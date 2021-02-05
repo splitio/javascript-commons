@@ -1,0 +1,75 @@
+{
+  "name": "@splitsoftware/splitio-commons",
+  "version": "0.0.1-canary.10",
+  "description": "Split Javascript SDK common components",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
+  "types": "types",
+  "files": [
+    "README.md",
+    "CONTRIBUTORS-GUIDE.md",
+    "LICENSE",
+    "CHANGES.txt",
+    "cjs",
+    "esm",
+    "src",
+    "types"
+  ],
+  "scripts": {
+    "check": "npm run check:lint && npm run check:types",
+    "check:lint": "eslint src --ext .js,.ts",
+    "check:types": "tsc --noEmit",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm -d true --declarationDir types --importHelpers",
+    "build:cjs": "rimraf cjs && tsc -m CommonJS --outDir cjs --importHelpers",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "publish:rc": "npm run check && npm run test && npm run build && npm publish --tag rc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/splitio/javascript-commons.git"
+  },
+  "keywords": [
+    "splitio",
+    "sdk",
+    "javascript"
+  ],
+  "author": "Emiliano Sanchez <emiliano.sanchez@split.io> (https://github.com/EmilianoSanchez)",
+  "contributors": [
+    "Nicolas Zelaya <nicolas.zelaya@split.io> (https://github.com/NicoZelaya)"
+  ],
+  "license": "Apache-2.0",
+  "bugs": "https://github.com/splitio/javascript-commons/issues",
+  "homepage": "https://github.com/splitio/javascript-commons#readme",
+  "dependencies": {
+    "object-assign": "^4.1.1",
+    "tslib": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/google.analytics": "0.0.40",
+    "@types/ioredis": "^4.14.1",
+    "@types/jest": "^26.0.10",
+    "@types/lodash": "^4.14.162",
+    "@types/node": "^14.14.7",
+    "@types/object-assign": "^4.0.30",
+    "@typescript-eslint/eslint-plugin": "^4.2.0",
+    "@typescript-eslint/parser": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "csv-streamify": "^4.0.0",
+    "eslint": "^7.9.0",
+    "eslint-plugin-compat": "3.7.0",
+    "fetch-mock": "^9.10.7",
+    "ioredis": "4.18.0",
+    "jest": "^26.4.2",
+    "jest-localstorage-mock": "^2.4.3",
+    "js-yaml": "^3.14.0",
+    "lodash": "^4.17.20",
+    "node-fetch": "^2.6.1",
+    "redis-server": "1.2.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.3.0",
+    "typescript": "^4.0.2"
+  },
+  "sideEffects": false
+}

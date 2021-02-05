@@ -1,0 +1,15 @@
+.idea
+.DS_Store
+**/npm-debug.log
+/.idea
+/.sonar
+**/node_modules
+/.vscode
+
+## transpiled code
+/esm
+/cjs
+/types
+
+## coverage info
+/coverage

@@ -1,0 +1,71 @@
+import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
+import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
+import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
+import { IStorageFactoryParams, IStorageSyncCS } from '../types';
+import KeyBuilderCS from '../KeyBuilderCS';
+import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
+import SplitsCacheInLocal from './SplitsCacheInLocal';
+import MySegmentsCacheInLocal from './MySegmentsCacheInLocal';
+import { logFactory } from '../../logger/sdkLogger';
+import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
+import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
+import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
+const log = logFactory('splitio-storage:localstorage');
+
+export interface InLocalStorageOptions {
+  prefix?: string
+}
+
+/**
+ * InLocal storage factory for standalone client-side SplitFactory
+ */
+export function InLocalStorage(options: InLocalStorageOptions = {}) {
+
+  // Fallback to InMemoryStorage if LocalStorage API is not available
+  if (!isLocalStorageAvailable()) {
+    log.warn('LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+    return;
+  }
+
+  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+
+  return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+
+    const keys = new KeyBuilderCS(prefix, params.matchingKey as string);
+    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
+
+    return {
+      splits: new SplitsCacheInLocal(keys, expirationTimestamp, params.splitFiltersValidation),
+      segments: new MySegmentsCacheInLocal(keys),
+      impressions: new ImpressionsCacheInMemory(),
+      impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
+      events: new EventsCacheInMemory(params.eventsQueueSize),
+
+      destroy() {
+        this.splits = new SplitsCacheInMemory();
+        this.segments = new MySegmentsCacheInMemory();
+        this.impressions.clear();
+        this.impressionCounts && this.impressionCounts.clear();
+        this.events.clear();
+      },
+
+      // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).
+      shared(matchingKey: string) {
+        const childKeysBuilder = new KeyBuilderCS(prefix, matchingKey);
+
+        return {
+          splits: this.splits,
+          segments: new MySegmentsCacheInLocal(childKeysBuilder),
+          impressions: this.impressions,
+          impressionCounts: this.impressionCounts,
+          events: this.events,
+
+          destroy() {
+            this.splits = new SplitsCacheInMemory();
+            this.segments = new MySegmentsCacheInMemory();
+          }
+        };
+      },
+    };
+  };
+}

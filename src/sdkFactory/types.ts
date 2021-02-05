@@ -1,0 +1,71 @@
+import { MaybeThenable } from '../dtos/types';
+import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
+import { ISignalListener } from '../listeners/types';
+import { ISdkReadinessManager } from '../readiness/types';
+import { ISdkClientFactoryParams } from '../sdkClient/types';
+import { IFetch, ISplitApi } from '../services/types';
+import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
+import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
+import { IImpressionObserver } from '../trackers/impressionObserver/types';
+import { SplitIO, ISettings, IEventEmitter } from '../types';
+import { ISettingsInternal } from '../utils/settingsValidation/types';
+
+/**
+ * Environment related dependencies
+ */
+export interface IPlatform {
+  getOptions?: () => object
+  getFetch?: () => (IFetch | undefined)
+  getEventSource?: () => (typeof EventSource | undefined)
+  EventEmitter: new () => IEventEmitter
+}
+
+/**
+ * Object parameter with the modules required to create an SDK factory instance
+ */
+export interface ISdkFactoryParams {
+
+  // The settings must be already validated
+  settings: ISettingsInternal,
+
+  // Platform dependencies
+  platform: IPlatform,
+
+  // Storage factory. The result storage type implies the type of the SDK:
+  // sync SDK (`ISDK` or `ICsSDK`) with `IStorageSync`, and async SDK (`IAsyncSDK`) with `IStorageAsync`
+  storageFactory: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
+
+  // Factory of Split Api (HTTP Client Service).
+  // It is not required when providing an asynchronous storage or offline SyncManager
+  splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
+
+  // SyncManager factory.
+  // It is not required when providing an asynchronous storage.
+  // It can create an offline or online sync manager, with or without streaming support.
+  syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
+
+  // Sdk manager factory
+  sdkManagerFactory?: (
+    splits: ISplitsCacheSync | ISplitsCacheAsync,
+    sdkReadinessManager: ISdkReadinessManager
+  ) => SplitIO.IManager | SplitIO.IAsyncManager,
+
+  // Sdk client method factory (ISDK::client method).
+  // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
+  sdkClientMethodFactory: (params: ISdkClientFactoryParams) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
+
+  // Signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
+  SignalListener?: new (
+    handler: (() => MaybeThenable<void>) | undefined, // Used by NodeSignalListener
+    settings: ISettings, // Used by BrowserSignalListener
+    storage: IStorageSync | IStorageAsync, // Used by BrowserSignalListener
+    serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener
+
+  // @TODO review impressionListener and integrations interfaces. What about handling impressionListener as an integration ?
+  impressionListener?: SplitIO.IImpressionListener,
+  integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,
+
+  // Impression observer factory. If provided, will be used for impressions dedupe
+  impressionsObserverFactory?: () => IImpressionObserver
+
+}
