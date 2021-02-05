@@ -1,7 +1,8 @@
-X.X.X (January XXX, 2021)
- - Initial public release. It includes common modules to the SDKs for the different Javascript runtime environments, such as Browser JS SDK, Node JS SDK, among others.
- - It has a modular design with the following goals in mind:
-   - Decouple the SDK API variants from the runtime environment, in order to, for example, run a client-side SDK instance on Node or Electron.
-   - Size reduction via tree-shaking with ES modules.
-   - Better performance by ussing the native APIs of each runtime environment.
-   - Extendable via pluggable modules, such as storages, integrations with third-party analytic tools, etc.
+0.0.1-beta1 (February 5, 2021)
+ - Initial public release. It includes common modules to be consumed by the different Split implementations written in JavaScript. Based on the original JS SDK in the `javascript-client` repository.
+ - It's designed with a modular approach, with the following goals in mind:
+   - Dependents should be able to include the modules that are needed for, as an example, a storage.
+   - Dependents should be able to use the module that's specific for their runtime environment, allowing for better usage of native APIs as well as to build optimizations targeted by each platform.
+   - Size reduction should be applicable when possible.
+   - Design should be extensible, specially for modules that act as an orchestrator.
+   - Code reusability.
