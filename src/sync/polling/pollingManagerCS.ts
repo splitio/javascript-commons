@@ -46,7 +46,7 @@ export default function pollingManagerCSFactory(
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
     const splitsHaveSegments = storage.splits.usesSegments();
     if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(`Turning segments data polling ${splitsHaveSegments ? 'ON' : 'OFF'}.`);
+      log.i(`Turning segments data polling ${splitsHaveSegments ? 'ON' : 'OFF'}.`);
       if (splitsHaveSegments) {
         startMySegmentsSyncTasks();
       } else {
@@ -75,7 +75,7 @@ export default function pollingManagerCSFactory(
 
     // Start periodic fetching (polling)
     start() {
-      log.info('Starting polling');
+      log.i('Starting polling');
 
       splitsSyncTask.start();
       if (storage.splits.usesSegments()) startMySegmentsSyncTasks();
@@ -83,7 +83,7 @@ export default function pollingManagerCSFactory(
 
     // Stop periodic fetching (polling)
     stop() {
-      log.info('Stopping polling');
+      log.i('Stopping polling');
 
       if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
       stopMySegmentsSyncTasks();

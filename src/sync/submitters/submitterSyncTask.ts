@@ -25,7 +25,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     const data = sourceCache.state();
 
     const dataCount: number | '' = typeof data.length === 'number' ? data.length : '';
-    log.info(`Pushing ${dataCount} ${dataName}.`);
+    log.i(`Pushing ${dataCount} ${dataName}.`);
     const latencyTrackerStop = latencyTracker && latencyTracker.start();
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
@@ -36,14 +36,14 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
       sourceCache.clear(); // we clear the queue if request successes.
     }).catch(err => {
       if (!maxRetries) {
-        log.warn(`Droping ${dataCount} ${dataName} after retry. Reason ${err}.`);
+        log.w(`Droping ${dataCount} ${dataName} after retry. Reason ${err}.`);
       } else if (retries === maxRetries) {
         retries = 0;
         sourceCache.clear(); // we clear the queue if request fails after retries.
-        log.warn(`Droping ${dataCount} ${dataName} after retry. Reason ${err}.`);
+        log.w(`Droping ${dataCount} ${dataName} after retry. Reason ${err}.`);
       } else {
         retries++;
-        log.warn(`Failed to push ${dataCount} ${dataName}, keeping data to retry on next iteration. Reason ${err}.`);
+        log.w(`Failed to push ${dataCount} ${dataName}, keeping data to retry on next iteration. Reason ${err}.`);
       }
     });
 

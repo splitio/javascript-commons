@@ -40,7 +40,7 @@ export default function pushManagerFactory(
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
   } catch (e) {
-    log.warn(e + 'Falling back to polling mode.');
+    log.w(e + 'Falling back to polling mode.');
     return;
   }
   const authenticate = authenticateFactory(fetchAuth);
@@ -89,14 +89,14 @@ export default function pushManagerFactory(
     // Set token refresh 10 minutes before expirationTime
     const delayInSeconds = expirationTime - issuedAt - SECONDS_BEFORE_EXPIRATION;
 
-    log.info(`Refreshing streaming token in ${delayInSeconds} seconds.`);
+    log.i(`Refreshing streaming token in ${delayInSeconds} seconds.`);
 
     timeoutId = setTimeout(connectPush, delayInSeconds * 1000);
   }
 
   function connectPush() {
     disconnected = false;
-    log.info('Connecting to push streaming.');
+    log.i('Connecting to push streaming.');
 
     const userKeys = userKey ? Object.keys(workers) : undefined;
     authenticate(userKeys).then(
@@ -109,7 +109,7 @@ export default function pushManagerFactory(
 
         // emit PUSH_DISCONNECT if org is not whitelisted
         if (!authData.pushEnabled) {
-          log.info('Streaming is not available. Switching to polling mode.');
+          log.i('Streaming is not available. Switching to polling mode.');
           pushEmitter.emit(PUSH_DISCONNECT); // there is no need to close sseClient (it is not open on this scenario)
           return;
         }
@@ -133,13 +133,13 @@ export default function pushManagerFactory(
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
-          log.error(errorMessage);
+          log.e(errorMessage);
           return;
         }
 
         // Handle other HTTP and network errors
         const delayInMillis = reauthBackoff.scheduleCall();
-        log.error(`${errorMessage}. Attempting to reauthenticate in ${delayInMillis / 1000} seconds.`);
+        log.e(`${errorMessage}. Attempting to reauthenticate in ${delayInMillis / 1000} seconds.`);
       }
     );
   }
@@ -147,7 +147,7 @@ export default function pushManagerFactory(
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
     disconnected = true;
-    log.info('Disconnecting from push streaming.');
+    log.i('Disconnecting from push streaming.');
     sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
@@ -186,7 +186,7 @@ export default function pushManagerFactory(
     }
 
     const errorMessage = error.parsedData && error.parsedData.message;
-    log.error(`Fail to connect to streaming${errorMessage ? `, with error message: "${errorMessage}"` : ''}. Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
+    log.e(`Fail to connect to streaming${errorMessage ? `, with error message: "${errorMessage}"` : ''}. Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
 
     pushEmitter.emit(PUSH_DISCONNECT); // no harm if polling already
   });

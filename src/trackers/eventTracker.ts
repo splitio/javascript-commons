@@ -23,7 +23,7 @@ export default function eventTrackerFactory(
     const msg = `event of type "${eventTypeId}" for traffic type "${trafficTypeName}". Key: ${key}. Value: ${value}. Timestamp: ${timestamp}. ${properties ? 'With properties.' : 'With no properties.'}`;
 
     if (tracked) {
-      log.info(`Successfully qeued ${msg}`);
+      log.i(`Successfully qeued ${msg}`);
       if (integrationsManager) {
         // Wrap in a timeout because we don't want it to be blocking.
         setTimeout(function () {
@@ -35,7 +35,7 @@ export default function eventTrackerFactory(
         }, 0);
       }
     } else {
-      log.warn(`Failed to queue ${msg}`);
+      log.w(`Failed to queue ${msg}`);
     }
 
     return tracked;

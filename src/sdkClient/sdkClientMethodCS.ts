@@ -41,7 +41,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
   return function client(key?: SplitIO.SplitKey) {
     if (key === undefined) {
-      log.debug('Retrieving default SDK client.');
+      log.d('Retrieving default SDK client.');
       return mainClientInstance;
     }
 
@@ -75,9 +75,9 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       sharedSyncManager.start();
 
-      log.info('New shared client instance created.');
+      log.i('New shared client instance created.');
     } else {
-      log.debug('Retrieving existing SDK client.');
+      log.d('Retrieving existing SDK client.');
     }
 
     return clientInstances[instanceId];

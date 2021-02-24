@@ -10,7 +10,7 @@ export function getTreatment(key: string, seed: number, treatments: { getTreatme
 
   const treatment = treatments.getTreatmentFor(_bucket);
 
-  log.debug(`[engine] using algo 'murmur' bucket ${_bucket} for key ${key} using seed ${seed} - treatment ${treatment}`);
+  log.d(`[engine] using algo 'murmur' bucket ${_bucket} for key ${key} using seed ${seed} - treatment ${treatment}`);
 
   return treatment;
 }

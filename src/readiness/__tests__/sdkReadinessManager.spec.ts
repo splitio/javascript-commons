@@ -82,8 +82,8 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
     const readyFromCacheEventCB = gateMock.once.mock.calls[2][1];
     readyFromCacheEventCB();
-    expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY_FROM_CACHE event fires, we get a info message.
-    expect(loggerMock.info.mock.calls[0]).toEqual(['Split SDK is ready from cache.']); // Telling us the SDK is ready to be used with data from cache.
+    expect(loggerMock.i.mock.calls.length).toBe(1); // If the SDK_READY_FROM_CACHE event fires, we get a info message.
+    expect(loggerMock.i.mock.calls[0]).toEqual(['Split SDK is ready from cache.']); // Telling us the SDK is ready to be used with data from cache.
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with no callbacks', () => {
@@ -94,19 +94,19 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
 
-    expect(loggerMock.warn.mock.calls.length).toBe(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor ready promise) we get a warning.
-    expect(loggerMock.warn.mock.calls[0]).toEqual(['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']); // Telling us there were no listeners and evaluations before this point may have been incorrect.
+    expect(loggerMock.w.mock.calls.length).toBe(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor ready promise) we get a warning.
+    expect(loggerMock.w.mock.calls[0]).toEqual(['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']); // Telling us there were no listeners and evaluations before this point may have been incorrect.
 
     // Now it's marked as ready.
     addListenerCB('this event we do not care');
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Now if we add a listener to an event unrelated with readiness, we get no errors logged.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Now if we add a listener to an event unrelated with readiness, we get no errors logged.
 
     addListenerCB(SDK_READY);
-    expect(loggerMock.error.mock.calls).toEqual([['A listener was added for SDK_READY on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.']]); // If we try to add a listener to SDK_READY we get the corresponding warning.
+    expect(loggerMock.e.mock.calls).toEqual([['A listener was added for SDK_READY on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.']]); // If we try to add a listener to SDK_READY we get the corresponding warning.
 
-    loggerMock.error.mockClear();
+    loggerMock.e.mockClear();
     addListenerCB(SDK_READY_TIMED_OUT);
-    expect(loggerMock.error.mock.calls).toEqual([['A listener was added for SDK_READY_TIMED_OUT on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.']]); // If we try to add a listener to SDK_READY_TIMED_OUT we get the corresponding warning.
+    expect(loggerMock.e.mock.calls).toEqual([['A listener was added for SDK_READY_TIMED_OUT on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.']]); // If we try to add a listener to SDK_READY_TIMED_OUT we get the corresponding warning.
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with callbacks', () => {
@@ -116,12 +116,12 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[1][1];
 
     addListenerCB(SDK_READY);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // We are adding a listener to the ready event before it is ready, so no warnings are logged.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // We are adding a listener to the ready event before it is ready, so no errors are logged.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // We are adding a listener to the ready event before it is ready, so no warnings are logged.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // We are adding a listener to the ready event before it is ready, so no errors are logged.
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // As we had at least one listener, we get no warnings.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // As we had at least one listener, we get no warnings.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
@@ -141,7 +141,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     removeListenerCB(SDK_READY);
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn.mock.calls[0]).toEqual(['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']); // We get the warning.
+    expect(loggerMock.w.mock.calls[0]).toEqual(['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']); // We get the warning.
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
@@ -162,7 +162,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     removeListenerCB('random event');
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // No warning when the SDK is ready as we still have one listener.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // No warning when the SDK is ready as we still have one listener.
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with expected internal callbacks', () => {
@@ -179,12 +179,12 @@ describe('SDK Readiness Manager - Event emitter', () => {
     addListenerCB(SDK_READY);
     removeListenerCB(SDK_READY);
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // We are adding/removing listeners to the ready event before it is ready, so no warnings are logged.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // We are adding/removing listeners to the ready event before it is ready, so no errors are logged.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // We are adding/removing listeners to the ready event before it is ready, so no warnings are logged.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // We are adding/removing listeners to the ready event before it is ready, so no errors are logged.
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn.mock.calls.length).not.toBe(0); // As we had the same amount of listeners that the expected, we get a warning.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
+    expect(loggerMock.w.mock.calls.length).not.toBe(0); // As we had the same amount of listeners that the expected, we get a warning.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
   });
 });
 
@@ -267,8 +267,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
     const readyEventCB = sdkReadinessManager.readinessManager.gate.once.mock.calls[0][1];
 
     readyEventCB();
-    expect(loggerMock.warn.mock.calls).toEqual([['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']]); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
-    loggerMock.warn.mockClear();
+    expect(loggerMock.w.mock.calls).toEqual([['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']]); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
+    loggerMock.w.mockClear();
 
     readyPromise.then(() => {
       expect('The ready promise is resolved when the gate emits SDK_READY.');
@@ -278,7 +278,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
     });
 
     readyEventCB();
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // But if we have a listener there are no warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // But if we have a listener there are no warnings.
   });
 
   test('.ready() rejected promises have a default onRejected handler that just logs the error', (done) => {
@@ -291,14 +291,14 @@ describe('SDK Readiness Manager - Ready promise', () => {
       () => { throw new Error('It should be a promise that was rejected on SDK_READY_TIMED_OUT, not resolved.'); }
     );
 
-    expect(loggerMock.error.mock.calls.length === 0).toBe(true); // not called until promise is rejected
+    expect(loggerMock.e.mock.calls.length === 0).toBe(true); // not called until promise is rejected
 
     setTimeout(() => {
-      expect(loggerMock.error.mock.calls).toEqual([[timeoutErrorMessage]]); // If we don\'t handle the rejected promise, an error is logged.
+      expect(loggerMock.e.mock.calls).toEqual([[timeoutErrorMessage]]); // If we don\'t handle the rejected promise, an error is logged.
       readyForTimeout = sdkReadinessManager.sdkStatus.ready();
 
       setTimeout(() => {
-        expect(loggerMock.error).lastCalledWith('Split SDK has emitted SDK_READY_TIMED_OUT event.'); // If we don\'t handle a new .ready() rejected promise, an error is logged.
+        expect(loggerMock.e).lastCalledWith('Split SDK has emitted SDK_READY_TIMED_OUT event.'); // If we don\'t handle a new .ready() rejected promise, an error is logged.
         readyForTimeout = sdkReadinessManager.sdkStatus.ready();
 
         readyForTimeout
@@ -306,7 +306,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
           .then(() => { throw new Error(); })
           .catch((error) => {
             expect(error).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
-            expect(loggerMock.error).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
+            expect(loggerMock.e).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
             done();
           });
       }, 0);

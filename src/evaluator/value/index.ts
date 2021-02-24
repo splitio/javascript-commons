@@ -9,9 +9,9 @@ function parseValue(key: string, attributeName: string | null, attributes: Split
   if (attributeName) {
     if (attributes) {
       value = attributes[attributeName];
-      log.debug(`Extracted attribute [${attributeName}], [${value}] will be used for matching.`);
+      log.d(`Extracted attribute [${attributeName}], [${value}] will be used for matching.`);
     } else {
-      log.warn(`Defined attribute [${attributeName}], no attributes received.`);
+      log.w(`Defined attribute [${attributeName}], no attributes received.`);
     }
   } else {
     value = key;
@@ -31,7 +31,7 @@ export default function value(key: string, matcherDto: IMatcherDto, attributes: 
   if (sanitizedValue !== undefined) {
     return sanitizedValue;
   } else {
-    log.warn(`Value ${valueToMatch} ${attributeName ? `for attribute ${attributeName} ` : + ''}doesn't match with expected type.`);
+    log.w(`Value ${valueToMatch} ${attributeName ? `for attribute ${attributeName} ` : + ''}doesn't match with expected type.`);
     return;
   }
 }

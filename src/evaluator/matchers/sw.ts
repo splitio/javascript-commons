@@ -6,7 +6,7 @@ export default function startsWithMatcherContext(ruleAttr: string[]) /*: Functio
   return function startsWithMatcher(runtimeAttr: string): boolean {
     let matches = ruleAttr.some(e => startsWith(runtimeAttr, e));
 
-    log.debug(`[startsWithMatcher] ${runtimeAttr} starts with ${ruleAttr}? ${matches}`);
+    log.d(`[startsWithMatcher] ${runtimeAttr} starts with ${ruleAttr}? ${matches}`);
 
     return matches;
   };

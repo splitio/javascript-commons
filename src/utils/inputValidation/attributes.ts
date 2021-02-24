@@ -8,6 +8,6 @@ export function validateAttributes(maybeAttrs: any, method: string): SplitIO.Att
   if (isObject(maybeAttrs) || maybeAttrs == undefined) // eslint-disable-line eqeqeq
     return maybeAttrs;
 
-  log.error(`${method}: attributes must be a plain object.`);
+  log.e(`${method}: attributes must be a plain object.`);
   return false;
 }

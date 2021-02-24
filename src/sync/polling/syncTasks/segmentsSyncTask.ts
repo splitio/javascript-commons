@@ -44,7 +44,7 @@ function segmentChangesUpdaterFactory(
    * @param {string[] | undefined} segmentNames list of segment names to fetch. By passing `undefined` it fetches the list of segments registered at the storage
    */
   return function segmentChangesUpdater(segmentNames?: string[]) {
-    log.debug('Started segments update');
+    log.d('Started segments update');
 
     // If not a segment name provided, read list of available segments names to be updated.
     if (!segmentNames) segmentNames = segmentsCache.getRegisteredSegments();
@@ -56,7 +56,7 @@ function segmentChangesUpdaterFactory(
       const segmentName = segmentNames[index];
       const since = segmentsCache.getChangeNumber(segmentName);
 
-      log.debug(`Processing segment ${segmentName}`);
+      log.d(`Processing segment ${segmentName}`);
 
       updaters.push(segmentChangesFetcher(since, segmentName, _promiseDecorator).then(function (changes) {
         let changeNumber = -1;
@@ -68,7 +68,7 @@ function segmentChangesUpdaterFactory(
             changeNumber = x.till;
           }
 
-          log.debug(`Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+          log.d(`Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
         });
 
         return changeNumber;
@@ -92,7 +92,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        inputValidationLog.error('Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.');
+        inputValidationLog.e('Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.');
       }
 
       return false;

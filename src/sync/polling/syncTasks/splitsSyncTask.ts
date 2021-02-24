@@ -101,7 +101,7 @@ export function splitChangesUpdaterFactory(
    * @param {number} retry current number of retry attemps
    */
   function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
-    log.debug(`Spin up split update using since = ${since}`);
+    log.d(`Spin up split update using since = ${since}`);
 
     const fetcherPromise = splitChangesFetcher(since, _promiseDecorator)
       .then((splitChanges: ISplitChangesResponse) => {
@@ -109,9 +109,9 @@ export function splitChangesUpdaterFactory(
 
         const mutation = computeSplitsMutation(splitChanges.splits);
 
-        log.debug(`New splits ${mutation.added.length}`);
-        log.debug(`Removed splits ${mutation.removed.length}`);
-        log.debug(`Segment names collected ${mutation.segments.length}`);
+        log.d(`New splits ${mutation.added.length}`);
+        log.d(`Removed splits ${mutation.removed.length}`);
+        log.d(`Segment names collected ${mutation.segments.length}`);
 
         // Write into storage
         // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
@@ -136,11 +136,11 @@ export function splitChangesUpdaterFactory(
           startingUp = false; // Stop retrying.
         }
 
-        log.warn(`Error while doing fetch of Splits. ${error}`);
+        log.w(`Error while doing fetch of Splits. ${error}`);
 
         if (startingUp && retriesOnFailureBeforeReady && retriesOnFailureBeforeReady > retry) {
           retry += 1;
-          log.info(`Retrying download of splits #${retry}. Reason: ${error}`);
+          log.i(`Retrying download of splits #${retry}. Reason: ${error}`);
           return _splitChangesUpdater(since, retry);
         } else {
           startingUp = false;

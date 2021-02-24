@@ -6,7 +6,7 @@ export default function endsWithMatcherContext(ruleAttr: string[]) /*: Function 
   return function endsWithMatcher(runtimeAttr: string): boolean {
     let endsWith = ruleAttr.some(e => strEndsWith(runtimeAttr, e));
 
-    log.debug(`[endsWithMatcher] ${runtimeAttr} ends with ${ruleAttr}? ${endsWith}`);
+    log.d(`[endsWithMatcher] ${runtimeAttr} ends with ${ruleAttr}? ${endsWith}`);
 
     return endsWith;
   };

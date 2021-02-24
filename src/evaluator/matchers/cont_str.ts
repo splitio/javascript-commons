@@ -6,7 +6,7 @@ export default function containsStringMatcherContext(ruleAttr: string[]) /*: Fun
   return function containsStringMatcher(runtimeAttr: string): boolean {
     let contains = ruleAttr.some(e => isString(runtimeAttr) && runtimeAttr.indexOf(e) > -1);
 
-    log.debug(`[containsStringMatcher] ${runtimeAttr} contains ${ruleAttr}? ${contains}`);
+    log.d(`[containsStringMatcher] ${runtimeAttr} contains ${ruleAttr}? ${contains}`);
 
     return contains;
   };

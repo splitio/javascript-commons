@@ -32,7 +32,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
       // We use boolean values to signal successful queueing
       .then(() => true)
       .catch(err => {
-        log.error(`Error adding event to queue: ${err}.`);
+        log.e(`Error adding event to queue: ${err}.`);
         return false;
       });
   }

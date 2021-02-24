@@ -8,7 +8,7 @@ import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 
 function unexpectedInputHandler() {
-  log.error('Invalid Split provided, no valid conditions found');
+  log.e('Invalid Split provided, no valid conditions found');
 
   return {
     treatment: CONTROL,
@@ -23,13 +23,13 @@ function computeTreatment(predicateResults: Array<IEvaluation | undefined>) {
     const evaluation = predicateResults[i];
 
     if (evaluation !== undefined) {
-      log.debug(`Treatment found: ${evaluation.treatment}`);
+      log.d(`Treatment found: ${evaluation.treatment}`);
 
       return evaluation;
     }
   }
 
-  log.debug('All predicates evaluated, no treatment found.');
+  log.d('All predicates evaluated, no treatment found.');
   return undefined;
 }
 

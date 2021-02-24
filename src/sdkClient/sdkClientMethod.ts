@@ -16,7 +16,7 @@ export function sdkClientMethodFactory(params: ISdkClientFactoryParams): () => S
       throw new Error('Shared Client not supported by the storage mechanism. Create isolated instances instead.');
     }
 
-    log.debug('Retrieving SDK client.');
+    log.d('Retrieving SDK client.');
     return clientInstance;
   };
 }

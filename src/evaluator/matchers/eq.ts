@@ -5,7 +5,7 @@ export default function equalToMatcherContext(ruleAttr: number) /*: Function */ 
   return function equalToMatcher(runtimeAttr: number): boolean {
     let isEqual = runtimeAttr === ruleAttr;
 
-    log.debug(`[equalToMatcher] is ${runtimeAttr} equal to ${ruleAttr}? ${isEqual}`);
+    log.d(`[equalToMatcher] is ${runtimeAttr} equal to ${ruleAttr}? ${isEqual}`);
 
     return isEqual;
   };

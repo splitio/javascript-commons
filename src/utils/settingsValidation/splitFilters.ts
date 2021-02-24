@@ -96,12 +96,12 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
   if (mode !== STANDALONE_MODE) {
-    log.warn(`Factory instantiation: split filters have been configured but will have no effect if mode is not '${STANDALONE_MODE}', since synchronization is being deferred to an external tool.`);
+    log.w(`Factory instantiation: split filters have been configured but will have no effect if mode is not '${STANDALONE_MODE}', since synchronization is being deferred to an external tool.`);
     return res;
   }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
-    log.warn('Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.');
+    log.w('Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.');
     return res;
   }
 
@@ -112,7 +112,7 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
       return true;
     } else {
-      log.warn(`Factory instantiation: split filter at position '${index}' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'.`);
+      log.w(`Factory instantiation: split filter at position '${index}' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'.`);
     }
     return false;
   });
@@ -124,7 +124,7 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
 
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
-  log.debug(`Factory instantiation: splits filtering criteria is '${res.queryString}'.`);
+  log.d(`Factory instantiation: splits filtering criteria is '${res.queryString}'.`);
 
   return res;
 }

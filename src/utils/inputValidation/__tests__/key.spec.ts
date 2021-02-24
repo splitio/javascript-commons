@@ -49,12 +49,12 @@ describe('INPUT VALIDATION for Key', () => {
     };
 
     expect(validateKey(validKey, 'some_method_keys')).toEqual(validKey); // It will return the valid key.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // No errors should be logged.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // No errors should be logged.
 
     expect(validateKey(validObjKey, 'some_method_keys')).toEqual(validObjKey); // It will return the valid key.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // No errors should be logged.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // No errors should be logged.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -65,12 +65,12 @@ describe('INPUT VALIDATION for Key', () => {
       const expectedLog = invalidKeys[i]['msg']('key');
 
       expect(validateKey(invalidKey, 'test_method')).toBe(false); // Invalid keys should return false.
-      expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
+      expect(loggerMock.e.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -81,12 +81,12 @@ describe('INPUT VALIDATION for Key', () => {
       const expectedLog = stringifyableKeys[i]['msg']('key', invalidKey);
 
       validateKey(invalidKey, 'test_method');
-      expect(loggerMock.warn.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // But if the logger allows for warnings, it should be logged.
+      expect(loggerMock.w.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // But if the logger allows for warnings, it should be logged.
 
-      loggerMock.warn.mockClear();
+      loggerMock.w.mockClear();
     }
 
-    expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // It should have not logged any errors.
 
     mockClear();
   });
@@ -95,12 +95,12 @@ describe('INPUT VALIDATION for Key', () => {
     // Test invalid object format
     for (let i = 0; i < invalidKeyObjects.length; i++) {
       expect(validateKey(invalidKeyObjects[i], 'test_method')).toBe(false); // Invalid key objects should return false.
-      expect(loggerMock.error.mock.calls[loggerMock.error.mock.calls.length - 1][0]).toEqual(`test_method: ${errorMsgs.WRONG_KEY_PROPS}`); // The error should be logged for the invalid key.
+      expect(loggerMock.e.mock.calls[loggerMock.e.mock.calls.length - 1][0]).toEqual(`test_method: ${errorMsgs.WRONG_KEY_PROPS}`); // The error should be logged for the invalid key.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
     // Test invalid matchingKey
@@ -112,12 +112,12 @@ describe('INPUT VALIDATION for Key', () => {
       const expectedLog = invalidKeys[i]['msg']('matchingKey');
 
       expect(validateKey(invalidKey, 'test_method')).toBe(false); // Invalid keys should return false.
-      expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
+      expect(loggerMock.e.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
 
@@ -130,12 +130,12 @@ describe('INPUT VALIDATION for Key', () => {
       const expectedLog = invalidKeys[i]['msg']('bucketingKey');
 
       expect(validateKey(invalidKey, 'test_method')).toBe(false); // Invalid keys should return false.
-      expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
+      expect(loggerMock.e.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // The error should be logged for the invalid key.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
 
@@ -148,10 +148,10 @@ describe('INPUT VALIDATION for Key', () => {
     let expectedLogBK = invalidKeys[1]['msg']('bucketingKey');
 
     expect(validateKey(invalidKey, 'test_method')).toBe(false); // Invalid keys should return false.
-    expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLogMK}`); // The error should be logged for the invalid key property.
-    expect(loggerMock.error.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The error should be logged for the invalid key property.
+    expect(loggerMock.e.mock.calls[0][0]).toEqual(`test_method: ${expectedLogMK}`); // The error should be logged for the invalid key property.
+    expect(loggerMock.e.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The error should be logged for the invalid key property.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -169,10 +169,10 @@ describe('INPUT VALIDATION for Key', () => {
     let expectedLogBK = stringifyableKeys[1]['msg']('bucketingKey', invalidKey.bucketingKey);
 
     expect(validateKey(invalidKey, 'test_method')).toEqual(expectedKey); // If a key object had stringifyable values, those will be stringified and Key returned.
-    expect(loggerMock.warn.mock.calls[0][0]).toEqual(`test_method: ${expectedLogMK}`); // The warning should be logged for the stringified prop if warnings are enabled.
-    expect(loggerMock.warn.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The warning should be logged for the stringified prop if warnings are enabled.
+    expect(loggerMock.w.mock.calls[0][0]).toEqual(`test_method: ${expectedLogMK}`); // The warning should be logged for the stringified prop if warnings are enabled.
+    expect(loggerMock.w.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The warning should be logged for the stringified prop if warnings are enabled.
 
-    expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // It should have not logged any errors.
 
     mockClear();
   });

@@ -36,13 +36,13 @@ describe('INPUT VALIDATION for Event types', () => {
   test('Should return the provided event type if it is a valid string without logging any errors', () => {
 
     expect(validateEvent('valid:Too', 'some_method_eventType')).toBe('valid:Too'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
     expect(validateEvent('I.am.valid-string_ValUe', 'some_method_eventType')).toBe('I.am.valid-string_ValUe'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
     expect(validateEvent('a', 'some_method_eventType')).toBe('a'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -53,12 +53,12 @@ describe('INPUT VALIDATION for Event types', () => {
       const expectedLog = invalidEvents[i]['msg'](invalidValue);
 
       expect(validateEvent(invalidValue, 'test_method')).toBe(false); // Invalid event types should always return false.
-      expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid event type.
+      expect(loggerMock.e.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid event type.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });

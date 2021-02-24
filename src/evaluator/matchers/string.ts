@@ -8,14 +8,14 @@ export default function stringMatcherContext(ruleAttr: string) /*: Function */ {
     try {
       re = new RegExp(ruleAttr);
     } catch (e) {
-      log.debug(`[stringMatcher] ${ruleAttr} is an invalid regex`);
+      log.d(`[stringMatcher] ${ruleAttr} is an invalid regex`);
 
       return false;
     }
 
     let regexMatches = re.test(runtimeAttr);
 
-    log.debug(`[stringMatcher] does ${runtimeAttr} matches with ${ruleAttr}? ${regexMatches ? 'yes' : 'no'}`);
+    log.d(`[stringMatcher] does ${runtimeAttr} matches with ${ruleAttr}? ${regexMatches ? 'yes' : 'no'}`);
 
     return regexMatches;
   };

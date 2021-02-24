@@ -21,7 +21,7 @@ export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getF
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
-  if (!fetch) log.error(messageNoFetch + ' The SDK will not get ready.');
+  if (!fetch) log.e(messageNoFetch + ' The SDK will not get ready.');
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
@@ -62,7 +62,7 @@ export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getF
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log[logErrorsAsInfo ? 'info' : 'error'](`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
+          log[logErrorsAsInfo ? 'i' : 'e'](`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
         }
 
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)

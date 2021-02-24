@@ -16,6 +16,6 @@ export function validateSplits(maybeSplits: any, method: string, listName = 'spl
     if (validatedArray.length) return uniq(validatedArray);
   }
 
-  log.error(`${method}: ${listName} must be a non-empty array.`);
+  log.e(`${method}: ${listName} must be a non-empty array.`);
   return false;
 }

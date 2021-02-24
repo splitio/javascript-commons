@@ -36,22 +36,22 @@ export class Logger {
     this.options = objectAssign({}, defaultOptions, options);
   }
 
-  debug(msg: string) {
+  d(msg: string) {
     if (this._shouldLog(LogLevels.DEBUG))
       this._log(LogLevels.DEBUG, msg);
   }
 
-  info(msg: string) {
+  i(msg: string) {
     if (this._shouldLog(LogLevels.INFO))
       this._log(LogLevels.INFO, msg);
   }
 
-  warn(msg: string) {
+  w(msg: string) {
     if (this._shouldLog(LogLevels.WARN))
       this._log(LogLevels.WARN, msg);
   }
 
-  error(msg: string) {
+  e(msg: string) {
     if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
       this._log(LogLevels.ERROR, msg);
   }

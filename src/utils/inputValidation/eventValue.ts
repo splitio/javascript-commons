@@ -6,6 +6,6 @@ export function validateEventValue(maybeValue: any, method: string): number | fa
   if (isFiniteNumber(maybeValue) || maybeValue == undefined) // eslint-disable-line eqeqeq
     return maybeValue;
 
-  log.error(`${method}: value must be a finite number.`);
+  log.e(`${method}: value must be a finite number.`);
   return false;
 }

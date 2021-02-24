@@ -11,14 +11,14 @@ function apiKeyError(reason: string) { return `Factory instantiation: ${reason},
 export function validateApiKey(maybeApiKey: any): string | false {
   let apiKey: string | false = false;
   if (maybeApiKey == undefined) { // eslint-disable-line eqeqeq
-    log.error(apiKeyError('you passed a null or undefined api_key'));
+    log.e(apiKeyError('you passed a null or undefined api_key'));
   } else if (isString(maybeApiKey)) {
     if (maybeApiKey.length > 0)
       apiKey = maybeApiKey;
     else
-      log.error(apiKeyError('you passed an empty api_key'));
+      log.e(apiKeyError('you passed an empty api_key'));
   } else {
-    log.error(apiKeyError('you passed an invalid api_key'));
+    log.e(apiKeyError('you passed an invalid api_key'));
   }
 
   return apiKey;
@@ -38,10 +38,10 @@ export function validateAndTrackApiKey(maybeApiKey: any): string | false {
       // If this key is not present, only warning scenarios is that we have factories for other keys.
       usedKeysMap[apiKey] = 1;
       if (Object.keys(usedKeysMap).length > 1) {
-        log.warn(apiKeyWarn('You already have an instance of the Split factory. Make sure you definitely want this additional instance'));
+        log.w(apiKeyWarn('You already have an instance of the Split factory. Make sure you definitely want this additional instance'));
       }
     } else {
-      log.warn(apiKeyWarn(`You already have ${usedKeysMap[apiKey]} ${usedKeysMap[apiKey] === 1 ? 'factory' : 'factories'} with this API Key`));
+      log.w(apiKeyWarn(`You already have ${usedKeysMap[apiKey]} ${usedKeysMap[apiKey] === 1 ? 'factory' : 'factories'} with this API Key`));
       usedKeysMap[apiKey]++;
     }
   }

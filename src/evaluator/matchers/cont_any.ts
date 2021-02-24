@@ -10,7 +10,7 @@ export default function containsAnyMatcherContext(ruleAttr: string[]) /*: Functi
       if (findIndex(runtimeAttr, e => e === ruleAttr[i]) >= 0) containsAny = true;
     }
 
-    log.debug(`[containsAnyMatcher] ${runtimeAttr} contains at least an element of ${ruleAttr}? ${containsAny}`);
+    log.d(`[containsAnyMatcher] ${runtimeAttr} contains at least an element of ${ruleAttr}? ${containsAny}`);
 
     return containsAny;
   };

@@ -12,7 +12,7 @@ export default function partOfMatcherContext(ruleAttr: string[]) /*: Function */
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isPartOf = false;
     }
 
-    log.debug(`[partOfMatcher] ${runtimeAttr} is part of ${ruleAttr}? ${isPartOf}`);
+    log.d(`[partOfMatcher] ${runtimeAttr} is part of ${ruleAttr}? ${isPartOf}`);
 
     return isPartOf;
   };

@@ -11,12 +11,12 @@ export default function matcherSegmentContext(segmentName: string, storage: { se
 
     if (thenable(isInSegment)) {
       isInSegment.then(result => {
-        log.debug(`[asyncSegmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+        log.d(`[asyncSegmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
 
         return result;
       });
     } else {
-      log.debug(`[segmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+      log.d(`[segmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
     }
 
     return isInSegment;

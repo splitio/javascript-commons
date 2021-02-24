@@ -17,7 +17,7 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
 
 // default onRejected handler, that just logs the error, if ready promise doesn't have one.
 function defaultOnRejected(err: any) {
-  log.error(err);
+  log.e(err);
 }
 
 /**
@@ -44,7 +44,7 @@ export default function sdkReadinessManagerFactory(
   readinessManager.gate.on(NEW_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY || event === SDK_READY_TIMED_OUT) {
       if (readinessManager.isReady()) {
-        log.error(`A listener was added for ${event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT'} on the SDK, which has already fired and won't be emitted again. The callback won't be executed.`);
+        log.e(`A listener was added for ${event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT'} on the SDK, which has already fired and won't be emitted again. The callback won't be executed.`);
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
@@ -55,13 +55,13 @@ export default function sdkReadinessManagerFactory(
   const readyPromise = generateReadyPromise();
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
-    log.info('Split SDK is ready from cache.');
+    log.i('Split SDK is ready from cache.');
   });
 
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
+        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.w('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);

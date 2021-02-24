@@ -43,9 +43,9 @@ describe('INPUT VALIDATION for Split names', () => {
 
     expect(validateSplits(validArr, 'some_method_splits')).toEqual(validArr); // It should return the provided array without changes if it is valid.
     expect(validateSplitMock.mock.calls.length).toBe(validArr.length); // Should have validated each value independently.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors on the collection.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors on the collection.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
   });
 
   test('Should return the provided array if it is a valid splits names array removing duplications, without logging any errors', () => {
@@ -53,21 +53,21 @@ describe('INPUT VALIDATION for Split names', () => {
 
     expect(validateSplits(validArr, 'some_method_splits')).toEqual(uniq(validArr)); // It should return the provided array without changes if it is valid.
     expect(validateSplitMock.mock.calls.length).toBe(validArr.length); // Should have validated each value independently.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors on the collection.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors on the collection.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
   });
 
   test('Should return false and log an error for the array if it is invalid', () => {
     for (let i = 0; i < invalidSplits.length; i++) {
       expect(validateSplits(invalidSplits[i], 'test_method')).toBe(false); // It will return false as the array is of an incorrect type.
-      expect(loggerMock.error.mock.calls).toEqual([['test_method: split_names must be a non-empty array.']]); // Should log the error for the collection.
+      expect(loggerMock.e.mock.calls).toEqual([['test_method: split_names must be a non-empty array.']]); // Should log the error for the collection.
       expect(validateSplitMock.mock.calls.length).toBe(0); // Should not try to validate any inner value if there is no valid array.
 
-      loggerMock.error.mockClear();
+      loggerMock.e.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
   });
 
   test('Should strip out any invalid value from the array', () => {
@@ -81,7 +81,7 @@ describe('INPUT VALIDATION for Split names', () => {
       expect(validateSplitMock.mock.calls[i]).toEqual([myArr[i], 'test_method', 'split name']); // Should validate any inner value independently.
     }
 
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any error for the collection.
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings for the collection.
+    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any error for the collection.
+    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings for the collection.
   });
 });

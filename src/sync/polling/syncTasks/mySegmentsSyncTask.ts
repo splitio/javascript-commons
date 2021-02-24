@@ -73,7 +73,7 @@ function mySegmentsUpdaterFactory(
 
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
-        log.warn(`Retrying download of segments #${retry}. Reason: ${error}`);
+        log.w(`Retrying download of segments #${retry}. Reason: ${error}`);
         return _mySegmentsUpdater(retry);
       } else {
         startingUp = false;

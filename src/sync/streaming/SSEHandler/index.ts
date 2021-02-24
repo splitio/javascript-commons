@@ -27,7 +27,7 @@ export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseE
       try {
         errorWithParsedData = errorParser(error);
       } catch (err) {
-        log.warn(`Error parsing SSE error notification: ${err}`);
+        log.w(`Error parsing SSE error notification: ${err}`);
       }
 
       pushEmitter.emit(SSE_ERROR, errorWithParsedData);
@@ -39,12 +39,12 @@ export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseE
       try {
         messageWithParsedData = messageParser(message);
       } catch (err) {
-        log.warn(`Error parsing new SSE message notification: ${err}`);
+        log.w(`Error parsing new SSE message notification: ${err}`);
         return;
       }
 
       const { parsedData, data, channel, timestamp } = messageWithParsedData;
-      log.debug(`New SSE message received, with data: ${data}.`);
+      log.d(`New SSE message received, with data: ${data}.`);
 
       // we only handle update events if streaming is up.
       if (!notificationKeeper.isStreamingUp() && parsedData.type !== OCCUPANCY && parsedData.type !== CONTROL)

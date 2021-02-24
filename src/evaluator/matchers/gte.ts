@@ -5,7 +5,7 @@ export default function greaterThanEqualMatcherContext(ruleAttr: number) /*: Fun
   return function greaterThanEqualMatcher(runtimeAttr: number): boolean {
     let isGreaterEqualThan = runtimeAttr >= ruleAttr;
 
-    log.debug(`[greaterThanEqualMatcher] is ${runtimeAttr} greater than ${ruleAttr}? ${isGreaterEqualThan}`);
+    log.d(`[greaterThanEqualMatcher] is ${runtimeAttr} greater than ${ruleAttr}? ${isGreaterEqualThan}`);
 
     return isGreaterEqualThan;
   };

@@ -62,9 +62,9 @@ export default function impressionsTrackerFactory(
       // If we're on an async storage, handle error and log it.
       if (thenable(res)) {
         res.then(() => {
-          log.debug(`Successfully stored ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}.`);
+          log.d(`Successfully stored ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}.`);
         }).catch(err => {
-          log.error(`Could not store impressions bulk with ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}. Error: ${err}`);
+          log.e(`Could not store impressions bulk with ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}. Error: ${err}`);
         });
       }
 
@@ -88,7 +88,7 @@ export default function impressionsTrackerFactory(
             try { // An exception on the listeners should not break the SDK.
               if (impressionListener) impressionListener.logImpression(impressionData);
             } catch (err) {
-              log.error(`Impression listener logImpression method threw: ${err}.`);
+              log.e(`Impression listener logImpression method threw: ${err}.`);
             }
           }, 0);
         }

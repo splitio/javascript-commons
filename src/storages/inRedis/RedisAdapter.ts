@@ -52,16 +52,16 @@ export default class RedisAdapter extends ioredis {
   _listenToEvents() {
     this.once('ready', () => {
       const commandsCount = this._notReadyCommandsQueue ? this._notReadyCommandsQueue.length : 0;
-      log.info(`Redis connection established. Queued commands: ${commandsCount}.`);
+      log.i(`Redis connection established. Queued commands: ${commandsCount}.`);
       this._notReadyCommandsQueue && this._notReadyCommandsQueue.forEach(queued => {
-        log.info(`Executing queued ${queued.name} command.`);
+        log.i(`Executing queued ${queued.name} command.`);
         queued.command().then(queued.resolve).catch(queued.reject);
       });
       // After the SDK is ready for the first time we'll stop queueing commands. This is just so we can keep handling BUR for them.
       this._notReadyCommandsQueue = undefined;
     });
     this.once('close', () => {
-      log.info('Redis connection closed.');
+      log.i('Redis connection closed.');
     });
   }
 
@@ -75,7 +75,7 @@ export default class RedisAdapter extends ioredis {
         const params = arguments;
 
         function commandWrapper() {
-          log.debug(`Executing ${method}.`);
+          log.d(`Executing ${method}.`);
           // Return original method
           const result = originalMethod.apply(instance, params);
 
@@ -90,7 +90,7 @@ export default class RedisAdapter extends ioredis {
             result.then(cleanUpRunningCommandsCb, cleanUpRunningCommandsCb);
 
             return timeout(instance._options.operationTimeout, result).catch(err => {
-              log.error(`${method} operation threw an error or exceeded configured timeout of ${instance._options.operationTimeout}ms. Message: ${err}`);
+              log.e(`${method} operation threw an error or exceeded configured timeout of ${instance._options.operationTimeout}ms. Message: ${err}`);
               // Handling is not the adapter responsibility.
               throw err;
             });
@@ -123,19 +123,19 @@ export default class RedisAdapter extends ioredis {
 
       setTimeout(function deferedDisconnect() {
         if (instance._runningCommands.size > 0) {
-          log.info(`Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
+          log.i(`Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
 
           Promise.all(setToArray(instance._runningCommands))
             .then(() => {
-              log.debug('Pending commands finished successfully, disconnecting.');
+              log.d('Pending commands finished successfully, disconnecting.');
               originalMethod.apply(instance, params);
             })
             .catch(e => {
-              log.warn(`Pending commands finished with error: ${e}. Proceeding with disconnection.`);
+              log.w(`Pending commands finished with error: ${e}. Proceeding with disconnection.`);
               originalMethod.apply(instance, params);
             });
         } else {
-          log.debug('No commands pending execution, disconnect.');
+          log.d('No commands pending execution, disconnect.');
           // Nothing pending, just proceed.
           originalMethod.apply(instance, params);
         }

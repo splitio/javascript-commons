@@ -17,7 +17,7 @@ export function validateStorageCS(settings: any): ISettings['storage'] {
   // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages
   if (storage) {
     if (typeof storage === 'function') return storage;
-    log.warn('The provided storage is invalid. Fallbacking into default MEMORY storage');
+    log.w('The provided storage is invalid. Fallbacking into default MEMORY storage');
   }
 
   // return default InMemory storage if provided one is not valid

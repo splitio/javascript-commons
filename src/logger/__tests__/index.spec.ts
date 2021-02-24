@@ -34,10 +34,10 @@ test('SPLIT LOGGER / Logger class shape', () => {
 
   const logger = new Logger('test-category', {});
 
-  expect(typeof logger.debug).toBe('function'); // instance.debug should be a method.
-  expect(typeof logger.info).toBe('function'); // instance.info should be a method.
-  expect(typeof logger.warn).toBe('function'); // instance.warn should be a method.
-  expect(typeof logger.error).toBe('function'); // instance.error should be a method.
+  expect(typeof logger.d).toBe('function'); // instance.d should be a method.
+  expect(typeof logger.i).toBe('function'); // instance.i should be a method.
+  expect(typeof logger.w).toBe('function'); // instance.w should be a method.
+  expect(typeof logger.e).toBe('function'); // instance.e should be a method.
 
 });
 
@@ -60,7 +60,7 @@ function testLogLevels(levelToTest: string) {
   const runTests = (showLevel?: boolean, displayAllErrors?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
-    const logMethod = levelToTest.toLowerCase();
+    const logMethod = levelToTest.toLowerCase().charAt(0);
     const logCategory = `test-category-${logMethod}${displayAllErrors ? 'displayAllErrors' : ''}`;
     const instance = new Logger(logCategory, {
       showLevel, displayAllErrors
@@ -71,7 +71,7 @@ function testLogLevels(levelToTest: string) {
       const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
 
       // Log error should always be visible.
-      if (logMethod === LOG_LEVELS.ERROR.toLowerCase() && displayAllErrors) testForNoLog = false;
+      if (logMethod === LOG_LEVELS.ERROR.toLowerCase().charAt(0) && displayAllErrors) testForNoLog = false;
 
       // Set the logLevel for this iteration.
       setLogLevel(LogLevels[logLevel]);
@@ -105,22 +105,22 @@ function testLogLevels(levelToTest: string) {
 
 }
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.debug', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.d', () => {
   testLogLevels(LogLevels.DEBUG);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.info', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.i', () => {
   testLogLevels(LogLevels.INFO);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.w', () => {
   testLogLevels(LogLevels.WARN);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.e', () => {
   testLogLevels(LogLevels.ERROR);
 
 });

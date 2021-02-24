@@ -60,7 +60,7 @@ export default class SplitToGa implements IIntegration {
   static validateFieldsObject(fieldsObject: any): fieldsObject is UniversalAnalytics.FieldsObject {
     if (fieldsObject && fieldsObject.hitType) return true;
 
-    log.warn('your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
+    log.w('your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
     return false;
   }
 
@@ -85,8 +85,8 @@ export default class SplitToGa implements IIntegration {
       this.events = options.events;
     }
 
-    log.info('Started Split-to-GA integration');
-    if (typeof SplitToGa.getGa() !== 'function') log.warn(noGaWarning + ' No hits will be sent until it is available.');
+    log.i('Started Split-to-GA integration');
+    if (typeof SplitToGa.getGa() !== 'function') log.w(noGaWarning + ' No hits will be sent until it is available.');
   }
 
   queue(data: SplitIO.IntegrationData) {
@@ -111,7 +111,7 @@ export default class SplitToGa implements IIntegration {
           if (!fieldsObject || !SplitToGa.validateFieldsObject(fieldsObject)) return;
         }
       } catch (err) {
-        log.warn(`SplitToGa queue method threw: ${err}. No hit was sent.`);
+        log.w(`SplitToGa queue method threw: ${err}. No hit was sent.`);
         return;
       }
 
@@ -124,7 +124,7 @@ export default class SplitToGa implements IIntegration {
         ga(sendCommand, fieldsObject);
       });
     } else {
-      log.warn(noGaWarning + ' No hit was sent.');
+      log.w(noGaWarning + ' No hit was sent.');
     }
   }
 

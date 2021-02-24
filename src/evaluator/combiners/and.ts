@@ -9,7 +9,7 @@ function andResults(results: boolean[]): boolean {
   // Array.prototype.every is supported by target environments
   const hasMatchedAll = results.every(value => value);
 
-  log.debug(`[andCombiner] evaluates to ${hasMatchedAll}`);
+  log.d(`[andCombiner] evaluates to ${hasMatchedAll}`);
   return hasMatchedAll;
 }
 

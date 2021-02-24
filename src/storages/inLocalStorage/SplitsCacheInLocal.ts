@@ -52,7 +52,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      log.error(e);
+      log.e(e);
     }
   }
 
@@ -72,7 +72,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      log.error(e);
+      log.e(e);
     }
   }
 
@@ -82,7 +82,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * We cannot simply call `localStorage.clear()` since that implies removing user items from the storage.
    */
   clear() {
-    log.info('Flushing Splits data from localStorage');
+    log.i('Flushing Splits data from localStorage');
 
     // collect item keys
     const len = localStorage.length;
@@ -114,7 +114,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return true;
     } catch (e) {
-      log.error(e);
+      log.e(e);
       return false;
     }
   }
@@ -129,7 +129,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return 1;
     } catch (e) {
-      log.error(e);
+      log.e(e);
       return 0;
     }
   }
@@ -147,14 +147,14 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      log.info('Split filter query was modified. Updating cache.');
+      log.i('Split filter query was modified. Updating cache.');
       const queryKey = this.keys.buildSplitsFilterQueryKey();
       const queryString = this.splitFiltersValidation.queryString;
       try {
         if (queryString) localStorage.setItem(queryKey, queryString);
         else localStorage.removeItem(queryKey);
       } catch (e) {
-        log.error(e);
+        log.e(e);
       }
       this.updateNewFilter = false;
     }
@@ -166,7 +166,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this.hasSync = true;
       return true;
     } catch (e) {
-      log.error(e);
+      log.e(e);
       return false;
     }
   }
@@ -273,7 +273,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
           });
         }
       } catch (e) {
-        log.error(e);
+        log.e(e);
       }
     }
     // if the filter didn't change, nothing is done

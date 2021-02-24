@@ -12,7 +12,7 @@ function checkTreatment(evaluation: IEvaluation, acceptableTreatments: string[],
     matches = acceptableTreatments.indexOf(evaluation.treatment as string) !== -1;
   }
 
-  log.debug(`[dependencyMatcher] Parent split "${parentName}" evaluated to "${evaluation.treatment}" with label "${evaluation.label}". ${parentName} evaluated treatment is part of [${acceptableTreatments}] ? ${matches}.`);
+  log.d(`[dependencyMatcher] Parent split "${parentName}" evaluated to "${evaluation.treatment}" with label "${evaluation.label}". ${parentName} evaluated treatment is part of [${acceptableTreatments}] ? ${matches}.`);
 
   return matches;
 }
@@ -20,7 +20,7 @@ function checkTreatment(evaluation: IEvaluation, acceptableTreatments: string[],
 export default function dependencyMatcherContext({ split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync) {
 
   return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
-    log.debug(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? `\n attributes: ${JSON.stringify(attributes)}` : ''}`);
+    log.d(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? `\n attributes: ${JSON.stringify(attributes)}` : ''}`);
     const evaluation = splitEvaluator(key, split, attributes, storage);
 
     if (thenable(evaluation)) {
