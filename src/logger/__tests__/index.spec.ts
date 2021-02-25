@@ -1,4 +1,6 @@
 import { Logger, LogLevels, setLogLevel, isLogLevelString } from '../index';
+import { codes } from '../codes';
+import { LogLevel } from '../../types';
 
 // We'll set this only once. These are the constants we will use for
 // comparing the LogLevel values.
@@ -32,7 +34,7 @@ test('SPLIT LOGGER / LogLevels exposed mappings', () => {
 test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof Logger).toBe('function'); // Logger should be a class we can instantiate.
 
-  const logger = new Logger('test-category', {});
+  const logger = new Logger('test-category', {}, codes);
 
   expect(typeof logger.d).toBe('function'); // instance.d should be a method.
   expect(typeof logger.i).toBe('function'); // instance.i should be a method.
@@ -41,9 +43,9 @@ test('SPLIT LOGGER / Logger class shape', () => {
 
 });
 
-const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
+const LOG_LEVELS_IN_ORDER: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
 /* Utility function to avoid repeating too much code */
-function testLogLevels(levelToTest: string) {
+function testLogLevels(levelToTest: LogLevel) {
   // Builds the expected message.
   const buildExpectedMessage = (lvl: string, category: string, msg: string, showLevel?: boolean) => {
     let res = '';
@@ -64,9 +66,9 @@ function testLogLevels(levelToTest: string) {
     const logCategory = `test-category-${logMethod}${displayAllErrors ? 'displayAllErrors' : ''}`;
     const instance = new Logger(logCategory, {
       showLevel, displayAllErrors
-    });
+    }, codes);
 
-    LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
+    LOG_LEVELS_IN_ORDER.forEach((logLevel: LogLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} (${displayAllErrors ? 'But all errors are configured to display' : 'Errors not forced to display'}) with showLevel: ${showLevel} ${logLevelLogsCounter}`;
       const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
 

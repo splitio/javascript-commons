@@ -21,7 +21,7 @@ export default function dependencyMatcherContext(log: ILogger, { split, treatmen
   }
 
   return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
-    log.d(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? `\n attributes: ${JSON.stringify(attributes)}` : ''}`);
+    log.d(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? '\n attributes: ' + JSON.stringify(attributes) : ''}`);
     const evaluation = splitEvaluator(key, split, attributes, storage, log);
 
     if (thenable(evaluation)) {

@@ -7,6 +7,7 @@ import { isLocalStorageAvailable } from '../utils/env/isLocalStorageAvailable';
 import { isNode } from '../utils/env/isNode';
 import { merge } from '../utils/lang';
 import { ILoggerAPI } from '../types';
+import { codes } from './codes';
 
 // @TODO when integrating with other packages, find the best way to update LoggerOption defaults per package (node, evaluator, etc.)
 const defaultOptions: ILoggerOptions = {
@@ -30,7 +31,7 @@ const initialState = String(
 );
 
 // we expose the logger instance creator
-export const logFactory = (namespace: string, options = {}) => new Logger(namespace, merge(options, defaultOptions));
+export const logFactory = (namespace: string, options = {}) => new Logger(namespace, merge(options, defaultOptions), codes);
 
 const ownLog = logFactory('splitio-utils:logger');
 

@@ -186,7 +186,7 @@ export default function pushManagerFactory(
     }
 
     const errorMessage = error.parsedData && error.parsedData.message;
-    log.e(`Fail to connect to streaming${errorMessage ? `, with error message: "${errorMessage}"` : ''}. Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
+    log.e(`Fail to connect to streaming${errorMessage ? ', with error message: "' + errorMessage + '"' : ''}. Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
 
     pushEmitter.emit(PUSH_DISCONNECT); // no harm if polling already
   });

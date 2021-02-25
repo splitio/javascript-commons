@@ -1,9 +1,9 @@
 import objectAssign from 'object-assign';
-import { ILoggerOptions, ILogger } from './types';
+import { ILoggerOptions, ILogger, ICodes } from './types';
 import { find } from '../utils/lang';
 import { LogLevel } from '../types';
 
-export const LogLevels: { [level: string]: LogLevel } = {
+export const LogLevels: { [level in LogLevel]: LogLevel } = {
   DEBUG: 'DEBUG',
   INFO: 'INFO',
   WARN: 'WARN',
@@ -22,47 +22,58 @@ export function isLogLevelString(str: string): str is LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
 
+function sprintf(format: string = '', args: any[] = []): string {
+  var i = 0;
+  return format.replace(/%s/g, function () {
+    return args[i++];
+  });
+}
+
 const defaultOptions = {
   showLevel: true,
   displayAllErrors: false
 };
 
 export class Logger implements ILogger {
-  private category: any;
-  private options: any;
 
-  constructor(category: string, options: ILoggerOptions) {
+  private category: string;
+  private options: ILoggerOptions;
+  private codes: ICodes;
+
+  constructor(category: string, options: ILoggerOptions, codes: ICodes) {
     this.category = category;
     this.options = objectAssign({}, defaultOptions, options);
+    this.codes = codes;
   }
 
-  d(msg: string) {
+  d(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.DEBUG))
-      this._log(LogLevels.DEBUG, msg);
+      this._log(LogLevels.DEBUG, msg, args);
   }
 
-  i(msg: string) {
+  i(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.INFO))
-      this._log(LogLevels.INFO, msg);
+      this._log(LogLevels.INFO, msg, args);
   }
 
-  w(msg: string) {
+  w(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.WARN))
-      this._log(LogLevels.WARN, msg);
+      this._log(LogLevels.WARN, msg, args);
   }
 
-  e(msg: string) {
+  e(msg: string | number, args?: any[]) {
     if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
-      this._log(LogLevels.ERROR, msg);
+      this._log(LogLevels.ERROR, msg, args);
   }
 
-  _log(level: string, text: string) {
+  private _log(level: LogLevel, text: string | number, args?: any[]) {
+    if (typeof text === 'number') text = sprintf(this.codes[level][text], args);
     const formattedText = this._generateLogMessage(level, text);
 
     console.log(formattedText);
   }
 
-  _generateLogMessage(level: string, text: string) {
+  private _generateLogMessage(level: string, text: string) {
     const textPre = ' => ';
     let result = '';
 
@@ -77,7 +88,7 @@ export class Logger implements ILogger {
     return result += text;
   }
 
-  _shouldLog(level: LogLevel) {
+  private _shouldLog(level: LogLevel) {
     const logLevel = globalLogLevel;
     const levels = Object.keys(LogLevels).map((f) => LogLevels[f as keyof typeof LogLevels]);
     const index = levels.indexOf(level); // What's the index of what it's trying to check if it should log

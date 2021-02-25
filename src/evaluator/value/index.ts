@@ -32,7 +32,7 @@ export default function value(key: string, matcherDto: IMatcherDto, attributes: 
   if (sanitizedValue !== undefined) {
     return sanitizedValue;
   } else {
-    log.w(`Value ${valueToMatch} ${attributeName ? `for attribute ${attributeName} ` : + ''}doesn't match with expected type.`);
+    log.w(`Value ${valueToMatch} ${attributeName ? ' for attribute ' + attributeName : ''}doesn't match with expected type.`);
     return;
   }
 }
