@@ -1,11 +1,12 @@
-import { logFactory } from '../logger/sdkLogger';
+import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
-const log = logFactory('splitio-sync:task');
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-sync:task');
 
 /**
  * factory of sync tasks
  */
-export default function syncTaskFactory<Input extends any[], Output>(task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
+export default function syncTaskFactory<Input extends any[], Output>(task: (...args: Input) => Promise<Output>, period: number, taskName = 'task', log: ILogger): ISyncTask<Input, Output> {
 
   // flag that indicates if the task is being executed
   let executing = false;

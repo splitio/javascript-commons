@@ -1,6 +1,7 @@
 import { MaybeThenable } from '../dtos/types';
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
+import { ILogger } from '../logger/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISdkClientFactoryParams } from '../sdkClient/types';
 import { IFetch, ISplitApi } from '../services/types';
@@ -47,7 +48,8 @@ export interface ISdkFactoryParams {
   // Sdk manager factory
   sdkManagerFactory?: (
     splits: ISplitsCacheSync | ISplitsCacheAsync,
-    sdkReadinessManager: ISdkReadinessManager
+    sdkReadinessManager: ISdkReadinessManager,
+    log: ILogger
   ) => SplitIO.IManager | SplitIO.IAsyncManager,
 
   // Sdk client method factory (ISDK::client method).

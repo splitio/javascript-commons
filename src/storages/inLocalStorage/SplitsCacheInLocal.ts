@@ -2,8 +2,9 @@ import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import AbstractSplitsCacheSync, { usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilderCS from '../KeyBuilderCS';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-storage:localstorage');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-storage:localstorage');
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -21,7 +22,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @param {number | undefined} expirationTimestamp
    * @param {ISplitFiltersValidation} splitFiltersValidation
    */
-  constructor(keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { byName: [], byPrefix: [] }, validFilters: [] }) {
     super();
     this.keys = keys;
     this.splitFiltersValidation = splitFiltersValidation;
@@ -52,7 +53,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      log.e(e);
+      this.log.e(e);
     }
   }
 
@@ -72,7 +73,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      log.e(e);
+      this.log.e(e);
     }
   }
 
@@ -82,7 +83,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * We cannot simply call `localStorage.clear()` since that implies removing user items from the storage.
    */
   clear() {
-    log.i('Flushing Splits data from localStorage');
+    this.log.i('Flushing Splits data from localStorage');
 
     // collect item keys
     const len = localStorage.length;
@@ -114,7 +115,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return true;
     } catch (e) {
-      log.e(e);
+      this.log.e(e);
       return false;
     }
   }
@@ -129,7 +130,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return 1;
     } catch (e) {
-      log.e(e);
+      this.log.e(e);
       return 0;
     }
   }
@@ -147,14 +148,14 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      log.i('Split filter query was modified. Updating cache.');
+      this.log.i('Split filter query was modified. Updating cache.');
       const queryKey = this.keys.buildSplitsFilterQueryKey();
       const queryString = this.splitFiltersValidation.queryString;
       try {
         if (queryString) localStorage.setItem(queryKey, queryString);
         else localStorage.removeItem(queryKey);
       } catch (e) {
-        log.e(e);
+        this.log.e(e);
       }
       this.updateNewFilter = false;
     }
@@ -166,7 +167,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this.hasSync = true;
       return true;
     } catch (e) {
-      log.e(e);
+      this.log.e(e);
       return false;
     }
   }
@@ -273,7 +274,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
           });
         }
       } catch (e) {
-        log.e(e);
+        this.log.e(e);
       }
     }
     // if the filter didn't change, nothing is done

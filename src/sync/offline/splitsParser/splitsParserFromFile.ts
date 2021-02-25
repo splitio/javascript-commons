@@ -4,12 +4,13 @@ import fs from 'fs';
 import path from 'path';
 // @ts-ignore
 import yaml from 'js-yaml';
-import { logFactory } from '../../../logger/sdkLogger';
 import { isString, endsWith, find, forOwn, uniq, } from '../../../utils/lang';
 import parseCondition, { IMockSplitEntry } from './parseCondition';
 import { ISplitPartial } from '../../../dtos/types';
 import { SplitIO } from '../../../types';
-const log = logFactory('splitio-offline:splits-fetcher');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-offline:splits-fetcher');
 
 type IYamlSplitEntry = Record<string, IMockSplitEntry>
 
@@ -39,7 +40,7 @@ function configFilesPath(configFilePath?: SplitIO.MockedFeaturesFilePath): Split
 }
 
 // Parse `.split` configuration file and return a map of "Split Objects"
-function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath): false | Record<string, ISplitPartial> {
+function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogger): false | Record<string, ISplitPartial> {
   const SPLIT_POSITION = 0;
   const TREATMENT_POSITION = 1;
   let data;
@@ -79,7 +80,7 @@ function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath): false | 
 }
 
 // Parse `.yml` or `.yaml` configuration files and return a map of "Split Objects"
-function readYAMLConfigFile(filePath: SplitIO.MockedFeaturesFilePath): false | Record<string, ISplitPartial> {
+function readYAMLConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogger): false | Record<string, ISplitPartial> {
   let data = '';
   let yamldoc = null;
 
@@ -160,16 +161,16 @@ function arrangeConditions(mocksData: Record<string, Required<ISplitPartial> & {
 }
 
 // Load the content of a configuration file into an Object
-export default function splitsParserFromFile(settings: { features?: SplitIO.MockedFeaturesFilePath }): false | Record<string, ISplitPartial> {
-  const filePath = configFilesPath(settings.features);
+export default function splitsParserFromFile({ features, log }: { features?: SplitIO.MockedFeaturesFilePath, log: ILogger }): false | Record<string, ISplitPartial> {
+  const filePath = configFilesPath(features);
   let mockData: false | Record<string, ISplitPartial>;
 
   // If we have a filePath, it means the extension is correct, choose the parser.
   if (endsWith(filePath, '.split')) {
     log.w('.split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.');
-    mockData = readSplitConfigFile(filePath);
+    mockData = readSplitConfigFile(filePath, log);
   } else {
-    mockData = readYAMLConfigFile(filePath);
+    mockData = readYAMLConfigFile(filePath, log);
   }
 
   return mockData;

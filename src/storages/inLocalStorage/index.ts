@@ -6,10 +6,10 @@ import KeyBuilderCS from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import SplitsCacheInLocal from './SplitsCacheInLocal';
 import MySegmentsCacheInLocal from './MySegmentsCacheInLocal';
-import { logFactory } from '../../logger/sdkLogger';
 import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
 import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
+import { logFactory } from '../../logger/sdkLogger';
 const log = logFactory('splitio-storage:localstorage');
 
 export interface InLocalStorageOptions {
@@ -31,12 +31,13 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
 
   return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
 
+    const log = params.log;
     const keys = new KeyBuilderCS(prefix, params.matchingKey as string);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     return {
-      splits: new SplitsCacheInLocal(keys, expirationTimestamp, params.splitFiltersValidation),
-      segments: new MySegmentsCacheInLocal(keys),
+      splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, params.splitFiltersValidation),
+      segments: new MySegmentsCacheInLocal(log, keys),
       impressions: new ImpressionsCacheInMemory(),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
@@ -55,7 +56,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
 
         return {
           splits: this.splits,
-          segments: new MySegmentsCacheInLocal(childKeysBuilder),
+          segments: new MySegmentsCacheInLocal(log, childKeysBuilder),
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,

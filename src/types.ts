@@ -1,4 +1,5 @@
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
+import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync } from './storages/types';
@@ -100,7 +101,8 @@ export interface ISettings {
   readonly runtime: {
     ip: string | false
     hostname: string | false
-  }
+  },
+  readonly log: ILogger
 }
 /**
  * Log levels.

@@ -5,12 +5,12 @@ import { SplitError } from '../../../utils/lang/errors';
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
-
-import { logFactory } from '../../../logger/sdkLogger';
 import { IFetchMySegments } from '../../../services/types';
 import mySegmentsFetcherFactory from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
-const log = logFactory('splitio-sync:my-segments');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:my-segments');
 
 type IMySegmentsUpdater = (segmentList?: string[]) => Promise<boolean>
 
@@ -26,7 +26,8 @@ function mySegmentsUpdaterFactory(
   mySegmentsCache: ISegmentsCacheSync,
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
-  retriesOnFailureBeforeReady: number
+  retriesOnFailureBeforeReady: number,
+  log: ILogger
 ): IMySegmentsUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -108,9 +109,11 @@ export default function mySegmentsSyncTaskFactory(
       storage.segments,
       readiness.segments,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
+      settings.log
     ),
     settings.scheduler.segmentsRefreshRate,
-    'mySegmentsUpdater'
+    'mySegmentsUpdater',
+    settings.log
   );
 }

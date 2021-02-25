@@ -3,6 +3,7 @@ import { IEventsCacheSync } from '../../../storages/types';
 import { SplitIO, ISettings } from '../../../types';
 import GaToSplit, { validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
 import { gaMock, gaRemove, modelMock } from './gaMock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 const hitSample: UniversalAnalytics.FieldsObject = {
   hitType: 'pageview',
@@ -80,13 +81,13 @@ test('validateEventData', () => {
 });
 
 test('fixEventTypeId', () => {
-  expect(fixEventTypeId(undefined)).toBe(undefined);
-  expect(fixEventTypeId(111)).toBe(111);
-  expect(fixEventTypeId('')).toBe('');
-  expect(fixEventTypeId('()')).toBe('');
-  expect(fixEventTypeId('()+_')).toBe('');
-  expect(fixEventTypeId('  some   event ')).toBe('some_event_');
-  expect(fixEventTypeId('  -*- some  -.%^ event =+ ')).toBe('some_-._event_');
+  expect(fixEventTypeId(undefined, loggerMock)).toBe(undefined);
+  expect(fixEventTypeId(111, loggerMock)).toBe(111);
+  expect(fixEventTypeId('', loggerMock)).toBe('');
+  expect(fixEventTypeId('()', loggerMock)).toBe('');
+  expect(fixEventTypeId('()+_', loggerMock)).toBe('');
+  expect(fixEventTypeId('  some   event ', loggerMock)).toBe('some_event_');
+  expect(fixEventTypeId('  -*- some  -.%^ event =+ ', loggerMock)).toBe('some_-._event_');
 });
 
 test('defaultMapper', () => {
@@ -110,6 +111,11 @@ const fakeStorage = {
     track: jest.fn()
   } as IEventsCacheSync
 };
+const fakeParams = {
+  storage: fakeStorage,
+  settings: { core: coreSettings, log: loggerMock }
+};
+
 // Returns a new event by copying defaultEvent
 function customMapper(model: UniversalAnalytics.Model, defaultEvent: SplitIO.EventData) {
   return { ...defaultEvent, properties: { ...defaultEvent.properties, someProp: 'someProp' } };
@@ -136,7 +142,7 @@ test('GaToSplit', () => {
   const { ga, tracker } = gaMock();
 
   // provide SplitTracker plugin
-  GaToSplit({}, fakeStorage, coreSettings);
+  GaToSplit({}, fakeParams as any);
   // @ts-expect-error
   let [arg1, arg2, SplitTracker] = ga.mock.calls.pop() as [string, string, any];
   expect([arg1, arg2]).toEqual(['provide', 'splitTracker']);
@@ -180,7 +186,7 @@ test('GaToSplit', () => {
   // provide a new SplitTracker plugin with custom SDK options
   GaToSplit({
     mapper: customMapper2, filter: customFilter, identities: customIdentities, prefix: ''
-  }, fakeStorage, coreSettings);
+  }, fakeParams as any);
   // @ts-expect-error
   [arg1, arg2, SplitTracker] = ga.mock.calls.pop();
   expect([arg1, arg2]).toEqual(['provide', 'splitTracker']);
@@ -205,7 +211,7 @@ test('GaToSplit', () => {
   // provide a new SplitTracker plugin with custom SDK options
   GaToSplit({
     mapper: customMapper3, filter: customFilter, identities: customIdentities, prefix: ''
-  }, fakeStorage, coreSettings);
+  }, fakeParams as any);
   // @ts-ignore
   [arg1, arg2, SplitTracker] = ga.mock.calls.pop();
   expect([arg1, arg2]).toEqual(['provide', 'splitTracker']);
@@ -231,7 +237,7 @@ test('GaToSplit: `hits` flag param', () => {
 
   // test setup
   const { ga, tracker } = gaMock();
-  GaToSplit({}, fakeStorage, coreSettings); // @ts-expect-error
+  GaToSplit({}, fakeParams as any); // @ts-expect-error
   let SplitTracker: any = ga.mock.calls.pop()[2];
 
   // init plugin with custom options

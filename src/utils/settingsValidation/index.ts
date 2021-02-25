@@ -6,6 +6,8 @@ import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
 import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
+import { logFactory } from '../../logger/sdkLogger';
+const log = logFactory('splitio');
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -78,7 +80,10 @@ const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED
-  }
+  },
+
+  // base logger
+  log
 };
 
 function fromSecondsToMillis(n: number) {
@@ -157,12 +162,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(withDefaults.sync.splitFilters, withDefaults.mode);
+  const splitFiltersValidation = validateSplitFilters(withDefaults.log, withDefaults.sync.splitFilters, withDefaults.mode);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters; // @ts-ignore
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
   // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(withDefaults.sync.impressionsMode);
+  withDefaults.sync.impressionsMode = validImpressionsMode(withDefaults.log, withDefaults.sync.impressionsMode);
 
   return withDefaults;
 }

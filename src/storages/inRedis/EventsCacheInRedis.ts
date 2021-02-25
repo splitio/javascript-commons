@@ -1,10 +1,11 @@
 import { IEventsCacheAsync } from '../types';
 import { IRedisMetadata } from '../../dtos/types';
 import KeyBuilderSS from '../KeyBuilderSS';
-import { logFactory } from '../../logger/sdkLogger';
 import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
-const log = logFactory('splitio-storage:redis');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-storage:redis');
 
 export default class EventsCacheInRedis implements IEventsCacheAsync {
 
@@ -13,7 +14,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
   private readonly metadata: IRedisMetadata;
   private readonly eventsKey: string;
 
-  constructor(keys: KeyBuilderSS, redis: Redis, metadata: IRedisMetadata) {
+  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis, metadata: IRedisMetadata) {
     this.keys = keys;
     this.redis = redis;
     this.metadata = metadata;
@@ -32,7 +33,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
       // We use boolean values to signal successful queueing
       .then(() => true)
       .catch(err => {
-        log.e(`Error adding event to queue: ${err}.`);
+        this.log.e(`Error adding event to queue: ${err}.`);
         return false;
       });
   }

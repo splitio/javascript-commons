@@ -1,9 +1,10 @@
 import { STANDALONE_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
-import { logFactory } from '../../logger/sdkLogger';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -37,9 +38,9 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  *
  * @throws Error if the sanitized list exceeds the length indicated by `maxLength`
  */
-function validateSplitFilter(type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
+function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(values, 'Factory instantiation', `${type} filter`, `${type} filter value`);
+  let result = validateSplits(log, values, 'Factory instantiation', `${type} filter`, `${type} filter value`);
 
   if (result) {
     // check max length
@@ -84,7 +85,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *
  * @throws Error if the some of the grouped list of values per filter exceeds the max allowed length
  */
-export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
+export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
   // Validation result schema
   const res = {
     validFilters: [],
@@ -119,7 +120,7 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
 
   // By filter type, remove invalid and duplicated values and order them
   FILTERS_METADATA.forEach(({ type, maxLength }) => {
-    if (res.groupedFilters[type].length > 0) res.groupedFilters[type] = validateSplitFilter(type, res.groupedFilters[type], maxLength);
+    if (res.groupedFilters[type].length > 0) res.groupedFilters[type] = validateSplitFilter(log, type, res.groupedFilters[type], maxLength);
   });
 
   // build query string

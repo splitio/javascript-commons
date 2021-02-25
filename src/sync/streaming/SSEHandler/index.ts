@@ -1,18 +1,19 @@
 import { errorParser, messageParser } from './NotificationParser';
 import notificationKeeperFactory from './NotificationKeeper';
 import { OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, SSE_ERROR } from '../constants';
-import { logFactory } from '../../../logger/sdkLogger';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
-const log = logFactory('splitio-sync:sse-handler');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:sse-handler');
 
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
  * @param pushEmitter emitter for events related to streaming support
  */
-export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseEventHandler {
+export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter, log: ILogger): ISseEventHandler {
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 

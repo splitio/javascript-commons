@@ -21,7 +21,7 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
   const filterQueryString = (settings as ISettingsInternal).sync.__splitFiltersValidation && (settings as ISettingsInternal).sync.__splitFiltersValidation.queryString;
   const metadata = buildMetadata(settings);
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const splitHttpClient = splitHttpClientFactory(settings.core.authorizationKey, metadata, platform.getFetch, platform.getOptions);
+  const splitHttpClient = splitHttpClientFactory(settings.log, settings.core.authorizationKey, metadata, platform.getFetch, platform.getOptions);
 
   return {
     fetchAuth(userMatchingKeys?: string[]) {
@@ -62,7 +62,7 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
 
     postTestImpressionsBulk(body: string) {
       const url = `${urls.events}/testImpressions/bulk`;
-      return splitHttpClient(url, 'POST', body, false, {
+      return splitHttpClient(url, 'POST', body, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         SplitSDKImpressionsMode
       });
@@ -75,12 +75,12 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
 
     postMetricsCounters(body: string) {
       const url = `${urls.events}/metrics/counters`;
-      return splitHttpClient(url, 'POST', body, true);
+      return splitHttpClient(url, 'POST', body);
     },
 
     postMetricsTimes(body: string) {
       const url = `${urls.events}/metrics/times`;
-      return splitHttpClient(url, 'POST', body, true);
+      return splitHttpClient(url, 'POST', body);
     }
   };
 }

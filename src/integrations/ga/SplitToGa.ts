@@ -1,11 +1,12 @@
 /* eslint-disable no-undef */
-import { logFactory } from '../../logger/sdkLogger';
 import { uniq } from '../../utils/lang';
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IIntegration } from '../types';
 import { SplitToGoogleAnalyticsOptions } from './types';
-const log = logFactory('splitio-split-to-ga');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-split-to-ga');
 
 const noGaWarning = '`ga` command queue not found.';
 
@@ -19,6 +20,7 @@ export default class SplitToGa implements IIntegration {
   private mapper?: (data: SplitIO.IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject;
   private impressions: boolean | undefined;
   private events: boolean | undefined;
+  private log: ILogger;
 
   // Default mapper function.
   static defaultMapper({ type, payload }: SplitIO.IntegrationData): UniversalAnalytics.FieldsObject {
@@ -57,7 +59,7 @@ export default class SplitToGa implements IIntegration {
    * @param {UniversalAnalytics.FieldsObject} fieldsObject object to validate.
    * @returns {boolean} Whether the data instance is a valid FieldsObject or not.
    */
-  static validateFieldsObject(fieldsObject: any): fieldsObject is UniversalAnalytics.FieldsObject {
+  static validateFieldsObject(fieldsObject: any, log: ILogger): fieldsObject is UniversalAnalytics.FieldsObject {
     if (fieldsObject && fieldsObject.hitType) return true;
 
     log.w('your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
@@ -68,9 +70,10 @@ export default class SplitToGa implements IIntegration {
    * constructor description
    * @param {object} options options passed at the SDK integrations settings (isomorphic SDK) or the SplitToGoogleAnalytics plugin (pluggable browser SDK)
    */
-  constructor(options?: SplitToGoogleAnalyticsOptions) {
+  constructor(options: SplitToGoogleAnalyticsOptions, log: ILogger) {
 
     this.trackerNames = SplitToGa.defaultTrackerNames;
+    this.log = log;
 
     if (options) {
       if (typeof options.filter === 'function') this.filter = options.filter;
@@ -108,10 +111,10 @@ export default class SplitToGa implements IIntegration {
         if (this.mapper) {
           fieldsObject = this.mapper(data, fieldsObject);
           // don't send the hit if it is falsy or invalid
-          if (!fieldsObject || !SplitToGa.validateFieldsObject(fieldsObject)) return;
+          if (!fieldsObject || !SplitToGa.validateFieldsObject(fieldsObject, this.log)) return;
         }
       } catch (err) {
-        log.w(`SplitToGa queue method threw: ${err}. No hit was sent.`);
+        this.log.w(`SplitToGa queue method threw: ${err}. No hit was sent.`);
         return;
       }
 
@@ -124,7 +127,7 @@ export default class SplitToGa implements IIntegration {
         ga(sendCommand, fieldsObject);
       });
     } else {
-      log.w(noGaWarning + ' No hit was sent.');
+      this.log.w(noGaWarning + ' No hit was sent.');
     }
   }
 

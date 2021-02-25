@@ -1,8 +1,9 @@
 import syncTaskFactory from '../syncTask';
-import { logFactory } from '../../logger/sdkLogger';
 import { ISyncTask, ITimeTracker } from '../types';
 import { IRecorderCacheConsumerSync } from '../../storages/types';
-const log = logFactory('splitio-sync:submitters');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:submitters');
 
 /**
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
@@ -12,6 +13,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
   sourceCache: IRecorderCacheConsumerSync<TState>,
   postRate: number,
   dataName: string,
+  log: ILogger,
   latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
@@ -51,5 +53,5 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     return latencyTrackerStop ? postPromise.then(latencyTrackerStop).catch(latencyTrackerStop) : postPromise;
   }
 
-  return syncTaskFactory(postData, postRate, dataName + ' submitter');
+  return syncTaskFactory(postData, postRate, dataName + ' submitter', log);
 }

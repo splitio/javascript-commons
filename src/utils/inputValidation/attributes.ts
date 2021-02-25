@@ -1,9 +1,10 @@
 import { isObject } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
-export function validateAttributes(maybeAttrs: any, method: string): SplitIO.Attributes | undefined | false {
+export function validateAttributes(log: ILogger, maybeAttrs: any, method: string): SplitIO.Attributes | undefined | false {
   // Attributes are optional
   if (isObject(maybeAttrs) || maybeAttrs == undefined) // eslint-disable-line eqeqeq
     return maybeAttrs;

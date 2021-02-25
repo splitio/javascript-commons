@@ -7,9 +7,9 @@ import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
-import { logFactory } from '../logger/sdkLogger';
 import { PUSH_CONNECT, PUSH_DISCONNECT } from './streaming/constants';
-export const log = logFactory('splitio-sync:sync-manager');
+// import { logFactory } from '../logger/sdkLogger';
+// export const log = logFactory('splitio-sync:sync-manager');
 
 /**
  * Online SyncManager factory.
@@ -35,6 +35,8 @@ export function syncManagerOnlineFactory(
     readiness
   }: ISyncManagerFactoryParams): ISyncManagerCS {
 
+    const log = settings.log;
+
     /** Polling Manager */
     const pollingManager = pollingManagerFactory(splitApi, storage, readiness, settings);
 
@@ -46,11 +48,11 @@ export function syncManagerOnlineFactory(
     /** Submitter Manager */
     // It is not inyected via a factory as push and polling managers, because at the moment it is mandatory and the same for server-side and client-side variants
     const submitters = [
-      impressionsSyncTaskFactory(splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
-      eventsSyncTaskFactory(splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
+      impressionsSyncTaskFactory(splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled, log),
+      eventsSyncTaskFactory(splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow, log)
       // @TODO add telemetry submitter
     ];
-    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(splitApi.postTestImpressionsCount, storage.impressionCounts));
+    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(splitApi.postTestImpressionsCount, storage.impressionCounts, log));
     const submitter = syncTaskComposite(submitters);
 
 

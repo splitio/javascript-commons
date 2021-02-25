@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 import objectAssign from 'object-assign';
 import { isString, isFiniteNumber, uniqAsStrings } from '../../utils/lang';
-import { logFactory } from '../../logger/sdkLogger';
 import {
   validateEvent,
   validateEventValue,
@@ -9,11 +8,13 @@ import {
   validateKey,
   validateTrafficType,
 } from '../../utils/inputValidation';
-import { IEventsCacheBase } from '../../storages/types';
-import { SplitIO, ISettings } from '../../types';
+import { SplitIO } from '../../types';
 import { Identity, GoogleAnalyticsToSplitOptions } from './types';
+import { ILogger } from '../../logger/types';
+import { IIntegrationFactoryParams } from '../types';
+// import { logFactory } from '../../logger/sdkLogger';
 const logName = 'splitio-ga-to-split', logNameMapper = logName + ':mapper';
-const log = logFactory(logName);
+// const log = logFactory(logName);
 
 /**
  * Provides a plugin to use with analytics.js, accounting for the possibility
@@ -125,24 +126,24 @@ export function validateIdentities(identities?: Identity[]) {
  * @param {EventData} data event data instance to validate. Precondition: data != undefined
  * @returns {boolean} Whether the data instance is a valid EventData or not.
  */
-export function validateEventData(eventData: any): eventData is SplitIO.EventData {
-  if (!validateEvent(eventData.eventTypeId, logNameMapper))
+export function validateEventData(log: ILogger, eventData: any): eventData is SplitIO.EventData {
+  if (!validateEvent(log, eventData.eventTypeId, logNameMapper))
     return false;
 
-  if (validateEventValue(eventData.value, logNameMapper) === false)
+  if (validateEventValue(log, eventData.value, logNameMapper) === false)
     return false;
 
-  const { properties } = validateEventProperties(eventData.properties, logNameMapper);
+  const { properties } = validateEventProperties(log, eventData.properties, logNameMapper);
   if (properties === false)
     return false;
 
   if (eventData.timestamp && !isFiniteNumber(eventData.timestamp))
     return false;
 
-  if (eventData.key && validateKey(eventData.key, logNameMapper) === false)
+  if (eventData.key && validateKey(log, eventData.key, logNameMapper) === false)
     return false;
 
-  if (eventData.trafficTypeName && validateTrafficType(eventData.trafficTypeName, logNameMapper) === false)
+  if (eventData.trafficTypeName && validateTrafficType(log, eventData.trafficTypeName, logNameMapper) === false)
     return false;
 
   return true;
@@ -156,7 +157,7 @@ const INVALID_SUBSTRING_REGEX = /[^-_.:a-zA-Z0-9]+/g;
  * @param {string} eventTypeId string value to fix.
  * @returns {string} Fixed version of `eventTypeId`.
  */
-export function fixEventTypeId(eventTypeId: any) {
+export function fixEventTypeId(eventTypeId: any, log: ILogger) {
   // return the input eventTypeId if it cannot be fixed
   if (!isString(eventTypeId) || eventTypeId.length === 0) {
     return eventTypeId;
@@ -178,8 +179,11 @@ export function fixEventTypeId(eventTypeId: any) {
  * @param {object} sdkOptions options passed at the SDK integrations settings (isomorphic SDK) or the GoogleAnalyticsToSplit plugin (pluggable browser SDK)
  * @param {object} storage SDK storage passed to track events
  * @param {object} coreSettings core settings used to define an identity if no one provided as SDK or plugin options
+ * @param {object} log factory logger
  */
-export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, storage: { events: IEventsCacheBase }, coreSettings: ISettings['core']) {
+export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIntegrationFactoryParams) {
+
+  const { storage, settings: { core: coreSettings, log } } = params;
 
   const defaultOptions = {
     prefix: defaultPrefix,
@@ -254,9 +258,9 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, sto
         // Add prefix. Nothing is appended if the prefix is falsy, e.g. undefined or ''.
         if (opts.prefix) eventData.eventTypeId = `${opts.prefix}.${eventData.eventTypeId}`;
 
-        eventData.eventTypeId = fixEventTypeId(eventData.eventTypeId);
+        eventData.eventTypeId = fixEventTypeId(eventData.eventTypeId, log);
 
-        if (!validateEventData(eventData))
+        if (!validateEventData(log, eventData))
           return;
 
         // Store the event

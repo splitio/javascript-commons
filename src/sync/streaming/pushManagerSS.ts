@@ -9,14 +9,13 @@ import Backoff from '../../utils/Backoff';
 import SSEHandlerFactory from './SSEHandler';
 import SegmentsUpdateWorker from './UpdateWorkers/SegmentsUpdateWorker';
 import SplitsUpdateWorker from './UpdateWorkers/SplitsUpdateWorker';
-import { logFactory } from '../../logger/sdkLogger';
 import { IFetchAuth } from '../../services/types';
 import { authenticateFactory } from './AuthClient';
 import SSEClient from './SSEClient';
 import { ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
-
-const log = logFactory('splitio-sync:push-manager');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:push-manager');
 
 /**
  * PushManager factory for server-side
@@ -30,6 +29,8 @@ export default function pushManagerSSFactory(
   settings: ISettings
 ): IPushManager | undefined {
 
+  const log = settings.log;
+
   let sseClient: ISSEClient;
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
@@ -41,7 +42,7 @@ export default function pushManagerSSFactory(
 
   // init feedback loop (pushEmitter)
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, log);
   sseClient.setEventHandler(sseHandler);
 
   // init workers
