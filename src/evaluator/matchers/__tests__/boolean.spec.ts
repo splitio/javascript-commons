@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('MATCHER BOOLEAN / should return true ONLY when the value is true', function () {
   // @ts-ignore
-  const matcher = matcherFactory({
+  const matcher = matcherFactory(noopLogger, {
     type: matcherTypes.EQUAL_TO_BOOLEAN,
     value: true
   } as IMatcherDto) as IMatcher;

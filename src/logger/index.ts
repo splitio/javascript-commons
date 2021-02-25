@@ -1,5 +1,5 @@
 import objectAssign from 'object-assign';
-import { ILoggerOptions } from './types';
+import { ILoggerOptions, ILogger } from './types';
 import { find } from '../utils/lang';
 import { LogLevel } from '../types';
 
@@ -27,7 +27,7 @@ const defaultOptions = {
   displayAllErrors: false
 };
 
-export class Logger {
+export class Logger implements ILogger {
   private category: any;
   private options: any;
 

@@ -2,10 +2,11 @@ import parser from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('PARSER / if user.string is true then split 100%:on', async function () {
   // @ts-ignore
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{

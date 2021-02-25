@@ -1,9 +1,10 @@
 // @ts-nocheck
 import parser from '..';
 import { ISplitCondition } from '../../../dtos/types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('PARSER / handle invalid matcher as control', async function () {
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -32,7 +33,7 @@ test('PARSER / handle invalid matcher as control', async function () {
 });
 
 test('PARSER / handle invalid matcher as control (complex example)', async function () {
-  const evaluator = parser([
+  const evaluator = parser(noopLogger, [
     {
       'conditionType': 'WHITELIST',
       'matcherGroup': {
@@ -132,7 +133,7 @@ test('PARSER / handle invalid matcher as control (complex example)', async funct
 });
 
 test('PARSER / handle invalid matcher as control (complex example mixing invalid and valid matchers)', async function () {
-  const evaluator = parser([
+  const evaluator = parser(noopLogger, [
     {
       'conditionType': 'WHITELIST',
       'matcherGroup': {

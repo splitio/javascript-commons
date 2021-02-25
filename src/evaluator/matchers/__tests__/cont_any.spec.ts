@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('MATCHER CONTAINS_ANY_OF_SET / should return true ONLY when value contains any of set ["update", "add"]', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(noopLogger, {
     negate: false,
     type: matcherTypes.CONTAINS_ANY_OF_SET,
     value: ['update', 'add']

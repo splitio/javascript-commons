@@ -1,11 +1,13 @@
+// @ts-nocheck
 import parser from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', async function () {
 
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     conditionType: 'ROLLOUT',
     matcherGroup: {
       combiner: 'AND',
@@ -32,7 +34,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', a
 
 test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% with bucket below 99', async function () {
 
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     conditionType: 'ROLLOUT',
     matcherGroup: {
       combiner: 'AND',
@@ -59,7 +61,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% wi
 
 test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% and bucket returns 100', async function () {
 
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     conditionType: 'ROLLOUT',
     matcherGroup: {
       combiner: 'AND',
@@ -86,7 +88,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% an
 
 test('PARSER / if user is whitelisted and in segment all 100%:off with trafficAllocation as 0%', async function () {
 
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     conditionType: 'WHITELIST',
     matcherGroup: {
       combiner: 'AND',

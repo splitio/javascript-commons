@@ -1,7 +1,8 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:matcher');
+import { ILogger } from '../../logger/types';
 
-export default function stringMatcherContext(ruleAttr: string) /*: Function */ {
+export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
   return function stringMatcher(runtimeAttr: string): boolean {
     let re;
 

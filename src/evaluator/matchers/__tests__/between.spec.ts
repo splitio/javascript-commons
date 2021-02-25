@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('MATCHER BETWEEN / should return true ONLY when the value is between 10 and 20', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(noopLogger, {
     negate: false,
     type: matcherTypes.BETWEEN,
     value: {

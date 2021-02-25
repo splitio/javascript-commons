@@ -3,6 +3,7 @@ import matcherFactory from '..';
 import { evaluateFeature } from '../../index';
 import { IMatcher, IMatcherDto } from '../../types';
 import { IStorageSync } from '../../../storages/types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 const ALWAYS_ON_SPLIT = '{"trafficTypeName":"user","name":"always-on","trafficAllocation":100,"trafficAllocationSeed":1012950810,"seed":-725161385,"status":"ACTIVE","killed":false,"defaultTreatment":"off","changeNumber":1494364996459,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":100},{"treatment":"off","size":0}],"label":"in segment all"}]}';
 const ALWAYS_OFF_SPLIT = '{"trafficTypeName":"user","name":"always-off","trafficAllocation":100,"trafficAllocationSeed":-331690370,"seed":403891040,"status":"ACTIVE","killed":false,"defaultTreatment":"on","changeNumber":1494365020316,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":0},{"treatment":"off","size":100}],"label":"in segment all"}]}';
@@ -18,7 +19,7 @@ const mockStorage = {
 };
 
 test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split returns one of the expected treatments', function () {
-  const matcherTrueAlwaysOn = matcherFactory({
+  const matcherTrueAlwaysOn = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-on',
@@ -26,7 +27,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
-  const matcherFalseAlwaysOn = matcherFactory({
+  const matcherFalseAlwaysOn = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-on',
@@ -34,7 +35,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
-  const matcherTrueAlwaysOff = matcherFactory({
+  const matcherTrueAlwaysOff = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-off',
@@ -42,7 +43,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
-  const matcherFalseAlwaysOff = matcherFactory({
+  const matcherFalseAlwaysOff = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-off',
@@ -57,7 +58,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
 });
 
 test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
-  const matcherParentNotExist = matcherFactory({
+  const matcherParentNotExist = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'not-existent-split',
@@ -66,7 +67,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
   // @ts-ignore
-  const matcherNoTreatmentsExpected = matcherFactory({
+  const matcherNoTreatmentsExpected = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-on',
@@ -75,7 +76,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
   // @ts-ignore
-  const matcherParentNameEmpty = matcherFactory({
+  const matcherParentNameEmpty = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: '',
@@ -84,7 +85,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
   // @ts-ignore
-  const matcherParentNameWrongType = matcherFactory({
+  const matcherParentNameWrongType = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: { some: 44 },
@@ -92,7 +93,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
-  const matcherExpectedTreatmentWrongTypeMatching = matcherFactory({
+  const matcherExpectedTreatmentWrongTypeMatching = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-on',
@@ -100,7 +101,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
-  const matcherExpectedTreatmentWrongTypeNotMatching = matcherFactory({
+  const matcherExpectedTreatmentWrongTypeNotMatching = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-off',
@@ -110,7 +111,7 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;
 
   // @ts-ignore
-  const matcherExpectationsListWrongType = matcherFactory({
+  const matcherExpectationsListWrongType = matcherFactory(noopLogger, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-on',

@@ -8,6 +8,7 @@ import { ISplit, MaybeThenable } from '../dtos/types';
 import { SplitIO } from '../types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluation, IEvaluationResult, IEvaluator, ISplitEvaluator } from './types';
+import { ILogger } from '../logger/types';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -26,9 +27,9 @@ export default class Engine {
     }
   }
 
-  static parse(splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync) {
+  static parse(splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync, log: ILogger) {
     const conditions = splitFlatStructure.conditions;
-    const evaluator = parser(conditions, storage);
+    const evaluator = parser(log, conditions, storage);
 
     return new Engine(splitFlatStructure, evaluator);
   }

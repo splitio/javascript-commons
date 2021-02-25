@@ -1,7 +1,8 @@
 import { SplitIO } from '../../types';
 import { IDependencyMatcherValue } from '../types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:sanitize');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:sanitize');
+import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
@@ -69,7 +70,7 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
 /**
  * Sanitize matcher value
  */
-export default function sanitize(matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes) {
+export default function sanitize(matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes, log: ILogger) {
   const processor = getProcessingFunction(matcherTypeID, dataType);
   let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
 

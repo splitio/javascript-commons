@@ -2,13 +2,14 @@
 import parser from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 //
 // EQUAL_TO_SET
 //
 test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on', async function () {
   const label = 'permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -43,7 +44,7 @@ test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "writ
 
 test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "write"] then split 100:on', async function () {
   const label = 'permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -78,7 +79,7 @@ test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "writ
 
 test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 100:on', async function () {
   const label = 'permissions = ["1", "2"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -113,7 +114,7 @@ test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 1
 
 test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["read", "write"] then not match', async function () {
   const label = 'permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -147,7 +148,7 @@ test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["re
 
 test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then not match', async function () {
   const label = 'permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -181,7 +182,7 @@ test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then 
 
 test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "write"] then not match', async function () {
   const label = 'permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -215,7 +216,7 @@ test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "wri
 
 test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argentina"] then split 100:on', async function () {
   const label = 'countries = ["usa","argentina"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -249,7 +250,7 @@ test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argen
 
 test('PARSER / if attribute is not an array we should not match equal to set', async function () {
   const label = 'countries = ["usa","argentina"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -284,7 +285,7 @@ test('PARSER / if attribute is not an array we should not match equal to set', a
 
 test('PARSER / if attribute is an EMPTY array we should not match equal to set', async function () {
   const label = 'countries = ["usa","argentina"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -317,7 +318,7 @@ test('PARSER / if attribute is an EMPTY array we should not match equal to set',
 
 test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on should not match', async function () {
   const label = 'not permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -350,7 +351,7 @@ test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read
 
 test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write"] false, then match', async function () {
   const label = 'not permissions = ["read", "write"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -384,7 +385,7 @@ test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write
 
 test('PARSER / NEGATED if attribute is not an array we should not match equal to set, so match', async function () {
   const label = 'countries = ["usa","argentina"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -421,7 +422,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match equal to
 
 test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal to set, so match', async function () {
   const label = 'countries = ["usa","argentina"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -458,7 +459,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal 
 //
 test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -493,7 +494,7 @@ test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of se
 
 test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of set ["read", "edit"] then split 100:on', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -528,7 +529,7 @@ test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of se
 
 test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1", "edit"] then split 100:on', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -563,7 +564,7 @@ test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1
 
 test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"] then not match', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -597,7 +598,7 @@ test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"]
 
 test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of set ["read", "edit"] then not match', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -631,7 +632,7 @@ test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of 
 
 test('PARSER / if attribute is not an array we should not match contains all', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -666,7 +667,7 @@ test('PARSER / if attribute is not an array we should not match contains all', a
 
 test('PARSER / if attribute is an EMPTY array we should not match contains all', async function () {
   const label = 'permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -699,7 +700,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains all',
 
 test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on should not match', async function () {
   const label = 'not permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -732,7 +733,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains a
 
 test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read", "edit"] false, so match', async function () {
   const label = 'not permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -766,7 +767,7 @@ test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read",
 
 test('PARSER / NEGATED if attribute is not an array we should not match contains all, so match', async function () {
   const label = 'not permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -803,7 +804,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
 
 test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains all, so match', async function () {
   const label = 'not permissions contains ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -840,7 +841,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match contai
 //
 test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on', async function () {
   const label = 'permissions part of ["read", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -875,7 +876,7 @@ test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edi
 
 test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edit", "delete"] then split 100:on', async function () {
   const label = 'permissions part of ["read", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -910,7 +911,7 @@ test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edi
 
 test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "delete"] then split 100:on', async function () {
   const label = 'permissions part of ["1", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -945,7 +946,7 @@ test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "del
 
 test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "edit"] then not match', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -979,7 +980,7 @@ test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "e
 
 test('PARSER / if attribute is not an array we should not match part of', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1014,7 +1015,7 @@ test('PARSER / if attribute is not an array we should not match part of', async 
 
 test('PARSER / if attribute is an EMPTY array we should not match part of', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1047,7 +1048,7 @@ test('PARSER / if attribute is an EMPTY array we should not match part of', asyn
 
 test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on should not match', async function () {
   const label = 'not permissions part of ["read", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1080,7 +1081,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["rea
 
 test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["read", "edit"] false, then match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1114,7 +1115,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["r
 
 test('PARSER / NEGATED if attribute is not an array we should not match part of, so match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1151,7 +1152,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match part of,
 
 test('PARSER / NEGATED if attribute is an EMPTY array we should not match part of, so match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1188,7 +1189,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match part o
 //
 test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on', async function () {
   const label = 'permissions part of ["read", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1223,7 +1224,7 @@ test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read"
 
 test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1", "delete"] then split 100:on', async function () {
   const label = 'permissions part of ["read", "1", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1258,7 +1259,7 @@ test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1"
 
 test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] then not match', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1292,7 +1293,7 @@ test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read
 
 test('PARSER / if attribute is not an array we should not match contains any', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1327,7 +1328,7 @@ test('PARSER / if attribute is not an array we should not match contains any', a
 
 test('PARSER / if attribute is an EMPTY array we should not match contains any', async function () {
   const label = 'permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1360,7 +1361,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains any',
 
 test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on should not match', async function () {
   const label = 'not permissions part of ["read", "edit", "delete"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1393,7 +1394,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set
 
 test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] false, then should match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1427,7 +1428,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of se
 
 test('PARSER / NEGATED if attribute is not an array we should not match contains any, then should match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1459,7 +1460,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
 
 test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains any, then should match', async function () {
   const label = 'not permissions part of ["read", "edit"]';
-  const evaluator = parser([{
+  const evaluator = parser(noopLogger, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{

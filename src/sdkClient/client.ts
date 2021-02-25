@@ -27,7 +27,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
       return treatment;
     };
 
-    const evaluation = evaluateFeature(key, splitName, attributes, storage);
+    const evaluation = evaluateFeature(key, splitName, attributes, storage, log);
 
     return thenable(evaluation) ? evaluation.then((res) => wrapUp(res)) : wrapUp(evaluation);
   }
@@ -47,7 +47,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
       return treatments;
     };
 
-    const evaluations = evaluateFeatures(key, splitNames, attributes, storage);
+    const evaluations = evaluateFeatures(key, splitNames, attributes, storage, log);
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }

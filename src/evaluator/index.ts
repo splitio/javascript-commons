@@ -7,6 +7,7 @@ import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
+import { ILogger } from '../logger/types';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -18,7 +19,8 @@ export function evaluateFeature(
   key: SplitIO.SplitKey,
   splitName: string,
   attributes: SplitIO.Attributes | undefined,
-  storage: IStorageSync | IStorageAsync
+  storage: IStorageSync | IStorageAsync,
+  log: ILogger
 ): MaybeThenable<IEvaluationResult> {
   let stringifiedSplit;
 
@@ -36,7 +38,8 @@ export function evaluateFeature(
       result,
       key,
       attributes,
-      storage
+      storage,
+      log
     ));
   }
 
@@ -44,7 +47,8 @@ export function evaluateFeature(
     stringifiedSplit,
     key,
     attributes,
-    storage
+    storage,
+    log
   );
 }
 
@@ -52,7 +56,8 @@ export function evaluateFeatures(
   key: SplitIO.SplitKey,
   splitNames: string[],
   attributes: SplitIO.Attributes | undefined,
-  storage: IStorageSync | IStorageAsync
+  storage: IStorageSync | IStorageAsync,
+  log: ILogger
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let stringifiedSplits;
   const evaluations: Record<string, IEvaluationResult> = {};
@@ -70,15 +75,16 @@ export function evaluateFeatures(
   }
 
   return (thenable(stringifiedSplits)) ?
-    stringifiedSplits.then(splits => getEvaluations(splitNames, splits, key, attributes, storage)) :
-    getEvaluations(splitNames, stringifiedSplits, key, attributes, storage);
+    stringifiedSplits.then(splits => getEvaluations(splitNames, splits, key, attributes, storage, log)) :
+    getEvaluations(splitNames, stringifiedSplits, key, attributes, storage, log);
 }
 
 function getEvaluation(
   stringifiedSplit: string | null,
   key: SplitIO.SplitKey,
   attributes: SplitIO.Attributes | undefined,
-  storage: IStorageSync | IStorageAsync
+  storage: IStorageSync | IStorageAsync,
+  log: ILogger
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
     treatment: CONTROL,
@@ -88,7 +94,7 @@ function getEvaluation(
 
   if (stringifiedSplit) {
     const splitJSON: ISplit = JSON.parse(stringifiedSplit);
-    const split = Engine.parse(splitJSON, storage);
+    const split = Engine.parse(splitJSON, storage, log);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async, evaluation and changeNumber will return a thenable
@@ -113,7 +119,8 @@ function getEvaluations(
   splits: Record<string, string | null>,
   key: SplitIO.SplitKey,
   attributes: SplitIO.Attributes | undefined,
-  storage: IStorageSync | IStorageAsync
+  storage: IStorageSync | IStorageAsync,
+  log: ILogger
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   const result: Record<string, IEvaluationResult> = {};
   const thenables: Promise<void>[] = [];
@@ -122,7 +129,8 @@ function getEvaluations(
       splits[splitName],
       key,
       attributes,
-      storage
+      storage,
+      log
     );
     if (thenable(evaluation)) {
       thenables.push(evaluation.then(res => {

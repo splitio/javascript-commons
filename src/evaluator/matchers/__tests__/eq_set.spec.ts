@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('MATCHER EQUAL_TO_SET / should return true ONLY when value is equal to set ["update", "add"]', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(noopLogger, {
     negate: false,
     type: matcherTypes.EQUAL_TO_SET,
     value: ['update', 'add']
