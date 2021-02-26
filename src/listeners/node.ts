@@ -1,9 +1,10 @@
 // @TODO eventually migrate to JS-Node-SDK package.
 import { ISignalListener } from './types';
 import thenable from '../utils/promise/thenable';
-import { logFactory } from '../logger/sdkLogger';
 import { MaybeThenable } from '../dtos/types';
-const log = logFactory('splitio-client:cleanup');
+import { ISettings } from '../types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-client:cleanup');
 
 /**
  * We'll listen for SIGTERM since it's the standard signal for server shutdown.
@@ -13,21 +14,22 @@ const log = logFactory('splitio-client:cleanup');
  * the process is already exiting.
  */
 export default class NodeSignalListener implements ISignalListener {
-  private handler: any;
 
-  constructor(handler: () => MaybeThenable<void>) {
-    this.handler = handler;
+  constructor(
+    private handler: () => MaybeThenable<void>,
+    private settings: ISettings
+  ) {
     this._sigtermHandler = this._sigtermHandler.bind(this);
   }
 
   start() {
-    log.d('Registering cleanup handlers.');
+    this.settings.log.d('Registering cleanup handlers.');
     // eslint-disable-next-line no-undef
     process.on('SIGTERM', this._sigtermHandler);
   }
 
   stop() {
-    log.d('Deregistering cleanup handlers.');
+    this.settings.log.d('Deregistering cleanup handlers.');
     // eslint-disable-next-line no-undef
     process.removeListener('SIGTERM', this._sigtermHandler);
   }
@@ -45,14 +47,14 @@ export default class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, 'SIGTERM');
     };
 
-    log.d('Split SDK graceful shutdown after SIGTERM.');
+    this.settings.log.d('Split SDK graceful shutdown after SIGTERM.');
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      log.e(`Error with Split graceful shutdown: ${err}`);
+      this.settings.log.e(`Error with Split graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

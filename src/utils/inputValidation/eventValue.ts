@@ -1,8 +1,9 @@
+import { ILogger } from '../../logger/types';
 import { isFiniteNumber } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
-export function validateEventValue(maybeValue: any, method: string): number | false {
+export function validateEventValue(log: ILogger, maybeValue: any, method: string): number | false {
   if (isFiniteNumber(maybeValue) || maybeValue == undefined) // eslint-disable-line eqeqeq
     return maybeValue;
 

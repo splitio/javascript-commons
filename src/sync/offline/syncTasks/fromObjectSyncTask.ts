@@ -1,5 +1,4 @@
 import { forOwn } from '../../../utils/lang';
-import { logFactory } from '../../../logger/sdkLogger';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
@@ -8,7 +7,8 @@ import syncTaskFactory from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
-const log = logFactory('splitio-producer:offline');
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-producer:offline');
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
@@ -19,6 +19,8 @@ export function fromObjectUpdaterFactory(
   readiness: IReadinessManager,
   settings: ISettings,
 ): () => Promise<boolean> {
+
+  const log = settings.log;
 
   return function objectUpdater() {
     const splits: [string, string][] = [];
@@ -82,6 +84,7 @@ export default function fromObjectSyncTaskFactory(
       settings,
     ),
     settings.scheduler.offlineRefreshRate,
-    'offlineUpdater'
+    'offlineUpdater',
+    settings.log
   );
 }

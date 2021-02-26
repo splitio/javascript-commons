@@ -1,5 +1,6 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
+import { noopLogger } from '../../../logger/noopLogger';
 
 export const settingsWithKey = {
   core: {
@@ -76,7 +77,8 @@ export const fullSettings: ISettings = {
     sdk: 'sdk',
     auth: 'auth',
     streaming: 'streaming'
-  }
+  },
+  log: noopLogger
 };
 
 export const settingsSplitApi = {
@@ -92,5 +94,6 @@ export const settingsSplitApi = {
   },
   sync: {
     impressionsMode: 'DEBUG'
-  }
+  },
+  log: noopLogger
 } as ISettings;

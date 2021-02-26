@@ -6,12 +6,13 @@ import { findIndex } from '../../../utils/lang';
 import { SplitError } from '../../../utils/lang/errors';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import segmentChangesFetcherFactory from '../fetchers/segmentChangesFetcher';
 import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
-const log = logFactory('splitio-sync:segment-changes');
-const inputValidationLog = logFactory('', { displayAllErrors: true });
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:segment-changes');
+// const inputValidationLog = logFactory('', { displayAllErrors: true });
 
 type ISegmentChangesUpdater = (segmentNames?: string[]) => Promise<boolean>
 
@@ -24,7 +25,8 @@ type ISegmentChangesUpdater = (segmentNames?: string[]) => Promise<boolean>
 function segmentChangesUpdaterFactory(
   segmentChangesFetcher: ISegmentChangesFetcher,
   segmentsCache: ISegmentsCacheSync,
-  readiness: IReadinessManager
+  readiness: IReadinessManager,
+  log: ILogger
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -92,7 +94,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        inputValidationLog.e('Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.');
+        log.e('Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.');
       }
 
       return false;
@@ -111,9 +113,11 @@ export default function segmentsSyncTaskFactory(
     segmentChangesUpdaterFactory(
       segmentChangesFetcherFactory(fetchSegmentChanges),
       storage.segments,
-      readiness
+      readiness,
+      settings.log
     ),
     settings.scheduler.segmentsRefreshRate,
-    'segmentChangesUpdater'
+    'segmentChangesUpdater',
+    settings.log
   );
 }

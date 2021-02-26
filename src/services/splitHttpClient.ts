@@ -1,9 +1,10 @@
 import { IFetch, ISplitHttpClient } from './types';
 import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
-import { logFactory } from '../logger/sdkLogger';
 import { IMetadata } from '../dtos/types';
-const log = logFactory('splitio-services:service');
+import { ILogger } from '../logger/types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-services:service');
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -15,7 +16,7 @@ const messageNoFetch = 'Global fetch API is not available.';
  * @param options global request options
  * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
  */
-export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: IMetadata, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
 
   const options = getOptions && getOptions();
   const fetch = getFetch && getFetch();

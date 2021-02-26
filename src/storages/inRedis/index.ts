@@ -34,9 +34,10 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
 
   return function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
 
+    const log = params.log;
     const metadata = metadataBuilder(params.metadata);
     const keys = new KeyBuilderSS(prefix, { version: metadata.s, ip: metadata.i, hostname: metadata.n });
-    const redisClient = new RedisAdapter(options.options || {});
+    const redisClient = new RedisAdapter(log, options.options || {});
 
     // subscription to Redis connect event in order to emit SDK_READY event
     // @TODO pass a callback to simplify custom storages
@@ -46,10 +47,10 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
     });
 
     return {
-      splits: new SplitsCacheInRedis(keys, redisClient),
+      splits: new SplitsCacheInRedis(log, keys, redisClient),
       segments: new SegmentsCacheInRedis(keys, redisClient),
       impressions: new ImpressionsCacheInRedis(keys, redisClient, metadata),
-      events: new EventsCacheInRedis(keys, redisClient, metadata),
+      events: new EventsCacheInRedis(log, keys, redisClient, metadata),
       latencies: new LatenciesCacheInRedis(keys, redisClient),
       counts: new CountsCacheInRedis(keys, redisClient),
 

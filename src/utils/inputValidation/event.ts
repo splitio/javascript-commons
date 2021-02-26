@@ -1,10 +1,11 @@
+import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
 const EVENT_TYPE_REGEX = /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/;
 
-export function validateEvent(maybeEvent: any, method: string): string | false {
+export function validateEvent(log: ILogger, maybeEvent: any, method: string): string | false {
   if (maybeEvent == undefined) { // eslint-disable-line eqeqeq
     log.e(`${method}: you passed a null or undefined event_type, event_type must be a non-empty string.`);
   } else if (!isString(maybeEvent)) {

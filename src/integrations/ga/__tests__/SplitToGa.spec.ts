@@ -58,17 +58,17 @@ const defaultEventFieldsObject = {
 describe('SplitToGa', () => {
 
   test('SplitToGa.validateFieldsObject', () => {
-    expect(SplitToGa.validateFieldsObject(undefined)).toBe(false);
-    expect(SplitToGa.validateFieldsObject(null)).toBe(false);
-    expect(SplitToGa.validateFieldsObject(123)).toBe(false);
-    expect(SplitToGa.validateFieldsObject(true)).toBe(false);
-    expect(SplitToGa.validateFieldsObject('something')).toBe(false);
-    expect(SplitToGa.validateFieldsObject(/asd/ig)).toBe(false);
-    expect(SplitToGa.validateFieldsObject(function () { })).toBe(false);
+    expect(SplitToGa.validateFieldsObject(undefined, loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject(null, loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject(123, loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject(true, loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject('something', loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject(/asd/ig, loggerMock)).toBe(false);
+    expect(SplitToGa.validateFieldsObject(function () { }, loggerMock)).toBe(false);
 
-    expect(SplitToGa.validateFieldsObject({})).toBe(false); // An empty object is an invalid FieldsObject instance
-    expect(SplitToGa.validateFieldsObject({ hitType: 10 })).toBe(true); // A fields object instance must have a HitType
-    expect(SplitToGa.validateFieldsObject({ hitType: 'event', ignoredProp: 'ignoredProp' })).toBe(true); // A fields object instance must have a HitType
+    expect(SplitToGa.validateFieldsObject({}, loggerMock)).toBe(false); // An empty object is an invalid FieldsObject instance
+    expect(SplitToGa.validateFieldsObject({ hitType: 10 }, loggerMock)).toBe(true); // A fields object instance must have a HitType
+    expect(SplitToGa.validateFieldsObject({ hitType: 'event', ignoredProp: 'ignoredProp' }, loggerMock)).toBe(true); // A fields object instance must have a HitType
   });
 
   test('SplitToGa.defaultMapper', () => {
@@ -84,14 +84,14 @@ describe('SplitToGa', () => {
     const { ga } = gaMock();
     expect(SplitToGa.getGa()).toBe(ga); // should return ga command queue if it exists
 
-    let integration = new SplitToGa();
+    let integration = new SplitToGa({}, loggerMock);
     expect(typeof integration).toBe('object');
     expect(loggerMock.w.mock.calls.length).toBe(0);
 
     gaRemove();
     expect(SplitToGa.getGa()).toBe(undefined); // should return undefined if ga command queue does not exist
 
-    integration = new SplitToGa();
+    integration = new SplitToGa({}, loggerMock);
     expect(typeof integration).toBe('object'); // SplitToGa instances should be created even if ga command queue does not exist
     // @ts-expect-error
     integration.queue('fake-data');
@@ -107,7 +107,7 @@ describe('SplitToGa', () => {
     const { ga } = gaMock();
 
     /** Default behaviour **/
-    const instance = new SplitToGa() as SplitToGa;
+    const instance = new SplitToGa({}, loggerMock) as SplitToGa;
     instance.queue(fakeImpression);
     // should queue `ga send` with the default mapped FieldsObject for impressions, appended with `splitHit` field
     expect(ga.mock.calls[ga.mock.calls.length - 1]).toEqual(['send', { ...defaultImpressionFieldsObject, splitHit: true }]);
@@ -135,7 +135,7 @@ describe('SplitToGa', () => {
       filter: customFilter,
       mapper: customMapper,
       trackerNames,
-    }) as SplitToGa;
+    }, loggerMock) as SplitToGa;
     ga.mockClear();
     instance2.queue(fakeImpression);
     expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` if a Split data (impression or event) is filtered
@@ -154,7 +154,7 @@ describe('SplitToGa', () => {
     }
     const instance3 = new SplitToGa({
       mapper: customMapper2,
-    }) as SplitToGa;
+    }, loggerMock) as SplitToGa;
     ga.mockClear();
     instance3.queue(fakeImpression);
     // should queue `ga send` with the custom FieldsObject from customMapper2, appended with `splitHit` field
@@ -168,7 +168,7 @@ describe('SplitToGa', () => {
     }
     const instance4 = new SplitToGa({ // @ts-expect-error
       mapper: customMapper3,
-    }) as SplitToGa;
+    }, loggerMock) as SplitToGa;
     ga.mockClear();
     instance4.queue(fakeImpression);
     expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` if a custom mapper throw an exception
@@ -176,7 +176,7 @@ describe('SplitToGa', () => {
     // `impressions` flags
     const instance5 = new SplitToGa({
       impressions: false,
-    }) as SplitToGa;
+    }, loggerMock) as SplitToGa;
     ga.mockClear();
     instance5.queue(fakeImpression);
     expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` for an impression if `impressions` flag is false
@@ -184,7 +184,7 @@ describe('SplitToGa', () => {
     // `impressions` flags
     const instance6 = new SplitToGa({
       events: false,
-    }) as SplitToGa;
+    }, loggerMock) as SplitToGa;
     ga.mockClear();
     instance6.queue(fakeEvent);
     expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` for a event if `events` flag is false

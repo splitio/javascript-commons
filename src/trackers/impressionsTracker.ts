@@ -1,13 +1,14 @@
 import objectAssign from 'object-assign';
 import thenable from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
-import { logFactory } from '../logger/sdkLogger';
 import { IImpressionCountsCacheBase, IImpressionsCacheBase } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { IMetadata } from '../dtos/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
-const log = logFactory('splitio-client:impressions-tracker');
+import { ILogger } from '../logger/types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-client:impressions-tracker');
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -20,6 +21,7 @@ const log = logFactory('splitio-client:impressions-tracker');
  * @param countsCache optional cache to save impressions count. If provided, impressions will be deduped (OPTIMIZED mode)
  */
 export default function impressionsTrackerFactory(
+  log: ILogger,
   impressionsCache: IImpressionsCacheBase,
 
   // @TODO consider passing only an optional integrationsManager to handle impressions

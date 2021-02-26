@@ -7,12 +7,13 @@ import { IReadinessManager, ISplitsEventEmitter } from '../../../readiness/types
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISplitsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import splitChangesFetcherFactory from '../fetchers/splitChangesFetcher';
 import { IFetchSplitChanges } from '../../../services/types';
 import thenable from '../../../utils/promise/thenable';
 import { ISettings } from '../../../types';
-const log = logFactory('splitio-sync:split-changes');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:split-changes');
 
 type ISplitChangesUpdater = () => Promise<boolean>
 
@@ -79,8 +80,9 @@ export function splitChangesUpdaterFactory(
   splitsCache: ISplitsCacheSync,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
-  requestTimeoutBeforeReady?: number,
-  retriesOnFailureBeforeReady?: number
+  requestTimeoutBeforeReady: number,
+  retriesOnFailureBeforeReady: number,
+  log: ILogger
 ): ISplitChangesUpdater {
 
   let startingUp = true;
@@ -178,9 +180,11 @@ export default function splitsSyncTaskFactory(
       storage.segments,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
+      settings.log,
     ),
     settings.scheduler.featuresRefreshRate,
-    'splitChangesUpdater'
+    'splitChangesUpdater',
+    settings.log
   );
 }

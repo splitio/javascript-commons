@@ -12,14 +12,13 @@ import MySegmentsUpdateWorker from './UpdateWorkers/MySegmentsUpdateWorker';
 import SplitsUpdateWorker from './UpdateWorkers/SplitsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
-import { logFactory } from '../../logger/sdkLogger';
 import SSEClient from './SSEClient';
 import { IFetchAuth } from '../../services/types';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { IPlatform } from '../../sdkFactory/types';
-
-const log = logFactory('splitio-sync:push-manager');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:push-manager');
 
 /**
  * PushManager factory for client-side, with support for multiple clients.
@@ -34,6 +33,8 @@ export default function pushManagerCSFactory(
   settings: ISettings
 ): IPushManagerCS | undefined {
 
+  const log = settings.log;
+
   let sseClient: ISSEClient;
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
@@ -45,7 +46,7 @@ export default function pushManagerCSFactory(
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, log);
   sseClient.setEventHandler(sseHandler);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker

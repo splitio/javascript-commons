@@ -1,7 +1,8 @@
 import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -13,7 +14,7 @@ const MAX_PROPERTIES_AMOUNT = 300;
 const MAX_PROPERTIES_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
 
-export function validateEventProperties(maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
+export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {

@@ -8,8 +8,8 @@ import { CONTROL } from '../utils/constants';
 import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
-import { logFactory } from '../logger/sdkLogger';
-const log = logFactory('splitio-client');
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-client');
 
 
 /**
@@ -17,7 +17,7 @@ const log = logFactory('splitio-client');
  */
 // @TODO missing time tracking to collect telemetry
 export default function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings: { log, mode }, impressionsTracker, eventTracker } = params;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const wrapUp = (evaluationResult: IEvaluationResult) => {
@@ -78,7 +78,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     const { treatment, label, changeNumber, config = null } = evaluation;
     log.i(`Split: ${splitName}. Key: ${matchingKey}. Evaluation: ${treatment}. Label: ${label}`);
 
-    if (validateSplitExistance(readinessManager, splitName, label, invokingMethodName)) {
+    if (validateSplitExistance(log, readinessManager, splitName, label, invokingMethodName)) {
       log.i('Queueing corresponding impression.');
       queue.push({
         feature: splitName,
@@ -114,7 +114,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     };
 
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistance(readinessManager, storage.splits, settings.mode, trafficTypeName, 'track');
+    validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
     return eventTracker.track(eventData as SplitIO.EventData, size);
   }

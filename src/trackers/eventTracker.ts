@@ -1,10 +1,11 @@
 import objectAssign from 'object-assign';
 import thenable from '../utils/promise/thenable';
-import { logFactory } from '../logger/sdkLogger';
 import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
 import { SplitIO } from '../types';
-const log = logFactory('splitio-client:event-tracker');
+import { ILogger } from '../logger/types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio-client:event-tracker');
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
@@ -13,6 +14,7 @@ const log = logFactory('splitio-client:event-tracker');
  * @param integrationsManager optional event handler used for integrations
  */
 export default function eventTrackerFactory(
+  log: ILogger,
   eventsCache: IEventsCacheBase,
   integrationsManager?: IEventsHandler
 ): IEventTracker {

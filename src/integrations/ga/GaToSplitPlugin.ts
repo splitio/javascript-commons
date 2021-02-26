@@ -6,6 +6,6 @@ export default function GaToSplitPlugin(options: GoogleAnalyticsToSplitOptions) 
 
   // GaToSplit integration factory
   return (params: IIntegrationFactoryParams) => {
-    return GaToSplit(options, params.storage, params.settings.core);
+    return GaToSplit(options, params);
   };
 }

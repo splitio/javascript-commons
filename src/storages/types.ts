@@ -1,4 +1,5 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
+import { ILogger } from '../logger/types';
 import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
@@ -246,5 +247,6 @@ export interface IStorageFactoryParams {
 
   // ATM, only used by InRedisStorage. @TODO pass a callback to simplify custom storages.
   readinessManager: IReadinessManager,
-  metadata: IMetadata
+  metadata: IMetadata,
+  log: ILogger
 }

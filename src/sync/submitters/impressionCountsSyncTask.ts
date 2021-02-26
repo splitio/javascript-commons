@@ -3,6 +3,7 @@ import { IPostTestImpressionsCount } from '../../services/types';
 import { IImpressionCountsCacheSync } from '../../storages/types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ImpressionCountsPayload } from './types';
+import { ILogger } from '../../logger/types';
 
 /**
  * Converts `impressionCounts` data from cache into request payload.
@@ -36,9 +37,10 @@ const IMPRESSIONS_COUNT_RATE = 1800000; // 30 minutes
 export function impressionCountsSyncTaskFactory(
   postTestImpressionsCount: IPostTestImpressionsCount,
   impressionCountsCache: IImpressionCountsCacheSync,
+  log: ILogger,
   latencyTracker?: ITimeTracker
 ): ISyncTask {
 
   // retry impressions counts only once.
-  return submitterSyncTaskFactory(postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', latencyTracker, fromImpressionCountsCollector, 1);
+  return submitterSyncTaskFactory(postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', log, latencyTracker, fromImpressionCountsCollector, 1);
 }

@@ -9,16 +9,12 @@ import {
 } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
-import { logFactory } from '../logger/sdkLogger';
-const log = logFactory('');
+import { ILogger } from '../logger/types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('');
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
-
-// default onRejected handler, that just logs the error, if ready promise doesn't have one.
-function defaultOnRejected(err: any) {
-  log.e(err);
-}
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -31,6 +27,7 @@ function defaultOnRejected(err: any) {
  */
 export default function sdkReadinessManagerFactory(
   EventEmitter: new () => IEventEmitter,
+  log: ILogger,
   readyTimeout = 0,
   internalReadyCbCount = 0,
   readinessManager = readinessManagerFactory(EventEmitter, readyTimeout)): ISdkReadinessManager {
@@ -58,6 +55,11 @@ export default function sdkReadinessManagerFactory(
     log.i('Split SDK is ready from cache.');
   });
 
+  // default onRejected handler, that just logs the error, if ready promise doesn't have one.
+  function defaultOnRejected(err: any) {
+    log.e(err);
+  }
+
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
@@ -75,7 +77,7 @@ export default function sdkReadinessManagerFactory(
     readinessManager,
 
     shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+      return sdkReadinessManagerFactory(EventEmitter, log, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
     },
 
     sdkStatus: objectAssign(
