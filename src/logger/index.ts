@@ -36,11 +36,11 @@ const defaultOptions = {
 
 export class Logger implements ILogger {
 
-  private category: string;
+  private category?: string;
   private options: ILoggerOptions;
   private codes: ICodes;
 
-  constructor(category: string, options: ILoggerOptions, codes: ICodes) {
+  constructor(category: string | undefined, options: ILoggerOptions | undefined, codes: ICodes) {
     this.category = category;
     this.options = objectAssign({}, defaultOptions, options);
     this.codes = codes;

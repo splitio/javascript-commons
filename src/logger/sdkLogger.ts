@@ -1,13 +1,12 @@
 /**
  * This file defines the logger interface and default options for the SDKs, not necessarily for the Logger as it's own.
  */
-import { ILoggerOptions } from './types';
+import { ICodes, ILoggerOptions } from './types';
 import { Logger, LogLevels, setLogLevel, isLogLevelString } from '.';
 import { isLocalStorageAvailable } from '../utils/env/isLocalStorageAvailable';
 import { isNode } from '../utils/env/isNode';
 import { merge } from '../utils/lang';
 import { ILoggerAPI } from '../types';
-import { codes } from './codes';
 
 // @TODO when integrating with other packages, find the best way to update LoggerOption defaults per package (node, evaluator, etc.)
 const defaultOptions: ILoggerOptions = {
@@ -31,9 +30,9 @@ const initialState = String(
 );
 
 // we expose the logger instance creator
-export const logFactory = (namespace: string, options = {}) => new Logger(namespace, merge(options, defaultOptions), codes);
+export const logFactory = (namespace: string, options = {}, codes: ICodes) => new Logger(namespace, merge(options, defaultOptions), codes);
 
-const ownLog = logFactory('splitio-utils:logger');
+// const log = logFactory('splitio-utils:logger');
 
 /**
  * The public Logger utility API exposed via SplitFactory.
@@ -53,7 +52,7 @@ export const API: ILoggerAPI = {
     if (isLogLevelString(logLevel)) {
       setLogLevel(logLevel);
     } else {
-      ownLog.e('Invalid Log Level - No changes to the logs will be applied.');
+      // log.e('Invalid Log Level - No changes to the logs will be applied.');
     }
   },
   /**

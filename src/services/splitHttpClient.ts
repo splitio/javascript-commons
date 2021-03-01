@@ -22,7 +22,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
-  if (!fetch) log.e(messageNoFetch + ' The SDK will not get ready.');
+  if (!fetch) log.e(`${messageNoFetch} The SDK will not get ready.`);
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',

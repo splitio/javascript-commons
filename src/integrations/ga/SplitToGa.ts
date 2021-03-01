@@ -8,8 +8,6 @@ import { ILogger } from '../../logger/types';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-split-to-ga');
 
-const noGaWarning = '`ga` command queue not found.';
-
 export default class SplitToGa implements IIntegration {
 
   // A falsy object represents the default tracker
@@ -89,7 +87,7 @@ export default class SplitToGa implements IIntegration {
     }
 
     log.i('Started Split-to-GA integration');
-    if (typeof SplitToGa.getGa() !== 'function') log.w(noGaWarning + ' No hits will be sent until it is available.');
+    if (typeof SplitToGa.getGa() !== 'function') log.w('`ga` command queue not found. No hits will be sent until it is available.');
   }
 
   queue(data: SplitIO.IntegrationData) {
@@ -127,7 +125,7 @@ export default class SplitToGa implements IIntegration {
         ga(sendCommand, fieldsObject);
       });
     } else {
-      this.log.w(noGaWarning + ' No hit was sent.');
+      this.log.w('`ga` command queue not found. No hit was sent.');
     }
   }
 

@@ -6,8 +6,9 @@ import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
 import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio');
+import { noopLogger } from '../../logger/noopLogger';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio');
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -82,8 +83,8 @@ const base = {
     impressionsMode: OPTIMIZED
   },
 
-  // base logger
-  log
+  // the default logger ignores all logs
+  log: noopLogger
 };
 
 function fromSecondsToMillis(n: number) {

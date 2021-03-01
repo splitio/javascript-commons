@@ -41,7 +41,7 @@ export default function pushManagerFactory(
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
   } catch (e) {
-    log.w(e + 'Falling back to polling mode.');
+    log.w(`${e}Falling back to polling mode.`);
     return;
   }
   const authenticate = authenticateFactory(fetchAuth);
