@@ -69,7 +69,7 @@ test('splitChangesUpdater / factory', (done) => {
   const readinessManager = readinessManagerFactory(EventEmitter);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
-  const splitChangesUpdater = splitChangesUpdaterFactory(splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits);
+  const splitChangesUpdater = splitChangesUpdaterFactory(splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits, 1000, 1);
 
   splitChangesUpdater().then((result) => {
     expect(setChangeNumber.mock.calls.length).toBe(1);
