@@ -4,7 +4,7 @@ import { IStorageSync } from '../../storages/types';
 import { IPollingManager } from '../polling/types';
 import { IReadinessManager } from '../../readiness/types';
 import objectAssign from 'object-assign';
-import { PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP } from './constants';
+import { PUSH_DISABLED, PUSH_DISCONNECT, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, SSE_ERROR } from './constants';
 import Backoff from '../../utils/Backoff';
 import SSEHandlerFactory from './SSEHandler';
 import SegmentsUpdateWorker from './UpdateWorkers/SegmentsUpdateWorker';
@@ -48,13 +48,14 @@ export default function pushManagerSSFactory(
   const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits);
   const segmentsUpdateWorker = new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
 
-  // flag that indicates if `disconnectPush` was called, either by the SyncManager (when the client is destroyed) or by a PUSH_NONRETRYABLE_ERROR error.
+  // flag that indicates if `disconnectPush` was called, either by the SyncManager (when the client is destroyed) or by a STREAMING_DISABLED control notification.
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
 
   /** PushManager functions related to initialization */
 
-  const connectPushRetryBackoff = new Backoff(connectPush, settings.scheduler.pushRetryBackoffBase);
+  const reauthBackoff = new Backoff(connectPush, settings.scheduler.authRetryBackoffBase);
+  const sseReconnectBackoff = new Backoff(sseClient.reopen, settings.scheduler.streamingReconnectBackoffBase);
 
   let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -78,11 +79,14 @@ export default function pushManagerSSFactory(
       function (authData) {
         if (disconnected) return;
 
-        // 'pushEnabled: false' is handled as a PUSH_NONRETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
-        // close the sseClient in case the org has been bloqued while the instance was connected to streaming
+        // restart backoff retry counter for auth and SSE connections, due to HTTP/network errors
+        reauthBackoff.reset();
+        sseReconnectBackoff.reset(); // reset backoff in case SSE conexion has opened after a HTTP or network error.
+
+        // emit PUSH_DISCONNECT if org is not whitelisted
         if (!authData.pushEnabled) {
           log.info('Streaming is not available. Switching to polling mode.');
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          pushEmitter.emit(PUSH_DISCONNECT); // there is no need to close sseClient (it is not open on this scenario)
           return;
         }
 
@@ -95,16 +99,20 @@ export default function pushManagerSSFactory(
       function (error) {
         if (disconnected) return;
 
-        log.error(`Failed to authenticate for streaming. Error: "${error.message}".`);
+        sseClient.close(); // no harm if already closed
+        pushEmitter.emit(PUSH_DISCONNECT); // no harm if `PUSH_DISCONNECT` was already notified
+
+        const errorMessage = `Failed to authenticate for streaming. Error: "${error.message}".`;
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          log.error(errorMessage);
           return;
         }
 
-        // Handle other HTTP and network errors as recoverable errors
-        pushEmitter.emit(PUSH_RETRYABLE_ERROR);
+        // Handle other HTTP and network errors
+        const delayInMillis = reauthBackoff.scheduleCall();
+        log.error(`${errorMessage}. Attempting to reauthenticate in ${delayInMillis / 1000} seconds.`);
       }
     );
   }
@@ -116,9 +124,8 @@ export default function pushManagerSSFactory(
     sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
-    connectPushRetryBackoff.reset();
-
-    stopWorkers();
+    reauthBackoff.reset();
+    sseReconnectBackoff.reset();
   }
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
@@ -127,31 +134,33 @@ export default function pushManagerSSFactory(
     segmentsUpdateWorker.backoff.reset();
   }
 
-  pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
+  pushEmitter.on(PUSH_DISCONNECT, stopWorkers);
 
-  // restart backoff retry counter once push is connected
-  pushEmitter.on(PUSH_SUBSYSTEM_UP, () => { connectPushRetryBackoff.reset(); });
+  /** Fallbacking due to STREAMING_DISABLED control event */
 
-  /** Fallbacking without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
-
-  pushEmitter.on(PUSH_NONRETRYABLE_ERROR, function handleNonRetryableError() {
-    // Note: `stopWorkers` is been called twice, but it is not harmful
+  pushEmitter.on(PUSH_DISABLED, function () {
     disconnectPush();
-    pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
+    pushEmitter.emit(PUSH_DISCONNECT); // no harm if polling already
   });
 
-  /** Fallbacking with retry due to recoverable SSE and Authentication errors */
+  /** Fallbacking due to SSE errors */
 
-  pushEmitter.on(PUSH_RETRYABLE_ERROR, function handleRetryableError() { // HTTP or network error in SSE connection
+  pushEmitter.on(SSE_ERROR, function (error) { // HTTP or network error in SSE connection
     // SSE connection is closed to avoid repeated errors due to retries
     sseClient.close();
 
-    // retry streaming reconnect with backoff algorithm
-    let delayInMillis = connectPushRetryBackoff.scheduleCall();
+    // retries are handled via backoff algorithm
+    let delayInMillis;
+    if (error.parsedData && (error.parsedData.statusCode === 400 || error.parsedData.statusCode === 401)) {
+      delayInMillis = reauthBackoff.scheduleCall(); // reauthenticate in case of token invalid or expired (when somehow refresh token was not properly executed)
+    } else {
+      delayInMillis = sseReconnectBackoff.scheduleCall(); // reconnect SSE for any other network or HTTP error
+    }
 
-    log.info(`Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
+    const errorMessage = error.parsedData && error.parsedData.message;
+    log.error(`Fail to connect to streaming${errorMessage ? `, with error message: "${errorMessage}"` : ''}. Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
 
-    pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
+    pushEmitter.emit(PUSH_DISCONNECT); // no harm if polling already
   });
 
   /** Functions related to synchronization (Queues and Workers in the spec) */
@@ -166,7 +175,10 @@ export default function pushManagerSSFactory(
     Object.create(pushEmitter),
     {
       // Expose functionality for starting and stoping push mode:
-      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which start polling.
+      stop() {
+        disconnectPush();
+        stopWorkers(); // if we call `stopWorkers` inside `disconnectPush`, it would be called twice on a PUSH_DISABLED event, which anyway is not harmful.
+      },
 
       start() {
         // Run in next event-loop cycle as in browser
