@@ -66,6 +66,16 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
     return this.getChangeNumber() > -1;
   }
 
+  /**
+   * Kill `name` split and set `defaultTreatment` and `changeNumber`.
+   * Used for SPLIT_KILL push notifications.
+   *
+   * @param {string} name
+   * @param {string} defaultTreatment
+   * @param {number} changeNumber
+   * @returns {Promise} a promise that is resolved once the split kill is performed. The fulfillment value is a boolean: `true` if the kill success updating the split or `false` if no split is updated,
+   * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
+   */
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean {
     const split = this.getSplit(name);
 

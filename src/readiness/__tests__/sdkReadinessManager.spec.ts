@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { loggerMock, mockClear } from '../../logger/__tests__/sdkLogger.mock';
 import { IEventEmitter } from '../../types';
-import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../readinessManager';
+import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
 import sdkReadinessManagerFactory from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 

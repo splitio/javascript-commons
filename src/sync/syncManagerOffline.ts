@@ -3,6 +3,7 @@ import fromObjectSyncTaskFactory from './offline/syncTasks/fromObjectSyncTask';
 import objectAssign from 'object-assign';
 import { ISplitsParser } from './offline/splitsParser/types';
 import { IReadinessManager } from '../readiness/types';
+import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 function flush() {
   return Promise.resolve();
@@ -40,7 +41,7 @@ export function syncManagerOfflineFactory(
               // In LOCALHOST mode, shared clients are ready in the next event cycle than created
               // SDK_READY cannot be emitted directly because this will not update the readiness status
               setTimeout(() => {
-                readinessManager.segments.emit('SDK_SEGMENTS_ARRIVED'); // SDK_SPLITS_ARRIVED emitted by main SyncManager
+                readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // SDK_SPLITS_ARRIVED emitted by main SyncManager
               }, 0);
             },
             stop() { },
