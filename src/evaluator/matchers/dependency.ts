@@ -15,13 +15,13 @@ export default function dependencyMatcherContext(log: ILogger, { split, treatmen
       matches = acceptableTreatments.indexOf(evaluation.treatment as string) !== -1;
     }
 
-    log.d(`[dependencyMatcher] Parent split "${parentName}" evaluated to "${evaluation.treatment}" with label "${evaluation.label}". ${parentName} evaluated treatment is part of [${acceptableTreatments}] ? ${matches}.`);
+    log.debug(`[dependencyMatcher] Parent split "${parentName}" evaluated to "${evaluation.treatment}" with label "${evaluation.label}". ${parentName} evaluated treatment is part of [${acceptableTreatments}] ? ${matches}.`);
 
     return matches;
   }
 
   return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
-    log.d(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? `\n attributes: ${JSON.stringify(attributes)}` : ''}`);
+    log.debug(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? `\n attributes: ${JSON.stringify(attributes)}` : ''}`);
     const evaluation = splitEvaluator(key, split, attributes, storage, log);
 
     if (thenable(evaluation)) {

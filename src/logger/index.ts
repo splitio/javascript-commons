@@ -36,22 +36,22 @@ export class Logger implements ILogger {
     this.options = objectAssign({}, defaultOptions, options);
   }
 
-  d(msg: string) {
+  debug(msg: string) {
     if (this._shouldLog(LogLevels.DEBUG))
       this._log(LogLevels.DEBUG, msg);
   }
 
-  i(msg: string) {
+  info(msg: string) {
     if (this._shouldLog(LogLevels.INFO))
       this._log(LogLevels.INFO, msg);
   }
 
-  w(msg: string) {
+  warn(msg: string) {
     if (this._shouldLog(LogLevels.WARN))
       this._log(LogLevels.WARN, msg);
   }
 
-  e(msg: string) {
+  error(msg: string) {
     if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
       this._log(LogLevels.ERROR, msg);
   }

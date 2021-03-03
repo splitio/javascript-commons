@@ -30,12 +30,12 @@ export function fromObjectUpdaterFactory(
       splitsMock = splitsParser(settings);
     } catch (err) {
       loadError = err;
-      log.e(`There was an issue loading the mock Splits data, no changes will be applied to the current cache. ${err}`);
+      log.error(`There was an issue loading the mock Splits data, no changes will be applied to the current cache. ${err}`);
     }
 
     if (!loadError && splitsMock) {
-      log.d('Splits data: ');
-      log.d(JSON.stringify(splitsMock));
+      log.debug('Splits data: ');
+      log.debug(JSON.stringify(splitsMock));
 
       forOwn(splitsMock, function (val, name) {
         splits.push([

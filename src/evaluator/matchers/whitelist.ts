@@ -7,7 +7,7 @@ export default function whitelistMatcherContext(log: ILogger, ruleAttr: ISet<str
   return function whitelistMatcher(runtimeAttr: string): boolean {
     let isInWhitelist = ruleAttr.has(runtimeAttr);
 
-    log.d(`[whitelistMatcher] evaluated ${runtimeAttr} in [${setToArray(ruleAttr).join(',')}] => ${isInWhitelist}`);
+    log.debug(`[whitelistMatcher] evaluated ${runtimeAttr} in [${setToArray(ruleAttr).join(',')}] => ${isInWhitelist}`);
 
     return isInWhitelist;
   };

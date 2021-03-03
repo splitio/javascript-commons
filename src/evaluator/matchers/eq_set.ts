@@ -13,7 +13,7 @@ export default function equalToSetMatcherContext(log: ILogger, ruleAttr: string[
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isEqual = false;
     }
 
-    log.d(`[equalToSetMatcher] is ${runtimeAttr} equal to set ${ruleAttr}? ${isEqual}`);
+    log.debug(`[equalToSetMatcher] is ${runtimeAttr} equal to set ${ruleAttr}? ${isEqual}`);
 
     return isEqual;
   };

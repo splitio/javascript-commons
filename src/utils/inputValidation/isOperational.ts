@@ -6,13 +6,13 @@ import { IReadinessManager } from '../../readiness/types';
 export function validateIfNotDestroyed(log: ILogger, readinessManager: IReadinessManager): boolean {
   if (!readinessManager.isDestroyed()) return true;
 
-  log.e('Client has already been destroyed - no calls possible.');
+  log.error('Client has already been destroyed - no calls possible.');
   return false;
 }
 
 export function validateIfOperational(log: ILogger, readinessManager: IReadinessManager, method: string) {
   if (readinessManager.isReady() || readinessManager.isReadyFromCache()) return true;
 
-  log.w(`${method}: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.`);
+  log.warn(`${method}: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.`);
   return false;
 }

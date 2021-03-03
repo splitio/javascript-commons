@@ -9,14 +9,14 @@ export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*:
     try {
       re = new RegExp(ruleAttr);
     } catch (e) {
-      log.d(`[stringMatcher] ${ruleAttr} is an invalid regex`);
+      log.debug(`[stringMatcher] ${ruleAttr} is an invalid regex`);
 
       return false;
     }
 
     let regexMatches = re.test(runtimeAttr);
 
-    log.d(`[stringMatcher] does ${runtimeAttr} matches with ${ruleAttr}? ${regexMatches ? 'yes' : 'no'}`);
+    log.debug(`[stringMatcher] does ${runtimeAttr} matches with ${ruleAttr}? ${regexMatches ? 'yes' : 'no'}`);
 
     return regexMatches;
   };

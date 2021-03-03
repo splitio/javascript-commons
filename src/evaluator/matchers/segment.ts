@@ -12,12 +12,12 @@ export default function matcherSegmentContext(log: ILogger, segmentName: string,
 
     if (thenable(isInSegment)) {
       isInSegment.then(result => {
-        log.d(`[asyncSegmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+        log.debug(`[asyncSegmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
 
         return result;
       });
     } else {
-      log.d(`[segmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+      log.debug(`[segmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
     }
 
     return isInSegment;

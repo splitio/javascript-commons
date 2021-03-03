@@ -41,7 +41,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   start() {
     if (typeof window !== 'undefined' && window.addEventListener) {
-      this.settings.log.d('Registering flush handler when unload page event is triggered.');
+      this.settings.log.debug('Registering flush handler when unload page event is triggered.');
       window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }
@@ -53,7 +53,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {
-      this.settings.log.d('Deregistering flush handler when unload page event is triggered.');
+      this.settings.log.debug('Deregistering flush handler when unload page event is triggered.');
       window.removeEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }

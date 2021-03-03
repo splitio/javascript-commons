@@ -12,7 +12,7 @@ export default function andCombinerContext(matchers: IMatcher[], log: ILogger) {
     // Array.prototype.every is supported by target environments
     const hasMatchedAll = results.every(value => value);
 
-    log.d(`[andCombiner] evaluates to ${hasMatchedAll}`);
+    log.debug(`[andCombiner] evaluates to ${hasMatchedAll}`);
     return hasMatchedAll;
   }
 

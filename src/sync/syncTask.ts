@@ -17,7 +17,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
 
   function execute(...args: Input) {
     executing = true;
-    log.d(`Running ${taskName}`);
+    log.debug(`Running ${taskName}`);
     return task(...args).then(result => {
       executing = false;
       if (running) timeoutID = setTimeout(execute, period, ...args);
@@ -35,7 +35,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
     start(...args: Input) {
       if (!running) {
         running = true;
-        log.d(`Starting ${taskName}. Running each ${period} millis`);
+        log.debug(`Starting ${taskName}. Running each ${period} millis`);
         return execute(...args);
       }
     },
@@ -43,7 +43,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
     stop() {
       running = false;
       if (timeoutID) {
-        log.d(`Stopping ${taskName}`);
+        log.debug(`Stopping ${taskName}`);
         clearTimeout(timeoutID);
         timeoutID = undefined;
       }

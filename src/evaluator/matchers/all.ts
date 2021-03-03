@@ -4,7 +4,7 @@ import { ILogger } from '../../logger/types';
 
 export default function allMatcherContext(log: ILogger) {
   return function allMatcher(runtimeAttr: string): boolean {
-    log.d('[allMatcher] is always true');
+    log.debug('[allMatcher] is always true');
 
     return runtimeAttr != null;
   };

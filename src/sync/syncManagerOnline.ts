@@ -60,15 +60,15 @@ export function syncManagerOnlineFactory(
 
     function startPolling() {
       if (!pollingManager.isRunning()) {
-        log.i('Streaming not available. Starting periodic fetch of data.');
+        log.info('Streaming not available. Starting periodic fetch of data.');
         pollingManager.start();
       } else {
-        log.i('Streaming couldn\'t connect. Continue periodic fetch of data.');
+        log.info('Streaming couldn\'t connect. Continue periodic fetch of data.');
       }
     }
 
     function stopPollingAndSyncAll() {
-      log.i('PUSH (re)connected. Syncing and stopping periodic fetch of data.');
+      log.info('PUSH (re)connected. Syncing and stopping periodic fetch of data.');
       // if polling, stop
       if (pollingManager.isRunning()) pollingManager.stop();
 

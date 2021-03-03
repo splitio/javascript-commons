@@ -16,7 +16,7 @@ export default function containsAllMatcherContext(log: ILogger, ruleAttr: string
       }
     }
 
-    log.d(`[containsAllMatcher] ${runtimeAttr} contains all elements of ${ruleAttr}? ${containsAll}`);
+    log.debug(`[containsAllMatcher] ${runtimeAttr} contains all elements of ${ruleAttr}? ${containsAll}`);
 
     return containsAll;
   };

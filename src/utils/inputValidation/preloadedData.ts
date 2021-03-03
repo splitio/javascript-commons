@@ -7,18 +7,18 @@ import { ILogger } from '../../logger/types';
 
 function validateTimestampData(log: ILogger, maybeTimestamp: any, method: string, item: string) {
   if (isFiniteNumber(maybeTimestamp) && maybeTimestamp > -1) return true;
-  log.e(`${method}: preloadedData.${item} must be a positive number.`);
+  log.error(`${method}: preloadedData.${item} must be a positive number.`);
   return false;
 }
 
 function validateSplitsData(log: ILogger, maybeSplitsData: any, method: string) {
   if (isObject(maybeSplitsData)) {
     const splitNames = Object.keys(maybeSplitsData);
-    if (splitNames.length === 0) log.w(`${method}: preloadedData.splitsData doesn't contain split definitions.`);
+    if (splitNames.length === 0) log.warn(`${method}: preloadedData.splitsData doesn't contain split definitions.`);
     // @TODO in the future, consider handling the possibility of having parsed definitions of splits
     if (splitNames.every(splitName => validateSplit(log, splitName, method) && isString(maybeSplitsData[splitName]))) return true;
   }
-  log.e(`${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`);
+  log.error(`${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`);
   return false;
 }
 
@@ -31,7 +31,7 @@ function validateMySegmentsData(log: ILogger, maybeMySegmentsData: any, method: 
       return Array.isArray(segmentNames) && segmentNames.every(segmentName => isString(segmentName));
     })) return true;
   }
-  log.e(`${method}: preloadedData.mySegmentsData must be a map of user keys to their list of segment names.`);
+  log.error(`${method}: preloadedData.mySegmentsData must be a map of user keys to their list of segment names.`);
   return false;
 }
 
@@ -40,13 +40,13 @@ function validateSegmentsData(log: ILogger, maybeSegmentsData: any, method: stri
     const segmentNames = Object.keys(maybeSegmentsData);
     if (segmentNames.every(segmentName => isString(maybeSegmentsData[segmentName]))) return true;
   }
-  log.e(`${method}: preloadedData.segmentsData must be a map of segment names to their serialized definitions.`);
+  log.error(`${method}: preloadedData.segmentsData must be a map of segment names to their serialized definitions.`);
   return false;
 }
 
 export function validatePreloadedData(log: ILogger, maybePreloadedData: any, method: string): maybePreloadedData is SplitIO.PreloadedData {
   if (!isObject(maybePreloadedData)) {
-    log.e(`${method}: preloadedData must be an object.`);
+    log.error(`${method}: preloadedData must be an object.`);
   } else if (
     validateTimestampData(log, maybePreloadedData.lastUpdated, method, 'lastUpdated') &&
     validateTimestampData(log, maybePreloadedData.since, method, 'since') &&

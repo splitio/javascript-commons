@@ -9,6 +9,6 @@ export function validateAttributes(log: ILogger, maybeAttrs: any, method: string
   if (isObject(maybeAttrs) || maybeAttrs == undefined) // eslint-disable-line eqeqeq
     return maybeAttrs;
 
-  log.e(`${method}: attributes must be a plain object.`);
+  log.error(`${method}: attributes must be a plain object.`);
   return false;
 }

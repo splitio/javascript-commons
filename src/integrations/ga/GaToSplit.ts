@@ -168,7 +168,7 @@ export function fixEventTypeId(eventTypeId: any, log: ILogger) {
     .replace(INVALID_PREFIX_REGEX, '')
     .replace(INVALID_SUBSTRING_REGEX, '_');
   const truncated = fixed.slice(0, 80);
-  if (truncated.length < fixed.length) log.w('EventTypeId was truncated because it cannot be more than 80 characters long.');
+  if (truncated.length < fixed.length) log.warn('EventTypeId was truncated because it cannot be more than 80 characters long.');
   return truncated;
 }
 
@@ -209,19 +209,19 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, par
       const validIdentities = validateIdentities(opts.identities);
 
       if (validIdentities.length === 0) {
-        log.w('No valid identities were provided. Please check that you are passing a valid list of identities or providing a traffic type at the SDK configuration.');
+        log.warn('No valid identities were provided. Please check that you are passing a valid list of identities or providing a traffic type at the SDK configuration.');
         return;
       }
 
       const invalids = validIdentities.length - opts.identities.length;
       if (invalids) {
-        log.w(`${invalids} identities were discarded because they are invalid or duplicated. Identities must be an array of objects with key and trafficType.`);
+        log.warn(`${invalids} identities were discarded because they are invalid or duplicated. Identities must be an array of objects with key and trafficType.`);
       }
       opts.identities = validIdentities;
 
       // Validate prefix
       if (!isString(opts.prefix)) {
-        log.w('The provided `prefix` was ignored since it is invalid. Please check that you are passing a string object as `prefix`.');
+        log.warn('The provided `prefix` was ignored since it is invalid. Please check that you are passing a string object as `prefix`.');
         opts.prefix = undefined;
       }
 
@@ -238,7 +238,7 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, par
         try {
           if (opts.filter && !opts.filter(model)) return;
         } catch (err) {
-          log.w(`GaToSplit custom filter threw: ${err}`);
+          log.warn(`GaToSplit custom filter threw: ${err}`);
           return;
         }
 
@@ -248,7 +248,7 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, par
           try {
             eventData = opts.mapper(model, eventData as SplitIO.EventData);
           } catch (err) {
-            log.w(`GaToSplit custom mapper threw: ${err}`);
+            log.warn(`GaToSplit custom mapper threw: ${err}`);
             return;
           }
           if (!eventData)
@@ -277,7 +277,7 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, par
         }
       });
 
-      log.i('Started GA-to-Split integration');
+      log.info('Started GA-to-Split integration');
     }
 
   }

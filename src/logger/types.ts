@@ -4,11 +4,11 @@ export interface ILoggerOptions {
 }
 
 export interface ILogger {
-  d(msg: string): void
+  debug(msg: string): void
 
-  i(msg: string): void
+  info(msg: string): void
 
-  w(msg: string): void
+  warn(msg: string): void
 
-  e(msg: string): void
+  error(msg: string): void
 }

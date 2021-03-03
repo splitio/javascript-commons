@@ -23,7 +23,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
    * @NOTE this method is not being used at the moment.
    */
   clear() {
-    this.log.i('Flushing MySegments data from localStorage');
+    this.log.info('Flushing MySegments data from localStorage');
 
     // We cannot simply call `localStorage.clear()` since that implies removing user items from the storage
     // We could optimize next sentence, since it implies iterating over all localStorage items
@@ -37,7 +37,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.setItem(segmentKey, DEFINED);
       return true;
     } catch (e) {
-      this.log.e(e);
+      this.log.error(e);
       return false;
     }
   }
@@ -49,7 +49,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.removeItem(segmentKey);
       return true;
     } catch (e) {
-      this.log.e(e);
+      this.log.error(e);
       return false;
     }
   }

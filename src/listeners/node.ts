@@ -23,13 +23,13 @@ export default class NodeSignalListener implements ISignalListener {
   }
 
   start() {
-    this.settings.log.d('Registering cleanup handlers.');
+    this.settings.log.debug('Registering cleanup handlers.');
     // eslint-disable-next-line no-undef
     process.on('SIGTERM', this._sigtermHandler);
   }
 
   stop() {
-    this.settings.log.d('Deregistering cleanup handlers.');
+    this.settings.log.debug('Deregistering cleanup handlers.');
     // eslint-disable-next-line no-undef
     process.removeListener('SIGTERM', this._sigtermHandler);
   }
@@ -47,14 +47,14 @@ export default class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, 'SIGTERM');
     };
 
-    this.settings.log.d('Split SDK graceful shutdown after SIGTERM.');
+    this.settings.log.debug('Split SDK graceful shutdown after SIGTERM.');
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      this.settings.log.e(`Error with Split graceful shutdown: ${err}`);
+      this.settings.log.error(`Error with Split graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

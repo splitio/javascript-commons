@@ -37,7 +37,7 @@ export function eventsSyncTaskFactory(
 
   // register eventsSubmitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.i('Flushing full events queue and reseting timer.');
+    log.info('Flushing full events queue and reseting timer.');
     syncTask.execute();
   });
 

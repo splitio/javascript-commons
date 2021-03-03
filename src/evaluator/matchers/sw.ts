@@ -7,7 +7,7 @@ export default function startsWithMatcherContext(log: ILogger, ruleAttr: string[
   return function startsWithMatcher(runtimeAttr: string): boolean {
     let matches = ruleAttr.some(e => startsWith(runtimeAttr, e));
 
-    log.d(`[startsWithMatcher] ${runtimeAttr} starts with ${ruleAttr}? ${matches}`);
+    log.debug(`[startsWithMatcher] ${runtimeAttr} starts with ${ruleAttr}? ${matches}`);
 
     return matches;
   };
