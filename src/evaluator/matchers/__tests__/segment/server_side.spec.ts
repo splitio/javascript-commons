@@ -2,12 +2,12 @@ import { matcherTypes } from '../../matcherTypes';
 import matcherFactory from '../..';
 import { IMatcher, IMatcherDto } from '../../../types';
 import { IStorageSync } from '../../../../storages/types';
-import { noopLogger } from '../../../../logger/noopLogger';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER IN_SEGMENT / should return true ONLY when the key is defined inside the segment', async function () {
   const segment = 'employees';
 
-  const matcher = matcherFactory(noopLogger, {
+  const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SEGMENT,
     value: segment
   } as IMatcherDto, {

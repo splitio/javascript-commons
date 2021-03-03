@@ -1,11 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER CONTAINS_STRING / should return true ONLY when the value is contained in ["roni", "bad", "ar"]', function () {
   // @ts-ignore
-  let matcher = matcherFactory(noopLogger, {
+  let matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.CONTAINS_STRING,
     value: ['roni', 'bad', 'ar']

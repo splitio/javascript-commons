@@ -1,10 +1,10 @@
 // @ts-nocheck
 import parser from '..';
 import { ISplitCondition } from '../../../dtos/types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / handle invalid matcher as control', async function () {
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -33,7 +33,7 @@ test('PARSER / handle invalid matcher as control', async function () {
 });
 
 test('PARSER / handle invalid matcher as control (complex example)', async function () {
-  const evaluator = parser(noopLogger, [
+  const evaluator = parser(loggerMock, [
     {
       'conditionType': 'WHITELIST',
       'matcherGroup': {
@@ -133,7 +133,7 @@ test('PARSER / handle invalid matcher as control (complex example)', async funct
 });
 
 test('PARSER / handle invalid matcher as control (complex example mixing invalid and valid matchers)', async function () {
-  const evaluator = parser(noopLogger, [
+  const evaluator = parser(loggerMock, [
     {
       'conditionType': 'WHITELIST',
       'matcherGroup': {

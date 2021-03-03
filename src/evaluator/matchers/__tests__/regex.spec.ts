@@ -3,11 +3,11 @@ import matcherFactory from '..';
 import fs from 'fs';
 import rl from 'readline';
 import { IMatcher, IMatcherDto } from '../../types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER REGEX (STRING) / should match the attribute value only with the string starts with hello', function () {
   // @ts-ignore
-  const matcher = matcherFactory(noopLogger, {
+  const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
     value: '^hello'
   } as IMatcherDto) as IMatcher;
@@ -18,7 +18,7 @@ test('MATCHER REGEX (STRING) / should match the attribute value only with the st
 
 test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', function () {
   // @ts-ignore
-  const matcher = matcherFactory(noopLogger, {
+  const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
     value: 'a.b'
   } as IMatcherDto) as IMatcher;
@@ -47,7 +47,7 @@ test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', function
           const isTestTrue = test === 'true';
 
           // @ts-ignore
-          const matcher = matcherFactory(noopLogger, {
+          const matcher = matcherFactory(loggerMock, {
             type: matcherTypes.MATCHES_STRING,
             value: regex
           } as IMatcherDto) as IMatcher;

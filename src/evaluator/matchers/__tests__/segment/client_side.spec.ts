@@ -2,12 +2,12 @@ import { matcherTypes } from '../../matcherTypes';
 import matcherFactory from '../..';
 import { IMatcher, IMatcherDto } from '../../../types';
 import { IStorageSync } from '../../../../storages/types';
-import { noopLogger } from '../../../../logger/noopLogger';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async function () {
   const segment = 'employees';
 
-  const matcherTrue = matcherFactory(noopLogger, {
+  const matcherTrue = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SEGMENT,
     value: segment
   } as IMatcherDto, {
@@ -18,7 +18,7 @@ test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined i
     }
   } as IStorageSync) as IMatcher;
 
-  const matcherFalse = matcherFactory(noopLogger, {
+  const matcherFalse = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SEGMENT,
     value: segment + 'asd'
   } as IMatcherDto, {
