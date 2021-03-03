@@ -1,8 +1,9 @@
 import SplitsCacheInLocal from '../SplitsCacheInLocal';
 import KeyBuilderCS from '../../KeyBuilderCS';
+import { noopLogger } from '../../../logger/noopLogger';
 
 test('SPLIT CACHE / LocalStorage', () => {
-  const cache = new SplitsCacheInLocal(new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(noopLogger, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.clear();
 
@@ -43,7 +44,7 @@ test('SPLIT CACHE / LocalStorage', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / Get Keys', () => {
-  const cache = new SplitsCacheInLocal(new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(noopLogger, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplit('lol1', 'something');
   cache.addSplit('lol2', 'something else');
@@ -55,7 +56,7 @@ test('SPLIT CACHE / LocalStorage / Get Keys', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / Add Splits', () => {
-  const cache = new SplitsCacheInLocal(new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(noopLogger, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([
     ['lol1', 'something'],
@@ -69,7 +70,7 @@ test('SPLIT CACHE / LocalStorage / Add Splits', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
-  const cache = new SplitsCacheInLocal(new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(noopLogger, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([ // loop of addSplit
     ['split1', '{ "trafficTypeName": "user_tt" }'],
@@ -108,7 +109,7 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / killLocally', () => {
-  const cache = new SplitsCacheInLocal(new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(noopLogger, new KeyBuilderCS('SPLITIO', 'user'));
   cache.addSplit('lol1', '{ "name": "something"}');
   cache.addSplit('lol2', '{ "name": "something else"}');
   const initialChangeNumber = cache.getChangeNumber();
@@ -117,24 +118,24 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
   let updated = cache.killLocally('nonexistent_split', 'other_treatment', 101);
   const nonexistentSplit = cache.getSplit('nonexistent_split');
 
-  expect(updated).toBe( false); // t exist
+  expect(updated).toBe(false); // t exist
   expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
 
   // kill an existent split
   updated = cache.killLocally('lol1', 'some_treatment', 100);
   let lol1Split = JSON.parse(cache.getSplit('lol1') as string);
 
-  expect(updated).toBe( true); // killLocally resolves with update if split is changed
+  expect(updated).toBe(true); // killLocally resolves with update if split is changed
   expect(lol1Split.killed).toBe(true); // existing split must be killed
-  expect(lol1Split.defaultTreatment).toBe( 'some_treatment'); // existing split must have new default treatment
-  expect(lol1Split.changeNumber).toBe( 100); // existing split must have the given change number
-  expect(cache.getChangeNumber()).toBe( initialChangeNumber); // cache changeNumber is not changed
+  expect(lol1Split.defaultTreatment).toBe('some_treatment'); // existing split must have new default treatment
+  expect(lol1Split.changeNumber).toBe(100); // existing split must have the given change number
+  expect(cache.getChangeNumber()).toBe(initialChangeNumber); // cache changeNumber is not changed
 
   // not update if changeNumber is old
   updated = cache.killLocally('lol1', 'some_treatment_2', 90);
   lol1Split = JSON.parse(cache.getSplit('lol1') as string);
 
-  expect(updated).toBe( false); // killLocally resolves without update if changeNumber is old
-  expect(lol1Split.defaultTreatment).not.toBe( 'some_treatment_2'); // existing split is not updated if given changeNumber is older
+  expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
+  expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
 });

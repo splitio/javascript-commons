@@ -1,3 +1,4 @@
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { SplitIO } from '../../types';
 import eventTrackerFactory from '../eventTracker';
 
@@ -17,7 +18,7 @@ describe('Event Tracker', () => {
   test('Tracker API', () => {
     expect(typeof eventTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const instance = eventTrackerFactory(fakeEventsCache, fakeIntegrationsManager);
+    const instance = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
 
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method.
   });
@@ -45,7 +46,7 @@ describe('Event Tracker', () => {
       }
     });
 
-    const tracker = eventTrackerFactory(fakeEventsCache, fakeIntegrationsManager);
+    const tracker = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
     const result1 = tracker.track(fakeEvent, 1);
 
     expect(fakeEventsCache.track.mock.calls[0]).toEqual([fakeEvent, 1]); // Should be present in the event cache.

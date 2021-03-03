@@ -86,7 +86,7 @@ describe('SplitToGa', () => {
 
     let integration = new SplitToGa({}, loggerMock);
     expect(typeof integration).toBe('object');
-    expect(loggerMock.w.mock.calls.length).toBe(0);
+    expect(loggerMock.warn.mock.calls.length).toBe(0);
 
     gaRemove();
     expect(SplitToGa.getGa()).toBe(undefined); // should return undefined if ga command queue does not exist
@@ -95,7 +95,7 @@ describe('SplitToGa', () => {
     expect(typeof integration).toBe('object'); // SplitToGa instances should be created even if ga command queue does not exist
     // @ts-expect-error
     integration.queue('fake-data');
-    expect(loggerMock.w.mock.calls).toEqual([ // Warn when creating and queueing while ga command queue does not exist
+    expect(loggerMock.warn.mock.calls).toEqual([ // Warn when creating and queueing while ga command queue does not exist
       ['`ga` command queue not found. No hits will be sent until it is available.'],
       ['`ga` command queue not found. No hit was sent.']
     ]);

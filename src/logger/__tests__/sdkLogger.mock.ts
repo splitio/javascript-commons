@@ -7,17 +7,17 @@ jest.mock('../sdkLogger');
 import { logFactory } from '../sdkLogger';
 
 export const loggerMock = {
-  w: jest.fn(),
-  e: jest.fn(),
-  d: jest.fn(),
-  i: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
 };
 
 (logFactory as jest.Mock).mockReturnValue(loggerMock);
 
 export function mockClear() {
-  loggerMock.w.mockClear();
-  loggerMock.e.mockClear();
-  loggerMock.d.mockClear();
-  loggerMock.i.mockClear();
+  loggerMock.warn.mockClear();
+  loggerMock.error.mockClear();
+  loggerMock.debug.mockClear();
+  loggerMock.info.mockClear();
 }

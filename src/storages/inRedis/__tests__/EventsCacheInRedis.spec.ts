@@ -1,6 +1,7 @@
 import Redis from 'ioredis';
 import find from 'lodash/find';
 import isEqual from 'lodash/isEqual';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import EventsCacheInRedis from '../EventsCacheInRedis';
 import { metadataBuilder } from '../index';
@@ -26,11 +27,11 @@ test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async
 
   expect(redisValues.length).toBe(0); // control assertion, there are no events previously queued.
 
-  const cache = new EventsCacheInRedis(keys, connection, fakeRedisMetadata);
+  const cache = new EventsCacheInRedis(loggerMock, keys, connection, fakeRedisMetadata);
   // I'll use a "bad" instance so I can force an issue with the rpush command. I'll store an integer and will make the cache try to use rpush there.
   await connection.set('non-list-key', 10);
   // @ts-expect-error
-  const faultyCache = new EventsCacheInRedis({
+  const faultyCache = new EventsCacheInRedis(loggerMock, {
     buildEventsKey: () => 'non-list-key'
   }, connection, fakeRedisMetadata);
 

@@ -35,19 +35,19 @@ const invalidValues = [
 describe('INPUT VALIDATION for Event Properties', () => {
 
   test('Not setting the properties object is acceptable', () => {
-    expect(validateEventProperties(undefined, 'some_method_eventProps')).toEqual({
+    expect(validateEventProperties(loggerMock, undefined, 'some_method_eventProps')).toEqual({
       properties: null,
       size: 1024
     });
     // It should return null in replacement of undefined since it is valid with default event size.');
-    expect(validateEventProperties(undefined, 'some_method_eventProps')).toEqual({
+    expect(validateEventProperties(loggerMock, undefined, 'some_method_eventProps')).toEqual({
       properties: null,
       size: 1024
     });
     // It should return the passed null since it is valid with default event size.');
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -55,16 +55,16 @@ describe('INPUT VALIDATION for Event Properties', () => {
   test('When setting a value for properties, only objects are acceptable', () => {
 
     invalidValues.forEach(val => {
-      expect(validateEventProperties(val, 'some_method_eventProps')).toEqual({
+      expect(validateEventProperties(loggerMock, val, 'some_method_eventProps')).toEqual({
         properties: false,
         size: 1024
       }); // It should return default size and properties false if the properties value is not an object or null/undefined.');
-      expect(loggerMock.e.mock.calls).toEqual([['some_method_eventProps: properties must be a plain object.']]); // Should log an error.
-      loggerMock.e.mockClear();
+      expect(loggerMock.error.mock.calls).toEqual([['some_method_eventProps: properties must be a plain object.']]); // Should log an error.
+      loggerMock.error.mockClear();
     });
 
 
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -79,7 +79,7 @@ describe('INPUT VALIDATION for Event Properties', () => {
       number2: 0.250,
       nullProp: null
     };
-    const output = validateEventProperties(validProperties, 'some_method_eventProps');
+    const output = validateEventProperties(loggerMock, validProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: validProperties,
@@ -89,8 +89,8 @@ describe('INPUT VALIDATION for Event Properties', () => {
 
     expect(validProperties).not.toBe(output.properties); // Returned properties should be a clone.
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -108,7 +108,7 @@ describe('INPUT VALIDATION for Event Properties', () => {
       willBeNulled3: [],
       willBeNulled4: new Map()
     };
-    const output = validateEventProperties(providedProperties, 'some_method_eventProps');
+    const output = validateEventProperties(loggerMock, providedProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: {
@@ -121,11 +121,11 @@ describe('INPUT VALIDATION for Event Properties', () => {
 
     expect(providedProperties).not.toBe(output.properties); // Returned properties should be a clone.
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls.length).toBe(4); // It should have logged one warning per each property of the invalid type.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls.length).toBe(4); // It should have logged one warning per each property of the invalid type.
 
     ['willBeNulled1', 'willBeNulled2', 'willBeNulled3', 'willBeNulled4'].forEach((key, index) => {
-      expect(loggerMock.w.mock.calls[index][0]).toBe(`some_method_eventProps: Property ${key} is of invalid type. Setting value to null.`);
+      expect(loggerMock.warn.mock.calls[index][0]).toBe(`some_method_eventProps: Property ${key} is of invalid type. Setting value to null.`);
     });
 
     mockClear();
@@ -137,7 +137,7 @@ describe('INPUT VALIDATION for Event Properties', () => {
     for (let i = 0; i < 300; i++) {
       validProperties[i] = null; // all will be null so we do not exceed the size.
     }
-    let output = validateEventProperties(validProperties, 'some_method_eventProps');
+    let output = validateEventProperties(loggerMock, validProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: validProperties,
@@ -145,12 +145,12 @@ describe('INPUT VALIDATION for Event Properties', () => {
     });
     // It should return the properties and the event size.');
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     // @ts-ignore
     validProperties.a = null; // Adding one prop to exceed the limit.
-    output = validateEventProperties(validProperties, 'some_method_eventProps');
+    output = validateEventProperties(loggerMock, validProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: validProperties,
@@ -158,8 +158,8 @@ describe('INPUT VALIDATION for Event Properties', () => {
     });
     // It should return the properties and the event size.');
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls).toEqual([['some_method_eventProps: Event has more than 300 properties. Some of them will be trimmed when processed.']]); // It should have logged a warning.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls).toEqual([['some_method_eventProps: Event has more than 300 properties. Some of them will be trimmed when processed.']]); // It should have logged a warning.
 
     mockClear();
   });
@@ -173,7 +173,7 @@ describe('INPUT VALIDATION for Event Properties', () => {
       validProperties[i] = fiveHundredChars; // key length is two, plus 510 chars it is 512 which multiplied by the byte size of each char is 1kb each key.
     }
     // It should be right on the size limit.
-    let output = validateEventProperties(validProperties, 'some_method_eventProps');
+    let output = validateEventProperties(loggerMock, validProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: validProperties,
@@ -182,13 +182,13 @@ describe('INPUT VALIDATION for Event Properties', () => {
     // It should return the properties and the event size.');
 
     expect(validProperties).not.toBe(output.properties); // Returned properties should be a clone.
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(loggerMock.w.mock.calls.length).toBe(0); // Should not log any warnings.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // Should not log any warnings.
 
     // @ts-ignore
     validProperties.a = null; // exceed by two bytes (1 char string key which is two bytes, null value which we count as 0 to match other SDKs)
 
-    output = validateEventProperties(validProperties, 'some_method_eventProps');
+    output = validateEventProperties(loggerMock, validProperties, 'some_method_eventProps');
 
     expect(output).toEqual({
       properties: false,
@@ -196,10 +196,10 @@ describe('INPUT VALIDATION for Event Properties', () => {
     });
     // It should return false instead of the properties and the event size.');
 
-    expect(loggerMock.w.mock.calls.length).toBe(0); // Should not log any warnings.
-    expect(loggerMock.e.mock.calls).toEqual([['some_method_eventProps: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.']]); // Should log an error.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // Should not log any warnings.
+    expect(loggerMock.error.mock.calls).toEqual([['some_method_eventProps: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.']]); // Should log an error.
 
-    loggerMock.e.mockClear();
+    loggerMock.error.mockClear();
 
     mockClear();
   });

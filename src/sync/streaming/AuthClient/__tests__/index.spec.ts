@@ -9,7 +9,7 @@ import EventEmitter from '../../../../utils/MinEvents';
 import { authenticateFactory, hashUserKey } from '../index';
 
 const authorizationKey = settingsSplitApi.core.authorizationKey;
-const authUrl = settingsSplitApi.urls.auth;
+const authUrl = settingsSplitApi.urls.auth; // @ts-ignore
 const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter });
 const authenticate = authenticateFactory(splitApi.fetchAuth);
 

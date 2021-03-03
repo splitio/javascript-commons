@@ -17,12 +17,13 @@ import occupancy2ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.
 import controlStreamingPaused from '../../../../__tests__/mocks/message.CONTROL.STREAMING_PAUSED.control_pri.1586987434750.json';
 import controlStreamingResumed from '../../../../__tests__/mocks/message.CONTROL.STREAMING_RESUMED.control_pri.1586987434850.json';
 import controlStreamingDisabled from '../../../../__tests__/mocks/message.CONTROL.STREAMING_DISABLED.control_pri.1586987434950.json';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 const pushEmitter = { emit: jest.fn() };
 
 test('`handleOpen` and `handlerMessage` for CONTROL and OCCUPANCY notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
 
   // handleOpen
 
@@ -78,7 +79,7 @@ test('`handleOpen` and `handlerMessage` for CONTROL and OCCUPANCY notifications 
   sseHandler.handleMessage(controlStreamingDisabled);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISABLED); // must emit PUSH_DISABLED if received a STREAMING_RESUMED control message
 
-  const sseHandler2 = SSEHandlerFactory(pushEmitter);
+  const sseHandler2 = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler2.handleOpen();
 
   sseHandler2.handleMessage(controlStreamingPaused);
@@ -90,7 +91,7 @@ test('`handleOpen` and `handlerMessage` for CONTROL and OCCUPANCY notifications 
 });
 
 test('`handlerMessage` for update notifications (NotificationProcessor)', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
@@ -113,7 +114,7 @@ test('`handlerMessage` for update notifications (NotificationProcessor)', () => 
 });
 
 test('handleError', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
@@ -134,7 +135,7 @@ test('handleError', () => {
 });
 
 test('handlerMessage: ignore invalid events', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
