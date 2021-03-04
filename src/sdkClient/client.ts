@@ -76,10 +76,10 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     }
 
     const { treatment, label, changeNumber, config = null } = evaluation;
-    log.i(`Split: ${splitName}. Key: ${matchingKey}. Evaluation: ${treatment}. Label: ${label}`);
+    log.info(`Split: ${splitName}. Key: ${matchingKey}. Evaluation: ${treatment}. Label: ${label}`);
 
     if (validateSplitExistance(log, readinessManager, splitName, label, invokingMethodName)) {
-      log.i('Queueing corresponding impression.');
+      log.info('Queueing corresponding impression.');
       queue.push({
         feature: splitName,
         keyName: matchingKey,

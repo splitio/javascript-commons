@@ -26,7 +26,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
-      params.log.w('LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+      params.log.warn('LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 

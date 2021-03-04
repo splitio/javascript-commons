@@ -9,7 +9,7 @@ import { ILogger } from '../../logger/types';
 // const log = logFactory('');
 
 function logTTExistanceWarning(log: ILogger, maybeTT: string, method: string) {
-  log.w(`${method}: Traffic Type ${maybeTT} does not have any corresponding Splits in this environment, make sure you're tracking your events to a valid traffic type defined in the Split console.`);
+  log.warn(`${method}: Traffic Type ${maybeTT} does not have any corresponding Splits in this environment, make sure you're tracking your events to a valid traffic type defined in the Split console.`);
 }
 
 /**

@@ -7,7 +7,7 @@ export default function endsWithMatcherContext(log: ILogger, ruleAttr: string[])
   return function endsWithMatcher(runtimeAttr: string): boolean {
     let endsWith = ruleAttr.some(e => strEndsWith(runtimeAttr, e));
 
-    log.d(`[endsWithMatcher] ${runtimeAttr} ends with ${ruleAttr}? ${endsWith}`);
+    log.debug(`[endsWithMatcher] ${runtimeAttr} ends with ${ruleAttr}? ${endsWith}`);
 
     return endsWith;
   };

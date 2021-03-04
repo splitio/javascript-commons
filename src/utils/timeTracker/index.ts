@@ -206,7 +206,7 @@ const TrackerAPI = {
     if (timerData) {
       // Stop the timer and round result for readability.
       const et = timerData.timer();
-      logger.d(`[${task}] took ${et}ms to finish.`);
+      logger.debug(`[${task}] took ${et}ms to finish.`);
 
       // Check if we have a tracker callback.
       if (timerData.cb) {

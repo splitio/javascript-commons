@@ -18,7 +18,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {
-    log.e(`${method}: properties must be a plain object.`);
+    log.error(`${method}: properties must be a plain object.`);
     return { properties: false, size: BASE_EVENT_SIZE };
   }
 
@@ -31,7 +31,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   };
 
   if (keys.length > MAX_PROPERTIES_AMOUNT) {
-    log.w(`${method}: Event has more than 300 properties. Some of them will be trimmed when processed.`);
+    log.warn(`${method}: Event has more than 300 properties. Some of them will be trimmed when processed.`);
   }
 
   for (let i = 0; i < keys.length; i++) {
@@ -48,7 +48,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
       clone[keys[i]] = null;
       val = null;
       isNullVal = true;
-      log.w(`${method}: Property ${keys[i]} is of invalid type. Setting value to null.`);
+      log.warn(`${method}: Property ${keys[i]} is of invalid type. Setting value to null.`);
     }
 
     if (isNullVal) output.size += ECMA_SIZES.NULL;
@@ -57,7 +57,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
     else if (isStringVal) output.size += val.length * ECMA_SIZES.STRING;
 
     if (output.size > MAX_PROPERTIES_SIZE) {
-      log.e(`${method}: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.`);
+      log.error(`${method}: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.`);
       output.properties = false;
       break;
     }

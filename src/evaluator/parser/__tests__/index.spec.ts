@@ -3,11 +3,11 @@ import parser from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
 import { bucket } from '../../../utils/murmur3/murmur3';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / if user is in segment all 100%:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -33,7 +33,7 @@ test('PARSER / if user is in segment all 100%:on', async function () {
 
 test('PARSER / if user is in segment all 100%:off', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -61,7 +61,7 @@ test('PARSER / if user is in segment all 100%:off', async function () {
 
 test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -86,7 +86,7 @@ test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async 
 
 test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -125,7 +125,7 @@ test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on
 
 test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -164,7 +164,7 @@ test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split
 
 test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -210,7 +210,7 @@ test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on',
 
 test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 100:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -256,7 +256,7 @@ test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 
 });
 
 test('PARSER / if user.account is in segment all then split 100:on', async function () {
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -282,7 +282,7 @@ test('PARSER / if user.account is in segment all then split 100:on', async funct
 
 test('PARSER / if user.attr is between 10 and 20 then split 100:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -323,7 +323,7 @@ test('PARSER / if user.attr is between 10 and 20 then split 100:on', async funct
 
 test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -365,7 +365,7 @@ test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, nega
 
 test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -410,7 +410,7 @@ test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async 
 
 test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -456,7 +456,7 @@ test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on,
 
 test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -501,7 +501,7 @@ test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async 
 
 test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -547,7 +547,7 @@ test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on,
 
 test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -592,7 +592,7 @@ test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async f
 
 test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, negated results', async function () {
 
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -637,7 +637,7 @@ test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, 
 });
 
 test('PARSER / if user is in segment all then split 20%:A,20%:B,60%:A', async function () {
-  const evaluator = parser(noopLogger, [{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{

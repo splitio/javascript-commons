@@ -52,7 +52,7 @@ export const API: ILoggerAPI = {
     if (isLogLevelString(logLevel)) {
       setLogLevel(logLevel);
     } else {
-      // log.e('Invalid Log Level - No changes to the logs will be applied.');
+      // log.error('Invalid Log Level - No changes to the logs will be applied.');
     }
   },
   /**

@@ -7,7 +7,7 @@ export default function containsStringMatcherContext(log: ILogger, ruleAttr: str
   return function containsStringMatcher(runtimeAttr: string): boolean {
     let contains = ruleAttr.some(e => isString(runtimeAttr) && runtimeAttr.indexOf(e) > -1);
 
-    log.d(`[containsStringMatcher] ${runtimeAttr} contains ${ruleAttr}? ${contains}`);
+    log.debug(`[containsStringMatcher] ${runtimeAttr} contains ${ruleAttr}? ${contains}`);
 
     return contains;
   };

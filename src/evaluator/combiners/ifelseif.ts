@@ -11,7 +11,7 @@ import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 export default function ifElseIfCombinerContext(predicates: IEvaluator[], log: ILogger): IEvaluator {
 
   function unexpectedInputHandler() {
-    log.e('Invalid Split provided, no valid conditions found');
+    log.error('Invalid Split provided, no valid conditions found');
 
     return {
       treatment: CONTROL,
@@ -26,13 +26,13 @@ export default function ifElseIfCombinerContext(predicates: IEvaluator[], log: I
       const evaluation = predicateResults[i];
 
       if (evaluation !== undefined) {
-        log.d(`Treatment found: ${evaluation.treatment}`);
+        log.debug(`Treatment found: ${evaluation.treatment}`);
 
         return evaluation;
       }
     }
 
-    log.d('All predicates evaluated, no treatment found.');
+    log.debug('All predicates evaluated, no treatment found.');
     return undefined;
   }
 

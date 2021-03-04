@@ -1,5 +1,6 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
+import { ILogger } from '../../../logger/types';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-settings');
 
@@ -10,14 +11,14 @@ import { ISettings } from '../../../types';
  *
  * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
  */
-export function validateStorageCS(settings: any): ISettings['storage'] {
+export function validateStorageCS(log: ILogger, settings: any): ISettings['storage'] {
   const { storage } = settings;
 
   // validate storage
   // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages
   if (storage) {
     if (typeof storage === 'function') return storage;
-    settings.log.w('The provided storage is invalid. Fallbacking into default MEMORY storage');
+    log.warn('The provided storage is invalid. Fallbacking into default MEMORY storage');
   }
 
   // return default InMemory storage if provided one is not valid

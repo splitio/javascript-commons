@@ -6,7 +6,7 @@ export default function equalToMatcherContext(log: ILogger, ruleAttr: number) /*
   return function equalToMatcher(runtimeAttr: number): boolean {
     let isEqual = runtimeAttr === ruleAttr;
 
-    log.d(`[equalToMatcher] is ${runtimeAttr} equal to ${ruleAttr}? ${isEqual}`);
+    log.debug(`[equalToMatcher] is ${runtimeAttr} equal to ${ruleAttr}? ${isEqual}`);
 
     return isEqual;
   };

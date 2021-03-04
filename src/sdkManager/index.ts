@@ -52,9 +52,9 @@ function objectsToViews(jsons: string[]) {
 }
 
 export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplitsCacheAsync>(
+  log: ILogger,
   splits: TSplitCache,
-  { readinessManager, sdkStatus }: ISdkReadinessManager,
-  log: ILogger
+  { readinessManager, sdkStatus }: ISdkReadinessManager
 ): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
   const SPLIT_FN_LABEL = 'split';
 

@@ -11,7 +11,7 @@ export default function containsAnyMatcherContext(log: ILogger, ruleAttr: string
       if (findIndex(runtimeAttr, e => e === ruleAttr[i]) >= 0) containsAny = true;
     }
 
-    log.d(`[containsAnyMatcher] ${runtimeAttr} contains at least an element of ${ruleAttr}? ${containsAny}`);
+    log.debug(`[containsAnyMatcher] ${runtimeAttr} contains at least an element of ${ruleAttr}? ${containsAny}`);
 
     return containsAny;
   };

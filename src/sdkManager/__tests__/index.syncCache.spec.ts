@@ -3,6 +3,7 @@ import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
 import SplitsCacheInMemory from '../../storages/inMemory/SplitsCacheInMemory';
 import { ISdkReadinessManager } from '../../readiness/types';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -17,7 +18,7 @@ describe('MANAGER API / Sync cache (In Memory)', () => {
 
   /** Setup: create manager */
   const cache = new SplitsCacheInMemory();
-  const manager = sdkManagerFactory(cache, sdkReadinessManagerMock);
+  const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
   cache.addSplit(splitObject.name, JSON.stringify(splitObject));
 
   test('List all splits', () => {

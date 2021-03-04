@@ -1,11 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER ALL_KEYS / should always return true', function () {
   // @ts-ignore
-  let matcher = matcherFactory(noopLogger, {
+  let matcher = matcherFactory(loggerMock, {
     type: matcherTypes.ALL_KEYS,
     value: undefined
   } as IMatcherDto) as IMatcher;

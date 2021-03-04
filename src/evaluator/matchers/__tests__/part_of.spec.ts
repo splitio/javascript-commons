@@ -1,11 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER PART_OF_SET / should return true ONLY when value is part of of set ["update", "add", "delete"]', function () {
   // @ts-ignore
-  let matcher = matcherFactory(noopLogger, {
+  let matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.PART_OF_SET,
     value: ['update', 'add', 'delete']

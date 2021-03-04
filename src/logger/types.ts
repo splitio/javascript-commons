@@ -6,13 +6,13 @@ export interface ILoggerOptions {
 }
 
 export interface ILogger {
-  d(msg: string | number, args?: any[]): void
+  debug(msg: string | number, args?: any[]): void
 
-  i(msg: string | number, args?: any[]): void
+  info(msg: string | number, args?: any[]): void
 
-  w(msg: string | number, args?: any[]): void
+  warn(msg: string | number, args?: any[]): void
 
-  e(msg: string | number, args?: any[]): void
+  error(msg: string | number, args?: any[]): void
 }
 
 export type ICodes = { [level in LogLevel]: string[] }

@@ -100,7 +100,7 @@ export default function sanitize(matcherTypeID: number, value: string | number |
     sanitizedValue = processor(sanitizedValue, attributes);
   }
 
-  log.d(`Attempted to sanitize [${value}] which should be of type [${dataType}]. \n Sanitized and processed value => [${sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue}]`);
+  log.debug(`Attempted to sanitize [${value}] which should be of type [${dataType}]. \n Sanitized and processed value => [${sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue}]`);
 
   return sanitizedValue;
 }

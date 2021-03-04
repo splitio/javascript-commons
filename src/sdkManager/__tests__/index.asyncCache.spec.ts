@@ -5,6 +5,7 @@ import { sdkManagerFactory } from '../index';
 import SplitsCacheInRedis from '../../storages/inRedis/SplitsCacheInRedis';
 import KeyBuilderSS from '../../storages/KeyBuilderSS';
 import { ISdkReadinessManager } from '../../readiness/types';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -20,8 +21,8 @@ test('MANAGER API / Async cache (In Redis)', async () => {
   /** Setup: create manager */
   const connection = new Redis({}); // @ts-expect-error
   const keys = new KeyBuilderSS();
-  const cache = new SplitsCacheInRedis(keys, connection);
-  const manager = sdkManagerFactory(cache, sdkReadinessManagerMock);
+  const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+  const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
   await cache.clear();
   await cache.addSplit(splitObject.name, JSON.stringify(splitObject));
 

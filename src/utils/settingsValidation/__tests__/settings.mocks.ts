@@ -1,6 +1,6 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
-import { noopLogger } from '../../../logger/noopLogger';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 export const settingsWithKey = {
   core: {
@@ -8,7 +8,8 @@ export const settingsWithKey = {
   },
   startup: {
     readyTimeout: 1,
-  }
+  },
+  log: loggerMock
 };
 
 export const settingsWithKeyAndTT = {
@@ -18,7 +19,8 @@ export const settingsWithKeyAndTT = {
   },
   startup: {
     readyTimeout: 1,
-  }
+  },
+  log: loggerMock
 };
 
 export const settingsWithKeyObject = {
@@ -30,7 +32,8 @@ export const settingsWithKeyObject = {
   },
   startup: {
     readyTimeout: 1,
-  }
+  },
+  log: loggerMock
 };
 
 export const fullSettings: ISettings = {
@@ -78,7 +81,7 @@ export const fullSettings: ISettings = {
     auth: 'auth',
     streaming: 'streaming'
   },
-  log: noopLogger
+  log: loggerMock
 };
 
 export const settingsSplitApi = {
@@ -95,5 +98,5 @@ export const settingsSplitApi = {
   sync: {
     impressionsMode: 'DEBUG'
   },
-  log: noopLogger
-} as ISettings;
+  log: loggerMock
+};

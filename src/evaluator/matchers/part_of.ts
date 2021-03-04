@@ -13,7 +13,7 @@ export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isPartOf = false;
     }
 
-    log.d(`[partOfMatcher] ${runtimeAttr} is part of ${ruleAttr}? ${isPartOf}`);
+    log.debug(`[partOfMatcher] ${runtimeAttr} is part of ${ruleAttr}? ${isPartOf}`);
 
     return isPartOf;
   };

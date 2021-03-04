@@ -48,7 +48,7 @@ function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILog
   try {
     data = fs.readFileSync(filePath, 'utf-8');
   } catch (e) {
-    log.e(e.message);
+    log.error(e.message);
 
     return {};
   }
@@ -60,12 +60,12 @@ function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILog
     let tuple: string | string[] = line.trim();
 
     if (tuple === '' || tuple.charAt(0) === '#') {
-      log.d(`Ignoring empty line or comment at #${index}`);
+      log.debug(`Ignoring empty line or comment at #${index}`);
     } else {
       tuple = tuple.split(/\s+/);
 
       if (tuple.length !== 2) {
-        log.d(`Ignoring line since it does not have exactly two columns #${index}`);
+        log.debug(`Ignoring line since it does not have exactly two columns #${index}`);
       } else {
         const splitName = tuple[SPLIT_POSITION];
         const condition = parseCondition({ treatment: tuple[TREATMENT_POSITION] });
@@ -92,7 +92,7 @@ function readYAMLConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogg
 
     yamldoc = yaml.safeLoad(data);
   } catch (e) {
-    log.e(e);
+    log.error(e);
 
     return {};
   }
@@ -102,7 +102,7 @@ function readYAMLConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogg
     const splitName = Object.keys(splitEntry)[0];
 
     if (!splitName || !isString(splitEntry[splitName].treatment))
-      log.e('Ignoring entry on YAML since the format is incorrect.');
+      log.error('Ignoring entry on YAML since the format is incorrect.');
 
     const mockData = splitEntry[splitName];
 
@@ -167,7 +167,7 @@ export default function splitsParserFromFile({ features, log }: { features?: Spl
 
   // If we have a filePath, it means the extension is correct, choose the parser.
   if (endsWith(filePath, '.split')) {
-    log.w('.split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.');
+    log.warn('.split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.');
     mockData = readSplitConfigFile(filePath, log);
   } else {
     mockData = readYAMLConfigFile(filePath, log);

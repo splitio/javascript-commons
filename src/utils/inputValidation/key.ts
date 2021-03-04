@@ -8,11 +8,11 @@ const KEY_MAX_LENGTH = 250;
 
 function validateKeyValue(log: ILogger, maybeKey: any, method: string, type: string): string | false {
   if (maybeKey == undefined) { // eslint-disable-line eqeqeq
-    log.e(`${method}: you passed a null or undefined ${type}, ${type} must be a non-empty string.`);
+    log.error(`${method}: you passed a null or undefined ${type}, ${type} must be a non-empty string.`);
     return false;
   }
   if (isFiniteNumber(maybeKey)) {
-    log.w(`${method}: ${type} "${maybeKey}" is not of type string, converting.`);
+    log.warn(`${method}: ${type} "${maybeKey}" is not of type string, converting.`);
     return toString(maybeKey);
   }
   if (isString(maybeKey)) {
@@ -23,12 +23,12 @@ function validateKeyValue(log: ILogger, maybeKey: any, method: string, type: str
     if (maybeKey.length > 0 && maybeKey.length <= KEY_MAX_LENGTH) return maybeKey;
 
     if (maybeKey.length === 0) {
-      log.e(`${method}: you passed an empty string, ${type} must be a non-empty string.`);
+      log.error(`${method}: you passed an empty string, ${type} must be a non-empty string.`);
     } else if (maybeKey.length > KEY_MAX_LENGTH) {
-      log.e(`${method}: ${type} too long, ${type} must be 250 characters or less.`);
+      log.error(`${method}: ${type} too long, ${type} must be 250 characters or less.`);
     }
   } else {
-    log.e(`${method}: you passed an invalid ${type} type, ${type} must be a non-empty string.`);
+    log.error(`${method}: you passed an invalid ${type} type, ${type} must be a non-empty string.`);
   }
 
   return false;
@@ -44,7 +44,7 @@ export function validateKey(log: ILogger, maybeKey: any, method: string): SplitI
       matchingKey, bucketingKey
     };
 
-    log.e(`${method}: Key must be an object with bucketingKey and matchingKey with valid string properties.`);
+    log.error(`${method}: Key must be an object with bucketingKey and matchingKey with valid string properties.`);
     return false;
   } else {
     return validateKeyValue(log, maybeKey, method, 'key');

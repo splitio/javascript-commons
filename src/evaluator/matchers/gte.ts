@@ -6,7 +6,7 @@ export default function greaterThanEqualMatcherContext(log: ILogger, ruleAttr: n
   return function greaterThanEqualMatcher(runtimeAttr: number): boolean {
     let isGreaterEqualThan = runtimeAttr >= ruleAttr;
 
-    log.d(`[greaterThanEqualMatcher] is ${runtimeAttr} greater than ${ruleAttr}? ${isGreaterEqualThan}`);
+    log.debug(`[greaterThanEqualMatcher] is ${runtimeAttr} greater than ${ruleAttr}? ${isGreaterEqualThan}`);
 
     return isGreaterEqualThan;
   };

@@ -36,14 +36,14 @@ const convertibleTrafficTypes = [
 describe('INPUT VALIDATION for Traffic Types', () => {
 
   test('Should return the provided traffic type if it is a valid string without logging any errors', () => {
-    expect(validateTrafficType('traffictype', 'some_method_trafficType')).toBe('traffictype'); // It should return the provided string if it is valid.
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(validateTrafficType('traffic_type', 'some_method_trafficType')).toBe('traffic_type'); // It should return the provided string if it is valid.
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
-    expect(validateTrafficType('traffic-type-23', 'some_method_trafficType')).toBe('traffic-type-23'); // It should return the provided string if it is valid.
-    expect(loggerMock.e.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(validateTrafficType(loggerMock, 'traffictype', 'some_method_trafficType')).toBe('traffictype'); // It should return the provided string if it is valid.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(validateTrafficType(loggerMock, 'traffic_type', 'some_method_trafficType')).toBe('traffic_type'); // It should return the provided string if it is valid.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(validateTrafficType(loggerMock, 'traffic-type-23', 'some_method_trafficType')).toBe('traffic-type-23'); // It should return the provided string if it is valid.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
 
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });
@@ -52,11 +52,11 @@ describe('INPUT VALIDATION for Traffic Types', () => {
     for (let i = 0; i < convertibleTrafficTypes.length; i++) {
       const convertibleTrafficType = convertibleTrafficTypes[i];
 
-      expect(validateTrafficType(convertibleTrafficType, 'some_method_trafficType')).toBe(convertibleTrafficType.toLowerCase()); // It should return the lowercase version of the traffic type received.
-      expect(loggerMock.w.mock.calls[i][0]).toEqual(`some_method_trafficType: ${errorMsgs.LOWERCASE_TRAFFIC_TYPE}`); // Should log a warning.
+      expect(validateTrafficType(loggerMock, convertibleTrafficType, 'some_method_trafficType')).toBe(convertibleTrafficType.toLowerCase()); // It should return the lowercase version of the traffic type received.
+      expect(loggerMock.warn.mock.calls[i][0]).toEqual(`some_method_trafficType: ${errorMsgs.LOWERCASE_TRAFFIC_TYPE}`); // Should log a warning.
     }
 
-    expect(loggerMock.e.mock.calls.length).toBe(0); // It should have not logged any errors.
+    expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
 
     mockClear();
   });
@@ -66,11 +66,11 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       const invalidValue = invalidTrafficTypes[i]['tt'];
       const expectedLog = invalidTrafficTypes[i]['msg'];
 
-      expect(validateTrafficType(invalidValue, 'test_method')).toBe(false); // Invalid traffic types should always return false.
-      expect(loggerMock.e.mock.calls[i][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid traffic type.
+      expect(validateTrafficType(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid traffic types should always return false.
+      expect(loggerMock.error.mock.calls[i][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid traffic type.
     }
 
-    expect(loggerMock.w.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
     mockClear();
   });

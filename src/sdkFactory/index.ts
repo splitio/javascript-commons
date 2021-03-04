@@ -74,12 +74,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // Sdk client and manager
   const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
-  const managerInstance = sdkManagerFactory && sdkManagerFactory(storage.splits, sdkReadinessManager, log);
+  const managerInstance = sdkManagerFactory && sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
   syncManager && syncManager.start();
   signalListener && signalListener.start();
 
-  log.i('New Split SDK instance created.');
+  log.info('New Split SDK instance created.');
 
   return {
     // Split evaluation and event tracking engine
@@ -88,8 +88,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // Manager API to explore available information
     // @ts-ignore
     manager() {
-      if (managerInstance) log.i('Manager instance retrieved.');
-      else log.e('Manager instance is not available. Provide the manager module on settings.');
+      if (managerInstance) log.info('Manager instance retrieved.');
+      else log.error('Manager instance is not available. Provide the manager module on settings.');
       return managerInstance;
     },
 

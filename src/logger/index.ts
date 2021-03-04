@@ -46,22 +46,22 @@ export class Logger implements ILogger {
     this.codes = codes;
   }
 
-  d(msg: string | number, args?: any[]) {
+  debug(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.DEBUG))
       this._log(LogLevels.DEBUG, msg, args);
   }
 
-  i(msg: string | number, args?: any[]) {
+  info(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.INFO))
       this._log(LogLevels.INFO, msg, args);
   }
 
-  w(msg: string | number, args?: any[]) {
+  warn(msg: string | number, args?: any[]) {
     if (this._shouldLog(LogLevels.WARN))
       this._log(LogLevels.WARN, msg, args);
   }
 
-  e(msg: string | number, args?: any[]) {
+  error(msg: string | number, args?: any[]) {
     if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
       this._log(LogLevels.ERROR, msg, args);
   }

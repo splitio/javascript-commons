@@ -57,27 +57,27 @@ test('validateIdentities', () => {
 });
 
 test('validateEventData', () => {
-  expect(() => { validateEventData(undefined); }).toThrow(); // throws exception if passed object is undefined
-  expect(() => { validateEventData(null); }).toThrow(); // throws exception if passed object is null
+  expect(() => { validateEventData(loggerMock, undefined); }).toThrow(); // throws exception if passed object is undefined
+  expect(() => { validateEventData(loggerMock, null); }).toThrow(); // throws exception if passed object is null
 
-  expect(validateEventData({})).toBe(false); // event must have a valid eventTypeId
-  expect(validateEventData({ eventTypeId: 'type' })).toBe(true); // event must have a valid eventTypeId
-  expect(validateEventData({ eventTypeId: 123 })).toBe(false); // event must have a valid eventTypeId
+  expect(validateEventData(loggerMock, {})).toBe(false); // event must have a valid eventTypeId
+  expect(validateEventData(loggerMock, { eventTypeId: 'type' })).toBe(true); // event must have a valid eventTypeId
+  expect(validateEventData(loggerMock, { eventTypeId: 123 })).toBe(false); // event must have a valid eventTypeId
 
-  expect(validateEventData({ eventTypeId: 'type', value: 'value' })).toBe(false); // event must have a valid value if present
-  expect(validateEventData({ eventTypeId: 'type', value: 0 })).toBe(true); // event must have a valid value if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', value: 'value' })).toBe(false); // event must have a valid value if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', value: 0 })).toBe(true); // event must have a valid value if present
 
-  expect(validateEventData({ eventTypeId: 'type', properties: ['prop1'] })).toBe(false); // event must have valid properties if present
-  expect(validateEventData({ eventTypeId: 'type', properties: { prop1: 'prop1' } })).toBe(true); // event must have valid properties if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', properties: ['prop1'] })).toBe(false); // event must have valid properties if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', properties: { prop1: 'prop1' } })).toBe(true); // event must have valid properties if present
 
-  expect(validateEventData({ eventTypeId: 'type', timestamp: true })).toBe(false); // event must have a valid timestamp if present
-  expect(validateEventData({ eventTypeId: 'type', timestamp: Date.now() })).toBe(true); // event must have a valid timestamp if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', timestamp: true })).toBe(false); // event must have a valid timestamp if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', timestamp: Date.now() })).toBe(true); // event must have a valid timestamp if present
 
-  expect(validateEventData({ eventTypeId: 'type', key: true })).toBe(false); // event must have a valid key if present
-  expect(validateEventData({ eventTypeId: 'type', key: 'key' })).toBe(true); // event must have a valid key if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', key: true })).toBe(false); // event must have a valid key if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', key: 'key' })).toBe(true); // event must have a valid key if present
 
-  expect(validateEventData({ eventTypeId: 'type', trafficTypeName: true })).toBe(false); // event must have a valid trafficTypeName if present
-  expect(validateEventData({ eventTypeId: 'type', trafficTypeName: 'tt' })).toBe(true); // event must have a valid trafficTypeName if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', trafficTypeName: true })).toBe(false); // event must have a valid trafficTypeName if present
+  expect(validateEventData(loggerMock, { eventTypeId: 'type', trafficTypeName: 'tt' })).toBe(true); // event must have a valid trafficTypeName if present
 });
 
 test('fixEventTypeId', () => {

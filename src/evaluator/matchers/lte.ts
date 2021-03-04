@@ -6,7 +6,7 @@ export default function lessThanEqualMatcherContext(log: ILogger, ruleAttr: numb
   return function lessThanEqualMatcher(runtimeAttr: number): boolean {
     let isLessEqualThan = runtimeAttr <= ruleAttr;
 
-    log.d(`[lessThanEqualMatcher] is ${runtimeAttr} less than ${ruleAttr}? ${isLessEqualThan}`);
+    log.debug(`[lessThanEqualMatcher] is ${runtimeAttr} less than ${ruleAttr}? ${isLessEqualThan}`);
 
     return isLessEqualThan;
   };

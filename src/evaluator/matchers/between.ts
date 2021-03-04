@@ -8,7 +8,7 @@ export default function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatc
 
     let isBetween = runtimeAttr >= ruleVO.start && runtimeAttr <= ruleVO.end;
 
-    log.d(`[betweenMatcher] is ${runtimeAttr} between ${ruleVO.start} and ${ruleVO.end}? ${isBetween}`);
+    log.debug(`[betweenMatcher] is ${runtimeAttr} between ${ruleVO.start} and ${ruleVO.end}? ${isBetween}`);
 
     return isBetween;
   };

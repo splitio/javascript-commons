@@ -47,9 +47,9 @@ export interface ISdkFactoryParams {
 
   // Sdk manager factory
   sdkManagerFactory?: (
+    log: ILogger,
     splits: ISplitsCacheSync | ISplitsCacheAsync,
-    sdkReadinessManager: ISdkReadinessManager,
-    log: ILogger
+    sdkReadinessManager: ISdkReadinessManager
   ) => SplitIO.IManager | SplitIO.IAsyncManager,
 
   // Sdk client method factory (ISDK::client method).

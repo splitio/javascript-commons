@@ -7,7 +7,7 @@ import { DEBUG, OPTIMIZED } from '../constants';
 export default function validImpressionsMode(log: ILogger, impressionsMode: string): SplitIO.ImpressionsMode {
   impressionsMode = impressionsMode.toUpperCase();
   if ([DEBUG, OPTIMIZED].indexOf(impressionsMode) === -1) {
-    log.e(`You passed an invalid impressionsMode, impressionsMode should be one of the following values: '${DEBUG}' or '${OPTIMIZED}'. Defaulting to '${OPTIMIZED}' mode.`);
+    log.error(`You passed an invalid impressionsMode, impressionsMode should be one of the following values: '${DEBUG}' or '${OPTIMIZED}'. Defaulting to '${OPTIMIZED}' mode.`);
     impressionsMode = OPTIMIZED;
   }
 

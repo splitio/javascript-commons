@@ -30,9 +30,9 @@ export default function pollingManagerSSFactory(
 
     // Start periodic fetching (polling)
     start() {
-      log.i('Starting polling');
-      log.d(`Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
-      log.d(`Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
+      log.info('Starting polling');
+      log.debug(`Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
+      log.debug(`Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();
       if (thenable(startingUp)) {
@@ -44,7 +44,7 @@ export default function pollingManagerSSFactory(
 
     // Stop periodic fetching (polling)
     stop() {
-      log.i('Stopping polling');
+      log.info('Stopping polling');
 
       if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
       if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();

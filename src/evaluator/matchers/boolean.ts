@@ -6,7 +6,7 @@ export default function booleanMatcherContext(log: ILogger, ruleAttr: boolean) /
   return function booleanMatcher(runtimeAttr: boolean): boolean {
     let booleanMatches = ruleAttr === runtimeAttr;
 
-    log.d(`[booleanMatcher] ${ruleAttr} === ${runtimeAttr}`);
+    log.debug(`[booleanMatcher] ${ruleAttr} === ${runtimeAttr}`);
 
     return booleanMatches;
   };
