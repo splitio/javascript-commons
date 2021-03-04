@@ -1,4 +1,5 @@
 import { merge } from '../lang';
+import logger from './logger';
 import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { API } from '../../logger/sdkLogger';
@@ -6,8 +7,6 @@ import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
 import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio');
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -82,8 +81,8 @@ const base = {
     impressionsMode: OPTIMIZED
   },
 
-  // base logger
-  log
+  // Logger
+  log: undefined
 };
 
 function fromSecondsToMillis(n: number) {
@@ -128,13 +127,17 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
+  // ensure a valid logger
+  const log = logger(withDefaults); // @ts-ignore
+  withDefaults.log = log;
+
   // ensure a valid SDK mode
   // @ts-ignore
   withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
 
   // ensure a valid Storage based on mode defined.
   // @ts-ignore
-  if (storage) withDefaults.storage = storage(withDefaults);
+  if (storage) withDefaults.storage = storage(log, withDefaults);
 
   setupLogger(withDefaults.debug);
 
@@ -150,7 +153,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
   // @ts-ignore
-  if (integrations) withDefaults.integrations = integrations(withDefaults);
+  if (integrations) withDefaults.integrations = integrations(log, withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore
@@ -162,12 +165,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(withDefaults.log, withDefaults.sync.splitFilters, withDefaults.mode);
+  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters; // @ts-ignore
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
   // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(withDefaults.log, withDefaults.sync.impressionsMode);
+  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
 
   return withDefaults;
 }

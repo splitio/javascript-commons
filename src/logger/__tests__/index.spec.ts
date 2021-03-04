@@ -34,10 +34,10 @@ test('SPLIT LOGGER / Logger class shape', () => {
 
   const logger = new Logger('test-category', {});
 
-  expect(typeof logger.debug).toBe('function'); // instance.d should be a method.
-  expect(typeof logger.info).toBe('function'); // instance.i should be a method.
-  expect(typeof logger.warn).toBe('function'); // instance.w should be a method.
-  expect(typeof logger.error).toBe('function'); // instance.e should be a method.
+  expect(typeof logger.debug).toBe('function'); // instance.debug should be a method.
+  expect(typeof logger.info).toBe('function'); // instance.info should be a method.
+  expect(typeof logger.warn).toBe('function'); // instance.warn should be a method.
+  expect(typeof logger.error).toBe('function'); // instance.error should be a method.
 
 });
 
@@ -105,22 +105,22 @@ function testLogLevels(levelToTest: string) {
 
 }
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.d', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.debug', () => {
   testLogLevels(LogLevels.DEBUG);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.i', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.info', () => {
   testLogLevels(LogLevels.INFO);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.w', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () => {
   testLogLevels(LogLevels.WARN);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.e', () => {
+test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
 
 });

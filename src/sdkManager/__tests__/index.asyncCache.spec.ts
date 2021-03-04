@@ -22,7 +22,7 @@ test('MANAGER API / Async cache (In Redis)', async () => {
   const connection = new Redis({}); // @ts-expect-error
   const keys = new KeyBuilderSS();
   const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
-  const manager = sdkManagerFactory(cache, sdkReadinessManagerMock, loggerMock);
+  const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
   await cache.clear();
   await cache.addSplit(splitObject.name, JSON.stringify(splitObject));
 

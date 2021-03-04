@@ -74,7 +74,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // Sdk client and manager
   const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
-  const managerInstance = sdkManagerFactory && sdkManagerFactory(storage.splits, sdkReadinessManager, log);
+  const managerInstance = sdkManagerFactory && sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
   syncManager && syncManager.start();
   signalListener && signalListener.start();
