@@ -8,7 +8,7 @@ export type IFetch = (
   }
 ) => Promise<Response>
 
-export type ISplitHttpClient = (url: string, method?: string, body?: string, extraHeaders?: Record<string, string>) => Promise<Response>
+export type ISplitHttpClient = (url: string, method?: string, body?: string, logErrorsAsInfo?: boolean, extraHeaders?: Record<string, string>) => Promise<Response>
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<Response>
 

@@ -34,7 +34,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
   if (metadata.ip) headers['SplitSDKMachineIP'] = metadata.ip;
   if (metadata.hostname) headers['SplitSDKMachineName'] = metadata.hostname;
 
-  return function httpClient(url: string, method: string = 'GET', body?: string, extraHeaders?: Record<string, string>): Promise<Response> {
+  return function httpClient(url: string, method: string = 'GET', body?: string, logErrorsAsInfo: boolean = false, extraHeaders?: Record<string, string>): Promise<Response> {
     const rHeaders = extraHeaders ? objectAssign({}, headers, extraHeaders) : headers;
     const request = objectAssign({ headers: rHeaders, method, body }, options);
 
@@ -63,7 +63,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log.error(`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
+          log[logErrorsAsInfo ? 'info' : 'error'](`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
         }
 
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
