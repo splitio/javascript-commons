@@ -1,5 +1,4 @@
 import { Logger, LogLevels, setLogLevel, isLogLevelString } from '../index';
-import { codes } from '../codes';
 import { LogLevel } from '../../types';
 
 // We'll set this only once. These are the constants we will use for
@@ -34,7 +33,7 @@ test('SPLIT LOGGER / LogLevels exposed mappings', () => {
 test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof Logger).toBe('function'); // Logger should be a class we can instantiate.
 
-  const logger = new Logger('test-category', {}, codes);
+  const logger = new Logger('test-category', {});
 
   expect(typeof logger.debug).toBe('function'); // instance.debug should be a method.
   expect(typeof logger.info).toBe('function'); // instance.info should be a method.
@@ -66,7 +65,7 @@ function testLogLevels(levelToTest: LogLevel) {
     const logCategory = `test-category-${logMethod}${displayAllErrors ? 'displayAllErrors' : ''}`;
     const instance = new Logger(logCategory, {
       showLevel, displayAllErrors
-    }, codes);
+    });
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel: LogLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} (${displayAllErrors ? 'But all errors are configured to display' : 'Errors not forced to display'}) with showLevel: ${showLevel} ${logLevelLogsCounter}`;

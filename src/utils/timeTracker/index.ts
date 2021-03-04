@@ -2,7 +2,6 @@ import { uniqueId } from '../lang';
 import { Logger } from '../../logger/index';
 import timer from './timer';
 import thenable from '../promise/thenable';
-import { codes } from '../../logger/codes';
 
 // Based on ProducerMetricsCollector and ClientCollector classes
 interface MetricsCollector {
@@ -24,7 +23,7 @@ interface MetricsCollector {
 // logger to be used on this module
 const logger = new Logger('[TIME TRACKER]', {
   showLevel: false
-}, codes);
+});
 
 // Map we will use for storing timers data
 const timers: Record<string, {

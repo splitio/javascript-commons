@@ -1,12 +1,13 @@
 /**
  * This file defines the logger interface and default options for the SDKs, not necessarily for the Logger as it's own.
  */
-import { ICodes, ILoggerOptions } from './types';
+import { ILoggerOptions } from './types';
 import { Logger, LogLevels, setLogLevel, isLogLevelString } from '.';
 import { isLocalStorageAvailable } from '../utils/env/isLocalStorageAvailable';
 import { isNode } from '../utils/env/isNode';
 import { merge } from '../utils/lang';
 import { ILoggerAPI } from '../types';
+import { IMap } from '../utils/lang/maps';
 
 // @TODO when integrating with other packages, find the best way to update LoggerOption defaults per package (node, evaluator, etc.)
 const defaultOptions: ILoggerOptions = {
@@ -30,7 +31,7 @@ const initialState = String(
 );
 
 // we expose the logger instance creator
-export const logFactory = (namespace: string, options = {}, codes: ICodes) => new Logger(namespace, merge(options, defaultOptions), codes);
+export const logFactory = (namespace: string, options = {}, codes: IMap<number, string>) => new Logger(namespace, merge(options, defaultOptions), codes);
 
 // const log = logFactory('splitio-utils:logger');
 

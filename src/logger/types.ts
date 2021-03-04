@@ -1,5 +1,3 @@
-import { LogLevel } from '../types';
-
 export interface ILoggerOptions {
   showLevel?: boolean,
   displayAllErrors?: boolean
@@ -14,5 +12,3 @@ export interface ILogger {
 
   error(msg: string | number, args?: any[]): void
 }
-
-export type ICodes = { [level in LogLevel]: string[] }
