@@ -76,6 +76,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 /**
  * Validates `splitFilters` configuration object and parses it into a query string for filtering splits on `/splitChanges` fetch.
  *
+ * @param {ILogger} log logger
  * @param {any} maybeSplitFilters split filters configuration param provided by the user
  * @param {string} mode settings mode
  * @returns it returns an object with the following properties:

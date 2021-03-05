@@ -9,10 +9,9 @@ import { ILogger } from '../../../logger/types';
  *
  * @returns {Array} array of valid integration factories. The array might be empty if `settings` object does not have valid integrations.
  */
-export function validatePluggableIntegrations(log: ILogger, settings: any): ISettings['integrations'] {
+export function validatePluggableIntegrations(settings: { log: ILogger, integrations?: any }): ISettings['integrations'] {
 
   return validateIntegrations(
-    log,
     settings,
     integration => typeof integration === 'function',
     'Integration items must be functions that initialize the integrations'

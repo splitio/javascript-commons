@@ -128,7 +128,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid logger
-  const log = logger(withDefaults); // @ts-ignore
+  const log = logger(withDefaults);
   withDefaults.log = log;
 
   // ensure a valid SDK mode
@@ -137,7 +137,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid Storage based on mode defined.
   // @ts-ignore
-  if (storage) withDefaults.storage = storage(log, withDefaults);
+  if (storage) withDefaults.storage = storage(withDefaults);
 
   setupLogger(withDefaults.debug);
 
@@ -153,7 +153,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
   // @ts-ignore
-  if (integrations) withDefaults.integrations = integrations(log, withDefaults);
+  if (integrations) withDefaults.integrations = integrations(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore

@@ -10,10 +10,9 @@ import { ILogger } from '../../../logger/types';
  *
  * @returns {Array} array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
  */
-export function validateConfigurableIntegrations(log: ILogger, settings: any, validIntegrationTypes: string[] = []) {
+export function validateConfigurableIntegrations(settings: { log: ILogger, integrations?: any }, validIntegrationTypes: string[] = []) {
 
   return validateIntegrations(
-    log,
     settings,
     integration => integration && isString(integration.type) && validIntegrationTypes.indexOf(integration.type) > -1,
     'Integration items must have a valid \'type\' value'

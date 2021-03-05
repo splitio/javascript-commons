@@ -11,8 +11,8 @@ import { ILogger } from '../../../logger/types';
  *
  * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
  */
-export function validateStorageCS(log: ILogger, settings: any): ISettings['storage'] {
-  const { storage } = settings;
+export function validateStorageCS(settings: { log: ILogger, storage?: any }): ISettings['storage'] {
+  const { storage, log } = settings;
 
   // validate storage
   // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages

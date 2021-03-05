@@ -184,7 +184,7 @@ describe('settingsValidation', () => {
 
     expect(settings.storage).toBe(storageMock);
     expect(settings.integrations).toBe(integrationsValidatorResult);
-    expect(integrationsValidatorMock).toBeCalledWith(settings.log, settings);
+    expect(integrationsValidatorMock).toBeCalledWith(settings);
   });
 });
 

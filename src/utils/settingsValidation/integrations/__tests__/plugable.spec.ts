@@ -1,18 +1,18 @@
 import { validatePluggableIntegrations } from '../pluggable';
-import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock as log } from '../../../../logger/__tests__/sdkLogger.mock';
 
 describe('integrations validator for pluggable integrations', () => {
 
   // Check different types, since `integrations` param is defined by the user
   test('Returns an empty array if `integrations` is an invalid object', () => {
-    expect(validatePluggableIntegrations(loggerMock, {})).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: undefined })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: true })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: 123 })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: 'string' })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: {} })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: [] })).toEqual([]);
-    expect(validatePluggableIntegrations(loggerMock, { integrations: [false, 0, Infinity, new Error(), []] })).toEqual([]);
+    expect(validatePluggableIntegrations({ log })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: undefined })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: true })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: 123 })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: 'string' })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: {} })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: [] })).toEqual([]);
+    expect(validatePluggableIntegrations({ log, integrations: [false, 0, Infinity, new Error(), []] })).toEqual([]);
   });
 
   test('Filters invalid integration factories from `integrations` array', () => {
@@ -21,7 +21,7 @@ describe('integrations validator for pluggable integrations', () => {
     const invalid = { queue() { } };
 
     // Integration factories that are invalid objects are removed
-    expect(validatePluggableIntegrations(loggerMock, { integrations: [invalid, validNoopIntFactory, false, 0, validIntFactory, Infinity, new Error(), [], invalid] }))
+    expect(validatePluggableIntegrations({ log, integrations: [invalid, validNoopIntFactory, false, 0, validIntFactory, Infinity, new Error(), [], invalid] }))
       .toEqual([validNoopIntFactory, validIntFactory]);
   });
 
