@@ -1,4 +1,4 @@
-import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock as log } from '../../../../logger/__tests__/sdkLogger.mock';
 import { validateConfigurableIntegrations } from '../configurable';
 
 
@@ -6,14 +6,14 @@ describe('integration validator for the configurable integrations', () => {
 
   // Check different types, since `integrations` param is defined by the user
   test('Returns an empty array if `integrations` is an invalid object', () => {
-    expect(validateConfigurableIntegrations(loggerMock, {}, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: undefined }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: true }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: 123 }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: 'string' }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: {} }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: [] }, ['INT_TYPE'])).toEqual([]);
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: [false, 0, Infinity, new Error(), () => { }, []] }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: undefined }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: true }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: 123 }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: 'string' }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: {} }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: [] }, ['INT_TYPE'])).toEqual([]);
+    expect(validateConfigurableIntegrations({ log, integrations: [false, 0, Infinity, new Error(), () => { }, []] }, ['INT_TYPE'])).toEqual([]);
   });
 
   test('Filters invalid integrations from `integrations` array', () => {
@@ -35,15 +35,15 @@ describe('integration validator for the configurable integrations', () => {
     };
 
     // All integrations are removed if no `validIntegrationTypes` array is passed
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: [valid, validWithOptions, invalid] }))
+    expect(validateConfigurableIntegrations({ log, integrations: [valid, validWithOptions, invalid] }))
       .toEqual([]);
 
     // Integrations that do not have the passed types are removed
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: [valid, validWithOptions, otherValidWithOptions, invalid] }, ['INT1']))
+    expect(validateConfigurableIntegrations({ log, integrations: [valid, validWithOptions, otherValidWithOptions, invalid] }, ['INT1']))
       .toEqual([valid, validWithOptions]);
 
     // Integrations that do not have the passed types or are invalid objects are removed
-    expect(validateConfigurableIntegrations(loggerMock, { integrations: [invalid, valid, false, 0, validWithOptions, Infinity, new Error(), otherValidWithOptions, () => { }, [], invalid] }, ['INT1', 'INT2']))
+    expect(validateConfigurableIntegrations({ log, integrations: [invalid, valid, false, 0, validWithOptions, Infinity, new Error(), otherValidWithOptions, () => { }, [], invalid] }, ['INT1', 'INT2']))
       .toEqual([valid, validWithOptions, otherValidWithOptions]);
   });
 });

@@ -11,8 +11,8 @@ import { ILogger } from '../../../logger/types';
  *
  * @returns {Array} array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
  */
-export function validateIntegrations(log: ILogger, settings: any, integrationValidator: (integrationItem: any) => boolean, extraWarning?: string) {
-  const { integrations } = settings;
+export function validateIntegrations(settings: { log: ILogger, integrations?: any }, integrationValidator: (integrationItem: any) => boolean, extraWarning?: string) {
+  const { integrations, log } = settings;
 
   // If integrations is not an array or an empty array, we return an empty array (no integrations).
   if (!Array.isArray(integrations) || integrations.length === 0) return [];

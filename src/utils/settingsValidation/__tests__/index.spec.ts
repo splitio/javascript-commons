@@ -167,7 +167,7 @@ describe('settingsValidation', () => {
 
     expect(settings.integrations).toBe(integrationsMock);
     expect(settings.storage).toBe(storageValidatorResult);
-    expect(storageValidatorMock).toBeCalledWith(settings.log, settings);
+    expect(storageValidatorMock).toBeCalledWith(settings);
   });
 
   test('overwrites integrations with the result of the given integrations validator', () => {
@@ -184,7 +184,7 @@ describe('settingsValidation', () => {
 
     expect(settings.storage).toBe(storageMock);
     expect(settings.integrations).toBe(integrationsValidatorResult);
-    expect(integrationsValidatorMock).toBeCalledWith(settings.log, settings);
+    expect(integrationsValidatorMock).toBeCalledWith(settings);
   });
 });
 

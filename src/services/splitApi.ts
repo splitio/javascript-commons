@@ -62,7 +62,7 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
 
     postTestImpressionsBulk(body: string) {
       const url = `${urls.events}/testImpressions/bulk`;
-      return splitHttpClient(url, 'POST', body, {
+      return splitHttpClient(url, 'POST', body, false, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         SplitSDKImpressionsMode
       });
@@ -70,12 +70,12 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
 
     postTestImpressionsCount(body: string) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, 'POST', body);
+      return splitHttpClient(url, 'POST', body, true);
     },
 
     postMetricsCounters(body: string) {
       const url = `${urls.events}/metrics/counters`;
-      return splitHttpClient(url, 'POST', body);
+      return splitHttpClient(url, 'POST', body, true);
     },
 
     postMetricsTimes(body: string) {
