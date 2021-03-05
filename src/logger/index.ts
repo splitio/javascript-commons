@@ -24,12 +24,11 @@ export function isLogLevelString(str: string): str is LogLevel {
 
 const defaultOptions = {
   showLevel: true,
-  displayAllErrors: false
 };
 
 export class Logger implements ILogger {
-  private category: any;
-  private options: any;
+  private category: string;
+  private options: Required<ILoggerOptions>;
 
   constructor(category: string, options: ILoggerOptions) {
     this.category = category;
@@ -52,7 +51,7 @@ export class Logger implements ILogger {
   }
 
   error(msg: string) {
-    if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
+    if (this._shouldLog(LogLevels.ERROR))
       this._log(LogLevels.ERROR, msg);
   }
 

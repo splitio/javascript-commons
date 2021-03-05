@@ -12,7 +12,6 @@ import { ISettings } from '../../../types';
 import { ILogger } from '../../../logger/types';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:segment-changes');
-// const inputValidationLog = logFactory('', { displayAllErrors: true });
 
 type ISegmentChangesUpdater = (segmentNames?: string[]) => Promise<boolean>
 

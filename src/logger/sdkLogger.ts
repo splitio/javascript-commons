@@ -11,7 +11,6 @@ import { ILoggerAPI } from '../types';
 // @TODO when integrating with other packages, find the best way to update LoggerOption defaults per package (node, evaluator, etc.)
 const defaultOptions: ILoggerOptions = {
   showLevel: true,
-  displayAllErrors: false
 };
 
 // @TODO when integrating with other packages, find the best way to handle initial state per package/environment

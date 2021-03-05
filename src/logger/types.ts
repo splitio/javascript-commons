@@ -1,6 +1,5 @@
 export interface ILoggerOptions {
   showLevel?: boolean,
-  displayAllErrors?: boolean
 }
 
 export interface ILogger {
