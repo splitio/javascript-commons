@@ -1,8 +1,7 @@
 import { merge } from '../lang';
-import logger from './logger';
 import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { API } from '../../logger/sdkLogger';
+import { API, logFactory } from '../../logger/sdkLogger';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
 import { LogLevel } from '../../types';
@@ -114,6 +113,10 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
 
+  // ensure a valid logger
+  const log = logFactory('splitio'); // @ts-ignore
+  withDefaults.log = log;
+
   // Scheduler periods
   withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
   withDefaults.scheduler.segmentsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.segmentsRefreshRate);
@@ -126,10 +129,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.requestTimeoutBeforeReady = fromSecondsToMillis(withDefaults.startup.requestTimeoutBeforeReady);
   withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
-
-  // ensure a valid logger
-  const log = logger(withDefaults);
-  withDefaults.log = log;
 
   // ensure a valid SDK mode
   // @ts-ignore

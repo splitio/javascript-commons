@@ -102,7 +102,7 @@ export interface ISettings {
     ip: string | false
     hostname: string | false
   },
-  log: ILogger
+  readonly log: ILogger
 }
 /**
  * Log levels.
