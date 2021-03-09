@@ -1,6 +1,7 @@
-import { readinessManagerFactory, SDK_READY, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY_TIMED_OUT, SDK_SPLITS_CACHE_LOADED, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readinessManager';
+import { readinessManagerFactory } from '../readinessManager';
 import EventEmitter from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
+import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
 
 const timeoutMs = 100;
 const statusFlagsCount = 5;

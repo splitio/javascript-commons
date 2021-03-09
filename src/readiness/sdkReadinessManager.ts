@@ -1,15 +1,10 @@
 import objectAssign from 'object-assign';
 import promiseWrapper from '../utils/promise/wrapper';
-import {
-  readinessManagerFactory,
-  SDK_READY,
-  SDK_READY_FROM_CACHE,
-  SDK_UPDATE,
-  SDK_READY_TIMED_OUT
-} from './readinessManager';
+import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
 import { logFactory } from '../logger/sdkLogger';
+import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 const log = logFactory('');
 
 const NEW_LISTENER_EVENT = 'newListener';
@@ -61,6 +56,8 @@ export default function sdkReadinessManagerFactory(
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
+        log.info('Split SDK is ready.');
+
         if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
         resolve();
       });

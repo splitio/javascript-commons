@@ -8,7 +8,7 @@ import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
 import { logFactory } from '../logger/sdkLogger';
-import { PUSH_CONNECT, PUSH_DISCONNECT } from './streaming/constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 export const log = logFactory('splitio-sync:sync-manager');
 
 /**
@@ -82,8 +82,8 @@ export function syncManagerOnlineFactory(
         // start syncing splits and segments
         if (pushManager) {
           pollingManager.syncAll();
-          pushManager.on(PUSH_CONNECT, stopPollingAndSyncAll);
-          pushManager.on(PUSH_DISCONNECT, startPolling);
+          pushManager.on(PUSH_SUBSYSTEM_UP, stopPollingAndSyncAll);
+          pushManager.on(PUSH_SUBSYSTEM_DOWN, startPolling);
           // Run in next event-loop cycle as in client-side SyncManager
           pushManager.start();
         } else {
