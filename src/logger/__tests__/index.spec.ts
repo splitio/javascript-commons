@@ -59,9 +59,7 @@ function testLogLevels(levelToTest: LogLevel) {
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
-    const instance = new Logger(logCategory, {
-      showLevel
-    });
+    const instance = new Logger(logCategory, { showLevel });
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
