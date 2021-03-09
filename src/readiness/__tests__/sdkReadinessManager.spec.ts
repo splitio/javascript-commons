@@ -97,6 +97,9 @@ describe('SDK Readiness Manager - Event emitter', () => {
     expect(loggerMock.warn.mock.calls.length).toBe(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor ready promise) we get a warning.
     expect(loggerMock.warn.mock.calls[0]).toEqual(['No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.']); // Telling us there were no listeners and evaluations before this point may have been incorrect.
 
+    expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY event fires, we get a info message.
+    expect(loggerMock.info.mock.calls[0]).toEqual(['Split SDK is ready.']); // Telling us the SDK is ready.
+
     // Now it's marked as ready.
     addListenerCB('this event we do not care');
     expect(loggerMock.error.mock.calls.length).toBe(0); // Now if we add a listener to an event unrelated with readiness, we get no errors logged.
@@ -122,6 +125,9 @@ describe('SDK Readiness Manager - Event emitter', () => {
     emitReadyEvent(sdkReadinessManager.readinessManager);
     expect(loggerMock.warn.mock.calls.length).toBe(0); // As we had at least one listener, we get no warnings.
     expect(loggerMock.error.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
+
+    expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY event fires, we get a info message.
+    expect(loggerMock.info.mock.calls[0]).toEqual(['Split SDK is ready.']); // Telling us the SDK is ready.
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {

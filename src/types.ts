@@ -341,7 +341,6 @@ export interface IStatusInterface extends IEventEmitter {
   /**
    * Returns a promise that will be resolved once the SDK has finished loading.
    * @function ready
-   * @deprecated Use on(sdk.Event.SDK_READY, callback: () => void) instead.
    * @returns {Promise<void>}
    */
   ready(): Promise<void>
