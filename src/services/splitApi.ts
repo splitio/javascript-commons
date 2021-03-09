@@ -5,6 +5,8 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { ISettingsInternal } from '../utils/settingsValidation/types';
 
+const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
+
 function userKeyToQueryParam(userKey: string) {
   return 'users=' + encodeURIComponent(userKey); // no need to check availability of `encodeURIComponent`, since it is a global highly supported.
 }
@@ -34,17 +36,17 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
       return splitHttpClient(url);
     },
 
-    fetchSplitChanges(since: number) {
+    fetchSplitChanges(since: number, noCache?: boolean) {
       const url = `${urls.sdk}/splitChanges?since=${since}${filterQueryString || ''}`;
-      return splitHttpClient(url);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
-    fetchSegmentChanges(since: number, segmentName: string) {
+    fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean) {
       const url = `${urls.sdk}/segmentChanges/${segmentName}?since=${since}`;
-      return splitHttpClient(url);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
-    fetchMySegments(userMatchingKey: string) {
+    fetchMySegments(userMatchingKey: string, noCache?: boolean) {
       /**
        * URI encoding of user keys in order to:
        *  - avoid 400 responses (due to URI malformed). E.g.: '/api/mySegments/%'
@@ -52,35 +54,35 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
       const url = `${urls.sdk}/mySegments/${encodeURIComponent(userMatchingKey)}`;
-      return splitHttpClient(url);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
     postEventsBulk(body: string) {
       const url = `${urls.events}/events/bulk`;
-      return splitHttpClient(url, 'POST', body);
+      return splitHttpClient(url, { method: 'POST', body });
     },
 
     postTestImpressionsBulk(body: string) {
       const url = `${urls.events}/testImpressions/bulk`;
-      return splitHttpClient(url, 'POST', body, false, {
+      return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
-        SplitSDKImpressionsMode
+        method: 'POST', body, headers: { SplitSDKImpressionsMode }
       });
     },
 
     postTestImpressionsCount(body: string) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, 'POST', body);
+      return splitHttpClient(url, { method: 'POST', body });
     },
 
     postMetricsCounters(body: string) {
       const url = `${urls.events}/metrics/counters`;
-      return splitHttpClient(url, 'POST', body, true);
+      return splitHttpClient(url, { method: 'POST', body }, true);
     },
 
     postMetricsTimes(body: string) {
       const url = `${urls.events}/metrics/times`;
-      return splitHttpClient(url, 'POST', body, true);
+      return splitHttpClient(url, { method: 'POST', body }, true);
     }
   };
 }

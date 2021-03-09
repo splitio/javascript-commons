@@ -10,10 +10,11 @@ import { logFactory } from '../../../logger/sdkLogger';
 import segmentChangesFetcherFactory from '../fetchers/segmentChangesFetcher';
 import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
+import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 const log = logFactory('splitio-sync:segment-changes');
 const inputValidationLog = logFactory('', { displayAllErrors: true });
 
-type ISegmentChangesUpdater = (segmentNames?: string[]) => Promise<boolean>
+type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
 /**
  * factory of SegmentChanges updater (a.k.a, SegmentsSyncTask), a task that:
@@ -42,23 +43,27 @@ function segmentChangesUpdaterFactory(
    * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
    *
    * @param {string[] | undefined} segmentNames list of segment names to fetch. By passing `undefined` it fetches the list of segments registered at the storage
+   * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
+   * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
+   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
    */
-  return function segmentChangesUpdater(segmentNames?: string[]) {
+  return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) {
     log.debug('Started segments update');
 
     // If not a segment name provided, read list of available segments names to be updated.
-    if (!segmentNames) segmentNames = segmentsCache.getRegisteredSegments();
+    let segments = segmentNames ? segmentNames : segmentsCache.getRegisteredSegments();
+    if (fetchOnlyNew) segments = segments.filter(segmentName => segmentsCache.getChangeNumber(segmentName) === -1);
 
     // Async fetchers are collected here.
     const updaters: Promise<number>[] = [];
 
-    for (let index = 0; index < segmentNames.length; index++) {
-      const segmentName = segmentNames[index];
+    for (let index = 0; index < segments.length; index++) {
+      const segmentName = segments[index];
       const since = segmentsCache.getChangeNumber(segmentName);
 
       log.debug(`Processing segment ${segmentName}`);
 
-      updaters.push(segmentChangesFetcher(since, segmentName, _promiseDecorator).then(function (changes) {
+      updaters.push(segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
         let changeNumber = -1;
         changes.forEach(x => {
           if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
@@ -80,7 +85,7 @@ function segmentChangesUpdaterFactory(
       // if at least one segment fetch successes, mark segments ready
       if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
         readyOnAlreadyExistentState = false;
-        readiness.segments.emit('SDK_SEGMENTS_ARRIVED');
+        readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
       }
       // if at least one segment fetch fails, return false to indicate that there was some error (e.g., invalid json, HTTP error, etc)
       if (shouldUpdateFlags.indexOf(-1) !== -1) return false;

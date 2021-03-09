@@ -1,4 +1,4 @@
-import { IFetch, ISplitHttpClient } from './types';
+import { IFetch, IRequestOptions, ISplitHttpClient } from './types';
 import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { logFactory } from '../logger/sdkLogger';
@@ -33,9 +33,13 @@ export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getF
   if (metadata.ip) headers['SplitSDKMachineIP'] = metadata.ip;
   if (metadata.hostname) headers['SplitSDKMachineName'] = metadata.hostname;
 
-  return function httpClient(url: string, method: string = 'GET', body?: string, logErrorsAsInfo: boolean = false, extraHeaders?: Record<string, string>): Promise<Response> {
-    const rHeaders = extraHeaders ? objectAssign({}, headers, extraHeaders) : headers;
-    const request = objectAssign({ headers: rHeaders, method, body }, options);
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<Response> {
+
+    const request = objectAssign({
+      headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
+      method: reqOpts.method || 'GET',
+      body: reqOpts.body
+    }, options);
 
     // using `fetch(url, options)` signature to work with unfetch, a lightweight ponyfill of fetch API.
     return fetch ? fetch(url, request)
