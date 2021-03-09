@@ -57,21 +57,16 @@ function testLogLevels(levelToTest: string) {
   const consoleLogSpy = jest.spyOn(global.console, 'log');
 
   // Runs the suite with the given value for showLevel option.
-  const runTests = (showLevel?: boolean, displayAllErrors?: boolean) => {
+  const runTests = (showLevel?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
-    const logCategory = `test-category-${logMethod}${displayAllErrors ? 'displayAllErrors' : ''}`;
-    const instance = new Logger(logCategory, {
-      showLevel, displayAllErrors
-    });
+    const logCategory = `test-category-${logMethod}`;
+    const instance = new Logger(logCategory, { showLevel });
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
-      const logMsg = `Test log for level ${levelToTest} (${displayAllErrors ? 'But all errors are configured to display' : 'Errors not forced to display'}) with showLevel: ${showLevel} ${logLevelLogsCounter}`;
+      const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
       const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
-
-      // Log error should always be visible.
-      if (logMethod === LOG_LEVELS.ERROR.toLowerCase() && displayAllErrors) testForNoLog = false;
 
       // Set the logLevel for this iteration.
       setLogLevel(LogLevels[logLevel]);
@@ -95,10 +90,8 @@ function testLogLevels(levelToTest: string) {
 
   // Show logLevel
   runTests(true);
-  runTests(true, true);
   // Hide logLevel
   runTests(false);
-  runTests(false, true);
 
   // Restore spied object.
   consoleLogSpy.mockRestore();

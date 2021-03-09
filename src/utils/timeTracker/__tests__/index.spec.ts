@@ -1,5 +1,6 @@
 import timer from '../timer';
 import tracker from '../index';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('TIMER / should count the time between two tasks', (done) => {
   const timerDuration = Math.floor(Math.random() * 1000); // In millis
@@ -26,9 +27,9 @@ describe('TIME TRACKER', () => {
     const promise = new Promise<Response>(res => {
       setTimeout(res, 1000);
     });
-    const startNormal = tracker.start(tracker.TaskNames.SDK_READY);
-    const startNormalFake = tracker.start('fakeTask3');
-    const startWithPromise = tracker.start('fakeTask4', undefined, promise) as Promise<any>;
+    const startNormal = tracker.start(tracker.TaskNames.SDK_READY, loggerMock);
+    const startNormalFake = tracker.start('fakeTask3', loggerMock);
+    const startWithPromise = tracker.start('fakeTask4', loggerMock, undefined, promise) as Promise<any>;
 
     expect(typeof startNormal).toBe('function'); // If we call start without a promise, it will return the stop function,
     // @ts-expect-error
@@ -39,14 +40,14 @@ describe('TIME TRACKER', () => {
   });
 
   test('stop() / should stop the timer and return the time, if any', () => {
-    tracker.start('test_task');
+    tracker.start('test_task', loggerMock);
 
     // creating two tasks with the same task name
-    const stopFromStart = tracker.start('fakeTask5') as () => number;
-    const stopFromStart2 = tracker.start('fakeTask5') as () => number;
+    const stopFromStart = tracker.start('fakeTask5', loggerMock) as () => number;
+    const stopFromStart2 = tracker.start('fakeTask5', loggerMock) as () => number;
 
-    const stopNotExistentTask = tracker.stop('not_existent');
-    const stopNotExistentTaskAndModifier = tracker.stop('test_task', 'mod');
+    const stopNotExistentTask = tracker.stop('not_existent', loggerMock);
+    const stopNotExistentTaskAndModifier = tracker.stop('test_task', loggerMock, 'mod');
 
     expect(typeof stopNotExistentTask).toBe('undefined'); // If we try to stop a timer that does not exist, we get undefined.
     expect(typeof stopNotExistentTaskAndModifier).toBe('undefined'); // If we try to stop a timer that does not exist, we get undefined.
