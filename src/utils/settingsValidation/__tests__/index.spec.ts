@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { ISettings } from '../../../types';
 import { OPTIMIZED, DEBUG } from '../../constants';
 
@@ -17,7 +18,8 @@ const minimalSettingsParams = {
     },
     version: 'javascript-test',
   },
-  runtime: () => ({ ip: false, hostname: false } as ISettings['runtime'])
+  runtime: () => ({ ip: false, hostname: false } as ISettings['runtime']),
+  logger: () => (loggerMock as ISettings['log'])
 };
 
 describe('settingsValidation', () => {
