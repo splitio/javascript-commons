@@ -1,11 +1,23 @@
 import { errorParser, messageParser } from './NotificationParser';
 import notificationKeeperFactory from './NotificationKeeper';
-import { OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, SSE_ERROR } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
 import { logFactory } from '../../../logger/sdkLogger';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
 const log = logFactory('splitio-sync:sse-handler');
+
+function isRetryableError(error: INotificationError) {
+  if (error.parsedData && error.parsedData.code) {
+    const code = error.parsedData.code;
+    // 401 errors due to invalid or expired token (e.g., if refresh token coudn't be executed)
+    if (40140 <= code && code <= 40149) return true;
+    // Others 4XX errors (e.g., bad request from the SDK)
+    if (40000 <= code && code <= 49999) return false;
+  }
+  // network errors or 5XX HTTP errors
+  return true;
+}
 
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
@@ -30,7 +42,14 @@ export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseE
         log.warn(`Error parsing SSE error notification: ${err}`);
       }
 
-      pushEmitter.emit(SSE_ERROR, errorWithParsedData);
+      let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
+      log.error(`Fail to connect to streaming, with error message: ${errorMessage}`);
+
+      if (isRetryableError(errorWithParsedData)) {
+        pushEmitter.emit(PUSH_RETRYABLE_ERROR);
+      } else {
+        pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+      }
     },
 
     /* NotificationProcessor */
