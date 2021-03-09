@@ -44,17 +44,17 @@ export default function notificationKeeperFactory(pushEmitter: IPushEventEmitter
           if (timestamp > c.oTime) {
             c.oTime = timestamp;
             c.hasPublishers = publishers !== 0;
-            const newHasPublishers = getHasPublishers();
+            const hasPublishersNow = getHasPublishers();
             if (hasResumed) {
-              if (!newHasPublishers && hasPublishers) {
+              if (!hasPublishersNow && hasPublishers) {
                 pushEmitter.emit(PUSH_SUBSYSTEM_DOWN);
-              } else if (newHasPublishers && !hasPublishers) {
+              } else if (hasPublishersNow && !hasPublishers) {
                 pushEmitter.emit(PUSH_SUBSYSTEM_UP);
               }
               // nothing to do when hasResumed === false:
-              // streaming is already down for `!newHasPublishers`, and cannot be up for `newHasPublishers`
+              // streaming is already down for `!hasPublishersNow`, and cannot be up for `hasPublishersNow`
             }
-            hasPublishers = newHasPublishers;
+            hasPublishers = hasPublishersNow;
           }
           return;
         }
