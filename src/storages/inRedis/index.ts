@@ -9,6 +9,7 @@ import EventsCacheInRedis from './EventsCacheInRedis';
 import LatenciesCacheInRedis from './LatenciesCacheInRedis';
 import CountsCacheInRedis from './CountsCacheInRedis';
 import { UNKNOWN } from '../../utils/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -42,8 +43,8 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
     // subscription to Redis connect event in order to emit SDK_READY event
     // @TODO pass a callback to simplify custom storages
     redisClient.on('connect', () => {
-      params.readinessManager.splits.emit('SDK_SPLITS_ARRIVED');
-      params.readinessManager.segments.emit('SDK_SEGMENTS_ARRIVED');
+      params.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      params.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     });
 
     return {
