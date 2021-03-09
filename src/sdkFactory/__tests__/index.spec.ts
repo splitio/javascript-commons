@@ -1,6 +1,5 @@
 import { ISdkFactoryParams } from '../types';
 import { sdkFactory } from '../index';
-import { API } from '../../logger/sdkLogger';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { SplitIO } from '../../types';
 import EventEmitter from '../../utils/MinEvents';
@@ -14,6 +13,12 @@ const mockStorage = {
   events: jest.fn(),
   impressions: jest.fn()
 };
+const loggerApiMock = 'loggerApi';
+jest.mock('../../logger/sdkLogger', () => {
+  return {
+    createLoggerAPI: () => loggerApiMock
+  };
+});
 
 // IAsyncSDK, minimal params
 const paramsForAsyncSDK = {
@@ -48,7 +53,7 @@ const fullParamsForSyncSDK = {
 /** End Mocks */
 
 function assertSdkApi(sdk: SplitIO.IAsyncSDK | SplitIO.ISDK | SplitIO.ICsSDK, params: any) {
-  expect(sdk.Logger).toBe(API);
+  expect(sdk.Logger).toBe(loggerApiMock);
   expect(sdk.settings).toBe(params.settings);
   expect(sdk.client).toBe(params.sdkClientMethodFactory.mock.results[0].value);
   expect(sdk.manager()).toBe(params.sdkManagerFactory.mock.results[0].value);

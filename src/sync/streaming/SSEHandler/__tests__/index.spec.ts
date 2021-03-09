@@ -72,7 +72,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
 
 test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler.handleOpen();
 
   // CONTROL messages
