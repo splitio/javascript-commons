@@ -8,11 +8,12 @@ import { ISegmentsSyncTask } from '../types';
 import { IFetchMySegments } from '../../../services/types';
 import mySegmentsFetcherFactory from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
+import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:my-segments');
 
-type IMySegmentsUpdater = (segmentList?: string[]) => Promise<boolean>
+type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
 /**
  * factory of MySegments updater (a.k.a, SegmentsSyncTask), a task that:
@@ -51,16 +52,16 @@ function mySegmentsUpdaterFactory(
     // Notify update if required
     if (splitsCache.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      segmentsEventEmitter.emit('SDK_SEGMENTS_ARRIVED');
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentList?: string[]): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentList?: string[], noCache?: boolean): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentList ?
       // If segmentList is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentList); res(true); }) :
       // If not provided, fetch mySegments
-      mySegmentsFetcher(_promiseDecorator).then(segments => {
+      mySegmentsFetcher(noCache, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
         startingUp = false;
 
@@ -75,7 +76,7 @@ function mySegmentsUpdaterFactory(
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
         log.warn(`Retrying download of segments #${retry}. Reason: ${error}`);
-        return _mySegmentsUpdater(retry);
+        return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params
       } else {
         startingUp = false;
       }
@@ -88,9 +89,10 @@ function mySegmentsUpdaterFactory(
    * MySegments updater returns a promise that resolves with a `false` boolean value if it fails to fetch mySegments or synchronize them with the storage.
    *
    * @param {string[] | undefined} segmentList list of mySegments names to sync in the storage. If the list is `undefined`, it fetches them before syncing in the storage.
+   * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentList?: string[]) {
-    return _mySegmentsUpdater(0, segmentList);
+  return function mySegmentsUpdater(segmentList?: string[], noCache?: boolean) {
+    return _mySegmentsUpdater(0, segmentList, noCache);
   };
 
 }

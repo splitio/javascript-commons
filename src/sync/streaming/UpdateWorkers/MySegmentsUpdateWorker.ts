@@ -34,7 +34,9 @@ export default class MySegmentsUpdateWorker implements IUpdateWorker {
     if (this.maxChangeNumber > this.currentChangeNumber) {
       this.handleNewEvent = false;
       const currentMaxChangeNumber = this.maxChangeNumber;
-      this.mySegmentsSyncTask.execute(this.segmentList).then((result) => {
+
+      // fetch mySegments revalidating data if cached
+      this.mySegmentsSyncTask.execute(this.segmentList, true).then((result) => {
         if (result !== false) // Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
           this.currentChangeNumber = Math.max(this.currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `this.maxChangeNumber` was updated during fetch.
         if (this.handleNewEvent) {

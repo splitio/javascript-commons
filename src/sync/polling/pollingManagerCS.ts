@@ -7,6 +7,7 @@ import mySegmentsSyncTaskFactory from './syncTasks/mySegmentsSyncTask';
 import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:polling-manager');
 
@@ -44,7 +45,7 @@ export default function pollingManagerCSFactory(
   }
 
   // smart pausing
-  readiness.splits.on('SDK_SPLITS_ARRIVED', () => {
+  readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
     const splitsHaveSegments = storage.splits.usesSegments();
     if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
@@ -62,10 +63,10 @@ export default function pollingManagerCSFactory(
 
     // smart ready
     function smartReady() {
-      if (!readiness.isReady() && !storage.splits.usesSegments()) readiness.segments.emit('SDK_SEGMENTS_ARRIVED');
+      if (!readiness.isReady() && !storage.splits.usesSegments()) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     }
     if (!storage.splits.usesSegments()) setTimeout(smartReady, 0);
-    else readiness.splits.once('SDK_SPLITS_ARRIVED', smartReady);
+    else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
 
     mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
     return mySegmentsSyncTask;

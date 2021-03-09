@@ -1,6 +1,7 @@
 // @ts-nocheck
 import SSEHandlerFactory from '..';
-import { PUSH_CONNECT, PUSH_DISABLED, PUSH_DISCONNECT, SSE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../../constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../../constants';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
 import splitUpdateMessage from '../../../../__tests__/mocks/message.SPLIT_UPDATE.1457552620999.json';
@@ -12,23 +13,28 @@ import mySegmentsUpdateMessage from '../../../../__tests__/mocks/message.MY_SEGM
 import occupancy1ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.1.control_pri.1586987434450.json';
 import occupancy0ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.0.control_pri.1586987434550.json';
 import occupancy2ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.2.control_pri.1586987434650.json';
+const occupancy1ControlSec = {...occupancy1ControlPri, data: occupancy1ControlPri.data.replace('control_pri', 'control_sec')};
+const occupancy0ControlSec = {...occupancy0ControlPri, data: occupancy0ControlPri.data.replace('control_pri', 'control_sec')};
+const occupancy2ControlSec = {...occupancy2ControlPri, data: occupancy2ControlPri.data.replace('control_pri', 'control_sec')};
 
 // control messages
 import controlStreamingPaused from '../../../../__tests__/mocks/message.CONTROL.STREAMING_PAUSED.control_pri.1586987434750.json';
 import controlStreamingResumed from '../../../../__tests__/mocks/message.CONTROL.STREAMING_RESUMED.control_pri.1586987434850.json';
 import controlStreamingDisabled from '../../../../__tests__/mocks/message.CONTROL.STREAMING_DISABLED.control_pri.1586987434950.json';
-import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+const controlStreamingPausedSec = {...controlStreamingPaused, data: controlStreamingPaused.data.replace('control_pri', 'control_sec')};
+const controlStreamingResumedSec = {...controlStreamingResumed, data: controlStreamingResumed.data.replace('control_pri', 'control_sec')};
+const controlStreamingDisabledSec = {...controlStreamingDisabled, data: controlStreamingDisabled.data.replace('control_pri', 'control_sec')};
 
 const pushEmitter = { emit: jest.fn() };
 
-test('`handleOpen` and `handlerMessage` for CONTROL and OCCUPANCY notifications (NotificationKeeper)', () => {
+test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
   const sseHandler = SSEHandlerFactory(pushEmitter, loggerMock);
 
   // handleOpen
 
   sseHandler.handleOpen();
-  expect(pushEmitter.emit.mock.calls[0][0]).toBe(PUSH_CONNECT); // must emit PUSH_CONNECT
+  expect(pushEmitter.emit.mock.calls[0][0]).toBe(PUSH_SUBSYSTEM_UP); // must emit PUSH_SUBSYSTEM_UP
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update massage if streaming on
@@ -36,57 +42,72 @@ test('`handleOpen` and `handlerMessage` for CONTROL and OCCUPANCY notifications 
   // OCCUPANCY messages
 
   sseHandler.handleMessage(occupancy1ControlPri);
-  expect(pushEmitter.emit).toBeCalledTimes(2); // must not emit PUSH_CONNECT if streaming on
+  expect(pushEmitter.emit).toBeCalledTimes(2); // must not emit PUSH_SUBSYSTEM_UP if streaming on
 
   sseHandler.handleMessage(occupancy0ControlPri);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISCONNECT); // must emit PUSH_DISCONNECT if streaming on and OCCUPANCY 0 in control_pri
+  sseHandler.handleMessage(occupancy0ControlSec);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_SUBSYSTEM_DOWN); // must emit PUSH_SUBSYSTEM_DOWN if streaming on and OCCUPANCY 0 in both control channels
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
   expect(pushEmitter.emit).toBeCalledTimes(3); // must not handle update massage if streaming off after an OCCUPANCY message
 
   sseHandler.handleMessage(occupancy0ControlPri);
-  expect(pushEmitter.emit).toBeCalledTimes(3); // must not emit PUSH_DISCONNECT if streaming off
+  sseHandler.handleMessage(occupancy0ControlSec);
+  expect(pushEmitter.emit).toBeCalledTimes(3); // must not emit PUSH_SUBSYSTEM_DOWN if streaming off
 
   sseHandler.handleMessage(occupancy1ControlPri);
+  sseHandler.handleMessage(occupancy1ControlSec);
   expect(pushEmitter.emit).toBeCalledTimes(3); // must ignore OCCUPANCY message if its timestamp is older
 
-  sseHandler.handleMessage(occupancy2ControlPri);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_CONNECT); // must emit PUSH_CONNECT if streaming off and OCCUPANCY mayor than 0 in control_pri
+  sseHandler.handleMessage(occupancy2ControlSec);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_SUBSYSTEM_UP); // must emit PUSH_SUBSYSTEM_UP if streaming off and OCCUPANCY mayor than 0 in at least one channel
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
+  sseHandler.handleMessage(occupancy2ControlPri); // must not emit PUSH_SUBSYSTEM_UP, since streaming is already on
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update massage if streaming on after an OCCUPANCY event
+
+  expect(pushEmitter.emit).toBeCalledTimes(5); // must not emit PUSH_SUBSYSTEM_UP if streaming is already on and another channel has publishers
+
+});
+
+test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
+  pushEmitter.emit.mockClear();
+  const sseHandler = SSEHandlerFactory(pushEmitter);
+  sseHandler.handleOpen();
 
   // CONTROL messages
 
   sseHandler.handleMessage(controlStreamingPaused);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISCONNECT); // must emit PUSH_DISCONNECT if streaming on and received a STREAMING_PAUSED control message
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_SUBSYSTEM_DOWN); // must emit PUSH_SUBSYSTEM_DOWN if streaming on and received a STREAMING_PAUSED control message
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
-  expect(pushEmitter.emit).toBeCalledTimes(6); // must not handle update massage if streaming off after a CONTROL message
+  expect(pushEmitter.emit).toBeCalledTimes(2); // must not handle update massage if streaming off after a CONTROL message
 
   sseHandler.handleMessage(controlStreamingPaused);
-  expect(pushEmitter.emit).toBeCalledTimes(6); // must not emit PUSH_DISCONNECT if streaming off
+  sseHandler.handleMessage(controlStreamingPausedSec);
+  expect(pushEmitter.emit).toBeCalledTimes(2); // must not emit PUSH_SUBSYSTEM_DOWN if streaming off
+
+  sseHandler.handleMessage(controlStreamingResumedSec); // testing STREAMING_RESUMED with second region
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_SUBSYSTEM_UP); // must emit PUSH_SUBSYSTEM_UP if streaming off and received a STREAMING_RESUMED control message');
 
   sseHandler.handleMessage(controlStreamingResumed);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_CONNECT); // must emit PUSH_CONNECT if streaming off and received a STREAMING_RESUMED control message
-
-  sseHandler.handleMessage(controlStreamingResumed);
-  expect(pushEmitter.emit).toBeCalledTimes(7); // must not emit PUSH_CONNECT if streaming on
+  sseHandler.handleMessage(controlStreamingResumedSec);
+  expect(pushEmitter.emit).toBeCalledTimes(3); // must not emit PUSH_SUBSYSTEM_UP if streaming on
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update massage if streaming on after a CONTROL event
 
-  sseHandler.handleMessage(controlStreamingDisabled);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISABLED); // must emit PUSH_DISABLED if received a STREAMING_RESUMED control message
+  sseHandler.handleMessage(controlStreamingDisabledSec); // testing STREAMING_DISABLED with second region
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // must emit PUSH_NONRETRYABLE_ERROR if received a STREAMING_DISABLED control message
 
   const sseHandler2 = SSEHandlerFactory(pushEmitter, loggerMock);
   sseHandler2.handleOpen();
 
-  sseHandler2.handleMessage(controlStreamingPaused);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISCONNECT);
+  sseHandler2.handleMessage(controlStreamingPausedSec); // testing STREAMING_PAUSED with second region
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_SUBSYSTEM_DOWN);
 
   sseHandler2.handleMessage(controlStreamingDisabled);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_DISABLED); // must emit PUSH_DISABLED if received a STREAMING_RESUMED control message, even if streaming is off
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // must emit PUSH_NONRETRYABLE_ERROR if received a STREAMING_DISABLED control message, even if streaming is off
 
 });
 
@@ -120,17 +141,27 @@ test('handleError', () => {
 
   const error = 'some error';
   sseHandler.handleError(error);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SSE_ERROR, error); // must emit ZSSE_ERROR with given error
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // A network error must emit PUSH_RETRYABLE_ERROR
 
   const errorWithData = { data: '{ "message": "error message"}' };
   sseHandler.handleError(errorWithData);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SSE_ERROR,
-    { data: errorWithData.data, parsedData: JSON.parse(errorWithData.data) }); // must emit SSE_ERROR with given error and parsed data
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An error without Ably code must emit PUSH_RETRYABLE_ERROR
 
   const errorWithBadData = { data: '{"message"error"' };
   sseHandler.handleError(errorWithBadData);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SSE_ERROR,
-    { data: errorWithBadData.data }); // must emit SSE_ERROR with given error and not parsed data if cannot be parsed
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An error that cannot be parsed must emit PUSH_RETRYABLE_ERROR
+
+  const ably4XXRecoverableError = { data: '{"message":"Token expired","code":40142,"statusCode":401}' };
+  sseHandler.handleError(ably4XXRecoverableError);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An Ably recoverable error must emit PUSH_RETRYABLE_ERROR
+
+  const ably4XXNonRecoverableError = { data: '{"message":"Token expired","code":42910,"statusCode":429}' };
+  sseHandler.handleError(ably4XXNonRecoverableError);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // An Ably non-recoverable error must emit PUSH_NONRETRYABLE_ERROR
+
+  const ably5XXError = { data: '{"message":"...","code":50000,"statusCode":500}' };
+  sseHandler.handleError(ably5XXError);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An Ably recoverable error must emit PUSH_RETRYABLE_ERROR
 
 });
 
