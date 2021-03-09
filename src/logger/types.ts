@@ -1,9 +1,13 @@
+import { LogLevel } from '../types';
+
 export interface ILoggerOptions {
+  logLevel?: LogLevel,
   showLevel?: boolean,
-  displayAllErrors?: boolean
 }
 
 export interface ILogger {
+  options: ILoggerOptions
+
   debug(msg: string | number, args?: any[]): void
 
   info(msg: string | number, args?: any[]): void

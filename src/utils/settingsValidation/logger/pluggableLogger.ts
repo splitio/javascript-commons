@@ -1,6 +1,7 @@
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../../logger/types';
 
-const noopLogger = {
+const noopLogger: ILogger = {
+  options: { logLevel: 'NONE' },
   debug() { },
   info() { },
   warn() { },
@@ -19,12 +20,12 @@ function isLogger(log: unknown): log is ILogger {
  * @returns the provided logger or a no-op logger if no one is provided
  * @throws throws an error if a logger was provided but is invalid
  */
-export default function logger(settings: { log: unknown }): ILogger {
-  const { log } = settings;
+export function validateLogger(settings: { debug: unknown }): ILogger {
+  const { debug } = settings;
 
-  if (!log) return noopLogger;
+  if (!debug) return noopLogger;
 
-  if (isLogger(log)) return log;
+  if (isLogger(debug)) return debug;
 
-  throw new Error('The provided `log` value at config is not valid');
+  throw new Error('The provided `debug` value at config is not valid');
 }

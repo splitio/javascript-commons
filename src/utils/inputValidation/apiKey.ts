@@ -1,10 +1,7 @@
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
 // import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('', {
-//   // Errors on API key validation are important enough so that one day we might force logging them or throw an exception on startup.
-//   displayAllErrors: true
-// });
+// const log = logFactory('');
 
 function apiKeyError(reason: string) { return `Factory instantiation: ${reason}, api_key must be a non-empty string.`; }
 

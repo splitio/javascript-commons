@@ -1,22 +1,30 @@
-import { logFactory, API } from '../sdkLogger';
-import { Logger } from '../index';
-import { LOG_LEVELS } from './index.spec';
+import { createLoggerAPI } from '../sdkLogger';
+import { Logger, LogLevels } from '../index';
 
-test('SPLIT SDK LOGGER FACTORY / methods and props', () => {
+test('createLoggerAPI / methods and props', () => {
+  const logger = new Logger('category', {});
 
-  expect(typeof logFactory).toBe('function'); // Importing the module should return a function.
+  expect(typeof createLoggerAPI).toBe('function'); // Importing the module should return a function.
 
-  expect(typeof API).toBe('object'); // Our logger should expose an API object.
-  expect(typeof API.enable).toBe('function'); // API object should have enable method.
-  expect(typeof API.disable).toBe('function'); // API object should have disable method.
-  expect(typeof API.setLogLevel).toBe('function'); // API object should have setLogLevel method.
-  expect(API.LogLevel).toEqual(LOG_LEVELS); // API object should have LogLevel prop including all available levels.
+  const loggerAPI = createLoggerAPI(logger);
 
-});
+  expect(typeof loggerAPI).toBe('object'); // Our logger should expose an API object.
 
-test('SPLIT SDK LOGGER FACTORY / create factory returned instance', () => {
-  const logger = logFactory('category', {});
+  expect(typeof loggerAPI.setLogLevel).toBe('function'); // API object should have setLogLevel method.
+  loggerAPI.setLogLevel('INFO');
+  expect(logger.options.logLevel).toBe('INFO'); // calling setLogLevel should update the log level.
+  // @ts-ignore
+  loggerAPI.setLogLevel('warn');
+  expect(logger.options.logLevel).toBe('INFO'); // calling setLogLevel with an invalid value should not update the log level.
 
-  expect(logger instanceof Logger).toBe(true); // Our logger should expose an API object.
+  expect(typeof loggerAPI.enable).toBe('function'); // API object should have enable method.
+  loggerAPI.enable();
+  expect(logger.options.logLevel).toBe('DEBUG'); // calling enable should update logger log level to DEBUG.
+
+  expect(typeof loggerAPI.disable).toBe('function'); // API object should have disable method.
+  loggerAPI.disable();
+  expect(logger.options.logLevel).toBe('NONE'); // calling disable should update logger log level to NONE.
+
+  expect(loggerAPI.LogLevel).toEqual(LogLevels); // API object should have LogLevel prop including all available levels.
 
 });

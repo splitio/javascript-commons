@@ -9,7 +9,7 @@ import MySegmentsCacheInLocal from './MySegmentsCacheInLocal';
 import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
 import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
-import { InMemoryStorageCSFactory } from '../../storages/inMemory/InMemoryStorageCS';
+import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-storage:localstorage');
 
@@ -22,6 +22,8 @@ export interface InLocalStorageOptions {
  */
 export function InLocalStorage(options: InLocalStorageOptions = {}) {
 
+  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+
   return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
@@ -29,8 +31,6 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
       params.log.warn('LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
-
-    const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
     const log = params.log;
     const keys = new KeyBuilderCS(prefix, params.matchingKey as string);

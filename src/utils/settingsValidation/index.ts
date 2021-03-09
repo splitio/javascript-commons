@@ -1,11 +1,8 @@
 import { merge } from '../lang';
-import logger from './logger';
 import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { API } from '../../logger/sdkLogger';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
-import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
 
 const base = {
@@ -40,10 +37,8 @@ const base = {
     eventsPushRate: 60,
     // how many events will be queued before flushing
     eventsQueueSize: 500,
-    // backoff base seconds to wait before re attempting to authenticate for push notifications
-    authRetryBackoffBase: 1,
-    // backoff base seconds to wait before re attempting to connect to streaming
-    streamingReconnectBackoffBase: 1
+    // backoff base seconds to wait before re attempting to connect to push notifications
+    pushRetryBackoffBase: 1,
   },
 
   urls: {
@@ -89,18 +84,6 @@ function fromSecondsToMillis(n: number) {
   return Math.round(n * 1000);
 }
 
-function setupLogger(debugValue: any) {
-  if (typeof debugValue === 'boolean') {
-    if (debugValue) {
-      API.enable();
-    } else {
-      API.disable();
-    }
-  } else if (typeof debugValue === 'string') {
-    API.setLogLevel(debugValue as LogLevel);
-  }
-}
-
 /**
  * Validates the given config and use it to build a settings object.
  *
@@ -109,10 +92,15 @@ function setupLogger(debugValue: any) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations } = validationParams;
+  const { defaults, runtime, storage, integrations, logger } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
+
+  // ensure a valid logger.
+  // First thing to validate, since other validators might use the logger.
+  const log = logger(withDefaults); // @ts-ignore
+  withDefaults.log = log;
 
   // Scheduler periods
   withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
@@ -127,10 +115,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
-  // ensure a valid logger
-  const log = logger(withDefaults);
-  withDefaults.log = log;
-
   // ensure a valid SDK mode
   // @ts-ignore
   withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
@@ -138,8 +122,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid Storage based on mode defined.
   // @ts-ignore
   if (storage) withDefaults.storage = storage(withDefaults);
-
-  setupLogger(withDefaults.debug);
 
   // Although `key` is mandatory according to TS declaration files, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
   if (withDefaults.mode === LOCALHOST_MODE && withDefaults.core.key === undefined) {
@@ -160,8 +142,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
-    withDefaults.scheduler.authRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.authRetryBackoffBase);
-    withDefaults.scheduler.streamingReconnectBackoffBase = fromSecondsToMillis(withDefaults.scheduler.streamingReconnectBackoffBase);
+    withDefaults.scheduler.pushRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.pushRetryBackoffBase);
   }
 
   // validate the `splitFilters` settings and parse splits query

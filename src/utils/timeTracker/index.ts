@@ -1,7 +1,7 @@
 import { uniqueId } from '../lang';
-import { Logger } from '../../logger/index';
 import timer from './timer';
 import thenable from '../promise/thenable';
+import { ILogger } from '../../logger/types';
 
 // Based on ProducerMetricsCollector and ClientCollector classes
 interface MetricsCollector {
@@ -19,11 +19,6 @@ interface MetricsCollector {
 
   [method: string]: (ms: number) => void,
 }
-
-// logger to be used on this module
-const logger = new Logger('[TIME TRACKER]', {
-  showLevel: false
-});
 
 // Map we will use for storing timers data
 const timers: Record<string, {
@@ -122,18 +117,19 @@ const TrackerAPI = {
    *
    * @param {Promise} promise - The promise we want to attach the callbacks.
    * @param {string} task - The name of the task.
+   * @param {ILogger} log - Logger.
    * @param {number | string} modifier - (optional) The modifier for the task, if any.
    */
-  __attachToPromise(promise: Promise<Response>, task: string, collector: false | MetricsCollector, modifier?: number | string) {
+  __attachToPromise(promise: Promise<Response>, task: string, log: ILogger, collector: false | MetricsCollector, modifier?: number | string) {
     return promise.then(resp => {
-      this.stop(task, modifier);
+      this.stop(task, log, modifier);
 
       if (collector && collector.count) collector.count(resp.status);
 
       return resp;
     })
       .catch(err => {
-        this.stop(task, modifier);
+        this.stop(task, log, modifier);
 
         if (collector && collector.countException) collector.countException();
 
@@ -145,11 +141,12 @@ const TrackerAPI = {
    * there may be multiple SDK instances tracking a "generic" task, making any task non-generic.
    *
    * @param {string} task - The task we are starting.
+   * @param {ILogger} log - Logger.
    * @param {Object} collectors - The collectors map.
    * @param {Promise} promise - (optional) The promise we are tracking.
    * @return {Function | Promise} The stop function for this specific task or the promise received with the callbacks registered.
    */
-  start(task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<Response>, now?: () => number): Promise<Response> | (() => number) {
+  start(task: string, log: ILogger, collectors?: Record<string, MetricsCollector>, promise?: Promise<Response>, now?: () => number): Promise<Response> | (() => number) {
     const taskUniqueId = uniqueId();
     const taskCollector = getCollectorForTask(task, collectors);
     let result;
@@ -157,10 +154,10 @@ const TrackerAPI = {
     // If we are registering a promise with this task, we should count the status and the exceptions as well
     // as stopping the task when the promise resolves. Then return the promise
     if (thenable(promise)) {
-      result = this.__attachToPromise(promise, task, taskCollector, taskUniqueId);
+      result = this.__attachToPromise(promise, task, log, taskCollector, taskUniqueId);
     } else {
       // If not, we return the stop function, as it will be stopped manually.
-      result = this.stop.bind(this, task, taskUniqueId);
+      result = this.stop.bind(this, task, log, taskUniqueId);
       if (CALLBACKS[task] && !taskCollector) {
         // and provide a way for a defered setup of the collector, if needed.
         // @ts-expect-error
@@ -197,15 +194,16 @@ const TrackerAPI = {
    * Stops the tracking of a given task.
    *
    * @param {string} task - The task we are starting.
+   * @param {ILogger} log - Logger.
    * @param {number | string} modifier - (optional) The modifier for that specific task.
    */
-  stop(task: string, modifier?: number | string) {
+  stop(task: string, log: ILogger, modifier?: number | string) {
     const timerName = generateTimerKey(task, modifier);
     const timerData = timers[timerName];
     if (timerData) {
       // Stop the timer and round result for readability.
       const et = timerData.timer();
-      logger.debug(`[${task}] took ${et}ms to finish.`);
+      log.debug(`[${task}] took ${et}ms to finish.`);
 
       // Check if we have a tracker callback.
       if (timerData.cb) {
