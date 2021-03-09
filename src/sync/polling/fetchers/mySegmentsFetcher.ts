@@ -10,11 +10,12 @@ import { IMySegmentsFetcher } from './types';
 export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments, userMatchingKey: string): IMySegmentsFetcher {
 
   return function mySegmentsFetcher(
+    noCache?: boolean,
     // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
     decorator?: (promise: Promise<Response>) => Promise<Response>
   ): Promise<string[]> {
 
-    let mySegmentsPromise = fetchMySegments(userMatchingKey);
+    let mySegmentsPromise = fetchMySegments(userMatchingKey, noCache);
     if (decorator) mySegmentsPromise = decorator(mySegmentsPromise);
 
     // Extract segment names

@@ -2,8 +2,8 @@ import { IFetchSegmentChanges } from '../../../services/types';
 import { ISegmentChangesResponse } from '../../../dtos/types';
 import { ISegmentChangesFetcher } from './types';
 
-function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, segmentName: string): Promise<ISegmentChangesResponse[]> {
-  return fetchSegmentChanges(since, segmentName)
+function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, segmentName: string, noCache?: boolean): Promise<ISegmentChangesResponse[]> {
+  return fetchSegmentChanges(since, segmentName, noCache)
     // no need to handle json parsing errors as SplitError, since errors are handled differently for segments
     .then(resp => resp.json())
     .then((json: ISegmentChangesResponse) => {
@@ -11,7 +11,7 @@ function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, s
       if (since === till) {
         return [json];
       } else {
-        return Promise.all([json, greedyFetch(fetchSegmentChanges, till, segmentName)]).then(flatMe => {
+        return Promise.all([json, greedyFetch(fetchSegmentChanges, till, segmentName, noCache)]).then(flatMe => {
           return [flatMe[0], ...flatMe[1]];
         });
       }
@@ -34,11 +34,12 @@ export default function segmentChangesFetcherFactory(fetchSegmentChanges: IFetch
   return function segmentChangesFetcher(
     since: number,
     segmentName: string,
+    noCache?: boolean,
     // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
     decorator?: (promise: Promise<ISegmentChangesResponse[]>) => Promise<ISegmentChangesResponse[]>
   ): Promise<ISegmentChangesResponse[]> {
 
-    let segmentsPromise = greedyFetch(fetchSegmentChanges, since, segmentName);
+    let segmentsPromise = greedyFetch(fetchSegmentChanges, since, segmentName, noCache);
     if (decorator) segmentsPromise = decorator(segmentsPromise);
 
     return segmentsPromise;

@@ -4,9 +4,9 @@ import { IStorageSync } from '../../storages/types';
 import { ISettings } from '../../types';
 import { ITask, ISyncTask } from '../types';
 
-export interface ISplitsSyncTask extends ISyncTask<[], boolean> { }
+export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean], boolean> { }
 
-export interface ISegmentsSyncTask extends ISyncTask<[string[]?], boolean> { }
+export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
