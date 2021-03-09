@@ -22,6 +22,3 @@ export { evaluateFeature, evaluateFeatures } from './evaluator';
 // Utils:
 export { hash128 } from './utils/murmur3/murmur3_128';
 export { hash } from './utils/murmur3/murmur3';
-
-// Logger
-export { logFactory, API } from './logger/sdkLogger';
