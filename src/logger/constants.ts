@@ -56,7 +56,7 @@ export const DEBUG_35 = 'splitio-offline:splits-fetcher => Ignoring line since i
 export const DEBUG_37 = 'splitio-sync:polling-manager => Splits will be refreshed each %s millis'; // @TODO remove since we already log it in syncTask debug log?
 export const DEBUG_38 = 'splitio-sync:polling-manager => Segments will be refreshed each %s millis'; // @TODO remove since we already log it in syncTask debug log?
 
-
+// commons
 export const ERROR_0 = 'splitio-engine:combiner => Invalid Split provided, no valid conditions found';
 export const ERROR_2 = 'splitio-utils:logger => Invalid Log Level - No changes to the logs will be applied.';
 export const ERROR_3 = 'A listener was added for %s on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.';
@@ -89,12 +89,14 @@ export const ERROR_36 = '%s: you passed an invalid traffic_type_name, traffic_ty
 export const ERROR_37 = '%s: you passed an empty traffic_type_name, traffic_type_name must be a non-empty string.';
 export const ERROR_38 = 'splitio-settings => You passed an invalid impressionsMode, impressionsMode should be one of the following values: \'%s\' or \'%s\'. Defaulting to \'%s\' mode.';
 export const ERROR_39 = 'Response status is not OK. Status: %s. URL: %s. Message: %s';
+export const ERROR_API_KEY = 'Factory instantiation: %s, api_key must be a non-empty string';
 
 // node
 export const ERROR_1 = 'splitio-client:cleanup => Error with Split graceful shutdown: %s';
 export const ERROR_8 = 'splitio-sync:segment-changes => Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.';
 export const ERROR_6 = 'splitio-offline:splits-fetcher => Ignoring entry on YAML since the format is incorrect.';
 
+// commons
 export const INFO_0 = 'Split SDK is ready from cache.';
 export const INFO_1 = 'Split SDK is ready.';
 export const INFO_2 = 'splitio-client => Split: %s. Key: %s. Evaluation: %s. Label: %s';
@@ -118,6 +120,7 @@ export const INFO_19 = 'splitio-sync:sync-manager => Streaming couldn\'t connect
 export const INFO_20 = 'splitio-sync:sync-manager => PUSH (re)connected. Syncing and stopping periodic fetch of data.';
 export const INFO_21 = 'splitio-client:event-tracker => Successfully qeued %s';
 
+// commons
 export const WARN_0 = 'splitio-engine:value => Value %s %sdoesn\'t match with expected type.';
 export const WARN_1 = 'splitio-engine:value => Defined attribute [%s], no attributes received.';
 export const WARN_2 = 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.';
@@ -142,6 +145,7 @@ export const WARN_22 = 'Factory instantiation: split filters have been configure
 export const WARN_23 = 'Factory instantiation: split filter at position \'%s\' is invalid. It must be an object with a valid filter type (\'byName\' or \'byPrefix\') and a list of \'values\'.';
 export const WARN_24 = 'Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.';
 export const WARN_25 = 'splitio-settings => The provided storage is invalid. Fallbacking into default MEMORY storage';
+export const WARN_API_KEY = 'Factory instantiation: %s. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application';
 
 // node
 export const WARN_3 = 'splitio-offline:splits-fetcher => .split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.';

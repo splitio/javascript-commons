@@ -30,7 +30,7 @@ const defaultOptions = {
 export class Logger implements ILogger {
 
   private category: string;
-  public options: Required<ILoggerOptions>;
+  private options: Required<ILoggerOptions>;
 
   constructor(category: string, options?: ILoggerOptions) {
     this.category = category;
