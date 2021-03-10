@@ -9,11 +9,11 @@ import { ILogger } from '../../logger/types';
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
  */
 export function submitterSyncTaskFactory<TState extends { length?: number }>(
+  log: ILogger,
   postClient: (body: string) => Promise<Response>,
   sourceCache: IRecorderCacheConsumerSync<TState>,
   postRate: number,
   dataName: string,
-  log: ILogger,
   latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
@@ -53,5 +53,5 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     return latencyTrackerStop ? postPromise.then(latencyTrackerStop).catch(latencyTrackerStop) : postPromise;
   }
 
-  return syncTaskFactory(postData, postRate, dataName + ' submitter', log);
+  return syncTaskFactory(log, postData, postRate, dataName + ' submitter');
 }

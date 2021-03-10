@@ -6,7 +6,7 @@ import thenable from '../../utils/promise/thenable';
 import { MaybeThenable } from '../../dtos/types';
 import { IMatcher } from '../types';
 
-export default function andCombinerContext(matchers: IMatcher[], log: ILogger) {
+export default function andCombinerContext(log: ILogger, matchers: IMatcher[]) {
 
   function andResults(results: boolean[]): boolean {
     // Array.prototype.every is supported by target environments

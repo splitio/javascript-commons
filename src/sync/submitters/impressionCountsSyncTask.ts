@@ -35,12 +35,12 @@ const IMPRESSIONS_COUNT_RATE = 1800000; // 30 minutes
  * Sync task that periodically posts impression counts
  */
 export function impressionCountsSyncTaskFactory(
+  log: ILogger,
   postTestImpressionsCount: IPostTestImpressionsCount,
   impressionCountsCache: IImpressionCountsCacheSync,
-  log: ILogger,
   latencyTracker?: ITimeTracker
 ): ISyncTask {
 
   // retry impressions counts only once.
-  return submitterSyncTaskFactory(postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', log, latencyTracker, fromImpressionCountsCollector, 1);
+  return submitterSyncTaskFactory(log, postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', latencyTracker, fromImpressionCountsCollector, 1);
 }

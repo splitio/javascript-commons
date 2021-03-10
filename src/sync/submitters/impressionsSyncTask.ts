@@ -41,14 +41,14 @@ export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDT
  * Sync task that periodically posts impressions data
  */
 export function impressionsSyncTaskFactory(
+  log: ILogger,
   postTestImpressionsBulk: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheSync,
   impressionsRefreshRate: number,
   sendLabels = false,
-  log: ILogger,
   latencyTracker?: ITimeTracker,
 ): ISyncTask {
 
   // retry impressions only once.
-  return submitterSyncTaskFactory(postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', log, latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+  return submitterSyncTaskFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
 }

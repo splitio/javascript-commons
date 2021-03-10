@@ -21,8 +21,8 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export default function sdkReadinessManagerFactory(
-  EventEmitter: new () => IEventEmitter,
   log: ILogger,
+  EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,
   internalReadyCbCount = 0,
   readinessManager = readinessManagerFactory(EventEmitter, readyTimeout)): ISdkReadinessManager {
@@ -74,7 +74,7 @@ export default function sdkReadinessManagerFactory(
     readinessManager,
 
     shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(EventEmitter, log, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
     },
 
     sdkStatus: objectAssign(

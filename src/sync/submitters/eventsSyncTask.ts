@@ -10,16 +10,16 @@ import { ILogger } from '../../logger/types';
  * Sync task that periodically posts tracked events
  */
 export function eventsSyncTaskFactory(
+  log: ILogger,
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheSync,
   eventsPushRate: number,
   eventsFirstPushWindow: number,
-  log: ILogger,
   latencyTracker?: ITimeTracker
 ): ISyncTask {
 
   // don't retry events.
-  const syncTask = submitterSyncTaskFactory(postEventsBulk, eventsCache, eventsPushRate, 'queued events', log, latencyTracker);
+  const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, 'queued events', latencyTracker);
 
   // Set a timer for the first push of events,
   if (eventsFirstPushWindow > 0) {

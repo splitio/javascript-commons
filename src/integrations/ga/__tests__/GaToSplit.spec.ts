@@ -81,13 +81,13 @@ test('validateEventData', () => {
 });
 
 test('fixEventTypeId', () => {
-  expect(fixEventTypeId(undefined, loggerMock)).toBe(undefined);
-  expect(fixEventTypeId(111, loggerMock)).toBe(111);
-  expect(fixEventTypeId('', loggerMock)).toBe('');
-  expect(fixEventTypeId('()', loggerMock)).toBe('');
-  expect(fixEventTypeId('()+_', loggerMock)).toBe('');
-  expect(fixEventTypeId('  some   event ', loggerMock)).toBe('some_event_');
-  expect(fixEventTypeId('  -*- some  -.%^ event =+ ', loggerMock)).toBe('some_-._event_');
+  expect(fixEventTypeId(loggerMock, undefined)).toBe(undefined);
+  expect(fixEventTypeId(loggerMock, 111)).toBe(111);
+  expect(fixEventTypeId(loggerMock, '')).toBe('');
+  expect(fixEventTypeId(loggerMock, '()')).toBe('');
+  expect(fixEventTypeId(loggerMock, '()+_')).toBe('');
+  expect(fixEventTypeId(loggerMock, '  some   event ')).toBe('some_event_');
+  expect(fixEventTypeId(loggerMock, '  -*- some  -.%^ event =+ ')).toBe('some_-._event_');
 });
 
 test('defaultMapper', () => {

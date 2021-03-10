@@ -1,5 +1,6 @@
 import * as engineUtils from '../engineUtils';
 import Treatments from '../../treatments';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 const treatmentsMock = Treatments.parse([{
   treatment: 'on',
@@ -15,7 +16,7 @@ test('ENGINE / should always evaluate to "off"', () => {
 
   let startTime = Date.now();
 
-  expect(engineUtils.getTreatment(bucketingKey, seed, treatmentsMock) === 'off').toBe(true); // treatment should be 'off'
+  expect(engineUtils.getTreatment(loggerMock, bucketingKey, seed, treatmentsMock) === 'off').toBe(true); // treatment should be 'off'
 
 
   let endTime = Date.now();
@@ -29,7 +30,7 @@ test('ENGINE / should always evaluate to "on"', () => {
 
   let startTime = Date.now();
 
-  expect(engineUtils.getTreatment(bucketingKey, seed, treatmentsMock) === 'on').toBe(true); // treatment should be 'on'
+  expect(engineUtils.getTreatment(loggerMock, bucketingKey, seed, treatmentsMock) === 'on').toBe(true); // treatment should be 'on'
 
   let endTime = Date.now();
 

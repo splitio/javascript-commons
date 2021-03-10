@@ -4,11 +4,12 @@ import * as LabelsConstants from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 import { SplitIO } from '../../types';
+import { ILogger } from '../../logger/types';
 
 // Build Evaluation object if and only if matchingResult is true
-function match(matchingResult: boolean, bucketingKey: string | undefined, seed: number, treatments: { getTreatmentFor: (x: number) => string }, label: string): IEvaluation | undefined {
+function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed: number, treatments: { getTreatmentFor: (x: number) => string }, label: string): IEvaluation | undefined {
   if (matchingResult) {
-    const treatment = getTreatment(bucketingKey as string, seed, treatments);
+    const treatment = getTreatment(log, bucketingKey as string, seed, treatments);
 
     return {
       treatment,
@@ -21,7 +22,7 @@ function match(matchingResult: boolean, bucketingKey: string | undefined, seed: 
 }
 
 // Condition factory
-export default function conditionContext(matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
+export default function conditionContext(log: ILogger, matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
   return function conditionEvaluator(key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
 
@@ -40,10 +41,10 @@ export default function conditionContext(matcherEvaluator: (...args: any) => May
     const matches = matcherEvaluator(key, attributes, splitEvaluator);
 
     if (thenable(matches)) {
-      return matches.then(result => match(result, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label));
+      return matches.then(result => match(log, result, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label));
     }
 
-    return match(matches, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label);
+    return match(log, matches, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label);
   };
 
 }
