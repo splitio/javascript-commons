@@ -4,6 +4,7 @@ import { ISegmentsCacheBase } from '../../storages/types';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
+import { DEBUG_18, DEBUG_19 } from '../../logger/codesConstants';
 
 export default function matcherSegmentContext(log: ILogger, segmentName: string, storage: { segments: ISegmentsCacheBase }) {
 
@@ -12,12 +13,12 @@ export default function matcherSegmentContext(log: ILogger, segmentName: string,
 
     if (thenable(isInSegment)) {
       isInSegment.then(result => {
-        log.debug(`[asyncSegmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+        log.debug(DEBUG_18, [segmentName, key, isInSegment]);
 
         return result;
       });
     } else {
-      log.debug(`[segmentMatcher] evaluated ${segmentName} / ${key} => ${isInSegment}`);
+      log.debug(DEBUG_19, [segmentName, key, isInSegment]);
     }
 
     return isInSegment;

@@ -1,3 +1,4 @@
+import { ERROR_34 } from '../../logger/codesConstants';
 import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';
@@ -17,6 +18,6 @@ export function validateSplits(log: ILogger, maybeSplits: any, method: string, l
     if (validatedArray.length) return uniq(validatedArray);
   }
 
-  log.error(`${method}: ${listName} must be a non-empty array.`);
+  log.error(ERROR_34, [method, listName]);
   return false;
 }

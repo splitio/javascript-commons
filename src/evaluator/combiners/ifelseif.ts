@@ -7,11 +7,12 @@ import * as LabelsConstants from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
+import { DEBUG_1, DEBUG_2, ERROR_0 } from '../../logger/codesConstants';
 
 export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 
   function unexpectedInputHandler() {
-    log.error('Invalid Split provided, no valid conditions found');
+    log.error(ERROR_0);
 
     return {
       treatment: CONTROL,
@@ -26,13 +27,13 @@ export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvalu
       const evaluation = predicateResults[i];
 
       if (evaluation !== undefined) {
-        log.debug(`Treatment found: ${evaluation.treatment}`);
+        log.debug(DEBUG_1, [evaluation.treatment]);
 
         return evaluation;
       }
     }
 
-    log.debug('All predicates evaluated, no treatment found.');
+    log.debug(DEBUG_2);
     return undefined;
   }
 

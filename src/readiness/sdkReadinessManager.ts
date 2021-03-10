@@ -5,6 +5,7 @@ import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ILogger } from '../logger/types';
+import { ERROR_3, INFO_0, INFO_1, WARN_2 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('');
 
@@ -36,7 +37,7 @@ export default function sdkReadinessManagerFactory(
   readinessManager.gate.on(NEW_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY || event === SDK_READY_TIMED_OUT) {
       if (readinessManager.isReady()) {
-        log.error(`A listener was added for ${event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT'} on the SDK, which has already fired and won't be emitted again. The callback won't be executed.`);
+        log.error(ERROR_3, [event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT']);
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
@@ -47,7 +48,7 @@ export default function sdkReadinessManagerFactory(
   const readyPromise = generateReadyPromise();
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
-    log.info('Split SDK is ready from cache.');
+    log.info(INFO_0);
   });
 
   // default onRejected handler, that just logs the error, if ready promise doesn't have one.
@@ -58,9 +59,9 @@ export default function sdkReadinessManagerFactory(
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
-        log.info('Split SDK is ready.');
+        log.info(INFO_1);
 
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
+        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(WARN_2);
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);

@@ -3,6 +3,7 @@ import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { IMetadata } from '../dtos/types';
 import { ILogger } from '../logger/types';
+import { ERROR_39, ERROR_5 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio-services:service');
 
@@ -22,7 +23,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
-  if (!fetch) log.error(`${messageNoFetch} The SDK will not get ready.`);
+  if (!fetch) log.error(ERROR_5, [messageNoFetch]);
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
@@ -67,7 +68,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log[logErrorsAsInfo ? 'info' : 'error'](`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
+          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_39, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)

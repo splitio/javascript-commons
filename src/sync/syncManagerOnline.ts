@@ -8,6 +8,7 @@ import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
+import { INFO_18, INFO_19, INFO_20 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // export const log = logFactory('splitio-sync:sync-manager');
 
@@ -60,15 +61,15 @@ export function syncManagerOnlineFactory(
 
     function startPolling() {
       if (!pollingManager.isRunning()) {
-        log.info('Streaming not available. Starting periodic fetch of data.');
+        log.info(INFO_18);
         pollingManager.start();
       } else {
-        log.info('Streaming couldn\'t connect. Continue periodic fetch of data.');
+        log.info(INFO_19);
       }
     }
 
     function stopPollingAndSyncAll() {
-      log.info('PUSH (re)connected. Syncing and stopping periodic fetch of data.');
+      log.info(INFO_20);
       // if polling, stop
       if (pollingManager.isRunning()) pollingManager.stop();
 

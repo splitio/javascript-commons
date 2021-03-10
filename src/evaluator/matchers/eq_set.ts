@@ -1,3 +1,4 @@
+import { DEBUG_13 } from '../../logger/codesConstants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
@@ -13,7 +14,7 @@ export default function equalToSetMatcherContext(log: ILogger, ruleAttr: string[
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isEqual = false;
     }
 
-    log.debug(`[equalToSetMatcher] is ${runtimeAttr} equal to set ${ruleAttr}? ${isEqual}`);
+    log.debug(DEBUG_13, [runtimeAttr, ruleAttr, isEqual]);
 
     return isEqual;
   };

@@ -5,6 +5,7 @@ import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';
+import { DEBUG_10, DEBUG_11 } from '../../logger/codesConstants';
 
 export default function dependencyMatcherContext(log: ILogger, { split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync) {
 
@@ -15,13 +16,13 @@ export default function dependencyMatcherContext(log: ILogger, { split, treatmen
       matches = acceptableTreatments.indexOf(evaluation.treatment as string) !== -1;
     }
 
-    log.debug(`[dependencyMatcher] Parent split "${parentName}" evaluated to "${evaluation.treatment}" with label "${evaluation.label}". ${parentName} evaluated treatment is part of [${acceptableTreatments}] ? ${matches}.`);
+    log.debug(DEBUG_10, [parentName, evaluation.treatment, evaluation.label, parentName, acceptableTreatments, matches]);
 
     return matches;
   }
 
   return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
-    log.debug(`[dependencyMatcher] will evaluate parent split: "${split}" with key: ${JSON.stringify(key)} ${attributes ? '\n attributes: ' + JSON.stringify(attributes) : ''}`);
+    log.debug(DEBUG_11, [split, JSON.stringify(key), attributes ? '\n attributes: ' + JSON.stringify(attributes) : '']);
     const evaluation = splitEvaluator(log, key, split, attributes, storage);
 
     if (thenable(evaluation)) {

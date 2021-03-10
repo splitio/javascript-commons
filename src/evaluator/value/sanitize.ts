@@ -6,6 +6,7 @@ import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
+import { DEBUG_25 } from '../../logger/codesConstants';
 
 function sanitizeNumber(val: any): number | undefined {
   const num = toNumber(val);
@@ -100,7 +101,7 @@ export default function sanitize(log: ILogger, matcherTypeID: number, value: str
     sanitizedValue = processor(sanitizedValue, attributes);
   }
 
-  log.debug(`Attempted to sanitize [${value}] which should be of type [${dataType}]. \n Sanitized and processed value => [${sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue}]`);
+  log.debug(DEBUG_25, [value, dataType, sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue]);
 
   return sanitizedValue;
 }

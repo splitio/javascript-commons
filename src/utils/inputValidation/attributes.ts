@@ -1,6 +1,7 @@
 import { isObject } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
+import { ERROR_13 } from '../../logger/codesConstants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('');
 
@@ -9,6 +10,6 @@ export function validateAttributes(log: ILogger, maybeAttrs: any, method: string
   if (isObject(maybeAttrs) || maybeAttrs == undefined) // eslint-disable-line eqeqeq
     return maybeAttrs;
 
-  log.error(`${method}: attributes must be a plain object.`);
+  log.error(ERROR_13, [method]);
   return false;
 }

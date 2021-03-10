@@ -7,6 +7,7 @@ import { sdkClientFactory } from './sdkClient';
 import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
+import { DEBUG_32, INFO_4, DEBUG_33 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio');
 
@@ -41,7 +42,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
   return function client(key?: SplitIO.SplitKey) {
     if (key === undefined) {
-      log.debug('Retrieving default SDK client.');
+      log.debug(DEBUG_32);
       return mainClientInstance;
     }
 
@@ -75,9 +76,9 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       sharedSyncManager.start();
 
-      log.info('New shared client instance created.');
+      log.info(INFO_4);
     } else {
-      log.debug('Retrieving existing SDK client.');
+      log.debug(DEBUG_33);
     }
 
     return clientInstances[instanceId];

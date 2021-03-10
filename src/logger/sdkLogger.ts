@@ -1,6 +1,7 @@
 import { LogLevels, isLogLevelString } from './index';
 import { ILoggerAPI } from '../types';
 import { ILogger } from './types';
+import { ERROR_2 } from './codesConstants';
 // const log = logFactory('splitio-utils:logger');
 
 
@@ -15,7 +16,7 @@ export function createLoggerAPI(log: ILogger): ILoggerAPI {
     if (isLogLevelString(logLevel)) {
       log.setLogLevel(logLevel);
     } else {
-      log.error('Invalid Log Level - No changes to the logs will be applied.');
+      log.error(ERROR_2);
     }
   }
 

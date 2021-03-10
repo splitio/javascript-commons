@@ -4,15 +4,16 @@ import { IMatcherDto } from '../types';
 // const log = logFactory('splitio-engine:value');
 import { ILogger } from '../../logger/types';
 import sanitizeValue from './sanitize';
+import { DEBUG_24, WARN_1, WARN_0 } from '../../logger/codesConstants';
 
 function parseValue(log: ILogger, key: string, attributeName: string | null, attributes: SplitIO.Attributes) {
   let value = undefined;
   if (attributeName) {
     if (attributes) {
       value = attributes[attributeName];
-      log.debug(`Extracted attribute [${attributeName}], [${value}] will be used for matching.`);
+      log.debug(DEBUG_24, [attributeName, value]);
     } else {
-      log.warn(`Defined attribute [${attributeName}], no attributes received.`);
+      log.warn(WARN_1, [attributeName]);
     }
   } else {
     value = key;
@@ -32,7 +33,7 @@ export default function value(log: ILogger, key: string, matcherDto: IMatcherDto
   if (sanitizedValue !== undefined) {
     return sanitizedValue;
   } else {
-    log.warn(`Value ${valueToMatch} ${attributeName ? ' for attribute ' + attributeName : ''}doesn't match with expected type.`);
+    log.warn(WARN_0, [valueToMatch, attributeName ? ' for attribute ' + attributeName : '']);
     return;
   }
 }

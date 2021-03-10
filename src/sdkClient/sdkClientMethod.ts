@@ -1,6 +1,7 @@
 import { ISdkClientFactoryParams } from './types';
 import { SplitIO } from '../types';
 import { sdkClientFactory } from './sdkClient';
+import { DEBUG_31 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio');
 
@@ -16,7 +17,7 @@ export function sdkClientMethodFactory(params: ISdkClientFactoryParams): () => S
       throw new Error('Shared Client not supported by the storage mechanism. Create isolated instances instead.');
     }
 
-    log.debug('Retrieving SDK client.');
+    log.debug(DEBUG_31);
     return clientInstance;
   };
 }

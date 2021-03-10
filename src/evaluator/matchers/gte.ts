@@ -1,3 +1,4 @@
+import { DEBUG_15 } from '../../logger/codesConstants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
@@ -6,7 +7,7 @@ export default function greaterThanEqualMatcherContext(log: ILogger, ruleAttr: n
   return function greaterThanEqualMatcher(runtimeAttr: number): boolean {
     let isGreaterEqualThan = runtimeAttr >= ruleAttr;
 
-    log.debug(`[greaterThanEqualMatcher] is ${runtimeAttr} greater than ${ruleAttr}? ${isGreaterEqualThan}`);
+    log.debug(DEBUG_15, [runtimeAttr, ruleAttr, isGreaterEqualThan]);
 
     return isGreaterEqualThan;
   };

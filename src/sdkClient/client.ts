@@ -8,6 +8,7 @@ import { CONTROL } from '../utils/constants';
 import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
+import { INFO_2, INFO_3 } from '../logger/codesConstants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio-client');
 
@@ -76,10 +77,10 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     }
 
     const { treatment, label, changeNumber, config = null } = evaluation;
-    log.info(`Split: ${splitName}. Key: ${matchingKey}. Evaluation: ${treatment}. Label: ${label}`);
+    log.info(INFO_2, [splitName, matchingKey, treatment, label]);
 
     if (validateSplitExistance(log, readinessManager, splitName, label, invokingMethodName)) {
-      log.info('Queueing corresponding impression.');
+      log.info(INFO_3);
       queue.push({
         feature: splitName,
         keyName: matchingKey,

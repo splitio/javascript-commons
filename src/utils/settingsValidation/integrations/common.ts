@@ -1,3 +1,4 @@
+import { WARN_21 } from '../../../logger/codesConstants';
 import { ILogger } from '../../../logger/types';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-settings');
@@ -22,7 +23,7 @@ export function validateIntegrations(settings: { log: ILogger, integrations?: an
 
   // Log a warning if at least one item is invalid
   const invalids = integrations.length - validIntegrations.length;
-  if (invalids) log.warn(`${invalids} integration ${invalids === 1 ? 'item' : 'items'} at settings ${invalids === 1 ? 'is' : 'are'} invalid. ${extraWarning || ''}`);
+  if (invalids) log.warn(WARN_21, [invalids, invalids === 1 ? 'item' : 'items', invalids === 1 ? 'is' : 'are', extraWarning || '']);
 
   return validIntegrations;
 }

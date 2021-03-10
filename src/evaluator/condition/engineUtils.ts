@@ -1,3 +1,4 @@
+import { DEBUG_3 } from '../../logger/codesConstants';
 import { ILogger } from '../../logger/types';
 import { bucket } from '../../utils/murmur3/murmur3';
 // import { logFactory } from '../../logger/sdkLogger';
@@ -11,7 +12,7 @@ export function getTreatment(log: ILogger, key: string, seed: number, treatments
 
   const treatment = treatments.getTreatmentFor(_bucket);
 
-  log.debug(`[engine] using algo 'murmur' bucket ${_bucket} for key ${key} using seed ${seed} - treatment ${treatment}`);
+  log.debug(DEBUG_3, [_bucket, key, seed, treatment]);
 
   return treatment;
 }

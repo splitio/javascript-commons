@@ -3,6 +3,7 @@ import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ILogger } from '../../logger/types';
+import { INFO_16 } from '../../logger/codesConstants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:submitters');
 
@@ -37,7 +38,7 @@ export function eventsSyncTaskFactory(
 
   // register eventsSubmitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.info('Flushing full events queue and reseting timer.');
+    log.info(INFO_16);
     syncTask.execute();
   });
 
