@@ -6,7 +6,7 @@ import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
-import { DEBUG_25 } from '../../logger/codesConstants';
+import { DEBUG_25 } from '../../logger/constants';
 
 function sanitizeNumber(val: any): number | undefined {
   const num = toNumber(val);

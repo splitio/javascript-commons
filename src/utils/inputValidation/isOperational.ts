@@ -1,4 +1,4 @@
-import { ERROR_21, WARN_14 } from '../../logger/codesConstants';
+import { ERROR_21, WARN_14 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { IReadinessManager } from '../../readiness/types';
 // import { logFactory } from '../../logger/sdkLogger';

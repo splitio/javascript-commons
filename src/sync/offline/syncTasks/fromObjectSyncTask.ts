@@ -8,7 +8,7 @@ import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-import { DEBUG_36, ERROR_7 } from '../../../logger/codesConstants';
+import { DEBUG_36, ERROR_7 } from '../../../logger/constants';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-producer:offline');
 

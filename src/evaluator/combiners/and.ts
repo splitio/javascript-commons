@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { MaybeThenable } from '../../dtos/types';
 import { IMatcher } from '../types';
-import { DEBUG_0 } from '../../logger/codesConstants';
+import { DEBUG_0 } from '../../logger/constants';
 
 export default function andCombinerContext(log: ILogger, matchers: IMatcher[]) {
 

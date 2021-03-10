@@ -10,7 +10,7 @@ import { getMatching } from '../utils/key';
 import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
-import { INFO_5, INFO_6, ERROR_4 } from '../logger/codesConstants';
+import { INFO_5, INFO_6, ERROR_4 } from '../logger/constants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio');
 

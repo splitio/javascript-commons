@@ -1,7 +1,7 @@
 import { isObject } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { ERROR_13 } from '../../logger/codesConstants';
+import { ERROR_13 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('');
 

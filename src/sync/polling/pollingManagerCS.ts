@@ -8,7 +8,7 @@ import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-import { INFO_7, INFO_8, INFO_9 } from '../../logger/codesConstants';
+import { INFO_7, INFO_8, INFO_9 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:polling-manager');
 

@@ -2,7 +2,7 @@ import { findIndex } from '../../utils/lang';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
-import { DEBUG_17 } from '../../logger/codesConstants';
+import { DEBUG_17 } from '../../logger/constants';
 
 export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function partOfMatcher(runtimeAttr: string[]): boolean {

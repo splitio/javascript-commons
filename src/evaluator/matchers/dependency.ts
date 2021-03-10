@@ -5,7 +5,7 @@ import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';
-import { DEBUG_10, DEBUG_11 } from '../../logger/codesConstants';
+import { DEBUG_10, DEBUG_11 } from '../../logger/constants';
 
 export default function dependencyMatcherContext(log: ILogger, { split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync) {
 

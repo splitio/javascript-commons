@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_22, WARN_24, WARN_23, DEBUG_51 } from '../../logger/codesConstants';
+import { WARN_22, WARN_24, WARN_23, DEBUG_51 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('');
 

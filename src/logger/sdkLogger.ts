@@ -1,7 +1,7 @@
 import { LogLevels, isLogLevelString } from './index';
 import { ILoggerAPI } from '../types';
 import { ILogger } from './types';
-import { ERROR_2 } from './codesConstants';
+import { ERROR_2 } from './constants';
 // const log = logFactory('splitio-utils:logger');
 
 

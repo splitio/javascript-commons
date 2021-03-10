@@ -5,7 +5,7 @@ import { IReadinessManager } from '../../readiness/types';
 import { SDKMode } from '../../types';
 import { MaybeThenable } from '../../dtos/types';
 import { ILogger } from '../../logger/types';
-import { WARN_20 } from '../../logger/codesConstants';
+import { WARN_20 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('');
 

@@ -1,4 +1,4 @@
-import { ERROR_38 } from '../../logger/codesConstants';
+import { ERROR_38 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { SplitIO } from '../../types';
 import { DEBUG, OPTIMIZED } from '../constants';

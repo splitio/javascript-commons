@@ -4,7 +4,7 @@ import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
-import { INFO_21, WARN_11 } from '../logger/codesConstants';
+import { INFO_21, WARN_11 } from '../logger/constants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio-client:event-tracker');
 

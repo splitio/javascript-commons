@@ -1,7 +1,7 @@
 import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { ERROR_18, ERROR_19, WARN_12, WARN_13 } from '../../logger/codesConstants';
+import { ERROR_18, ERROR_19, WARN_12, WARN_13 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('');
 

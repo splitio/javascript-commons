@@ -10,7 +10,7 @@ import { ImpressionsPayload } from '../sync/submitters/types';
 import { MaybeThenable } from '../dtos/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
 import objectAssign from 'object-assign';
-import { DEBUG_26, DEBUG_27 } from '../logger/codesConstantsBrowser';
+import { DEBUG_26, DEBUG_27 } from '../logger/constants';
 
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio-client:cleanup');

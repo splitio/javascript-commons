@@ -3,7 +3,7 @@ import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ILogger } from '../../logger/types';
-import { INFO_16 } from '../../logger/codesConstants';
+import { INFO_16 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:submitters');
 

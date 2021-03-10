@@ -1,4 +1,4 @@
-import { DEBUG_48, DEBUG_47, DEBUG_49 } from '../logger/codesConstants';
+import { DEBUG_48, DEBUG_47, DEBUG_49 } from '../logger/constants';
 import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 // import { logFactory } from '../logger/sdkLogger';

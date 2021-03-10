@@ -2,7 +2,7 @@ import { isString } from '../../utils/lang';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
-import { DEBUG_9 } from '../../logger/codesConstants';
+import { DEBUG_9 } from '../../logger/constants';
 
 export default function containsStringMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function containsStringMatcher(runtimeAttr: string): boolean {

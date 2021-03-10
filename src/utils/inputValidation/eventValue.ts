@@ -1,4 +1,4 @@
-import { ERROR_20 } from '../../logger/codesConstants';
+import { ERROR_20 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isFiniteNumber } from '../lang';
 // import { logFactory } from '../../logger/sdkLogger';

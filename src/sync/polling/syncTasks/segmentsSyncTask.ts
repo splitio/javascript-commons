@@ -11,7 +11,7 @@ import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { DEBUG_41, DEBUG_40, DEBUG_39, ERROR_8 } from '../../../logger/codesConstantsNode';
+import { DEBUG_41, DEBUG_40, DEBUG_39, ERROR_8 } from '../../../logger/constants';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:segment-changes');
 

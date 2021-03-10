@@ -5,7 +5,7 @@ import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ILogger } from '../logger/types';
-import { ERROR_3, INFO_0, INFO_1, WARN_2 } from '../logger/codesConstants';
+import { ERROR_3, INFO_0, INFO_1, WARN_2 } from '../logger/constants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('');
 

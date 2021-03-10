@@ -4,7 +4,7 @@ import { IMatcherDto } from '../types';
 // const log = logFactory('splitio-engine:value');
 import { ILogger } from '../../logger/types';
 import sanitizeValue from './sanitize';
-import { DEBUG_24, WARN_1, WARN_0 } from '../../logger/codesConstants';
+import { DEBUG_24, WARN_1, WARN_0 } from '../../logger/constants';
 
 function parseValue(log: ILogger, key: string, attributeName: string | null, attributes: SplitIO.Attributes) {
   let value = undefined;

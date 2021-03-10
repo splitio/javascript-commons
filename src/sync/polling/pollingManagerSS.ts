@@ -6,8 +6,8 @@ import { ISplitApi } from '../../services/types';
 import { ISettings } from '../../types';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import thenable from '../../utils/promise/thenable';
-import { INFO_8, INFO_9 } from '../../logger/codesConstants';
-import { DEBUG_37, DEBUG_38 } from '../../logger/codesConstantsNode';
+import { INFO_8, INFO_9 } from '../../logger/constants';
+import { DEBUG_37, DEBUG_38 } from '../../logger/constants';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-sync:polling-manager');
 

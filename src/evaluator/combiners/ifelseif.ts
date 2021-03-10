@@ -7,7 +7,7 @@ import * as LabelsConstants from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
-import { DEBUG_1, DEBUG_2, ERROR_0 } from '../../logger/codesConstants';
+import { DEBUG_1, DEBUG_2, ERROR_0 } from '../../logger/constants';
 
 export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 

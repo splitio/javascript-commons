@@ -1,4 +1,4 @@
-import { WARN_21 } from '../../../logger/codesConstants';
+import { WARN_21 } from '../../../logger/constants';
 import { ILogger } from '../../../logger/types';
 // import { logFactory } from '../../../logger/sdkLogger';
 // const log = logFactory('splitio-settings');

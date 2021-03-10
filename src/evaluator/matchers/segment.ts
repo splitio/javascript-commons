@@ -4,7 +4,7 @@ import { ISegmentsCacheBase } from '../../storages/types';
 // const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
-import { DEBUG_18, DEBUG_19 } from '../../logger/codesConstants';
+import { DEBUG_18, DEBUG_19 } from '../../logger/constants';
 
 export default function matcherSegmentContext(log: ILogger, segmentName: string, storage: { segments: ISegmentsCacheBase }) {
 

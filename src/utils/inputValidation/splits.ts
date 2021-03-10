@@ -1,4 +1,4 @@
-import { ERROR_34 } from '../../logger/codesConstants';
+import { ERROR_34 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';

@@ -7,7 +7,7 @@ import { IMetadata } from '../dtos/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { ILogger } from '../logger/types';
-import { DEBUG_50, ERROR_11, ERROR_12 } from '../logger/codesConstants';
+import { DEBUG_50, ERROR_11, ERROR_12 } from '../logger/constants';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio-client:impressions-tracker');
 
