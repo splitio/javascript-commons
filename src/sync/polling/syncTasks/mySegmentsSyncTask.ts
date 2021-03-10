@@ -22,13 +22,13 @@ type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  */
 function mySegmentsUpdaterFactory(
+  log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
   splitsCache: ISplitsCacheSync,
   mySegmentsCache: ISegmentsCacheSync,
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
-  log: ILogger
 ): IMySegmentsUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -105,17 +105,17 @@ export default function mySegmentsSyncTaskFactory(
   matchingKey: string
 ): ISegmentsSyncTask {
   return syncTaskFactory(
+    settings.log,
     mySegmentsUpdaterFactory(
+      settings.log,
       mySegmentsFetcherFactory(fetchMySegments, matchingKey),
       storage.splits,
       storage.segments,
       readiness.segments,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
-      settings.log
     ),
     settings.scheduler.segmentsRefreshRate,
     'mySegmentsUpdater',
-    settings.log
   );
 }

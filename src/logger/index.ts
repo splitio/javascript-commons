@@ -30,7 +30,7 @@ const defaultOptions = {
 
 export class Logger implements ILogger {
 
-  private category?: string;
+  private category: string;
   public options: Required<ILoggerOptions>;
   private codes: IMap<number, string>;
 
@@ -38,6 +38,10 @@ export class Logger implements ILogger {
     this.category = category;
     this.options = objectAssign({}, defaultOptions, options);
     this.codes = codes || new _Map();
+  }
+
+  setLogLevel(logLevel: LogLevel) {
+    this.options.logLevel = logLevel;
   }
 
   debug(msg: string | number, args?: any[]) {

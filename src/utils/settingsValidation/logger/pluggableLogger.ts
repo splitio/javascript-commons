@@ -1,7 +1,7 @@
 import { ILogger } from '../../../logger/types';
 
 const noopLogger: ILogger = {
-  options: { logLevel: 'NONE' },
+  setLogLevel() { },
   debug() { },
   info() { },
   warn() { },
@@ -10,7 +10,7 @@ const noopLogger: ILogger = {
 
 function isLogger(log: unknown): log is ILogger {
   // @ts-ignore
-  return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function';
+  return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
 }
 
 /**

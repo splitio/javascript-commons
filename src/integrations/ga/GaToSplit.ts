@@ -154,10 +154,11 @@ const INVALID_SUBSTRING_REGEX = /[^-_.:a-zA-Z0-9]+/g;
 /**
  * Fixes the passed string value to comply with EventTypeId format, by removing invalid characters and truncating if necessary.
  *
+ * @param {object} log factory logger
  * @param {string} eventTypeId string value to fix.
  * @returns {string} Fixed version of `eventTypeId`.
  */
-export function fixEventTypeId(eventTypeId: any, log: ILogger) {
+export function fixEventTypeId(log: ILogger, eventTypeId: any) {
   // return the input eventTypeId if it cannot be fixed
   if (!isString(eventTypeId) || eventTypeId.length === 0) {
     return eventTypeId;
@@ -258,7 +259,7 @@ export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, par
         // Add prefix. Nothing is appended if the prefix is falsy, e.g. undefined or ''.
         if (opts.prefix) eventData.eventTypeId = `${opts.prefix}.${eventData.eventTypeId}`;
 
-        eventData.eventTypeId = fixEventTypeId(eventData.eventTypeId, log);
+        eventData.eventTypeId = fixEventTypeId(log, eventData.eventTypeId);
 
         if (!validateEventData(log, eventData))
           return;

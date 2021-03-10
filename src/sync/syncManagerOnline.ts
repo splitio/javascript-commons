@@ -48,11 +48,11 @@ export function syncManagerOnlineFactory(
     /** Submitter Manager */
     // It is not inyected via a factory as push and polling managers, because at the moment it is mandatory and the same for server-side and client-side variants
     const submitters = [
-      impressionsSyncTaskFactory(splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled, log),
-      eventsSyncTaskFactory(splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow, log)
+      impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
+      eventsSyncTaskFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
       // @TODO add telemetry submitter
     ];
-    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(splitApi.postTestImpressionsCount, storage.impressionCounts, log));
+    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
     const submitter = syncTaskComposite(submitters);
 
 

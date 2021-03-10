@@ -23,9 +23,10 @@ function isRetryableError(error: INotificationError) {
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
+ * @param log factory logger
  * @param pushEmitter emitter for events related to streaming support
  */
-export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter, log: ILogger): ISseEventHandler {
+export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 

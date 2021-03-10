@@ -8,7 +8,7 @@ import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 
-export default function ifElseIfCombinerContext(predicates: IEvaluator[], log: ILogger): IEvaluator {
+export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 
   function unexpectedInputHandler() {
     log.error('Invalid Split provided, no valid conditions found');

@@ -81,7 +81,7 @@ describe('IntegrationsManagerFactory for browser', () => {
     }];
     const instance = browserIMF(integrations, fakeParams as any);
 
-    expect((SplitToGaMock as unknown as jest.Mock).mock.calls).toEqual([[integrations[0], fakeParams.settings.log]]); // Invokes SplitToGa integration module with options
+    expect((SplitToGaMock as unknown as jest.Mock).mock.calls).toEqual([[fakeParams.settings.log, integrations[0]]]); // Invokes SplitToGa integration module with options
 
     const fakeImpression = 'fake'; // @ts-expect-error
     instance.handleImpression(fakeImpression);

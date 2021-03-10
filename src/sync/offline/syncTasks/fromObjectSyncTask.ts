@@ -78,6 +78,7 @@ export default function fromObjectSyncTaskFactory(
   settings: ISettings
 ): ISyncTask<[], boolean> {
   return syncTaskFactory(
+    settings.log,
     fromObjectUpdaterFactory(
       splitsParser,
       storage,
@@ -86,6 +87,5 @@ export default function fromObjectSyncTaskFactory(
     ),
     settings.scheduler.offlineRefreshRate,
     'offlineUpdater',
-    settings.log
   );
 }

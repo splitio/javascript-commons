@@ -30,7 +30,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const metadata = buildMetadata(settings);
 
   // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
-  const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, log, settings.startup.readyTimeout);
+  const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
 
   const storageFactoryParams = {
     eventsQueueSize: settings.scheduler.eventsQueueSize,

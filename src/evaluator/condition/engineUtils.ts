@@ -1,3 +1,4 @@
+import { ILogger } from '../../logger/types';
 import { bucket } from '../../utils/murmur3/murmur3';
 // import { logFactory } from '../../logger/sdkLogger';
 // const log = logFactory('splitio-engine');
@@ -5,12 +6,12 @@ import { bucket } from '../../utils/murmur3/murmur3';
 /**
  * Get the treatment name given a key, a seed, and the percentage of each treatment.
  */
-export function getTreatment(key: string, seed: number, treatments: { getTreatmentFor: (x: number) => string }) {
+export function getTreatment(log: ILogger, key: string, seed: number, treatments: { getTreatmentFor: (x: number) => string }) {
   const _bucket = bucket(key, seed);
 
   const treatment = treatments.getTreatmentFor(_bucket);
 
-  // log.debug(`[engine] using algo 'murmur' bucket ${_bucket} for key ${key} using seed ${seed} - treatment ${treatment}`);
+  log.debug(`[engine] using algo 'murmur' bucket ${_bucket} for key ${key} using seed ${seed} - treatment ${treatment}`);
 
   return treatment;
 }

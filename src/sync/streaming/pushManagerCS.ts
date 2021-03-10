@@ -46,7 +46,7 @@ export default function pushManagerCSFactory(
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(pushEmitter, log);
+  const sseHandler = SSEHandlerFactory(log, pushEmitter);
   sseClient.setEventHandler(sseHandler);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker

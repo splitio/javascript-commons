@@ -115,21 +115,21 @@ const TrackerAPI = {
   /**
    * "Private" method, used to attach count/countException and stop callbacks to a promise.
    *
+   * @param {ILogger} log - Logger.
    * @param {Promise} promise - The promise we want to attach the callbacks.
    * @param {string} task - The name of the task.
-   * @param {ILogger} log - Logger.
    * @param {number | string} modifier - (optional) The modifier for the task, if any.
    */
-  __attachToPromise(promise: Promise<Response>, task: string, log: ILogger, collector: false | MetricsCollector, modifier?: number | string) {
+  __attachToPromise(log: ILogger, promise: Promise<Response>, task: string, collector: false | MetricsCollector, modifier?: number | string) {
     return promise.then(resp => {
-      this.stop(task, log, modifier);
+      this.stop(log, task, modifier);
 
       if (collector && collector.count) collector.count(resp.status);
 
       return resp;
     })
       .catch(err => {
-        this.stop(task, log, modifier);
+        this.stop(log, task, modifier);
 
         if (collector && collector.countException) collector.countException();
 
@@ -140,13 +140,13 @@ const TrackerAPI = {
    * Starts tracking the time for a given task. All tasks tracked are considered "unique" because
    * there may be multiple SDK instances tracking a "generic" task, making any task non-generic.
    *
-   * @param {string} task - The task we are starting.
    * @param {ILogger} log - Logger.
+   * @param {string} task - The task we are starting.
    * @param {Object} collectors - The collectors map.
    * @param {Promise} promise - (optional) The promise we are tracking.
    * @return {Function | Promise} The stop function for this specific task or the promise received with the callbacks registered.
    */
-  start(task: string, log: ILogger, collectors?: Record<string, MetricsCollector>, promise?: Promise<Response>, now?: () => number): Promise<Response> | (() => number) {
+  start(log: ILogger, task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<Response>, now?: () => number): Promise<Response> | (() => number) {
     const taskUniqueId = uniqueId();
     const taskCollector = getCollectorForTask(task, collectors);
     let result;
@@ -154,10 +154,10 @@ const TrackerAPI = {
     // If we are registering a promise with this task, we should count the status and the exceptions as well
     // as stopping the task when the promise resolves. Then return the promise
     if (thenable(promise)) {
-      result = this.__attachToPromise(promise, task, log, taskCollector, taskUniqueId);
+      result = this.__attachToPromise(log, promise, task, taskCollector, taskUniqueId);
     } else {
       // If not, we return the stop function, as it will be stopped manually.
-      result = this.stop.bind(this, task, log, taskUniqueId);
+      result = this.stop.bind(this, log, task, taskUniqueId);
       if (CALLBACKS[task] && !taskCollector) {
         // and provide a way for a defered setup of the collector, if needed.
         // @ts-expect-error
@@ -193,17 +193,17 @@ const TrackerAPI = {
   /**
    * Stops the tracking of a given task.
    *
-   * @param {string} task - The task we are starting.
    * @param {ILogger} log - Logger.
+   * @param {string} task - The task we are starting.
    * @param {number | string} modifier - (optional) The modifier for that specific task.
    */
-  stop(task: string, log: ILogger, modifier?: number | string) {
+  stop(log: ILogger, task: string, modifier?: number | string) {
     const timerName = generateTimerKey(task, modifier);
     const timerData = timers[timerName];
     if (timerData) {
       // Stop the timer and round result for readability.
       const et = timerData.timer();
-      log.debug(`[${task}] took ${et}ms to finish.`);
+      log.debug(`time tracker: [${task}] took ${et}ms to finish.`);
 
       // Check if we have a tracker callback.
       if (timerData.cb) {

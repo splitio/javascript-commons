@@ -23,10 +23,10 @@ type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetch
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  */
 function segmentChangesUpdaterFactory(
+  log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
   segmentsCache: ISegmentsCacheSync,
   readiness: IReadinessManager,
-  log: ILogger
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -114,14 +114,14 @@ export default function segmentsSyncTaskFactory(
   settings: ISettings,
 ): ISegmentsSyncTask {
   return syncTaskFactory(
+    settings.log,
     segmentChangesUpdaterFactory(
+      settings.log,
       segmentChangesFetcherFactory(fetchSegmentChanges),
       storage.segments,
       readiness,
-      settings.log
     ),
     settings.scheduler.segmentsRefreshRate,
-    'segmentChangesUpdater',
-    settings.log
+    'segmentChangesUpdater'
   );
 }

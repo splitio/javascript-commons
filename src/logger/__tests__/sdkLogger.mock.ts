@@ -1,11 +1,10 @@
-import { ILoggerOptions } from '../types';
 
 export const loggerMock = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
   info: jest.fn(),
-  options: { logLevel: 'NONE', showLevel: true } as ILoggerOptions
+  setLogLevel: jest.fn()
 };
 
 export function mockClear() {
@@ -13,4 +12,5 @@ export function mockClear() {
   loggerMock.error.mockClear();
   loggerMock.debug.mockClear();
   loggerMock.info.mockClear();
+  loggerMock.setLogLevel.mockClear();
 }

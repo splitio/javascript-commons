@@ -27,7 +27,7 @@ export default class Engine {
     }
   }
 
-  static parse(splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync, log: ILogger) {
+  static parse(log: ILogger, splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync) {
     const conditions = splitFlatStructure.conditions;
     const evaluator = parser(log, conditions, storage);
 
