@@ -23,27 +23,27 @@ function fromCache<V>(propertyName: 'latencies' | 'delta') {
  * Sync task that periodically posts telemetry counts
  */
 export function countsSyncTaskFactory(
+  log: ILogger,
   postMetricsCounters: IPostMetricsCounters,
   countsCache: ICountsCacheSync,
   metricsRefreshRate: number,
-  log: ILogger,
   latencyTracker?: ITimeTracker
 ): ISyncTask {
 
-  return submitterSyncTaskFactory(postMetricsCounters, countsCache, metricsRefreshRate, 'count metrics', log, latencyTracker, fromCache<number>('delta'));
+  return submitterSyncTaskFactory(log, postMetricsCounters, countsCache, metricsRefreshRate, 'count metrics', latencyTracker, fromCache<number>('delta'));
 }
 
 /**
  * Sync task that periodically posts telemetry latencies
  */
 export function latenciesSyncTaskFactory(
+  log: ILogger,
   postMetricsLatencies: IPostMetricsTimes,
   latenciesCache: ILatenciesCacheSync,
   metricsRefreshRate: number,
-  log: ILogger,
   latencyTracker?: ITimeTracker
 ): ISyncTask {
 
   // don't retry metrics.
-  return submitterSyncTaskFactory(postMetricsLatencies, latenciesCache, metricsRefreshRate, 'latency metrics', log, latencyTracker, fromCache<number[]>('latencies'));
+  return submitterSyncTaskFactory(log, postMetricsLatencies, latenciesCache, metricsRefreshRate, 'latency metrics', latencyTracker, fromCache<number[]>('latencies'));
 }

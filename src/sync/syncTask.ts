@@ -6,7 +6,7 @@ import { ISyncTask } from './types';
 /**
  * factory of sync tasks
  */
-export default function syncTaskFactory<Input extends any[], Output>(task: (...args: Input) => Promise<Output>, period: number, taskName = 'task', log: ILogger): ISyncTask<Input, Output> {
+export default function syncTaskFactory<Input extends any[], Output>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
   // flag that indicates if the task is being executed
   let executing = false;

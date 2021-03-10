@@ -32,7 +32,7 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
 
       // Evaluator function.
       return (key: string, attributes: SplitIO.Attributes, splitEvaluator: ISplitEvaluator) => {
-        const value = sanitizeValue(key, matcherDto, attributes, log);
+        const value = sanitizeValue(log, key, matcherDto, attributes);
         const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
 
         if (thenable(result)) {
@@ -55,7 +55,7 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
 
     predicates.push(conditionFactory(
       log,
-      andCombiner(expressions, log),
+      andCombiner(log, expressions),
       Treatments.parse(partitions),
       label,
       conditionType
@@ -63,5 +63,5 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
   }
 
   // Instanciate evaluator given the set of conditions using if else if logic
-  return ifElseIfCombiner(predicates, log);
+  return ifElseIfCombiner(log, predicates);
 }

@@ -42,7 +42,7 @@ export default function pushManagerSSFactory(
 
   // init feedback loop (pushEmitter)
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(pushEmitter, log);
+  const sseHandler = SSEHandlerFactory(log, pushEmitter);
   sseClient.setEventHandler(sseHandler);
 
   // init workers

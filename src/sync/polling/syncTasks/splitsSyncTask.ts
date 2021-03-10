@@ -83,13 +83,13 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
  * Exported for testing purposes.
  */
 export function splitChangesUpdaterFactory(
+  log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
   splitsCache: ISplitsCacheSync,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
-  log: ILogger
 ): ISplitChangesUpdater {
 
   let startingUp = true;
@@ -185,17 +185,17 @@ export default function splitsSyncTaskFactory(
   settings: ISettings,
 ): ISplitsSyncTask {
   return syncTaskFactory(
+    settings.log,
     splitChangesUpdaterFactory(
+      settings.log,
       splitChangesFetcherFactory(fetchSplitChanges),
       storage.splits,
       storage.segments,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
-      settings.log,
     ),
     settings.scheduler.featuresRefreshRate,
     'splitChangesUpdater',
-    settings.log
   );
 }

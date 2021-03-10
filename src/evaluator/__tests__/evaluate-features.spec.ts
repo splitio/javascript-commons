@@ -44,11 +44,11 @@ test('EVALUATOR - Multiple evaluations at once  / should return label exception,
 
   // This validation is async because the only exception possible when retrieving a Split would happen with Async storages.
   const evaluation = await evaluateFeatures(
+    loggerMock,
     'fake-key',
     ['throw_exception'],
     null,
     mockStorage,
-    loggerMock
   );
 
   expect(evaluation).toEqual(expectedOutput); // If there was an error on the `getSplits` we should get the results for exception.
@@ -68,11 +68,11 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
   };
 
   const multipleEvaluationAtOnce = await evaluateFeatures(
+    loggerMock,
     'fake-key',
     ['config', 'not_existent_split', 'regular', 'killed', 'archived', 'trafficAlocation1', 'killedWithConfig', 'archivedWithConfig', 'trafficAlocation1WithConfig'],
     null,
     mockStorage,
-    loggerMock
   );
   // assert evaluationWithConfig
   expect(multipleEvaluationAtOnce['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.

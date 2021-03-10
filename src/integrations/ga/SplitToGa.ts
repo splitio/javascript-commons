@@ -56,10 +56,11 @@ export default class SplitToGa implements IIntegration {
    * Other validations (e.g., an `event` hitType must have a `eventCategory` and `eventAction`) are handled
    * and logged (as warnings or errors depending the case) by GA debugger, but the hit is sent anyway.
    *
+   * @param {object} log factory logger
    * @param {UniversalAnalytics.FieldsObject} fieldsObject object to validate.
    * @returns {boolean} Whether the data instance is a valid FieldsObject or not.
    */
-  static validateFieldsObject(fieldsObject: any, log: ILogger): fieldsObject is UniversalAnalytics.FieldsObject {
+  static validateFieldsObject(log: ILogger, fieldsObject: any): fieldsObject is UniversalAnalytics.FieldsObject {
     if (fieldsObject && fieldsObject.hitType) return true;
 
     log.warn('your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
@@ -70,7 +71,7 @@ export default class SplitToGa implements IIntegration {
    * constructor description
    * @param {object} options options passed at the SDK integrations settings (isomorphic SDK) or the SplitToGoogleAnalytics plugin (pluggable browser SDK)
    */
-  constructor(options: SplitToGoogleAnalyticsOptions, log: ILogger) {
+  constructor(log: ILogger, options: SplitToGoogleAnalyticsOptions) {
 
     this.trackerNames = SplitToGa.defaultTrackerNames;
     this.log = log;
@@ -111,7 +112,7 @@ export default class SplitToGa implements IIntegration {
         if (this.mapper) {
           fieldsObject = this.mapper(data, fieldsObject);
           // don't send the hit if it is falsy or invalid
-          if (!fieldsObject || !SplitToGa.validateFieldsObject(fieldsObject, this.log)) return;
+          if (!fieldsObject || !SplitToGa.validateFieldsObject(this.log, fieldsObject)) return;
         }
       } catch (err) {
         this.log.warn(`SplitToGa queue method threw: ${err}. No hit was sent.`);

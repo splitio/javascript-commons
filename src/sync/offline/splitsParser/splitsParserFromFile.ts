@@ -40,7 +40,7 @@ function configFilesPath(configFilePath?: SplitIO.MockedFeaturesFilePath): Split
 }
 
 // Parse `.split` configuration file and return a map of "Split Objects"
-function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogger): false | Record<string, ISplitPartial> {
+function readSplitConfigFile(log: ILogger, filePath: SplitIO.MockedFeaturesFilePath): false | Record<string, ISplitPartial> {
   const SPLIT_POSITION = 0;
   const TREATMENT_POSITION = 1;
   let data;
@@ -80,7 +80,7 @@ function readSplitConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILog
 }
 
 // Parse `.yml` or `.yaml` configuration files and return a map of "Split Objects"
-function readYAMLConfigFile(filePath: SplitIO.MockedFeaturesFilePath, log: ILogger): false | Record<string, ISplitPartial> {
+function readYAMLConfigFile(log: ILogger, filePath: SplitIO.MockedFeaturesFilePath): false | Record<string, ISplitPartial> {
   let data = '';
   let yamldoc = null;
 
@@ -168,9 +168,9 @@ export default function splitsParserFromFile({ features, log }: { features?: Spl
   // If we have a filePath, it means the extension is correct, choose the parser.
   if (endsWith(filePath, '.split')) {
     log.warn('.split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.');
-    mockData = readSplitConfigFile(filePath, log);
+    mockData = readSplitConfigFile(log, filePath);
   } else {
-    mockData = readYAMLConfigFile(filePath, log);
+    mockData = readYAMLConfigFile(log, filePath);
   }
 
   return mockData;
