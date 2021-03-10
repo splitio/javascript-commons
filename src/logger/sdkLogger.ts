@@ -13,7 +13,7 @@ export function createLoggerAPI(log: ILogger): ILoggerAPI {
 
   function setLogLevel(logLevel: string) {
     if (isLogLevelString(logLevel)) {
-      log.options.logLevel = logLevel;
+      log.setLogLevel(logLevel);
     } else {
       log.error('Invalid Log Level - No changes to the logs will be applied.');
     }

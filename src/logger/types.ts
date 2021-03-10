@@ -6,7 +6,7 @@ export interface ILoggerOptions {
 }
 
 export interface ILogger {
-  options: ILoggerOptions
+  setLogLevel(logLevel: LogLevel): void
 
   debug(msg: string): void
 
