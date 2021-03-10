@@ -4,7 +4,7 @@ import { find } from '../utils/lang';
 import { LogLevel } from '../types';
 import { IMap, _Map } from '../utils/lang/maps';
 
-export const LogLevels: { [level in LogLevel]: LogLevel } = {
+export const LogLevels: { [level: string]: LogLevel } = {
   DEBUG: 'DEBUG',
   INFO: 'INFO',
   WARN: 'WARN',

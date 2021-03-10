@@ -38,7 +38,7 @@ test('SPLIT LOGGER / Logger class shape', () => {
 
 });
 
-const LOG_LEVELS_IN_ORDER: LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
+const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
 /* Utility function to avoid repeating too much code */
 function testLogLevels(levelToTest: LogLevel) {
   // Builds the expected message.
