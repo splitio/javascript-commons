@@ -54,6 +54,7 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
     }
 
     predicates.push(conditionFactory(
+      log,
       andCombiner(expressions, log),
       Treatments.parse(partitions),
       label,
