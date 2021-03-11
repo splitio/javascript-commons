@@ -26,5 +26,6 @@ export function validateLogger(settings: { debug: unknown }): ILogger {
 
   if (isLogger(debug)) return debug;
 
+  // @TODO log error instead of throwing one
   throw new Error('The provided `debug` value at config is not valid');
 }
