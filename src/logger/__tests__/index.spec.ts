@@ -33,10 +33,7 @@ test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof logger.info).toBe('function'); // instance.info should be a method.
   expect(typeof logger.warn).toBe('function'); // instance.warn should be a method.
   expect(typeof logger.error).toBe('function'); // instance.error should be a method.
-  expect(typeof logger.setLogLevel).toBe('function'); // @ts-ignore // instance.setLogLevel should be a method.
-  expect(typeof logger.options.logLevel).toBe('string'); // @ts-ignore // instance.options.logLevel should be a string.
-  expect(typeof logger.options.showLevel).toBe('boolean'); // instance.options.showLevel should be a boolean.
-
+  expect(typeof logger.setLogLevel).toBe('function'); // instance.setLogLevel should be a method.
 });
 
 const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];

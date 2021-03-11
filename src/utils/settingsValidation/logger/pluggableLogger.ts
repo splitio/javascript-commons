@@ -8,8 +8,7 @@ const noopLogger: ILogger = {
   error() { }
 };
 
-function isLogger(log: unknown): log is ILogger {
-  // @ts-ignore
+function isLogger(log: any): log is ILogger {
   return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
 }
 
@@ -27,5 +26,6 @@ export function validateLogger(settings: { debug: unknown }): ILogger {
 
   if (isLogger(debug)) return debug;
 
+  // @TODO log error instead of throwing one
   throw new Error('The provided `debug` value at config is not valid');
 }

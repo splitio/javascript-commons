@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateKey } from '../key';
 
@@ -42,6 +42,8 @@ const invalidKeyObjects = [
 
 describe('INPUT VALIDATION for Key', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('String and Object keys / Should return the key with no errors logged if the key is correct', () => {
     const validKey = 'validKey';
     const validObjKey = {
@@ -55,8 +57,6 @@ describe('INPUT VALIDATION for Key', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // No errors should be logged.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('String key / Should return false and log error if key is invalid', () => {
@@ -71,8 +71,6 @@ describe('INPUT VALIDATION for Key', () => {
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('String key / Should return stringified version of the key if it is convertible to one and log a warning.', () => {
@@ -87,8 +85,6 @@ describe('INPUT VALIDATION for Key', () => {
     }
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
-
-    mockClear();
   });
 
   test('Object key / Should return false and log error if a part of the key is invalid', () => {
@@ -102,7 +98,7 @@ describe('INPUT VALIDATION for Key', () => {
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
-    mockClear();
+    loggerMock.mockClear();
     // Test invalid matchingKey
     for (let i = 0; i < invalidKeys.length; i++) {
       const invalidKey = {
@@ -119,7 +115,7 @@ describe('INPUT VALIDATION for Key', () => {
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
-    mockClear();
+    loggerMock.mockClear();
 
     // Test invalid bucketingKey
     for (let i = 0; i < invalidKeys.length; i++) {
@@ -137,7 +133,7 @@ describe('INPUT VALIDATION for Key', () => {
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
 
-    mockClear();
+    loggerMock.mockClear();
 
     // Just one test that if both are invalid we get the log for both.
     let invalidKey = {
@@ -152,8 +148,6 @@ describe('INPUT VALIDATION for Key', () => {
     expect(loggerMock.error.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The error should be logged for the invalid key property.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Object key / Should return stringified version of the key props if those are convertible and log the corresponding warnings', () => {
@@ -173,7 +167,5 @@ describe('INPUT VALIDATION for Key', () => {
     expect(loggerMock.warn.mock.calls[1][0]).toEqual(`test_method: ${expectedLogBK}`); // The warning should be logged for the stringified prop if warnings are enabled.
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
-
-    mockClear();
   });
 });

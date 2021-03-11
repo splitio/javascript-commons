@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateEventValue } from '../eventValue';
 
@@ -19,6 +19,8 @@ const invalidValues = [
 
 describe('INPUT VALIDATION for Event Values', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Should return the passed value if it is a valid finite number without logging any errors', () => {
     expect(validateEventValue(loggerMock, 50, 'some_method_eventValue')).toBe(50); // It should return the passed number if it is valid.
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
@@ -26,8 +28,6 @@ describe('INPUT VALIDATION for Event Values', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Should return the passed value if it is a null or undefined (since it is optional) without logging any errors', () => {
@@ -37,8 +37,6 @@ describe('INPUT VALIDATION for Event Values', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Should return false and log error if event value is not a valid finite number', () => {
@@ -52,7 +50,5 @@ describe('INPUT VALIDATION for Event Values', () => {
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 });
