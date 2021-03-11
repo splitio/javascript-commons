@@ -1,7 +1,7 @@
 import BrowserSignalListener from '../browser';
 import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
-import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 /* Mocks start */
 
@@ -62,8 +62,6 @@ const fakeSplitApi = {
   postTestImpressionsCount: jest.fn(() => Promise.resolve())
 } as ISplitApi;
 
-const fakeSettings = settingsSplitApi;
-
 const UNLOAD_DOM_EVENT = 'unload';
 const unloadEventListeners = new Set<() => any>();
 
@@ -109,7 +107,7 @@ function triggerUnloadEvent() {
 
 test('Browser JS listener / Impressions optimized mode', (done) => {
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -140,7 +138,7 @@ test('Browser JS listener / Impressions optimized mode', (done) => {
 
 test('Browser JS listener / Impressions debug mode', (done) => {
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -174,7 +172,7 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', (don
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
 

@@ -4,6 +4,7 @@ import { impressionObserverSSFactory } from '../impressionObserver/impressionObs
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 /* Mocks */
 
@@ -36,13 +37,13 @@ describe('Impressions Tracker', () => {
     expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
     const { fakeImpressionsCache, fakeMetadata } = generateMocks();
-    const instance = impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata);
+    const instance = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata);
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method which will actually track queued impressions.
   });
 
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
     const { fakeImpressionsCache, fakeMetadata } = generateMocks();
-    const tracker = impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata);
+    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata);
 
     const imp1 = {
       feature: '10',
@@ -63,7 +64,7 @@ describe('Impressions Tracker', () => {
 
   test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
     const { fakeImpressionsCache, fakeMetadata, fakeListener, fakeIntegrationsManager } = generateMocks();
-    const tracker = impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata, fakeListener, fakeIntegrationsManager);
+    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, fakeListener, fakeIntegrationsManager);
 
     const fakeImpression = {
       feature: 'impression'
@@ -138,8 +139,8 @@ describe('Impressions Tracker', () => {
     impression3.time = 1234567891;
 
     const trackers = [
-      impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverSSFactory()),
-      impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory())
+      impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverSSFactory()),
+      impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory())
     ];
 
     expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // storage method should not be called until impressions are tracked.
@@ -167,7 +168,7 @@ describe('Impressions Tracker', () => {
     impression3.time = Date.now();
 
     const impressionCountsCache = new ImpressionCountsCacheInMemory();
-    const tracker = impressionsTrackerFactory(fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory(), impressionCountsCache);
+    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory(), impressionCountsCache);
 
     expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // cache method should not be called by just creating a tracker
 

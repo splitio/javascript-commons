@@ -1,3 +1,4 @@
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { CONSUMER_MODE, STANDALONE_MODE } from '../../utils/constants';
 import { sdkClientMethodFactory } from '../sdkClientMethod';
 import { assertClientApi } from './testUtils';
@@ -11,7 +12,7 @@ const paramMocks = [
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: undefined,
-    settings: { mode: CONSUMER_MODE }
+    settings: { mode: CONSUMER_MODE, log: loggerMock }
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -19,7 +20,7 @@ const paramMocks = [
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: { stop: jest.fn() },
-    settings: { mode: STANDALONE_MODE }
+    settings: { mode: STANDALONE_MODE, log: loggerMock }
   }
 ];
 

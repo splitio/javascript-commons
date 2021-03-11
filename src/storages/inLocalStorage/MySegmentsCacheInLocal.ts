@@ -1,16 +1,19 @@
+import { ILogger } from '../../logger/types';
 import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
-import { logFactory } from '../../logger/sdkLogger';
 import KeyBuilderCS from '../KeyBuilderCS';
-const log = logFactory('splitio-storage:localstorage');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-storage:localstorage');
 
 const DEFINED = '1';
 
 export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
   private readonly keys: KeyBuilderCS;
+  private readonly log: ILogger;
 
-  constructor(keys: KeyBuilderCS) {
+  constructor(log: ILogger, keys: KeyBuilderCS) {
     super();
+    this.log = log;
     this.keys = keys;
     // There is not need to flush segments cache like splits cache, since resetSegments receives the up-to-date list of active segments
   }
@@ -20,7 +23,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
    * @NOTE this method is not being used at the moment.
    */
   clear() {
-    log.info('Flushing MySegments data from localStorage');
+    this.log.info('Flushing MySegments data from localStorage');
 
     // We cannot simply call `localStorage.clear()` since that implies removing user items from the storage
     // We could optimize next sentence, since it implies iterating over all localStorage items
@@ -34,7 +37,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.setItem(segmentKey, DEFINED);
       return true;
     } catch (e) {
-      log.error(e);
+      this.log.error(e);
       return false;
     }
   }
@@ -46,7 +49,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.removeItem(segmentKey);
       return true;
     } catch (e) {
-      log.error(e);
+      this.log.error(e);
       return false;
     }
   }

@@ -6,6 +6,7 @@ import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
 import { SplitIO } from '../types';
+import { ILogger } from '../logger/types';
 
 function collectTreatments(splitObject: ISplit) {
   const conditions = splitObject.conditions;
@@ -51,6 +52,7 @@ function objectsToViews(jsons: string[]) {
 }
 
 export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplitsCacheAsync>(
+  log: ILogger,
   splits: TSplitCache,
   { readinessManager, sdkStatus }: ISdkReadinessManager
 ): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
@@ -64,8 +66,8 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the Split object corresponding to the given split name if valid
        */
       split(maybeSplitName: string) {
-        const splitName = validateSplit(maybeSplitName, SPLIT_FN_LABEL);
-        if (!validateIfNotDestroyed(readinessManager) || !validateIfOperational(readinessManager, SPLIT_FN_LABEL) || !splitName) {
+        const splitName = validateSplit(log, maybeSplitName, SPLIT_FN_LABEL);
+        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
           return null;
         }
 
@@ -73,12 +75,12 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
 
         if (thenable(split)) {
           return split.then(result => {
-            validateSplitExistance(readinessManager, splitName, result, SPLIT_FN_LABEL);
+            validateSplitExistance(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
         }
 
-        validateSplitExistance(readinessManager, splitName, split, SPLIT_FN_LABEL);
+        validateSplitExistance(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
 
         return objectToView(split);
       },
@@ -86,7 +88,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the Split objects present on the factory storage
        */
       splits() {
-        if (!validateIfNotDestroyed(readinessManager) || !validateIfOperational(readinessManager, 'splits')) {
+        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, 'splits')) {
           return [];
         }
         const currentSplits = splits.getAll();
@@ -98,7 +100,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the Split names present on the factory storage
        */
       names() {
-        if (!validateIfNotDestroyed(readinessManager) || !validateIfOperational(readinessManager, 'names')) {
+        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, 'names')) {
           return [];
         }
         return splits.getSplitNames();

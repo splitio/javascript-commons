@@ -1,10 +1,11 @@
 import { SplitIO } from '../../types';
-import { logFactory } from '../../logger/sdkLogger';
 import { IMatcherDto } from '../types';
-const log = logFactory('splitio-engine:value');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:value');
+import { ILogger } from '../../logger/types';
 import sanitizeValue from './sanitize';
 
-function parseValue(key: string, attributeName: string | null, attributes: SplitIO.Attributes) {
+function parseValue(log: ILogger, key: string, attributeName: string | null, attributes: SplitIO.Attributes) {
   let value = undefined;
   if (attributeName) {
     if (attributes) {
@@ -23,10 +24,10 @@ function parseValue(key: string, attributeName: string | null, attributes: Split
 /**
  * Defines value to be matched (key / attribute).
  */
-export default function value(key: string, matcherDto: IMatcherDto, attributes: SplitIO.Attributes) {
+export default function value(log: ILogger, key: string, matcherDto: IMatcherDto, attributes: SplitIO.Attributes) {
   const attributeName = matcherDto.attribute;
-  const valueToMatch = parseValue(key, attributeName, attributes);
-  const sanitizedValue = sanitizeValue(matcherDto.type, valueToMatch, matcherDto.dataType, attributes);
+  const valueToMatch = parseValue(log, key, attributeName, attributes);
+  const sanitizedValue = sanitizeValue(log, matcherDto.type, valueToMatch, matcherDto.dataType, attributes);
 
   if (sanitizedValue !== undefined) {
     return sanitizedValue;

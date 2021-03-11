@@ -1,6 +1,7 @@
 // @ts-nocheck
 import SSEHandlerFactory from '..';
 import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../../constants';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
 import splitUpdateMessage from '../../../../__tests__/mocks/message.SPLIT_UPDATE.1457552620999.json';
@@ -28,7 +29,7 @@ const pushEmitter = { emit: jest.fn() };
 
 test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
 
   // handleOpen
 
@@ -71,7 +72,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
 
 test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
   sseHandler.handleOpen();
 
   // CONTROL messages
@@ -99,7 +100,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   sseHandler.handleMessage(controlStreamingDisabledSec); // testing STREAMING_DISABLED with second region
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // must emit PUSH_NONRETRYABLE_ERROR if received a STREAMING_DISABLED control message
 
-  const sseHandler2 = SSEHandlerFactory(pushEmitter);
+  const sseHandler2 = SSEHandlerFactory(loggerMock, pushEmitter);
   sseHandler2.handleOpen();
 
   sseHandler2.handleMessage(controlStreamingPausedSec); // testing STREAMING_PAUSED with second region
@@ -111,7 +112,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
 });
 
 test('`handlerMessage` for update notifications (NotificationProcessor)', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
@@ -134,7 +135,7 @@ test('`handlerMessage` for update notifications (NotificationProcessor)', () => 
 });
 
 test('handleError', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
@@ -165,7 +166,7 @@ test('handleError', () => {
 });
 
 test('handlerMessage: ignore invalid events', () => {
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 

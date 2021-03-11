@@ -1,8 +1,9 @@
 import { IBetweenMatcherData } from '../../dtos/types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:matcher');
+import { ILogger } from '../../logger/types';
 
-export default function betweenMatcherContext(ruleVO: IBetweenMatcherData) /*: Function */ {
+export default function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatcherData) /*: Function */ {
   return function betweenMatcher(runtimeAttr: number): boolean {
 
     let isBetween = runtimeAttr >= ruleVO.start && runtimeAttr <= ruleVO.end;

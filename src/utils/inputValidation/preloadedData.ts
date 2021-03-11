@@ -1,27 +1,28 @@
 import { isObject, isString, isFiniteNumber } from '../lang';
 import { validateSplit } from './split';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
-function validateTimestampData(maybeTimestamp: any, method: string, item: string) {
+function validateTimestampData(log: ILogger, maybeTimestamp: any, method: string, item: string) {
   if (isFiniteNumber(maybeTimestamp) && maybeTimestamp > -1) return true;
   log.error(`${method}: preloadedData.${item} must be a positive number.`);
   return false;
 }
 
-function validateSplitsData(maybeSplitsData: any, method: string) {
+function validateSplitsData(log: ILogger, maybeSplitsData: any, method: string) {
   if (isObject(maybeSplitsData)) {
     const splitNames = Object.keys(maybeSplitsData);
     if (splitNames.length === 0) log.warn(`${method}: preloadedData.splitsData doesn't contain split definitions.`);
     // @TODO in the future, consider handling the possibility of having parsed definitions of splits
-    if (splitNames.every(splitName => validateSplit(splitName, method) && isString(maybeSplitsData[splitName]))) return true;
+    if (splitNames.every(splitName => validateSplit(log, splitName, method) && isString(maybeSplitsData[splitName]))) return true;
   }
   log.error(`${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`);
   return false;
 }
 
-function validateMySegmentsData(maybeMySegmentsData: any, method: string) {
+function validateMySegmentsData(log: ILogger, maybeMySegmentsData: any, method: string) {
   if (isObject(maybeMySegmentsData)) {
     const userKeys = Object.keys(maybeMySegmentsData);
     if (userKeys.every(userKey => {
@@ -34,7 +35,7 @@ function validateMySegmentsData(maybeMySegmentsData: any, method: string) {
   return false;
 }
 
-function validateSegmentsData(maybeSegmentsData: any, method: string) {
+function validateSegmentsData(log: ILogger, maybeSegmentsData: any, method: string) {
   if (isObject(maybeSegmentsData)) {
     const segmentNames = Object.keys(maybeSegmentsData);
     if (segmentNames.every(segmentName => isString(maybeSegmentsData[segmentName]))) return true;
@@ -43,15 +44,15 @@ function validateSegmentsData(maybeSegmentsData: any, method: string) {
   return false;
 }
 
-export function validatePreloadedData(maybePreloadedData: any, method: string): maybePreloadedData is SplitIO.PreloadedData {
+export function validatePreloadedData(log: ILogger, maybePreloadedData: any, method: string): maybePreloadedData is SplitIO.PreloadedData {
   if (!isObject(maybePreloadedData)) {
     log.error(`${method}: preloadedData must be an object.`);
   } else if (
-    validateTimestampData(maybePreloadedData.lastUpdated, method, 'lastUpdated') &&
-    validateTimestampData(maybePreloadedData.since, method, 'since') &&
-    validateSplitsData(maybePreloadedData.splitsData, method) &&
-    (!maybePreloadedData.mySegmentsData || validateMySegmentsData(maybePreloadedData.mySegmentsData, method)) &&
-    (!maybePreloadedData.segmentsData || validateSegmentsData(maybePreloadedData.segmentsData, method))
+    validateTimestampData(log, maybePreloadedData.lastUpdated, method, 'lastUpdated') &&
+    validateTimestampData(log, maybePreloadedData.since, method, 'since') &&
+    validateSplitsData(log, maybePreloadedData.splitsData, method) &&
+    (!maybePreloadedData.mySegmentsData || validateMySegmentsData(log, maybePreloadedData.mySegmentsData, method)) &&
+    (!maybePreloadedData.segmentsData || validateSegmentsData(log, maybePreloadedData.segmentsData, method))
   ) {
     return true;
   }

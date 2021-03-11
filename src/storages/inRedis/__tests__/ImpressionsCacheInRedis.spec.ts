@@ -2,12 +2,13 @@ import Redis from '../RedisAdapter';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import ImpressionsCacheInRedis from '../ImpressionsCacheInRedis';
 import IORedis, { BooleanResponse } from 'ioredis';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('IMPRESSIONS CACHE IN REDIS / should incrementally store values', async () => {
   const prefix = 'impr_cache_ut';
   const impressionsKey = `${prefix}.impressions`;
   const testMeta = { thisIsTheMeta: true };
-  const connection = new Redis({});
+  const connection = new Redis(loggerMock, {});
   // @ts-expect-error
   const keys = new KeyBuilderSS(prefix); // @ts-expect-error
   const c = new ImpressionsCacheInRedis(keys, connection, testMeta);
@@ -67,7 +68,7 @@ test('IMPRESSIONS CACHE IN REDIS / should not resolve track before calling expir
   const prefix = 'impr_cache_ut_2';
   const impressionsKey = `${prefix}.impressions`;
   const testMeta = { thisIsTheMeta: true };
-  const connection = new Redis({});
+  const connection = new Redis(loggerMock, {});
   // @ts-expect-error
   const keys = new KeyBuilderSS(prefix); // @ts-expect-error
   const c = new ImpressionsCacheInRedis(keys, connection, testMeta);

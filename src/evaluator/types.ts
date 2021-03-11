@@ -2,6 +2,7 @@ import { IBetweenMatcherData, IDependencyMatcherData, MaybeThenable } from '../d
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { ISet } from '../utils/lang/sets';
 import { SplitIO } from '../types';
+import { ILogger } from '../logger/types';
 
 export interface IDependencyMatcherValue {
   key: SplitIO.SplitKey,
@@ -26,7 +27,7 @@ export interface IEvaluation {
 
 export type IEvaluationResult = IEvaluation & { treatment: string }
 
-export type ISplitEvaluator = (key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
+export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
 export type IEvaluator = (key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | undefined>
 

@@ -1,4 +1,5 @@
 import NodeSignalListener from '../node';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const processOnSpy = jest.spyOn(process, 'on');
 const processRemoveListenerSpy = jest.spyOn(process, 'removeListener');
@@ -7,7 +8,7 @@ const processKillSpy = jest.spyOn(process, 'kill').mockImplementation(() => true
 test('Node JS listener / Signal Listener class methods and start/stop functionality', () => {
 
   const handlerMock = jest.fn();
-  const listener = new NodeSignalListener(handlerMock);
+  const listener = new NodeSignalListener(handlerMock, fullSettings);
 
   listener.start();
 
@@ -27,7 +28,7 @@ test('Node JS listener / Signal Listener class methods and start/stop functional
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler', () => {
 
   const handlerMock = jest.fn();
-  const listener = new NodeSignalListener(handlerMock);
+  const listener = new NodeSignalListener(handlerMock, fullSettings);
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -56,7 +57,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
 
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
   const handlerMock = jest.fn(() => { throw 'some error'; });
-  const listener = new NodeSignalListener(handlerMock);
+  const listener = new NodeSignalListener(handlerMock, fullSettings);
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -93,7 +94,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
   });
   const handlerMock = jest.fn(() => fakePromise);
 
-  const listener = new NodeSignalListener(handlerMock);
+  const listener = new NodeSignalListener(handlerMock, fullSettings);
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');
@@ -137,7 +138,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
   });
   const handlerMock = jest.fn(() => fakePromise);
 
-  const listener = new NodeSignalListener(handlerMock);
+  const listener = new NodeSignalListener(handlerMock, fullSettings);
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');

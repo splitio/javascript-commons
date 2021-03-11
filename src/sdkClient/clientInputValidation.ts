@@ -16,24 +16,25 @@ import { CONTROL, CONTROL_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { SplitIO } from '../types';
+import { ILogger } from '../logger/types';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export default function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(client: TClient, readinessManager: IReadinessManager, isStorageSync = false): TClient {
+export default function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient, readinessManager: IReadinessManager, isStorageSync = false): TClient {
 
   /**
    * Avoid repeating this validations code
    */
   function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeSplitOrSplits: string | string[], maybeAttributes: SplitIO.Attributes | undefined, methodName: string) {
     const multi = startsWith(methodName, 'getTreatments');
-    const key = validateKey(maybeKey, methodName);
-    const splitOrSplits = multi ? validateSplits(maybeSplitOrSplits, methodName) : validateSplit(maybeSplitOrSplits, methodName);
-    const attributes = validateAttributes(maybeAttributes, methodName);
-    const isOperational = validateIfNotDestroyed(readinessManager);
+    const key = validateKey(log, maybeKey, methodName);
+    const splitOrSplits = multi ? validateSplits(log, maybeSplitOrSplits, methodName) : validateSplit(log, maybeSplitOrSplits, methodName);
+    const attributes = validateAttributes(log, maybeAttributes, methodName);
+    const isOperational = validateIfNotDestroyed(log, readinessManager);
 
-    validateIfOperational(readinessManager, methodName);
+    validateIfOperational(log, readinessManager, methodName);
 
     const valid = isOperational && key && splitOrSplits && attributes !== false;
 
@@ -97,12 +98,12 @@ export default function clientInputValidationDecorator<TClient extends SplitIO.I
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
-    const key = validateKey(maybeKey, 'track');
-    const tt = validateTrafficType(maybeTT, 'track');
-    const event = validateEvent(maybeEvent, 'track');
-    const eventValue = validateEventValue(maybeEventValue, 'track');
-    const { properties, size } = validateEventProperties(maybeProperties, 'track');
-    const isOperational = validateIfNotDestroyed(readinessManager);
+    const key = validateKey(log, maybeKey, 'track');
+    const tt = validateTrafficType(log, maybeTT, 'track');
+    const event = validateEvent(log, maybeEvent, 'track');
+    const eventValue = validateEventValue(log, maybeEventValue, 'track');
+    const { properties, size } = validateEventProperties(log, maybeProperties, 'track');
+    const isOperational = validateIfNotDestroyed(log, readinessManager);
 
     if (isOperational && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
       return client.track(key, tt, event, eventValue, properties, size);

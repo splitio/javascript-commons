@@ -3,17 +3,13 @@ import promiseWrapper from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
-import { logFactory } from '../logger/sdkLogger';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
-const log = logFactory('');
+import { ILogger } from '../logger/types';
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('');
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
-
-// default onRejected handler, that just logs the error, if ready promise doesn't have one.
-function defaultOnRejected(err: any) {
-  log.error(err);
-}
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -25,6 +21,7 @@ function defaultOnRejected(err: any) {
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export default function sdkReadinessManagerFactory(
+  log: ILogger,
   EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,
   internalReadyCbCount = 0,
@@ -53,6 +50,11 @@ export default function sdkReadinessManagerFactory(
     log.info('Split SDK is ready from cache.');
   });
 
+  // default onRejected handler, that just logs the error, if ready promise doesn't have one.
+  function defaultOnRejected(err: any) {
+    log.error(err);
+  }
+
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
@@ -72,7 +74,7 @@ export default function sdkReadinessManagerFactory(
     readinessManager,
 
     shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
     },
 
     sdkStatus: objectAssign(

@@ -1,10 +1,12 @@
+import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
+
 // include BOM and nbsp
 const TRIMMABLE_SPACES_REGEX = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/;
 
-export function validateSplit(maybeSplit: any, method: string, item = 'split name'): string | false {
+export function validateSplit(log: ILogger, maybeSplit: any, method: string, item = 'split name'): string | false {
   if (maybeSplit == undefined) { // eslint-disable-line eqeqeq
     log.error(`${method}: you passed a null or undefined ${item}, ${item} must be a non-empty string.`);
   } else if (!isString(maybeSplit)) {

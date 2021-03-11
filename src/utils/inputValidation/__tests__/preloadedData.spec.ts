@@ -138,7 +138,7 @@ test('INPUT VALIDATION for preloadedData', () => {
 
   for (let i = 0; i < testCases.length; i++) {
     const testCase = testCases[i];
-    expect(validatePreloadedData(testCase.input, method)).toBe(testCase.output);
+    expect(validatePreloadedData(loggerMock, testCase.input, method)).toBe(testCase.output);
 
     if (testCase.error) {
       expect(loggerMock.error.mock.calls[0]).toEqual([testCase.error]); // Should log the error for the invalid preloadedData.

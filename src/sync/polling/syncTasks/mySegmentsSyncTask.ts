@@ -5,13 +5,13 @@ import { SplitError } from '../../../utils/lang/errors';
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
-
-import { logFactory } from '../../../logger/sdkLogger';
 import { IFetchMySegments } from '../../../services/types';
 import mySegmentsFetcherFactory from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-const log = logFactory('splitio-sync:my-segments');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:my-segments');
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -22,12 +22,13 @@ type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  */
 function mySegmentsUpdaterFactory(
+  log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
   splitsCache: ISplitsCacheSync,
   mySegmentsCache: ISegmentsCacheSync,
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
-  retriesOnFailureBeforeReady: number
+  retriesOnFailureBeforeReady: number,
 ): IMySegmentsUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -104,15 +105,17 @@ export default function mySegmentsSyncTaskFactory(
   matchingKey: string
 ): ISegmentsSyncTask {
   return syncTaskFactory(
+    settings.log,
     mySegmentsUpdaterFactory(
+      settings.log,
       mySegmentsFetcherFactory(fetchMySegments, matchingKey),
       storage.splits,
       storage.segments,
       readiness.segments,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
     ),
     settings.scheduler.segmentsRefreshRate,
-    'mySegmentsUpdater'
+    'mySegmentsUpdater',
   );
 }

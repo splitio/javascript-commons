@@ -210,12 +210,10 @@ describe('sdkClientMethodCSFactory', () => {
     const paramsWithInvalidKeyAndTT = {
       ...params,
       settings: {
+        ...params.settings,
         core: {
           key: true, // invalid key
           trafficType: '' // invalid TT
-        },
-        startup: {
-          readyTimeout: 1,
         }
       }
     };

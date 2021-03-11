@@ -1,5 +1,6 @@
 // @ts-nocheck
 import ifElseIfCombinerFactory from '../ifelseif';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('IF ELSE IF COMBINER / should correctly propagate context parameters and predicates returns value', async function () {
   let inputKey = 'sample';
@@ -16,7 +17,7 @@ test('IF ELSE IF COMBINER / should correctly propagate context parameters and pr
   }
 
   let predicates = [evaluator];
-  let ifElseIfEvaluator = ifElseIfCombinerFactory(predicates);
+  let ifElseIfEvaluator = ifElseIfCombinerFactory(loggerMock, predicates);
 
   expect(await ifElseIfEvaluator(inputKey, inputSeed, inputAttributes) === evaluationResult).toBe(true);
   console.log(`evaluator should return ${evaluationResult}`);
@@ -35,7 +36,7 @@ test('IF ELSE IF COMBINER / should stop evaluating when one matcher return a tre
     }
   ];
 
-  let ifElseIfEvaluator = ifElseIfCombinerFactory(predicates);
+  let ifElseIfEvaluator = ifElseIfCombinerFactory(loggerMock, predicates);
 
   expect(await ifElseIfEvaluator()).toBe('exclude'); // exclude treatment found
 });
@@ -53,7 +54,7 @@ test('IF ELSE IF COMBINER / should return undefined if there is none matching ru
     }
   ];
 
-  const ifElseIfEvaluator = ifElseIfCombinerFactory(predicates);
+  const ifElseIfEvaluator = ifElseIfCombinerFactory(loggerMock, predicates);
 
   expect(await ifElseIfEvaluator() === undefined).toBe(true);
 });

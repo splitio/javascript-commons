@@ -1,7 +1,8 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
-import { logFactory } from '../../../logger/sdkLogger';
-const log = logFactory('splitio-settings');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-settings');
 
 /**
  * This function validates `settings.storage` object
@@ -10,8 +11,8 @@ const log = logFactory('splitio-settings');
  *
  * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
  */
-export function validateStorageCS(settings: any): ISettings['storage'] {
-  const { storage } = settings;
+export function validateStorageCS(settings: { log: ILogger, storage?: any }): ISettings['storage'] {
+  const { storage, log } = settings;
 
   // validate storage
   // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages

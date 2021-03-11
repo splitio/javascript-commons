@@ -1,5 +1,4 @@
 import { ISegmentsSyncTask, ISplitsSyncTask, IPollingManagerCS } from './types';
-import { logFactory } from '../../logger/sdkLogger';
 import { forOwn } from '../../utils/lang';
 import { IReadinessManager } from '../../readiness/types';
 import { ISplitApi } from '../../services/types';
@@ -9,7 +8,8 @@ import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-const log = logFactory('splitio-sync:polling-manager');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:polling-manager');
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -21,6 +21,8 @@ export default function pollingManagerCSFactory(
   readiness: IReadinessManager,
   settings: ISettings,
 ): IPollingManagerCS {
+
+  const log = settings.log;
 
   const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);
 

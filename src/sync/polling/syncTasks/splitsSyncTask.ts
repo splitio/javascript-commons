@@ -7,13 +7,14 @@ import { IReadinessManager, ISplitsEventEmitter } from '../../../readiness/types
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISplitsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import splitChangesFetcherFactory from '../fetchers/splitChangesFetcher';
 import { IFetchSplitChanges } from '../../../services/types';
 import thenable from '../../../utils/promise/thenable';
 import { ISettings } from '../../../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
-const log = logFactory('splitio-sync:split-changes');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:split-changes');
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 
@@ -82,12 +83,13 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
  * Exported for testing purposes.
  */
 export function splitChangesUpdaterFactory(
+  log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
   splitsCache: ISplitsCacheSync,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number,
-  retriesOnFailureBeforeReady: number
+  retriesOnFailureBeforeReady: number,
 ): ISplitChangesUpdater {
 
   let startingUp = true;
@@ -183,15 +185,17 @@ export default function splitsSyncTaskFactory(
   settings: ISettings,
 ): ISplitsSyncTask {
   return syncTaskFactory(
+    settings.log,
     splitChangesUpdaterFactory(
+      settings.log,
       splitChangesFetcherFactory(fetchSplitChanges),
       storage.splits,
       storage.segments,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
     ),
     settings.scheduler.featuresRefreshRate,
-    'splitChangesUpdater'
+    'splitChangesUpdater',
   );
 }

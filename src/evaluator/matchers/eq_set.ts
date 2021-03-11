@@ -1,8 +1,9 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:matcher');
+import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export default function equalToSetMatcherContext(ruleAttr: string[]) /*: Function */ {
+export default function equalToSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function equalToSetMatcher(runtimeAttr: string[]): boolean {
     // Length being the same is the first condition.
     let isEqual = runtimeAttr.length === ruleAttr.length;

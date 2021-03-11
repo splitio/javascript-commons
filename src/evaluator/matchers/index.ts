@@ -17,6 +17,7 @@ import booleanMatcher from './boolean';
 import stringMatcher from './string';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { IMatcher, IMatcherDto } from '../types';
+import { ILogger } from '../../logger/types';
 
 const matchers = [
   undefined, // UNDEFINED: 0,
@@ -42,7 +43,7 @@ const matchers = [
 /**
  * Matcher factory.
  */
-export default function matcherFactory(matcherDto: IMatcherDto, storage?: IStorageSync | IStorageAsync): IMatcher | undefined {
+export default function matcherFactory(log: ILogger, matcherDto: IMatcherDto, storage?: IStorageSync | IStorageAsync): IMatcher | undefined {
   let {
     type,
     value
@@ -50,6 +51,6 @@ export default function matcherFactory(matcherDto: IMatcherDto, storage?: IStora
 
   let matcherFn;
   // @ts-ignore
-  if (matchers[type]) matcherFn = matchers[type](value, storage); // There is no index-out-of-bound exception in JavaScript
+  if (matchers[type]) matcherFn = matchers[type](log, value, storage); // There is no index-out-of-bound exception in JavaScript
   return matcherFn;
 }

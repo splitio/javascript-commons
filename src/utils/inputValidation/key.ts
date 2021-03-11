@@ -1,11 +1,12 @@
 import { isObject, isString, isFiniteNumber, toString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
 const KEY_MAX_LENGTH = 250;
 
-function validateKeyValue(maybeKey: any, method: string, type: string): string | false {
+function validateKeyValue(log: ILogger, maybeKey: any, method: string, type: string): string | false {
   if (maybeKey == undefined) { // eslint-disable-line eqeqeq
     log.error(`${method}: you passed a null or undefined ${type}, ${type} must be a non-empty string.`);
     return false;
@@ -33,11 +34,11 @@ function validateKeyValue(maybeKey: any, method: string, type: string): string |
   return false;
 }
 
-export function validateKey(maybeKey: any, method: string): SplitIO.SplitKey | false {
+export function validateKey(log: ILogger, maybeKey: any, method: string): SplitIO.SplitKey | false {
   if (isObject(maybeKey)) {
     // Validate key object
-    const matchingKey = validateKeyValue(maybeKey.matchingKey, method, 'matchingKey');
-    const bucketingKey = validateKeyValue(maybeKey.bucketingKey, method, 'bucketingKey');
+    const matchingKey = validateKeyValue(log, maybeKey.matchingKey, method, 'matchingKey');
+    const bucketingKey = validateKeyValue(log, maybeKey.bucketingKey, method, 'bucketingKey');
 
     if (matchingKey && bucketingKey) return {
       matchingKey, bucketingKey
@@ -46,6 +47,6 @@ export function validateKey(maybeKey: any, method: string): SplitIO.SplitKey | f
     log.error(`${method}: Key must be an object with bucketingKey and matchingKey with valid string properties.`);
     return false;
   } else {
-    return validateKeyValue(maybeKey, method, 'key');
+    return validateKeyValue(log, maybeKey, method, 'key');
   }
 }

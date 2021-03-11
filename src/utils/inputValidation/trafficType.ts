@@ -1,10 +1,11 @@
+import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('');
 
 const CAPITAL_LETTERS_REGEX = /[A-Z]/;
 
-export function validateTrafficType(maybeTT: any, method: string): string | false {
+export function validateTrafficType(log: ILogger, maybeTT: any, method: string): string | false {
   if (maybeTT == undefined) { // eslint-disable-line eqeqeq
     log.error(`${method}: you passed a null or undefined traffic_type_name, traffic_type_name must be a non-empty string.`);
   } else if (!isString(maybeTT)) {

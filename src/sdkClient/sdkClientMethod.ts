@@ -1,14 +1,14 @@
 import { ISdkClientFactoryParams } from './types';
 import { SplitIO } from '../types';
-import { logFactory } from '../logger/sdkLogger';
 import { sdkClientFactory } from './sdkClient';
-const log = logFactory('splitio');
+// import { logFactory } from '../logger/sdkLogger';
+// const log = logFactory('splitio');
 
 /**
  * Factory of client method for server-side SDKs (ISDK and IAsyncSDK)
  */
 export function sdkClientMethodFactory(params: ISdkClientFactoryParams): () => SplitIO.IClient | SplitIO.IAsyncClient {
-
+  const log = params.settings.log;
   const clientInstance = sdkClientFactory(params);
 
   return function client() {

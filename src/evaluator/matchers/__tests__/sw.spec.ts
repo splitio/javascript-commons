@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER STARTS_WITH / should return true ONLY when the value starts with ["a", "b", "c"]', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.STARTS_WITH,
     value: ['a', 'b', 'c']

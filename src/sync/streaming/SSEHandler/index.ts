@@ -1,11 +1,12 @@
 import { errorParser, messageParser } from './NotificationParser';
 import notificationKeeperFactory from './NotificationKeeper';
 import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
-import { logFactory } from '../../../logger/sdkLogger';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
-const log = logFactory('splitio-sync:sse-handler');
+import { ILogger } from '../../../logger/types';
+// import { logFactory } from '../../../logger/sdkLogger';
+// const log = logFactory('splitio-sync:sse-handler');
 
 function isRetryableError(error: INotificationError) {
   if (error.parsedData && error.parsedData.code) {
@@ -22,9 +23,10 @@ function isRetryableError(error: INotificationError) {
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
+ * @param log factory logger
  * @param pushEmitter emitter for events related to streaming support
  */
-export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseEventHandler {
+export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 

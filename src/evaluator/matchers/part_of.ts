@@ -1,8 +1,9 @@
-import { logFactory } from '../../logger/sdkLogger';
 import { findIndex } from '../../utils/lang';
-const log = logFactory('splitio-engine:matcher');
+// import { logFactory } from '../../logger/sdkLogger';
+// const log = logFactory('splitio-engine:matcher');
+import { ILogger } from '../../logger/types';
 
-export default function partOfMatcherContext(ruleAttr: string[]) /*: Function */ {
+export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function partOfMatcher(runtimeAttr: string[]): boolean {
     // To be part of the length should be minor or equal.
     let isPartOf = runtimeAttr.length <= ruleAttr.length;
