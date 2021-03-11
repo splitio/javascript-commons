@@ -2,7 +2,7 @@ import uniq from 'lodash/uniq';
 import startsWith from 'lodash/startsWith';
 
 // mocks sdkLogger
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 // mocks validateSplit
 jest.mock('../split');
@@ -34,7 +34,7 @@ const invalidSplits = [
 describe('INPUT VALIDATION for Split names', () => {
 
   afterEach(() => {
-    mockClear();
+    loggerMock.mockClear();
     validateSplitMock.mockClear();
   });
 

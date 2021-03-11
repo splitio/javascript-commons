@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { STANDALONE_MODE, CONSUMER_MODE } from '../../constants';
 
@@ -15,6 +15,8 @@ describe('validateSplitFilters', () => {
     queryString: null,
     groupedFilters: { byName: [], byPrefix: [] }
   };
+
+  afterEach(() => { loggerMock.mockClear(); });
 
   test('Returns default output with empty values if `splitFilters` is an invalid object or `mode` is not \'standalone\'', () => {
 
@@ -39,8 +41,6 @@ describe('validateSplitFilters', () => {
 
     expect(loggerMock.debug.mock.calls.length === 0).toBe(true);
     expect(loggerMock.error.mock.calls.length === 0).toBe(true);
-
-    mockClear();
   });
 
   test('Returns object with null queryString, if `splitFilters` contains invalid filters or contains filters with no values or invalid values', () => {
@@ -76,8 +76,6 @@ describe('validateSplitFilters', () => {
       ['Factory instantiation: you passed an invalid byName filter value, byName filter value must be a non-empty string.'],
       ['Factory instantiation: byName filter must be a non-empty array.']
     ]);
-
-    mockClear();
   });
 
   test('Returns object with a queryString, if `splitFilters` contains at least a valid `byName` or `byPrefix` filter with at least a valid value', () => {
@@ -97,8 +95,6 @@ describe('validateSplitFilters', () => {
         expect(() => validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toThrow(queryStrings[i]);
       }
     }
-
-    mockClear();
   });
 
 });

@@ -4,7 +4,7 @@ import { LOCALHOST_MODE, STANDALONE_MODE } from '../../constants';
 import thenable from '../../promise/thenable';
 
 /** Mocks */
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 const TEST_EXISTENT_TT = 'test_existent_tt';
 const TEST_NOT_EXISTENT_TT = 'test_not_existent_tt';
@@ -35,6 +35,11 @@ const errorMsgs = {
 
 describe('validateTrafficTypeExistance', () => {
 
+  afterEach(() => {
+    loggerMock.mockClear();
+    splitsCacheMock.trafficTypeExists.mockClear();
+  });
+
   test('Should return true without going to the storage and log nothing if the SDK is not ready or in localhost mode', () => {
     // Not ready and not localstorage
     expect(validateTrafficTypeExistance(loggerMock, readinessManagerMock, splitsCacheMock, STANDALONE_MODE, 'test_tt', 'test_method')).toBe(true); // If the SDK is not ready yet, it will return true.
@@ -48,8 +53,6 @@ describe('validateTrafficTypeExistance', () => {
     expect(splitsCacheMock.trafficTypeExists.mock.calls.length).toBe(0); // If the SDK is in localhost mode, it does not try to go to the storage.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // If the SDK is in localhost mode, it will not log any warnings.
     expect(loggerMock.error.mock.calls.length).toBe(0); // If the SDK is in localhost mode, it will not log any errors.
-
-    mockClear();
   });
 
   test('Should return true and log nothing if SDK Ready, not localhost mode and the traffic type exists in the storage', () => {
@@ -60,9 +63,6 @@ describe('validateTrafficTypeExistance', () => {
     expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the storage.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // If the SDK is in condition to validate but the TT exists, it will not log any warnings.
     expect(loggerMock.error.mock.calls.length).toBe(0); // If the SDK is in condition to validate but the TT exists, it will not log any errors.
-
-    mockClear();
-    splitsCacheMock.trafficTypeExists.mockClear();
   });
 
   test('Should return false and log warning if SDK Ready, not localhost mode and the traffic type does NOT exist in the storage', () => {
@@ -71,9 +71,6 @@ describe('validateTrafficTypeExistance', () => {
     expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_NOT_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the storage.
     expect(loggerMock.warn.mock.calls).toEqual([[`test_method_y: ${errorMsgs.NOT_EXISTENT_TT(TEST_NOT_EXISTENT_TT)}`]]); // If the SDK is in condition to validate but the TT does not exist in the storage, it will log the expected warning.
     expect(loggerMock.error.mock.calls.length).toBe(0); // It logged a warning so no errors should be logged.
-
-    mockClear();
-    splitsCacheMock.trafficTypeExists.mockClear();
   });
 
   test('validateTrafficTypeExistance w/async storage - If the storage is async but the SDK is in condition to validate, it will validate that the TT exists on the storage', async () => {
@@ -104,8 +101,5 @@ describe('validateTrafficTypeExistance', () => {
     expect(isValid2).toBe(false); // As the split is not on the storage, it will resolve to false, failing the validation..
     expect(loggerMock.warn.mock.calls).toEqual([[`test_method_z: ${errorMsgs.NOT_EXISTENT_TT(TEST_NOT_EXISTENT_ASYNC_TT)}`]]); // If the SDK is in condition to validate but the TT does not exist in the storage, it will log the expected warning.
     expect(loggerMock.error.mock.calls.length).toBe(0); // It logged a warning so no errors should be logged.
-
-    mockClear();
-    splitsCacheMock.trafficTypeExists.mockClear();
   });
 });

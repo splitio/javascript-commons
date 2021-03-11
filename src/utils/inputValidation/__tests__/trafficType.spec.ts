@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateTrafficType } from '../trafficType';
 
@@ -35,6 +35,8 @@ const convertibleTrafficTypes = [
 
 describe('INPUT VALIDATION for Traffic Types', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Should return the provided traffic type if it is a valid string without logging any errors', () => {
     expect(validateTrafficType(loggerMock, 'traffictype', 'some_method_trafficType')).toBe('traffictype'); // It should return the provided string if it is valid.
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
@@ -44,8 +46,6 @@ describe('INPUT VALIDATION for Traffic Types', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Should lowercase the whole traffic type if it is a valid string with uppercases and log a warning (if those are enabled)', () => {
@@ -57,8 +57,6 @@ describe('INPUT VALIDATION for Traffic Types', () => {
     }
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
-
-    mockClear();
   });
 
   test('Should return false and log error if traffic type is not a valid string', () => {
@@ -71,7 +69,5 @@ describe('INPUT VALIDATION for Traffic Types', () => {
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 });

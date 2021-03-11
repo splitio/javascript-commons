@@ -2,7 +2,7 @@ import { SplitIO } from '../../../types';
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../../../utils/constants';
 
 // Mocks
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { gaMock, gaRemove } from './gaMock';
 
 // Test target
@@ -79,7 +79,7 @@ describe('SplitToGa', () => {
   });
 
   test('SplitToGa.getGa', () => {
-    mockClear();
+    loggerMock.mockClear();
 
     const { ga } = gaMock();
     expect(SplitToGa.getGa()).toBe(ga); // should return ga command queue if it exists

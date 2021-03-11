@@ -3,11 +3,11 @@ export const loggerMock = {
   error: jest.fn(),
   debug: jest.fn(),
   info: jest.fn(),
-};
 
-export function mockClear() {
-  loggerMock.warn.mockClear();
-  loggerMock.error.mockClear();
-  loggerMock.debug.mockClear();
-  loggerMock.info.mockClear();
-}
+  mockClear() {
+    this.warn.mockClear();
+    this.error.mockClear();
+    this.debug.mockClear();
+    this.info.mockClear();
+  }
+};
