@@ -6,25 +6,25 @@ test('createLoggerAPI / methods and props', () => {
 
   expect(typeof createLoggerAPI).toBe('function'); // Importing the module should return a function.
 
-  const loggerAPI = createLoggerAPI(logger);
+  const API = createLoggerAPI(logger);
 
-  expect(typeof loggerAPI).toBe('object'); // Our logger should expose an API object.
+  expect(typeof API).toBe('object'); // Our logger should expose an API object.
 
-  expect(typeof loggerAPI.setLogLevel).toBe('function'); // API object should have setLogLevel method.
-  loggerAPI.setLogLevel('INFO'); // @ts-ignore
+  expect(typeof API.setLogLevel).toBe('function'); // API object should have setLogLevel method.
+  API.setLogLevel('INFO'); // @ts-ignore
   expect(logger.options.logLevel).toBe('INFO'); // calling setLogLevel should update the log level.
   // @ts-ignore
-  loggerAPI.setLogLevel('warn'); // @ts-ignore
+  API.setLogLevel('warn'); // @ts-ignore
   expect(logger.options.logLevel).toBe('INFO'); // calling setLogLevel with an invalid value should not update the log level.
 
-  expect(typeof loggerAPI.enable).toBe('function'); // API object should have enable method.
-  loggerAPI.enable(); // @ts-ignore
+  expect(typeof API.enable).toBe('function'); // API object should have enable method.
+  API.enable(); // @ts-ignore
   expect(logger.options.logLevel).toBe('DEBUG'); // calling enable should update logger log level to DEBUG.
 
-  expect(typeof loggerAPI.disable).toBe('function'); // API object should have disable method.
-  loggerAPI.disable(); // @ts-ignore
+  expect(typeof API.disable).toBe('function'); // API object should have disable method.
+  API.disable(); // @ts-ignore
   expect(logger.options.logLevel).toBe('NONE'); // calling disable should update logger log level to NONE.
 
-  expect(loggerAPI.LogLevel).toEqual(LogLevels); // API object should have LogLevel prop including all available levels.
+  expect(API.LogLevel).toEqual(LogLevels); // API object should have LogLevel prop including all available levels.
 
 });
