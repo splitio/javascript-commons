@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateEvent } from '../event';
 
@@ -33,6 +33,8 @@ const invalidEvents = [
 
 describe('INPUT VALIDATION for Event types', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Should return the provided event type if it is a valid string without logging any errors', () => {
 
     expect(validateEvent(loggerMock, 'valid:Too', 'some_method_eventType')).toBe('valid:Too'); // It should return the provided string if it is valid.
@@ -43,8 +45,6 @@ describe('INPUT VALIDATION for Event types', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Should return false and log error if event type is not a valid string', () => {
@@ -59,7 +59,5 @@ describe('INPUT VALIDATION for Event types', () => {
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 });

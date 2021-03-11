@@ -1,7 +1,7 @@
 
 import * as LabelConstants from '../../labels';
 
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateSplitExistance } from '../splitExistance';
 import { IReadinessManager } from '../../../readiness/types';
@@ -11,6 +11,8 @@ const errorMsgs = {
 };
 
 describe('Split existance (special case)', () => {
+
+  afterEach(() => { loggerMock.mockClear(); });
 
   test('Should return a boolean indicating if the SDK was ready and there was no Split object or "definition not found" label', () => {
     // @ts-expect-error
@@ -44,7 +46,5 @@ describe('Split existance (special case)', () => {
     loggerMock.warn.mock.calls.forEach(call => expect(call[0]).toBe(`other_method: ${errorMsgs.NOT_EXISTENT_SPLIT('other_split')}`)); // Warning logs should have the correct message.
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // We log warnings, not errors.
-
-    mockClear();
   });
 });

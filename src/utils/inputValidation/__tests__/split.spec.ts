@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateSplit } from '../split';
 
@@ -35,6 +35,8 @@ const trimmableSplits = [
 
 describe('INPUT VALIDATION for Split name', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Should return the provided split name if it is a valid string without logging any errors', () => {
     expect(validateSplit(loggerMock, 'splitName', 'some_method_splitName')).toBe('splitName'); // It should return the provided string if it is valid.
     expect(loggerMock.error.mock.calls[0]).not.toEqual('some_method_splitName'); // Should not log any errors.
@@ -44,8 +46,6 @@ describe('INPUT VALIDATION for Split name', () => {
     expect(loggerMock.error.mock.calls[0]).not.toEqual('some_method_splitName'); // Should not log any errors.
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 
   test('Should trim split name if it is a valid string with trimmable spaces and log a warning (if those are enabled)', () => {
@@ -58,8 +58,6 @@ describe('INPUT VALIDATION for Split name', () => {
     }
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
-
-    mockClear();
   });
 
   test('Should return false and log error if split name is not a valid string', () => {
@@ -75,7 +73,5 @@ describe('INPUT VALIDATION for Split name', () => {
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
-
-    mockClear();
   });
 });

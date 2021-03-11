@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { loggerMock, mockClear } from '../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { IEventEmitter } from '../../types';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
 import sdkReadinessManagerFactory from '../sdkReadinessManager';
@@ -34,9 +34,7 @@ function emitTimeoutEvent(readinessManager: IReadinessManager) {
 
 describe('SDK Readiness Manager - Event emitter', () => {
 
-  afterEach(() => {
-    mockClear();
-  });
+  afterEach(() => { loggerMock.mockClear(); });
 
   test('Providing the gate object to get the SDK status interface that manages events', () => {
     expect(typeof sdkReadinessManagerFactory).toBe('function'); // The module exposes a function.
@@ -256,7 +254,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
     await ready.then(
       () => {
         expect('It should be a resolved promise when the SDK is ready, even after an SDK timeout.');
-        mockClear();
+        loggerMock.mockClear();
         testPassedCount++;
         expect(testPassedCount).toBe(5);
         done();

@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateApiKey, validateAndTrackApiKey, releaseApiKey } from '../apiKey';
 
@@ -25,13 +25,13 @@ const invalidKeys = [
 
 describe('validateApiKey', () => {
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Should return the passed api key if it is a valid string without logging any errors', () => {
     const validApiKey = 'qjok3snti4dgsticade5hfphmlucarsflv14';
 
     expect(validateApiKey(loggerMock, validApiKey)).toBe(validApiKey); // It should return the passed string if it is valid.
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
-
-    mockClear();
   });
 
   test('Should return false and log error if the api key is invalid', () => {
@@ -44,12 +44,12 @@ describe('validateApiKey', () => {
 
       loggerMock.error.mockClear();
     }
-
-    mockClear();
   });
 });
 
 describe('validateAndTrackApiKey', () => {
+
+  afterEach(() => { loggerMock.mockClear(); });
 
   test('Should log a warning if we are instantiating more than one factory (different api keys)', () => {
     const validApiKey1 = 'qjok3snti4dgsticade5hfphmlucarsflv14';
@@ -70,13 +70,12 @@ describe('validateAndTrackApiKey', () => {
     releaseApiKey(validApiKey2);
     releaseApiKey(validApiKey3);
 
-    mockClear();
+    loggerMock.mockClear();
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey1)).toBe(validApiKey1);
     expect(loggerMock.warn.mock.calls.length).toBe(0); // If all the keys were released and we try again, there is no warning.
 
     releaseApiKey(validApiKey1); // clean up the cache of api keys for next test
-    mockClear();
   });
 
   test('Should log a warning if we are instantiating more than one factory (same api key)', () => {
@@ -104,7 +103,7 @@ describe('validateAndTrackApiKey', () => {
     releaseApiKey(validApiKey);
     releaseApiKey(validApiKey);
 
-    mockClear();
+    loggerMock.mockClear();
 
     // So we get the warning again.
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
@@ -114,12 +113,11 @@ describe('validateAndTrackApiKey', () => {
     releaseApiKey(validApiKey);
     releaseApiKey(validApiKey);
 
-    mockClear();
+    loggerMock.mockClear();
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
     expect(loggerMock.warn.mock.calls.length).toBe(0); // s users, there is no warning when we use it again.
 
     releaseApiKey(validApiKey); // clean up the cache just in case a new test is added
-    mockClear();
   });
 });

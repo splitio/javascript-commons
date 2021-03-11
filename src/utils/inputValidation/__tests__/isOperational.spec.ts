@@ -1,8 +1,10 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateIfNotDestroyed, validateIfOperational } from '../isOperational';
 
 describe('validateIfNotDestroyed', () => {
+
+  afterEach(() => { loggerMock.mockClear(); });
 
   test('Should return true if the client/factory evaluates as operational (not destroyed).', () => {
     const readinessManagerMock = { isDestroyed: jest.fn(() => false) };
@@ -12,8 +14,6 @@ describe('validateIfNotDestroyed', () => {
     expect(readinessManagerMock.isDestroyed.mock.calls.length).toBe(1); // It checks for destroyed status using the context.
     expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // Should not log any warnings.
-
-    mockClear();
   });
 
   test('Should return false and log error if attributes map is invalid', () => {
@@ -24,8 +24,6 @@ describe('validateIfNotDestroyed', () => {
     expect(readinessManagerMock.isDestroyed.mock.calls.length).toBe(1); // It checks for destroyed status using the context.
     expect(loggerMock.error.mock.calls).toEqual([['Client has already been destroyed - no calls possible.']]); // Should log an error.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // But it should not log any warnings.
-
-    mockClear();
   });
 });
 
@@ -39,8 +37,6 @@ describe('validateIfOperational', () => {
     expect(readinessManagerMock.isReady.mock.calls.length).toBe(1); // It checks for readiness status using the context.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // But it should not log any warnings.
     expect(loggerMock.error.mock.calls.length).toBe(0); // But it should not log any errors.
-
-    mockClear();
   });
 
   test('Should return true and log nothing if the SDK was ready from cache.', () => {
@@ -52,8 +48,6 @@ describe('validateIfOperational', () => {
     expect(readinessManagerMock.isReadyFromCache.mock.calls.length).toBe(1); // It checks for SDK_READY_FROM_CACHE status.
     expect(loggerMock.warn.mock.calls.length).toBe(0); // But it should not log any warnings.
     expect(loggerMock.error.mock.calls.length).toBe(0); // But it should not log any errors.
-
-    mockClear();
   });
 
   test('Should return false and log a warning if the SDK was not ready.', () => {
@@ -65,7 +59,5 @@ describe('validateIfOperational', () => {
     expect(readinessManagerMock.isReadyFromCache.mock.calls.length).toBe(1); // It checks for SDK_READY_FROM_CACHE status.
     expect(loggerMock.warn.mock.calls).toEqual([['test_method: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.']]); // It should log the expected warning.
     expect(loggerMock.error.mock.calls.length).toBe(0); // But it should not log any errors.
-
-    mockClear();
   });
 });
