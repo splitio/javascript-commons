@@ -9,7 +9,7 @@ import { ISplitApi } from '../services/types';
 import { getMatching } from '../utils/key';
 import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
-import { API } from '../logger/sdkLogger';
+import { createLoggerAPI } from '../logger/sdkLogger';
 // import { logFactory } from '../logger/sdkLogger';
 // const log = logFactory('splitio');
 
@@ -94,7 +94,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     },
 
     // Logger wrapper API
-    Logger: API,
+    Logger: createLoggerAPI(settings.log),
 
     settings,
   };

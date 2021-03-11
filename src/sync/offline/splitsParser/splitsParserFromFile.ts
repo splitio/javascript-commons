@@ -31,10 +31,10 @@ function configFilesPath(configFilePath?: SplitIO.MockedFeaturesFilePath): Split
 
   // Validate the extensions
   if (!(endsWith(configFilePath, '.yaml', true) || endsWith(configFilePath, '.yml', true) || endsWith(configFilePath, '.split', true)))
-    throw `Invalid extension specified for Splits mock file. Accepted extensions are ".yml" and ".yaml". Your specified file is ${configFilePath}`;
+    throw new Error(`Invalid extension specified for Splits mock file. Accepted extensions are ".yml" and ".yaml". Your specified file is ${configFilePath}`);
 
   if (!fs.existsSync(configFilePath as SplitIO.MockedFeaturesFilePath))
-    throw `Split configuration not found in ${configFilePath} - Please review your Split file location.`;
+    throw new Error(`Split configuration not found in ${configFilePath} - Please review your Split file location.`);
 
   return configFilePath as SplitIO.MockedFeaturesFilePath;
 }

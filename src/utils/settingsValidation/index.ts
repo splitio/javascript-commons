@@ -1,10 +1,8 @@
 import { merge } from '../lang';
 import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { API, logFactory } from '../../logger/sdkLogger';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
-import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
 
 const base = {
@@ -86,18 +84,6 @@ function fromSecondsToMillis(n: number) {
   return Math.round(n * 1000);
 }
 
-function setupLogger(debugValue: any) {
-  if (typeof debugValue === 'boolean') {
-    if (debugValue) {
-      API.enable();
-    } else {
-      API.disable();
-    }
-  } else if (typeof debugValue === 'string') {
-    API.setLogLevel(debugValue as LogLevel);
-  }
-}
-
 /**
  * Validates the given config and use it to build a settings object.
  *
@@ -106,13 +92,14 @@ function setupLogger(debugValue: any) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations } = validationParams;
+  const { defaults, runtime, storage, integrations, logger } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
 
-  // ensure a valid logger
-  const log = logFactory('splitio'); // @ts-ignore, modify readonly prop
+  // ensure a valid logger.
+  // First thing to validate, since other validators might use the logger.
+  const log = logger(withDefaults); // @ts-ignore, modify readonly prop
   withDefaults.log = log;
 
   // Scheduler periods
@@ -135,8 +122,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid Storage based on mode defined.
   // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
-
-  setupLogger(withDefaults.debug);
 
   // Although `key` is mandatory according to TS declaration files, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
   if (withDefaults.mode === LOCALHOST_MODE && withDefaults.core.key === undefined) {
