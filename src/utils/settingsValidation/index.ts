@@ -112,7 +112,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
 
   // ensure a valid logger
-  const log = logFactory('splitio'); // @ts-ignore
+  const log = logFactory('splitio'); // @ts-ignore, modify readonly prop
   withDefaults.log = log;
 
   // Scheduler periods
@@ -129,11 +129,11 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
 
   // ensure a valid Storage based on mode defined.
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
 
   setupLogger(withDefaults.debug);
@@ -144,16 +144,16 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // Current ip/hostname information
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
   // validate push options
-  if (withDefaults.streamingEnabled !== false) { // @ts-ignore
+  if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
@@ -162,7 +162,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // validate the `splitFilters` settings and parse splits query
   const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
-  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters; // @ts-ignore
+  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
   // ensure a valid impressionsMode
