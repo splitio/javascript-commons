@@ -9,6 +9,7 @@ import { ILogger } from '../../logger/types';
 // const log = logFactory('splitio-split-to-ga');
 
 const noGaWarning = '`ga` command queue not found.';
+const noHit = 'No hit was sent.';
 
 export default class SplitToGa implements IIntegration {
 
@@ -115,7 +116,7 @@ export default class SplitToGa implements IIntegration {
           if (!fieldsObject || !SplitToGa.validateFieldsObject(this.log, fieldsObject)) return;
         }
       } catch (err) {
-        this.log.warn(`SplitToGa queue method threw: ${err}. No hit was sent.`);
+        this.log.warn(`SplitToGa queue method threw: ${err}. ${noHit}`);
         return;
       }
 
@@ -128,7 +129,7 @@ export default class SplitToGa implements IIntegration {
         ga(sendCommand, fieldsObject);
       });
     } else {
-      this.log.warn(`${noGaWarning} No hit was sent.`);
+      this.log.warn(`${noGaWarning} ${noHit}`);
     }
   }
 

@@ -16,6 +16,8 @@ function buildInstanceId(key: SplitIO.SplitKey) {
   return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-`;
 }
 
+const method = 'Client instantiation';
+
 /**
  * Factory of client method for the client-side API variant where TT is ignored and thus
  * clients don't have a binded TT for the track method.
@@ -26,7 +28,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
   // Keeping similar behaviour as in the isomorphic JS SDK: if settings key is invalid,
   // `false` value is used as binded key of the default client, but trafficType is ignored
   // @TODO handle as a non-recoverable error
-  const validKey = validateKey(log, key, 'Client instantiation');
+  const validKey = validateKey(log, key, method);
 
   const mainClientInstance = clientCSDecorator(
     sdkClientFactory(params) as SplitIO.IClient, // @ts-ignore
@@ -47,7 +49,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
     }
 
     // Validate the key value. The trafficType (2nd argument) is ignored
-    const validKey = validateKey(log, key, 'Shared Client instantiation');
+    const validKey = validateKey(log, key, `Shared ${method}`);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
     }
