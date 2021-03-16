@@ -1,8 +1,6 @@
 import { ERROR_14, ERROR_15, ERROR_16, ERROR_17 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 const EVENT_TYPE_REGEX = /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/;
 

@@ -14,8 +14,6 @@ import { ISettings } from '../../../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { DEBUG_42, DEBUG_43, DEBUG_44, DEBUG_45, WARN_5, INFO_10 } from '../../../logger/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:split-changes');
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 

@@ -9,8 +9,6 @@ import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { INFO_2, INFO_3 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client');
 
 
 /**

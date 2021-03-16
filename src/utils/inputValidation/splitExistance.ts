@@ -2,8 +2,6 @@ import { SPLIT_NOT_FOUND } from '../labels';
 import { IReadinessManager } from '../../readiness/types';
 import { ILogger } from '../../logger/types';
 import { WARN_18 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 /**
  * This is defined here and in this format mostly because of the logger and the fact that it's considered a validation at product level.

@@ -5,8 +5,6 @@ import { IEventsHandler, IEventTracker } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
 import { INFO_21, WARN_11 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:event-tracker');
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.

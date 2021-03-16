@@ -1,8 +1,6 @@
 import { ERROR_35, ERROR_36, ERROR_37, WARN_19 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 const CAPITAL_LETTERS_REGEX = /[A-Z]/;
 

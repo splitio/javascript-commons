@@ -6,8 +6,6 @@ import { SDKMode } from '../../types';
 import { MaybeThenable } from '../../dtos/types';
 import { ILogger } from '../../logger/types';
 import { WARN_20 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 function logTTExistanceWarning(log: ILogger, maybeTT: string, method: string) {
   log.warn(WARN_20, [method, maybeTT]);

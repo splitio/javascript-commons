@@ -1,7 +1,5 @@
 import { IDependencyMatcherData, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';

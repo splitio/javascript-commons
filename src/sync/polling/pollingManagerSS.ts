@@ -8,8 +8,6 @@ import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import thenable from '../../utils/promise/thenable';
 import { INFO_8, INFO_9 } from '../../logger/constants';
 import { DEBUG_37, DEBUG_38 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:polling-manager');
 
 /**
  * Expose start / stop mechanism for pulling data from services.

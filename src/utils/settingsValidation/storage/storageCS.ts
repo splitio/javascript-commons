@@ -2,8 +2,6 @@ import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemorySto
 import { ISettings } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { WARN_25 } from '../../../logger/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-settings');
 
 /**
  * This function validates `settings.storage` object

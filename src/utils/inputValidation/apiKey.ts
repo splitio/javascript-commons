@@ -1,8 +1,6 @@
 import { ERROR_API_KEY, WARN_API_KEY } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 /** validates the given api key */
 export function validateApiKey(log: ILogger, maybeApiKey: any): string | false {

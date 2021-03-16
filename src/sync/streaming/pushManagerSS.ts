@@ -15,8 +15,6 @@ import SSEClient from './SSEClient';
 import { ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
 import { WARN_8, INFO_11, INFO_13, INFO_14, ERROR_10, INFO_15, INFO_12 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:push-manager');
 
 /**
  * PushManager factory for server-side

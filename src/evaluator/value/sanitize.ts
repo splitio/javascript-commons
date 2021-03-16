@@ -1,7 +1,5 @@
 import { SplitIO } from '../../types';
 import { IDependencyMatcherValue } from '../types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:sanitize');
 import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';

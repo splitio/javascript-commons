@@ -4,8 +4,6 @@ import objectAssign from 'object-assign';
 import { IMetadata } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { ERROR_39, ERROR_5 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-services:service');
 
 const messageNoFetch = 'Global fetch API is not available.';
 

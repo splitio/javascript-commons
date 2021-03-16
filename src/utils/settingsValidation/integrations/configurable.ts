@@ -15,6 +15,6 @@ export function validateConfigurableIntegrations(settings: { log: ILogger, integ
   return validateIntegrations(
     settings,
     integration => integration && isString(integration.type) && validIntegrationTypes.indexOf(integration.type) > -1,
-    'Integration items must have a valid \'type\' value'
+    'Integration items must have a valid "type" value'
   );
 }

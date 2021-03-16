@@ -3,8 +3,6 @@ import { ISyncTask, ITimeTracker } from '../types';
 import { IRecorderCacheConsumerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { INFO_17, WARN_9, WARN_10 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:submitters');
 
 /**
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask

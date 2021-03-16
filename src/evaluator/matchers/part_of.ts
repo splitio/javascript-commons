@@ -1,6 +1,4 @@
 import { findIndex } from '../../utils/lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import { DEBUG_17 } from '../../logger/constants';
 

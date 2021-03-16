@@ -1,8 +1,6 @@
 import { DEBUG_48, DEBUG_47, DEBUG_49 } from '../logger/constants';
 import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-sync:task');
 
 /**
  * factory of sync tasks
