@@ -1,6 +1,4 @@
 import { DEBUG_21, DEBUG_20 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 
 export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {

@@ -8,8 +8,6 @@ import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
 import { DEBUG_32, INFO_4, DEBUG_33 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio');
 
 function buildInstanceId(key: SplitIO.SplitKey) {
   // @ts-ignore

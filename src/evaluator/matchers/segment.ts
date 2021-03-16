@@ -1,7 +1,5 @@
 import { MaybeThenable } from '../../dtos/types';
 import { ISegmentsCacheBase } from '../../storages/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { DEBUG_18, DEBUG_19 } from '../../logger/constants';

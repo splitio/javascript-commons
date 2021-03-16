@@ -6,8 +6,6 @@ import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
 import { ILogger } from '../../../logger/types';
 import { WARN_6, ERROR_9, WARN_7, DEBUG_46 } from '../../../logger/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:sse-handler');
 
 function isRetryableError(error: INotificationError) {
   if (error.parsedData && error.parsedData.code) {

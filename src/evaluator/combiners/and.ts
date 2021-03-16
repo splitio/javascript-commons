@@ -1,6 +1,4 @@
 import { findIndex } from '../../utils/lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:combiner');
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { MaybeThenable } from '../../dtos/types';

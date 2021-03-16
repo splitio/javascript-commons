@@ -4,8 +4,6 @@ import thenable from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import { DEBUG_28, DEBUG_29, DEBUG_30, ERROR_1 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:cleanup');
 
 /**
  * We'll listen for SIGTERM since it's the standard signal for server shutdown.

@@ -6,8 +6,6 @@ import { IEventEmitter } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ILogger } from '../logger/types';
 import { ERROR_3, INFO_0, INFO_1, WARN_2 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('');
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';

@@ -11,8 +11,6 @@ import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { WARN_4 } from '../../../logger/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:my-segments');
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 

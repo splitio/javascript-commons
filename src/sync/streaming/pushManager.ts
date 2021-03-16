@@ -19,8 +19,6 @@ import { getMatching } from '../../utils/key';
 import { MY_SEGMENTS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP } from './constants';
 import { IPlatform } from '../../sdkFactory/types';
 import { WARN_8, INFO_11, INFO_13, INFO_14, ERROR_10, INFO_15, INFO_12 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:push-manager');
 
 /**
  * PushManager factory:

@@ -1,7 +1,5 @@
 import { SplitIO } from '../../types';
 import { IMatcherDto } from '../types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:value');
 import { ILogger } from '../../logger/types';
 import sanitizeValue from './sanitize';
 import { DEBUG_24, WARN_1, WARN_0 } from '../../logger/constants';

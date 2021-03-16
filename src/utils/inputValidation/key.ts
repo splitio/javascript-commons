@@ -2,8 +2,6 @@ import { isObject, isString, isFiniteNumber, toString } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { ERROR_22, WARN_15, ERROR_25, ERROR_23, ERROR_24, ERROR_26 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 const KEY_MAX_LENGTH = 250;
 

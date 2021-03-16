@@ -1,6 +1,4 @@
 import { DEBUG_14 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import { endsWith as strEndsWith } from '../../utils/lang';
 

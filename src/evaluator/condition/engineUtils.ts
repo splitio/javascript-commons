@@ -1,8 +1,6 @@
 import { DEBUG_3 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { bucket } from '../../utils/murmur3/murmur3';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine');
 
 /**
  * Get the treatment name given a key, a seed, and the percentage of each treatment.

@@ -2,8 +2,6 @@ import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { ERROR_18, ERROR_19, WARN_12, WARN_13 } from '../../logger/constants';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.

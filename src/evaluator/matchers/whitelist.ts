@@ -1,6 +1,4 @@
 import { setToArray, ISet } from '../../utils/lang/sets';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
 import { ILogger } from '../../logger/types';
 import { DEBUG_23 } from '../../logger/constants';
 

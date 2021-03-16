@@ -1,7 +1,5 @@
 import { WARN_21 } from '../../../logger/constants';
 import { ILogger } from '../../../logger/types';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-settings');
 
 /**
  * This function validates `settings.integrations` object

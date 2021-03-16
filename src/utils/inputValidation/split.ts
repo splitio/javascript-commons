@@ -1,8 +1,6 @@
 import { ERROR_22, ERROR_32, WARN_17, ERROR_33 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 // include BOM and nbsp
 const TRIMMABLE_SPACES_REGEX = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/;

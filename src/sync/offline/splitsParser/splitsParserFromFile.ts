@@ -10,8 +10,6 @@ import { ISplitPartial } from '../../../dtos/types';
 import { SplitIO } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { DEBUG_34, DEBUG_35, ERROR_6, WARN_3 } from '../../../logger/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-offline:splits-fetcher');
 
 type IYamlSplitEntry = Record<string, IMockSplitEntry>
 

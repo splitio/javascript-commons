@@ -12,9 +12,6 @@ import { OPTIMIZED, DEBUG } from '../utils/constants';
 import objectAssign from 'object-assign';
 import { DEBUG_26, DEBUG_27 } from '../logger/constants';
 
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:cleanup');
-
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
 
