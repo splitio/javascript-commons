@@ -9,13 +9,13 @@ function isLogger(log: any): log is ILogger {
  * Validates the `debug` (logger) property at config.
  *
  * @param settings user config object
- * @returns the provided logger at `settings.debug` or a new one with NONE log level if invalid or not provided
+ * @returns the provided logger at `settings.debug` or a new one with NONE log level if the provided one is invalid
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
   const log = new Logger('splitio', { logLevel: 'NONE' });
 
-  // @TODO consider debug of boolean or string types
+  // @TODO support boolean and string values?
   if (!debug) return log;
 
   if (isLogger(debug)) return debug;
