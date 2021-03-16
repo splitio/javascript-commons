@@ -3,6 +3,7 @@ import { ILogger } from '../../../logger/types';
 import { LogLevel } from '../../../types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
+import { IMap } from '../../lang/maps';
 
 // @TODO when integrating with other packages, find the best way to handle initial state per environment
 const LS_KEY = 'splitio_debug';
@@ -47,21 +48,25 @@ export function getLogLevel(debugValue: unknown): LogLevel | undefined {
 }
 
 /**
- * Validates the `debug` property at config and use it to set the log level.
- *
- * @param settings user config object
- * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
+ * Factory of logger validator, which validates the `debug` property at config and creates a logger instance with the provided `debug` log level.
  */
-export function validateLogger(settings: { debug: unknown} ): ILogger {
+export function validateLoggerFactory(msgCodes?: IMap<number, string>) {
 
-  const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
+  /**
+   * Validates the `debug` property at config and use it to set the log level.
+   *
+   * @param settings user config object
+   * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
+   */
+  return function validateLogger(settings: { debug: unknown }): ILogger {
 
-  const log = new Logger('splitio', { logLevel: settingLogLevel || initialLogLevel });
+    const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
 
-  // logs error if the provided settings debug value is invalid
-  if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');
+    const log = new Logger('splitio', { logLevel: settingLogLevel || initialLogLevel }, msgCodes);
 
-  return log;
+    // logs error if the provided settings debug value is invalid
+    if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');
+
+    return log;
+  };
 }
-
-

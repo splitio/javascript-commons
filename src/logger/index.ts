@@ -2,6 +2,7 @@ import objectAssign from 'object-assign';
 import { ILoggerOptions, ILogger } from './types';
 import { find } from '../utils/lang';
 import { LogLevel } from '../types';
+import { IMap, _Map } from '../utils/lang/maps';
 
 export const LogLevels: { [level: string]: LogLevel } = {
   DEBUG: 'DEBUG',
@@ -31,36 +32,42 @@ export class Logger implements ILogger {
 
   private category: string;
   private options: Required<ILoggerOptions>;
+  private codes: IMap<number, string>;
 
-  constructor(category: string, options?: ILoggerOptions) {
+  constructor(category: string, options?: ILoggerOptions, codes?: IMap<number, string>) {
     this.category = category;
     this.options = objectAssign({}, defaultOptions, options);
+    this.codes = codes || new _Map();
   }
 
   setLogLevel(logLevel: LogLevel) {
     this.options.logLevel = logLevel;
   }
 
-  debug(msg: string, args?: any[]) {
+  debug(msg: string | number, args?: any[]) {
     this._log(LogLevels.DEBUG, msg, args);
   }
 
-  info(msg: string, args?: any[]) {
+  info(msg: string | number, args?: any[]) {
     this._log(LogLevels.INFO, msg, args);
   }
 
-  warn(msg: string, args?: any[]) {
+  warn(msg: string | number, args?: any[]) {
     this._log(LogLevels.WARN, msg, args);
   }
 
-  error(msg: string, args?: any[]) {
+  error(msg: string | number, args?: any[]) {
     this._log(LogLevels.ERROR, msg, args);
   }
 
-  private _log(level: LogLevel, text: string, args?: any[]) {
+  private _log(level: LogLevel, msg: string | number, args?: any[]) {
     if (this._shouldLog(level)) {
-      if (args) text = sprintf(text, args);
-      const formattedText = this._generateLogMessage(level, text);
+      if (typeof msg === 'number') {
+        const format = this.codes.get(msg);
+        if (format) msg = sprintf(format, args);
+        else msg = `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
+      }
+      const formattedText = this._generateLogMessage(level, msg);
 
       console.log(formattedText);
     }
