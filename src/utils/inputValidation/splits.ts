@@ -1,8 +1,7 @@
+import { ERROR_34 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 export function validateSplits(log: ILogger, maybeSplits: any, method: string, listName = 'split_names', item = 'split name'): string[] | false {
   if (Array.isArray(maybeSplits) && maybeSplits.length > 0) {
@@ -17,6 +16,6 @@ export function validateSplits(log: ILogger, maybeSplits: any, method: string, l
     if (validatedArray.length) return uniq(validatedArray);
   }
 
-  log.error(`${method}: ${listName} must be a non-empty array.`);
+  log.error(ERROR_34, [method, listName]);
   return false;
 }

@@ -15,6 +15,13 @@ export function isLogLevelString(str: string): str is LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
 
+function sprintf(format: string = '', args: any[] = []): string {
+  var i = 0;
+  return format.replace(/%s/g, function () {
+    return args[i++];
+  });
+}
+
 const defaultOptions = {
   logLevel: LogLevels.NONE,
   showLevel: true,
@@ -34,31 +41,32 @@ export class Logger implements ILogger {
     this.options.logLevel = logLevel;
   }
 
-  debug(msg: string) {
-    this._log(LogLevels.DEBUG, msg);
+  debug(msg: string, args?: any[]) {
+    this._log(LogLevels.DEBUG, msg, args);
   }
 
-  info(msg: string) {
-    this._log(LogLevels.INFO, msg);
+  info(msg: string, args?: any[]) {
+    this._log(LogLevels.INFO, msg, args);
   }
 
-  warn(msg: string) {
-    this._log(LogLevels.WARN, msg);
+  warn(msg: string, args?: any[]) {
+    this._log(LogLevels.WARN, msg, args);
   }
 
-  error(msg: string) {
-    this._log(LogLevels.ERROR, msg);
+  error(msg: string, args?: any[]) {
+    this._log(LogLevels.ERROR, msg, args);
   }
 
-  _log(level: LogLevel, text: string) {
+  private _log(level: LogLevel, text: string, args?: any[]) {
     if (this._shouldLog(level)) {
+      if (args) text = sprintf(text, args);
       const formattedText = this._generateLogMessage(level, text);
 
       console.log(formattedText);
     }
   }
 
-  _generateLogMessage(level: LogLevel, text: string) {
+  private _generateLogMessage(level: LogLevel, text: string) {
     const textPre = ' => ';
     let result = '';
 
@@ -73,7 +81,7 @@ export class Logger implements ILogger {
     return result += text;
   }
 
-  _shouldLog(level: LogLevel) {
+  private _shouldLog(level: LogLevel) {
     const logLevel = this.options.logLevel;
     const levels = Object.keys(LogLevels).map((f) => LogLevels[f as keyof typeof LogLevels]);
     const index = levels.indexOf(level); // What's the index of what it's trying to check if it should log

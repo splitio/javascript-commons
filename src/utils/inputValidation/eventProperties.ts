@@ -1,8 +1,7 @@
 import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
+import { ERROR_18, ERROR_19, WARN_12, WARN_13 } from '../../logger/constants';
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -18,7 +17,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {
-    log.error(`${method}: properties must be a plain object.`);
+    log.error(ERROR_18, [method]);
     return { properties: false, size: BASE_EVENT_SIZE };
   }
 
@@ -31,7 +30,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   };
 
   if (keys.length > MAX_PROPERTIES_AMOUNT) {
-    log.warn(`${method}: Event has more than 300 properties. Some of them will be trimmed when processed.`);
+    log.warn(WARN_13, [method]);
   }
 
   for (let i = 0; i < keys.length; i++) {
@@ -48,7 +47,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
       clone[keys[i]] = null;
       val = null;
       isNullVal = true;
-      log.warn(`${method}: Property ${keys[i]} is of invalid type. Setting value to null.`);
+      log.warn(WARN_12, [method, keys[i]]);
     }
 
     if (isNullVal) output.size += ECMA_SIZES.NULL;
@@ -57,7 +56,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
     else if (isStringVal) output.size += val.length * ECMA_SIZES.STRING;
 
     if (output.size > MAX_PROPERTIES_SIZE) {
-      log.error(`${method}: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.`);
+      log.error(ERROR_19, [method]);
       output.properties = false;
       break;
     }

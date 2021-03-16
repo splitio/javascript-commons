@@ -9,8 +9,7 @@ import parseCondition, { IMockSplitEntry } from './parseCondition';
 import { ISplitPartial } from '../../../dtos/types';
 import { SplitIO } from '../../../types';
 import { ILogger } from '../../../logger/types';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-offline:splits-fetcher');
+import { DEBUG_34, DEBUG_35, ERROR_6, WARN_3 } from '../../../logger/constants';
 
 type IYamlSplitEntry = Record<string, IMockSplitEntry>
 
@@ -60,12 +59,12 @@ function readSplitConfigFile(log: ILogger, filePath: SplitIO.MockedFeaturesFileP
     let tuple: string | string[] = line.trim();
 
     if (tuple === '' || tuple.charAt(0) === '#') {
-      log.debug(`Ignoring empty line or comment at #${index}`);
+      log.debug(DEBUG_34, [index]);
     } else {
       tuple = tuple.split(/\s+/);
 
       if (tuple.length !== 2) {
-        log.debug(`Ignoring line since it does not have exactly two columns #${index}`);
+        log.debug(DEBUG_35, [index]);
       } else {
         const splitName = tuple[SPLIT_POSITION];
         const condition = parseCondition({ treatment: tuple[TREATMENT_POSITION] });
@@ -102,7 +101,7 @@ function readYAMLConfigFile(log: ILogger, filePath: SplitIO.MockedFeaturesFilePa
     const splitName = Object.keys(splitEntry)[0];
 
     if (!splitName || !isString(splitEntry[splitName].treatment))
-      log.error('Ignoring entry on YAML since the format is incorrect.');
+      log.error(ERROR_6);
 
     const mockData = splitEntry[splitName];
 
@@ -167,7 +166,7 @@ export default function splitsParserFromFile({ features, log }: { features?: Spl
 
   // If we have a filePath, it means the extension is correct, choose the parser.
   if (endsWith(filePath, '.split')) {
-    log.warn('.split mocks will be deprecated soon in favor of YAML files, which provide more targeting power. Take a look in our documentation.');
+    log.warn(WARN_3);
     mockData = readSplitConfigFile(log, filePath);
   } else {
     mockData = readYAMLConfigFile(log, filePath);

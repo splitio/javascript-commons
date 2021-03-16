@@ -5,8 +5,7 @@ import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
 import { ILogger } from '../../../logger/types';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:sse-handler');
+import { WARN_6, ERROR_9, WARN_7, DEBUG_46 } from '../../../logger/constants';
 
 function isRetryableError(error: INotificationError) {
   if (error.parsedData && error.parsedData.code) {
@@ -41,11 +40,11 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       try {
         errorWithParsedData = errorParser(error);
       } catch (err) {
-        log.warn(`Error parsing SSE error notification: ${err}`);
+        log.warn(WARN_6, [err]);
       }
 
       let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
-      log.error(`Fail to connect to streaming, with error message: ${errorMessage}`);
+      log.error(ERROR_9, [errorMessage]);
 
       if (isRetryableError(errorWithParsedData)) {
         pushEmitter.emit(PUSH_RETRYABLE_ERROR);
@@ -60,12 +59,12 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       try {
         messageWithParsedData = messageParser(message);
       } catch (err) {
-        log.warn(`Error parsing new SSE message notification: ${err}`);
+        log.warn(WARN_7, [err]);
         return;
       }
 
       const { parsedData, data, channel, timestamp } = messageWithParsedData;
-      log.debug(`New SSE message received, with data: ${data}.`);
+      log.debug(DEBUG_46, [data]);
 
       // we only handle update events if streaming is up.
       if (!notificationKeeper.isStreamingUp() && parsedData.type !== OCCUPANCY && parsedData.type !== CONTROL)

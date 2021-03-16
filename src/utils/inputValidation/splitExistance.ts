@@ -1,8 +1,7 @@
 import { SPLIT_NOT_FOUND } from '../labels';
 import { IReadinessManager } from '../../readiness/types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
+import { WARN_18 } from '../../logger/constants';
 
 /**
  * This is defined here and in this format mostly because of the logger and the fact that it's considered a validation at product level.
@@ -11,7 +10,7 @@ import { ILogger } from '../../logger/types';
 export function validateSplitExistance(log: ILogger, readinessManager: IReadinessManager, splitName: string, labelOrSplitObj: any, method: string): boolean {
   if (readinessManager.isReady()) { // Only if it's ready we validate this, otherwise it may just be that the SDK is not ready yet.
     if (labelOrSplitObj === SPLIT_NOT_FOUND || labelOrSplitObj == null) {
-      log.warn(`${method}: you passed "${splitName}" that does not exist in this environment, please double check what Splits exist in the web console.`);
+      log.warn(WARN_18, [method, splitName]);
       return false;
     }
   }

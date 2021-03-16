@@ -7,8 +7,7 @@ import { IMetadata } from '../dtos/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { ILogger } from '../logger/types';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:impressions-tracker');
+import { DEBUG_50, ERROR_11, ERROR_12 } from '../logger/constants';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -64,9 +63,9 @@ export default function impressionsTrackerFactory(
       // If we're on an async storage, handle error and log it.
       if (thenable(res)) {
         res.then(() => {
-          log.debug(`Successfully stored ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}.`);
+          log.debug(DEBUG_50, [impressionsCount, impressionsCount === 1 ? '' : 's']);
         }).catch(err => {
-          log.error(`Could not store impressions bulk with ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}. Error: ${err}`);
+          log.error(ERROR_11, [impressionsCount, impressionsCount === 1 ? '' : 's', err]);
         });
       }
 
@@ -90,7 +89,7 @@ export default function impressionsTrackerFactory(
             try { // An exception on the listeners should not break the SDK.
               if (impressionListener) impressionListener.logImpression(impressionData);
             } catch (err) {
-              log.error(`Impression listener logImpression method threw: ${err}.`);
+              log.error(ERROR_12, [err]);
             }
           }, 0);
         }

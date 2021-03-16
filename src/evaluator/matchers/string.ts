@@ -1,5 +1,4 @@
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
+import { DEBUG_21, DEBUG_20 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
 export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
@@ -9,14 +8,14 @@ export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*:
     try {
       re = new RegExp(ruleAttr);
     } catch (e) {
-      log.debug(`[stringMatcher] ${ruleAttr} is an invalid regex`);
+      log.debug(DEBUG_21, [ruleAttr]);
 
       return false;
     }
 
     let regexMatches = re.test(runtimeAttr);
 
-    log.debug(`[stringMatcher] does ${runtimeAttr} matches with ${ruleAttr}? ${regexMatches ? 'yes' : 'no'}`);
+    log.debug(DEBUG_20, [runtimeAttr, ruleAttr, regexMatches ? 'yes' : 'no']);
 
     return regexMatches;
   };

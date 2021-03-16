@@ -3,8 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
+import { WARN_22, WARN_24, WARN_23, DEBUG_51 } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -98,12 +97,12 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
   if (mode !== STANDALONE_MODE) {
-    log.warn(`Factory instantiation: split filters have been configured but will have no effect if mode is not '${STANDALONE_MODE}', since synchronization is being deferred to an external tool.`);
+    log.warn(WARN_22, [STANDALONE_MODE]);
     return res;
   }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
-    log.warn('Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.');
+    log.warn(WARN_24);
     return res;
   }
 
@@ -114,7 +113,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
       return true;
     } else {
-      log.warn(`Factory instantiation: split filter at position '${index}' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'.`);
+      log.warn(WARN_23, [index]);
     }
     return false;
   });
@@ -126,7 +125,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
-  log.debug(`Factory instantiation: splits filtering criteria is '${res.queryString}'.`);
+  log.debug(DEBUG_51, [res.queryString]);
 
   return res;
 }

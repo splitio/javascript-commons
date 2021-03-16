@@ -10,9 +10,7 @@ import { ImpressionsPayload } from '../sync/submitters/types';
 import { MaybeThenable } from '../dtos/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
 import objectAssign from 'object-assign';
-
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:cleanup');
+import { DEBUG_26, DEBUG_27 } from '../logger/constants';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
@@ -41,7 +39,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   start() {
     if (typeof window !== 'undefined' && window.addEventListener) {
-      this.settings.log.debug('Registering flush handler when unload page event is triggered.');
+      this.settings.log.debug(DEBUG_26);
       window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }
@@ -53,7 +51,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {
-      this.settings.log.debug('Deregistering flush handler when unload page event is triggered.');
+      this.settings.log.debug(DEBUG_27);
       window.removeEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }

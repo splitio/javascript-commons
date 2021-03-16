@@ -1,5 +1,4 @@
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-engine:matcher');
+import { DEBUG_8 } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
@@ -11,7 +10,7 @@ export default function containsAnyMatcherContext(log: ILogger, ruleAttr: string
       if (findIndex(runtimeAttr, e => e === ruleAttr[i]) >= 0) containsAny = true;
     }
 
-    log.debug(`[containsAnyMatcher] ${runtimeAttr} contains at least an element of ${ruleAttr}? ${containsAny}`);
+    log.debug(DEBUG_8, [runtimeAttr, ruleAttr, containsAny]);
 
     return containsAny;
   };

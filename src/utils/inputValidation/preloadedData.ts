@@ -2,8 +2,6 @@ import { isObject, isString, isFiniteNumber } from '../lang';
 import { validateSplit } from './split';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('');
 
 function validateTimestampData(log: ILogger, maybeTimestamp: any, method: string, item: string) {
   if (isFiniteNumber(maybeTimestamp) && maybeTimestamp > -1) return true;

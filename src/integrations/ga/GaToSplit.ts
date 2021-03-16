@@ -13,8 +13,8 @@ import { Identity, GoogleAnalyticsToSplitOptions } from './types';
 import { ILogger } from '../../logger/types';
 import { IIntegrationFactoryParams } from '../types';
 // import { logFactory } from '../../logger/sdkLogger';
-const logName = 'splitio-ga-to-split', logNameMapper = logName + ':mapper';
-// const log = logFactory(logName);
+// const log = logFactory('splitio-ga-to-split');
+const logNameMapper = 'splitio-ga-to-split:mapper';
 
 /**
  * Provides a plugin to use with analytics.js, accounting for the possibility

@@ -10,8 +10,7 @@ import mySegmentsFetcherFactory from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:my-segments');
+import { WARN_4 } from '../../../logger/constants';
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -75,7 +74,7 @@ function mySegmentsUpdaterFactory(
 
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
-        log.warn(`Retrying download of segments #${retry}. Reason: ${error}`);
+        log.warn(WARN_4, [retry, error]);
         return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params
       } else {
         startingUp = false;

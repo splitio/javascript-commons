@@ -6,8 +6,8 @@ import { ISplitApi } from '../../services/types';
 import { ISettings } from '../../types';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import thenable from '../../utils/promise/thenable';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-sync:polling-manager');
+import { INFO_8, INFO_9 } from '../../logger/constants';
+import { DEBUG_37, DEBUG_38 } from '../../logger/constants';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -30,9 +30,9 @@ export default function pollingManagerSSFactory(
 
     // Start periodic fetching (polling)
     start() {
-      log.info('Starting polling');
-      log.debug(`Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
-      log.debug(`Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
+      log.info(INFO_8);
+      log.debug(DEBUG_37, [settings.scheduler.featuresRefreshRate]); // @TODO remove since we already log it in syncTask debug log?
+      log.debug(DEBUG_38, [settings.scheduler.segmentsRefreshRate]); // @TODO remove since we already log it in syncTask debug log?
 
       const startingUp = splitsSyncTask.start();
       if (thenable(startingUp)) {
@@ -44,7 +44,7 @@ export default function pollingManagerSSFactory(
 
     // Stop periodic fetching (polling)
     stop() {
-      log.info('Stopping polling');
+      log.info(INFO_9);
 
       if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
       if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();

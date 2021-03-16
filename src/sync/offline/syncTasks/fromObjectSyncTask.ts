@@ -8,8 +8,7 @@ import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-// import { logFactory } from '../../../logger/sdkLogger';
-// const log = logFactory('splitio-producer:offline');
+import { DEBUG_36, ERROR_7 } from '../../../logger/constants';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
@@ -31,11 +30,11 @@ export function fromObjectUpdaterFactory(
       splitsMock = splitsParser(settings);
     } catch (err) {
       loadError = err;
-      log.error(`There was an issue loading the mock Splits data, no changes will be applied to the current cache. ${err}`);
+      log.error(ERROR_7, [err]);
     }
 
     if (!loadError && splitsMock) {
-      log.debug('Splits data: ');
+      log.debug(DEBUG_36);
       log.debug(JSON.stringify(splitsMock));
 
       forOwn(splitsMock, function (val, name) {

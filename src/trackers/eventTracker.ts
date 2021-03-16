@@ -4,8 +4,7 @@ import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
-// import { logFactory } from '../logger/sdkLogger';
-// const log = logFactory('splitio-client:event-tracker');
+import { INFO_21, WARN_11 } from '../logger/constants';
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
@@ -25,7 +24,7 @@ export default function eventTrackerFactory(
     const msg = `event of type "${eventTypeId}" for traffic type "${trafficTypeName}". Key: ${key}. Value: ${value}. Timestamp: ${timestamp}. ${properties ? 'With properties.' : 'With no properties.'}`;
 
     if (tracked) {
-      log.info(`Successfully qeued ${msg}`);
+      log.info(INFO_21, [msg]);
       if (integrationsManager) {
         // Wrap in a timeout because we don't want it to be blocking.
         setTimeout(function () {
@@ -37,7 +36,7 @@ export default function eventTrackerFactory(
         }, 0);
       }
     } else {
-      log.warn(`Failed to queue ${msg}`);
+      log.warn(WARN_11, [msg]);
     }
 
     return tracked;
