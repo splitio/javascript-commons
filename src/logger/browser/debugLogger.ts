@@ -6,4 +6,7 @@ import { codesDebug } from '../messages/debug';
 import { codesDebugBrowser } from '../messages/debugBrowser';
 import { _Map } from '../../utils/lang/maps';
 
-export const debugLogger = new Logger('splitio', { logLevel: 'DEBUG' }, new _Map(codesError.concat(codesWarn).concat(codesInfo).concat(codesDebug).concat(codesDebugBrowser)));
+export const debugLogger = new Logger(
+  'splitio', { logLevel: 'DEBUG' },
+  new _Map(codesError.concat(codesWarn, codesInfo, codesDebug, codesDebugBrowser))
+);
