@@ -1,4 +1,4 @@
-import { ERROR_13 } from '../../../logger/constants';
+import { ERROR_NOT_PLAIN_OBJECT } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateAttributes } from '../attributes';
@@ -41,7 +41,7 @@ describe('INPUT VALIDATION for Attributes', () => {
       const invalidAttribute = invalidAttributes[i];
 
       expect(validateAttributes(loggerMock, invalidAttribute, 'test_method')).toBe(false); // Invalid attribute objects should return false.
-      expect(loggerMock.error).lastCalledWith(ERROR_13, ['test_method']); // The error should be logged for the invalid attributes map.
+      expect(loggerMock.error).lastCalledWith(ERROR_NOT_PLAIN_OBJECT, ['test_method', 'attributes']); // The error should be logged for the invalid attributes map.
 
       loggerMock.error.mockClear();
     }

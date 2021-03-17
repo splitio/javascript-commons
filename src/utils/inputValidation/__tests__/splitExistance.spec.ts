@@ -5,10 +5,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateSplitExistance } from '../splitExistance';
 import { IReadinessManager } from '../../../readiness/types';
-
-const errorMsgs = {
-  NOT_EXISTENT_SPLIT: (splitName: string) => `you passed "${splitName}" that does not exist in this environment, please double check what Splits exist in the web console.`
-};
+import { WARN_NOT_EXISTENT_SPLIT } from '../../../logger/constants';
 
 describe('Split existance (special case)', () => {
 
@@ -43,7 +40,7 @@ describe('Split existance (special case)', () => {
     expect(validateSplitExistance(loggerMock, readinessManagerMock, 'other_split', LabelConstants.SPLIT_NOT_FOUND, 'other_method')).toBe(false); // Should return false if it receives a label but it is the split not found one.
 
     expect(loggerMock.warn.mock.calls.length).toBe(3); // It should have logged 3 warnings, one per each time we called it
-    loggerMock.warn.mock.calls.forEach(call => expect(call[0]).toBe(`other_method: ${errorMsgs.NOT_EXISTENT_SPLIT('other_split')}`)); // Warning logs should have the correct message.
+    loggerMock.warn.mock.calls.forEach(call => expect(call).toEqual([WARN_NOT_EXISTENT_SPLIT, ['other_method', 'other_split']])); // Warning logs should have the correct message.
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // We log warnings, not errors.
   });

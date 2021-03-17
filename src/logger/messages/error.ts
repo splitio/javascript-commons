@@ -1,4 +1,4 @@
-import { ERROR_0, ERROR_2, ERROR_3, ERROR_4, ERROR_5, ERROR_7, ERROR_9, ERROR_10, ERROR_11, ERROR_12, ERROR_13, ERROR_14, ERROR_15, ERROR_16, ERROR_17, ERROR_18, ERROR_19, ERROR_20, ERROR_21, ERROR_22, ERROR_23, ERROR_24, ERROR_25, ERROR_26, ERROR_32, ERROR_33, ERROR_34, ERROR_35, ERROR_36, ERROR_37, ERROR_38, ERROR_39, ERROR_API_KEY } from '../constants';
+import { ERROR_0, ERROR_2, ERROR_3, ERROR_4, ERROR_5, ERROR_7, ERROR_9, ERROR_10, ERROR_11, ERROR_12, ERROR_EVENT_TYPE_FORMAT, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, ERROR_NOT_FINITE, ERROR_21, ERROR_NULL, ERROR_TOO_LONG, ERROR_INVALID_KEY_OBJECT, ERROR_INVALID, ERROR_EMPTY, ERROR_EMPTY_ARRAY, ERROR_INVALID_ENUM, ERROR_39 } from '../constants';
 
 export const codesError: [number, string][] = [
   [ERROR_0, 'splitio-engine:combiner => Invalid Split provided, no valid conditions found'],
@@ -11,27 +11,19 @@ export const codesError: [number, string][] = [
   [ERROR_10, 'splitio-sync:push-manager => Failed to authenticate for streaming. Error: "%s".'],
   [ERROR_11, 'splitio-client:impressions-tracker => Could not store impressions bulk with %s impression%s. Error: %s'],
   [ERROR_12, 'splitio-client:impressions-tracker => Impression listener logImpression method threw: %s.'],
-  [ERROR_13, '%s: attributes must be a plain object.'],
-  [ERROR_14, '%s: you passed "%s", event_type must adhere to the regular expression /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/g. This means an event_type must be alphanumeric, cannot be more than 80 characters long, and can only include a dash, underscore, period, or colon as separators of alphanumeric characters.'],
-  [ERROR_15, '%s: you passed a null or undefined event_type, event_type must be a non-empty string.'],
-  [ERROR_16, '%s: you passed an invalid event_type, event_type must be a non-empty string.'],
-  [ERROR_17, '%s: you passed an empty event_type, event_type must be a non-empty string.'],
-  [ERROR_18, '%s: properties must be a plain object.'],
-  [ERROR_19, '%s: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.'],
-  [ERROR_20, '%s: value must be a finite number.'],
   [ERROR_21, 'Client has already been destroyed - no calls possible.'],
-  [ERROR_22, '%s: you passed a null or undefined %s, %s must be a non-empty string.'],
-  [ERROR_23, '%s: %s too long, %s must be 250 characters or less.'],
-  [ERROR_24, '%s: you passed an invalid %s type, %s must be a non-empty string.'],
-  [ERROR_25, '%s: you passed an empty string, %s must be a non-empty string.'],
-  [ERROR_26, '%s: Key must be an object with bucketingKey and matchingKey with valid string properties.'],
-  [ERROR_32, '%s: you passed an invalid %s, %s must be a non-empty string.'],
-  [ERROR_33, '%s: you passed an empty %s, %s must be a non-empty string.'],
-  [ERROR_34, '%s: %s must be a non-empty array.'],
-  [ERROR_35, '%s: you passed a null or undefined traffic_type_name, traffic_type_name must be a non-empty string.'],
-  [ERROR_36, '%s: you passed an invalid traffic_type_name, traffic_type_name must be a non-empty string.'],
-  [ERROR_37, '%s: you passed an empty traffic_type_name, traffic_type_name must be a non-empty string.'],
-  [ERROR_38, 'splitio-settings => You passed an invalid impressionsMode, impressionsMode should be one of the following values: "%s" or "%s". Defaulting to "%s" mode.'],
   [ERROR_39, 'Response status is not OK. Status: %s. URL: %s. Message: %s'],
-  [ERROR_API_KEY, 'Factory instantiation: %s, api_key must be a non-empty string']
+  // input validation
+  [ERROR_EVENT_TYPE_FORMAT, '%s: you passed "%s", event_type must adhere to the regular expression /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/g. This means an event_type must be alphanumeric, cannot be more than 80 characters long, and can only include a dash, underscore, period, or colon as separators of alphanumeric characters.'],
+  [ERROR_NOT_PLAIN_OBJECT, '%s: %s must be a plain object.'],
+  [ERROR_SIZE_EXCEEDED, '%s: the maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.'],
+  [ERROR_NOT_FINITE, '%s: value must be a finite number.'],
+  [ERROR_NULL, '%s: you passed a null or undefined %s. It must be a non-empty string.'],
+  [ERROR_TOO_LONG, '%s: %s too long. It must have 250 characters or less.'],
+  [ERROR_INVALID_KEY_OBJECT, '%s: Key must be an object with bucketingKey and matchingKey with valid string properties.'],
+  [ERROR_INVALID, '%s: you passed an invalid %s. It must be a non-empty string.'],
+  [ERROR_EMPTY, '%s: you passed an empty %s. It must be a non-empty string.'],
+  [ERROR_EMPTY_ARRAY, '%s: %s must be a non-empty array.'],
+  // initialization / settings validation
+  [ERROR_INVALID_ENUM, '%s: you passed an invalid %s. It should be one of the following values: %s. Defaulting to "%s" mode.'],
 ];

@@ -1,4 +1,4 @@
-import { ERROR_34 } from '../../logger/constants';
+import { ERROR_EMPTY_ARRAY } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';
@@ -16,6 +16,6 @@ export function validateSplits(log: ILogger, maybeSplits: any, method: string, l
     if (validatedArray.length) return uniq(validatedArray);
   }
 
-  log.error(ERROR_34, [method, listName]);
+  log.error(ERROR_EMPTY_ARRAY, [method, listName]);
   return false;
 }

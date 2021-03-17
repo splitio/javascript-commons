@@ -1,7 +1,7 @@
 import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { ERROR_18, ERROR_19, WARN_12, WARN_13 } from '../../logger/constants';
+import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -17,7 +17,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {
-    log.error(ERROR_18, [method]);
+    log.error(ERROR_NOT_PLAIN_OBJECT, [method, 'properties']);
     return { properties: false, size: BASE_EVENT_SIZE };
   }
 
@@ -30,7 +30,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   };
 
   if (keys.length > MAX_PROPERTIES_AMOUNT) {
-    log.warn(WARN_13, [method]);
+    log.warn(WARN_TRIMMING_PROPERTIES, [method]);
   }
 
   for (let i = 0; i < keys.length; i++) {
@@ -47,7 +47,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
       clone[keys[i]] = null;
       val = null;
       isNullVal = true;
-      log.warn(WARN_12, [method, keys[i]]);
+      log.warn(WARN_SETTING_NULL, [method, keys[i]]);
     }
 
     if (isNullVal) output.size += ECMA_SIZES.NULL;
@@ -56,7 +56,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
     else if (isStringVal) output.size += val.length * ECMA_SIZES.STRING;
 
     if (output.size > MAX_PROPERTIES_SIZE) {
-      log.error(ERROR_19, [method]);
+      log.error(ERROR_SIZE_EXCEEDED, [method]);
       output.properties = false;
       break;
     }
