@@ -12,10 +12,10 @@ export const codesWarn: [number, string][] = [
   [WARN_9, 'splitio-sync:submitters => Droping %s %s after retry. Reason %s.'],
   [WARN_10, 'splitio-sync:submitters => Failed to push %s %s, keeping data to retry on next iteration. Reason %s.'],
   [WARN_11, 'splitio-client:event-tracker => Failed to queue %s'],
+  [WARN_14, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
   // input validation
   [WARN_SETTING_NULL, '%s: Property "%s" is of invalid type. Setting value to null.'],
   [WARN_TRIMMING_PROPERTIES, '%s: Event has more than 300 properties. Some of them will be trimmed when processed.'],
-  [WARN_14, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
   [WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
   [WARN_NOT_EXISTENT_SPLIT, '%s: split "%s" does not exist in this environment, please double check what splits exist in the web console.'],

@@ -12,6 +12,7 @@ export const codesError: [number, string][] = [
   [ERROR_11, 'splitio-client:impressions-tracker => Could not store impressions bulk with %s impression%s. Error: %s'],
   [ERROR_12, 'splitio-client:impressions-tracker => Impression listener logImpression method threw: %s.'],
   [ERROR_21, 'Client has already been destroyed - no calls possible.'],
+  [ERROR_38, 'splitio-settings => You passed an invalid impressionsMode, impressionsMode should be one of the following values: "%s" or "%s". Defaulting to "%s" mode.'],
   [ERROR_39, 'Response status is not OK. Status: %s. URL: %s. Message: %s'],
   // input validation
   [ERROR_EVENT_TYPE_FORMAT, '%s: you passed "%s", event_type must adhere to the regular expression /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/g. This means an event_type must be alphanumeric, cannot be more than 80 characters long, and can only include a dash, underscore, period, or colon as separators of alphanumeric characters.'],
@@ -24,6 +25,4 @@ export const codesError: [number, string][] = [
   [ERROR_INVALID, '%s: you passed an invalid %s. It must be a non-empty string.'],
   [ERROR_EMPTY, '%s: you passed an empty %s. It must be a non-empty string.'],
   [ERROR_EMPTY_ARRAY, '%s: %s must be a non-empty array.'],
-  // initialization / settings validation
-  [ERROR_INVALID_ENUM, '%s: you passed an invalid %s. It should be one of the following values: %s. Defaulting to "%s" mode.'],
 ];
