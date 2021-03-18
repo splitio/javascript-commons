@@ -5,9 +5,8 @@ import { SplitIO } from '../../types';
 import { IIntegration } from '../types';
 import { SplitToGoogleAnalyticsOptions } from './types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-split-to-ga');
 
+const logPrefix = 'split-to-ga: ';
 const noGaWarning = '`ga` command queue not found.';
 const noHit = 'No hit was sent.';
 
@@ -64,7 +63,7 @@ export default class SplitToGa implements IIntegration {
   static validateFieldsObject(log: ILogger, fieldsObject: any): fieldsObject is UniversalAnalytics.FieldsObject {
     if (fieldsObject && fieldsObject.hitType) return true;
 
-    log.warn('your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
+    log.warn(logPrefix + 'your custom mapper returned an invalid FieldsObject instance. It must be an object with at least a `hitType` field.');
     return false;
   }
 
@@ -90,8 +89,8 @@ export default class SplitToGa implements IIntegration {
       this.events = options.events;
     }
 
-    log.info('Started Split-to-GA integration');
-    if (typeof SplitToGa.getGa() !== 'function') log.warn(`${noGaWarning} No hits will be sent until it is available.`);
+    log.info(logPrefix + 'integration started');
+    if (typeof SplitToGa.getGa() !== 'function') log.warn(logPrefix + `${noGaWarning} No hits will be sent until it is available.`);
   }
 
   queue(data: SplitIO.IntegrationData) {
@@ -116,7 +115,7 @@ export default class SplitToGa implements IIntegration {
           if (!fieldsObject || !SplitToGa.validateFieldsObject(this.log, fieldsObject)) return;
         }
       } catch (err) {
-        this.log.warn(`SplitToGa queue method threw: ${err}. ${noHit}`);
+        this.log.warn(logPrefix + `queue method threw: ${err}. ${noHit}`);
         return;
       }
 
@@ -129,7 +128,7 @@ export default class SplitToGa implements IIntegration {
         ga(sendCommand, fieldsObject);
       });
     } else {
-      this.log.warn(`${noGaWarning} ${noHit}`);
+      this.log.warn(logPrefix + `${noGaWarning} ${noHit}`);
     }
   }
 

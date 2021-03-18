@@ -138,7 +138,7 @@ describe('SplitToGa', () => {
     }) as SplitToGa;
     ga.mockClear();
     instance2.queue(fakeImpression);
-    expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` if a Split data (impression or event) is filtered
+    expect(ga).not.toBeCalled(); // shouldn't queue `ga send` if a Split data (impression or event) is filtered
 
     instance2.queue(fakeEvent);
     expect(ga.mock.calls).toEqual([
@@ -171,7 +171,7 @@ describe('SplitToGa', () => {
     }) as SplitToGa;
     ga.mockClear();
     instance4.queue(fakeImpression);
-    expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` if a custom mapper throw an exception
+    expect(ga).not.toBeCalled(); // shouldn't queue `ga send` if a custom mapper throw an exception
 
     // `impressions` flags
     const instance5 = new SplitToGa(loggerMock, {
@@ -179,7 +179,7 @@ describe('SplitToGa', () => {
     }) as SplitToGa;
     ga.mockClear();
     instance5.queue(fakeImpression);
-    expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` for an impression if `impressions` flag is false
+    expect(ga).not.toBeCalled(); // shouldn't queue `ga send` for an impression if `impressions` flag is false
 
     // `impressions` flags
     const instance6 = new SplitToGa(loggerMock, {
@@ -187,7 +187,7 @@ describe('SplitToGa', () => {
     }) as SplitToGa;
     ga.mockClear();
     instance6.queue(fakeEvent);
-    expect(ga.mock.calls.length === 0).toBe(true); // t queue `ga send` for a event if `events` flag is false
+    expect(ga).not.toBeCalled(); // shouldn't queue `ga send` for a event if `events` flag is false
 
     // test teardown
     gaRemove();

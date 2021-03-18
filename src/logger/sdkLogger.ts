@@ -2,8 +2,6 @@ import { LogLevels, isLogLevelString } from './index';
 import { ILoggerAPI } from '../types';
 import { ILogger } from './types';
 import { ERROR_2 } from './constants';
-// const log = logFactory('splitio-utils:logger');
-
 
 /**
  * The public Logger utility API exposed via SplitFactory, used to update the log level.

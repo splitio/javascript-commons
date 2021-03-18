@@ -1,8 +1,7 @@
 import { ILogger } from '../../logger/types';
 import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
 import KeyBuilderCS from '../KeyBuilderCS';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-storage:localstorage');
+import { logPrefix } from './index';
 
 const DEFINED = '1';
 
@@ -23,7 +22,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
    * @NOTE this method is not being used at the moment.
    */
   clear() {
-    this.log.info('Flushing MySegments data from localStorage');
+    this.log.info(logPrefix + 'Flushing MySegments data from localStorage');
 
     // We cannot simply call `localStorage.clear()` since that implies removing user items from the storage
     // We could optimize next sentence, since it implies iterating over all localStorage items
@@ -37,7 +36,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.setItem(segmentKey, DEFINED);
       return true;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
       return false;
     }
   }
@@ -49,7 +48,7 @@ export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       localStorage.removeItem(segmentKey);
       return true;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
       return false;
     }
   }

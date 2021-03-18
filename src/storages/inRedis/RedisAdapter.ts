@@ -4,8 +4,8 @@ import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
 import thenable from '../../utils/promise/thenable';
 import timeout from '../../utils/promise/timeout';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-storage:redis-adapter');
+
+const logPrefix = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
 const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'pipeline', 'expire', 'mget'];
@@ -55,16 +55,16 @@ export default class RedisAdapter extends ioredis {
   _listenToEvents() {
     this.once('ready', () => {
       const commandsCount = this._notReadyCommandsQueue ? this._notReadyCommandsQueue.length : 0;
-      this.log.info(`Redis connection established. Queued commands: ${commandsCount}.`);
+      this.log.info(logPrefix + `Redis connection established. Queued commands: ${commandsCount}.`);
       this._notReadyCommandsQueue && this._notReadyCommandsQueue.forEach(queued => {
-        this.log.info(`Executing queued ${queued.name} command.`);
+        this.log.info(logPrefix + `Executing queued ${queued.name} command.`);
         queued.command().then(queued.resolve).catch(queued.reject);
       });
       // After the SDK is ready for the first time we'll stop queueing commands. This is just so we can keep handling BUR for them.
       this._notReadyCommandsQueue = undefined;
     });
     this.once('close', () => {
-      this.log.info('Redis connection closed.');
+      this.log.info(logPrefix + 'Redis connection closed.');
     });
   }
 
@@ -78,7 +78,7 @@ export default class RedisAdapter extends ioredis {
         const params = arguments;
 
         function commandWrapper() {
-          instance.log.debug(`Executing ${method}.`);
+          instance.log.debug(logPrefix + `Executing ${method}.`);
           // Return original method
           const result = originalMethod.apply(instance, params);
 
@@ -93,7 +93,7 @@ export default class RedisAdapter extends ioredis {
             result.then(cleanUpRunningCommandsCb, cleanUpRunningCommandsCb);
 
             return timeout(instance._options.operationTimeout, result).catch(err => {
-              instance.log.error(`${method} operation threw an error or exceeded configured timeout of ${instance._options.operationTimeout}ms. Message: ${err}`);
+              instance.log.error(logPrefix + `${method} operation threw an error or exceeded configured timeout of ${instance._options.operationTimeout}ms. Message: ${err}`);
               // Handling is not the adapter responsibility.
               throw err;
             });
@@ -126,19 +126,19 @@ export default class RedisAdapter extends ioredis {
 
       setTimeout(function deferedDisconnect() {
         if (instance._runningCommands.size > 0) {
-          instance.log.info(`Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
+          instance.log.info(logPrefix + `Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
 
           Promise.all(setToArray(instance._runningCommands))
             .then(() => {
-              instance.log.debug('Pending commands finished successfully, disconnecting.');
+              instance.log.debug(logPrefix + 'Pending commands finished successfully, disconnecting.');
               originalMethod.apply(instance, params);
             })
             .catch(e => {
-              instance.log.warn(`Pending commands finished with error: ${e}. Proceeding with disconnection.`);
+              instance.log.warn(logPrefix + `Pending commands finished with error: ${e}. Proceeding with disconnection.`);
               originalMethod.apply(instance, params);
             });
         } else {
-          instance.log.debug('No commands pending execution, disconnect.');
+          instance.log.debug(logPrefix + 'No commands pending execution, disconnect.');
           // Nothing pending, just proceed.
           originalMethod.apply(instance, params);
         }
