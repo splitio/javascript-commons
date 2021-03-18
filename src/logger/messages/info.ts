@@ -1,4 +1,4 @@
-import { INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21, EVENTS_TRACKER_LB, SYNC_POLLING_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, SYNC_SUBMITTERS_LB, IMPRESSIONS_TRACKER_LB } from '../constants';
+import { INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21, EVENTS_TRACKER_LB, SYNC_MANAGER_LB, SYNC_POLLING_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, SYNC_SUBMITTERS_LB, IMPRESSIONS_TRACKER_LB } from '../constants';
 
 const READY_MSG = 'Split SDK is ready';
 
@@ -12,6 +12,7 @@ export const codesInfo: [number, string][] = [
   [INFO_4, ' New shared client instance created.'],
   [INFO_5, ' New Split SDK instance created.'],
   [INFO_6, ' Manager instance retrieved.'],
+  [INFO_21, EVENTS_TRACKER_LB + 'Successfully qeued %s'],
   // synchronizer
   [INFO_7, SYNC_POLLING_LB + 'Turning segments data polling %s.'],
   [INFO_8, SYNC_POLLING_LB + 'Starting polling'],
@@ -24,8 +25,7 @@ export const codesInfo: [number, string][] = [
   [INFO_13, SYNC_STREAMING_LB + 'Connecting to streaming.'],
   [INFO_14, SYNC_STREAMING_LB + 'Streaming is disabled for given Api key. Switching to polling mode.'],
   [INFO_15, SYNC_STREAMING_LB + 'Disconnecting from streaming.'],
-  [INFO_18, SYNC_STREAMING_LB + 'Streaming not available. Starting polling.'],
-  [INFO_19, SYNC_STREAMING_LB + 'Streaming couldn\'t connect. Continue polling.'],
-  [INFO_20, SYNC_STREAMING_LB + 'Streaming (re)connected. Syncing and stopping polling.'],
-  [INFO_21, EVENTS_TRACKER_LB + 'Successfully qeued %s']
+  [INFO_18, SYNC_MANAGER_LB + 'Streaming not available. Starting polling.'],
+  [INFO_19, SYNC_MANAGER_LB + 'Streaming couldn\'t connect. Continue polling.'],
+  [INFO_20, SYNC_MANAGER_LB + 'Streaming (re)connected. Syncing and stopping polling.'],
 ];

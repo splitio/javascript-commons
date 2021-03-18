@@ -6,6 +6,7 @@ import { _Set, setToArray } from '../../../utils/lang/sets';
 
 // Mocking sdkLogger
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+const logPrefix = 'storage:redis-adapter: ';
 
 // Mocking ioredis
 
@@ -155,23 +156,23 @@ describe('STORAGE Redis Adapter', () => {
   });
 
   test('instance methods - _listenToEvents', (done) => {
-    expect(ioredisMock.once.mock.calls.length).toBe(0); // Control assertion
-    expect(ioredisMock[METHODS_TO_PROMISE_WRAP[0]].mock.calls.length).toBe(0); // Control assertion
+    expect(ioredisMock.once).not.toBeCalled(); // Control assertion
+    expect(ioredisMock[METHODS_TO_PROMISE_WRAP[0]]).not.toBeCalled(); // Control assertion
 
     const instance = new RedisAdapter(loggerMock, {
       url: 'redis://localhost:6379/0'
     });
 
-    expect(ioredisMock.once.mock.calls.length).toBe(2); // If the method was called, it should have called the `once` function twice. If that it the case we can assume that the method was called on creation.
+    expect(ioredisMock.once).toBeCalledTimes(2); // If the method was called, it should have called the `once` function twice. If that it the case we can assume that the method was called on creation.
 
     // Reset stubs again, we'll check the behaviour calling the method directly.
     clearAllMocks();
-    expect(ioredisMock.once.mock.calls.length).toBe(0); // Control assertion
-    expect(ioredisMock[METHODS_TO_PROMISE_WRAP[METHODS_TO_PROMISE_WRAP.length - 1]].mock.calls.length).toBe(0); // Control assertion
+    expect(ioredisMock.once).not.toBeCalled(); // Control assertion
+    expect(ioredisMock[METHODS_TO_PROMISE_WRAP[METHODS_TO_PROMISE_WRAP.length - 1]]).not.toBeCalled(); // Control assertion
 
     instance._listenToEvents();
 
-    expect(ioredisMock.once.mock.calls.length).toBe(2); // The "once" method of the instance should be called twice.
+    expect(ioredisMock.once).toBeCalledTimes(2); // The "once" method of the instance should be called twice.
 
     const firstCallArgs = ioredisMock.once.mock.calls[0];
 
@@ -183,21 +184,21 @@ describe('STORAGE Redis Adapter', () => {
     expect(secondCallArgs[0]).toBe('close'); // First argument for the first call should be the "close" event.
     expect(typeof secondCallArgs[1]).toBe('function'); // second argument for the first call should be a callback function.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // Control assertion
+    expect(loggerMock.warn).not.toBeCalled(); // Control assertion
     secondCallArgs[1](); // Execute the callback for "close"
 
-    expect(loggerMock.info.mock.calls.length).toBe(1); // The callback for the "close" event will only log info to the user about what is going on.
-    expect(loggerMock.info.mock.calls[0]).toEqual(['Redis connection closed.']); // The callback for the "close" event will only log info to the user about what is going on.
+    expect(loggerMock.info).toBeCalledTimes(1); // The callback for the "close" event will only log info to the user about what is going on.
+    expect(loggerMock.info.mock.calls[0]).toEqual([logPrefix + 'Redis connection closed.']); // The callback for the "close" event will only log info to the user about what is going on.
 
     loggerMock.info.mockClear();
-    expect(loggerMock.info.mock.calls.length).toBe(0); // Control assertion
+    expect(loggerMock.info).not.toBeCalled(); // Control assertion
     expect(Array.isArray(instance._notReadyCommandsQueue)).toBe(true); // Control assertion
 
     // Without any offline commands queued, execute the callback for "ready"
     firstCallArgs[1]();
 
-    expect(loggerMock.info.mock.calls.length).not.toBe(0); // The callback for the "ready" event will inform the user about the trigger.
-    expect(loggerMock.info.mock.calls[0]).toEqual(['Redis connection established. Queued commands: 0.']); // The callback for the "ready" event will inform the user about the trigger.
+    expect(loggerMock.info).toBeCalledTimes(1); // The callback for the "ready" event will inform the user about the trigger.
+    expect(loggerMock.info).toBeCalledWith(logPrefix + 'Redis connection established. Queued commands: 0.'); // The callback for the "ready" event will inform the user about the trigger.
     expect(instance._notReadyCommandsQueue).toBe(undefined); // After the DB is ready, it will clean up the offline commands queue so we do not queue commands anymore.
 
     // Don't do this at home
@@ -219,19 +220,19 @@ describe('STORAGE Redis Adapter', () => {
     // execute the callback for "ready" once more
     firstCallArgs[1]();
 
-    expect(loggerMock.info.mock.calls.length).toBe(3); // If we had queued commands, it will log the event (1 call) as well as each executed command (n calls).
+    expect(loggerMock.info).toBeCalledTimes(3); // If we had queued commands, it will log the event (1 call) as well as each executed command (n calls).
     expect(loggerMock.info.mock.calls).toEqual([
-      ['Redis connection established. Queued commands: 2.'], // The callback for the "ready" event will inform the user about the trigger and the amount of queued commands.
-      ['Executing queued GET command.'], // If we had queued, it will log the event as well as each executed command.
-      ['Executing queued SET command.'] // If we had queued commands, it will log the event as well as each executed command.
+      [logPrefix + 'Redis connection established. Queued commands: 2.'], // The callback for the "ready" event will inform the user about the trigger and the amount of queued commands.
+      [logPrefix + 'Executing queued GET command.'], // If we had queued, it will log the event as well as each executed command.
+      [logPrefix + 'Executing queued SET command.'] // If we had queued commands, it will log the event as well as each executed command.
     ]);
-    expect(queuedGetCommand.command.mock.calls.length).toBe(1); // It will execute each queued command.
+    expect(queuedGetCommand.command).toBeCalledTimes(1); // It will execute each queued command.
 
     setTimeout(() => { // Remember this is tied to a promise.
-      expect(queuedGetCommand.resolve.mock.calls.length).not.toBe(0); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
-      expect(queuedGetCommand.reject.mock.calls.length).toBe(0); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
-      expect(queuedSetCommand.reject.mock.calls.length).not.toBe(0); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
-      expect(queuedSetCommand.resolve.mock.calls.length).toBe(0); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
+      expect(queuedGetCommand.resolve).toBeCalled(); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
+      expect(queuedGetCommand.reject).not.toBeCalled(); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
+      expect(queuedSetCommand.reject).toBeCalled(); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
+      expect(queuedSetCommand.resolve).not.toBeCalled(); // And depending on what happens with the command promise, it will call the resolve or reject function for the promise wrapper.
 
       done();
     }, 5);
@@ -245,7 +246,7 @@ describe('STORAGE Redis Adapter', () => {
 
     forEach(METHODS_TO_PROMISE_WRAP, methodName => {
       expect(instance[methodName]).not.toBe(ioredisMock[methodName]); // Method "${methodName}" from ioredis library should be wrapped.
-      expect(ioredisMock[methodName].mock.calls.length).toBe(0); // Checking that the method was not called yet.
+      expect(ioredisMock[methodName]).not.toBeCalled(); // Checking that the method was not called yet.
 
       const startingQueueLength = instance._notReadyCommandsQueue.length;
 
@@ -267,12 +268,12 @@ describe('STORAGE Redis Adapter', () => {
 
     forEach(METHODS_TO_PROMISE_WRAP, (methodName, index) => {
       // We do NOT have the commands queue on this state, so a call for this methods will execute the command.
-      expect(ioredisMock[methodName].mock.calls.length).toBe(0); // Control assertion - Original method (${methodName}) was not called yet
+      expect(ioredisMock[methodName]).not.toBeCalled(); // Control assertion - Original method (${methodName}) was not called yet
 
       const previousTimeoutCalls = timeout.mock.calls.length;
       let previousRunningCommandsSize = instance._runningCommands.size;
       instance[methodName](methodName).catch(() => { }); // Swallow exception so it's not spread to logs.
-      expect(ioredisMock[methodName].mock.calls.length).not.toBe(0); // Original method (${methodName}) is called right away (through wrapper) when we are not queueing anymore.
+      expect(ioredisMock[methodName]).toBeCalled(); // Original method (${methodName}) is called right away (through wrapper) when we are not queueing anymore.
       expect(instance._runningCommands.size).toBe(previousRunningCommandsSize + 1); // If the result of the operation was a thenable it will add the item to the running commands queue.
 
       expect(timeout.mock.calls.length).toBe(previousTimeoutCalls + 1); // The promise returned by the original method should have a timeout wrapper.
@@ -286,7 +287,7 @@ describe('STORAGE Redis Adapter', () => {
       commandTimeoutResolver.rej('test');
       setTimeout(() => { // Allow the promises to tick.
         expect(instance._runningCommands.has(commandTimeoutResolver.originalPromise)).toBe(false); // After a command finishes with error, it's promise is removed from the instance._runningCommands queue.
-        expect(loggerMock.error.mock.calls[index]).toEqual([`${methodName} operation threw an error or exceeded configured timeout of 5000ms. Message: test`]); // The log error method should be called with the corresponding messages, depending on the method, error and operationTimeout.
+        expect(loggerMock.error.mock.calls[index]).toEqual([`${logPrefix}${methodName} operation threw an error or exceeded configured timeout of 5000ms. Message: test`]); // The log error method should be called with the corresponding messages, depending on the method, error and operationTimeout.
       }, 0);
     });
 
@@ -310,7 +311,7 @@ describe('STORAGE Redis Adapter', () => {
 
       commandTimeoutResolver.res('test');
       setTimeout(() => { // Allow the promises to tick.
-        expect(loggerMock.error.mock.calls.length).toBe(0); // No error should be logged
+        expect(loggerMock.error).not.toBeCalled(); // No error should be logged
         expect(instance._runningCommands.has(commandTimeoutResolver.originalPromise)).toBe(false); // After a command finishes successfully, it's promise is removed from the instance._runningCommands queue.
       }, 0);
     });
@@ -330,11 +331,11 @@ describe('STORAGE Redis Adapter', () => {
     // Call the method.
     // Note that there are no commands on the queue for this first run.
     instance.disconnect();
-    expect(ioredisMock.disconnect.mock.calls.length).toBe(0); // Original method should not be called right away.
+    expect(ioredisMock.disconnect).not.toBeCalled(); // Original method should not be called right away.
 
     setTimeout(() => { // o queued commands timeout wrapper.
-      expect(loggerMock.debug.mock.calls).toEqual([['No commands pending execution, disconnect.']]);
-      expect(ioredisMock.disconnect.mock.calls.length).toBe(1); // Original method should have been called once, asynchronously
+      expect(loggerMock.debug.mock.calls).toEqual([[logPrefix + 'No commands pending execution, disconnect.']]);
+      expect(ioredisMock.disconnect).toBeCalledTimes(1); // Original method should have been called once, asynchronously
       loggerMock.debug.mockClear();
       ioredisMock.disconnect.mockClear();
 
@@ -346,12 +347,12 @@ describe('STORAGE Redis Adapter', () => {
       rejectedPromise.catch(() => { }); // Swallow the unhandled to avoid unhandledRejection warns
 
       setTimeout(() => { // queued with rejection timeout wrapper
-        expect(loggerMock.info.mock.calls).toEqual([['Attempting to disconnect but there are 2 commands still waiting for resolution. Defering disconnection until those finish.']]);
+        expect(loggerMock.info.mock.calls).toEqual([[logPrefix + 'Attempting to disconnect but there are 2 commands still waiting for resolution. Defering disconnection until those finish.']]);
 
         Promise.all(setToArray(instance._runningCommands)).catch(e => {
           setImmediate(() => { // Allow the callback to execute before checking.
-            expect(loggerMock.warn.mock.calls[0]).toEqual([`Pending commands finished with error: ${e}. Proceeding with disconnection.`]); // Should warn about the error but tell user that will disconnect anyways.
-            expect(ioredisMock.disconnect.mock.calls.length).toBe(1); // Original method should have been called once, asynchronously
+            expect(loggerMock.warn.mock.calls[0]).toEqual([`${logPrefix}Pending commands finished with error: ${e}. Proceeding with disconnection.`]); // Should warn about the error but tell user that will disconnect anyways.
+            expect(ioredisMock.disconnect).toBeCalledTimes(1); // Original method should have been called once, asynchronously
 
             loggerMock.info.mockClear();
             loggerMock.warn.mockClear();
@@ -366,12 +367,12 @@ describe('STORAGE Redis Adapter', () => {
             instance._runningCommands.add(Promise.resolve());
 
             setTimeout(() => {
-              expect(loggerMock.info.mock.calls).toEqual([['Attempting to disconnect but there are 4 commands still waiting for resolution. Defering disconnection until those finish.']]);
+              expect(loggerMock.info.mock.calls).toEqual([[logPrefix + 'Attempting to disconnect but there are 4 commands still waiting for resolution. Defering disconnection until those finish.']]);
 
               Promise.all(setToArray(instance._runningCommands)).then(() => { // This one will go through success path
                 setImmediate(() => {
-                  expect(loggerMock.debug.mock.calls).toEqual([['Pending commands finished successfully, disconnecting.']]);
-                  expect(ioredisMock.disconnect.mock.calls.length).toBe(1); // Original method should have been called once, asynchronously
+                  expect(loggerMock.debug.mock.calls).toEqual([[logPrefix + 'Pending commands finished successfully, disconnecting.']]);
+                  expect(ioredisMock.disconnect).toBeCalledTimes(1); // Original method should have been called once, asynchronously
                 });
               });
             }, 10);

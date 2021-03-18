@@ -96,8 +96,8 @@ describe('SplitToGa', () => {
     // @ts-expect-error
     integration.queue('fake-data');
     expect(loggerMock.warn.mock.calls).toEqual([ // Warn when creating and queueing while ga command queue does not exist
-      ['`ga` command queue not found. No hits will be sent until it is available.'],
-      ['`ga` command queue not found. No hit was sent.']
+      ['split-to-ga: `ga` command queue not found. No hits will be sent until it is available.'],
+      ['split-to-ga: `ga` command queue not found. No hit was sent.']
     ]);
   });
 

@@ -1,4 +1,3 @@
-// commons
 export const DEBUG_ENGINE_COMBINER_AND = 0;
 export const DEBUG_1 = 1;
 export const DEBUG_2 = 2;
@@ -25,6 +24,8 @@ export const DEBUG_22 = 22;
 export const DEBUG_23 = 23;
 export const DEBUG_24 = 24;
 export const DEBUG_25 = 25;
+export const DEBUG_26 = 26;
+export const DEBUG_27 = 27;
 export const DEBUG_32 = 32;
 export const DEBUG_33 = 33;
 export const DEBUG_36 = 36;
@@ -39,23 +40,6 @@ export const DEBUG_49 = 49;
 export const DEBUG_50 = 50;
 export const DEBUG_SPLITS_FILTER = 51;
 
-// browser
-export const DEBUG_26 = 26;
-export const DEBUG_27 = 27;
-
-// node
-export const DEBUG_28 = 28;
-export const DEBUG_29 = 29;
-export const DEBUG_30 = 30;
-export const DEBUG_39 = 39;
-export const DEBUG_40 = 40;
-export const DEBUG_41 = 41;
-export const DEBUG_34 = 34;
-export const DEBUG_35 = 35;
-export const DEBUG_37 = 37; // @TODO remove since we already log it in syncTask debug log?
-export const DEBUG_38 = 38; // @TODO remove since we already log it in syncTask debug log?
-
-// commons
 export const ERROR_0 = 300;
 export const ERROR_2 = 302;
 export const ERROR_CLIENT_LISTENER = 303;
@@ -80,12 +64,6 @@ export const ERROR_EMPTY_ARRAY = 334;
 export const ERROR_INVALID_IMPRESSIONS_MODE = 338;
 export const ERROR_39 = 339;
 
-// node
-export const ERROR_1 = 301;
-export const ERROR_API_KEY_INVALID = 308;
-export const ERROR_6 = 306;
-
-// commons
 export const INFO_CLIENT_READY_FROM_CACHE = 100;
 export const INFO_CLIENT_READY = 101;
 export const INFO_2 = 102;
@@ -109,7 +87,6 @@ export const INFO_19 = 119;
 export const INFO_20 = 120;
 export const INFO_21 = 121;
 
-// commons
 export const WARN_ENGINE_INVALID_VALUE = 200;
 export const WARN_ENGINE_NO_ATTRIBUTES = 201;
 export const WARN_CLIENT_NO_LISTENER = 202;
@@ -136,22 +113,20 @@ export const WARN_SPLITS_FILTER_EMPTY = 224;
 export const WARN_STORAGE_INVALID = 225;
 export const WARN_API_KEY = 226;
 
-// node
-export const WARN_3 = 203;
-
-// Log tags/categories
+// Log prefixes/tags/categories
 export const SETTINGS_LB = 'settings';
 export const ENGINE_LB = 'engine';
 export const ENGINE_COMBINER_LB = ENGINE_LB + ':combiner: ';
 export const ENGINE_MATCHER_LB = ENGINE_LB + ':matcher: ';
 export const ENGINE_VALUE_LB = ENGINE_LB + ':value: ';
 export const SYNC_LB = 'sync';
+export const SYNC_MANAGER_LB = SYNC_LB + ':sync-manager: ';
 export const SYNC_OFFLINE_LB = SYNC_LB + ':offline: ';
 export const SYNC_STREAMING_LB = SYNC_LB + ':streaming: ';
 export const SYNC_SPLITS_LB = SYNC_LB + ':split-changes: ';
 export const SYNC_SEGMENTS_LB = SYNC_LB + ':segment-changes: ';
 export const SYNC_MYSEGMENTS_LB = SYNC_LB + ':my-segments: ';
-export const SYNC_POLLING_LB = SYNC_LB + ':polling: ';
+export const SYNC_POLLING_LB = SYNC_LB + ':polling-manager: ';
 export const SYNC_SUBMITTERS_LB = SYNC_LB + ':submitter: ';
 export const IMPRESSIONS_TRACKER_LB = 'impressions-tracker: ';
 export const EVENTS_TRACKER_LB = 'events-tracker: ';
