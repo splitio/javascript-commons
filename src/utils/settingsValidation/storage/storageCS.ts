@@ -1,7 +1,7 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
 import { ILogger } from '../../../logger/types';
-import { WARN_25 } from '../../../logger/constants';
+import { WARN_STORAGE_INVALID } from '../../../logger/constants';
 
 /**
  * This function validates `settings.storage` object
@@ -17,7 +17,7 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any }): IS
   // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages
   if (storage) {
     if (typeof storage === 'function') return storage;
-    log.warn(WARN_25);
+    log.warn(WARN_STORAGE_INVALID);
   }
 
   // return default InMemory storage if provided one is not valid

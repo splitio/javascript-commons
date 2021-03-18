@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_22, WARN_24, WARN_23, DEBUG_51 } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, DEBUG_SPLITS_FILTER, SETTINGS_LB } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -39,7 +39,7 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  */
 function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(log, values, 'Factory instantiation', `${type} filter`, `${type} filter value`);
+  let result = validateSplits(log, values, SETTINGS_LB, `${type} filter`, `${type} filter value`);
 
   if (result) {
     // check max length
@@ -97,12 +97,12 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
   if (mode !== STANDALONE_MODE) {
-    log.warn(WARN_22, [STANDALONE_MODE]);
+    log.warn(WARN_SPLITS_FILTER_IGNORED, [STANDALONE_MODE]);
     return res;
   }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
-    log.warn(WARN_24);
+    log.warn(WARN_SPLITS_FILTER_EMPTY);
     return res;
   }
 
@@ -113,7 +113,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
       return true;
     } else {
-      log.warn(WARN_23, [index]);
+      log.warn(WARN_SPLITS_FILTER_INVALID, [index]);
     }
     return false;
   });
@@ -125,7 +125,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
-  log.debug(DEBUG_51, [res.queryString]);
+  log.debug(DEBUG_SPLITS_FILTER, [res.queryString]);
 
   return res;
 }

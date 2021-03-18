@@ -11,7 +11,7 @@ import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { DEBUG_41, DEBUG_40, DEBUG_39, ERROR_8 } from '../../../logger/constants';
+import { DEBUG_41, DEBUG_40, DEBUG_39, ERROR_API_KEY_INVALID } from '../../../logger/constants';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -97,7 +97,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        log.error(ERROR_8);
+        log.error(ERROR_API_KEY_INVALID);
       }
 
       return false;

@@ -1,4 +1,4 @@
-import { DEBUG_0, DEBUG_1, DEBUG_2, DEBUG_3, DEBUG_4, DEBUG_5, DEBUG_6, DEBUG_7, DEBUG_8, DEBUG_9, DEBUG_10, DEBUG_11, DEBUG_12, DEBUG_13, DEBUG_14, DEBUG_15, DEBUG_16, DEBUG_17, DEBUG_18, DEBUG_19, DEBUG_20, DEBUG_21, DEBUG_22, DEBUG_23, DEBUG_24, DEBUG_25, DEBUG_31, DEBUG_32, DEBUG_33, DEBUG_36, DEBUG_42, DEBUG_43, DEBUG_44, DEBUG_45, DEBUG_46, DEBUG_47, DEBUG_48, DEBUG_49, DEBUG_50, DEBUG_51 } from '../constants';
+import { DEBUG_0, DEBUG_1, DEBUG_2, DEBUG_3, DEBUG_4, DEBUG_5, DEBUG_6, DEBUG_7, DEBUG_8, DEBUG_9, DEBUG_10, DEBUG_11, DEBUG_12, DEBUG_13, DEBUG_14, DEBUG_15, DEBUG_16, DEBUG_17, DEBUG_18, DEBUG_19, DEBUG_20, DEBUG_21, DEBUG_22, DEBUG_23, DEBUG_24, DEBUG_25, DEBUG_31, DEBUG_32, DEBUG_33, DEBUG_36, DEBUG_42, DEBUG_43, DEBUG_44, DEBUG_45, DEBUG_46, DEBUG_47, DEBUG_48, DEBUG_49, DEBUG_50, DEBUG_SPLITS_FILTER, SETTINGS_LB } from '../constants';
 
 export const codesDebug: [number, string][] = [
   [DEBUG_0, 'splitio-engine:combiner => [andCombiner] evaluates to %s'],
@@ -40,5 +40,6 @@ export const codesDebug: [number, string][] = [
   [DEBUG_48, 'splitio-sync:task => Running %s'],
   [DEBUG_49, 'splitio-sync:task => Stopping %s'],
   [DEBUG_50, 'splitio-client:impressions-tracker => Successfully stored %s impression%s.'],
-  [DEBUG_51, 'Factory instantiation: splits filtering criteria is "%s".']
+  // initialization / settings validation
+  [DEBUG_SPLITS_FILTER, SETTINGS_LB+': splits filtering criteria is "%s".']
 ];

@@ -38,7 +38,7 @@ export const DEBUG_47 = 47;
 export const DEBUG_48 = 48;
 export const DEBUG_49 = 49;
 export const DEBUG_50 = 50;
-export const DEBUG_51 = 51;
+export const DEBUG_SPLITS_FILTER = 51;
 
 // browser
 export const DEBUG_26 = 26;
@@ -59,7 +59,7 @@ export const DEBUG_38 = 38; // @TODO remove since we already log it in syncTask 
 // commons
 export const ERROR_0 = 300;
 export const ERROR_2 = 302;
-export const ERROR_3 = 303;
+export const ERROR_CLIENT_LISTENER = 303;
 export const ERROR_4 = 304;
 export const ERROR_5 = 305;
 export const ERROR_7 = 307;
@@ -71,24 +71,24 @@ export const ERROR_EVENT_TYPE_FORMAT = 314;
 export const ERROR_NOT_PLAIN_OBJECT = 318;
 export const ERROR_SIZE_EXCEEDED = 319;
 export const ERROR_NOT_FINITE = 320;
-export const ERROR_21 = 321;
+export const ERROR_CLIENT_DESTROYED = 321;
 export const ERROR_NULL = 322;
 export const ERROR_TOO_LONG = 323;
 export const ERROR_INVALID_KEY_OBJECT = 326;
 export const ERROR_INVALID = 332;
 export const ERROR_EMPTY = 333;
 export const ERROR_EMPTY_ARRAY = 334;
-export const ERROR_INVALID_ENUM = 338;
+export const ERROR_INVALID_IMPRESSIONS_MODE = 338;
 export const ERROR_39 = 339;
 
 // node
 export const ERROR_1 = 301;
-export const ERROR_8 = 308;
+export const ERROR_API_KEY_INVALID = 308;
 export const ERROR_6 = 306;
 
 // commons
-export const INFO_0 = 100;
-export const INFO_1 = 101;
+export const INFO_CLIENT_READY_FROM_CACHE = 100;
+export const INFO_CLIENT_READY = 101;
 export const INFO_2 = 102;
 export const INFO_3 = 103;
 export const INFO_4 = 104;
@@ -113,7 +113,7 @@ export const INFO_21 = 121;
 // commons
 export const WARN_0 = 200;
 export const WARN_1 = 201;
-export const WARN_2 = 202;
+export const WARN_CLIENT_NO_LISTENER = 202;
 export const WARN_4 = 204;
 export const WARN_5 = 205;
 export const WARN_6 = 206;
@@ -124,18 +124,21 @@ export const WARN_10 = 210;
 export const WARN_11 = 211;
 export const WARN_SETTING_NULL = 212;
 export const WARN_TRIMMING_PROPERTIES = 213;
-export const WARN_14 = 214;
+export const WARN_CLIENT_NOT_READY = 214;
 export const WARN_CONVERTING = 215;
 export const WARN_TRIMMING = 217;
 export const WARN_NOT_EXISTENT_SPLIT = 218;
 export const WARN_LOWERCASE_TRAFFIC_TYPE = 219;
 export const WARN_NOT_EXISTENT_TT = 220;
-export const WARN_21 = 221;
-export const WARN_22 = 222;
-export const WARN_23 = 223;
-export const WARN_24 = 224;
-export const WARN_25 = 225;
+export const WARN_INTEGRATION_INVALID = 221;
+export const WARN_SPLITS_FILTER_IGNORED = 222;
+export const WARN_SPLITS_FILTER_INVALID = 223;
+export const WARN_SPLITS_FILTER_EMPTY = 224;
+export const WARN_STORAGE_INVALID = 225;
 export const WARN_API_KEY = 226;
 
 // node
 export const WARN_3 = 203;
+
+// Log tags or categories
+export const SETTINGS_LB = 'settings';

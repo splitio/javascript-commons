@@ -32,7 +32,7 @@ export default function clientInputValidationDecorator<TClient extends SplitIO.I
     const key = validateKey(log, maybeKey, methodName);
     const splitOrSplits = multi ? validateSplits(log, maybeSplitOrSplits, methodName) : validateSplit(log, maybeSplitOrSplits, methodName);
     const attributes = validateAttributes(log, maybeAttributes, methodName);
-    const isOperational = validateIfNotDestroyed(log, readinessManager);
+    const isOperational = validateIfNotDestroyed(log, readinessManager, methodName);
 
     validateIfOperational(log, readinessManager, methodName);
 
@@ -103,7 +103,7 @@ export default function clientInputValidationDecorator<TClient extends SplitIO.I
     const event = validateEvent(log, maybeEvent, 'track');
     const eventValue = validateEventValue(log, maybeEventValue, 'track');
     const { properties, size } = validateEventProperties(log, maybeProperties, 'track');
-    const isOperational = validateIfNotDestroyed(log, readinessManager);
+    const isOperational = validateIfNotDestroyed(log, readinessManager, 'track');
 
     if (isOperational && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
       return client.track(key, tt, event, eventValue, properties, size);

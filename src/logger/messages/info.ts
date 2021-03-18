@@ -1,8 +1,12 @@
-import { INFO_0, INFO_1, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21 } from '../constants';
+import { INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21 } from '../constants';
+
+const READY_MSG = 'Split SDK is ready';
 
 export const codesInfo: [number, string][] = [
-  [INFO_0, 'Split SDK is ready from cache.'],
-  [INFO_1, 'Split SDK is ready.'],
+  // client status
+  [INFO_CLIENT_READY_FROM_CACHE, READY_MSG + ' from cache'],
+  [INFO_CLIENT_READY, READY_MSG],
+
   [INFO_2, 'splitio-client => Split: %s. Key: %s. Evaluation: %s. Label: %s'],
   [INFO_3, 'splitio-client => Queueing corresponding impression.'],
   [INFO_4, 'splitio => New shared client instance created.'],
