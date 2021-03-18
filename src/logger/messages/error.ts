@@ -1,16 +1,19 @@
-import { ERROR_0, ERROR_2, ERROR_CLIENT_LISTENER, ERROR_4, ERROR_5, ERROR_7, ERROR_9, ERROR_10, ERROR_11, ERROR_12, ERROR_EVENT_TYPE_FORMAT, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, ERROR_NOT_FINITE, ERROR_CLIENT_DESTROYED, ERROR_NULL, ERROR_TOO_LONG, ERROR_INVALID_KEY_OBJECT, ERROR_INVALID, ERROR_EMPTY, ERROR_EMPTY_ARRAY, ERROR_INVALID_IMPRESSIONS_MODE, ERROR_39, SETTINGS_LB } from '../constants';
+import { ERROR_0, ERROR_2, ERROR_CLIENT_LISTENER, ERROR_4, ERROR_5, ERROR_7, ERROR_9, ERROR_10, ERROR_11, ERROR_12, ERROR_EVENT_TYPE_FORMAT, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, ERROR_NOT_FINITE, ERROR_CLIENT_DESTROYED, ERROR_NULL, ERROR_TOO_LONG, ERROR_INVALID_KEY_OBJECT, ERROR_INVALID, ERROR_EMPTY, ERROR_EMPTY_ARRAY, ERROR_INVALID_IMPRESSIONS_MODE, ERROR_39, SETTINGS_LB, ENGINE_COMBINER_LB, SYNC_OFFLINE_LB, SYNC_STREAMING_LB, IMPRESSIONS_TRACKER_LB } from '../constants';
 
 export const codesError: [number, string][] = [
-  [ERROR_0, 'splitio-engine:combiner => Invalid Split provided, no valid conditions found'],
-  [ERROR_2, 'splitio-utils:logger => Invalid Log Level - No changes to the logs will be applied.'],
-  [ERROR_4, 'splitio => Manager instance is not available. Provide the manager module on settings.'],
-  [ERROR_5, 'splitio-services:service => %s The SDK will not get ready.'],
-  [ERROR_7, 'splitio-producer:offline => There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
-  [ERROR_9, 'splitio-sync:sse-handler => Fail to connect to streaming, with error message: %s'],
-  [ERROR_10, 'splitio-sync:push-manager => Failed to authenticate for streaming. Error: "%s".'],
-  [ERROR_11, 'splitio-client:impressions-tracker => Could not store impressions bulk with %s impression%s. Error: %s'],
-  [ERROR_12, 'splitio-client:impressions-tracker => Impression listener logImpression method threw: %s.'],
-  [ERROR_39, 'splitio-services:service => Response status is not OK. Status: %s. URL: %s. Message: %s'],
+  // evaluator
+  [ERROR_0, ENGINE_COMBINER_LB + 'Invalid Split provided, no valid conditions found'],
+  // SDK
+  [ERROR_2, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
+  [ERROR_4, ' Manager instance is not available.'],
+  [ERROR_5, ' The SDK will not get ready. Reason: %s'],
+  // synchronizer
+  [ERROR_7, SYNC_OFFLINE_LB + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
+  [ERROR_9, SYNC_STREAMING_LB + 'Fail to connect to streaming, with error message: %s'],
+  [ERROR_10, SYNC_STREAMING_LB + 'Failed to authenticate for streaming. Error: "%s".'],
+  [ERROR_11, IMPRESSIONS_TRACKER_LB + 'Could not store impressions bulk with %s impression%s. Error: %s'],
+  [ERROR_12, IMPRESSIONS_TRACKER_LB + 'Impression listener logImpression method threw: %s.'],
+  [ERROR_39, ' Response status is not OK. Status: %s. URL: %s. Message: %s'],
   // client status
   [ERROR_CLIENT_LISTENER, 'A listener was added for %s on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.'],
   [ERROR_CLIENT_DESTROYED, '%s: Client has already been destroyed - no calls possible.'],

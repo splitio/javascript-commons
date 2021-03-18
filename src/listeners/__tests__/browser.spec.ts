@@ -157,7 +157,7 @@ test('Browser JS listener / Impressions debug mode', (done) => {
     expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length === 0).toBe(true);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.
@@ -191,7 +191,7 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', (don
     expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length === 0).toBe(true);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.

@@ -1,5 +1,5 @@
 // commons
-export const DEBUG_0 = 0;
+export const DEBUG_ENGINE_COMBINER_AND = 0;
 export const DEBUG_1 = 1;
 export const DEBUG_2 = 2;
 export const DEBUG_3 = 3;
@@ -25,8 +25,7 @@ export const DEBUG_22 = 22;
 export const DEBUG_23 = 23;
 export const DEBUG_24 = 24;
 export const DEBUG_25 = 25;
-export const DEBUG_31 = 31;
-export const DEBUG_32 = 32; // @TODO remove and use DEBUG_31 ('splitio => Retrieving SDK client.')
+export const DEBUG_32 = 32;
 export const DEBUG_33 = 33;
 export const DEBUG_36 = 36;
 export const DEBUG_42 = 42;
@@ -111,8 +110,8 @@ export const INFO_20 = 120;
 export const INFO_21 = 121;
 
 // commons
-export const WARN_0 = 200;
-export const WARN_1 = 201;
+export const WARN_ENGINE_INVALID_VALUE = 200;
+export const WARN_ENGINE_NO_ATTRIBUTES = 201;
 export const WARN_CLIENT_NO_LISTENER = 202;
 export const WARN_4 = 204;
 export const WARN_5 = 205;
@@ -140,5 +139,20 @@ export const WARN_API_KEY = 226;
 // node
 export const WARN_3 = 203;
 
-// Log tags or categories
+// Log tags/categories
 export const SETTINGS_LB = 'settings';
+export const ENGINE_LB = 'engine';
+export const ENGINE_COMBINER_LB = ENGINE_LB + ':combiner: ';
+export const ENGINE_MATCHER_LB = ENGINE_LB + ':matcher: ';
+export const ENGINE_VALUE_LB = ENGINE_LB + ':value: ';
+export const SYNC_LB = 'sync';
+export const SYNC_OFFLINE_LB = SYNC_LB + ':offline: ';
+export const SYNC_STREAMING_LB = SYNC_LB + ':streaming: ';
+export const SYNC_SPLITS_LB = SYNC_LB + ':split-changes: ';
+export const SYNC_SEGMENTS_LB = SYNC_LB + ':segment-changes: ';
+export const SYNC_MYSEGMENTS_LB = SYNC_LB + ':my-segments: ';
+export const SYNC_POLLING_LB = SYNC_LB + ':polling: ';
+export const SYNC_SUBMITTERS_LB = SYNC_LB + ':submitter: ';
+export const IMPRESSIONS_TRACKER_LB = 'impressions-tracker: ';
+export const EVENTS_TRACKER_LB = 'events-tracker: ';
+export const CLEANUP_LB = 'cleanup: ';

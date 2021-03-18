@@ -34,8 +34,7 @@ export function fromObjectUpdaterFactory(
     }
 
     if (!loadError && splitsMock) {
-      log.debug(DEBUG_36);
-      log.debug(JSON.stringify(splitsMock));
+      log.debug(DEBUG_36, [JSON.stringify(splitsMock)]);
 
       forOwn(splitsMock, function (val, name) {
         splits.push([
