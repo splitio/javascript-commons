@@ -1,6 +1,5 @@
 import { isLogLevelString, Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
-import { LogLevel } from '../../../types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
 import { codesError } from '../../../logger/messages/error';
@@ -8,6 +7,8 @@ import { codesWarn } from '../../../logger/messages/warn';
 import { codesInfo } from '../../../logger/messages/info';
 import { codesDebug } from '../../../logger/messages/debug';
 import { _Map } from '../../lang/maps';
+import { getLogLevel } from './commons';
+import { LogLevel } from '../../../types';
 
 const allCodes = new _Map(codesError.concat(codesWarn, codesInfo, codesDebug));
 
@@ -37,36 +38,21 @@ if (/^(enabled?|on)/i.test(initialState)) {
   initialLogLevel = initialState;
 }
 
-// returns the LogLevel for the given debugValue or undefined if it is invalid.
-// debugValue must be a boolean or LogLevel string.
-export function getLogLevel(debugValue: unknown): LogLevel | undefined {
-  if (typeof debugValue === 'boolean') {
-    if (debugValue) {
-      return LogLevels.DEBUG;
-    } else {
-      return LogLevels.NONE;
-    }
-  } else if (typeof debugValue === 'string' && isLogLevelString(debugValue)) {
-    return debugValue;
-  } else {
-    return undefined;
-  }
-}
-
 /**
  * Validates the `debug` property at config and use it to set the log level.
  *
- * @param settings user config object
+ * @param settings user config object, with an optional `debug` property of type boolean or string log level.
  * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
+  const { debug } = settings;
 
-  const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
+  const logLevel: LogLevel | undefined = debug !== undefined ? getLogLevel(debug) : initialLogLevel;
 
-  const log = new Logger({ logLevel: settingLogLevel || initialLogLevel }, allCodes);
+  const log = new Logger({ logLevel: logLevel || initialLogLevel }, allCodes);
 
-  // logs error if the provided settings debug value is invalid
-  if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');
+  // if logLevel is undefined at this point, it means that settings `debug` value is invalid
+  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid Log Level - No changes to the logs will be applied.');
 
   return log;
 }

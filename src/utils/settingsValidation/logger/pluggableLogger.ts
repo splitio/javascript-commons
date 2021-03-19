@@ -1,27 +1,35 @@
 import { Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
+import { LogLevel } from '../../../types';
+import { getLogLevel } from './commons';
 
 function isLogger(log: any): log is ILogger {
   return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
 }
 
+// By default it starts disabled.
+let initialLogLevel = LogLevels.NONE;
+
 /**
- * Validates the `debug` (logger) property at config.
+ * Validates the `debug` property at config and use it to set the logger.
  *
- * @param settings user config object
- * @returns the provided logger at `settings.debug` or a new one with NONE log level if the provided one is invalid
+ * @param settings user config object, with an optional `debug` property of type boolean, string log level or a Logger object.
+ * @returns a logger instance, that might be: the provided logger at `settings.debug`, or one with the given `debug` log level,
+ * or one with NONE log level if `debug` is not defined or invalid.
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
-  const log = new Logger();
+  let logLevel: LogLevel | undefined = initialLogLevel;
 
-  // @TODO support boolean and string values?
-  if (!debug) return log;
+  if (debug !== undefined) {
+    if (isLogger(debug)) return debug;
+    logLevel = getLogLevel(settings.debug);
+  }
 
-  if (isLogger(debug)) return debug;
+  const log = new Logger({ logLevel: logLevel || initialLogLevel });
 
-  // logs error for consistency with builtin logger validator
-  log._log(LogLevels.ERROR, 'The provided `debug` value at config is invalid.');
+  // if logLevel is undefined at this point, it means that `debug` value is invalid
+  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.');
 
   return log;
 }
