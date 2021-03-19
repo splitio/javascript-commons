@@ -5,7 +5,7 @@ export const codesError: [number, string][] = [
   [ERROR_0, ENGINE_COMBINER_LB + 'Invalid Split provided, no valid conditions found'],
   // SDK
   [ERROR_2, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
-  [ERROR_4, ' Manager instance is not available.'],
+  [ERROR_4, ' Manager instance is not available.'], // @TODO remove if the manager is not pluggable
   [ERROR_5, ' The SDK will not get ready. Reason: %s'],
   // synchronizer
   [ERROR_7, SYNC_OFFLINE_LB + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],

@@ -3,7 +3,13 @@ import { ILogger } from '../../../logger/types';
 import { LogLevel } from '../../../types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
-import { IMap } from '../../lang/maps';
+import { codesError } from '../../../logger/messages/error';
+import { codesWarn } from '../../../logger/messages/warn';
+import { codesInfo } from '../../../logger/messages/info';
+import { codesDebug } from '../../../logger/messages/debug';
+import { _Map } from '../../lang/maps';
+
+const allCodes = new _Map(codesError.concat(codesWarn, codesInfo, codesDebug));
 
 // @TODO when integrating with other packages, find the best way to handle initial state per environment
 const LS_KEY = 'splitio_debug';
@@ -48,25 +54,19 @@ export function getLogLevel(debugValue: unknown): LogLevel | undefined {
 }
 
 /**
- * Factory of logger validator, which validates the `debug` property at config and creates a logger instance with the provided `debug` log level.
+ * Validates the `debug` property at config and use it to set the log level.
+ *
+ * @param settings user config object
+ * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
  */
-export function validateLoggerFactory(msgCodes?: IMap<number, string>) {
+export function validateLogger(settings: { debug: unknown }): ILogger {
 
-  /**
-   * Validates the `debug` property at config and use it to set the log level.
-   *
-   * @param settings user config object
-   * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
-   */
-  return function validateLogger(settings: { debug: unknown }): ILogger {
+  const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
 
-    const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
+  const log = new Logger('splitio', { logLevel: settingLogLevel || initialLogLevel }, allCodes);
 
-    const log = new Logger('splitio', { logLevel: settingLogLevel || initialLogLevel }, msgCodes);
+  // logs error if the provided settings debug value is invalid
+  if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');
 
-    // logs error if the provided settings debug value is invalid
-    if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');
-
-    return log;
-  };
+  return log;
 }

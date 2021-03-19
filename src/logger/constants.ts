@@ -1,3 +1,10 @@
+/**
+ * Message codes used to trim string log messages from commons and client-side API modules,
+ * in order to reduce the minimal SDK size for Browser and eventually other client-side environments.
+ *
+ * Modules related to the server-side API (e.g., segmentsSyncTask), platform-specific components (e.g., signal listeners)
+ * and pluggable components (e.g., pluggable integrations & storages) can use the logger with string literals.
+ */
 export const DEBUG_ENGINE_COMBINER_AND = 0;
 export const DEBUG_1 = 1;
 export const DEBUG_2 = 2;
