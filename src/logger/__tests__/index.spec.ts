@@ -1,5 +1,6 @@
 import { LogLevel } from '../../types';
-import { Logger, LogLevels, isLogLevelString } from '../index';
+import { _Map } from '../../utils/lang/maps';
+import { Logger, LogLevels, isLogLevelString, _sprintf } from '../index';
 
 // We'll set this only once. These are the constants we will use for
 // comparing the LogLevel values.
@@ -52,12 +53,13 @@ function testLogLevels(levelToTest: LogLevel) {
   const consoleLogSpy = jest.spyOn(global.console, 'log');
 
   // Runs the suite with the given value for showLevel option.
-  const runTests = (showLevel?: boolean) => {
+  const runTests = (showLevel?: boolean, useCodes?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
-    const instance = new Logger({ prefix: logCategory, showLevel });
+    const instance = new Logger({ prefix: logCategory, showLevel },
+      useCodes ? new _Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
@@ -67,7 +69,8 @@ function testLogLevels(levelToTest: LogLevel) {
       instance.setLogLevel(LogLevels[logLevel]);
       // Call the method
       // @ts-ignore
-      instance[logMethod](logMsg);
+      if (useCodes) instance[logMethod](1, [levelToTest, showLevel, logLevelLogsCounter]); // @ts-ignore
+      else instance[logMethod](logMsg);
       // Assert if console.log was called.
       const actualMessage = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
       if (testForNoLog) {
@@ -87,6 +90,8 @@ function testLogLevels(levelToTest: LogLevel) {
   runTests(true);
   // Hide logLevel
   runTests(false);
+  // Hide logLevel and use message codes
+  runTests(false, true);
 
   // Restore spied object.
   consoleLogSpy.mockRestore();
@@ -111,4 +116,18 @@ test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () 
 test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
 
+});
+
+test('_sprintf', () => {
+  expect(_sprintf()).toBe('');
+  expect(_sprintf(undefined, [/regex/, 'arg', 10, {}])).toBe('');
+
+  expect(_sprintf('text')).toBe('text');
+  expect(_sprintf('text', [])).toBe('text');
+  expect(_sprintf('text', [/regex/, 'arg', 10, {}])).toBe('text');
+
+  expect(_sprintf('text %s', [])).toBe('text undefined');
+  expect(_sprintf('text %s', ['arg1'])).toBe('text arg1');
+  expect(_sprintf('text %s', ['arg1', 'arg2'])).toBe('text arg1');
+  expect(_sprintf('%s text %s', ['arg1', true, 'arg3'])).toBe('arg1 text true');
 });

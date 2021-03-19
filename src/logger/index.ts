@@ -24,7 +24,8 @@ export function isLogLevelString(str: string): str is LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
 
-function sprintf(format: string = '', args: any[] = []): string {
+// exported for testing purposes only
+export function _sprintf(format: string = '', args: any[] = []): string {
   var i = 0;
   return format.replace(/%s/g, function () {
     return args[i++];
@@ -73,7 +74,7 @@ export class Logger implements ILogger {
   _log(level: LogLevel, msg: string | number, args?: any[]) {
     if (typeof msg === 'number') {
       const format = this.codes.get(msg);
-      if (format) msg = sprintf(format, args);
+      if (format) msg = _sprintf(format, args);
       else msg = `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
     }
     const formattedText = this._generateLogMessage(level, msg);
