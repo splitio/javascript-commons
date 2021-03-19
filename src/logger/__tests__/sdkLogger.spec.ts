@@ -3,7 +3,7 @@ import { Logger, LogLevels } from '../index';
 
 test('LoggerAPI / methods and props', () => {
   // creates a LoggerAPI instance
-  const logger = new Logger('category');
+  const logger = new Logger();
   const API = createLoggerAPI(logger);
 
   expect(typeof API).toBe('object'); // Our logger should expose an API object.

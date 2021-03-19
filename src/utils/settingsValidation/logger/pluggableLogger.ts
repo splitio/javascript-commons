@@ -1,4 +1,4 @@
-import { Logger } from '../../../logger';
+import { Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
 
 function isLogger(log: any): log is ILogger {
@@ -13,15 +13,15 @@ function isLogger(log: any): log is ILogger {
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
-  const log = new Logger('splitio', { logLevel: 'NONE' });
+  const log = new Logger();
 
   // @TODO support boolean and string values?
   if (!debug) return log;
 
   if (isLogger(debug)) return debug;
 
-  // logs error, for consistency with builtin logger validator
-  log.error('The provided `debug` value at config is invalid.');
+  // logs error for consistency with builtin logger validator
+  log._log(LogLevels.ERROR, 'The provided `debug` value at config is invalid.');
 
   return log;
 }

@@ -63,7 +63,7 @@ export function validateLogger(settings: { debug: unknown }): ILogger {
 
   const settingLogLevel = settings.debug ? getLogLevel(settings.debug) : initialLogLevel;
 
-  const log = new Logger('splitio', { logLevel: settingLogLevel || initialLogLevel }, allCodes);
+  const log = new Logger({ logLevel: settingLogLevel || initialLogLevel }, allCodes);
 
   // logs error if the provided settings debug value is invalid
   if (!settingLogLevel) log.error('Invalid Log Level - No changes to the logs will be applied.');

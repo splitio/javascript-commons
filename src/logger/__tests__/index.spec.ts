@@ -27,7 +27,7 @@ test('SPLIT LOGGER / LogLevels exposed mappings', () => {
 test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof Logger).toBe('function'); // Logger should be a class we can instantiate.
 
-  const logger = new Logger('test-category');
+  const logger = new Logger({ prefix: 'test-category' });
 
   expect(typeof logger.debug).toBe('function'); // instance.debug should be a method.
   expect(typeof logger.info).toBe('function'); // instance.info should be a method.
@@ -57,7 +57,7 @@ function testLogLevels(levelToTest: LogLevel) {
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
-    const instance = new Logger(logCategory, { showLevel });
+    const instance = new Logger({ prefix: logCategory, showLevel });
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;

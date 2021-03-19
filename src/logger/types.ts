@@ -1,6 +1,7 @@
 import { LogLevel } from '../types';
 
 export interface ILoggerOptions {
+  prefix?: string,
   logLevel?: LogLevel,
   showLevel?: boolean,
 }
