@@ -122,6 +122,7 @@ export const WARN_API_KEY = 226;
 
 // Log prefixes/tags/categories
 export const SETTINGS_LB = 'settings';
+export const INSTANTIATION_LB = 'Factory instantiation';
 export const ENGINE_LB = 'engine';
 export const ENGINE_COMBINER_LB = ENGINE_LB + ':combiner: ';
 export const ENGINE_MATCHER_LB = ENGINE_LB + ':matcher: ';
