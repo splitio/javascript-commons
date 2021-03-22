@@ -11,7 +11,7 @@ import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SETTINGS_LB, SYNC_SEGMENTS_LB } from '../../../logger/constants';
+import { INSTANTIATION_LB, SYNC_SEGMENTS_LB } from '../../../logger/constants';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -97,7 +97,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        log.error(SETTINGS_LB + 'you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.');
+        log.error(INSTANTIATION_LB + ': you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.');
       }
 
       return false;
