@@ -1,6 +1,7 @@
 import { WARN_ENGINE_INVALID_VALUE, WARN_ENGINE_NO_ATTRIBUTES, WARN_CLIENT_NO_LISTENER, WARN_4, WARN_5, WARN_6, WARN_7, WARN_8, WARN_9, WARN_10, WARN_11, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES, WARN_CLIENT_NOT_READY, WARN_CONVERTING, WARN_TRIMMING, WARN_NOT_EXISTENT_SPLIT, WARN_LOWERCASE_TRAFFIC_TYPE, WARN_NOT_EXISTENT_TT, WARN_INTEGRATION_INVALID, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_STORAGE_INVALID, WARN_API_KEY, SETTINGS_LB, ENGINE_VALUE_LB, EVENTS_TRACKER_LB, SYNC_MYSEGMENTS_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, SYNC_SUBMITTERS_LB } from '../constants';
+import { codesError } from './error';
 
-export const codesWarn: [number, string][] = [
+export const codesWarn: [number, string][] = codesError.concat([
   // evaluator
   [WARN_ENGINE_INVALID_VALUE, ENGINE_VALUE_LB + 'Value %s doesn\'t match with expected type.'],
   [WARN_ENGINE_NO_ATTRIBUTES, ENGINE_VALUE_LB + 'Defined attribute [%s], no attributes received.'],
@@ -32,4 +33,4 @@ export const codesWarn: [number, string][] = [
   [WARN_SPLITS_FILTER_EMPTY, SETTINGS_LB+': splitFilters configuration must be a non-empty array of filter objects.'],
   [WARN_STORAGE_INVALID, SETTINGS_LB+': The provided storage is invalid. Fallbacking into default MEMORY storage'],
   [WARN_API_KEY, SETTINGS_LB+': You already have %s. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application']
-];
+]);

@@ -10,8 +10,7 @@ import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
 import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
-
-export const logPrefix = 'storage:localstorage: ';
+import { logPrefix } from './constants';
 
 export interface InLocalStorageOptions {
   prefix?: string

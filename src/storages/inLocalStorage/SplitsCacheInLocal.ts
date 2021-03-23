@@ -3,7 +3,7 @@ import AbstractSplitsCacheSync, { usesSegments } from '../AbstractSplitsCacheSyn
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
-import { logPrefix } from './index';
+import { logPrefix } from './constants';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.

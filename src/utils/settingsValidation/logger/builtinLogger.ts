@@ -2,17 +2,14 @@ import { isLogLevelString, Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
-import { codesError } from '../../../logger/messages/error';
-import { codesWarn } from '../../../logger/messages/warn';
-import { codesInfo } from '../../../logger/messages/info';
 import { codesDebug } from '../../../logger/messages/debug';
 import { _Map } from '../../lang/maps';
 import { getLogLevel } from './commons';
 import { LogLevel } from '../../../types';
 
-const allCodes = new _Map(codesError.concat(codesWarn, codesInfo, codesDebug));
+const allCodes = new _Map(codesDebug);
 
-// @TODO when integrating with other packages, find the best way to handle initial state per environment
+// @TODO set default debug setting instead of initialLogLevel when integrating in JS and Node packages
 const LS_KEY = 'splitio_debug';
 const ENV_VAR_KEY = 'SPLITIO_DEBUG';
 

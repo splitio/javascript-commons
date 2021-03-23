@@ -1,8 +1,9 @@
 import { INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21, EVENTS_TRACKER_LB, SYNC_MANAGER_LB, SYNC_POLLING_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, SYNC_SUBMITTERS_LB, IMPRESSIONS_TRACKER_LB } from '../constants';
+import { codesWarn } from './warn';
 
 const READY_MSG = 'Split SDK is ready';
 
-export const codesInfo: [number, string][] = [
+export const codesInfo: [number, string][] = codesWarn.concat([
   // client status
   [INFO_CLIENT_READY_FROM_CACHE, READY_MSG + ' from cache'],
   [INFO_CLIENT_READY, READY_MSG],
@@ -28,4 +29,4 @@ export const codesInfo: [number, string][] = [
   [INFO_18, SYNC_MANAGER_LB + 'Streaming not available. Starting polling.'],
   [INFO_19, SYNC_MANAGER_LB + 'Streaming couldn\'t connect. Continue polling.'],
   [INFO_20, SYNC_MANAGER_LB + 'Streaming (re)connected. Syncing and stopping polling.'],
-];
+]);

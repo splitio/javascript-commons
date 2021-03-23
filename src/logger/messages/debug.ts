@@ -1,6 +1,7 @@
 import { DEBUG_ENGINE_COMBINER_AND, DEBUG_1, DEBUG_2, DEBUG_3, DEBUG_4, DEBUG_5, DEBUG_6, DEBUG_7, DEBUG_8, DEBUG_9, DEBUG_10, DEBUG_11, DEBUG_12, DEBUG_13, DEBUG_14, DEBUG_15, DEBUG_16, DEBUG_17, DEBUG_18, DEBUG_19, DEBUG_20, DEBUG_21, DEBUG_22, DEBUG_23, DEBUG_24, DEBUG_25, DEBUG_32, DEBUG_33, DEBUG_36, DEBUG_42, DEBUG_43, DEBUG_44, DEBUG_45, DEBUG_46, DEBUG_47, DEBUG_48, DEBUG_49, DEBUG_50, DEBUG_SPLITS_FILTER, SETTINGS_LB, ENGINE_LB, ENGINE_COMBINER_LB, ENGINE_MATCHER_LB, ENGINE_VALUE_LB, SYNC_OFFLINE_LB, IMPRESSIONS_TRACKER_LB, SYNC_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, CLEANUP_LB, DEBUG_26, DEBUG_27 } from '../constants';
+import { codesInfo } from './info';
 
-export const codesDebug: [number, string][] = [
+export const codesDebug: [number, string][] = codesInfo.concat([
   // evaluator
   [DEBUG_ENGINE_COMBINER_AND, ENGINE_COMBINER_LB + '[andCombiner] evaluates to %s'],
   [DEBUG_1, ENGINE_COMBINER_LB + 'Treatment found: %s'],
@@ -46,4 +47,4 @@ export const codesDebug: [number, string][] = [
   [DEBUG_50, IMPRESSIONS_TRACKER_LB + 'Successfully stored %s impression%s.'],
   // initialization / settings validation
   [DEBUG_SPLITS_FILTER, SETTINGS_LB + ': splits filtering criteria is "%s".']
-];
+]);

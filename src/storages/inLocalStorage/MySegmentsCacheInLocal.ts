@@ -1,9 +1,7 @@
 import { ILogger } from '../../logger/types';
 import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
 import KeyBuilderCS from '../KeyBuilderCS';
-import { logPrefix } from './index';
-
-const DEFINED = '1';
+import { logPrefix, DEFINED } from './constants';
 
 export default class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
