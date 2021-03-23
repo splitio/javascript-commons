@@ -26,7 +26,13 @@ describe('logger validators', () => {
     expect(getLoggerLogLevel(validateLogger({ debug: 10 }))).toBe('NONE');
     expect(getLoggerLogLevel(validateLogger({ debug: {} }))).toBe('NONE');
 
-    expect(consoleLogSpy).toBeCalledTimes(3);
+    if (validateLogger === builtinValidateLogger) {
+      // for builtinValidateLogger, a logger cannot be passed as `debug` property
+      expect(getLoggerLogLevel(validateLogger({ debug: loggerMock }))).toBe('NONE');
+      expect(consoleLogSpy).toBeCalledTimes(4);
+    } else {
+      expect(consoleLogSpy).toBeCalledTimes(3);
+    }
   });
 
   test.each(testTargets)('returns a logger with the provided log level if `debug` property is true or a string log level', (validateLogger) => {
@@ -44,12 +50,6 @@ describe('logger validators', () => {
     expect(pluggableValidateLogger({ debug: loggerMock })).toBe(loggerMock);
 
     expect(consoleLogSpy).not.toBeCalled();
-  });
-
-  test('builtin logger validators / returns a NONE logger if `debug` property is invalid and logs the error', () => {
-    expect(getLoggerLogLevel(builtinValidateLogger({ debug: loggerMock }))).toBe('NONE');
-
-    expect(consoleLogSpy).toBeCalledTimes(1);
   });
 
 });

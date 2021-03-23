@@ -51,7 +51,7 @@ export function validateLogger(settings: { debug: unknown }): ILogger {
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel }, allCodes);
 
-  // if logLevel is undefined at this point, it means that settings `debug` value is invalid
+  // @ts-ignore // if logLevel is undefined at this point, it means that settings `debug` value is invalid
   if (!logLevel) log._log(LogLevels.ERROR, 'Invalid Log Level - No changes to the logs will be applied.');
 
   return log;

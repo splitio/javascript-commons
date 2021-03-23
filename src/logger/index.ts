@@ -12,7 +12,7 @@ export const LogLevels: { [level: string]: LogLevel } = {
   NONE: 'NONE'
 };
 
-const logLevelRanks = {
+const LogLevelRanks = {
   DEBUG: 1,
   INFO: 2,
   WARN: 3,
@@ -26,7 +26,7 @@ export function isLogLevelString(str: string): str is LogLevel {
 
 // exported for testing purposes only
 export function _sprintf(format: string = '', args: any[] = []): string {
-  var i = 0;
+  let i = 0;
   return format.replace(/%s/g, function () {
     return args[i++];
   });
@@ -47,36 +47,38 @@ export class Logger implements ILogger {
   constructor(options?: ILoggerOptions, codes?: IMap<number, string>) {
     this.options = objectAssign({}, defaultOptions, options);
     this.codes = codes || new _Map();
-    this.logLevel = logLevelRanks[this.options.logLevel];
+    this.logLevel = LogLevelRanks[this.options.logLevel];
   }
 
   setLogLevel(logLevel: LogLevel) {
     this.options.logLevel = logLevel;
-    this.logLevel = logLevelRanks[logLevel];
+    this.logLevel = LogLevelRanks[logLevel];
   }
 
   debug(msg: string | number, args?: any[]) {
-    if (this._shouldLog(logLevelRanks.DEBUG)) this._log(LogLevels.DEBUG, msg, args);
+    if (this._shouldLog(LogLevelRanks.DEBUG)) this._log(LogLevels.DEBUG, msg, args);
   }
 
   info(msg: string | number, args?: any[]) {
-    if (this._shouldLog(logLevelRanks.INFO)) this._log(LogLevels.INFO, msg, args);
+    if (this._shouldLog(LogLevelRanks.INFO)) this._log(LogLevels.INFO, msg, args);
   }
 
   warn(msg: string | number, args?: any[]) {
-    if (this._shouldLog(logLevelRanks.WARN)) this._log(LogLevels.WARN, msg, args);
+    if (this._shouldLog(LogLevelRanks.WARN)) this._log(LogLevels.WARN, msg, args);
   }
 
   error(msg: string | number, args?: any[]) {
-    if (this._shouldLog(logLevelRanks.ERROR)) this._log(LogLevels.ERROR, msg, args);
+    if (this._shouldLog(LogLevelRanks.ERROR)) this._log(LogLevels.ERROR, msg, args);
   }
 
-  _log(level: LogLevel, msg: string | number, args?: any[]) {
+  private _log(level: LogLevel, msg: string | number, args?: any[]) {
     if (typeof msg === 'number') {
       const format = this.codes.get(msg);
-      if (format) msg = _sprintf(format, args);
-      else msg = `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
+      msg = format ? _sprintf(format, args) : `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
+    } else {
+      if (args) msg = _sprintf(msg, args);
     }
+
     const formattedText = this._generateLogMessage(level, msg);
 
     console.log(formattedText);

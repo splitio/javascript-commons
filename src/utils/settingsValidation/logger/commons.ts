@@ -7,7 +7,7 @@ import { LogLevel } from '../../../types';
  * i.e., if the debugValue is not a boolean or LogLevel string.
  *
  * @param debugValue debug value at config
- * @returns LogLevel of the given debugValue
+ * @returns LogLevel of the given debugValue or undefined if the provided value is invalid
  */
 export function getLogLevel(debugValue: unknown): LogLevel | undefined {
   if (typeof debugValue === 'boolean') {

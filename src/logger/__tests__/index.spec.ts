@@ -118,7 +118,7 @@ test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', ()
 
 });
 
-test('_sprintf', () => {
+test('SPLIT LOGGER / _sprintf', () => {
   expect(_sprintf()).toBe('');
   expect(_sprintf(undefined, [/regex/, 'arg', 10, {}])).toBe('');
 
