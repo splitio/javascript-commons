@@ -118,7 +118,7 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
   let updated = cache.killLocally('nonexistent_split', 'other_treatment', 101);
   const nonexistentSplit = cache.getSplit('nonexistent_split');
 
-  expect(updated).toBe(false); // t exist
+  expect(updated).toBe(false); // killLocally resolves without update if split doesn't exist
   expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
 
   // kill an existent split

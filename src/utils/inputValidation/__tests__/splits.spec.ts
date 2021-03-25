@@ -3,6 +3,7 @@ import startsWith from 'lodash/startsWith';
 
 // mocks sdkLogger
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { ERROR_EMPTY_ARRAY } from '../../../logger/constants';
 
 // mocks validateSplit
 jest.mock('../split');
@@ -61,7 +62,7 @@ describe('INPUT VALIDATION for Split names', () => {
   test('Should return false and log an error for the array if it is invalid', () => {
     for (let i = 0; i < invalidSplits.length; i++) {
       expect(validateSplits(loggerMock, invalidSplits[i], 'test_method')).toBe(false); // It will return false as the array is of an incorrect type.
-      expect(loggerMock.error.mock.calls).toEqual([['test_method: split_names must be a non-empty array.']]); // Should log the error for the collection.
+      expect(loggerMock.error).toBeCalledWith(ERROR_EMPTY_ARRAY, ['test_method', 'split_names']); // Should log the error for the collection.
       expect(validateSplitMock.mock.calls.length).toBe(0); // Should not try to validate any inner value if there is no valid array.
 
       loggerMock.error.mockClear();

@@ -1,26 +1,21 @@
+import { ERROR_EMPTY, ERROR_NULL, ERROR_INVALID, WARN_API_KEY } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateApiKey, validateAndTrackApiKey, releaseApiKey } from '../apiKey';
 
-const errorMsgs = {
-  WRONG_TYPE_API_KEY: 'Factory instantiation: you passed an invalid api_key, api_key must be a non-empty string.',
-  EMPTY_API_KEY: 'Factory instantiation: you passed an empty api_key, api_key must be a non-empty string.',
-  NULL_API_KEY: 'Factory instantiation: you passed a null or undefined api_key, api_key must be a non-empty string.'
-};
-
 const invalidKeys = [
-  { key: '', msg: errorMsgs.EMPTY_API_KEY },
-  { key: null, msg: errorMsgs.NULL_API_KEY },
-  { key: undefined, msg: errorMsgs.NULL_API_KEY },
-  { key: () => { }, msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: new Promise(r => r()), msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: Symbol('asd'), msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: [], msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: true, msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: NaN, msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: Infinity, msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: -Infinity, msg: errorMsgs.WRONG_TYPE_API_KEY },
-  { key: {}, msg: errorMsgs.WRONG_TYPE_API_KEY }
+  { key: '', msg: ERROR_EMPTY },
+  { key: null, msg: ERROR_NULL },
+  { key: undefined, msg: ERROR_NULL },
+  { key: () => { }, msg: ERROR_INVALID },
+  { key: new Promise(r => r()), msg: ERROR_INVALID },
+  { key: Symbol('asd'), msg: ERROR_INVALID },
+  { key: [], msg: ERROR_INVALID },
+  { key: true, msg: ERROR_INVALID },
+  { key: NaN, msg: ERROR_INVALID },
+  { key: Infinity, msg: ERROR_INVALID },
+  { key: -Infinity, msg: ERROR_INVALID },
+  { key: {}, msg: ERROR_INVALID }
 ];
 
 describe('validateApiKey', () => {
@@ -31,7 +26,7 @@ describe('validateApiKey', () => {
     const validApiKey = 'qjok3snti4dgsticade5hfphmlucarsflv14';
 
     expect(validateApiKey(loggerMock, validApiKey)).toBe(validApiKey); // It should return the passed string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
   });
 
   test('Should return false and log error if the api key is invalid', () => {
@@ -57,13 +52,11 @@ describe('validateAndTrackApiKey', () => {
     const validApiKey3 = '84ynbsnti4dgsticade5hfphmlucars92uih';
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey1)).toBe(validApiKey1);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // If this is the first api key we are registering, there is no warning.
+    expect(loggerMock.warn).not.toBeCalled(); // If this is the first api key we are registering, there is no warning.
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey2)).toBe(validApiKey2);
-    expect(loggerMock.warn.mock.calls).toEqual([['Factory instantiation: You already have an instance of the Split factory. Make sure you definitely want this additional instance. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.']]); // We register a new api key, we get a warning.
-
     expect(validateAndTrackApiKey(loggerMock, validApiKey3)).toBe(validApiKey3);
-    expect(loggerMock.warn.mock.calls[0]).toEqual(['Factory instantiation: You already have an instance of the Split factory. Make sure you definitely want this additional instance. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.']); // We register a new api key, we get a warning.
+    expect(loggerMock.warn).toBeCalledWith(WARN_API_KEY, ['an instance of the Split factory']); // we get a warning when we register a new api key.
 
     // We will release the used keys and expect no warnings next time.
     releaseApiKey(validApiKey1);
@@ -73,7 +66,7 @@ describe('validateAndTrackApiKey', () => {
     loggerMock.mockClear();
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey1)).toBe(validApiKey1);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // If all the keys were released and we try again, there is no warning.
+    expect(loggerMock.warn).not.toBeCalled(); // If all the keys were released and we try again, there is no warning.
 
     releaseApiKey(validApiKey1); // clean up the cache of api keys for next test
   });
@@ -82,7 +75,7 @@ describe('validateAndTrackApiKey', () => {
     const validApiKey = '84ynbsnti4dgsticade5hfphmlucars92uih';
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // If this is the first api key we are registering, there is no warning.
+    expect(loggerMock.warn).not.toBeCalled(); // If this is the first api key we are registering, there is no warning.
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
 
@@ -93,10 +86,10 @@ describe('validateAndTrackApiKey', () => {
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
 
     expect(loggerMock.warn.mock.calls).toEqual([
-      ['Factory instantiation: You already have 1 factory with this API Key. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.'], // We register a the same api key again, we get a warning with the number of instances we have.
-      ['Factory instantiation: You already have 2 factories with this API Key. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.'], // We register a the same api key again, we get a warning with the number of instances we have.
-      ['Factory instantiation: You already have 3 factories with this API Key. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.'] // We register a the same api key again, we get a warning with the number of instances we have.
-    ]);
+      [WARN_API_KEY, ['1 factory with this API Key']],
+      [WARN_API_KEY, ['2 factories with this API Key']],
+      [WARN_API_KEY, ['3 factories with this API Key']]
+    ]); // We get a warning each time we register the same api key, with the number of instances we have.
 
     // We will release the used api key leaving only 1 "use" on the cache.
     releaseApiKey(validApiKey);
@@ -107,7 +100,7 @@ describe('validateAndTrackApiKey', () => {
 
     // So we get the warning again.
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
-    expect(loggerMock.warn.mock.calls).toEqual([['Factory instantiation: You already have 1 factory with this API Key. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application.']]); // We register a the same api key again, we get a warning with the number of instances we have.
+    expect(loggerMock.warn).toBeCalledWith(WARN_API_KEY, ['1 factory with this API Key']);
 
     // Leave it with 0
     releaseApiKey(validApiKey);
@@ -116,7 +109,7 @@ describe('validateAndTrackApiKey', () => {
     loggerMock.mockClear();
 
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // s users, there is no warning when we use it again.
+    expect(loggerMock.warn).not.toBeCalled(); // s users, there is no warning when we use it again.
 
     releaseApiKey(validApiKey); // clean up the cache just in case a new test is added
   });

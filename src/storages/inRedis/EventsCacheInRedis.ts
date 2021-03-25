@@ -4,8 +4,8 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-storage:redis');
+
+const logPrefix = 'storage:redis: ';
 
 export default class EventsCacheInRedis implements IEventsCacheAsync {
 
@@ -33,7 +33,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
       // We use boolean values to signal successful queueing
       .then(() => true)
       .catch(err => {
-        this.log.error(`Error adding event to queue: ${err}.`);
+        this.log.error(logPrefix + `Error adding event to queue: ${err}.`);
         return false;
       });
   }

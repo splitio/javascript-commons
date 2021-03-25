@@ -1,31 +1,27 @@
+import { Logger } from '../../../logger';
 import { ILogger } from '../../../logger/types';
-
-const noopLogger: ILogger = {
-  setLogLevel() { },
-  debug() { },
-  info() { },
-  warn() { },
-  error() { }
-};
 
 function isLogger(log: any): log is ILogger {
   return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
 }
 
 /**
- * Validates the `log` (logger) property at config.
+ * Validates the `debug` (logger) property at config.
  *
  * @param settings user config object
- * @returns the provided logger or a no-op logger if no one is provided
- * @throws throws an error if a logger was provided but is invalid
+ * @returns the provided logger at `settings.debug` or a new one with NONE log level if the provided one is invalid
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
+  const log = new Logger('splitio', { logLevel: 'NONE' });
 
-  if (!debug) return noopLogger;
+  // @TODO support boolean and string values?
+  if (!debug) return log;
 
   if (isLogger(debug)) return debug;
 
-  // @TODO log error instead of throwing one
-  throw new Error('The provided `debug` value at config is not valid');
+  // logs error, for consistency with builtin logger validator
+  log.error('The provided `debug` value at config is invalid.');
+
+  return log;
 }

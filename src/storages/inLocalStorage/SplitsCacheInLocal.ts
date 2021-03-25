@@ -3,8 +3,7 @@ import AbstractSplitsCacheSync, { usesSegments } from '../AbstractSplitsCacheSyn
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-storage:localstorage');
+import { logPrefix } from './index';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -53,7 +52,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
     }
   }
 
@@ -73,7 +72,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         }
       }
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
     }
   }
 
@@ -83,7 +82,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * We cannot simply call `localStorage.clear()` since that implies removing user items from the storage.
    */
   clear() {
-    this.log.info('Flushing Splits data from localStorage');
+    this.log.info(logPrefix + 'Flushing Splits data from localStorage');
 
     // collect item keys
     const len = localStorage.length;
@@ -115,7 +114,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return true;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
       return false;
     }
   }
@@ -130,7 +129,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       return 1;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
       return 0;
     }
   }
@@ -148,14 +147,14 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      this.log.info('Split filter query was modified. Updating cache.');
+      this.log.info(logPrefix + 'Split filter query was modified. Updating cache.');
       const queryKey = this.keys.buildSplitsFilterQueryKey();
       const queryString = this.splitFiltersValidation.queryString;
       try {
         if (queryString) localStorage.setItem(queryKey, queryString);
         else localStorage.removeItem(queryKey);
       } catch (e) {
-        this.log.error(e);
+        this.log.error(logPrefix + e);
       }
       this.updateNewFilter = false;
     }
@@ -167,7 +166,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this.hasSync = true;
       return true;
     } catch (e) {
-      this.log.error(e);
+      this.log.error(logPrefix + e);
       return false;
     }
   }
@@ -274,7 +273,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
           });
         }
       } catch (e) {
-        this.log.error(e);
+        this.log.error(logPrefix + e);
       }
     }
     // if the filter didn't change, nothing is done

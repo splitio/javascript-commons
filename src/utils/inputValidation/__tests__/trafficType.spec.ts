@@ -1,30 +1,24 @@
+import { ERROR_NULL, ERROR_INVALID, ERROR_EMPTY, WARN_LOWERCASE_TRAFFIC_TYPE } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateTrafficType } from '../trafficType';
 
-const errorMsgs = {
-  NULL_TRAFFIC_TYPE: 'you passed a null or undefined traffic_type_name, traffic_type_name must be a non-empty string.',
-  WRONG_TYPE_TRAFFIC_TYPE: 'you passed an invalid traffic_type_name, traffic_type_name must be a non-empty string.',
-  EMPTY_TRAFFIC_TYPE: 'you passed an empty traffic_type_name, traffic_type_name must be a non-empty string.',
-  LOWERCASE_TRAFFIC_TYPE: 'traffic_type_name should be all lowercase - converting string to lowercase.'
-};
-
 const invalidTrafficTypes = [
-  { tt: [], msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: () => { }, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: Object.create({}), msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: {}, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: true, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: false, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: 10, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: 0, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: NaN, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: Infinity, msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: null, msg: errorMsgs.NULL_TRAFFIC_TYPE },
-  { tt: undefined, msg: errorMsgs.NULL_TRAFFIC_TYPE },
-  { tt: new Promise(res => res), msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: Symbol('asd'), msg: errorMsgs.WRONG_TYPE_TRAFFIC_TYPE },
-  { tt: '', msg: errorMsgs.EMPTY_TRAFFIC_TYPE }
+  { tt: [], msg: ERROR_INVALID },
+  { tt: () => { }, msg: ERROR_INVALID },
+  { tt: Object.create({}), msg: ERROR_INVALID },
+  { tt: {}, msg: ERROR_INVALID },
+  { tt: true, msg: ERROR_INVALID },
+  { tt: false, msg: ERROR_INVALID },
+  { tt: 10, msg: ERROR_INVALID },
+  { tt: 0, msg: ERROR_INVALID },
+  { tt: NaN, msg: ERROR_INVALID },
+  { tt: Infinity, msg: ERROR_INVALID },
+  { tt: null, msg: ERROR_NULL },
+  { tt: undefined, msg: ERROR_NULL },
+  { tt: new Promise(res => res), msg: ERROR_INVALID },
+  { tt: Symbol('asd'), msg: ERROR_INVALID },
+  { tt: '', msg: ERROR_EMPTY }
 ];
 
 const convertibleTrafficTypes = [
@@ -53,7 +47,7 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       const convertibleTrafficType = convertibleTrafficTypes[i];
 
       expect(validateTrafficType(loggerMock, convertibleTrafficType, 'some_method_trafficType')).toBe(convertibleTrafficType.toLowerCase()); // It should return the lowercase version of the traffic type received.
-      expect(loggerMock.warn.mock.calls[i][0]).toEqual(`some_method_trafficType: ${errorMsgs.LOWERCASE_TRAFFIC_TYPE}`); // Should log a warning.
+      expect(loggerMock.warn.mock.calls[i]).toEqual([WARN_LOWERCASE_TRAFFIC_TYPE, ['some_method_trafficType']]); // Should log a warning.
     }
 
     expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
@@ -65,7 +59,7 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       const expectedLog = invalidTrafficTypes[i]['msg'];
 
       expect(validateTrafficType(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid traffic types should always return false.
-      expect(loggerMock.error.mock.calls[i][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid traffic type.
+      expect(loggerMock.error.mock.calls[i]).toEqual([expectedLog, ['test_method']]); // Should log the error for the invalid traffic type.
     }
 
     expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.

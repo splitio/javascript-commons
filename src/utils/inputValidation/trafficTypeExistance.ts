@@ -5,10 +5,10 @@ import { IReadinessManager } from '../../readiness/types';
 import { SDKMode } from '../../types';
 import { MaybeThenable } from '../../dtos/types';
 import { ILogger } from '../../logger/types';
-import { WARN_20 } from '../../logger/constants';
+import { WARN_NOT_EXISTENT_TT } from '../../logger/constants';
 
 function logTTExistanceWarning(log: ILogger, maybeTT: string, method: string) {
-  log.warn(WARN_20, [method, maybeTT]);
+  log.warn(WARN_NOT_EXISTENT_TT, [method, maybeTT]);
 }
 
 /**

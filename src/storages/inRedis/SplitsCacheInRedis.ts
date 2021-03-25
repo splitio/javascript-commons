@@ -3,8 +3,8 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { ISplitsCacheAsync } from '../types';
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
-// import { logFactory } from '../../logger/sdkLogger';
-// const log = logFactory('splitio-storage:redis');
+
+const logPrefix = 'storage:redis: ';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -83,7 +83,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    */
   getSplit(name: string): Promise<string | null> {
     if (this.redisError) {
-      this.log.error(this.redisError);
+      this.log.error(logPrefix + this.redisError);
 
       throw this.redisError;
     }
@@ -137,14 +137,14 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
       .then((ttCount: string | null | number) => {
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(`Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(logPrefix + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(`Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(logPrefix + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
@@ -169,7 +169,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
     if (this.redisError) {
-      this.log.error(this.redisError);
+      this.log.error(logPrefix + this.redisError);
 
       throw this.redisError;
     }
@@ -183,7 +183,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
         return Promise.resolve(splits);
       })
       .catch(e => {
-        this.log.error(`Could not grab splits due to an error: ${e}.`);
+        this.log.error(logPrefix + `Could not grab splits due to an error: ${e}.`);
         return Promise.reject(e);
       });
   }

@@ -67,7 +67,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       split(maybeSplitName: string) {
         const splitName = validateSplit(log, maybeSplitName, SPLIT_FN_LABEL);
-        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
+        if (!validateIfNotDestroyed(log, readinessManager, SPLIT_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
           return null;
         }
 
@@ -88,7 +88,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the Split objects present on the factory storage
        */
       splits() {
-        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, 'splits')) {
+        if (!validateIfNotDestroyed(log, readinessManager, 'splits') || !validateIfOperational(log, readinessManager, 'splits')) {
           return [];
         }
         const currentSplits = splits.getAll();
@@ -100,7 +100,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the Split names present on the factory storage
        */
       names() {
-        if (!validateIfNotDestroyed(log, readinessManager) || !validateIfOperational(log, readinessManager, 'names')) {
+        if (!validateIfNotDestroyed(log, readinessManager, 'names') || !validateIfOperational(log, readinessManager, 'names')) {
           return [];
         }
         return splits.getSplitNames();

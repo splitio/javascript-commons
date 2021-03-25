@@ -1,30 +1,24 @@
+import { ERROR_INVALID, ERROR_NULL, ERROR_EMPTY, WARN_TRIMMING } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateSplit } from '../split';
 
-const errorMsgs = {
-  NULL_SPLIT: () => 'you passed a null or undefined split name, split name must be a non-empty string.',
-  WRONG_TYPE_SPLIT: () => 'you passed an invalid split name, split name must be a non-empty string.',
-  EMPTY_SPLIT: () => 'you passed an empty split name, split name must be a non-empty string.',
-  TRIMMABLE_SPLIT: (splitName: string) => `split name "${splitName}" has extra whitespace, trimming.`
-};
-
 const invalidSplits = [
-  { split: [], msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: () => { }, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: Object.create({}), msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: {}, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: true, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: false, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: 10, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: 0, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: NaN, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: Infinity, msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: null, msg: errorMsgs.NULL_SPLIT },
-  { split: undefined, msg: errorMsgs.NULL_SPLIT },
-  { split: new Promise(res => res), msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: Symbol('asd'), msg: errorMsgs.WRONG_TYPE_SPLIT },
-  { split: '', msg: errorMsgs.EMPTY_SPLIT }
+  { split: [], msg: ERROR_INVALID },
+  { split: () => { }, msg: ERROR_INVALID },
+  { split: Object.create({}), msg: ERROR_INVALID },
+  { split: {}, msg: ERROR_INVALID },
+  { split: true, msg: ERROR_INVALID },
+  { split: false, msg: ERROR_INVALID },
+  { split: 10, msg: ERROR_INVALID },
+  { split: 0, msg: ERROR_INVALID },
+  { split: NaN, msg: ERROR_INVALID },
+  { split: Infinity, msg: ERROR_INVALID },
+  { split: null, msg: ERROR_NULL },
+  { split: undefined, msg: ERROR_NULL },
+  { split: new Promise(res => res), msg: ERROR_INVALID },
+  { split: Symbol('asd'), msg: ERROR_INVALID },
+  { split: '', msg: ERROR_EMPTY }
 ];
 
 const trimmableSplits = [
@@ -52,7 +46,7 @@ describe('INPUT VALIDATION for Split name', () => {
     for (let i = 0; i < trimmableSplits.length; i++) {
       const trimmableSplit = trimmableSplits[i];
       expect(validateSplit(loggerMock, trimmableSplit, 'some_method_splitName')).toBe(trimmableSplit.trim()); // It should return the trimmed version of the split name received.
-      expect(loggerMock.warn.mock.calls[0][0]).toEqual(`some_method_splitName: ${errorMsgs.TRIMMABLE_SPLIT(trimmableSplit)}`); // Should log a warning if those are enabled.
+      expect(loggerMock.warn).toBeCalledWith(WARN_TRIMMING, ['some_method_splitName', 'split name', trimmableSplit]); // Should log a warning if those are enabled.
 
       loggerMock.warn.mockClear();
     }
@@ -64,10 +58,10 @@ describe('INPUT VALIDATION for Split name', () => {
     for (let i = 0; i < invalidSplits.length; i++) {
       const invalidValue = invalidSplits[i]['split'];
       // @ts-ignore
-      const expectedLog = invalidSplits[i]['msg'](invalidValue);
+      const expectedLog = invalidSplits[i]['msg'];
 
       expect(validateSplit(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid event types should always return false.
-      expect(loggerMock.error.mock.calls[0][0]).toEqual(`test_method: ${expectedLog}`); // Should log the error for the invalid event type.
+      expect(loggerMock.error).toBeCalledWith(expectedLog, ['test_method', 'split name']); // Should log the error for the invalid event type.
 
       loggerMock.error.mockClear();
     }

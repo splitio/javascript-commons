@@ -144,14 +144,14 @@ test('INPUT VALIDATION for preloadedData', () => {
       expect(loggerMock.error.mock.calls[0]).toEqual([testCase.error]); // Should log the error for the invalid preloadedData.
       loggerMock.error.mockClear();
     } else {
-      expect(loggerMock.error.mock.calls.length === 0).toBe(true); // Should not log any error.
+      expect(loggerMock.error).not.toBeCalled(); // Should not log any error.
     }
 
     if (testCase.warn) {
       expect(loggerMock.warn.mock.calls[0]).toEqual([testCase.warn]); // Should log the warning for the given preloadedData.
       loggerMock.warn.mockClear();
     } else {
-      expect(loggerMock.warn.mock.calls.length === 0).toBe(true); // Should not log any warning.
+      expect(loggerMock.warn).not.toBeCalled(); // Should not log any warning.
     }
   }
 });

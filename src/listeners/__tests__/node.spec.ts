@@ -17,7 +17,7 @@ test('Node JS listener / Signal Listener class methods and start/stop functional
   expect(processOnSpy.mock.calls).toEqual([['SIGTERM', listener._sigtermHandler]]);
 
   // pre-check and call stop
-  expect(processRemoveListenerSpy.mock.calls.length === 0).toBe(true);
+  expect(processRemoveListenerSpy).not.toBeCalled();
   listener.stop();
 
   // removed correct listener from correct signal on stop.

@@ -9,8 +9,6 @@ import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './strea
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { INFO_18, INFO_19, INFO_20 } from '../logger/constants';
-// import { logFactory } from '../logger/sdkLogger';
-// export const log = logFactory('splitio-sync:sync-manager');
 
 /**
  * Online SyncManager factory.
