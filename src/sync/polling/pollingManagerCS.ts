@@ -8,7 +8,7 @@ import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-import { INFO_7, INFO_8, INFO_9 } from '../../logger/constants';
+import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -48,7 +48,7 @@ export default function pollingManagerCSFactory(
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
     const splitsHaveSegments = storage.splits.usesSegments();
     if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(INFO_7, [splitsHaveSegments ? 'ON' : 'OFF']);
+      log.info(POLLING_SMART_PAUSING, [splitsHaveSegments ? 'ON' : 'OFF']);
       if (splitsHaveSegments) {
         startMySegmentsSyncTasks();
       } else {
@@ -77,7 +77,7 @@ export default function pollingManagerCSFactory(
 
     // Start periodic fetching (polling)
     start() {
-      log.info(INFO_8);
+      log.info(POLLING_START);
 
       splitsSyncTask.start();
       if (storage.splits.usesSegments()) startMySegmentsSyncTasks();
@@ -85,7 +85,7 @@ export default function pollingManagerCSFactory(
 
     // Stop periodic fetching (polling)
     stop() {
-      log.info(INFO_9);
+      log.info(POLLING_STOP);
 
       if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
       stopMySegmentsSyncTasks();

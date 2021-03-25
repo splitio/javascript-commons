@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, DEBUG_SPLITS_FILTER, SETTINGS_LB } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, logPrefixSettings } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -39,7 +39,7 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  */
 function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(log, values, SETTINGS_LB, `${type} filter`, `${type} filter value`);
+  let result = validateSplits(log, values, logPrefixSettings, `${type} filter`, `${type} filter value`);
 
   if (result) {
     // check max length
@@ -125,7 +125,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
-  log.debug(DEBUG_SPLITS_FILTER, [res.queryString]);
+  log.debug(SETTINGS_SPLITS_FILTER, [res.queryString]);
 
   return res;
 }

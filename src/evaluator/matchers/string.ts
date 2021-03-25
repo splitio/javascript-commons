@@ -1,4 +1,4 @@
-import { DEBUG_21, DEBUG_20 } from '../../logger/constants';
+import { ENGINE_MATCHER_STRING_INVALID, ENGINE_MATCHER_STRING } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
 export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
@@ -8,14 +8,14 @@ export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*:
     try {
       re = new RegExp(ruleAttr);
     } catch (e) {
-      log.debug(DEBUG_21, [ruleAttr]);
+      log.debug(ENGINE_MATCHER_STRING_INVALID, [ruleAttr]);
 
       return false;
     }
 
     let regexMatches = re.test(runtimeAttr);
 
-    log.debug(DEBUG_20, [runtimeAttr, ruleAttr, regexMatches ? 'yes' : 'no']);
+    log.debug(ENGINE_MATCHER_STRING, [runtimeAttr, ruleAttr, regexMatches ? 'yes' : 'no']);
 
     return regexMatches;
   };

@@ -8,7 +8,7 @@ import { CONTROL } from '../utils/constants';
 import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
-import { INFO_2, INFO_3 } from '../logger/constants';
+import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 
 
 /**
@@ -75,10 +75,10 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     }
 
     const { treatment, label, changeNumber, config = null } = evaluation;
-    log.info(INFO_2, [splitName, matchingKey, treatment, label]);
+    log.info(IMPRESSION, [splitName, matchingKey, treatment, label]);
 
     if (validateSplitExistance(log, readinessManager, splitName, label, invokingMethodName)) {
-      log.info(INFO_3);
+      log.info(IMPRESSION_QUEUEING);
       queue.push({
         feature: splitName,
         keyName: matchingKey,

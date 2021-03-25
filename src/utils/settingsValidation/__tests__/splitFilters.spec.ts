@@ -7,7 +7,7 @@ import { splitFilters, queryStrings, groupedFilters } from '../../../__tests__/m
 
 // Test target
 import { validateSplitFilters } from '../splitFilters';
-import { DEBUG_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY } from '../../../logger/constants';
+import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY } from '../../../logger/constants';
 
 describe('validateSplitFilters', () => {
 
@@ -48,7 +48,7 @@ describe('validateSplitFilters', () => {
       groupedFilters: { byName: [], byPrefix: [] }
     };
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // filters without values
-    expect(loggerMock.debug).toBeCalledWith(DEBUG_SPLITS_FILTER, [null]);
+    expect(loggerMock.debug).toBeCalledWith(SETTINGS_SPLITS_FILTER, [null]);
     loggerMock.debug.mockClear();
 
     splitFilters.push(
@@ -58,7 +58,7 @@ describe('validateSplitFilters', () => {
       { type: 'byName', values: [13] });
     output.validFilters.push({ type: 'byName', values: [13] });
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // some filters are invalid
-    expect(loggerMock.debug.mock.calls).toEqual([[DEBUG_SPLITS_FILTER, [null]]]);
+    expect(loggerMock.debug.mock.calls).toEqual([[SETTINGS_SPLITS_FILTER, [null]]]);
     expect(loggerMock.warn.mock.calls).toEqual([
       [WARN_SPLITS_FILTER_INVALID, [3]], // invalid value of `type` property
       [WARN_SPLITS_FILTER_INVALID, [4]], // invalid type of `values` property
@@ -82,7 +82,7 @@ describe('validateSplitFilters', () => {
           groupedFilters: groupedFilters[i]
         };
         expect(validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toEqual(output); // splitFilters #${i}
-        expect(loggerMock.debug).lastCalledWith(DEBUG_SPLITS_FILTER, [queryStrings[i]]);
+        expect(loggerMock.debug).lastCalledWith(SETTINGS_SPLITS_FILTER, [queryStrings[i]]);
 
       } else { // tests where validateSplitFilters throws an exception
         expect(() => validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toThrow(queryStrings[i]);

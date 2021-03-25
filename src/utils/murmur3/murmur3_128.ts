@@ -6,7 +6,7 @@ const X86 = 'x86';
 const X64_ARCHS = ['arm64', 'ppc64', 'x64', 's390x', 'mipsel'];
 const isX64 = getArchType() === X64;
 
-/*!
+/*
  * +----------------------------------------------------------------------------------+
  * | murmurHash3.js v3.0.0 (http://github.com/karanlyons/murmurHash3.js)              |
  * | A TypeScript/JavaScript implementation of MurmurHash3's hashing algorithms.      |

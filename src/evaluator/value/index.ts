@@ -2,16 +2,16 @@ import { SplitIO } from '../../types';
 import { IMatcherDto } from '../types';
 import { ILogger } from '../../logger/types';
 import sanitizeValue from './sanitize';
-import { DEBUG_24, WARN_ENGINE_NO_ATTRIBUTES, WARN_ENGINE_INVALID_VALUE } from '../../logger/constants';
+import { ENGINE_VALUE, ENGINE_VALUE_NO_ATTRIBUTES, ENGINE_VALUE_INVALID } from '../../logger/constants';
 
 function parseValue(log: ILogger, key: string, attributeName: string | null, attributes: SplitIO.Attributes) {
   let value = undefined;
   if (attributeName) {
     if (attributes) {
       value = attributes[attributeName];
-      log.debug(DEBUG_24, [attributeName, value]);
+      log.debug(ENGINE_VALUE, [attributeName, value]);
     } else {
-      log.warn(WARN_ENGINE_NO_ATTRIBUTES, [attributeName]);
+      log.warn(ENGINE_VALUE_NO_ATTRIBUTES, [attributeName]);
     }
   } else {
     value = key;
@@ -31,7 +31,7 @@ export default function value(log: ILogger, key: string, matcherDto: IMatcherDto
   if (sanitizedValue !== undefined) {
     return sanitizedValue;
   } else {
-    log.warn(WARN_ENGINE_INVALID_VALUE, [valueToMatch + (attributeName ? ' for attribute ' + attributeName : '')]);
+    log.warn(ENGINE_VALUE_INVALID, [valueToMatch + (attributeName ? ' for attribute ' + attributeName : '')]);
     return;
   }
 }

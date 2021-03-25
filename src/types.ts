@@ -89,7 +89,7 @@ export interface ISettings {
     auth: string,
     streaming: string
   },
-  readonly debug: boolean,
+  readonly debug: boolean | LogLevel,
   readonly version: string,
   features: SplitIO.MockedFeaturesFilePath | SplitIO.MockedFeaturesMap,
   readonly streamingEnabled: boolean,

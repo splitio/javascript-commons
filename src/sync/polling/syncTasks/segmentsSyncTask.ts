@@ -11,7 +11,7 @@ import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { INSTANTIATION_LB, SYNC_SEGMENTS_LB } from '../../../logger/constants';
+import { logPrefixInstantiation, logPrefixSyncSegments } from '../../../logger/constants';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -48,7 +48,7 @@ function segmentChangesUpdaterFactory(
    * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
    */
   return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) {
-    log.debug(SYNC_SEGMENTS_LB + 'Started segments update');
+    log.debug(logPrefixSyncSegments + 'Started segments update');
 
     // If not a segment name provided, read list of available segments names to be updated.
     let segments = segmentNames ? segmentNames : segmentsCache.getRegisteredSegments();
@@ -61,7 +61,7 @@ function segmentChangesUpdaterFactory(
       const segmentName = segments[index];
       const since = segmentsCache.getChangeNumber(segmentName);
 
-      log.debug(SYNC_SEGMENTS_LB + `Processing segment ${segmentName}`);
+      log.debug(logPrefixSyncSegments + `Processing segment ${segmentName}`);
 
       updaters.push(segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
         let changeNumber = -1;
@@ -73,7 +73,7 @@ function segmentChangesUpdaterFactory(
             changeNumber = x.till;
           }
 
-          log.debug(SYNC_SEGMENTS_LB + `Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+          log.debug(logPrefixSyncSegments + `Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
         });
 
         return changeNumber;
@@ -97,7 +97,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        log.error(INSTANTIATION_LB + ': you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.');
+        log.error(logPrefixInstantiation + ': you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.');
       }
 
       return false;

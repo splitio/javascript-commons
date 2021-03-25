@@ -3,7 +3,7 @@ import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { IMetadata } from '../dtos/types';
 import { ILogger } from '../logger/types';
-import { ERROR_39, ERROR_5 } from '../logger/constants';
+import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -21,7 +21,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
-  if (!fetch) log.error(ERROR_5, [messageNoFetch]);
+  if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
@@ -66,7 +66,7 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_39, [resp ? resp.status : 'NO_STATUS', url, msg]);
+          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)

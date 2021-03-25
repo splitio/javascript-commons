@@ -10,7 +10,7 @@ import mySegmentsFetcherFactory from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { WARN_4 } from '../../../logger/constants';
+import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -74,7 +74,7 @@ function mySegmentsUpdaterFactory(
 
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
-        log.warn(WARN_4, [retry, error]);
+        log.warn(SYNC_MYSEGMENTS_FETCH_RETRY, [retry, error]);
         return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params
       } else {
         startingUp = false;

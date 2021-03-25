@@ -1,6 +1,6 @@
 import { findIndex } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
-import { DEBUG_17 } from '../../logger/constants';
+import { ENGINE_MATCHER_PART_OF } from '../../logger/constants';
 
 export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function partOfMatcher(runtimeAttr: string[]): boolean {
@@ -12,7 +12,7 @@ export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isPartOf = false;
     }
 
-    log.debug(DEBUG_17, [runtimeAttr, ruleAttr, isPartOf]);
+    log.debug(ENGINE_MATCHER_PART_OF, [runtimeAttr, ruleAttr, isPartOf]);
 
     return isPartOf;
   };

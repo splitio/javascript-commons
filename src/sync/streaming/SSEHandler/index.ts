@@ -5,7 +5,7 @@ import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
 import { ILogger } from '../../../logger/types';
-import { WARN_6, ERROR_9, WARN_7, DEBUG_46 } from '../../../logger/constants';
+import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 
 function isRetryableError(error: INotificationError) {
   if (error.parsedData && error.parsedData.code) {
@@ -40,11 +40,11 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       try {
         errorWithParsedData = errorParser(error);
       } catch (err) {
-        log.warn(WARN_6, [err]);
+        log.warn(STREAMING_PARSING_ERROR_FAILS, [err]);
       }
 
       let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
-      log.error(ERROR_9, [errorMessage]);
+      log.error(ERROR_STREAMING_SSE, [errorMessage]);
 
       if (isRetryableError(errorWithParsedData)) {
         pushEmitter.emit(PUSH_RETRYABLE_ERROR);
@@ -59,12 +59,12 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       try {
         messageWithParsedData = messageParser(message);
       } catch (err) {
-        log.warn(WARN_7, [err]);
+        log.warn(STREAMING_PARSING_MESSAGE_FAILS, [err]);
         return;
       }
 
       const { parsedData, data, channel, timestamp } = messageWithParsedData;
-      log.debug(DEBUG_46, [data]);
+      log.debug(STREAMING_NEW_MESSAGE, [data]);
 
       // we only handle update events if streaming is up.
       if (!notificationKeeper.isStreamingUp() && parsedData.type !== OCCUPANCY && parsedData.type !== CONTROL)

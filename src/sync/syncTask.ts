@@ -1,4 +1,4 @@
-import { DEBUG_48, DEBUG_47, DEBUG_49 } from '../logger/constants';
+import { SYNC_TASK_EXECUTE, SYNC_TASK_START, SYNC_TASK_STOP } from '../logger/constants';
 import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 
@@ -16,7 +16,7 @@ export default function syncTaskFactory<Input extends any[], Output>(log: ILogge
 
   function execute(...args: Input) {
     executing = true;
-    log.debug(DEBUG_48, [taskName]);
+    log.debug(SYNC_TASK_EXECUTE, [taskName]);
     return task(...args).then(result => {
       executing = false;
       if (running) timeoutID = setTimeout(execute, period, ...args);
@@ -34,7 +34,7 @@ export default function syncTaskFactory<Input extends any[], Output>(log: ILogge
     start(...args: Input) {
       if (!running) {
         running = true;
-        log.debug(DEBUG_47, [taskName, period]);
+        log.debug(SYNC_TASK_START, [taskName, period]);
         return execute(...args);
       }
     },
@@ -42,7 +42,7 @@ export default function syncTaskFactory<Input extends any[], Output>(log: ILogge
     stop() {
       running = false;
       if (timeoutID) {
-        log.debug(DEBUG_49, [taskName]);
+        log.debug(SYNC_TASK_STOP, [taskName]);
         clearTimeout(timeoutID);
         timeoutID = undefined;
       }

@@ -1,4 +1,4 @@
-import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, INSTANTIATION_LB } from '../../logger/constants';
+import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, logPrefixInstantiation } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
 
@@ -8,14 +8,14 @@ const item = 'api_key';
 export function validateApiKey(log: ILogger, maybeApiKey: any): string | false {
   let apiKey: string | false = false;
   if (maybeApiKey == undefined) { // eslint-disable-line eqeqeq
-    log.error(ERROR_NULL, [INSTANTIATION_LB, item]);
+    log.error(ERROR_NULL, [logPrefixInstantiation, item]);
   } else if (isString(maybeApiKey)) {
     if (maybeApiKey.length > 0)
       apiKey = maybeApiKey;
     else
-      log.error(ERROR_EMPTY, [INSTANTIATION_LB, item]);
+      log.error(ERROR_EMPTY, [logPrefixInstantiation, item]);
   } else {
-    log.error(ERROR_INVALID, [INSTANTIATION_LB, item]);
+    log.error(ERROR_INVALID, [logPrefixInstantiation, item]);
   }
 
   return apiKey;

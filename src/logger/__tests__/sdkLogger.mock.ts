@@ -1,3 +1,4 @@
+import { LogLevel } from '../../types';
 
 export const loggerMock = {
   warn: jest.fn(),
@@ -14,3 +15,7 @@ export const loggerMock = {
     this.setLogLevel.mockClear();
   }
 };
+
+export function getLoggerLogLevel(logger: any): LogLevel | undefined {
+  if (logger) return logger.options.logLevel;
+}

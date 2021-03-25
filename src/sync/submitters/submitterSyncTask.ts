@@ -2,7 +2,7 @@ import syncTaskFactory from '../syncTask';
 import { ISyncTask, ITimeTracker } from '../types';
 import { IRecorderCacheConsumerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
-import { INFO_17, WARN_9, WARN_10 } from '../../logger/constants';
+import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
 
 /**
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
@@ -26,7 +26,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     const data = sourceCache.state();
 
     const dataCount: number | '' = typeof data.length === 'number' ? data.length : '';
-    log.info(INFO_17, [dataCount, dataName]);
+    log.info(SUBMITTERS_PUSH, [dataCount, dataName]);
     const latencyTrackerStop = latencyTracker && latencyTracker.start();
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
@@ -37,14 +37,14 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
       sourceCache.clear(); // we clear the queue if request successes.
     }).catch(err => {
       if (!maxRetries) {
-        log.warn(WARN_9, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_FAILS, [dataCount, dataName, err]);
       } else if (retries === maxRetries) {
         retries = 0;
         sourceCache.clear(); // we clear the queue if request fails after retries.
-        log.warn(WARN_9, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_FAILS, [dataCount, dataName, err]);
       } else {
         retries++;
-        log.warn(WARN_10, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_RETRY, [dataCount, dataName, err]);
       }
     });
 
