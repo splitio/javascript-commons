@@ -14,7 +14,7 @@ import { DEBUG_26, DEBUG_27 } from '../logger/constants';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
-const LOG_EXTRA = 'for unload page event.';
+const EVENT_NAME = 'for unload page event.';
 
 /**
  * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
@@ -40,7 +40,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   start() {
     if (typeof window !== 'undefined' && window.addEventListener) {
-      this.settings.log.debug(DEBUG_26, [LOG_EXTRA]);
+      this.settings.log.debug(DEBUG_26, [EVENT_NAME]);
       window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }
@@ -52,7 +52,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {
-      this.settings.log.debug(DEBUG_27, [LOG_EXTRA]);
+      this.settings.log.debug(DEBUG_27, [EVENT_NAME]);
       window.removeEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }

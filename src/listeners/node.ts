@@ -5,7 +5,8 @@ import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import { CLEANUP_LB, DEBUG_26, DEBUG_27 } from '../logger/constants';
 
-const LOG_EXTRA = 'for SIGTERM signal.';
+const SIGTERM = 'SIGTERM';
+const EVENT_NAME = 'for SIGTERM signal.';
 
 /**
  * We'll listen for SIGTERM since it's the standard signal for server shutdown.
@@ -24,15 +25,15 @@ export default class NodeSignalListener implements ISignalListener {
   }
 
   start() {
-    this.settings.log.debug(DEBUG_26, [LOG_EXTRA]);
+    this.settings.log.debug(DEBUG_26, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
-    process.on('SIGTERM', this._sigtermHandler);
+    process.on(SIGTERM, this._sigtermHandler);
   }
 
   stop() {
-    this.settings.log.debug(DEBUG_27, [LOG_EXTRA]);
+    this.settings.log.debug(DEBUG_27, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
-    process.removeListener('SIGTERM', this._sigtermHandler);
+    process.removeListener(SIGTERM, this._sigtermHandler);
   }
 
   /**
@@ -45,7 +46,7 @@ export default class NodeSignalListener implements ISignalListener {
 
       // This handler prevented the default behaviour, start again.
       // eslint-disable-next-line no-undef
-      process.kill(process.pid, 'SIGTERM');
+      process.kill(process.pid, SIGTERM);
     };
 
     this.settings.log.debug(CLEANUP_LB + 'Split SDK graceful shutdown after SIGTERM.');
