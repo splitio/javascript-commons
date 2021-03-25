@@ -2,7 +2,7 @@ import { ERROR_0, ERROR_2, ERROR_CLIENT_LISTENER, ERROR_4, ERROR_5, ERROR_7, ERR
 
 export const codesError: [number, string][] = [
   // evaluator
-  [ERROR_0, ENGINE_COMBINER_LB + 'Invalid Split provided, no valid conditions found'],
+  [ERROR_0, ENGINE_COMBINER_LB + 'Invalid Split, no valid rules found'],
   // SDK
   [ERROR_2, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
   [ERROR_4, ' Manager instance is not available.'], // @TODO remove if the manager is not pluggable
