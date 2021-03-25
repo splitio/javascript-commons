@@ -1,4 +1,4 @@
-import { ENGINE_VALUE_INVALID, ENGINE_VALUE_NO_ATTRIBUTES, CLIENT_NO_LISTENER, SYNC_MYSEGMENTS_FETCH_RETRY, SYNC_SPLITS_FETCH_FAILS, STREAMING_PARSING_ERROR_FAILS, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_FALLBACK, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY, ERROR_EVENTS_TRACKER, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES, CLIENT_NOT_READY, WARN_CONVERTING, WARN_TRIMMING, WARN_NOT_EXISTENT_SPLIT, WARN_LOWERCASE_TRAFFIC_TYPE, WARN_NOT_EXISTENT_TT, WARN_INTEGRATION_INVALID, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_STORAGE_INVALID, WARN_API_KEY, logPrefixSettings, logPrefixEngineValue, logPrefixEventsTracker, logPrefixSyncMysegments, logPrefixSyncSplits, logPrefixSyncStreaming, logPrefixSyncSubmitters } from '../constants';
+import { ENGINE_VALUE_INVALID, ENGINE_VALUE_NO_ATTRIBUTES, CLIENT_NO_LISTENER, SYNC_MYSEGMENTS_FETCH_RETRY, SYNC_SPLITS_FETCH_FAILS, STREAMING_PARSING_ERROR_FAILS, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_FALLBACK, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES, CLIENT_NOT_READY, WARN_CONVERTING, WARN_TRIMMING, WARN_NOT_EXISTENT_SPLIT, WARN_LOWERCASE_TRAFFIC_TYPE, WARN_NOT_EXISTENT_TT, WARN_INTEGRATION_INVALID, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_STORAGE_INVALID, WARN_API_KEY, logPrefixSettings, logPrefixEngineValue, logPrefixSyncMysegments, logPrefixSyncSplits, logPrefixSyncStreaming, logPrefixSyncSubmitters } from '../constants';
 import { codesError } from './error';
 
 export const codesWarn: [number, string][] = codesError.concat([
@@ -9,12 +9,10 @@ export const codesWarn: [number, string][] = codesError.concat([
   [SYNC_MYSEGMENTS_FETCH_RETRY, logPrefixSyncMysegments + 'Retrying download of segments #%s. Reason: %s'],
   [SYNC_SPLITS_FETCH_FAILS, logPrefixSyncSplits + 'Error while doing fetch of Splits. %s'],
   [STREAMING_PARSING_ERROR_FAILS, logPrefixSyncStreaming + 'Error parsing SSE error notification: %s'],
-  [STREAMING_PARSING_MESSAGE_FAILS, logPrefixSyncStreaming + 'Error parsing new SSE message notification: %s'],
+  [STREAMING_PARSING_MESSAGE_FAILS, logPrefixSyncStreaming + 'Error parsing SSE message notification: %s'],
   [STREAMING_FALLBACK, logPrefixSyncStreaming + 'Falling back to polling mode. Reason: %s'],
   [SUBMITTERS_PUSH_FAILS, logPrefixSyncSubmitters + 'Droping %s %s after retry. Reason: %s.'],
   [SUBMITTERS_PUSH_RETRY, logPrefixSyncSubmitters + 'Failed to push %s %s, keeping data to retry on next iteration. Reason: %s.'],
-  // SDK
-  [ERROR_EVENTS_TRACKER, logPrefixEventsTracker + 'Failed to queue %s'],
   // client status
   [CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
   [CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],

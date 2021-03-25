@@ -1,18 +1,18 @@
-import { ERROR_ENGINE_COMBINER_IFELSEIF, ERROR_LOGLEVEL_INVALID, ERROR_CLIENT_LISTENER, ERROR_MANAGER_NOT_AVAILABLE, ERROR_CLIENT_CANNOT_GET_READY, ERROR_SYNC_OFFLINE_LOADING, ERROR_STREAMING_SSE, ERROR_STREAMING_AUTH, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER, ERROR_EVENT_TYPE_FORMAT, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, ERROR_NOT_FINITE, ERROR_CLIENT_DESTROYED, ERROR_NULL, ERROR_TOO_LONG, ERROR_INVALID_KEY_OBJECT, ERROR_INVALID, ERROR_EMPTY, ERROR_EMPTY_ARRAY, ERROR_INVALID_IMPRESSIONS_MODE, ERROR_HTTP, logPrefixSettings, logPrefixEngineCombiner, logPrefixSyncOffline, logPrefixSyncStreaming, logPrefixImpressionsTracker } from '../constants';
+import { ERROR_ENGINE_COMBINER_IFELSEIF, ERROR_LOGLEVEL_INVALID, ERROR_CLIENT_LISTENER, ERROR_CLIENT_CANNOT_GET_READY, ERROR_SYNC_OFFLINE_LOADING, ERROR_STREAMING_SSE, ERROR_STREAMING_AUTH, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER, ERROR_EVENT_TYPE_FORMAT, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, ERROR_NOT_FINITE, ERROR_CLIENT_DESTROYED, ERROR_NULL, ERROR_TOO_LONG, ERROR_INVALID_KEY_OBJECT, ERROR_INVALID, ERROR_EMPTY, ERROR_EMPTY_ARRAY, ERROR_INVALID_IMPRESSIONS_MODE, ERROR_HTTP, logPrefixSettings, logPrefixEngineCombiner, logPrefixSyncOffline, logPrefixSyncStreaming, logPrefixImpressionsTracker, ERROR_EVENTS_TRACKER, logPrefixEventsTracker } from '../constants';
 
 export const codesError: [number, string][] = [
   // evaluator
   [ERROR_ENGINE_COMBINER_IFELSEIF, logPrefixEngineCombiner + 'Invalid Split, no valid rules found'],
   // SDK
   [ERROR_LOGLEVEL_INVALID, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
-  [ERROR_MANAGER_NOT_AVAILABLE, ' Manager instance is not available.'], // @TODO remove if the manager is not pluggable
   [ERROR_CLIENT_CANNOT_GET_READY, ' The SDK will not get ready. Reason: %s'],
+  [ERROR_IMPRESSIONS_TRACKER, logPrefixImpressionsTracker + 'Could not store impressions bulk with %s impression(s). Error: %s'],
+  [ERROR_IMPRESSIONS_LISTENER, logPrefixImpressionsTracker + 'Impression listener logImpression method threw: %s.'],
+  [ERROR_EVENTS_TRACKER, logPrefixEventsTracker + 'Failed to queue %s'],
   // synchronizer
   [ERROR_SYNC_OFFLINE_LOADING, logPrefixSyncOffline + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
   [ERROR_STREAMING_SSE, logPrefixSyncStreaming + 'Fail to connect to streaming, with error message: %s'],
   [ERROR_STREAMING_AUTH, logPrefixSyncStreaming + 'Failed to authenticate for streaming. Error: "%s".'],
-  [ERROR_IMPRESSIONS_TRACKER, logPrefixImpressionsTracker + 'Could not store impressions bulk with %s impression%s. Error: %s'],
-  [ERROR_IMPRESSIONS_LISTENER, logPrefixImpressionsTracker + 'Impression listener logImpression method threw: %s.'],
   [ERROR_HTTP, ' Response status is not OK. Status: %s. URL: %s. Message: %s'],
   // client status
   [ERROR_CLIENT_LISTENER, 'A listener was added for %s on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.'],

@@ -1,4 +1,4 @@
-import { CLIENT_READY_FROM_CACHE, CLIENT_READY, IMPRESSION, IMPRESSION_QUEUEING, NEW_SHARED_CLIENT, NEW_FACTORY, RETRIEVE_MANAGER, POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP, SYNC_SPLITS_FETCH_RETRY, STREAMING_REFRESH_TOKEN, STREAMING_RECONNECT, STREAMING_CONNECTING, STREAMING_DISABLED, STREAMING_DISCONNECTING, SUBMITTERS_PUSH_FULL_EVENTS_QUEUE, SUBMITTERS_PUSH, SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING, EVENTS_TRACKER_SUCCESS, logPrefixEventsTracker, logPrefixSyncManager, logPrefixSyncPolling, logPrefixSyncSplits, logPrefixSyncStreaming, logPrefixSyncSubmitters, logPrefixImpressionsTracker } from '../constants';
+import { CLIENT_READY_FROM_CACHE, CLIENT_READY, IMPRESSION, IMPRESSION_QUEUEING, NEW_SHARED_CLIENT, NEW_FACTORY, POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP, SYNC_SPLITS_FETCH_RETRY, STREAMING_REFRESH_TOKEN, STREAMING_RECONNECT, STREAMING_CONNECTING, STREAMING_DISABLED, STREAMING_DISCONNECTING, SUBMITTERS_PUSH_FULL_EVENTS_QUEUE, SUBMITTERS_PUSH, SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING, EVENTS_TRACKER_SUCCESS, logPrefixEventsTracker, logPrefixSyncManager, logPrefixSyncPolling, logPrefixSyncSplits, logPrefixSyncStreaming, logPrefixSyncSubmitters, logPrefixImpressionsTracker, IMPRESSIONS_TRACKER_SUCCESS } from '../constants';
 import { codesWarn } from './warn';
 
 const READY_MSG = 'Split SDK is ready';
@@ -12,8 +12,9 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [IMPRESSION_QUEUEING, logPrefixImpressionsTracker +'Queueing corresponding impression.'],
   [NEW_SHARED_CLIENT, ' New shared client instance created.'],
   [NEW_FACTORY, ' New Split SDK instance created.'],
-  [RETRIEVE_MANAGER, ' Manager instance retrieved.'],
   [EVENTS_TRACKER_SUCCESS, logPrefixEventsTracker + 'Successfully qeued %s'],
+  [IMPRESSIONS_TRACKER_SUCCESS, logPrefixImpressionsTracker + 'Successfully stored %s impression(s).'],
+
   // synchronizer
   [POLLING_SMART_PAUSING, logPrefixSyncPolling + 'Turning segments data polling %s.'],
   [POLLING_START, logPrefixSyncPolling + 'Starting polling'],
