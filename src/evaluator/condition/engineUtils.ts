@@ -1,4 +1,4 @@
-import { DEBUG_3 } from '../../logger/constants';
+import { ENGINE_BUCKET } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { bucket } from '../../utils/murmur3/murmur3';
 
@@ -10,7 +10,7 @@ export function getTreatment(log: ILogger, key: string, seed: number, treatments
 
   const treatment = treatments.getTreatmentFor(_bucket);
 
-  log.debug(DEBUG_3, [_bucket, key, seed, treatment]);
+  log.debug(ENGINE_BUCKET, [_bucket, key, seed, treatment]);
 
   return treatment;
 }

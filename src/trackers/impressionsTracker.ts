@@ -7,7 +7,7 @@ import { IMetadata } from '../dtos/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { ILogger } from '../logger/types';
-import { DEBUG_50, ERROR_11, ERROR_12 } from '../logger/constants';
+import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -63,9 +63,9 @@ export default function impressionsTrackerFactory(
       // If we're on an async storage, handle error and log it.
       if (thenable(res)) {
         res.then(() => {
-          log.debug(DEBUG_50, [impressionsCount, impressionsCount === 1 ? '' : 's']);
+          log.debug(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount, impressionsCount === 1 ? '' : 's']);
         }).catch(err => {
-          log.error(ERROR_11, [impressionsCount, impressionsCount === 1 ? '' : 's', err]);
+          log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, impressionsCount === 1 ? '' : 's', err]);
         });
       }
 
@@ -89,7 +89,7 @@ export default function impressionsTrackerFactory(
             try { // An exception on the listeners should not break the SDK.
               if (impressionListener) impressionListener.logImpression(impressionData);
             } catch (err) {
-              log.error(ERROR_12, [err]);
+              log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
             }
           }, 0);
         }

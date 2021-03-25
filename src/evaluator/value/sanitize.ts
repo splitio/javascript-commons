@@ -4,7 +4,7 @@ import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
-import { DEBUG_25 } from '../../logger/constants';
+import { ENGINE_SANITIZE } from '../../logger/constants';
 
 function sanitizeNumber(val: any): number | undefined {
   const num = toNumber(val);
@@ -99,7 +99,7 @@ export default function sanitize(log: ILogger, matcherTypeID: number, value: str
     sanitizedValue = processor(sanitizedValue, attributes);
   }
 
-  log.debug(DEBUG_25, [value, dataType, sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue]);
+  log.debug(ENGINE_SANITIZE, [value, dataType, sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue]);
 
   return sanitizedValue;
 }

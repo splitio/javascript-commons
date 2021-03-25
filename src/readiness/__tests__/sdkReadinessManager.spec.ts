@@ -4,7 +4,7 @@ import { IEventEmitter } from '../../types';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
 import sdkReadinessManagerFactory from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
-import { ERROR_CLIENT_LISTENER, INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, WARN_CLIENT_NO_LISTENER } from '../../logger/constants';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
 
 const EventEmitterMock = jest.fn(() => ({
   on: jest.fn(),
@@ -82,7 +82,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const readyFromCacheEventCB = gateMock.once.mock.calls[2][1];
     readyFromCacheEventCB();
     expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY_FROM_CACHE event fires, we get a info message.
-    expect(loggerMock.info).toBeCalledWith(INFO_CLIENT_READY_FROM_CACHE); // Telling us the SDK is ready to be used with data from cache.
+    expect(loggerMock.info).toBeCalledWith(CLIENT_READY_FROM_CACHE); // Telling us the SDK is ready to be used with data from cache.
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with no callbacks', () => {
@@ -94,10 +94,10 @@ describe('SDK Readiness Manager - Event emitter', () => {
     emitReadyEvent(sdkReadinessManager.readinessManager);
 
     expect(loggerMock.warn.mock.calls.length).toBe(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor ready promise) we get a warning.
-    expect(loggerMock.warn).toBeCalledWith(WARN_CLIENT_NO_LISTENER); // Telling us there were no listeners and evaluations before this point may have been incorrect.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // Telling us there were no listeners and evaluations before this point may have been incorrect.
 
     expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY event fires, we get a info message.
-    expect(loggerMock.info).toBeCalledWith(INFO_CLIENT_READY); // Telling us the SDK is ready.
+    expect(loggerMock.info).toBeCalledWith(CLIENT_READY); // Telling us the SDK is ready.
 
     // Now it's marked as ready.
     addListenerCB('this event we do not care');
@@ -126,7 +126,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     expect(loggerMock.error.mock.calls.length).toBe(0); // As we had at least one listener, we get no errors.
 
     expect(loggerMock.info.mock.calls.length).toBe(1); // If the SDK_READY event fires, we get a info message.
-    expect(loggerMock.info).toBeCalledWith(INFO_CLIENT_READY); // Telling us the SDK is ready.
+    expect(loggerMock.info).toBeCalledWith(CLIENT_READY); // Telling us the SDK is ready.
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
@@ -146,7 +146,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     removeListenerCB(SDK_READY);
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn).toBeCalledWith(WARN_CLIENT_NO_LISTENER); // We get the warning.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We get the warning.
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
@@ -272,7 +272,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
     const readyEventCB = sdkReadinessManager.readinessManager.gate.once.mock.calls[0][1];
 
     readyEventCB();
-    expect(loggerMock.warn).toBeCalledWith(WARN_CLIENT_NO_LISTENER); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
     loggerMock.warn.mockClear();
 
     readyPromise.then(() => {

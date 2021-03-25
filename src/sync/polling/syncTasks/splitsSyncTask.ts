@@ -13,7 +13,7 @@ import thenable from '../../../utils/promise/thenable';
 import { ISettings } from '../../../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { DEBUG_42, DEBUG_43, DEBUG_44, DEBUG_45, WARN_5, INFO_10 } from '../../../logger/constants';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 
@@ -116,7 +116,7 @@ export function splitChangesUpdaterFactory(
      * @param {number} retry current number of retry attemps
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
-      log.debug(DEBUG_42, [since]);
+      log.debug(SYNC_SPLITS_FETCH, [since]);
 
       const fetcherPromise = splitChangesFetcher(since, noCache, _promiseDecorator)
         .then((splitChanges: ISplitChangesResponse) => {
@@ -124,9 +124,9 @@ export function splitChangesUpdaterFactory(
 
           const mutation = computeSplitsMutation(splitChanges.splits);
 
-          log.debug(DEBUG_43, [mutation.added.length]);
-          log.debug(DEBUG_44, [mutation.removed.length]);
-          log.debug(DEBUG_45, [mutation.segments.length]);
+          log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
+          log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
+          log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
           // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
@@ -152,11 +152,11 @@ export function splitChangesUpdaterFactory(
             startingUp = false; // Stop retrying.
           }
 
-          log.warn(WARN_5, [error]);
+          log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
 
           if (startingUp && retriesOnFailureBeforeReady > retry) {
             retry += 1;
-            log.info(INFO_10, [retry, error]);
+            log.info(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
             return _splitChangesUpdater(since, retry);
           } else {
             startingUp = false;

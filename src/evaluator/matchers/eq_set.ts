@@ -1,4 +1,4 @@
-import { DEBUG_13 } from '../../logger/constants';
+import { ENGINE_MATCHER_EQUAL_TO_SET } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
@@ -12,7 +12,7 @@ export default function equalToSetMatcherContext(log: ILogger, ruleAttr: string[
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isEqual = false;
     }
 
-    log.debug(DEBUG_13, [runtimeAttr, ruleAttr, isEqual]);
+    log.debug(ENGINE_MATCHER_EQUAL_TO_SET, [runtimeAttr, ruleAttr, isEqual]);
 
     return isEqual;
   };

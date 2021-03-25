@@ -5,7 +5,7 @@ import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ILogger } from '../logger/types';
-import { ERROR_CLIENT_LISTENER, INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, WARN_CLIENT_NO_LISTENER } from '../logger/constants';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
@@ -46,7 +46,7 @@ export default function sdkReadinessManagerFactory(
   const readyPromise = generateReadyPromise();
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
-    log.info(INFO_CLIENT_READY_FROM_CACHE);
+    log.info(CLIENT_READY_FROM_CACHE);
   });
 
   // default onRejected handler, that just logs the error, if ready promise doesn't have one.
@@ -57,9 +57,9 @@ export default function sdkReadinessManagerFactory(
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
-        log.info(INFO_CLIENT_READY);
+        log.info(CLIENT_READY);
 
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(WARN_CLIENT_NO_LISTENER);
+        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(CLIENT_NO_LISTENER);
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);

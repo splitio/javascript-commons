@@ -8,7 +8,7 @@ import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
-import { INFO_18, INFO_19, INFO_20 } from '../logger/constants';
+import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 
 /**
  * Online SyncManager factory.
@@ -59,15 +59,15 @@ export function syncManagerOnlineFactory(
 
     function startPolling() {
       if (!pollingManager.isRunning()) {
-        log.info(INFO_18);
+        log.info(SYNC_START_POLLING);
         pollingManager.start();
       } else {
-        log.info(INFO_19);
+        log.info(SYNC_CONTINUE_POLLING);
       }
     }
 
     function stopPollingAndSyncAll() {
-      log.info(INFO_20);
+      log.info(SYNC_STOP_POLLING);
       // if polling, stop
       if (pollingManager.isRunning()) pollingManager.stop();
 

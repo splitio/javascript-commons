@@ -3,7 +3,7 @@ import { ISignalListener } from './types';
 import thenable from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
-import { CLEANUP_LB, DEBUG_26, DEBUG_27 } from '../logger/constants';
+import { logPrefixCleanup, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 
 const SIGTERM = 'SIGTERM';
 const EVENT_NAME = 'for SIGTERM signal.';
@@ -25,13 +25,13 @@ export default class NodeSignalListener implements ISignalListener {
   }
 
   start() {
-    this.settings.log.debug(DEBUG_26, [EVENT_NAME]);
+    this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
     process.on(SIGTERM, this._sigtermHandler);
   }
 
   stop() {
-    this.settings.log.debug(DEBUG_27, [EVENT_NAME]);
+    this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
     process.removeListener(SIGTERM, this._sigtermHandler);
   }
@@ -49,14 +49,14 @@ export default class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, SIGTERM);
     };
 
-    this.settings.log.debug(CLEANUP_LB + 'Split SDK graceful shutdown after SIGTERM.');
+    this.settings.log.debug(logPrefixCleanup + 'Split SDK graceful shutdown after SIGTERM.');
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      this.settings.log.error(CLEANUP_LB + `Error with Split SDK graceful shutdown: ${err}`);
+      this.settings.log.error(logPrefixCleanup + `Error with Split SDK graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

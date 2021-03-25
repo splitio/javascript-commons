@@ -14,7 +14,7 @@ import { authenticateFactory } from './AuthClient';
 import SSEClient from './SSEClient';
 import { ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
-import { WARN_8, INFO_11, INFO_13, INFO_14, ERROR_10, INFO_15, INFO_12 } from '../../logger/constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT } from '../../logger/constants';
 
 /**
  * PushManager factory for server-side
@@ -34,7 +34,7 @@ export default function pushManagerSSFactory(
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
   } catch (e) {
-    log.warn(WARN_8, [e]);
+    log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
   const authenticate = authenticateFactory(fetchAuth);
@@ -65,14 +65,14 @@ export default function pushManagerSSFactory(
     // Set token refresh 10 minutes before expirationTime
     const delayInSeconds = expirationTime - issuedAt - SECONDS_BEFORE_EXPIRATION;
 
-    log.info(INFO_11, [delayInSeconds]);
+    log.info(STREAMING_REFRESH_TOKEN, [delayInSeconds]);
 
     timeoutId = setTimeout(connectPush, delayInSeconds * 1000);
   }
 
   function connectPush() {
     disconnected = false;
-    log.info(INFO_13);
+    log.info(STREAMING_CONNECTING);
 
     authenticate().then(
       function (authData) {
@@ -81,7 +81,7 @@ export default function pushManagerSSFactory(
         // 'pushEnabled: false' is handled as a PUSH_NONRETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
         // close the sseClient in case the org has been bloqued while the instance was connected to streaming
         if (!authData.pushEnabled) {
-          log.info(INFO_14);
+          log.info(STREAMING_DISABLED);
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
           return;
         }
@@ -95,7 +95,7 @@ export default function pushManagerSSFactory(
       function (error) {
         if (disconnected) return;
 
-        log.error(ERROR_10, [error.message]);
+        log.error(ERROR_STREAMING_AUTH, [error.message]);
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
@@ -112,7 +112,7 @@ export default function pushManagerSSFactory(
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
     disconnected = true;
-    log.info(INFO_15);
+    log.info(STREAMING_DISCONNECTING);
     sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
@@ -149,7 +149,7 @@ export default function pushManagerSSFactory(
     // retry streaming reconnect with backoff algorithm
     let delayInMillis = connectPushRetryBackoff.scheduleCall();
 
-    log.info(INFO_12, [delayInMillis / 1000]);
+    log.info(STREAMING_RECONNECT, [delayInMillis / 1000]);
 
     pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
   });

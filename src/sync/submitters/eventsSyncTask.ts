@@ -3,7 +3,7 @@ import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ILogger } from '../../logger/types';
-import { INFO_16 } from '../../logger/constants';
+import { SUBMITTERS_PUSH_FULL_EVENTS_QUEUE } from '../../logger/constants';
 
 /**
  * Sync task that periodically posts tracked events
@@ -36,7 +36,7 @@ export function eventsSyncTaskFactory(
 
   // register eventsSubmitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.info(INFO_16);
+    log.info(SUBMITTERS_PUSH_FULL_EVENTS_QUEUE);
     syncTask.execute();
   });
 

@@ -1,4 +1,4 @@
-import { DEBUG_7 } from '../../logger/constants';
+import { ENGINE_MATCHER_CONTAINS_ALL } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
@@ -15,7 +15,7 @@ export default function containsAllMatcherContext(log: ILogger, ruleAttr: string
       }
     }
 
-    log.debug(DEBUG_7, [runtimeAttr, ruleAttr, containsAll]);
+    log.debug(ENGINE_MATCHER_CONTAINS_ALL, [runtimeAttr, ruleAttr, containsAll]);
 
     return containsAll;
   };

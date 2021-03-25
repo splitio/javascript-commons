@@ -1,4 +1,4 @@
-import { WARN_CLIENT_NOT_READY, ERROR_CLIENT_DESTROYED } from '../../../logger/constants';
+import { CLIENT_NOT_READY, ERROR_CLIENT_DESTROYED } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateIfNotDestroyed, validateIfOperational } from '../isOperational';
@@ -58,7 +58,7 @@ describe('validateIfOperational', () => {
     expect(validateIfOperational(loggerMock, readinessManagerMock, 'test_method')).toBe(false); // It should return true if SDK was ready.
     expect(readinessManagerMock.isReady).toBeCalledTimes(1); // It checks for SDK_READY status.
     expect(readinessManagerMock.isReadyFromCache).toBeCalledTimes(1); // It checks for SDK_READY_FROM_CACHE status.
-    expect(loggerMock.warn).toBeCalledWith(WARN_CLIENT_NOT_READY, ['test_method']); // It should log the expected warning.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NOT_READY, ['test_method']); // It should log the expected warning.
     expect(loggerMock.error).not.toBeCalled(); // But it should not log any errors.
   });
 });

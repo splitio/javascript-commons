@@ -1,5 +1,5 @@
 import { IBetweenMatcherData } from '../../dtos/types';
-import { DEBUG_5 } from '../../logger/constants';
+import { ENGINE_MATCHER_BETWEEN } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
 export default function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatcherData) /*: Function */ {
@@ -7,7 +7,7 @@ export default function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatc
 
     let isBetween = runtimeAttr >= ruleVO.start && runtimeAttr <= ruleVO.end;
 
-    log.debug(DEBUG_5, [runtimeAttr, ruleVO.start, ruleVO.end, isBetween]);
+    log.debug(ENGINE_MATCHER_BETWEEN, [runtimeAttr, ruleVO.start, ruleVO.end, isBetween]);
 
     return isBetween;
   };

@@ -8,7 +8,7 @@ import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-import { DEBUG_36, ERROR_7 } from '../../../logger/constants';
+import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
@@ -30,11 +30,11 @@ export function fromObjectUpdaterFactory(
       splitsMock = splitsParser(settings);
     } catch (err) {
       loadError = err;
-      log.error(ERROR_7, [err]);
+      log.error(ERROR_SYNC_OFFLINE_LOADING, [err]);
     }
 
     if (!loadError && splitsMock) {
-      log.debug(DEBUG_36, [JSON.stringify(splitsMock)]);
+      log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
       forOwn(splitsMock, function (val, name) {
         splits.push([

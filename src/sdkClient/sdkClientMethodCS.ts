@@ -7,7 +7,7 @@ import { sdkClientFactory } from './sdkClient';
 import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
-import { DEBUG_32, INFO_4, DEBUG_33 } from '../logger/constants';
+import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
 
 function buildInstanceId(key: SplitIO.SplitKey) {
   // @ts-ignore
@@ -42,7 +42,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
   return function client(key?: SplitIO.SplitKey) {
     if (key === undefined) {
-      log.debug(DEBUG_32);
+      log.debug(RETRIEVE_CLIENT_DEFAULT);
       return mainClientInstance;
     }
 
@@ -76,9 +76,9 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       sharedSyncManager.start();
 
-      log.info(INFO_4);
+      log.info(NEW_SHARED_CLIENT);
     } else {
-      log.debug(DEBUG_33);
+      log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
     return clientInstances[instanceId];

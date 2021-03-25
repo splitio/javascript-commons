@@ -1,32 +1,32 @@
-import { INFO_CLIENT_READY_FROM_CACHE, INFO_CLIENT_READY, INFO_2, INFO_3, INFO_4, INFO_5, INFO_6, INFO_7, INFO_8, INFO_9, INFO_10, INFO_11, INFO_12, INFO_13, INFO_14, INFO_15, INFO_16, INFO_17, INFO_18, INFO_19, INFO_20, INFO_21, EVENTS_TRACKER_LB, SYNC_MANAGER_LB, SYNC_POLLING_LB, SYNC_SPLITS_LB, SYNC_STREAMING_LB, SYNC_SUBMITTERS_LB, IMPRESSIONS_TRACKER_LB } from '../constants';
+import { CLIENT_READY_FROM_CACHE, CLIENT_READY, IMPRESSION, IMPRESSION_QUEUEING, NEW_SHARED_CLIENT, NEW_FACTORY, RETRIEVE_MANAGER, POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP, SYNC_SPLITS_FETCH_RETRY, STREAMING_REFRESH_TOKEN, STREAMING_RECONNECT, STREAMING_CONNECTING, STREAMING_DISABLED, STREAMING_DISCONNECTING, SUBMITTERS_PUSH_FULL_EVENTS_QUEUE, SUBMITTERS_PUSH, SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING, EVENTS_TRACKER_SUCCESS, logPrefixEventsTracker, logPrefixSyncManager, logPrefixSyncPolling, logPrefixSyncSplits, logPrefixSyncStreaming, logPrefixSyncSubmitters, logPrefixImpressionsTracker } from '../constants';
 import { codesWarn } from './warn';
 
 const READY_MSG = 'Split SDK is ready';
 
 export const codesInfo: [number, string][] = codesWarn.concat([
   // client status
-  [INFO_CLIENT_READY_FROM_CACHE, READY_MSG + ' from cache'],
-  [INFO_CLIENT_READY, READY_MSG],
+  [CLIENT_READY_FROM_CACHE, READY_MSG + ' from cache'],
+  [CLIENT_READY, READY_MSG],
   // SDK
-  [INFO_2, IMPRESSIONS_TRACKER_LB +'Split: %s. Key: %s. Evaluation: %s. Label: %s'],
-  [INFO_3, IMPRESSIONS_TRACKER_LB +'Queueing corresponding impression.'],
-  [INFO_4, ' New shared client instance created.'],
-  [INFO_5, ' New Split SDK instance created.'],
-  [INFO_6, ' Manager instance retrieved.'],
-  [INFO_21, EVENTS_TRACKER_LB + 'Successfully qeued %s'],
+  [IMPRESSION, logPrefixImpressionsTracker +'Split: %s. Key: %s. Evaluation: %s. Label: %s'],
+  [IMPRESSION_QUEUEING, logPrefixImpressionsTracker +'Queueing corresponding impression.'],
+  [NEW_SHARED_CLIENT, ' New shared client instance created.'],
+  [NEW_FACTORY, ' New Split SDK instance created.'],
+  [RETRIEVE_MANAGER, ' Manager instance retrieved.'],
+  [EVENTS_TRACKER_SUCCESS, logPrefixEventsTracker + 'Successfully qeued %s'],
   // synchronizer
-  [INFO_7, SYNC_POLLING_LB + 'Turning segments data polling %s.'],
-  [INFO_8, SYNC_POLLING_LB + 'Starting polling'],
-  [INFO_9, SYNC_POLLING_LB + 'Stopping polling'],
-  [INFO_10, SYNC_SPLITS_LB + 'Retrying download of splits #%s. Reason: %s'],
-  [INFO_16, SYNC_SUBMITTERS_LB + 'Flushing full events queue and reseting timer.'],
-  [INFO_17, SYNC_SUBMITTERS_LB + 'Pushing %s %s.'],
-  [INFO_11, SYNC_STREAMING_LB + 'Refreshing streaming token in %s seconds.'],
-  [INFO_12, SYNC_STREAMING_LB + 'Attempting to reconnect in %s seconds.'],
-  [INFO_13, SYNC_STREAMING_LB + 'Connecting to streaming.'],
-  [INFO_14, SYNC_STREAMING_LB + 'Streaming is disabled for given Api key. Switching to polling mode.'],
-  [INFO_15, SYNC_STREAMING_LB + 'Disconnecting from streaming.'],
-  [INFO_18, SYNC_MANAGER_LB + 'Streaming not available. Starting polling.'],
-  [INFO_19, SYNC_MANAGER_LB + 'Streaming couldn\'t connect. Continue polling.'],
-  [INFO_20, SYNC_MANAGER_LB + 'Streaming (re)connected. Syncing and stopping polling.'],
+  [POLLING_SMART_PAUSING, logPrefixSyncPolling + 'Turning segments data polling %s.'],
+  [POLLING_START, logPrefixSyncPolling + 'Starting polling'],
+  [POLLING_STOP, logPrefixSyncPolling + 'Stopping polling'],
+  [SYNC_SPLITS_FETCH_RETRY, logPrefixSyncSplits + 'Retrying download of splits #%s. Reason: %s'],
+  [SUBMITTERS_PUSH_FULL_EVENTS_QUEUE, logPrefixSyncSubmitters + 'Flushing full events queue and reseting timer.'],
+  [SUBMITTERS_PUSH, logPrefixSyncSubmitters + 'Pushing %s %s.'],
+  [STREAMING_REFRESH_TOKEN, logPrefixSyncStreaming + 'Refreshing streaming token in %s seconds.'],
+  [STREAMING_RECONNECT, logPrefixSyncStreaming + 'Attempting to reconnect in %s seconds.'],
+  [STREAMING_CONNECTING, logPrefixSyncStreaming + 'Connecting to streaming.'],
+  [STREAMING_DISABLED, logPrefixSyncStreaming + 'Streaming is disabled for given Api key. Switching to polling mode.'],
+  [STREAMING_DISCONNECTING, logPrefixSyncStreaming + 'Disconnecting from streaming.'],
+  [SYNC_START_POLLING, logPrefixSyncManager + 'Streaming not available. Starting polling.'],
+  [SYNC_CONTINUE_POLLING, logPrefixSyncManager + 'Streaming couldn\'t connect. Continue polling.'],
+  [SYNC_STOP_POLLING, logPrefixSyncManager + 'Streaming (re)connected. Syncing and stopping polling.'],
 ]);

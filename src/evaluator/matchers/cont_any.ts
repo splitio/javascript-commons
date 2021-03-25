@@ -1,4 +1,4 @@
-import { DEBUG_8 } from '../../logger/constants';
+import { ENGINE_MATCHER_CONTAINS_ANY } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
@@ -10,7 +10,7 @@ export default function containsAnyMatcherContext(log: ILogger, ruleAttr: string
       if (findIndex(runtimeAttr, e => e === ruleAttr[i]) >= 0) containsAny = true;
     }
 
-    log.debug(DEBUG_8, [runtimeAttr, ruleAttr, containsAny]);
+    log.debug(ENGINE_MATCHER_CONTAINS_ANY, [runtimeAttr, ruleAttr, containsAny]);
 
     return containsAny;
   };

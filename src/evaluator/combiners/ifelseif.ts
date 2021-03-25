@@ -5,12 +5,12 @@ import * as LabelsConstants from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
-import { DEBUG_1, DEBUG_2, ERROR_0 } from '../../logger/constants';
+import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 
 export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 
   function unexpectedInputHandler() {
-    log.error(ERROR_0);
+    log.error(ERROR_ENGINE_COMBINER_IFELSEIF);
 
     return {
       treatment: CONTROL,
@@ -25,13 +25,13 @@ export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvalu
       const evaluation = predicateResults[i];
 
       if (evaluation !== undefined) {
-        log.debug(DEBUG_1, [evaluation.treatment]);
+        log.debug(ENGINE_COMBINER_IFELSEIF, [evaluation.treatment]);
 
         return evaluation;
       }
     }
 
-    log.debug(DEBUG_2);
+    log.debug(ENGINE_COMBINER_IFELSEIF_NO_TREATMENT);
     return undefined;
   }
 

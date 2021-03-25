@@ -3,7 +3,7 @@ import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import { MaybeThenable } from '../../dtos/types';
 import { IMatcher } from '../types';
-import { DEBUG_ENGINE_COMBINER_AND } from '../../logger/constants';
+import { ENGINE_COMBINER_AND } from '../../logger/constants';
 
 export default function andCombinerContext(log: ILogger, matchers: IMatcher[]) {
 
@@ -11,7 +11,7 @@ export default function andCombinerContext(log: ILogger, matchers: IMatcher[]) {
     // Array.prototype.every is supported by target environments
     const hasMatchedAll = results.every(value => value);
 
-    log.debug(DEBUG_ENGINE_COMBINER_AND, [hasMatchedAll]);
+    log.debug(ENGINE_COMBINER_AND, [hasMatchedAll]);
     return hasMatchedAll;
   }
 
