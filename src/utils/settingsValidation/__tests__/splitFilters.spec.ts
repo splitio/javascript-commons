@@ -1,4 +1,4 @@
-import { loggerMock, mockClear } from '../../../logger/__tests__/sdkLogger.mock';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { STANDALONE_MODE, CONSUMER_MODE } from '../../constants';
 
@@ -7,6 +7,7 @@ import { splitFilters, queryStrings, groupedFilters } from '../../../__tests__/m
 
 // Test target
 import { validateSplitFilters } from '../splitFilters';
+import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY } from '../../../logger/constants';
 
 describe('validateSplitFilters', () => {
 
@@ -16,31 +17,23 @@ describe('validateSplitFilters', () => {
     groupedFilters: { byName: [], byPrefix: [] }
   };
 
+  afterEach(() => { loggerMock.mockClear(); });
+
   test('Returns default output with empty values if `splitFilters` is an invalid object or `mode` is not \'standalone\'', () => {
 
-    expect(validateSplitFilters(undefined, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(validateSplitFilters(null, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(loggerMock.warn.mock.calls.length === 0).toBe(true);
+    expect(validateSplitFilters(loggerMock, undefined, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(validateSplitFilters(loggerMock, null, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(loggerMock.warn).not.toBeCalled();
 
-    expect(validateSplitFilters(true, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(loggerMock.warn.mock.calls[0]).toEqual(['Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.']);
+    expect(validateSplitFilters(loggerMock, true, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(validateSplitFilters(loggerMock, 15, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(validateSplitFilters(loggerMock, 'string', STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(validateSplitFilters(loggerMock, [], STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
+    expect(validateSplitFilters(loggerMock, [{ type: 'byName', values: ['split_1'] }], CONSUMER_MODE)).toEqual(defaultOutput); // splitFilters ignored if not in 'standalone' mode
+    expect(loggerMock.warn.mock.calls).toEqual([[WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_IGNORED, ['standalone']]]);
 
-    expect(validateSplitFilters(15, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(loggerMock.warn.mock.calls[1]).toEqual(['Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.']);
-
-    expect(validateSplitFilters('string', STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(loggerMock.warn.mock.calls[2]).toEqual(['Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.']);
-
-    expect(validateSplitFilters([], STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(loggerMock.warn.mock.calls[3]).toEqual(['Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.']);
-
-    expect(validateSplitFilters([{ type: 'byName', values: ['split_1'] }], CONSUMER_MODE)).toEqual(defaultOutput);
-    expect(loggerMock.warn.mock.calls[4]).toEqual(["Factory instantiation: split filters have been configured but will have no effect if mode is not 'standalone', since synchronization is being deferred to an external tool."]);
-
-    expect(loggerMock.debug.mock.calls.length === 0).toBe(true);
-    expect(loggerMock.error.mock.calls.length === 0).toBe(true);
-
-    mockClear();
+    expect(loggerMock.debug).not.toBeCalled();
+    expect(loggerMock.error).not.toBeCalled();
   });
 
   test('Returns object with null queryString, if `splitFilters` contains invalid filters or contains filters with no values or invalid values', () => {
@@ -54,8 +47,8 @@ describe('validateSplitFilters', () => {
       queryString: null,
       groupedFilters: { byName: [], byPrefix: [] }
     };
-    expect(validateSplitFilters(splitFilters, STANDALONE_MODE)).toEqual(output); // filters without values
-    expect(loggerMock.debug.mock.calls[0]).toEqual(["Factory instantiation: splits filtering criteria is 'null'."]);
+    expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // filters without values
+    expect(loggerMock.debug).toBeCalledWith(SETTINGS_SPLITS_FILTER, [null]);
     loggerMock.debug.mockClear();
 
     splitFilters.push(
@@ -64,20 +57,18 @@ describe('validateSplitFilters', () => {
       { type: null, values: [] },
       { type: 'byName', values: [13] });
     output.validFilters.push({ type: 'byName', values: [13] });
-    expect(validateSplitFilters(splitFilters, STANDALONE_MODE)).toEqual(output); // some filters are invalid
-    expect(loggerMock.debug.mock.calls).toEqual([["Factory instantiation: splits filtering criteria is 'null'."]]);
+    expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // some filters are invalid
+    expect(loggerMock.debug.mock.calls).toEqual([[SETTINGS_SPLITS_FILTER, [null]]]);
     expect(loggerMock.warn.mock.calls).toEqual([
-      ["Factory instantiation: split filter at position '3' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'."], // invalid value of `type` property
-      ["Factory instantiation: split filter at position '4' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'."], // invalid type of `values` property
-      ["Factory instantiation: split filter at position '5' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'."] // invalid type of `type` property
+      [WARN_SPLITS_FILTER_INVALID, [3]], // invalid value of `type` property
+      [WARN_SPLITS_FILTER_INVALID, [4]], // invalid type of `values` property
+      [WARN_SPLITS_FILTER_INVALID, [5]] // invalid type of `type` property
     ]);
 
     expect(loggerMock.error.mock.calls).toEqual([
-      ['Factory instantiation: you passed an invalid byName filter value, byName filter value must be a non-empty string.'],
-      ['Factory instantiation: byName filter must be a non-empty array.']
+      [ERROR_INVALID, ['settings', 'byName filter value']],
+      [ERROR_EMPTY_ARRAY, ['settings', 'byName filter']]
     ]);
-
-    mockClear();
   });
 
   test('Returns object with a queryString, if `splitFilters` contains at least a valid `byName` or `byPrefix` filter with at least a valid value', () => {
@@ -90,15 +81,13 @@ describe('validateSplitFilters', () => {
           queryString: queryStrings[i],
           groupedFilters: groupedFilters[i]
         };
-        expect(validateSplitFilters(splitFilters[i], STANDALONE_MODE)).toEqual(output); // splitFilters #${i}
-        expect(loggerMock.debug.mock.calls[loggerMock.debug.mock.calls.length - 1]).toEqual([`Factory instantiation: splits filtering criteria is '${queryStrings[i]}'.`]);
+        expect(validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toEqual(output); // splitFilters #${i}
+        expect(loggerMock.debug).lastCalledWith(SETTINGS_SPLITS_FILTER, [queryStrings[i]]);
 
       } else { // tests where validateSplitFilters throws an exception
-        expect(() => validateSplitFilters(splitFilters[i], STANDALONE_MODE)).toThrow(queryStrings[i]);
+        expect(() => validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toThrow(queryStrings[i]);
       }
     }
-
-    mockClear();
   });
 
 });

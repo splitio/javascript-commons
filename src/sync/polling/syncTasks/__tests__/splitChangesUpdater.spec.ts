@@ -9,6 +9,7 @@ import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import EventEmitter from '../../../../utils/MinEvents';
+import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 const activeSplitWithSegments = {
   name: 'Split1',
@@ -55,7 +56,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
 test('splitChangesUpdater / factory', (done) => {
 
-  fetchMock.once('*', { status: 200, body: splitChangesMock1 });
+  fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
   const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter });
   const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
 
@@ -69,14 +70,14 @@ test('splitChangesUpdater / factory', (done) => {
   const readinessManager = readinessManagerFactory(EventEmitter);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
-  const splitChangesUpdater = splitChangesUpdaterFactory(splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits, 1000, 1);
+  const splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits, 1000, 1);
 
   splitChangesUpdater().then((result) => {
-    expect(setChangeNumber.mock.calls.length).toBe(1);
+    expect(setChangeNumber).toBeCalledTimes(1);
     expect(setChangeNumber).lastCalledWith(splitChangesMock1.till);
-    expect(addSplits.mock.calls.length).toBe(1);
+    expect(addSplits).toBeCalledTimes(1);
     expect(addSplits.mock.calls[0][0].length).toBe(splitChangesMock1.splits.length);
-    expect(removeSplits.mock.calls.length).toBe(1);
+    expect(removeSplits).toBeCalledTimes(1);
     expect(removeSplits).lastCalledWith([]);
     expect(registerSegments).toBeCalledTimes(1);
     expect(splitsEmitSpy).toBeCalledWith('SDK_SPLITS_ARRIVED');

@@ -5,6 +5,7 @@ import { IImpressionsCacheSync } from '../../storages/types';
 import { ImpressionDTO } from '../../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ImpressionsPayload } from './types';
+import { ILogger } from '../../logger/types';
 
 /**
  * Converts `impressions` data from cache into request payload.
@@ -40,6 +41,7 @@ export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDT
  * Sync task that periodically posts impressions data
  */
 export function impressionsSyncTaskFactory(
+  log: ILogger,
   postTestImpressionsBulk: IPostTestImpressionsBulk,
   impressionsCache: IImpressionsCacheSync,
   impressionsRefreshRate: number,
@@ -48,5 +50,5 @@ export function impressionsSyncTaskFactory(
 ): ISyncTask {
 
   // retry impressions only once.
-  return submitterSyncTaskFactory(postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+  return submitterSyncTaskFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
 }

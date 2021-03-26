@@ -9,14 +9,12 @@ import Backoff from '../../utils/Backoff';
 import SSEHandlerFactory from './SSEHandler';
 import SegmentsUpdateWorker from './UpdateWorkers/SegmentsUpdateWorker';
 import SplitsUpdateWorker from './UpdateWorkers/SplitsUpdateWorker';
-import { logFactory } from '../../logger/sdkLogger';
 import { IFetchAuth } from '../../services/types';
 import { authenticateFactory } from './AuthClient';
 import SSEClient from './SSEClient';
 import { ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
-
-const log = logFactory('splitio-sync:push-manager');
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT } from '../../logger/constants';
 
 /**
  * PushManager factory for server-side
@@ -30,18 +28,20 @@ export default function pushManagerSSFactory(
   settings: ISettings
 ): IPushManager | undefined {
 
+  const log = settings.log;
+
   let sseClient: ISSEClient;
   try {
     sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
   } catch (e) {
-    log.warn(e + 'Falling back to polling mode.');
+    log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
   const authenticate = authenticateFactory(fetchAuth);
 
   // init feedback loop (pushEmitter)
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(pushEmitter);
+  const sseHandler = SSEHandlerFactory(log, pushEmitter);
   sseClient.setEventHandler(sseHandler);
 
   // init workers
@@ -65,14 +65,14 @@ export default function pushManagerSSFactory(
     // Set token refresh 10 minutes before expirationTime
     const delayInSeconds = expirationTime - issuedAt - SECONDS_BEFORE_EXPIRATION;
 
-    log.info(`Refreshing streaming token in ${delayInSeconds} seconds.`);
+    log.info(STREAMING_REFRESH_TOKEN, [delayInSeconds]);
 
     timeoutId = setTimeout(connectPush, delayInSeconds * 1000);
   }
 
   function connectPush() {
     disconnected = false;
-    log.info('Connecting to push streaming.');
+    log.info(STREAMING_CONNECTING);
 
     authenticate().then(
       function (authData) {
@@ -81,7 +81,7 @@ export default function pushManagerSSFactory(
         // 'pushEnabled: false' is handled as a PUSH_NONRETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
         // close the sseClient in case the org has been bloqued while the instance was connected to streaming
         if (!authData.pushEnabled) {
-          log.info('Streaming is not available. Switching to polling mode.');
+          log.info(STREAMING_DISABLED);
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
           return;
         }
@@ -95,7 +95,7 @@ export default function pushManagerSSFactory(
       function (error) {
         if (disconnected) return;
 
-        log.error(`Failed to authenticate for streaming. Error: "${error.message}".`);
+        log.error(ERROR_STREAMING_AUTH, [error.message]);
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
@@ -112,7 +112,7 @@ export default function pushManagerSSFactory(
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
     disconnected = true;
-    log.info('Disconnecting from push streaming.');
+    log.info(STREAMING_DISCONNECTING);
     sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
@@ -149,7 +149,7 @@ export default function pushManagerSSFactory(
     // retry streaming reconnect with backoff algorithm
     let delayInMillis = connectPushRetryBackoff.scheduleCall();
 
-    log.info(`Attempting to reconnect in ${delayInMillis / 1000} seconds.`);
+    log.info(STREAMING_RECONNECT, [delayInMillis / 1000]);
 
     pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
   });

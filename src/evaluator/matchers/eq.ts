@@ -1,11 +1,11 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_EQUAL } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 
-export default function equalToMatcherContext(ruleAttr: number) /*: Function */ {
+export default function equalToMatcherContext(log: ILogger, ruleAttr: number) /*: Function */ {
   return function equalToMatcher(runtimeAttr: number): boolean {
     let isEqual = runtimeAttr === ruleAttr;
 
-    log.debug(`[equalToMatcher] is ${runtimeAttr} equal to ${ruleAttr}? ${isEqual}`);
+    log.debug(ENGINE_MATCHER_EQUAL, [runtimeAttr, ruleAttr, isEqual]);
 
     return isEqual;
   };

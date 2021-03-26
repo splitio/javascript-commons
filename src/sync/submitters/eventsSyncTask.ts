@@ -2,13 +2,14 @@ import { IEventsCacheSync } from '../../storages/types';
 import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-sync:submitters');
+import { ILogger } from '../../logger/types';
+import { SUBMITTERS_PUSH_FULL_EVENTS_QUEUE } from '../../logger/constants';
 
 /**
  * Sync task that periodically posts tracked events
  */
 export function eventsSyncTaskFactory(
+  log: ILogger,
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheSync,
   eventsPushRate: number,
@@ -17,7 +18,7 @@ export function eventsSyncTaskFactory(
 ): ISyncTask {
 
   // don't retry events.
-  const syncTask = submitterSyncTaskFactory(postEventsBulk, eventsCache, eventsPushRate, 'queued events', latencyTracker);
+  const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, 'queued events', latencyTracker);
 
   // Set a timer for the first push of events,
   if (eventsFirstPushWindow > 0) {
@@ -35,7 +36,7 @@ export function eventsSyncTaskFactory(
 
   // register eventsSubmitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.info('Flushing full events queue and reseting timer.');
+    log.info(SUBMITTERS_PUSH_FULL_EVENTS_QUEUE);
     syncTask.execute();
   });
 

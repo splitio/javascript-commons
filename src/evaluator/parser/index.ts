@@ -10,8 +10,9 @@ import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
 import { ISplitCondition } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { SplitIO } from '../../types';
+import { ILogger } from '../../logger/types';
 
-export default function parser(conditions: ISplitCondition[], storage?: IStorageSync | IStorageAsync): IEvaluator {
+export default function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
 
   for (let i = 0; i < conditions.length; i++) {
@@ -27,11 +28,11 @@ export default function parser(conditions: ISplitCondition[], storage?: IStorage
 
     // create a set of pure functions from the matcher's dto
     const expressions = matchers.map((matcherDto: IMatcherDto) => {
-      const matcher = matcherFactory(matcherDto, storage);
+      const matcher = matcherFactory(log, matcherDto, storage);
 
       // Evaluator function.
       return (key: string, attributes: SplitIO.Attributes, splitEvaluator: ISplitEvaluator) => {
-        const value = sanitizeValue(key, matcherDto, attributes);
+        const value = sanitizeValue(log, key, matcherDto, attributes);
         const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
 
         if (thenable(result)) {
@@ -53,7 +54,8 @@ export default function parser(conditions: ISplitCondition[], storage?: IStorage
     }
 
     predicates.push(conditionFactory(
-      andCombiner(expressions),
+      log,
+      andCombiner(log, expressions),
       Treatments.parse(partitions),
       label,
       conditionType
@@ -61,5 +63,5 @@ export default function parser(conditions: ISplitCondition[], storage?: IStorage
   }
 
   // Instanciate evaluator given the set of conditions using if else if logic
-  return ifElseIfCombiner(predicates);
+  return ifElseIfCombiner(log, predicates);
 }

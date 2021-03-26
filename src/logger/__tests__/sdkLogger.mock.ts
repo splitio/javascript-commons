@@ -1,23 +1,21 @@
-/**
- * This util mocks the logFactory at sdkLogger module, to spy on it
- */
-
-jest.mock('../sdkLogger');
-
-import { logFactory } from '../sdkLogger';
+import { LogLevel } from '../../types';
 
 export const loggerMock = {
   warn: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
   info: jest.fn(),
+  setLogLevel: jest.fn(),
+
+  mockClear() {
+    this.warn.mockClear();
+    this.error.mockClear();
+    this.debug.mockClear();
+    this.info.mockClear();
+    this.setLogLevel.mockClear();
+  }
 };
 
-(logFactory as jest.Mock).mockReturnValue(loggerMock);
-
-export function mockClear() {
-  loggerMock.warn.mockClear();
-  loggerMock.error.mockClear();
-  loggerMock.debug.mockClear();
-  loggerMock.info.mockClear();
+export function getLoggerLogLevel(logger: any): LogLevel | undefined {
+  if (logger) return logger.options.logLevel;
 }

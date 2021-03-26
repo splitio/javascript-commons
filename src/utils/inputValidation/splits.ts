@@ -1,14 +1,14 @@
+import { ERROR_EMPTY_ARRAY } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { validateSplit } from './split';
-const log = logFactory('');
 
-export function validateSplits(maybeSplits: any, method: string, listName = 'split_names', item = 'split name'): string[] | false {
+export function validateSplits(log: ILogger, maybeSplits: any, method: string, listName = 'split_names', item = 'split name'): string[] | false {
   if (Array.isArray(maybeSplits) && maybeSplits.length > 0) {
     let validatedArray: string[] = [];
     // Remove invalid values
     maybeSplits.forEach(maybeSplit => {
-      const splitName = validateSplit(maybeSplit, method, item);
+      const splitName = validateSplit(log, maybeSplit, method, item);
       if (splitName) validatedArray.push(splitName);
     });
 
@@ -16,6 +16,6 @@ export function validateSplits(maybeSplits: any, method: string, listName = 'spl
     if (validatedArray.length) return uniq(validatedArray);
   }
 
-  log.error(`${method}: ${listName} must be a non-empty array.`);
+  log.error(ERROR_EMPTY_ARRAY, [method, listName]);
   return false;
 }

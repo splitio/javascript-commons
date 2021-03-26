@@ -6,13 +6,12 @@ import { findIndex } from '../../../utils/lang';
 import { SplitError } from '../../../utils/lang/errors';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import segmentChangesFetcherFactory from '../fetchers/segmentChangesFetcher';
 import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-const log = logFactory('splitio-sync:segment-changes');
-const inputValidationLog = logFactory('', { displayAllErrors: true });
+import { ILogger } from '../../../logger/types';
+import { logPrefixInstantiation, logPrefixSyncSegments } from '../../../logger/constants';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -23,9 +22,10 @@ type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetch
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  */
 function segmentChangesUpdaterFactory(
+  log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
   segmentsCache: ISegmentsCacheSync,
-  readiness: IReadinessManager
+  readiness: IReadinessManager,
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -48,7 +48,7 @@ function segmentChangesUpdaterFactory(
    * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
    */
   return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) {
-    log.debug('Started segments update');
+    log.debug(logPrefixSyncSegments + 'Started segments update');
 
     // If not a segment name provided, read list of available segments names to be updated.
     let segments = segmentNames ? segmentNames : segmentsCache.getRegisteredSegments();
@@ -61,7 +61,7 @@ function segmentChangesUpdaterFactory(
       const segmentName = segments[index];
       const since = segmentsCache.getChangeNumber(segmentName);
 
-      log.debug(`Processing segment ${segmentName}`);
+      log.debug(logPrefixSyncSegments + `Processing segment ${segmentName}`);
 
       updaters.push(segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
         let changeNumber = -1;
@@ -73,7 +73,7 @@ function segmentChangesUpdaterFactory(
             changeNumber = x.till;
           }
 
-          log.debug(`Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+          log.debug(logPrefixSyncSegments + `Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
         });
 
         return changeNumber;
@@ -97,7 +97,7 @@ function segmentChangesUpdaterFactory(
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped
         readiness.destroy();
-        inputValidationLog.error('Factory instantiation: you passed a Browser type authorizationKey, please grab an Api Key from the Split web console that is of type SDK.');
+        log.error(logPrefixInstantiation + ': you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.');
       }
 
       return false;
@@ -113,10 +113,12 @@ export default function segmentsSyncTaskFactory(
   settings: ISettings,
 ): ISegmentsSyncTask {
   return syncTaskFactory(
+    settings.log,
     segmentChangesUpdaterFactory(
+      settings.log,
       segmentChangesFetcherFactory(fetchSegmentChanges),
       storage.segments,
-      readiness
+      readiness,
     ),
     settings.scheduler.segmentsRefreshRate,
     'segmentChangesUpdater'

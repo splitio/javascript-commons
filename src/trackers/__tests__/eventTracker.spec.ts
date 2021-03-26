@@ -1,3 +1,4 @@
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { SplitIO } from '../../types';
 import eventTrackerFactory from '../eventTracker';
 
@@ -17,7 +18,7 @@ describe('Event Tracker', () => {
   test('Tracker API', () => {
     expect(typeof eventTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const instance = eventTrackerFactory(fakeEventsCache, fakeIntegrationsManager);
+    const instance = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
 
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method.
   });
@@ -45,11 +46,11 @@ describe('Event Tracker', () => {
       }
     });
 
-    const tracker = eventTrackerFactory(fakeEventsCache, fakeIntegrationsManager);
+    const tracker = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
     const result1 = tracker.track(fakeEvent, 1);
 
     expect(fakeEventsCache.track.mock.calls[0]).toEqual([fakeEvent, 1]); // Should be present in the event cache.
-    expect(fakeIntegrationsManager.handleEvent.mock.calls.length).toBe(0); // The integration manager handleEvent method should not be executed synchronously.
+    expect(fakeIntegrationsManager.handleEvent).not.toBeCalled(); // The integration manager handleEvent method should not be executed synchronously.
     expect(result1).toBe(true); // Should return the value of the event cache.
 
     setTimeout(() => {
@@ -64,14 +65,14 @@ describe('Event Tracker', () => {
         expect(tracked).toBe(false); // Should return the value of the event cache resolved promise.
 
         setTimeout(() => {
-          expect(fakeIntegrationsManager.handleEvent.mock.calls.length).toBe(1); // Untracked event should not be sent to integration manager.
+          expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Untracked event should not be sent to integration manager.
 
           const result3 = tracker.track(fakeEvent, 3) as Promise<boolean>;
 
           expect(fakeEventsCache.track.mock.calls[2]).toEqual([fakeEvent, 3]); // Should be present in the event cache.
 
           result3.then(tracked => {
-            expect(fakeIntegrationsManager.handleEvent.mock.calls.length).toBe(1); // Tracked event should not be sent to integration manager synchronously
+            expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Tracked event should not be sent to integration manager synchronously
             expect(tracked).toBe(true); // Should return the value of the event cache resolved promise.
 
             setTimeout(() => {

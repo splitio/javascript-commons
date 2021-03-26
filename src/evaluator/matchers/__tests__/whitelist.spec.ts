@@ -2,10 +2,11 @@ import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { _Set } from '../../../utils/lang/sets';
 import { IMatcher, IMatcherDto } from '../../types';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER WHITELIST / should return true ONLY when the key is defined', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(loggerMock, {
     type: matcherTypes.WHITELIST,
     value: new _Set().add('key')
   } as IMatcherDto) as IMatcher;

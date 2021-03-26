@@ -1,4 +1,5 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
+import { ILogger } from '../logger/types';
 import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
@@ -236,6 +237,7 @@ export type IStorageAsync = IStorageBase<
 export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
+  log: ILogger,
   eventsQueueSize: number,
   optimize: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
   dataLoader?: DataLoader,
@@ -246,5 +248,5 @@ export interface IStorageFactoryParams {
 
   // ATM, only used by InRedisStorage. @TODO pass a callback to simplify custom storages.
   readinessManager: IReadinessManager,
-  metadata: IMetadata
+  metadata: IMetadata,
 }

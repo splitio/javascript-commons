@@ -1,13 +1,13 @@
 import { IBetweenMatcherData } from '../../dtos/types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_BETWEEN } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 
-export default function betweenMatcherContext(ruleVO: IBetweenMatcherData) /*: Function */ {
+export default function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatcherData) /*: Function */ {
   return function betweenMatcher(runtimeAttr: number): boolean {
 
     let isBetween = runtimeAttr >= ruleVO.start && runtimeAttr <= ruleVO.end;
 
-    log.debug(`[betweenMatcher] is ${runtimeAttr} between ${ruleVO.start} and ${ruleVO.end}? ${isBetween}`);
+    log.debug(ENGINE_MATCHER_BETWEEN, [runtimeAttr, ruleVO.start, ruleVO.end, isBetween]);
 
     return isBetween;
   };

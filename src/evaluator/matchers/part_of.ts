@@ -1,8 +1,8 @@
-import { logFactory } from '../../logger/sdkLogger';
 import { findIndex } from '../../utils/lang';
-const log = logFactory('splitio-engine:matcher');
+import { ILogger } from '../../logger/types';
+import { ENGINE_MATCHER_PART_OF } from '../../logger/constants';
 
-export default function partOfMatcherContext(ruleAttr: string[]) /*: Function */ {
+export default function partOfMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function partOfMatcher(runtimeAttr: string[]): boolean {
     // To be part of the length should be minor or equal.
     let isPartOf = runtimeAttr.length <= ruleAttr.length;
@@ -12,7 +12,7 @@ export default function partOfMatcherContext(ruleAttr: string[]) /*: Function */
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isPartOf = false;
     }
 
-    log.debug(`[partOfMatcher] ${runtimeAttr} is part of ${ruleAttr}? ${isPartOf}`);
+    log.debug(ENGINE_MATCHER_PART_OF, [runtimeAttr, ruleAttr, isPartOf]);
 
     return isPartOf;
   };

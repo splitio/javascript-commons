@@ -1,4 +1,6 @@
-import { Logger, LogLevels, setLogLevel, isLogLevelString } from '../index';
+import { LogLevel } from '../../types';
+import { _Map } from '../../utils/lang/maps';
+import { Logger, LogLevels, isLogLevelString, _sprintf } from '../index';
 
 // We'll set this only once. These are the constants we will use for
 // comparing the LogLevel values.
@@ -9,12 +11,6 @@ export const LOG_LEVELS = {
   ERROR: 'ERROR',
   NONE: 'NONE'
 };
-
-test('SPLIT LOGGER / setLogLevel utility function', () => {
-  expect(typeof setLogLevel).toBe('function'); // setLogLevel should be a function
-  expect(setLogLevel).not.toThrow(); // Calling setLogLevel should not throw an error.
-
-});
 
 test('SPLIT LOGGER / isLogLevelString utility function', () => {
   expect(typeof isLogLevelString).toBe('function'); // isLogLevelString should be a function
@@ -32,18 +28,18 @@ test('SPLIT LOGGER / LogLevels exposed mappings', () => {
 test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof Logger).toBe('function'); // Logger should be a class we can instantiate.
 
-  const logger = new Logger('test-category', {});
+  const logger = new Logger({ prefix: 'test-category' });
 
   expect(typeof logger.debug).toBe('function'); // instance.debug should be a method.
   expect(typeof logger.info).toBe('function'); // instance.info should be a method.
   expect(typeof logger.warn).toBe('function'); // instance.warn should be a method.
   expect(typeof logger.error).toBe('function'); // instance.error should be a method.
-
+  expect(typeof logger.setLogLevel).toBe('function'); // instance.setLogLevel should be a method.
 });
 
 const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
 /* Utility function to avoid repeating too much code */
-function testLogLevels(levelToTest: string) {
+function testLogLevels(levelToTest: LogLevel) {
   // Builds the expected message.
   const buildExpectedMessage = (lvl: string, category: string, msg: string, showLevel?: boolean) => {
     let res = '';
@@ -57,27 +53,24 @@ function testLogLevels(levelToTest: string) {
   const consoleLogSpy = jest.spyOn(global.console, 'log');
 
   // Runs the suite with the given value for showLevel option.
-  const runTests = (showLevel?: boolean, displayAllErrors?: boolean) => {
+  const runTests = (showLevel?: boolean, useCodes?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
-    const logCategory = `test-category-${logMethod}${displayAllErrors ? 'displayAllErrors' : ''}`;
-    const instance = new Logger(logCategory, {
-      showLevel, displayAllErrors
-    });
+    const logCategory = `test-category-${logMethod}`;
+    const instance = new Logger({ prefix: logCategory, showLevel },
+      useCodes ? new _Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
-      const logMsg = `Test log for level ${levelToTest} (${displayAllErrors ? 'But all errors are configured to display' : 'Errors not forced to display'}) with showLevel: ${showLevel} ${logLevelLogsCounter}`;
+      const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
       const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
 
-      // Log error should always be visible.
-      if (logMethod === LOG_LEVELS.ERROR.toLowerCase() && displayAllErrors) testForNoLog = false;
-
       // Set the logLevel for this iteration.
-      setLogLevel(LogLevels[logLevel]);
+      instance.setLogLevel(LogLevels[logLevel]);
       // Call the method
       // @ts-ignore
-      instance[logMethod](logMsg);
+      if (useCodes) instance[logMethod](1, [levelToTest, showLevel, logLevelLogsCounter]); // @ts-ignore
+      else instance[logMethod](logMsg);
       // Assert if console.log was called.
       const actualMessage = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
       if (testForNoLog) {
@@ -95,9 +88,9 @@ function testLogLevels(levelToTest: string) {
 
   // Show logLevel
   runTests(true);
-  runTests(true, true);
   // Hide logLevel
   runTests(false);
+  // Hide logLevel and use message codes
   runTests(false, true);
 
   // Restore spied object.
@@ -123,4 +116,18 @@ test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () 
 test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
 
+});
+
+test('SPLIT LOGGER / _sprintf', () => {
+  expect(_sprintf()).toBe('');
+  expect(_sprintf(undefined, [/regex/, 'arg', 10, {}])).toBe('');
+
+  expect(_sprintf('text')).toBe('text');
+  expect(_sprintf('text', [])).toBe('text');
+  expect(_sprintf('text', [/regex/, 'arg', 10, {}])).toBe('text');
+
+  expect(_sprintf('text %s', [])).toBe('text undefined');
+  expect(_sprintf('text %s', ['arg1'])).toBe('text arg1');
+  expect(_sprintf('text %s', ['arg1', 'arg2'])).toBe('text arg1');
+  expect(_sprintf('%s text %s', ['arg1', true, 'arg3'])).toBe('arg1 text true');
 });

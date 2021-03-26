@@ -18,10 +18,11 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
 
     // Client API (getTreatment* & track methods)
     clientInputValidationDecorator(
+      settings.log,
       clientFactory(params),
       sdkReadinessManager.readinessManager,
       // @TODO isStorageSync could be extracted from the storage itself (e.g. `storage.isSync`) to simplify interfaces
-      settings.mode === CONSUMER_MODE ? false : true
+      settings.mode === CONSUMER_MODE ? false : true,
     ),
 
     // Sdk destroy

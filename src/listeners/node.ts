@@ -1,9 +1,12 @@
 // @TODO eventually migrate to JS-Node-SDK package.
 import { ISignalListener } from './types';
 import thenable from '../utils/promise/thenable';
-import { logFactory } from '../logger/sdkLogger';
 import { MaybeThenable } from '../dtos/types';
-const log = logFactory('splitio-client:cleanup');
+import { ISettings } from '../types';
+import { logPrefixCleanup, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+
+const SIGTERM = 'SIGTERM';
+const EVENT_NAME = 'for SIGTERM signal.';
 
 /**
  * We'll listen for SIGTERM since it's the standard signal for server shutdown.
@@ -13,23 +16,24 @@ const log = logFactory('splitio-client:cleanup');
  * the process is already exiting.
  */
 export default class NodeSignalListener implements ISignalListener {
-  private handler: any;
 
-  constructor(handler: () => MaybeThenable<void>) {
-    this.handler = handler;
+  constructor(
+    private handler: () => MaybeThenable<void>,
+    private settings: ISettings
+  ) {
     this._sigtermHandler = this._sigtermHandler.bind(this);
   }
 
   start() {
-    log.debug('Registering cleanup handlers.');
+    this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
-    process.on('SIGTERM', this._sigtermHandler);
+    process.on(SIGTERM, this._sigtermHandler);
   }
 
   stop() {
-    log.debug('Deregistering cleanup handlers.');
+    this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
-    process.removeListener('SIGTERM', this._sigtermHandler);
+    process.removeListener(SIGTERM, this._sigtermHandler);
   }
 
   /**
@@ -42,17 +46,17 @@ export default class NodeSignalListener implements ISignalListener {
 
       // This handler prevented the default behaviour, start again.
       // eslint-disable-next-line no-undef
-      process.kill(process.pid, 'SIGTERM');
+      process.kill(process.pid, SIGTERM);
     };
 
-    log.debug('Split SDK graceful shutdown after SIGTERM.');
+    this.settings.log.debug(logPrefixCleanup + 'Split SDK graceful shutdown after SIGTERM.');
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      log.error(`Error with Split graceful shutdown: ${err}`);
+      this.settings.log.error(logPrefixCleanup + `Error with Split SDK graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

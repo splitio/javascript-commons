@@ -99,7 +99,8 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
  * Given a parsed split, it returns a boolean flagging if its conditions use segments matchers (rules & whitelists).
  * This util is intended to simplify the implementation of `splitsCache::usesSegments` method
  */
-export function usesSegments({ conditions = [] }: ISplit) {
+export function usesSegments(split: ISplit) {
+  const conditions = split.conditions || [];
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
 

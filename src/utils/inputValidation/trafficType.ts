@@ -1,20 +1,20 @@
+import { ERROR_NULL, ERROR_INVALID, ERROR_EMPTY, WARN_LOWERCASE_TRAFFIC_TYPE } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
 
 const CAPITAL_LETTERS_REGEX = /[A-Z]/;
 
-export function validateTrafficType(maybeTT: any, method: string): string | false {
+export function validateTrafficType(log: ILogger, maybeTT: any, method: string): string | false {
   if (maybeTT == undefined) { // eslint-disable-line eqeqeq
-    log.error(`${method}: you passed a null or undefined traffic_type_name, traffic_type_name must be a non-empty string.`);
+    log.error(ERROR_NULL, [method]);
   } else if (!isString(maybeTT)) {
-    log.error(`${method}: you passed an invalid traffic_type_name, traffic_type_name must be a non-empty string.`);
+    log.error(ERROR_INVALID, [method]);
   } else {
     if (maybeTT.length === 0) {
-      log.error(`${method}: you passed an empty traffic_type_name, traffic_type_name must be a non-empty string.`);
+      log.error(ERROR_EMPTY, [method]);
     } else {
       if (CAPITAL_LETTERS_REGEX.test(maybeTT)) {
-        log.warn(`${method}: traffic_type_name should be all lowercase - converting string to lowercase.`);
+        log.warn(WARN_LOWERCASE_TRAFFIC_TYPE, [method]);
         maybeTT = maybeTT.toLowerCase();
       }
 

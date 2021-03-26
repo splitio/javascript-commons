@@ -1,7 +1,7 @@
 import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -13,11 +13,11 @@ const MAX_PROPERTIES_AMOUNT = 300;
 const MAX_PROPERTIES_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
 
-export function validateEventProperties(maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
+export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {
-    log.error(`${method}: properties must be a plain object.`);
+    log.error(ERROR_NOT_PLAIN_OBJECT, [method, 'properties']);
     return { properties: false, size: BASE_EVENT_SIZE };
   }
 
@@ -30,7 +30,7 @@ export function validateEventProperties(maybeProperties: any, method: string): {
   };
 
   if (keys.length > MAX_PROPERTIES_AMOUNT) {
-    log.warn(`${method}: Event has more than 300 properties. Some of them will be trimmed when processed.`);
+    log.warn(WARN_TRIMMING_PROPERTIES, [method]);
   }
 
   for (let i = 0; i < keys.length; i++) {
@@ -47,7 +47,7 @@ export function validateEventProperties(maybeProperties: any, method: string): {
       clone[keys[i]] = null;
       val = null;
       isNullVal = true;
-      log.warn(`${method}: Property ${keys[i]} is of invalid type. Setting value to null.`);
+      log.warn(WARN_SETTING_NULL, [method, keys[i]]);
     }
 
     if (isNullVal) output.size += ECMA_SIZES.NULL;
@@ -56,7 +56,7 @@ export function validateEventProperties(maybeProperties: any, method: string): {
     else if (isStringVal) output.size += val.length * ECMA_SIZES.STRING;
 
     if (output.size > MAX_PROPERTIES_SIZE) {
-      log.error(`${method}: The maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.`);
+      log.error(ERROR_SIZE_EXCEEDED, [method]);
       output.properties = false;
       break;
     }

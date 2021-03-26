@@ -1,10 +1,10 @@
 import { SplitIO } from '../../types';
 import { IDependencyMatcherValue } from '../types';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:sanitize');
+import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
+import { ENGINE_SANITIZE } from '../../logger/constants';
 
 function sanitizeNumber(val: any): number | undefined {
   const num = toNumber(val);
@@ -69,7 +69,7 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
 /**
  * Sanitize matcher value
  */
-export default function sanitize(matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes) {
+export default function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes) {
   const processor = getProcessingFunction(matcherTypeID, dataType);
   let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
 
@@ -99,7 +99,7 @@ export default function sanitize(matcherTypeID: number, value: string | number |
     sanitizedValue = processor(sanitizedValue, attributes);
   }
 
-  log.debug(`Attempted to sanitize [${value}] which should be of type [${dataType}]. \n Sanitized and processed value => [${sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue}]`);
+  log.debug(ENGINE_SANITIZE, [value, dataType, sanitizedValue instanceof Object ? JSON.stringify(sanitizedValue) : sanitizedValue]);
 
   return sanitizedValue;
 }

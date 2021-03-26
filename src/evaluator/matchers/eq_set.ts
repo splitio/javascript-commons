@@ -1,8 +1,8 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_EQUAL_TO_SET } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export default function equalToSetMatcherContext(ruleAttr: string[]) /*: Function */ {
+export default function equalToSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function equalToSetMatcher(runtimeAttr: string[]): boolean {
     // Length being the same is the first condition.
     let isEqual = runtimeAttr.length === ruleAttr.length;
@@ -12,7 +12,7 @@ export default function equalToSetMatcherContext(ruleAttr: string[]) /*: Functio
       if (findIndex(ruleAttr, e => e === runtimeAttr[i]) < 0) isEqual = false;
     }
 
-    log.debug(`[equalToSetMatcher] is ${runtimeAttr} equal to set ${ruleAttr}? ${isEqual}`);
+    log.debug(ENGINE_MATCHER_EQUAL_TO_SET, [runtimeAttr, ruleAttr, isEqual]);
 
     return isEqual;
   };

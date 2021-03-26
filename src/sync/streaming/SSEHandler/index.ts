@@ -1,11 +1,11 @@
 import { errorParser, messageParser } from './NotificationParser';
 import notificationKeeperFactory from './NotificationKeeper';
 import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
-import { logFactory } from '../../../logger/sdkLogger';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError } from './types';
-const log = logFactory('splitio-sync:sse-handler');
+import { ILogger } from '../../../logger/types';
+import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 
 function isRetryableError(error: INotificationError) {
   if (error.parsedData && error.parsedData.code) {
@@ -22,9 +22,10 @@ function isRetryableError(error: INotificationError) {
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
+ * @param log factory logger
  * @param pushEmitter emitter for events related to streaming support
  */
-export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseEventHandler {
+export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 
@@ -39,11 +40,11 @@ export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseE
       try {
         errorWithParsedData = errorParser(error);
       } catch (err) {
-        log.warn(`Error parsing SSE error notification: ${err}`);
+        log.warn(STREAMING_PARSING_ERROR_FAILS, [err]);
       }
 
       let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
-      log.error(`Fail to connect to streaming, with error message: ${errorMessage}`);
+      log.error(ERROR_STREAMING_SSE, [errorMessage]);
 
       if (isRetryableError(errorWithParsedData)) {
         pushEmitter.emit(PUSH_RETRYABLE_ERROR);
@@ -58,12 +59,12 @@ export default function SSEHandlerFactory(pushEmitter: IPushEventEmitter): ISseE
       try {
         messageWithParsedData = messageParser(message);
       } catch (err) {
-        log.warn(`Error parsing new SSE message notification: ${err}`);
+        log.warn(STREAMING_PARSING_MESSAGE_FAILS, [err]);
         return;
       }
 
       const { parsedData, data, channel, timestamp } = messageWithParsedData;
-      log.debug(`New SSE message received, with data: ${data}.`);
+      log.debug(STREAMING_NEW_MESSAGE, [data]);
 
       // we only handle update events if streaming is up.
       if (!notificationKeeper.isStreamingUp() && parsedData.type !== OCCUPANCY && parsedData.type !== CONTROL)

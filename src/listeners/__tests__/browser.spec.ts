@@ -1,7 +1,7 @@
 import BrowserSignalListener from '../browser';
 import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
-import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 /* Mocks start */
 
@@ -62,8 +62,6 @@ const fakeSplitApi = {
   postTestImpressionsCount: jest.fn(() => Promise.resolve())
 } as ISplitApi;
 
-const fakeSettings = settingsSplitApi;
-
 const UNLOAD_DOM_EVENT = 'unload';
 const unloadEventListeners = new Set<() => any>();
 
@@ -109,7 +107,7 @@ function triggerUnloadEvent() {
 
 test('Browser JS listener / Impressions optimized mode', (done) => {
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -120,15 +118,15 @@ test('Browser JS listener / Impressions optimized mode', (done) => {
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called three times.
-    expect((global.window.navigator.sendBeacon as jest.Mock).mock.calls.length).toBe(3);
+    expect(global.window.navigator.sendBeacon).toBeCalledTimes(3);
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length).toBe(0);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.
@@ -140,7 +138,7 @@ test('Browser JS listener / Impressions optimized mode', (done) => {
 
 test('Browser JS listener / Impressions debug mode', (done) => {
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -151,15 +149,15 @@ test('Browser JS listener / Impressions debug mode', (done) => {
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called twice.
-    expect((global.window.navigator.sendBeacon as jest.Mock).mock.calls.length).toBe(2);
+    expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length === 0).toBe(true);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.
@@ -174,7 +172,7 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', (don
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
 
-  const listener = new BrowserSignalListener(undefined, fakeSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -185,15 +183,15 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', (don
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called twice.
-    expect((sendBeacon as jest.Mock).mock.calls.length).toBe(0);
+    expect(sendBeacon).not.toBeCalled();
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(1);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(1);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).toBeCalledTimes(1);
+    expect(fakeSplitApi.postEventsBulk).toBeCalledTimes(1);
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length === 0).toBe(true);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.

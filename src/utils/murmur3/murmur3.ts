@@ -1,7 +1,7 @@
 /* eslint-disable no-fallthrough */
 import { UTF16ToUTF8, x86Fmix, x86Multiply, x86Rotl } from './commons';
 
-/*!
+/*
  * +----------------------------------------------------------------------------------+
  * | murmurHash3.js v3.0.0 (http://github.com/karanlyons/murmurHash3.js)              |
  * | A TypeScript/JavaScript implementation of MurmurHash3's hashing algorithms.      |

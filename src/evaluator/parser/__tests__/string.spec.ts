@@ -2,13 +2,14 @@
 import parser from '..';
 import { ISplitCondition } from '../../../dtos/types';
 import { keyParser } from '../../../utils/key';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 //
 // STARTS WITH
 //
 test('PARSER / if user.email starts with ["nico"] then split 100:on', async function () {
   const label = 'email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -42,7 +43,7 @@ test('PARSER / if user.email starts with ["nico"] then split 100:on', async func
 
 test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should match', async function () {
   const label = 'email starts with ["1"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -76,7 +77,7 @@ test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should m
 
 test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async function () {
   const label = 'email starts with ["nico", "marcio", "facu"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -110,7 +111,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
 
 test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async function () {
   const label = 'email starts with ["nico", "marcio", "facu"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -144,7 +145,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
 
 test('PARSER / if user.email does not start with ["nico"] then not match', async function () {
   // const label = 'email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -176,7 +177,7 @@ test('PARSER / if user.email does not start with ["nico"] then not match', async
 
 test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not match', async function () {
   // const label = 'email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -206,7 +207,7 @@ test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not 
 
 test('PARSER / if user.email is not a string, start with ["nico"] should not match', async function () {
   // const label = 'email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -239,7 +240,7 @@ test('PARSER / if user.email is not a string, start with ["nico"] should not mat
 
 test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so not match', async function () {
   const label = 'not email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -272,7 +273,7 @@ test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so 
 
 test('PARSER / NEGATED if user.email does not start with ["nico"] should not match, then match', async function () {
   const label = 'not email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -306,7 +307,7 @@ test('PARSER / NEGATED if user.email does not start with ["nico"] should not mat
 
 test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] should not match, so negation should', async function () {
   const label = 'not email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -338,7 +339,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] sho
 
 test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should not match, so negation should', async function () {
   const label = 'not email starts with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -377,7 +378,7 @@ test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should
 //
 test('PARSER / if user.email ends with ["split.io"] then split 100:on', async function () {
   const label = 'email ends with ["split.io"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -411,7 +412,7 @@ test('PARSER / if user.email ends with ["split.io"] then split 100:on', async fu
 
 test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should match', async function () {
   const label = 'email starts with ["3"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -444,7 +445,7 @@ test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should mat
 
 test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async function () {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -478,7 +479,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
 
 test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async function () {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -512,7 +513,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
 
 test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] but attribute is "" then split 100:on', async function () {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -545,7 +546,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
 
 test('PARSER / if user.email does not end with ["split.io"] then not match', async function () {
   const label = 'email ends with ["split.io"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -578,7 +579,7 @@ test('PARSER / if user.email does not end with ["split.io"] then not match', asy
 
 test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not match', async function () {
   // const label = 'email ends with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -608,7 +609,7 @@ test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not ma
 
 test('PARSER / if user.email is not a string, end with ["nico"] should not match', async function () {
   // const label = 'email ends with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -643,7 +644,7 @@ test('PARSER / if user.email is not a string, end with ["nico"] should not match
 
 test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, so not match', async function () {
   const label = 'not email ends with ["split.io"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -675,7 +676,7 @@ test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, s
 
 test('PARSER / NEGATED if user.email does not end with ["split.io"] then no match, so match', async function () {
   const label = 'not email ends with ["split.io"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -708,7 +709,7 @@ test('PARSER / NEGATED if user.email does not end with ["split.io"] then no matc
 
 test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] should not match, so negation should', async function () {
   const label = 'not email ends with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -740,7 +741,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] shoul
 
 test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should not match, so negation should', async function () {
   const label = 'not email ends with ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -779,7 +780,7 @@ test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should n
 //
 test('PARSER / if user.email contains ["@split"] then split 100:on', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -813,7 +814,7 @@ test('PARSER / if user.email contains ["@split"] then split 100:on', async funct
 
 test('PARSER / if user.email = 123, contains ["2"] then split 100:on should match', async function () {
   const label = 'email contains ["2"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -847,7 +848,7 @@ test('PARSER / if user.email = 123, contains ["2"] then split 100:on should matc
 
 test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -881,7 +882,7 @@ test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on',
 
 test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -915,7 +916,7 @@ test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async
 
 test('PARSER / if user.email contains ["@split"] (whole string matches) then split 100:on', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -949,7 +950,7 @@ test('PARSER / if user.email contains ["@split"] (whole string matches) then spl
 
 test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async function () {
   const label = 'email contains ["@split", "@gmail", "@hotmail"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -983,7 +984,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
 
 test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async function () {
   const label = 'email contains ["@split", "@gmail", "@hotmail"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1017,7 +1018,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
 
 test('PARSER / if user.email does not contain ["@split"] then not match', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1050,7 +1051,7 @@ test('PARSER / if user.email does not contain ["@split"] then not match', async 
 
 test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not match', async function () {
   // const label = 'email contains ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1080,7 +1081,7 @@ test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not ma
 
 test('PARSER / if user.email is not a string, contains ["nico"] should not match', async function () {
   // const label = 'email contains ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1115,7 +1116,7 @@ test('PARSER / if user.email is not a string, contains ["nico"] should not match
 
 test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then no match', async function () {
   const label = 'not email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1148,7 +1149,7 @@ test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then
 
 test('PARSER / NEGATED if user.email does not contain ["@split"] then not match, so match', async function () {
   const label = 'email contains ["@split"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1181,7 +1182,7 @@ test('PARSER / NEGATED if user.email does not contain ["@split"] then not match,
 
 test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] should not match, so negation should', async function () {
   const label = 'not email contains ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{
@@ -1213,7 +1214,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] shoul
 
 test('PARSER / NEGATED if user.email is not a string, contains ["nico"] should not match, so negation should', async function () {
   const label = 'not email contains ["nico"]';
-  const evaluator = parser([{
+  const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
       matchers: [{

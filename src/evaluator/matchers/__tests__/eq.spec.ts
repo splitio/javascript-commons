@@ -1,10 +1,11 @@
 import { matcherTypes } from '../matcherTypes';
 import matcherFactory from '..';
 import { IMatcher, IMatcherDto } from '../../types';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER EQUAL / should return true ONLY when the value is equal to 10', function () {
   // @ts-ignore
-  let matcher = matcherFactory({
+  let matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.EQUAL_TO,
     value: 10

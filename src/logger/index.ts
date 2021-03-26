@@ -1,7 +1,8 @@
 import objectAssign from 'object-assign';
-import { ILoggerOptions } from './types';
+import { ILoggerOptions, ILogger } from './types';
 import { find } from '../utils/lang';
 import { LogLevel } from '../types';
+import { IMap, _Map } from '../utils/lang/maps';
 
 export const LogLevels: { [level: string]: LogLevel } = {
   DEBUG: 'DEBUG',
@@ -11,58 +12,79 @@ export const LogLevels: { [level: string]: LogLevel } = {
   NONE: 'NONE'
 };
 
-// DEBUG is the default. The log level is not specific to an SDK instance.
-let globalLogLevel = LogLevels.DEBUG;
-
-export function setLogLevel(level: LogLevel) {
-  globalLogLevel = level;
-}
+const LogLevelRanks = {
+  DEBUG: 1,
+  INFO: 2,
+  WARN: 3,
+  ERROR: 4,
+  NONE: 5
+};
 
 export function isLogLevelString(str: string): str is LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
 
+// exported for testing purposes only
+export function _sprintf(format: string = '', args: any[] = []): string {
+  let i = 0;
+  return format.replace(/%s/g, function () {
+    return args[i++];
+  });
+}
+
 const defaultOptions = {
+  prefix: 'splitio',
+  logLevel: LogLevels.NONE,
   showLevel: true,
-  displayAllErrors: false
 };
 
-export class Logger {
-  private category: any;
-  private options: any;
+export class Logger implements ILogger {
 
-  constructor(category: string, options: ILoggerOptions) {
-    this.category = category;
+  private options: Required<ILoggerOptions>;
+  private codes: IMap<number, string>;
+  private logLevel: number;
+
+  constructor(options?: ILoggerOptions, codes?: IMap<number, string>) {
     this.options = objectAssign({}, defaultOptions, options);
+    this.codes = codes || new _Map();
+    this.logLevel = LogLevelRanks[this.options.logLevel];
   }
 
-  debug(msg: string) {
-    if (this._shouldLog(LogLevels.DEBUG))
-      this._log(LogLevels.DEBUG, msg);
+  setLogLevel(logLevel: LogLevel) {
+    this.options.logLevel = logLevel;
+    this.logLevel = LogLevelRanks[logLevel];
   }
 
-  info(msg: string) {
-    if (this._shouldLog(LogLevels.INFO))
-      this._log(LogLevels.INFO, msg);
+  debug(msg: string | number, args?: any[]) {
+    if (this._shouldLog(LogLevelRanks.DEBUG)) this._log(LogLevels.DEBUG, msg, args);
   }
 
-  warn(msg: string) {
-    if (this._shouldLog(LogLevels.WARN))
-      this._log(LogLevels.WARN, msg);
+  info(msg: string | number, args?: any[]) {
+    if (this._shouldLog(LogLevelRanks.INFO)) this._log(LogLevels.INFO, msg, args);
   }
 
-  error(msg: string) {
-    if (this.options.displayAllErrors || this._shouldLog(LogLevels.ERROR))
-      this._log(LogLevels.ERROR, msg);
+  warn(msg: string | number, args?: any[]) {
+    if (this._shouldLog(LogLevelRanks.WARN)) this._log(LogLevels.WARN, msg, args);
   }
 
-  _log(level: string, text: string) {
-    const formattedText = this._generateLogMessage(level, text);
+  error(msg: string | number, args?: any[]) {
+    if (this._shouldLog(LogLevelRanks.ERROR)) this._log(LogLevels.ERROR, msg, args);
+  }
+
+  private _log(level: LogLevel, msg: string | number, args?: any[]) {
+    if (typeof msg === 'number') {
+      const format = this.codes.get(msg);
+      msg = format ? _sprintf(format, args) : `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
+    } else {
+      if (args) msg = _sprintf(msg, args);
+    }
+
+    const formattedText = this._generateLogMessage(level, msg);
 
     console.log(formattedText);
   }
 
-  _generateLogMessage(level: string, text: string) {
+  private _generateLogMessage(level: LogLevel, text: string) {
     const textPre = ' => ';
     let result = '';
 
@@ -70,19 +92,14 @@ export class Logger {
       result += '[' + level + ']' + (level === LogLevels.INFO || level === LogLevels.WARN ? ' ' : '') + ' ';
     }
 
-    if (this.category) {
-      result += this.category + textPre;
+    if (this.options.prefix) {
+      result += this.options.prefix + textPre;
     }
 
     return result += text;
   }
 
-  _shouldLog(level: LogLevel) {
-    const logLevel = globalLogLevel;
-    const levels = Object.keys(LogLevels).map((f) => LogLevels[f as keyof typeof LogLevels]);
-    const index = levels.indexOf(level); // What's the index of what it's trying to check if it should log
-    const levelIdx = levels.indexOf(logLevel); // What's the current log level index.
-
-    return index >= levelIdx;
+  private _shouldLog(level: number) {
+    return level >= this.logLevel;
   }
 }

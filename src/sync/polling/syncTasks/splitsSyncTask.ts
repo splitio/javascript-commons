@@ -7,13 +7,13 @@ import { IReadinessManager, ISplitsEventEmitter } from '../../../readiness/types
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISplitsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import splitChangesFetcherFactory from '../fetchers/splitChangesFetcher';
 import { IFetchSplitChanges } from '../../../services/types';
 import thenable from '../../../utils/promise/thenable';
 import { ISettings } from '../../../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
-const log = logFactory('splitio-sync:split-changes');
+import { ILogger } from '../../../logger/types';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 
@@ -82,12 +82,13 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
  * Exported for testing purposes.
  */
 export function splitChangesUpdaterFactory(
+  log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
   splitsCache: ISplitsCacheSync,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number,
-  retriesOnFailureBeforeReady: number
+  retriesOnFailureBeforeReady: number,
 ): ISplitChangesUpdater {
 
   let startingUp = true;
@@ -115,7 +116,7 @@ export function splitChangesUpdaterFactory(
      * @param {number} retry current number of retry attemps
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
-      log.debug(`Spin up split update using since = ${since}`);
+      log.debug(SYNC_SPLITS_FETCH, [since]);
 
       const fetcherPromise = splitChangesFetcher(since, noCache, _promiseDecorator)
         .then((splitChanges: ISplitChangesResponse) => {
@@ -123,9 +124,9 @@ export function splitChangesUpdaterFactory(
 
           const mutation = computeSplitsMutation(splitChanges.splits);
 
-          log.debug(`New splits ${mutation.added.length}`);
-          log.debug(`Removed splits ${mutation.removed.length}`);
-          log.debug(`Segment names collected ${mutation.segments.length}`);
+          log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
+          log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
+          log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
           // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
@@ -151,11 +152,11 @@ export function splitChangesUpdaterFactory(
             startingUp = false; // Stop retrying.
           }
 
-          log.warn(`Error while doing fetch of Splits. ${error}`);
+          log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
 
           if (startingUp && retriesOnFailureBeforeReady > retry) {
             retry += 1;
-            log.info(`Retrying download of splits #${retry}. Reason: ${error}`);
+            log.info(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
             return _splitChangesUpdater(since, retry);
           } else {
             startingUp = false;
@@ -183,15 +184,17 @@ export default function splitsSyncTaskFactory(
   settings: ISettings,
 ): ISplitsSyncTask {
   return syncTaskFactory(
+    settings.log,
     splitChangesUpdaterFactory(
+      settings.log,
       splitChangesFetcherFactory(fetchSplitChanges),
       storage.splits,
       storage.segments,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
     ),
     settings.scheduler.featuresRefreshRate,
-    'splitChangesUpdater'
+    'splitChangesUpdater',
   );
 }

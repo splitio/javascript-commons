@@ -1,4 +1,5 @@
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
+import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync } from './storages/types';
@@ -88,7 +89,7 @@ export interface ISettings {
     auth: string,
     streaming: string
   },
-  readonly debug: boolean,
+  readonly debug: boolean | LogLevel,
   readonly version: string,
   features: SplitIO.MockedFeaturesFilePath | SplitIO.MockedFeaturesMap,
   readonly streamingEnabled: boolean,
@@ -99,7 +100,8 @@ export interface ISettings {
   readonly runtime: {
     ip: string | false
     hostname: string | false
-  }
+  },
+  readonly log: ILogger
 }
 /**
  * Log levels.

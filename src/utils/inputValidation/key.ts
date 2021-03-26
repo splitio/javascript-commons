@@ -1,17 +1,17 @@
 import { isObject, isString, isFiniteNumber, toString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+import { ERROR_NULL, WARN_CONVERTING, ERROR_EMPTY, ERROR_TOO_LONG, ERROR_INVALID, ERROR_INVALID_KEY_OBJECT } from '../../logger/constants';
 
 const KEY_MAX_LENGTH = 250;
 
-function validateKeyValue(maybeKey: any, method: string, type: string): string | false {
+function validateKeyValue(log: ILogger, maybeKey: any, method: string, type: string): string | false {
   if (maybeKey == undefined) { // eslint-disable-line eqeqeq
-    log.error(`${method}: you passed a null or undefined ${type}, ${type} must be a non-empty string.`);
+    log.error(ERROR_NULL, [method, type]);
     return false;
   }
   if (isFiniteNumber(maybeKey)) {
-    log.warn(`${method}: ${type} "${maybeKey}" is not of type string, converting.`);
+    log.warn(WARN_CONVERTING, [method, type, maybeKey]);
     return toString(maybeKey);
   }
   if (isString(maybeKey)) {
@@ -22,30 +22,30 @@ function validateKeyValue(maybeKey: any, method: string, type: string): string |
     if (maybeKey.length > 0 && maybeKey.length <= KEY_MAX_LENGTH) return maybeKey;
 
     if (maybeKey.length === 0) {
-      log.error(`${method}: you passed an empty string, ${type} must be a non-empty string.`);
+      log.error(ERROR_EMPTY, [method, type]);
     } else if (maybeKey.length > KEY_MAX_LENGTH) {
-      log.error(`${method}: ${type} too long, ${type} must be 250 characters or less.`);
+      log.error(ERROR_TOO_LONG, [method, type]);
     }
   } else {
-    log.error(`${method}: you passed an invalid ${type} type, ${type} must be a non-empty string.`);
+    log.error(ERROR_INVALID, [method, type]);
   }
 
   return false;
 }
 
-export function validateKey(maybeKey: any, method: string): SplitIO.SplitKey | false {
+export function validateKey(log: ILogger, maybeKey: any, method: string): SplitIO.SplitKey | false {
   if (isObject(maybeKey)) {
     // Validate key object
-    const matchingKey = validateKeyValue(maybeKey.matchingKey, method, 'matchingKey');
-    const bucketingKey = validateKeyValue(maybeKey.bucketingKey, method, 'bucketingKey');
+    const matchingKey = validateKeyValue(log, maybeKey.matchingKey, method, 'matchingKey');
+    const bucketingKey = validateKeyValue(log, maybeKey.bucketingKey, method, 'bucketingKey');
 
     if (matchingKey && bucketingKey) return {
       matchingKey, bucketingKey
     };
 
-    log.error(`${method}: Key must be an object with bucketingKey and matchingKey with valid string properties.`);
+    log.error(ERROR_INVALID_KEY_OBJECT, [method]);
     return false;
   } else {
-    return validateKeyValue(maybeKey, method, 'key');
+    return validateKeyValue(log, maybeKey, method, 'key');
   }
 }

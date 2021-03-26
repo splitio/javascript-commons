@@ -3,17 +3,12 @@ import promiseWrapper from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
-import { logFactory } from '../logger/sdkLogger';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
-const log = logFactory('');
+import { ILogger } from '../logger/types';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
-
-// default onRejected handler, that just logs the error, if ready promise doesn't have one.
-function defaultOnRejected(err: any) {
-  log.error(err);
-}
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -25,6 +20,7 @@ function defaultOnRejected(err: any) {
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export default function sdkReadinessManagerFactory(
+  log: ILogger,
   EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,
   internalReadyCbCount = 0,
@@ -39,7 +35,7 @@ export default function sdkReadinessManagerFactory(
   readinessManager.gate.on(NEW_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY || event === SDK_READY_TIMED_OUT) {
       if (readinessManager.isReady()) {
-        log.error(`A listener was added for ${event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT'} on the SDK, which has already fired and won't be emitted again. The callback won't be executed.`);
+        log.error(ERROR_CLIENT_LISTENER, [event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT']);
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
@@ -50,15 +46,20 @@ export default function sdkReadinessManagerFactory(
   const readyPromise = generateReadyPromise();
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
-    log.info('Split SDK is ready from cache.');
+    log.info(CLIENT_READY_FROM_CACHE);
   });
+
+  // default onRejected handler, that just logs the error, if ready promise doesn't have one.
+  function defaultOnRejected(err: any) {
+    log.error(err);
+  }
 
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
-        log.info('Split SDK is ready.');
+        log.info(CLIENT_READY);
 
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
+        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(CLIENT_NO_LISTENER);
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);
@@ -72,7 +73,7 @@ export default function sdkReadinessManagerFactory(
     readinessManager,
 
     shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
     },
 
     sdkStatus: objectAssign(

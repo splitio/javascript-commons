@@ -1,13 +1,13 @@
 import objectAssign from 'object-assign';
 import thenable from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
-import { logFactory } from '../logger/sdkLogger';
 import { IImpressionCountsCacheBase, IImpressionsCacheBase } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { IMetadata } from '../dtos/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
-const log = logFactory('splitio-client:impressions-tracker');
+import { ILogger } from '../logger/types';
+import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -20,6 +20,7 @@ const log = logFactory('splitio-client:impressions-tracker');
  * @param countsCache optional cache to save impressions count. If provided, impressions will be deduped (OPTIMIZED mode)
  */
 export default function impressionsTrackerFactory(
+  log: ILogger,
   impressionsCache: IImpressionsCacheBase,
 
   // @TODO consider passing only an optional integrationsManager to handle impressions
@@ -62,9 +63,9 @@ export default function impressionsTrackerFactory(
       // If we're on an async storage, handle error and log it.
       if (thenable(res)) {
         res.then(() => {
-          log.debug(`Successfully stored ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}.`);
+          log.info(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount]);
         }).catch(err => {
-          log.error(`Could not store impressions bulk with ${impressionsCount} impression${impressionsCount === 1 ? '' : 's'}. Error: ${err}`);
+          log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, err]);
         });
       }
 
@@ -88,7 +89,7 @@ export default function impressionsTrackerFactory(
             try { // An exception on the listeners should not break the SDK.
               if (impressionListener) impressionListener.logImpression(impressionData);
             } catch (err) {
-              log.error(`Impression listener logImpression method threw: ${err}.`);
+              log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
             }
           }, 0);
         }

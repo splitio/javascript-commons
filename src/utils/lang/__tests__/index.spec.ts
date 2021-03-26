@@ -139,7 +139,7 @@ test('LANG UTILS / find', () => {
   const obj = { myKey: 'myVal', myOtherKey: 'myOtherVal' };
 
   find(obj, spy);
-  expect(spy.mock.calls.length === 2).toBe(true); // The iteratee should be called as many times as elements we have on the collection.
+  expect(spy).toBeCalledTimes(2); // The iteratee should be called as many times as elements we have on the collection.
   expect(spy.mock.calls[0]).toEqual(['myVal', 'myKey', obj]); // When iterating on an object the iteratee should be called with (val, key, collection)
   expect(spy.mock.calls[1]).toEqual(['myOtherVal', 'myOtherKey', obj]); // When iterating on an object the iteratee should be called with (val, key, collection)
 
@@ -147,7 +147,7 @@ test('LANG UTILS / find', () => {
   spy.mockClear();
 
   find(arr, spy);
-  expect(spy.mock.calls.length === 2).toBe(true); // The iteratee should be called as many times as elements we have on the collection.
+  expect(spy).toBeCalledTimes(2); // The iteratee should be called as many times as elements we have on the collection.
   expect(spy.mock.calls[0]).toEqual(['one', 0, arr]); // When iterating on an array the iteratee should be called with (val, index, collection)
   expect(spy.mock.calls[1]).toEqual(['two', 1, arr]); // When iterating on an array the iteratee should be called with (val, index, collection)
 
@@ -486,7 +486,7 @@ test('LANG UTILS / forOwn', () => {
   const obj = { myKey: 'myVal', myOtherKey: 'myOtherVal' };
 
   forOwn(obj, spy);
-  expect(spy.mock.calls.length === 2).toBe(true); // The iteratee should be called as many times as elements we have on the object.
+  expect(spy).toBeCalledTimes(2); // The iteratee should be called as many times as elements we have on the object.
   expect(spy.mock.calls[0]).toEqual(['myVal', 'myKey', obj]); // When iterating on an object the iteratee should be called with (val, key, collection)
   expect(spy.mock.calls[1]).toEqual(['myOtherVal', 'myOtherKey', obj]); // When iterating on an object the iteratee should be called with (val, key, collection)
 
