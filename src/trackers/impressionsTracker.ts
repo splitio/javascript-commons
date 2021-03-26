@@ -63,9 +63,9 @@ export default function impressionsTrackerFactory(
       // If we're on an async storage, handle error and log it.
       if (thenable(res)) {
         res.then(() => {
-          log.debug(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount, impressionsCount === 1 ? '' : 's']);
+          log.info(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount]);
         }).catch(err => {
-          log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, impressionsCount === 1 ? '' : 's', err]);
+          log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, err]);
         });
       }
 

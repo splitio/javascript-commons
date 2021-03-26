@@ -40,14 +40,14 @@ test.each(paramMocks)('sdkClientMethodFactory', (params) => {
 
   // `client.destroy` method should stop internal components (other client methods where validated in `client.spec.ts`)
   client.destroy().then(() => {
-    expect(params.sdkReadinessManager.readinessManager.destroy.mock.calls.length).toBe(1);
+    expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
     expect(params.storage.destroy).toBeCalledTimes(1);
 
     if (params.syncManager) {
       expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
     }
-    if (params.signalListener) expect(params.signalListener.stop.mock.calls.length).toBe(1);
+    if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
   });
 
   // calling the function with parameters should throw an error

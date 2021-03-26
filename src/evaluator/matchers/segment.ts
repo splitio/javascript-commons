@@ -2,7 +2,7 @@ import { MaybeThenable } from '../../dtos/types';
 import { ISegmentsCacheBase } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
-import { ENGINE_MATCHER_SEGMENT_ASYNC, ENGINE_MATCHER_SEGMENT } from '../../logger/constants';
+import { ENGINE_MATCHER_SEGMENT } from '../../logger/constants';
 
 export default function matcherSegmentContext(log: ILogger, segmentName: string, storage: { segments: ISegmentsCacheBase }) {
 
@@ -11,7 +11,7 @@ export default function matcherSegmentContext(log: ILogger, segmentName: string,
 
     if (thenable(isInSegment)) {
       isInSegment.then(result => {
-        log.debug(ENGINE_MATCHER_SEGMENT_ASYNC, [segmentName, key, isInSegment]);
+        log.debug(ENGINE_MATCHER_SEGMENT, [segmentName, key, isInSegment]);
 
         return result;
       });

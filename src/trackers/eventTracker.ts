@@ -36,7 +36,7 @@ export default function eventTrackerFactory(
         }, 0);
       }
     } else {
-      log.warn(ERROR_EVENTS_TRACKER, [msg]);
+      log.error(ERROR_EVENTS_TRACKER, [msg]);
     }
 
     return tracked;

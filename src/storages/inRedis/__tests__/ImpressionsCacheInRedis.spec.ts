@@ -96,9 +96,9 @@ test('IMPRESSIONS CACHE IN REDIS / should not resolve track before calling expir
   // @ts-expect-error
   c.track([i1, i2]).then(() => {
     connection.quit(); // Try to disconnect right away.
-    expect(spy1.mock.calls.length).not.toBe(0); // Redis rpush was called once before executing external callback.
+    expect(spy1).toBeCalled(); // Redis rpush was called once before executing external callback.
     // Following assertion fails if the expire takes place after disconnected and throws unhandledPromiseRejection
-    expect(spy2.mock.calls.length).not.toBe(0); // Redis expire was called once before executing external callback.
+    expect(spy2).toBeCalled(); // Redis expire was called once before executing external callback.
   }).catch(e => {
     throw new Error(`An error was generated from the redis expire tests: ${e}`);
   }).then(() => {

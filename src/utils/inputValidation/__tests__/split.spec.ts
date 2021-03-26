@@ -39,7 +39,7 @@ describe('INPUT VALIDATION for Split name', () => {
     expect(validateSplit(loggerMock, 'A_split-name_29', 'some_method_splitName')).toBe('A_split-name_29'); // It should return the provided string if it is valid.
     expect(loggerMock.error.mock.calls[0]).not.toEqual('some_method_splitName'); // Should not log any errors.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
   });
 
   test('Should trim split name if it is a valid string with trimmable spaces and log a warning (if those are enabled)', () => {
@@ -51,7 +51,7 @@ describe('INPUT VALIDATION for Split name', () => {
       loggerMock.warn.mockClear();
     }
 
-    expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
+    expect(loggerMock.error).not.toBeCalled(); // It should have not logged any errors.
   });
 
   test('Should return false and log error if split name is not a valid string', () => {
@@ -66,6 +66,6 @@ describe('INPUT VALIDATION for Split name', () => {
       loggerMock.error.mockClear();
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
   });
 });

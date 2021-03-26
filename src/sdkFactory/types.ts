@@ -46,7 +46,7 @@ export interface ISdkFactoryParams {
   syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
 
   // Sdk manager factory
-  sdkManagerFactory?: (
+  sdkManagerFactory: (
     log: ILogger,
     splits: ISplitsCacheSync | ISplitsCacheAsync,
     sdkReadinessManager: ISdkReadinessManager

@@ -10,7 +10,7 @@ import { getMatching } from '../utils/key';
 import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
-import { NEW_FACTORY, RETRIEVE_MANAGER, ERROR_MANAGER_NOT_AVAILABLE } from '../logger/constants';
+import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 
 /**
  * Modular SDK factory
@@ -73,7 +73,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // Sdk client and manager
   const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
-  const managerInstance = sdkManagerFactory && sdkManagerFactory(log, storage.splits, sdkReadinessManager);
+  const managerInstance = sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
   syncManager && syncManager.start();
   signalListener && signalListener.start();
@@ -87,8 +87,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // Manager API to explore available information
     // @ts-ignore
     manager() {
-      if (managerInstance) log.info(RETRIEVE_MANAGER);
-      else log.error(ERROR_MANAGER_NOT_AVAILABLE);
+      log.debug(RETRIEVE_MANAGER);
       return managerInstance;
     },
 

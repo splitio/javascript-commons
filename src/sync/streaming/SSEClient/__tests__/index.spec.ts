@@ -35,7 +35,7 @@ test('SSClient / setEventHandler, open and close methods', () => {
   instance.open(authDataSample);
   let esconnection = instance.connection; // instance of EventSource used to mock events
   esconnection.emitOpen();
-  expect(handler.handleOpen.mock.calls.length).toBe(1); // handleOpen called when connection is opened
+  expect(handler.handleOpen).toBeCalledTimes(1); // handleOpen called when connection is opened
   handler.handleOpen.mockClear();
 
   // emit message
@@ -56,25 +56,25 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
   // open attempt without open event emitted
   instance.open(authDataSample);
-  expect(handler.handleOpen.mock.calls.length).toBe(0); // handleOpen not called until open event is emitted
+  expect(handler.handleOpen).not.toBeCalled(); // handleOpen not called until open event is emitted
 
   // open a new connection
   instance.open(authDataSample);
   instance.connection.emitOpen();
-  expect(handler.handleOpen.mock.calls.length).toBe(1); // handleOpen called when connection is open
+  expect(handler.handleOpen).toBeCalledTimes(1); // handleOpen called when connection is open
 
   // reopen the connection
   handler.handleOpen.mockClear();
   instance.reopen();
   instance.connection.emitOpen();
-  expect(handler.handleOpen.mock.calls.length).toBe(1); // handleOpen called if connection is reopen
+  expect(handler.handleOpen).toBeCalledTimes(1); // handleOpen called if connection is reopen
 
   // remove event handler before opening a new connection
   handler.handleOpen.mockClear();
   instance.setEventHandler(undefined);
   instance.open(authDataSample);
   instance.connection.emitOpen();
-  expect(handler.handleOpen.mock.calls.length).toBe(0); // handleOpen not called if connection is open but the handler was removed
+  expect(handler.handleOpen).not.toBeCalled(); // handleOpen not called if connection is open but the handler was removed
 
 });
 
