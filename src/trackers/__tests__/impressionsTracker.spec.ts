@@ -55,7 +55,7 @@ describe('Impressions Tracker', () => {
       feature: '30',
     } as ImpressionDTO;
 
-    expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // cache method should not be called by just creating a tracker
+    expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
     tracker.track([imp1, imp2, imp3]);
 
@@ -76,20 +76,20 @@ describe('Impressions Tracker', () => {
       fake: 'attributes'
     };
 
-    expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // The storage should not be invoked if we haven't tracked impressions.
-    expect(fakeListener.logImpression.mock.calls.length).toBe(0); // The listener should not be invoked if we haven't tracked impressions.
-    expect(fakeIntegrationsManager.handleImpression.mock.calls.length).toBe(0); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
+    expect(fakeImpressionsCache.track).not.toBeCalled(); // The storage should not be invoked if we haven't tracked impressions.
+    expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be invoked if we haven't tracked impressions.
+    expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
 
     // We signal that we actually want to track the queued impressions.
     tracker.track([fakeImpression, fakeImpression2], fakeAttributes);
 
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression, fakeImpression2]); // Even with a listener, impression should be sent to the cache
-    expect(fakeListener.logImpression.mock.calls.length).toBe(0); // The listener should not be executed synchronously.
-    expect(fakeIntegrationsManager.handleImpression.mock.calls.length).toBe(0); // The integrations manager handleImpression method should not be executed synchronously.
+    expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
+    expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be executed synchronously.
 
     setTimeout(() => {
-      expect(fakeListener.logImpression.mock.calls.length).toBe(2); // The listener should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
-      expect(fakeIntegrationsManager.handleImpression.mock.calls.length).toBe(2); // The integrations manager handleImpression method should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
+      expect(fakeListener.logImpression).toBeCalledTimes(2); // The listener should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
+      expect(fakeIntegrationsManager.handleImpression).toBeCalledTimes(2); // The integrations manager handleImpression method should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
 
       const impressionData1 = { impression: fakeImpression, attributes: fakeAttributes, sdkLanguageVersion: fakeMetadata.version, ip: fakeMetadata.ip, hostname: fakeMetadata.hostname };
       const impressionData2 = { impression: fakeImpression2, attributes: fakeAttributes, sdkLanguageVersion: fakeMetadata.version, ip: fakeMetadata.ip, hostname: fakeMetadata.hostname };
@@ -143,7 +143,7 @@ describe('Impressions Tracker', () => {
       impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory())
     ];
 
-    expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // storage method should not be called until impressions are tracked.
+    expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
 
     trackers.forEach(tracker => {
       tracker.track([impression, impression2, impression3]);
@@ -170,7 +170,7 @@ describe('Impressions Tracker', () => {
     const impressionCountsCache = new ImpressionCountsCacheInMemory();
     const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeMetadata, undefined, undefined, impressionObserverCSFactory(), impressionCountsCache);
 
-    expect(fakeImpressionsCache.track.mock.calls.length).toBe(0); // cache method should not be called by just creating a tracker
+    expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
     tracker.track([impression, impression2, impression3]);
 

@@ -73,11 +73,11 @@ test('splitChangesUpdater / factory', (done) => {
   const splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits, 1000, 1);
 
   splitChangesUpdater().then((result) => {
-    expect(setChangeNumber.mock.calls.length).toBe(1);
+    expect(setChangeNumber).toBeCalledTimes(1);
     expect(setChangeNumber).lastCalledWith(splitChangesMock1.till);
-    expect(addSplits.mock.calls.length).toBe(1);
+    expect(addSplits).toBeCalledTimes(1);
     expect(addSplits.mock.calls[0][0].length).toBe(splitChangesMock1.splits.length);
-    expect(removeSplits.mock.calls.length).toBe(1);
+    expect(removeSplits).toBeCalledTimes(1);
     expect(removeSplits).lastCalledWith([]);
     expect(registerSegments).toBeCalledTimes(1);
     expect(splitsEmitSpy).toBeCalledWith('SDK_SPLITS_ARRIVED');

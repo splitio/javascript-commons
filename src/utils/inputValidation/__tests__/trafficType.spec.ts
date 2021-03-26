@@ -33,13 +33,13 @@ describe('INPUT VALIDATION for Traffic Types', () => {
 
   test('Should return the provided traffic type if it is a valid string without logging any errors', () => {
     expect(validateTrafficType(loggerMock, 'traffictype', 'some_method_trafficType')).toBe('traffictype'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
     expect(validateTrafficType(loggerMock, 'traffic_type', 'some_method_trafficType')).toBe('traffic_type'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
     expect(validateTrafficType(loggerMock, 'traffic-type-23', 'some_method_trafficType')).toBe('traffic-type-23'); // It should return the provided string if it is valid.
-    expect(loggerMock.error.mock.calls.length).toBe(0); // Should not log any errors.
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
   });
 
   test('Should lowercase the whole traffic type if it is a valid string with uppercases and log a warning (if those are enabled)', () => {
@@ -50,7 +50,7 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       expect(loggerMock.warn.mock.calls[i]).toEqual([WARN_LOWERCASE_TRAFFIC_TYPE, ['some_method_trafficType']]); // Should log a warning.
     }
 
-    expect(loggerMock.error.mock.calls.length).toBe(0); // It should have not logged any errors.
+    expect(loggerMock.error).not.toBeCalled(); // It should have not logged any errors.
   });
 
   test('Should return false and log error if traffic type is not a valid string', () => {
@@ -62,6 +62,6 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       expect(loggerMock.error.mock.calls[i]).toEqual([expectedLog, ['test_method']]); // Should log the error for the invalid traffic type.
     }
 
-    expect(loggerMock.warn.mock.calls.length).toBe(0); // It should have not logged any warnings.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
   });
 });

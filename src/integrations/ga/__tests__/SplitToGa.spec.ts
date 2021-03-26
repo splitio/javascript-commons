@@ -86,7 +86,7 @@ describe('SplitToGa', () => {
 
     let integration = new SplitToGa(loggerMock, {});
     expect(typeof integration).toBe('object');
-    expect(loggerMock.warn.mock.calls.length).toBe(0);
+    expect(loggerMock.warn).not.toBeCalled();
 
     gaRemove();
     expect(SplitToGa.getGa()).toBe(undefined); // should return undefined if ga command queue does not exist
@@ -110,13 +110,13 @@ describe('SplitToGa', () => {
     const instance = new SplitToGa(loggerMock, {}) as SplitToGa;
     instance.queue(fakeImpression);
     // should queue `ga send` with the default mapped FieldsObject for impressions, appended with `splitHit` field
-    expect(ga.mock.calls[ga.mock.calls.length - 1]).toEqual(['send', { ...defaultImpressionFieldsObject, splitHit: true }]);
+    expect(ga).lastCalledWith('send', { ...defaultImpressionFieldsObject, splitHit: true });
 
     instance.queue(fakeEvent);
     // should queue `ga send` with the default mapped FieldsObject for events, appended with `splitHit` field
-    expect(ga.mock.calls[ga.mock.calls.length - 1]).toEqual(['send', { ...defaultEventFieldsObject, splitHit: true }]);
+    expect(ga).lastCalledWith('send', { ...defaultEventFieldsObject, splitHit: true });
 
-    expect(ga.mock.calls.length).toBe(2);
+    expect(ga).toBeCalledTimes(2);
 
     /** Custom behaviour **/
     // Custom filter
@@ -146,7 +146,7 @@ describe('SplitToGa', () => {
       [`${trackerNames[1]}.send`, { ...customMapper(), splitHit: true }]
     ]); // should queue `ga send` with the custom trackerName and FieldsObject from customMapper, appended with `splitHit` field
 
-    expect(ga.mock.calls.length).toBe(2);
+    expect(ga).toBeCalledTimes(2);
 
     // Custom mapper that returns the default FieldsObject
     function customMapper2(data: SplitIO.IntegrationData, defaultFieldsObject: UniversalAnalytics.FieldsObject) {
@@ -158,9 +158,9 @@ describe('SplitToGa', () => {
     ga.mockClear();
     instance3.queue(fakeImpression);
     // should queue `ga send` with the custom FieldsObject from customMapper2, appended with `splitHit` field
-    expect(ga.mock.calls[ga.mock.calls.length - 1]).toEqual(['send', { ...customMapper2(fakeImpression, defaultImpressionFieldsObject), splitHit: true }]);
+    expect(ga).lastCalledWith('send', { ...customMapper2(fakeImpression, defaultImpressionFieldsObject), splitHit: true });
 
-    expect(ga.mock.calls.length).toBe(1);
+    expect(ga).toBeCalledTimes(1);
 
     // Custom mapper that throws an error
     function customMapper3() {

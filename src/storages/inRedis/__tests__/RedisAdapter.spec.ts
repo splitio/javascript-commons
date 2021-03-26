@@ -276,7 +276,7 @@ describe('STORAGE Redis Adapter', () => {
       expect(ioredisMock[methodName]).toBeCalled(); // Original method (${methodName}) is called right away (through wrapper) when we are not queueing anymore.
       expect(instance._runningCommands.size).toBe(previousRunningCommandsSize + 1); // If the result of the operation was a thenable it will add the item to the running commands queue.
 
-      expect(timeout.mock.calls.length).toBe(previousTimeoutCalls + 1); // The promise returned by the original method should have a timeout wrapper.
+      expect(timeout).toBeCalledTimes(previousTimeoutCalls + 1); // The promise returned by the original method should have a timeout wrapper.
 
       // Get the original promise (the one passed to timeout)
       const commandTimeoutResolver = timeoutPromiseResolvers[0];

@@ -118,15 +118,15 @@ test('Browser JS listener / Impressions optimized mode', (done) => {
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called three times.
-    expect((global.window.navigator.sendBeacon as jest.Mock).mock.calls.length).toBe(3);
+    expect(global.window.navigator.sendBeacon).toBeCalledTimes(3);
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
-    expect((global.window.removeEventListener as jest.Mock).mock.calls.length).toBe(0);
+    expect(global.window.removeEventListener).not.toBeCalled();
     listener.stop();
 
     // removed correct listener from correct signal on stop.
@@ -149,12 +149,12 @@ test('Browser JS listener / Impressions debug mode', (done) => {
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called twice.
-    expect((global.window.navigator.sendBeacon as jest.Mock).mock.calls.length).toBe(2);
+    expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(0);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
     expect(global.window.removeEventListener).not.toBeCalled();
@@ -183,12 +183,12 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', (don
 
   setTimeout(() => {
     // Unload event was triggered. Thus sendBeacon method should have been called twice.
-    expect((sendBeacon as jest.Mock).mock.calls.length).toBe(0);
+    expect(sendBeacon).not.toBeCalled();
 
     // Http post services should have not been called
-    expect((fakeSplitApi.postTestImpressionsBulk as jest.Mock).mock.calls.length).toBe(1);
-    expect((fakeSplitApi.postEventsBulk as jest.Mock).mock.calls.length).toBe(1);
-    expect((fakeSplitApi.postTestImpressionsCount as jest.Mock).mock.calls.length).toBe(0);
+    expect(fakeSplitApi.postTestImpressionsBulk).toBeCalledTimes(1);
+    expect(fakeSplitApi.postEventsBulk).toBeCalledTimes(1);
+    expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
     // pre-check and call stop
     expect(global.window.removeEventListener).not.toBeCalled();

@@ -246,7 +246,7 @@ test('GaToSplit: `hits` flag param', () => {
   // send hit and assert that it was not tracked as a Split event
   (fakeStorage.events.track as jest.Mock).mockClear();
   window.ga('send', hitSample);
-  expect((fakeStorage.events.track as jest.Mock).mock.calls.length).toBe(0);
+  expect(fakeStorage.events.track).toBeCalledTimes(0);
 
   // test teardown
   gaRemove();

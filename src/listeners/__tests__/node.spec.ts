@@ -35,19 +35,19 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
   jest.spyOn(listener, 'stop');
 
   // Control asserts.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(0);
-  expect(handlerMock.mock.calls.length).toBe(0);
-  expect(processKillSpy.mock.calls.length).toBe(0);
+  expect(listener.stop).not.toBeCalled();
+  expect(handlerMock).not.toBeCalled();
+  expect(processKillSpy).not.toBeCalled();
 
   // Call function
   // @ts-expect-error
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock.mock.calls.length).toBe(1);
+  expect(handlerMock).toBeCalledTimes(1);
 
   // Clean up is called.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(1);
+  expect(listener.stop).toBeCalledTimes(1);
   // It called for kill again, so the shutdown keeps going.
   expect(processKillSpy.mock.calls).toEqual([[process.pid, 'SIGTERM']]);
 
@@ -64,21 +64,21 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
   jest.spyOn(listener, 'stop');
 
   // Control asserts.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(0);
-  expect(handlerMock.mock.calls.length).toBe(0);
-  expect(processKillSpy.mock.calls.length).toBe(0);
+  expect(listener.stop).not.toBeCalled();
+  expect(handlerMock).not.toBeCalled();
+  expect(processKillSpy).not.toBeCalled();
 
   // Call function.
   // @ts-expect-error
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock.mock.calls.length).toBe(1);
+  expect(handlerMock).toBeCalledTimes(1);
 
   // Even if the handler throws, clean up is called.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(1);
+  expect(listener.stop).toBeCalledTimes(1);
   // Even if the handler throws, it should call for kill again, so the shutdown keeps going.
-  expect(processKillSpy.mock.calls.length).toBe(1);
+  expect(processKillSpy).toBeCalledTimes(1);
   expect(processKillSpy.mock.calls).toEqual([[process.pid, 'SIGTERM']]);
 
   // Reset the kill spy since it's used on other tests.
@@ -107,17 +107,17 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock.mock.calls.length).toBe(1);
+  expect(handlerMock).toBeCalledTimes(1);
 
   // Check that the wrap up is waiting for the promise to be resolved.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(0);
-  expect(processKillSpy.mock.calls.length).toBe(0);
+  expect(listener.stop).not.toBeCalled();
+  expect(processKillSpy).not.toBeCalled();
 
   fakePromise.then(() => {
     // Clean up is called even if there is an error.
-    expect((listener.stop as jest.Mock).mock.calls.length).toBe(1);
+    expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
-    expect(processKillSpy.mock.calls.length).toBe(1);
+    expect(processKillSpy).toBeCalledTimes(1);
     expect(processKillSpy.mock.calls).toEqual([[process.pid, 'SIGTERM']]);
 
     // Reset the kill spy since it's used on other tests.
@@ -151,18 +151,18 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
   const handlerPromise = listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock.mock.calls.length).toBe(1);
+  expect(handlerMock).toBeCalledTimes(1);
 
   // Check that the wrap up is waiting for the promise to be resolved.
-  expect((listener.stop as jest.Mock).mock.calls.length).toBe(0);
-  expect(processKillSpy.mock.calls.length).toBe(0);
+  expect(listener.stop).not.toBeCalled();
+  expect(processKillSpy).not.toBeCalled();
 
   // Calling .then since the wrapUp handler does not throw.
   (handlerPromise as Promise<void>).then(() => {
     // Clean up is called.
-    expect((listener.stop as jest.Mock).mock.calls.length).toBe(1);
+    expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
-    expect(processKillSpy.mock.calls.length).toBe(1);
+    expect(processKillSpy).toBeCalledTimes(1);
     expect(processKillSpy.mock.calls).toEqual([[process.pid, 'SIGTERM']]);
 
     /* Clean up everything */
