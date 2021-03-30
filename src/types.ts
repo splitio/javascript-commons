@@ -1,4 +1,5 @@
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
+import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync } from './storages/types';
@@ -72,8 +73,7 @@ export interface ISettings {
     offlineRefreshRate: number,
     eventsPushRate: number,
     eventsQueueSize: number,
-    authRetryBackoffBase: number,
-    streamingReconnectBackoffBase: number
+    pushRetryBackoffBase: number
   },
   readonly startup: {
     readyTimeout: number,
@@ -89,7 +89,7 @@ export interface ISettings {
     auth: string,
     streaming: string
   },
-  readonly debug: boolean,
+  readonly debug: boolean | LogLevel,
   readonly version: string,
   features: SplitIO.MockedFeaturesFilePath | SplitIO.MockedFeaturesMap,
   readonly streamingEnabled: boolean,
@@ -100,7 +100,8 @@ export interface ISettings {
   readonly runtime: {
     ip: string | false
     hostname: string | false
-  }
+  },
+  readonly log: ILogger
 }
 /**
  * Log levels.
@@ -279,19 +280,12 @@ interface INodeBasicSettings extends ISharedSettings {
      */
     offlineRefreshRate?: number
     /**
-     * When using streaming mode, seconds to wait before re attempting to authenticate for push notifications.
+     * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
      * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-     * @property {number} authRetryBackoffBase
+     * @property {number} pushRetryBackoffBase
      * @default 1
      */
-    authRetryBackoffBase?: number,
-    /**
-     * When using streaming mode, seconds to wait before re attempting to connect to streaming.
-     * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-     * @property {number} streamingReconnectBackoffBase
-     * @default 1
-     */
-    streamingReconnectBackoffBase?: number,
+    pushRetryBackoffBase?: number,
   },
   /**
    * SDK Core settings for NodeJS.
@@ -347,9 +341,22 @@ export interface IStatusInterface extends IEventEmitter {
    */
   Event: EventConsts,
   /**
-   * Returns a promise that will be resolved once the SDK has finished loading.
+   * Returns a promise that will be resolved once the SDK has finished loading (SDK_READY event emitted) or rejected if the SDK has timedout (SDK_READY_TIMED_OUT event emitted).
+   * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, calling the `ready` method after the
+   * SDK had timed out will return a new promise that should eventually resolve if the SDK gets ready.
+   *
+   * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
+   * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
+   * ```
+   * try {
+   *   await client.ready().catch((e) => { throw e; });
+   *   // SDK is ready
+   * } catch(e) {
+   *   // SDK has timedout
+   * }
+   * ```
+   *
    * @function ready
-   * @deprecated Use on(sdk.Event.SDK_READY, callback: () => void) instead.
    * @returns {Promise<void>}
    */
   ready(): Promise<void>
@@ -776,19 +783,12 @@ export namespace SplitIO {
        */
       offlineRefreshRate?: number
       /**
-       * When using streaming mode, seconds to wait before re attempting to authenticate for push notifications.
+       * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
        * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-       * @property {number} authRetryBackoffBase
+       * @property {number} pushRetryBackoffBase
        * @default 1
        */
-      authRetryBackoffBase?: number,
-      /**
-       * When using streaming mode, seconds to wait before re attempting to connect to streaming.
-       * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-       * @property {number} streamingReconnectBackoffBase
-       * @default 1
-       */
-      streamingReconnectBackoffBase?: number,
+      pushRetryBackoffBase?: number,
     },
     /**
      * SDK Core settings for the browser.

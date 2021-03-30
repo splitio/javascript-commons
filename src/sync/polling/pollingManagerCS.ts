@@ -1,5 +1,4 @@
 import { ISegmentsSyncTask, ISplitsSyncTask, IPollingManagerCS } from './types';
-import { logFactory } from '../../logger/sdkLogger';
 import { forOwn } from '../../utils/lang';
 import { IReadinessManager } from '../../readiness/types';
 import { ISplitApi } from '../../services/types';
@@ -8,7 +7,8 @@ import mySegmentsSyncTaskFactory from './syncTasks/mySegmentsSyncTask';
 import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
-const log = logFactory('splitio-sync:polling-manager');
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
+import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -20,6 +20,8 @@ export default function pollingManagerCSFactory(
   readiness: IReadinessManager,
   settings: ISettings,
 ): IPollingManagerCS {
+
+  const log = settings.log;
 
   const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);
 
@@ -42,11 +44,11 @@ export default function pollingManagerCSFactory(
   }
 
   // smart pausing
-  readiness.splits.on('SDK_SPLITS_ARRIVED', () => {
+  readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
     const splitsHaveSegments = storage.splits.usesSegments();
     if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(`Turning segments data polling ${splitsHaveSegments ? 'ON' : 'OFF'}.`);
+      log.info(POLLING_SMART_PAUSING, [splitsHaveSegments ? 'ON' : 'OFF']);
       if (splitsHaveSegments) {
         startMySegmentsSyncTasks();
       } else {
@@ -60,10 +62,10 @@ export default function pollingManagerCSFactory(
 
     // smart ready
     function smartReady() {
-      if (!readiness.isReady() && !storage.splits.usesSegments()) readiness.segments.emit('SDK_SEGMENTS_ARRIVED');
+      if (!readiness.isReady() && !storage.splits.usesSegments()) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     }
     if (!storage.splits.usesSegments()) setTimeout(smartReady, 0);
-    else readiness.splits.once('SDK_SPLITS_ARRIVED', smartReady);
+    else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
 
     mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
     return mySegmentsSyncTask;
@@ -75,7 +77,7 @@ export default function pollingManagerCSFactory(
 
     // Start periodic fetching (polling)
     start() {
-      log.info('Starting polling');
+      log.info(POLLING_START);
 
       splitsSyncTask.start();
       if (storage.splits.usesSegments()) startMySegmentsSyncTasks();
@@ -83,7 +85,7 @@ export default function pollingManagerCSFactory(
 
     // Stop periodic fetching (polling)
     stop() {
-      log.info('Stopping polling');
+      log.info(POLLING_STOP);
 
       if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
       stopMySegmentsSyncTasks();

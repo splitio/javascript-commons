@@ -1,22 +1,29 @@
-import { logFactory, API } from '../sdkLogger';
-import { Logger } from '../index';
-import { LOG_LEVELS } from './index.spec';
+import { createLoggerAPI } from '../sdkLogger';
+import { Logger, LogLevels } from '../index';
+import { getLoggerLogLevel } from './sdkLogger.mock';
 
-test('SPLIT SDK LOGGER FACTORY / methods and props', () => {
-
-  expect(typeof logFactory).toBe('function'); // Importing the module should return a function.
+test('LoggerAPI / methods and props', () => {
+  // creates a LoggerAPI instance
+  const logger = new Logger();
+  const API = createLoggerAPI(logger);
 
   expect(typeof API).toBe('object'); // Our logger should expose an API object.
-  expect(typeof API.enable).toBe('function'); // API object should have enable method.
-  expect(typeof API.disable).toBe('function'); // API object should have disable method.
+
   expect(typeof API.setLogLevel).toBe('function'); // API object should have setLogLevel method.
-  expect(API.LogLevel).toEqual(LOG_LEVELS); // API object should have LogLevel prop including all available levels.
+  API.setLogLevel('INFO');
+  expect(getLoggerLogLevel(logger)).toBe('INFO'); // calling setLogLevel should update the log level.
+  // @ts-ignore, passing wrong type
+  API.setLogLevel('warn');
+  expect(getLoggerLogLevel(logger)).toBe('INFO'); // calling setLogLevel with an invalid value should not update the log level.
 
-});
+  expect(typeof API.enable).toBe('function'); // API object should have enable method.
+  API.enable();
+  expect(getLoggerLogLevel(logger)).toBe('DEBUG'); // calling enable should update logger log level to DEBUG.
 
-test('SPLIT SDK LOGGER FACTORY / create factory returned instance', () => {
-  const logger = logFactory('category', {});
+  expect(typeof API.disable).toBe('function'); // API object should have disable method.
+  API.disable();
+  expect(getLoggerLogLevel(logger)).toBe('NONE'); // calling disable should update logger log level to NONE.
 
-  expect(logger instanceof Logger).toBe(true); // Our logger should expose an API object.
+  expect(API.LogLevel).toEqual(LogLevels); // API object should have LogLevel prop including all available levels.
 
 });

@@ -1,39 +1,39 @@
 import { findIndex } from '../../utils/lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:combiner');
+import { ILogger } from '../../logger/types';
 import thenable from '../../utils/promise/thenable';
 import * as LabelsConstants from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
+import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 
-function unexpectedInputHandler() {
-  log.error('Invalid Split provided, no valid conditions found');
+export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 
-  return {
-    treatment: CONTROL,
-    label: LabelsConstants.EXCEPTION
-  };
-}
+  function unexpectedInputHandler() {
+    log.error(ERROR_ENGINE_COMBINER_IFELSEIF);
 
-function computeTreatment(predicateResults: Array<IEvaluation | undefined>) {
-  const len = predicateResults.length;
-
-  for (let i = 0; i < len; i++) {
-    const evaluation = predicateResults[i];
-
-    if (evaluation !== undefined) {
-      log.debug(`Treatment found: ${evaluation.treatment}`);
-
-      return evaluation;
-    }
+    return {
+      treatment: CONTROL,
+      label: LabelsConstants.EXCEPTION
+    };
   }
 
-  log.debug('All predicates evaluated, no treatment found.');
-  return undefined;
-}
+  function computeTreatment(predicateResults: Array<IEvaluation | undefined>) {
+    const len = predicateResults.length;
 
-export default function ifElseIfCombinerContext(predicates: IEvaluator[]): IEvaluator {
+    for (let i = 0; i < len; i++) {
+      const evaluation = predicateResults[i];
+
+      if (evaluation !== undefined) {
+        log.debug(ENGINE_COMBINER_IFELSEIF, [evaluation.treatment]);
+
+        return evaluation;
+      }
+    }
+
+    log.debug(ENGINE_COMBINER_IFELSEIF_NO_TREATMENT);
+    return undefined;
+  }
 
   function ifElseIfCombiner(key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
     // In Async environments we are going to have async predicates. There is none way to know

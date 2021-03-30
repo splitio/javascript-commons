@@ -1,12 +1,10 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_ALL } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 
-function allMatcher(runtimeAttr: string): boolean {
-  log.debug('[allMatcher] is always true');
+export default function allMatcherContext(log: ILogger) {
+  return function allMatcher(runtimeAttr: string): boolean {
+    log.debug(ENGINE_MATCHER_ALL);
 
-  return runtimeAttr != null;
-}
-
-export default function allMatcherContext() {
-  return allMatcher;
+    return runtimeAttr != null;
+  };
 }

@@ -1,7 +1,8 @@
+import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import Backoff from '../../../utils/Backoff';
-import { ISplitsSyncTask } from '../../polling/types';
+import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
 import { IUpdateWorker } from './types';
 
 /**
@@ -11,9 +12,10 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
 
   private readonly splitsCache: ISplitsCacheSync;
   private readonly splitsSyncTask: ISplitsSyncTask;
+  private readonly splitsEventEmitter: ISplitsEventEmitter;
+  private readonly segmentsSyncTask?: ISegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
-  private readonly splitsEventEmitter: ISplitsEventEmitter;
   readonly backoff: Backoff;
 
   /**
@@ -21,12 +23,13 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
    * @param {Object} splitsSyncTask task for syncing splits data
    * @param {Object} splitsEventEmitter emitter for splits data events
    */
-  constructor(splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter) {
+  constructor(splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask) {
     this.splitsCache = splitsCache;
     this.splitsSyncTask = splitsSyncTask;
+    this.splitsEventEmitter = splitsEventEmitter;
+    this.segmentsSyncTask = segmentsSyncTask;
     this.maxChangeNumber = 0;
     this.handleNewEvent = false;
-    this.splitsEventEmitter = splitsEventEmitter;
     this.put = this.put.bind(this);
     this.killSplit = this.killSplit.bind(this);
     this.__handleSplitUpdateCall = this.__handleSplitUpdateCall.bind(this);
@@ -38,10 +41,14 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
   __handleSplitUpdateCall() {
     if (this.maxChangeNumber > this.splitsCache.getChangeNumber()) {
       this.handleNewEvent = false;
-      this.splitsSyncTask.execute().then(() => {
+
+      // fetch splits revalidating data if cached
+      this.splitsSyncTask.execute(true).then(() => {
         if (this.handleNewEvent) {
           this.__handleSplitUpdateCall();
         } else {
+          // fetch new registered segments for server-side API. Not retrying on error
+          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(undefined, false, true);
           this.backoff.scheduleCall();
         }
       });
@@ -78,7 +85,7 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
     // @TODO handle retry due to errors in storage, once we allow the definition of custom async storages
     if (this.splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
       // trigger an SDK_UPDATE if Split was killed locally
-      this.splitsEventEmitter.emit('SDK_SPLITS_ARRIVED', true);
+      this.splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
     }
     // queues the SplitChanges fetch (only if changeNumber is newer)
     this.put(changeNumber);

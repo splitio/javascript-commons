@@ -1,11 +1,11 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_LESS } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 
-export default function lessThanEqualMatcherContext(ruleAttr: number) /*: function */ {
+export default function lessThanEqualMatcherContext(log: ILogger, ruleAttr: number) /*: function */ {
   return function lessThanEqualMatcher(runtimeAttr: number): boolean {
     let isLessEqualThan = runtimeAttr <= ruleAttr;
 
-    log.debug(`[lessThanEqualMatcher] is ${runtimeAttr} less than ${ruleAttr}? ${isLessEqualThan}`);
+    log.debug(ENGINE_MATCHER_LESS, [runtimeAttr, ruleAttr, isLessEqualThan]);
 
     return isLessEqualThan;
   };

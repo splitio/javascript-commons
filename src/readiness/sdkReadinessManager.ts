@@ -1,24 +1,14 @@
 import objectAssign from 'object-assign';
 import promiseWrapper from '../utils/promise/wrapper';
-import {
-  readinessManagerFactory,
-  SDK_READY,
-  SDK_READY_FROM_CACHE,
-  SDK_UPDATE,
-  SDK_READY_TIMED_OUT
-} from './readinessManager';
+import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
-import { logFactory } from '../logger/sdkLogger';
-const log = logFactory('');
+import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
+import { ILogger } from '../logger/types';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
-
-// default onRejected handler, that just logs the error, if ready promise doesn't have one.
-function defaultOnRejected(err: any) {
-  log.error(err);
-}
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -30,6 +20,7 @@ function defaultOnRejected(err: any) {
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export default function sdkReadinessManagerFactory(
+  log: ILogger,
   EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,
   internalReadyCbCount = 0,
@@ -44,7 +35,7 @@ export default function sdkReadinessManagerFactory(
   readinessManager.gate.on(NEW_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY || event === SDK_READY_TIMED_OUT) {
       if (readinessManager.isReady()) {
-        log.error(`A listener was added for ${event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT'} on the SDK, which has already fired and won't be emitted again. The callback won't be executed.`);
+        log.error(ERROR_CLIENT_LISTENER, [event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT']);
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
@@ -55,13 +46,20 @@ export default function sdkReadinessManagerFactory(
   const readyPromise = generateReadyPromise();
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
-    log.info('Split SDK is ready from cache.');
+    log.info(CLIENT_READY_FROM_CACHE);
   });
+
+  // default onRejected handler, that just logs the error, if ready promise doesn't have one.
+  function defaultOnRejected(err: any) {
+    log.error(err);
+  }
 
   function generateReadyPromise() {
     const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
       readinessManager.gate.once(SDK_READY, () => {
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn('No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.');
+        log.info(CLIENT_READY);
+
+        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(CLIENT_NO_LISTENER);
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);
@@ -75,7 +73,7 @@ export default function sdkReadinessManagerFactory(
     readinessManager,
 
     shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
     },
 
     sdkStatus: objectAssign(
@@ -89,7 +87,25 @@ export default function sdkReadinessManagerFactory(
           SDK_UPDATE,
           SDK_READY_TIMED_OUT,
         },
-        // Expose the ready promise flag
+        /**
+         * Returns a promise that will be resolved once the SDK has finished loading (SDK_READY event emitted) or rejected if the SDK has timedout (SDK_READY_TIMED_OUT event emitted).
+         * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, calling the `ready` method after the
+         * SDK had timed out will return a new promise that should eventually resolve if the SDK gets ready.
+         *
+         * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
+         * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
+         * ```
+         * try {
+         *   await client.ready().catch((e) => { throw e; });
+         *   // SDK is ready
+         * } catch(e) {
+         *   // SDK has timedout
+         * }
+         * ```
+         *
+         * @function ready
+         * @returns {Promise<void>}
+         */
         ready: () => {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {

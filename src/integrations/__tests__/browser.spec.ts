@@ -1,6 +1,7 @@
 import { GOOGLE_ANALYTICS_TO_SPLIT, SPLIT_TO_GOOGLE_ANALYTICS } from '../../utils/constants/browser';
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../../utils/constants';
 import { IIntegrationManager } from '../types';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // Mock integration modules (GaToSplit and SplitToGa).
 
@@ -17,10 +18,11 @@ const SplitToGaQueueMethod = jest.fn();
 });
 
 
-const fakeContext = {
+const fakeParams = {
   storage: 'fakeStorage',
   settings: {
-    core: 'fakeCore'
+    core: 'fakeCore',
+    log: loggerMock
   }
 };
 
@@ -44,18 +46,18 @@ describe('IntegrationsManagerFactory for browser', () => {
     expect(instance1).toBe(undefined); // The instance should be undefined if settings.integrations does not contain integrations that register a listener.
 
     let integrations: BrowserIntegration[] = [{ type: GOOGLE_ANALYTICS_TO_SPLIT }, { type: SPLIT_TO_GOOGLE_ANALYTICS }];
-    const instance2 = browserIMF(integrations, fakeContext as any) as IIntegrationManager;
-    expect((GaToSplitMock as jest.Mock).mock.calls.length).toBe(1); // GaToSplit invoked once
-    expect((SplitToGaMock as unknown as jest.Mock).mock.calls.length).toBe(1); // SplitToGa invoked once
+    const instance2 = browserIMF(integrations, fakeParams as any) as IIntegrationManager;
+    expect(GaToSplitMock).toBeCalledTimes(1); // GaToSplit invoked once
+    expect(SplitToGaMock).toBeCalledTimes(1); // SplitToGa invoked once
     expect(typeof instance2.handleImpression).toBe('function'); // The instance should implement the handleImpression method if settings.integrations has items that register a listener.
     expect(typeof instance2.handleEvent).toBe('function'); // The instance should implement the handleEvent method if settings.integrations has items that register a listener.
 
     clearMocks();
 
     integrations = [{ type: GOOGLE_ANALYTICS_TO_SPLIT }, { type: SPLIT_TO_GOOGLE_ANALYTICS }, { type: GOOGLE_ANALYTICS_TO_SPLIT }, { type: SPLIT_TO_GOOGLE_ANALYTICS }, { type: SPLIT_TO_GOOGLE_ANALYTICS }];
-    browserIMF(integrations, fakeContext as any);
-    expect((GaToSplitMock as jest.Mock).mock.calls.length).toBe(2); // GaToSplit invoked twice
-    expect((SplitToGaMock as unknown as jest.Mock).mock.calls.length).toBe(3); // SplitToGa invoked thrice
+    browserIMF(integrations, fakeParams as any);
+    expect(GaToSplitMock).toBeCalledTimes(2); // GaToSplit invoked twice
+    expect(SplitToGaMock).toBeCalledTimes(3); // SplitToGa invoked thrice
 
     clearMocks();
   });
@@ -65,9 +67,9 @@ describe('IntegrationsManagerFactory for browser', () => {
       type: 'GOOGLE_ANALYTICS_TO_SPLIT',
       prefix: 'some-prefix'
     }];
-    browserIMF(integrations, fakeContext as any);
+    browserIMF(integrations, fakeParams as any);
 
-    expect((GaToSplitMock as jest.Mock).mock.calls).toEqual([[integrations[0], fakeContext.storage, fakeContext.settings.core]]); // Invokes GaToSplit integration module with options, storage and core settings
+    expect((GaToSplitMock as jest.Mock).mock.calls).toEqual([[integrations[0], fakeParams]]); // Invokes GaToSplit integration module with options, storage and core settings
 
     clearMocks();
   });
@@ -77,9 +79,9 @@ describe('IntegrationsManagerFactory for browser', () => {
       type: 'SPLIT_TO_GOOGLE_ANALYTICS',
       events: true
     }];
-    const instance = browserIMF(integrations, fakeContext as any);
+    const instance = browserIMF(integrations, fakeParams as any);
 
-    expect((SplitToGaMock as unknown as jest.Mock).mock.calls).toEqual([[integrations[0]]]); // Invokes SplitToGa integration module with options
+    expect((SplitToGaMock as unknown as jest.Mock).mock.calls).toEqual([[fakeParams.settings.log, integrations[0]]]); // Invokes SplitToGa integration module with options
 
     const fakeImpression = 'fake'; // @ts-expect-error
     instance.handleImpression(fakeImpression);

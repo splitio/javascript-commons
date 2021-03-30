@@ -1,3 +1,4 @@
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { CONSUMER_MODE, STANDALONE_MODE } from '../../utils/constants';
 import { sdkClientMethodFactory } from '../sdkClientMethod';
 import { assertClientApi } from './testUtils';
@@ -11,7 +12,7 @@ const paramMocks = [
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: undefined,
-    settings: { mode: CONSUMER_MODE }
+    settings: { mode: CONSUMER_MODE, log: loggerMock }
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -19,7 +20,7 @@ const paramMocks = [
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: { stop: jest.fn() },
-    settings: { mode: STANDALONE_MODE }
+    settings: { mode: STANDALONE_MODE, log: loggerMock }
   }
 ];
 
@@ -39,14 +40,14 @@ test.each(paramMocks)('sdkClientMethodFactory', (params) => {
 
   // `client.destroy` method should stop internal components (other client methods where validated in `client.spec.ts`)
   client.destroy().then(() => {
-    expect(params.sdkReadinessManager.readinessManager.destroy.mock.calls.length).toBe(1);
+    expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
     expect(params.storage.destroy).toBeCalledTimes(1);
 
     if (params.syncManager) {
       expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
     }
-    if (params.signalListener) expect(params.signalListener.stop.mock.calls.length).toBe(1);
+    if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
   });
 
   // calling the function with parameters should throw an error

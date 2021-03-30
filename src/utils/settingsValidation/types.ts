@@ -15,6 +15,8 @@ export interface ISettingsValidationParams {
   storage?: (settings: ISettings) => ISettings['storage'],
   /** Integrations validator */
   integrations?: (settings: ISettings) => ISettings['integrations'],
+  /** Logger validator */
+  logger: (settings: ISettings) => ISettings['log'],
 }
 
 /**

@@ -1,9 +1,9 @@
-import { IFetch, ISplitHttpClient } from './types';
+import { IFetch, IRequestOptions, ISplitHttpClient } from './types';
 import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
-import { logFactory } from '../logger/sdkLogger';
 import { IMetadata } from '../dtos/types';
-const log = logFactory('splitio-services:service');
+import { ILogger } from '../logger/types';
+import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -15,13 +15,13 @@ const messageNoFetch = 'Global fetch API is not available.';
  * @param options global request options
  * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
  */
-export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: IMetadata, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
 
   const options = getOptions && getOptions();
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
-  if (!fetch) log.error(messageNoFetch + ' The SDK will not get ready.');
+  if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
   const headers: Record<string, string> = {
     'Accept': 'application/json',
@@ -33,15 +33,19 @@ export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getF
   if (metadata.ip) headers['SplitSDKMachineIP'] = metadata.ip;
   if (metadata.hostname) headers['SplitSDKMachineName'] = metadata.hostname;
 
-  return function httpClient(url: string, method: string = 'GET', body?: string, logErrorsAsInfo: boolean = false, extraHeaders?: Record<string, string>): Promise<Response> {
-    const rHeaders = extraHeaders ? objectAssign({}, headers, extraHeaders) : headers;
-    const request = objectAssign({ headers: rHeaders, method, body }, options);
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<Response> {
+
+    const request = objectAssign({
+      headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
+      method: reqOpts.method || 'GET',
+      body: reqOpts.body
+    }, options);
 
     // using `fetch(url, options)` signature to work with unfetch, a lightweight ponyfill of fetch API.
     return fetch ? fetch(url, request)
       // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#Checking_that_the_fetch_was_successful
       .then(response => {
-        if (!response.ok) {
+        if (!response.ok) { // eslint-disable-next-line no-throw-literal
           throw { response };
         }
         return response;
@@ -62,7 +66,7 @@ export function splitHttpClientFactory(apikey: string, metadata: IMetadata, getF
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log[logErrorsAsInfo ? 'info' : 'error'](`Response status is not OK. Status: ${resp ? resp.status : 'NO_STATUS'}. URL: ${url}. Message: ${msg}`);
+          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)

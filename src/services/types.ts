@@ -1,22 +1,21 @@
-export type IFetch = (
-  url: string,
-  options?: {
-    method?: string,
-    headers?: Record<string, string>,
-    credentials?: 'include' | 'omit',
-    body?: string
-  }
-) => Promise<Response>
+export type IRequestOptions = {
+  method?: string,
+  headers?: Record<string, string>,
+  body?: string
+};
 
-export type ISplitHttpClient = (url: string, method?: string, body?: string, logErrorsAsInfo?: boolean, extraHeaders?: Record<string, string>) => Promise<Response>
+// Reduced version of Fetch API
+export type IFetch = (url: string, options?: IRequestOptions) => Promise<Response>
+
+export type ISplitHttpClient = (url: string, options?: IRequestOptions, logErrorsAsInfo?: boolean) => Promise<Response>
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<Response>
 
-export type IFetchSplitChanges = (since: number) => Promise<Response>
+export type IFetchSplitChanges = (since: number, noCache?: boolean) => Promise<Response>
 
-export type IFetchSegmentChanges = (since: number, segmentName: string) => Promise<Response>
+export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean) => Promise<Response>
 
-export type IFetchMySegments = (userMatchingKey: string) => Promise<Response>
+export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => Promise<Response>
 
 export type IPostEventsBulk = (body: string) => Promise<Response>
 

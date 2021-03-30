@@ -1,5 +1,5 @@
-import { logFactory } from '../../../logger/sdkLogger';
-const log = logFactory('splitio-settings');
+import { WARN_INTEGRATION_INVALID } from '../../../logger/constants';
+import { ILogger } from '../../../logger/types';
 
 /**
  * This function validates `settings.integrations` object
@@ -10,8 +10,8 @@ const log = logFactory('splitio-settings');
  *
  * @returns {Array} array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
  */
-export function validateIntegrations(settings: any, integrationValidator: (integrationItem: any) => boolean, extraWarning?: string) {
-  const { integrations } = settings;
+export function validateIntegrations(settings: { log: ILogger, integrations?: any }, integrationValidator: (integrationItem: any) => boolean, extraWarning?: string) {
+  const { integrations, log } = settings;
 
   // If integrations is not an array or an empty array, we return an empty array (no integrations).
   if (!Array.isArray(integrations) || integrations.length === 0) return [];
@@ -21,7 +21,7 @@ export function validateIntegrations(settings: any, integrationValidator: (integ
 
   // Log a warning if at least one item is invalid
   const invalids = integrations.length - validIntegrations.length;
-  if (invalids) log.warn(`${invalids} integration ${invalids === 1 ? 'item' : 'items'} at settings ${invalids === 1 ? 'is' : 'are'} invalid. ${extraWarning || ''}`);
+  if (invalids) log.warn(WARN_INTEGRATION_INVALID, [invalids, invalids === 1 ? 'item' : 'items', invalids === 1 ? 'is' : 'are', extraWarning || '']);
 
   return validIntegrations;
 }

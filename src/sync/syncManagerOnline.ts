@@ -7,9 +7,8 @@ import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
 import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
-import { logFactory } from '../logger/sdkLogger';
-import { PUSH_CONNECT, PUSH_DISCONNECT } from './streaming/constants';
-export const log = logFactory('splitio-sync:sync-manager');
+import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
+import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 
 /**
  * Online SyncManager factory.
@@ -35,6 +34,8 @@ export function syncManagerOnlineFactory(
     readiness
   }: ISyncManagerFactoryParams): ISyncManagerCS {
 
+    const log = settings.log;
+
     /** Polling Manager */
     const pollingManager = pollingManagerFactory(splitApi, storage, readiness, settings);
 
@@ -46,11 +47,11 @@ export function syncManagerOnlineFactory(
     /** Submitter Manager */
     // It is not inyected via a factory as push and polling managers, because at the moment it is mandatory and the same for server-side and client-side variants
     const submitters = [
-      impressionsSyncTaskFactory(splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
-      eventsSyncTaskFactory(splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
+      impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
+      eventsSyncTaskFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
       // @TODO add telemetry submitter
     ];
-    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(splitApi.postTestImpressionsCount, storage.impressionCounts));
+    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
     const submitter = syncTaskComposite(submitters);
 
 
@@ -58,15 +59,15 @@ export function syncManagerOnlineFactory(
 
     function startPolling() {
       if (!pollingManager.isRunning()) {
-        log.info('Streaming not available. Starting periodic fetch of data.');
+        log.info(SYNC_START_POLLING);
         pollingManager.start();
       } else {
-        log.info('Streaming couldn\'t connect. Continue periodic fetch of data.');
+        log.info(SYNC_CONTINUE_POLLING);
       }
     }
 
     function stopPollingAndSyncAll() {
-      log.info('PUSH (re)connected. Syncing and stopping periodic fetch of data.');
+      log.info(SYNC_STOP_POLLING);
       // if polling, stop
       if (pollingManager.isRunning()) pollingManager.stop();
 
@@ -82,8 +83,8 @@ export function syncManagerOnlineFactory(
         // start syncing splits and segments
         if (pushManager) {
           pollingManager.syncAll();
-          pushManager.on(PUSH_CONNECT, stopPollingAndSyncAll);
-          pushManager.on(PUSH_DISCONNECT, startPolling);
+          pushManager.on(PUSH_SUBSYSTEM_UP, stopPollingAndSyncAll);
+          pushManager.on(PUSH_SUBSYSTEM_DOWN, startPolling);
           // Run in next event-loop cycle as in client-side SyncManager
           pushManager.start();
         } else {

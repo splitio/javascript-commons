@@ -1,9 +1,10 @@
 import MySegmentsCacheInLocal from '../MySegmentsCacheInLocal';
 import KeyBuilderCS from '../../KeyBuilderCS';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('SEGMENT CACHE / in LocalStorage', () => {
   const keys = new KeyBuilderCS('SPLITIO', 'user');
-  const cache = new MySegmentsCacheInLocal(keys);
+  const cache = new MySegmentsCacheInLocal(loggerMock, keys);
 
   cache.clear();
 

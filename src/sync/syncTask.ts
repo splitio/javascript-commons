@@ -1,11 +1,11 @@
-import { logFactory } from '../logger/sdkLogger';
+import { SYNC_TASK_EXECUTE, SYNC_TASK_START, SYNC_TASK_STOP } from '../logger/constants';
+import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
-const log = logFactory('splitio-sync:task');
 
 /**
  * factory of sync tasks
  */
-export default function syncTaskFactory<Input extends any[], Output>(task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
+export default function syncTaskFactory<Input extends any[], Output>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
   // flag that indicates if the task is being executed
   let executing = false;
@@ -16,7 +16,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
 
   function execute(...args: Input) {
     executing = true;
-    log.debug(`Running ${taskName}`);
+    log.debug(SYNC_TASK_EXECUTE, [taskName]);
     return task(...args).then(result => {
       executing = false;
       if (running) timeoutID = setTimeout(execute, period, ...args);
@@ -34,7 +34,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
     start(...args: Input) {
       if (!running) {
         running = true;
-        log.debug(`Starting ${taskName}. Running each ${period} millis`);
+        log.debug(SYNC_TASK_START, [taskName, period]);
         return execute(...args);
       }
     },
@@ -42,7 +42,7 @@ export default function syncTaskFactory<Input extends any[], Output>(task: (...a
     stop() {
       running = false;
       if (timeoutID) {
-        log.debug(`Stopping ${taskName}`);
+        log.debug(SYNC_TASK_STOP, [taskName]);
         clearTimeout(timeoutID);
         timeoutID = undefined;
       }

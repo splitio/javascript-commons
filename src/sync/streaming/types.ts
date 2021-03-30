@@ -1,4 +1,4 @@
-import { IMySegmentsUpdateData, INotificationError } from './SSEHandler/types';
+import { IMySegmentsUpdateData } from './SSEHandler/types';
 import { ITask } from '../types';
 import { IPollingManager, ISegmentsSyncTask } from '../polling/types';
 import { IReadinessManager } from '../../readiness/types';
@@ -8,10 +8,10 @@ import { IEventEmitter, ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
 
 // Internal SDK events, subscribed by SyncManager and PushManager
-export type PUSH_CONNECT = 'PUSH_CONNECT'
-export type PUSH_DISCONNECT = 'PUSH_DISCONNECT'
-export type PUSH_DISABLED = 'PUSH_DISABLED'
-export type SSE_ERROR = 'SSE_ERROR'
+export type PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP'
+export type PUSH_SUBSYSTEM_DOWN = 'PUSH_SUBSYSTEM_DOWN'
+export type PUSH_NONRETRYABLE_ERROR = 'PUSH_NONRETRYABLE_ERROR'
+export type PUSH_RETRYABLE_ERROR = 'PUSH_RETRYABLE_ERROR'
 
 // Update-type push notifications, handled by NotificationProcessor
 export type MY_SEGMENTS_UPDATE = 'MY_SEGMENTS_UPDATE';
@@ -23,7 +23,7 @@ export type SPLIT_UPDATE = 'SPLIT_UPDATE';
 export type CONTROL = 'CONTROL';
 export type OCCUPANCY = 'OCCUPANCY';
 
-export type IPushEvent = PUSH_CONNECT | PUSH_DISCONNECT | PUSH_DISABLED | SSE_ERROR | MY_SEGMENTS_UPDATE | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL
+export type IPushEvent = PUSH_SUBSYSTEM_UP | PUSH_SUBSYSTEM_DOWN | PUSH_NONRETRYABLE_ERROR | PUSH_RETRYABLE_ERROR | MY_SEGMENTS_UPDATE | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL
 
 /**
  * EventEmitter used as Feedback Loop between the SyncManager and PushManager,
@@ -35,7 +35,6 @@ export interface IPushEventEmitter extends IEventEmitter {
     T extends SEGMENT_UPDATE ? [changeNumber: number, segmentName: string] :
     T extends SPLIT_UPDATE ? [changeNumber: number] :
     T extends SPLIT_KILL ? [changeNumber: number, splitName: string, defaultTreatment: string] :
-    T extends SSE_ERROR ? [error: INotificationError] :
     any[]) => void): this;
 
   on<T extends IPushEvent>(event: T, listener: (...args:
@@ -43,7 +42,6 @@ export interface IPushEventEmitter extends IEventEmitter {
     T extends SEGMENT_UPDATE ? [changeNumber: number, segmentName: string] :
     T extends SPLIT_UPDATE ? [changeNumber: number] :
     T extends SPLIT_KILL ? [changeNumber: number, splitName: string, defaultTreatment: string] :
-    T extends SSE_ERROR ? [error: INotificationError] :
     any[]) => void): this;
 
   emit<T extends IPushEvent>(event: T, ...args:
@@ -51,7 +49,6 @@ export interface IPushEventEmitter extends IEventEmitter {
     T extends SEGMENT_UPDATE ? [changeNumber: number, segmentName: string] :
     T extends SPLIT_UPDATE ? [changeNumber: number] :
     T extends SPLIT_KILL ? [changeNumber: number, splitName: string, defaultTreatment: string] :
-    T extends SSE_ERROR ? [error: INotificationError] :
     any[]): boolean;
 }
 

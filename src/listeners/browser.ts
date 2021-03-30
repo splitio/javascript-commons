@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
-import { logFactory } from '../logger/sdkLogger';
 import { IRecorderCacheConsumerSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSyncTask';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSyncTask';
@@ -11,11 +10,11 @@ import { ImpressionsPayload } from '../sync/submitters/types';
 import { MaybeThenable } from '../dtos/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
 import objectAssign from 'object-assign';
-
-const log = logFactory('splitio-client:cleanup');
+import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
+const EVENT_NAME = 'for unload page event.';
 
 /**
  * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
@@ -41,7 +40,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   start() {
     if (typeof window !== 'undefined' && window.addEventListener) {
-      log.debug('Registering flush handler when unload page event is triggered.');
+      this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
       window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }
@@ -53,7 +52,7 @@ export default class BrowserSignalListener implements ISignalListener {
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {
-      log.debug('Deregistering flush handler when unload page event is triggered.');
+      this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
       window.removeEventListener(UNLOAD_DOM_EVENT, this.flushData);
     }
   }

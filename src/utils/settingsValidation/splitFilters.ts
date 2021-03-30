@@ -1,9 +1,9 @@
 import { STANDALONE_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
-import { logFactory } from '../../logger/sdkLogger';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
-const log = logFactory('');
+import { ILogger } from '../../logger/types';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, logPrefixSettings } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -37,9 +37,9 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  *
  * @throws Error if the sanitized list exceeds the length indicated by `maxLength`
  */
-function validateSplitFilter(type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
+function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(values, 'Factory instantiation', `${type} filter`, `${type} filter value`);
+  let result = validateSplits(log, values, logPrefixSettings, `${type} filter`, `${type} filter value`);
 
   if (result) {
     // check max length
@@ -75,6 +75,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 /**
  * Validates `splitFilters` configuration object and parses it into a query string for filtering splits on `/splitChanges` fetch.
  *
+ * @param {ILogger} log logger
  * @param {any} maybeSplitFilters split filters configuration param provided by the user
  * @param {string} mode settings mode
  * @returns it returns an object with the following properties:
@@ -84,7 +85,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *
  * @throws Error if the some of the grouped list of values per filter exceeds the max allowed length
  */
-export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
+export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
   // Validation result schema
   const res = {
     validFilters: [],
@@ -96,12 +97,12 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
   if (mode !== STANDALONE_MODE) {
-    log.warn(`Factory instantiation: split filters have been configured but will have no effect if mode is not '${STANDALONE_MODE}', since synchronization is being deferred to an external tool.`);
+    log.warn(WARN_SPLITS_FILTER_IGNORED, [STANDALONE_MODE]);
     return res;
   }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
-    log.warn('Factory instantiation: splitFilters configuration must be a non-empty array of filter objects.');
+    log.warn(WARN_SPLITS_FILTER_EMPTY);
     return res;
   }
 
@@ -112,19 +113,19 @@ export function validateSplitFilters(maybeSplitFilters: any, mode: string): ISpl
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
       return true;
     } else {
-      log.warn(`Factory instantiation: split filter at position '${index}' is invalid. It must be an object with a valid filter type ('byName' or 'byPrefix') and a list of 'values'.`);
+      log.warn(WARN_SPLITS_FILTER_INVALID, [index]);
     }
     return false;
   });
 
   // By filter type, remove invalid and duplicated values and order them
   FILTERS_METADATA.forEach(({ type, maxLength }) => {
-    if (res.groupedFilters[type].length > 0) res.groupedFilters[type] = validateSplitFilter(type, res.groupedFilters[type], maxLength);
+    if (res.groupedFilters[type].length > 0) res.groupedFilters[type] = validateSplitFilter(log, type, res.groupedFilters[type], maxLength);
   });
 
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
-  log.debug(`Factory instantiation: splits filtering criteria is '${res.queryString}'.`);
+  log.debug(SETTINGS_SPLITS_FILTER, [res.queryString]);
 
   return res;
 }

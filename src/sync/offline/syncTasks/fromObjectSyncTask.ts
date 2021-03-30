@@ -1,5 +1,4 @@
 import { forOwn } from '../../../utils/lang';
-import { logFactory } from '../../../logger/sdkLogger';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
@@ -8,7 +7,8 @@ import syncTaskFactory from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
-const log = logFactory('splitio-producer:offline');
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
@@ -20,6 +20,8 @@ export function fromObjectUpdaterFactory(
   settings: ISettings,
 ): () => Promise<boolean> {
 
+  const log = settings.log;
+
   return function objectUpdater() {
     const splits: [string, string][] = [];
     let loadError = null;
@@ -28,12 +30,11 @@ export function fromObjectUpdaterFactory(
       splitsMock = splitsParser(settings);
     } catch (err) {
       loadError = err;
-      log.error(`There was an issue loading the mock Splits data, no changes will be applied to the current cache. ${err}`);
+      log.error(ERROR_SYNC_OFFLINE_LOADING, [err]);
     }
 
     if (!loadError && splitsMock) {
-      log.debug('Splits data: ');
-      log.debug(JSON.stringify(splitsMock));
+      log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
       forOwn(splitsMock, function (val, name) {
         splits.push([
@@ -55,8 +56,8 @@ export function fromObjectUpdaterFactory(
         storage.splits.clear(),
         storage.splits.addSplits(splits)
       ]).then(() => {
-        readiness.splits.emit('SDK_SPLITS_ARRIVED');
-        readiness.segments.emit('SDK_SEGMENTS_ARRIVED');
+        readiness.splits.emit(SDK_SPLITS_ARRIVED);
+        readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         return true;
       });
     } else {
@@ -75,6 +76,7 @@ export default function fromObjectSyncTaskFactory(
   settings: ISettings
 ): ISyncTask<[], boolean> {
   return syncTaskFactory(
+    settings.log,
     fromObjectUpdaterFactory(
       splitsParser,
       storage,
@@ -82,6 +84,6 @@ export default function fromObjectSyncTaskFactory(
       settings,
     ),
     settings.scheduler.offlineRefreshRate,
-    'offlineUpdater'
+    'offlineUpdater',
   );
 }

@@ -7,14 +7,21 @@ import { IReadinessManager, ISplitsEventEmitter } from '../../../readiness/types
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISplitsSyncTask } from '../types';
-import { logFactory } from '../../../logger/sdkLogger';
 import splitChangesFetcherFactory from '../fetchers/splitChangesFetcher';
 import { IFetchSplitChanges } from '../../../services/types';
 import thenable from '../../../utils/promise/thenable';
 import { ISettings } from '../../../types';
-const log = logFactory('splitio-sync:split-changes');
+import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
+import { ILogger } from '../../../logger/types';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 
-type ISplitChangesUpdater = () => Promise<boolean>
+type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
+
+// Checks that all registered segments have been fetched (changeNumber !== -1).
+// @TODO review together with Segments and MySegments storage APIs
+function checkAllSegmentsExist(segmentsStorage: ISegmentsCacheSync) {
+  return segmentsStorage.getRegisteredSegments().every(segmentName => segmentsStorage.getChangeNumber(segmentName) !== -1);
+}
 
 /**
  * Collect segments from a raw split definition.
@@ -75,12 +82,13 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
  * Exported for testing purposes.
  */
 export function splitChangesUpdaterFactory(
+  log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
   splitsCache: ISplitsCacheSync,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
-  requestTimeoutBeforeReady?: number,
-  retriesOnFailureBeforeReady?: number
+  requestTimeoutBeforeReady: number,
+  retriesOnFailureBeforeReady: number,
 ): ISplitChangesUpdater {
 
   let startingUp = true;
@@ -97,67 +105,71 @@ export function splitChangesUpdaterFactory(
   }
 
   /**
-   * @param {number} since current changeNumber at splitsCache
-   * @param {number} retry current number of retry attemps
-   */
-  function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
-    log.debug(`Spin up split update using since = ${since}`);
-
-    const fetcherPromise = splitChangesFetcher(since, _promiseDecorator)
-      .then((splitChanges: ISplitChangesResponse) => {
-        startingUp = false;
-
-        const mutation = computeSplitsMutation(splitChanges.splits);
-
-        log.debug(`New splits ${mutation.added.length}`);
-        log.debug(`Removed splits ${mutation.removed.length}`);
-        log.debug(`Segment names collected ${mutation.segments.length}`);
-
-        // Write into storage
-        // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
-        return Promise.all([
-          // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
-          splitsCache.setChangeNumber(splitChanges.till),
-          splitsCache.addSplits(mutation.added),
-          splitsCache.removeSplits(mutation.removed),
-          segmentsCache.registerSegments(mutation.segments)
-        ]).then(() => {
-          if (since !== splitChanges.till || readyOnAlreadyExistentState) {
-            readyOnAlreadyExistentState = false;
-            splitsEventEmitter.emit('SDK_SPLITS_ARRIVED');
-          }
-          return true;
-        });
-      })
-      .catch(error => {
-        // handle user callback errors
-        if (!(error instanceof SplitError)) {
-          setTimeout(() => { throw error; }, 0);
-          startingUp = false; // Stop retrying.
-        }
-
-        log.warn(`Error while doing fetch of Splits. ${error}`);
-
-        if (startingUp && retriesOnFailureBeforeReady && retriesOnFailureBeforeReady > retry) {
-          retry += 1;
-          log.info(`Retrying download of splits #${retry}. Reason: ${error}`);
-          return _splitChangesUpdater(since, retry);
-        } else {
-          startingUp = false;
-        }
-        return false;
-      });
-
-    // After triggering the requests, if we have cached splits information let's notify that.
-    if (startingUp && splitsCache.checkCache()) splitsEventEmitter.emit('SDK_SPLITS_CACHE_LOADED');
-
-    return fetcherPromise;
-  }
-
-  /**
    * SplitChanges updater returns a promise that resolves with a `false` boolean value if it fails to fetch splits or synchronize them with the storage.
+   *
+   * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function splitChangesUpdater() {
+  return function splitChangesUpdater(noCache?: boolean) {
+
+    /**
+     * @param {number} since current changeNumber at splitsCache
+     * @param {number} retry current number of retry attemps
+     */
+    function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
+      log.debug(SYNC_SPLITS_FETCH, [since]);
+
+      const fetcherPromise = splitChangesFetcher(since, noCache, _promiseDecorator)
+        .then((splitChanges: ISplitChangesResponse) => {
+          startingUp = false;
+
+          const mutation = computeSplitsMutation(splitChanges.splits);
+
+          log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
+          log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
+          log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
+
+          // Write into storage
+          // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
+          return Promise.all([
+            // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
+            splitsCache.setChangeNumber(splitChanges.till),
+            splitsCache.addSplits(mutation.added),
+            splitsCache.removeSplits(mutation.removed),
+            segmentsCache.registerSegments(mutation.segments)
+          ]).then(() => {
+            // For server-side SDK, we must check that all registered segments have been fetched
+            if (readyOnAlreadyExistentState || (since !== splitChanges.till && checkAllSegmentsExist(segmentsCache))) {
+              readyOnAlreadyExistentState = false;
+              splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
+            }
+            return true;
+          });
+        })
+        .catch(error => {
+          // handle user callback errors
+          if (!(error instanceof SplitError)) {
+            setTimeout(() => { throw error; }, 0);
+            startingUp = false; // Stop retrying.
+          }
+
+          log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
+
+          if (startingUp && retriesOnFailureBeforeReady > retry) {
+            retry += 1;
+            log.info(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
+            return _splitChangesUpdater(since, retry);
+          } else {
+            startingUp = false;
+          }
+          return false;
+        });
+
+      // After triggering the requests, if we have cached splits information let's notify that.
+      if (startingUp && splitsCache.checkCache()) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
+
+      return fetcherPromise;
+    }
+
     const since = splitsCache.getChangeNumber();
     // Adding an extra promise to keep the fetch call asynchronous
     const sincePromise: Promise<number> = thenable(since) ? since : Promise.resolve(since);
@@ -172,15 +184,17 @@ export default function splitsSyncTaskFactory(
   settings: ISettings,
 ): ISplitsSyncTask {
   return syncTaskFactory(
+    settings.log,
     splitChangesUpdaterFactory(
+      settings.log,
       splitChangesFetcherFactory(fetchSplitChanges),
       storage.splits,
       storage.segments,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
-      settings.startup.retriesOnFailureBeforeReady
+      settings.startup.retriesOnFailureBeforeReady,
     ),
     settings.scheduler.featuresRefreshRate,
-    'splitChangesUpdater'
+    'splitChangesUpdater',
   );
 }

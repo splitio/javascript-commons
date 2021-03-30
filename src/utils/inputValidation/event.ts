@@ -1,19 +1,19 @@
+import { ERROR_EVENT_TYPE_FORMAT, ERROR_NULL, ERROR_INVALID, ERROR_EMPTY } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('');
 
 const EVENT_TYPE_REGEX = /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/;
 
-export function validateEvent(maybeEvent: any, method: string): string | false {
+export function validateEvent(log: ILogger, maybeEvent: any, method: string): string | false {
   if (maybeEvent == undefined) { // eslint-disable-line eqeqeq
-    log.error(`${method}: you passed a null or undefined event_type, event_type must be a non-empty string.`);
+    log.error(ERROR_NULL, [method]);
   } else if (!isString(maybeEvent)) {
-    log.error(`${method}: you passed an invalid event_type, event_type must be a non-empty string.`);
+    log.error(ERROR_INVALID, [method]);
   } else { // It is a string.
     if (maybeEvent.length === 0) {
-      log.error(`${method}: you passed an empty event_type, event_type must be a non-empty string.`);
+      log.error(ERROR_EMPTY, [method]);
     } else if (!EVENT_TYPE_REGEX.test(maybeEvent)) {
-      log.error(`${method}: you passed "${maybeEvent}", event_type must adhere to the regular expression /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/g. This means an event_type must be alphanumeric, cannot be more than 80 characters long, and can only include a dash, underscore, period, or colon as separators of alphanumeric characters.`);
+      log.error(ERROR_EVENT_TYPE_FORMAT, [method, maybeEvent]);
     } else {
       return maybeEvent;
     }

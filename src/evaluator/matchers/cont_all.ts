@@ -1,8 +1,8 @@
-import { logFactory } from '../../logger/sdkLogger';
-const log = logFactory('splitio-engine:matcher');
+import { ENGINE_MATCHER_CONTAINS_ALL } from '../../logger/constants';
+import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export default function containsAllMatcherContext(ruleAttr: string[]) /*: Function */ {
+export default function containsAllMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function containsAllMatcher(runtimeAttr: string[]): boolean {
     let containsAll = true;
 
@@ -15,7 +15,7 @@ export default function containsAllMatcherContext(ruleAttr: string[]) /*: Functi
       }
     }
 
-    log.debug(`[containsAllMatcher] ${runtimeAttr} contains all elements of ${ruleAttr}? ${containsAll}`);
+    log.debug(ENGINE_MATCHER_CONTAINS_ALL, [runtimeAttr, ruleAttr, containsAll]);
 
     return containsAll;
   };

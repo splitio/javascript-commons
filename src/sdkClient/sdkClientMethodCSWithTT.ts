@@ -3,18 +3,19 @@ import { ISdkClientFactoryParams } from './types';
 import { SplitIO } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
-import { logFactory } from '../logger/sdkLogger';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
 import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
-const log = logFactory('splitio');
+import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
 
 function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
   // @ts-ignore
   return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-${trafficType !== undefined ? trafficType : ''}`;
 }
+
+const method = 'Client instantiation';
 
 /**
  * Factory of client method for the client-side (browser) variant of the Isomorphic JS SDK,
@@ -22,15 +23,15 @@ function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
  * (default client) or the client method (shared clients).
  */
 export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
-  const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout } } } = params;
+  const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
 
   // Keeping the behaviour as in the isomorphic JS SDK: if settings key or TT are invalid,
   // `false` value is used as binded key/TT of the default client, which leads to several issues.
   // @TODO update when supporting non-recoverable errors
-  const validKey = validateKey(key, 'Client instantiation');
+  const validKey = validateKey(log, key, method);
   let validTrafficType;
   if (trafficType !== undefined) {
-    validTrafficType = validateTrafficType(trafficType, 'Client instantiation');
+    validTrafficType = validateTrafficType(log, trafficType, method);
   }
 
   const mainClientInstance = clientCSDecorator(
@@ -48,19 +49,19 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
   return function client(key?: SplitIO.SplitKey, trafficType?: string) {
     if (key === undefined) {
-      log.debug('Retrieving default SDK client.');
+      log.debug(RETRIEVE_CLIENT_DEFAULT);
       return mainClientInstance;
     }
 
     // Validate the key value
-    const validKey = validateKey(key, 'Shared Client instantiation');
+    const validKey = validateKey(log, key, `Shared ${method}`);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
     }
 
     let validTrafficType;
     if (trafficType !== undefined) {
-      validTrafficType = validateTrafficType(trafficType, 'Shared Client instantiation');
+      validTrafficType = validateTrafficType(log, trafficType, `Shared ${method}`);
       if (validTrafficType === false) {
         throw new Error('Shared Client needs a valid traffic type or no traffic type at all.');
       }
@@ -90,9 +91,9 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       sharedSyncManager.start();
 
-      log.info('New shared client instance created.');
+      log.info(NEW_SHARED_CLIENT);
     } else {
-      log.debug('Retrieving existing SDK client.');
+      log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
     return clientInstances[instanceId];

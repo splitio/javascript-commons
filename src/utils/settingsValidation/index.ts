@@ -1,10 +1,8 @@
 import { merge } from '../lang';
 import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { API } from '../../logger/sdkLogger';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
-import { LogLevel } from '../../types';
 import { ISettingsInternal, ISettingsValidationParams } from './types';
 
 const base = {
@@ -39,10 +37,8 @@ const base = {
     eventsPushRate: 60,
     // how many events will be queued before flushing
     eventsQueueSize: 500,
-    // backoff base seconds to wait before re attempting to authenticate for push notifications
-    authRetryBackoffBase: 1,
-    // backoff base seconds to wait before re attempting to connect to streaming
-    streamingReconnectBackoffBase: 1
+    // backoff base seconds to wait before re attempting to connect to push notifications
+    pushRetryBackoffBase: 1,
   },
 
   urls: {
@@ -78,23 +74,14 @@ const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED
-  }
+  },
+
+  // Logger
+  log: undefined
 };
 
 function fromSecondsToMillis(n: number) {
   return Math.round(n * 1000);
-}
-
-function setupLogger(debugValue: any) {
-  if (typeof debugValue === 'boolean') {
-    if (debugValue) {
-      API.enable();
-    } else {
-      API.disable();
-    }
-  } else if (typeof debugValue === 'string') {
-    API.setLogLevel(debugValue as LogLevel);
-  }
 }
 
 /**
@@ -105,10 +92,15 @@ function setupLogger(debugValue: any) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations } = validationParams;
+  const { defaults, runtime, storage, integrations, logger } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
+
+  // ensure a valid logger.
+  // First thing to validate, since other validators might use the logger.
+  const log = logger(withDefaults); // @ts-ignore, modify readonly prop
+  withDefaults.log = log;
 
   // Scheduler periods
   withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
@@ -124,14 +116,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
 
   // ensure a valid Storage based on mode defined.
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
-
-  setupLogger(withDefaults.debug);
 
   // Although `key` is mandatory according to TS declaration files, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
   if (withDefaults.mode === LOCALHOST_MODE && withDefaults.core.key === undefined) {
@@ -139,30 +129,29 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // Current ip/hostname information
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
-  // @ts-ignore
+  // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
   // validate push options
-  if (withDefaults.streamingEnabled !== false) { // @ts-ignore
+  if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
-    withDefaults.scheduler.authRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.authRetryBackoffBase);
-    withDefaults.scheduler.streamingReconnectBackoffBase = fromSecondsToMillis(withDefaults.scheduler.streamingReconnectBackoffBase);
+    withDefaults.scheduler.pushRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.pushRetryBackoffBase);
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(withDefaults.sync.splitFilters, withDefaults.mode);
-  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters; // @ts-ignore
+  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
+  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
   // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(withDefaults.sync.impressionsMode);
+  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
 
   return withDefaults;
 }

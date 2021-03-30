@@ -1,12 +1,13 @@
 import Redis from 'ioredis';
 import SplitsCacheInRedis from '../SplitsCacheInRedis';
 import KeyBuilderSS from '../../KeyBuilderSS';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('SPLITS CACHE / Redis', async () => {
   const connection = new Redis();
   // @ts-expect-error
   const keys = new KeyBuilderSS();
-  const cache = new SplitsCacheInRedis(keys, connection);
+  const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
 
   await cache.clear();
 
@@ -55,7 +56,7 @@ test('SPLITS CACHE / Redis / trafficTypeExists tests', async () => {
   const connection = new Redis();
   // @ts-expect-error
   const keys = new KeyBuilderSS(prefix);
-  const cache = new SplitsCacheInRedis(keys, connection);
+  const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
 
   const testTTName = 'tt_test_name';
   const testTTNameNoCount = 'tt_test_name_2';
