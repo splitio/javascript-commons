@@ -1,4 +1,4 @@
-0.0.1-beta1 (February 5, 2021)
+0.1.0 (March 30, 2021)
  - Initial public release. It includes common modules to be consumed by the different Split implementations written in JavaScript. Based on the original JS SDK in the `javascript-client` repository.
  - It's designed with a modular approach, with the following goals in mind:
    - Dependents should be able to include the modules that are needed for, as an example, a storage.
