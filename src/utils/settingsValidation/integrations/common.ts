@@ -21,7 +21,7 @@ export function validateIntegrations(settings: { log: ILogger, integrations?: an
 
   // Log a warning if at least one item is invalid
   const invalids = integrations.length - validIntegrations.length;
-  if (invalids) log.warn(WARN_INTEGRATION_INVALID, [invalids, invalids === 1 ? 'item' : 'items', invalids === 1 ? 'is' : 'are', extraWarning || '']);
+  if (invalids) log.warn(WARN_INTEGRATION_INVALID, [invalids, extraWarning || '']);
 
   return validIntegrations;
 }

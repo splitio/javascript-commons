@@ -36,7 +36,7 @@ export function validateAndTrackApiKey(log: ILogger, maybeApiKey: any): string |
         log.warn(WARN_API_KEY, ['an instance of the Split factory']);
       }
     } else {
-      log.warn(WARN_API_KEY, [`${usedKeysMap[apiKey]} ${usedKeysMap[apiKey] === 1 ? 'factory' : 'factories'} with this API Key`]);
+      log.warn(WARN_API_KEY, [`${usedKeysMap[apiKey]} factory/ies with this API Key`]);
       usedKeysMap[apiKey]++;
     }
   }
