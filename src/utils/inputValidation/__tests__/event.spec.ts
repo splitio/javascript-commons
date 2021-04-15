@@ -47,7 +47,7 @@ describe('INPUT VALIDATION for Event types', () => {
       const expectedLog = invalidEvents[i]['msg'];
 
       expect(validateEvent(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid event types should always return false.
-      expect(loggerMock.error).toBeCalledWith(expectedLog, expectedLog === ERROR_EVENT_TYPE_FORMAT ? ['test_method', invalidValue] : ['test_method']); // Should log the error for the invalid event type.
+      expect(loggerMock.error).toBeCalledWith(expectedLog, expectedLog === ERROR_EVENT_TYPE_FORMAT ? ['test_method', invalidValue] : ['test_method', 'event_type']); // Should log the error for the invalid event type.
 
       loggerMock.error.mockClear();
     }

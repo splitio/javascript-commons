@@ -25,7 +25,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_LOWERCASE_TRAFFIC_TYPE, '%s: traffic_type_name should be all lowercase - converting string to lowercase.'],
   [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding split in this environment, make sure you\'re tracking your events to a valid traffic type defined in the web console.'],
   // initialization / settings validation
-  [c.WARN_INTEGRATION_INVALID, c.logPrefixSettings+': %s integration %s at settings %s invalid. %s'],
+  [c.WARN_INTEGRATION_INVALID, c.logPrefixSettings+': %s integration item(s) at settings is invalid. %s'],
   [c.WARN_SPLITS_FILTER_IGNORED, c.logPrefixSettings+': split filters have been configured but will have no effect if mode is not "%s", since synchronization is being deferred to an external tool.'],
   [c.WARN_SPLITS_FILTER_INVALID, c.logPrefixSettings+': split filter at position %s is invalid. It must be an object with a valid filter type ("byName" or "byPrefix") and a list of "values".'],
   [c.WARN_SPLITS_FILTER_EMPTY, c.logPrefixSettings+': splitFilters configuration must be a non-empty array of filter objects.'],
