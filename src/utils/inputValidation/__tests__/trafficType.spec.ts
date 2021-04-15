@@ -59,7 +59,7 @@ describe('INPUT VALIDATION for Traffic Types', () => {
       const expectedLog = invalidTrafficTypes[i]['msg'];
 
       expect(validateTrafficType(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid traffic types should always return false.
-      expect(loggerMock.error.mock.calls[i]).toEqual([expectedLog, ['test_method']]); // Should log the error for the invalid traffic type.
+      expect(loggerMock.error.mock.calls[i]).toEqual([expectedLog, ['test_method', 'traffic_type']]); // Should log the error for the invalid traffic type.
     }
 
     expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
