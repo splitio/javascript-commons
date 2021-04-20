@@ -12,7 +12,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.IMPRESSION_QUEUEING, c.logPrefixImpressionsTracker +'Queueing corresponding impression.'],
   [c.NEW_SHARED_CLIENT, ' New shared client instance created.'],
   [c.NEW_FACTORY, ' New Split SDK instance created.'],
-  [c.EVENTS_TRACKER_SUCCESS, c.logPrefixEventsTracker + 'Successfully qeued %s'],
+  [c.EVENTS_TRACKER_SUCCESS, c.logPrefixEventsTracker + 'Successfully queued %s'],
   [c.IMPRESSIONS_TRACKER_SUCCESS, c.logPrefixImpressionsTracker + 'Successfully stored %s impression(s).'],
 
   // synchronizer
