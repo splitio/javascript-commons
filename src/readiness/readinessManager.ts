@@ -63,8 +63,11 @@ export function readinessManagerFactory(
 
   function checkIsReadyFromCache() {
     if (!isReadyFromCache && splits.splitsCacheLoaded) {
-      isReadyFromCache = true;
-      gate.emit(SDK_READY_FROM_CACHE);
+      // Make it async, in case user callbacks throw an exception
+      setTimeout(() => {
+        isReadyFromCache = true;
+        gate.emit(SDK_READY_FROM_CACHE);
+      }, 0);
     }
   }
 
