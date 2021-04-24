@@ -4,7 +4,6 @@ import { ISegmentChangesFetcher } from './types';
 
 function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, segmentName: string, noCache?: boolean): Promise<ISegmentChangesResponse[]> {
   return fetchSegmentChanges(since, segmentName, noCache)
-    // no need to handle json parsing errors as SplitError, since errors are handled differently for segments
     .then(resp => resp.json())
     .then((json: ISegmentChangesResponse) => {
       let { since, till } = json;

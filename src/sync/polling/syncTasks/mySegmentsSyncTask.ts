@@ -1,7 +1,6 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from '../../../storages/types';
 import { IReadinessManager, ISegmentsEventEmitter } from '../../../readiness/types';
-import { SplitError } from '../../../utils/lang/errors';
 import timeout from '../../../utils/promise/timeout';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
@@ -43,7 +42,7 @@ function mySegmentsUpdaterFactory(
     // mySegmentsPromise = tracker.start(tracker.TaskNames.MY_SEGMENTS_FETCH, startingUp ? metricCollectors : false, mySegmentsPromise);
   }
 
-  // @TODO if allowing custom storages, handle async execution and wrap errors as SplitErrors to distinguish from user callback errors
+  // @TODO if allowing custom storages, handle async execution
   function updateSegments(segments: string[]) {
     // Update the list of segment names available
     const shouldNotifyUpdate = mySegmentsCache.resetSegments(segments);
@@ -69,8 +68,6 @@ function mySegmentsUpdaterFactory(
       });
 
     return updaterPromise.catch(error => {
-      // handle user callback errors
-      if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
 
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;

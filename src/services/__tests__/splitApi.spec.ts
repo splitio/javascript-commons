@@ -2,7 +2,6 @@
 import { splitApiFactory } from '../splitApi';
 import { ISettings } from '../../types';
 import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
-import { SplitError } from '../../utils/lang/errors';
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
 
@@ -61,7 +60,6 @@ describe('splitApi', () => {
 
     // Invoking any Service method, returns a rejected promise with Split error
     splitApi.fetchAuth().catch(error => {
-      expect(error).toBeInstanceOf(SplitError);
       expect(error.message).toBe('Global fetch API is not available.');
       done();
     });

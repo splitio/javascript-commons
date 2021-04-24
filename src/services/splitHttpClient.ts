@@ -1,5 +1,4 @@
 import { IFetch, IRequestOptions, ISplitHttpClient } from './types';
-import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { IMetadata } from '../dtos/types';
 import { ILogger } from '../logger/types';
@@ -69,8 +68,10 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
           log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
-        // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
-        throw new SplitNetworkError(msg, resp && resp.status);
-      }) : Promise.reject(new SplitError(messageNoFetch));
+        const networkError = new Error(msg);
+        // @ts-ignore. Passes `undefined` as statusCode if not an HTTP error (resp === undefined)
+        networkError.statusCode = resp && resp.status;
+        throw networkError;
+      }) : Promise.reject(new Error(messageNoFetch));
   };
 }

@@ -1,4 +1,3 @@
-import { SplitError } from '../../../utils/lang/errors';
 import { IFetchMySegments } from '../../../services/types';
 import { IMySegmentsResponseItem } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
@@ -20,8 +19,7 @@ export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegmen
 
     // Extract segment names
     return mySegmentsPromise
-      // JSON parsing errors are handled as SplitErrors, to distinguish from user callback errors
-      .then(resp => resp.json().catch(error => { throw new SplitError(error.message); }))
+      .then(resp => resp.json())
       .then(json => json.mySegments.map((segment: IMySegmentsResponseItem) => segment.name));
   };
 

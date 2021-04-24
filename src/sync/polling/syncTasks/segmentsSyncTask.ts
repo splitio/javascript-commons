@@ -3,7 +3,6 @@ import { ISegmentsCacheSync, IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISegmentChangesResponse } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
-import { SplitError } from '../../../utils/lang/errors';
 import syncTaskFactory from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
 import segmentChangesFetcherFactory from '../fetchers/segmentChangesFetcher';
@@ -91,8 +90,6 @@ function segmentChangesUpdaterFactory(
       if (shouldUpdateFlags.indexOf(-1) !== -1) return false;
       return true;
     }).catch(error => {
-      // handle user callback errors
-      if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
 
       if (error.statusCode === 403) {
         // @TODO although factory status is destroyed, synchronization is not stopped

@@ -1,4 +1,3 @@
-import { SplitError } from '../../../utils/lang/errors';
 import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
@@ -129,7 +128,7 @@ export function splitChangesUpdaterFactory(
           log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
-          // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
+          // @TODO if allowing custom storages, handle consistency/atomicity of operations
           return Promise.all([
             // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
             splitsCache.setChangeNumber(splitChanges.till),
@@ -146,11 +145,6 @@ export function splitChangesUpdaterFactory(
           });
         })
         .catch(error => {
-          // handle user callback errors
-          if (!(error instanceof SplitError)) {
-            setTimeout(() => { throw error; }, 0);
-            startingUp = false; // Stop retrying.
-          }
 
           log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
 
