@@ -40,8 +40,7 @@ export const wrapperWithValuesToSanitize = {
   incr: () => Promise.resolve('1'),
   decr: () => Promise.resolve('0'),
   getMany: () => Promise.resolve(['1', null, false, true, '2', null]),
-  connect: () => Promise.resolve(1),
-  close: () => Promise.resolve(0),
+  connect: () => Promise.resolve(1)
 };
 
 const SANITIZED_RESULTS = {
@@ -52,8 +51,7 @@ const SANITIZED_RESULTS = {
   incr: false,
   decr: false,
   getMany: ['1', null, '2', null],
-  connect: false,
-  close: false
+  connect: false
 };
 
 const VALID_METHOD_CALLS = {
@@ -109,7 +107,7 @@ describe('Wrapper Adapter', () => {
         expect(true).toBe(false); // promise shouldn't be resolved
       } catch (e) {
         expect(e).toBeInstanceOf(SplitError);
-        expect(loggerMock.error).toHaveBeenCalledWith(`${logPrefix} wrapper '${method}' operation threw an error. Message: ${e.message}`);
+        expect(loggerMock.error).toHaveBeenCalledWith(`${logPrefix} Wrapper '${method}' operation threw an error. Message: ${e.message}`);
       }
     }
 
@@ -118,7 +116,7 @@ describe('Wrapper Adapter', () => {
 
   test('sanitize wrapper call results', async () => {
     const instance = wrapperAdapter(loggerMock, wrapperWithValuesToSanitize);
-    const methods = Object.keys(VALID_METHOD_CALLS);
+    const methods = Object.keys(SANITIZED_RESULTS);
 
     for (let i = 0; i < methods.length; i++) {
       try {
