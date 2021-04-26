@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import thenable from '../../../utils/promise/thenable';
 import { logPrefix } from '../constants';
@@ -95,7 +96,7 @@ describe('Wrapper Adapter', () => {
     expect(loggerMock.warn).not.toBeCalled();
   });
 
-  test('handle wrapper call exceptions', async () => { // @ts-ignore
+  test('handle wrapper call exceptions', async () => {
     const instance = wrapperAdapter(loggerMock, wrapperWithIssues);
     const methods = Object.keys(VALID_METHOD_CALLS);
 
@@ -115,7 +116,7 @@ describe('Wrapper Adapter', () => {
     expect(loggerMock.error).toBeCalledTimes(methods.length);
   });
 
-  test('sanitize wrapper call results', async () => { // @ts-ignore
+  test('sanitize wrapper call results', async () => {
     const instance = wrapperAdapter(loggerMock, wrapperWithValuesToSanitize);
     const methods = Object.keys(VALID_METHOD_CALLS);
 

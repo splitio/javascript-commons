@@ -33,7 +33,7 @@ function sanitizeArrayOfNullableString(val: any): (string | null)[] {
 }
 sanitizeArrayOfNullableString.type = 'Array<string | null>';
 
-const METHODS_TO_PROMISE_WRAP: [string, { (val: any): any, type: string }][] = [
+const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: string }][] = [
   ['get', sanitizeNullableString],
   ['set', sanitizeBoolean],
   ['del', sanitizeBoolean],
@@ -42,7 +42,7 @@ const METHODS_TO_PROMISE_WRAP: [string, { (val: any): any, type: string }][] = [
   ['decr', sanitizeBoolean],
   ['getMany', sanitizeArrayOfNullableString],
   ['connect', sanitizeBoolean],
-  ['close', sanitizeBoolean]
+  ['close', undefined]
 ];
 
 /**
@@ -61,7 +61,7 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
 
     // Logs error and wraps it into an SplitError object
     function handleError(e: any) {
-      log.error(`${logPrefix} wrapper '${method}' operation threw an error. Message: ${e}`);
+      log.error(`${logPrefix} Wrapper '${method}' operation threw an error. Message: ${e}`);
       return Promise.reject(new SplitError(e));
     }
 
@@ -69,7 +69,9 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
       try {
         // @ts-ignore
         return wrapper[method].apply(wrapper, arguments).then((value => {
+          if (!sanitizer) return value;
           const sanitizedValue = sanitizer(value);
+
           // if value had to be sanitized, log a warning
           if (sanitizedValue !== value) log.warn(`${logPrefix} Attempted to sanitize return value [${value}] of wrapper '${method}' operation which should be of type [${sanitizer.type}]. Sanitized and processed value => [${sanitizedValue}]`);
 
