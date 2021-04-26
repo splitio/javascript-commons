@@ -23,12 +23,12 @@ function sanitizeString(val: any): string | undefined {
   return str ? str : undefined;
 }
 
-function sanitizeArray(val: any): number[] | string[] | undefined {
+function sanitizeArray(val: any): string[] | undefined {
   const arr = Array.isArray(val) ? uniq(val.map(e => e + '')) : [];
   return arr.length ? arr : undefined;
 }
 
-function sanitizeBoolean(val: any): boolean | undefined {
+export function sanitizeBoolean(val: any): boolean | undefined {
   if (val === true || val === false) return val;
 
   if (typeof val === 'string') {

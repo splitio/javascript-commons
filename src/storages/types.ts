@@ -3,6 +3,66 @@ import { ILogger } from '../logger/types';
 import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
+/**
+ * Interface to define a custom wrapper storage.
+ */
+export interface ICustomStorageWrapper {
+  /**
+   * Returns a promise that resolves with the element associated with the specified `key`, or null if the key can't be found in the storage.
+   */
+  get: (key: string) => Promise<string | null>
+  /**
+   * Adds or updates an element with a specified `key` and a `value`.
+   * Returns a promise that resolves with a boolean value:
+   *   - true if the element existed and was updated,
+   *   - or false if the element didn't exist and was added.
+   */
+  set: (key: string, value: string) => Promise<boolean>
+  /**
+   * Removes the specified element by `key`.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the element existed and has been removed,
+   *   - or false if the element does not exist.
+   */
+  del: (key: string) => Promise<boolean>
+  /**
+   * Returns a promise that resolves with the list of element keys that match with the given `prefix`.
+   */
+  getKeysByPrefix: (prefix: string) => Promise<string[]>
+  /**
+   * Increment in 1 the given `key` value or set it in 1 if the value doesn't exist.
+   * Return a resolved promise with a boolean value:
+   *   - true if the value was incremented,
+   *   - or false if the value already existed and couldn't be parsed into a finite number.
+   * @param key
+   */
+  incr: (key: string) => Promise<boolean>
+  /**
+   * Decrement in 1 the given `key` value or set it in -1 if the value doesn't exist.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the value was decremented,
+   *   - or false if the value already existed and couldn't be parsed into a finite number.
+   * @param key
+   */
+  decr: (key: string) => Promise<boolean>
+  /**
+   * Returns a promise that resolves with the list of elements associated with the specified list of `keys`.
+   */
+  getMany: (keys: string[]) => Promise<(string | null)[]>
+
+  /**
+   * For storages that requires to be connected, like database servers.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the operation succeeded,
+   *   - or false if the operation failed.
+   */
+  connect: () => Promise<boolean>
+  /**
+   * For storages that requires to be closed, for example, to release resources.
+   */
+  close: () => Promise<void>
+}
+
 /** Splits cache */
 
 export interface ISplitsCacheBase {
