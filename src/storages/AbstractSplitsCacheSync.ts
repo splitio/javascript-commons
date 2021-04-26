@@ -19,17 +19,10 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
     return results;
   }
 
-  abstract removeSplit(name: string): number
+  abstract removeSplit(name: string): boolean
 
-  removeSplits(names: string[]): number {
-    let len = names.length;
-    let counter = 0;
-
-    for (let i = 0; i < len; i++) {
-      counter += this.removeSplit(names[i]);
-    }
-
-    return counter;
+  removeSplits(names: string[]): boolean[] {
+    return names.map(name => this.removeSplit(name));
   }
 
   abstract getSplit(name: string): string | null

@@ -33,6 +33,14 @@ export default class KeyBuilder {
     return startsWith(key, `${this.prefix}.split.`);
   }
 
+  buildSplitKeyPrefix() {
+    return `${this.prefix}.split.`;
+  }
+
+  buildSplitsWithSegmentCountKey() {
+    return `${this.prefix}.splits.usingSegments`;
+  }
+
   buildSegmentNameKey(segmentName: string) {
     return `${this.prefix}.segment.${segmentName}`;
   }

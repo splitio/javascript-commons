@@ -66,10 +66,10 @@ export interface ICustomStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplit(name: string, split: string): MaybeThenable<boolean>,
+  addSplit(name: string, split: string): MaybeThenable<boolean>, // @TODO remove as in spec
   addSplits(entries: [string, string][]): MaybeThenable<boolean[]>,
-  removeSplit(name: string): MaybeThenable<number>,
-  removeSplits(names: string[]): MaybeThenable<number>,
+  removeSplit(name: string): MaybeThenable<boolean>, // @TODO remove as in spec
+  removeSplits(names: string[]): MaybeThenable<boolean[]>,
   getSplit(name: string): MaybeThenable<string | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, string | null>>, // `fetchMany` in spec
   setChangeNumber(changeNumber: number): MaybeThenable<boolean>,
@@ -80,13 +80,14 @@ export interface ISplitsCacheBase {
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<void | boolean>,
   checkCache(): MaybeThenable<boolean>,
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
   addSplit(name: string, split: string): boolean,
   addSplits(entries: [string, string][]): boolean[]
-  removeSplit(name: string): number
-  removeSplits(names: string[]): number
+  removeSplit(name: string): boolean
+  removeSplits(names: string[]): boolean[]
   getSplit(name: string): string | null
   getSplits(names: string[]): Record<string, string | null>
   setChangeNumber(changeNumber: number): boolean
@@ -103,8 +104,8 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
   addSplit(name: string, split: string): Promise<boolean>,
   addSplits(entries: [string, string][]): Promise<boolean[]>,
-  removeSplit(name: string): Promise<number>,
-  removeSplits(names: string[]): Promise<number>,
+  removeSplit(name: string): Promise<boolean>,
+  removeSplits(names: string[]): Promise<boolean[]>,
   getSplit(name: string): Promise<string | null>,
   getSplits(names: string[]): Promise<Record<string, string | null>>,
   setChangeNumber(changeNumber: number): Promise<boolean>,
@@ -115,6 +116,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean>,
   checkCache(): Promise<boolean>,
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>
 }
 
 /** Segments cache */
