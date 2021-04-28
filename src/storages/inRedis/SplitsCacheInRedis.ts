@@ -23,21 +23,23 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
  */
 export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
+  private readonly log: ILogger;
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
-  // private redisError?: string;
+  private redisError?: string;
 
-  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+    this.log = log;
     this.redis = redis;
     this.keys = keys;
 
-    // this.redis.on('error', (e) => {
-    //   this.redisError = e;
-    // });
+    this.redis.on('error', (e) => {
+      this.redisError = e;
+    });
 
-    // this.redis.on('connect', () => {
-    //   this.redisError = undefined;
-    // });
+    this.redis.on('connect', () => {
+      this.redisError = undefined;
+    });
   }
 
   // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
@@ -91,12 +93,11 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    * Returned promise is Rejected with an SplitError if redis operation fails.
    */
   getSplit(name: string): Promise<string | null> {
-    // @TODO remove next block if not required
-    // if (this.redisError) {
-    //   this.log.error(logPrefix + this.redisError);
+    if (this.redisError) {
+      this.log.error(logPrefix + this.redisError);
 
-    //   throw this.redisError;
-    // }
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+    }
 
     return this.redis.get(this.keys.buildSplitKey(name));
   }
@@ -149,14 +150,14 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(logPrefix + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(logPrefix + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(logPrefix + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(logPrefix + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
@@ -181,12 +182,11 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    * Returned promise is Rejected with an SplitError if redis operation fails.
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
-    // @TODO remove next block if not required
-    // if (this.redisError) {
-    //   this.log.error(logPrefix + this.redisError);
+    if (this.redisError) {
+      this.log.error(logPrefix + this.redisError);
 
-    //   throw this.redisError;
-    // }
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+    }
 
     const splits: Record<string, string | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));

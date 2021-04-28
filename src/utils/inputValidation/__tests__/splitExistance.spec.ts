@@ -7,7 +7,7 @@ import { validateSplitExistance } from '../splitExistance';
 import { IReadinessManager } from '../../../readiness/types';
 import { WARN_NOT_EXISTENT_SPLIT } from '../../../logger/constants';
 
-describe('Split existance (special case)', () => {
+describe('Split existence (special case)', () => {
 
   afterEach(() => { loggerMock.mockClear(); });
 

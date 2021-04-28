@@ -17,10 +17,10 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
   private readonly wrapper: ICustomStorageWrapper;
 
   /**
-   *
-   * @param log logger instance
-   * @param keys key builder
-   * @param wrapper adapted wrapper storage
+   * Create a SplitsCache that uses a custom storage wrapper.
+   * @param log  Logger instance.
+   * @param keys  Key builder.
+   * @param wrapper  Adapted wrapper storage.
    */
   constructor(log: ILogger, keys: KeyBuilder, wrapper: ICustomStorageWrapper) {
     this.log = log;
@@ -167,7 +167,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
   }
 
   /**
-   * Check traffic type existance.
+   * Check traffic type existence.
    * The returned promise is resolved with a boolean indicating whether the TT exist or not.
    * In case of wrapper operation failures, the promise resolves with a true value, assuming that the TT might exist.
    * It will never be rejected.
@@ -180,13 +180,13 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(logPrefix + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(logPrefix + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       }).catch(e => {
-        this.log.error(logPrefix + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(logPrefix + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
