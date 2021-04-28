@@ -77,6 +77,7 @@ export const wrapperMock = {
 
   mockClear() {
     _cache = {};
+    _queues = {};
     this.get.mockClear();
     this.set.mockClear();
     this.del.mockClear();
@@ -86,5 +87,11 @@ export const wrapperMock = {
     this.getMany.mockClear();
     this.connect.mockClear();
     this.close.mockClear();
+    this.getAndSet.mockClear();
+    this.getByPrefix.mockClear();
+    this.pushItems.mockClear();
+    this.popItems.mockClear();
+    this.getItemsCount.mockClear();
+    this.itemContains.mockClear();
   }
 };
