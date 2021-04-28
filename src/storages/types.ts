@@ -8,27 +8,38 @@ import { SplitIO, ImpressionDTO } from '../types';
  */
 export interface ICustomStorageWrapper {
   /**
-   * Returns a promise that resolves with the element associated with the specified `key`, or null if the key can't be found in the storage.
+   * Return a promise that resolves with the element value associated with the specified `key`, or null if the key can't be found in the storage.
    */
   get: (key: string) => Promise<string | null>
   /**
-   * Adds or updates an element with a specified `key` and a `value`.
+   * Add or update an element with a specified `key` and `value`.
    * Returns a promise that resolves with a boolean value:
    *   - true if the element existed and was updated,
    *   - or false if the element didn't exist and was added.
    */
   set: (key: string, value: string) => Promise<boolean>
   /**
-   * Removes the specified element by `key`.
+   * Add or update an element with a specified `key` and `value`.
+   * Returns a promise that resolves with the previous value associated to the given `key`, or null if not set.
+   *   - true if the element existed and was updated,
+   *   - or false if the element didn't exist and was added.
+   */
+  getAndSet: (key: string, value: string) => Promise<string | null>
+  /**
+   * Remove the specified element by `key`.
    * Return a promise that resolves with a boolean value:
    *   - true if the element existed and has been removed,
    *   - or false if the element does not exist.
    */
   del: (key: string) => Promise<boolean>
   /**
-   * Returns a promise that resolves with the list of element keys that match with the given `prefix`.
+   * Return a promise that resolves with the list of element keys that match with the given `prefix`.
    */
   getKeysByPrefix: (prefix: string) => Promise<string[]>
+  /**
+   * Return a promise that resolves with the list of element values that match with the given `prefix`.
+   */
+  getByPrefix: (prefix: string) => Promise<string[]>
   /**
    * Increment in 1 the given `key` value or set it in 1 if the value doesn't exist.
    * Return a resolved promise with a boolean value:
@@ -46,9 +57,26 @@ export interface ICustomStorageWrapper {
    */
   decr: (key: string) => Promise<boolean>
   /**
-   * Returns a promise that resolves with the list of elements associated with the specified list of `keys`.
+   * Return a promise that resolves with the list of elements associated with the specified list of `keys`.
    */
   getMany: (keys: string[]) => Promise<(string | null)[]>
+  /**
+   * Push given `items` to `key` queue.
+   */
+  pushItems: (key: string, items: string[]) => Promise<boolean>
+  /**
+   * Pop `count` number of items from `key` queue.
+   * Return a promise that resolves with the list of removed items the removed members, or an empty array when key does not exist.
+   */
+  popItems: (key: string, count: number) => Promise<string[]>
+  /**
+   * Return a promise that resolves with the number of items at the `key` queue, or 0 when key does not exist.
+   */
+  getItemsCount: (key: string) => Promise<number>
+  /**
+   * Return a promise that resolves with true boolean value if `item` is a member of the set stored at `key`, or false otherwise.
+   */
+  itemContains: (key: string, item: string) => Promise<boolean>
 
   /**
    * For storages that requires to be connected, like database servers.

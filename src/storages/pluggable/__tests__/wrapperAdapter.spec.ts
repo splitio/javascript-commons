@@ -29,7 +29,13 @@ export const wrapperWithIssues = {
   decr: 'invalid value',
   getMany: throwsException,
   connect: rejectedPromise,
-  close: invalidThenable
+  close: invalidThenable,
+  getAndSet: 'invalid value',
+  getByPrefix: throwsException,
+  pushItems: rejectedPromise,
+  popItems: invalidThenable,
+  getItemsCount: 'invalid value',
+  itemContains: throwsException,
 };
 
 export const wrapperWithValuesToSanitize = {
@@ -40,7 +46,13 @@ export const wrapperWithValuesToSanitize = {
   incr: () => Promise.resolve('1'),
   decr: () => Promise.resolve('0'),
   getMany: () => Promise.resolve(['1', null, false, true, '2', null]),
-  connect: () => Promise.resolve(1)
+  connect: () => Promise.resolve(1),
+  getAndSet: () => Promise.resolve(true),
+  getByPrefix: () => Promise.resolve(['1', null, false, true, '2', null]),
+  pushItems: () => Promise.resolve('false'),
+  popItems: () => Promise.resolve('invalid array'),
+  getItemsCount: () => Promise.resolve('10'),
+  itemContains: () => Promise.resolve('true'),
 };
 
 const SANITIZED_RESULTS = {
@@ -51,7 +63,13 @@ const SANITIZED_RESULTS = {
   incr: false,
   decr: false,
   getMany: ['1', null, '2', null],
-  connect: false
+  connect: false,
+  getAndSet: 'true',
+  getByPrefix: ['1', '2'],
+  pushItems: false,
+  popItems: [],
+  getItemsCount: 10,
+  itemContains: true,
 };
 
 const VALID_METHOD_CALLS = {
@@ -63,7 +81,13 @@ const VALID_METHOD_CALLS = {
   'decr': ['some_key'],
   'getMany': [['some_key_1', 'some_key_2']],
   'connect': [],
-  'close': []
+  'close': [],
+  'getAndSet': ['some_key', 'some_value'],
+  'getByPrefix': ['some_prefix'],
+  'pushItems': ['some_key', ['item1', 'item2']],
+  'popItems': ['some_key'],
+  'getItemsCount': ['some_key'],
+  'itemContains': ['some_key', 'some_value'],
 };
 
 // Test target
@@ -125,7 +149,7 @@ describe('Wrapper Adapter', () => {
 
         expect(result).toEqual(SANITIZED_RESULTS[method]); // result should be sanitized
       } catch (e) {
-        expect(true).toBe(false); // promise shouldn't be rejected
+        expect(true).toBe(methods[i]); // promise shouldn't be rejected
       }
     }
 

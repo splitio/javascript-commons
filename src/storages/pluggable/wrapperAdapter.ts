@@ -1,4 +1,4 @@
-import { toString, isString } from '../../utils/lang';
+import { toString, isString, toNumber } from '../../utils/lang';
 import { sanitizeBoolean as sBoolean } from '../../evaluator/value/sanitize';
 import { ILogger } from '../../logger/types';
 import { SplitError } from '../../utils/lang/errors';
@@ -11,6 +11,11 @@ function sanitizeBoolean(val: any): boolean {
   return sBoolean(val) || false;
 }
 sanitizeBoolean.type = 'boolean';
+
+function sanitizeNumber(val: any): number {
+  return toNumber(val);
+}
+sanitizeNumber.type = 'number';
 
 function sanitizeArray(val: any): string[] {
   if (!Array.isArray(val)) return []; // if not an array, returns a new empty one
@@ -42,7 +47,13 @@ const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: str
   ['decr', sanitizeBoolean],
   ['getMany', sanitizeArrayOfNullableString],
   ['connect', sanitizeBoolean],
-  ['close', undefined]
+  ['close', undefined],
+  ['getAndSet', sanitizeNullableString],
+  ['getByPrefix', sanitizeArray],
+  ['pushItems', sanitizeBoolean],
+  ['popItems', sanitizeArray],
+  ['getItemsCount', sanitizeNumber],
+  ['itemContains', sanitizeBoolean],
 ];
 
 /**

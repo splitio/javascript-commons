@@ -1,17 +1,24 @@
 import { startsWith, toNumber } from '../../../utils/lang';
 
 let _cache: Record<string, string> = {};
+let _queues: Record<string, string[]> = {};
 
 // An in memory ICustomStorageWrapper implementation with Jest mocks
 export const wrapperMock = {
 
   _cache,
+  _queues,
 
   get: jest.fn((key => {
     return Promise.resolve(key in _cache ? _cache[key] : null);
   })),
   set: jest.fn((key: string, value: string) => {
     const result = key in _cache;
+    _cache[key] = value;
+    return Promise.resolve(result);
+  }),
+  getAndSet: jest.fn((key: string, value: string) => {
+    const result = key in _cache ? _cache[key] : null;
     _cache[key] = value;
     return Promise.resolve(result);
   }),
@@ -22,6 +29,9 @@ export const wrapperMock = {
   }),
   getKeysByPrefix: jest.fn((prefix: string) => {
     return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
+  }),
+  getByPrefix: jest.fn((prefix: string) => {
+    return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key]));
   }),
   incr: jest.fn((key: string) => {
     if (key in _cache) {
@@ -46,6 +56,21 @@ export const wrapperMock = {
   getMany: jest.fn((keys: string[]) => {
     return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] : null));
   }),
+  pushItems: jest.fn((key: string, items: string[]) => {
+    if (!(key in _queues)) _queues[key] = [];
+    _queues[key].push(...items);
+    return Promise.resolve(true);
+  }),
+  popItems: jest.fn((key: string, count: number) => {
+    return Promise.resolve(key in _queues ? _queues[key].splice(0, count) : []);
+  }),
+  getItemsCount: jest.fn((key: string) => {
+    return Promise.resolve(key in _queues ? _queues[key].length : 0);
+  }),
+  itemContains: jest.fn((key: string, item: string) => {
+    return Promise.resolve(key in _queues && _queues[key].indexOf(item) > -1 ? true : false);
+  }),
+
   // always connects and close
   connect: jest.fn(() => Promise.resolve(true)),
   close: jest.fn(() => Promise.resolve()),
@@ -62,37 +87,4 @@ export const wrapperMock = {
     this.connect.mockClear();
     this.close.mockClear();
   }
-};
-
-function throwsException() {
-  throw new Error('some error');
-}
-
-function rejectedPromise() {
-  return Promise.reject('some error');
-}
-
-// @TODO remove if not used
-export const wrapperWithExceptions = {
-  get: throwsException,
-  set: throwsException,
-  delete: throwsException,
-  getKeysByPrefix: throwsException,
-  incr: throwsException,
-  decr: throwsException,
-  getMany: throwsException,
-  connect: throwsException,
-  close: throwsException
-};
-
-export const wrapperWithRejectedPromiseResults = {
-  get: rejectedPromise,
-  set: rejectedPromise,
-  delete: rejectedPromise,
-  getKeysByPrefix: rejectedPromise,
-  incr: rejectedPromise,
-  decr: rejectedPromise,
-  getMany: rejectedPromise,
-  connect: rejectedPromise,
-  close: rejectedPromise
 };
