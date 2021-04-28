@@ -6,7 +6,7 @@ import { SplitError } from '../../../utils/lang/errors';
 
 /** Mocks */
 
-import { wrapperMock } from './wrapper.mock'; // Well implemented wrapper
+import { wrapperMock } from './wrapper.mock';
 
 function throwsException() {
   throw new Error('some error');
