@@ -202,7 +202,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
   }
 
   /**
-   * Get till number or null if it's not defined.
+   * Get till number or -1 if it's not defined.
    * The returned promise is resolved with the changeNumber or -1 if it doesn't exist or a wrapper operation fails.
    * The promise will never be rejected.
    */
@@ -230,7 +230,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
       }).catch(() => true); // If wrapper operation fails, assume we need them.
   }
 
-  // @TODO remove `clear` from SplitsStorage
+  // @TODO implement for DataLoader/Producer mode
   clear(): Promise<boolean> {
     return Promise.resolve(true);
   }

@@ -113,7 +113,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
   }
 
   /**
-   * Get till number or null if it's not defined.
+   * Get till number or -1 if it's not defined.
    *
    * @TODO pending error handling
    */

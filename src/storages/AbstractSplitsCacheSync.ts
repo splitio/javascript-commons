@@ -10,13 +10,7 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
   abstract addSplit(name: string, split: string): boolean;
 
   addSplits(entries: [string, string][]): boolean[] {
-    const results: boolean[] = [];
-
-    entries.forEach(keyValuePair => {
-      results.push(this.addSplit(keyValuePair[0], keyValuePair[1]));
-    });
-
-    return results;
+    return entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1]));
   }
 
   abstract removeSplit(name: string): boolean
