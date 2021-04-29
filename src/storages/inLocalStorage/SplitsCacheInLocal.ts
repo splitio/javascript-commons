@@ -119,7 +119,7 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
-  removeSplit(name: string): number {
+  removeSplit(name: string): boolean {
     try {
       const split = this.getSplit(name);
       localStorage.removeItem(this.keys.buildSplitKey(name));
@@ -127,10 +127,10 @@ export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const parsedSplit = JSON.parse(split as string);
       this._decrementCounts(parsedSplit);
 
-      return 1;
+      return true;
     } catch (e) {
       this.log.error(logPrefix + e);
-      return 0;
+      return false;
     }
   }
 

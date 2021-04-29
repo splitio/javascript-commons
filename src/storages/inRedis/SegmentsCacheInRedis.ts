@@ -53,6 +53,7 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     });
   }
 
+  // @TODO remove: not used and not part of interface
   registerSegment(segment: string) {
     return this.registerSegments([segment]);
   }

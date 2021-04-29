@@ -1,4 +1,4 @@
-import { metadataBuilder } from '../index';
+import { metadataBuilder } from '../../metadataBuilder';
 import { UNKNOWN } from '../../../utils/constants';
 import { IMetadata } from '../../../dtos/types';
 

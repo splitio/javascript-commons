@@ -26,10 +26,6 @@ export default class KeyBuilderCS extends KeyBuilder {
       return builtSegmentKeyName.substr(prefix.length);
   }
 
-  buildSplitsWithSegmentCountKey() {
-    return `${this.prefix}.splits.usingSegments`;
-  }
-
   buildLastUpdatedKey() {
     return `${this.prefix}.splits.lastUpdated`;
   }
