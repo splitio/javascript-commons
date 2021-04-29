@@ -4,7 +4,7 @@ import { isNaNNumber } from '../../utils/lang';
 import KeyBuilder from '../KeyBuilder';
 import { ICustomStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
-import { logPrefix } from './constants';
+import { LOG_PREFIX } from './constants';
 
 /**
  * ISegmentsCacheAsync implementation for pluggable storages.
@@ -49,7 +49,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
       const i = parseInt(value as string, 10);
       return isNaNNumber(i) ? -1 : i;
     }).catch((e) => {
-      this.log.error(logPrefix + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
+      this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
       return -1;
     });
   }

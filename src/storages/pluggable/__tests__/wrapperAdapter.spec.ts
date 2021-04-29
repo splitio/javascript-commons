@@ -6,7 +6,7 @@ import { SplitError } from '../../../utils/lang/errors';
 
 /** Mocks */
 
-import { wrapperMock } from './wrapper.mock'; // Well implemented wrapper
+import { wrapperMock } from './wrapper.mock';
 
 function throwsException() {
   throw new Error('some error');
@@ -49,7 +49,6 @@ export const wrapperWithValuesToSanitize = {
   connect: () => Promise.resolve(1),
   getAndSet: () => Promise.resolve(true),
   getByPrefix: () => Promise.resolve(['1', null, false, true, '2', null]),
-  pushItems: () => Promise.resolve('false'),
   popItems: () => Promise.resolve('invalid array'),
   getItemsCount: () => Promise.resolve('10'),
   itemContains: () => Promise.resolve('true'),
@@ -66,7 +65,6 @@ const SANITIZED_RESULTS = {
   connect: false,
   getAndSet: 'true',
   getByPrefix: ['1', '2'],
-  pushItems: false,
   popItems: [],
   getItemsCount: 10,
   itemContains: true,
@@ -84,7 +82,7 @@ const VALID_METHOD_CALLS = {
   'close': [],
   'getAndSet': ['some_key', 'some_value'],
   'getByPrefix': ['some_prefix'],
-  'pushItems': ['some_key', ['item1', 'item2']],
+  'pushItems': ['some_key_list', ['item1', 'item2']],
   'popItems': ['some_key'],
   'getItemsCount': ['some_key'],
   'itemContains': ['some_key', 'some_value'],
