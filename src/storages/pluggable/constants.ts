@@ -1,1 +1,1 @@
-export const logPrefix = 'storage:pluggable:';
+export const LOG_PREFIX = 'storage:pluggable:';

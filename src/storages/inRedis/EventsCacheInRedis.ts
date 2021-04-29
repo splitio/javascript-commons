@@ -4,8 +4,7 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-
-const logPrefix = 'storage:redis: ';
+import { LOG_PREFIX } from './constants';
 
 export default class EventsCacheInRedis implements IEventsCacheAsync {
 
@@ -33,7 +32,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
       // We use boolean values to signal successful queueing
       .then(() => true)
       .catch(err => {
-        this.log.error(logPrefix + `Error adding event to queue: ${err}.`);
+        this.log.error(LOG_PREFIX + `Error adding event to queue: ${err}.`);
         return false;
       });
   }

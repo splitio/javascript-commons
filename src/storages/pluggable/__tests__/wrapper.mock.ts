@@ -3,12 +3,11 @@ import { startsWith, toNumber } from '../../../utils/lang';
 // Creates an in memory ICustomStorageWrapper implementation with Jest mocks
 export function wrapperMockFactory() {
 
+  /** Holds items and list of items */
   let _cache: Record<string, string> = {};
-  let _queues: Record<string, string[]> = {};
 
   return {
     _cache,
-    _queues,
 
     get: jest.fn((key => {
       return Promise.resolve(key in _cache ? _cache[key] : null);
@@ -57,19 +56,26 @@ export function wrapperMockFactory() {
     getMany: jest.fn((keys: string[]) => {
       return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] : null));
     }),
-    pushItems: jest.fn((key: string, items: string[]) => {
-      if (!(key in _queues)) _queues[key] = [];
-      _queues[key].push(...items);
-      return Promise.resolve(true);
+    pushItems: jest.fn((key: string, items: string[]) => { // @ts-ignore
+      if (!(key in _cache)) _cache[key] = [];
+      const list = _cache[key];
+      if (Array.isArray(list)) {
+        list.push(...items);
+        return Promise.resolve();
+      }
+      return Promise.reject('key is not a list');
     }),
     popItems: jest.fn((key: string, count: number) => {
-      return Promise.resolve(key in _queues ? _queues[key].splice(0, count) : []);
+      const list = _cache[key];
+      return Promise.resolve(Array.isArray(list) ? list.splice(0, count) : []);
     }),
     getItemsCount: jest.fn((key: string) => {
-      return Promise.resolve(key in _queues ? _queues[key].length : 0);
+      const list = _cache[key];
+      return Promise.resolve(Array.isArray(list) ? list.length : 0);
     }),
     itemContains: jest.fn((key: string, item: string) => {
-      return Promise.resolve(key in _queues && _queues[key].indexOf(item) > -1 ? true : false);
+      const list = _cache[key];
+      return Promise.resolve(Array.isArray(list) && list.indexOf(item) > -1 ? true : false);
     }),
 
     // always connects and close
@@ -78,7 +84,6 @@ export function wrapperMockFactory() {
 
     mockClear() {
       this._cache = {};
-      this._queues = {};
       this.get.mockClear();
       this.set.mockClear();
       this.del.mockClear();

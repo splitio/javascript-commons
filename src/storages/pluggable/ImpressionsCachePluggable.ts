@@ -3,7 +3,7 @@ import { IRedisMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { ILogger } from '../../logger/types';
-import { logPrefix } from './constants';
+import { LOG_PREFIX } from './constants';
 
 export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
@@ -29,10 +29,13 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
     return this.wrapper.pushItems(
       this.keys.buildImpressionsKey(),
       this._toJSON(impressions)
-    ).catch((e) => {
-      this.log.error(logPrefix + ` Error adding event to queue: ${e}.`);
-      return false;
-    });
+    )
+      // We use boolean values to signal successful queueing
+      .then(() => true)
+      .catch((e) => {
+        this.log.error(LOG_PREFIX + ` Error adding event to queue: ${e}.`);
+        return false;
+      });
   }
 
   private _toJSON(impressions: ImpressionDTO[]): string[] {

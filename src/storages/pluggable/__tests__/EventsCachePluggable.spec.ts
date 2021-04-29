@@ -30,15 +30,15 @@ describe('PLUGGABLE EVENTS CACHE', () => {
     // @ts-expect-error
     expect(await cache.track(fakeEvent3)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
 
-    const redisValues = wrapperMock._queues[key];
+    const values = wrapperMock._cache[key];
 
-    expect(redisValues.length).toBe(3); // After pushing we should have on Redis as many events as we have stored.
-    expect(typeof redisValues[0]).toBe('string'); // All elements should be strings since those are stringified JSONs.
-    expect(typeof redisValues[1]).toBe('string'); // All elements should be strings since those are stringified JSONs.
-    expect(typeof redisValues[2]).toBe('string'); // All elements should be strings since those are stringified JSONs.
+    expect(values.length).toBe(3); // After pushing we should have as many events as we have stored.
+    expect(typeof values[0]).toBe('string'); // All elements should be strings since those are stringified JSONs.
+    expect(typeof values[1]).toBe('string'); // All elements should be strings since those are stringified JSONs.
+    expect(typeof values[2]).toBe('string'); // All elements should be strings since those are stringified JSONs.
 
     const findMatchingElem = (event: any) => {
-      return find(redisValues, elem => {
+      return find(values, elem => {
         const parsedElem = JSON.parse(elem);
         return isEqual(parsedElem.e, event) && isEqual(parsedElem.m, fakeRedisMetadata);
       });
@@ -48,9 +48,9 @@ describe('PLUGGABLE EVENTS CACHE', () => {
     const foundEv1 = findMatchingElem(fakeEvent1);
     const foundEv2 = findMatchingElem(fakeEvent2);
     const foundEv3 = findMatchingElem(fakeEvent3);
-    expect(foundEv1).not.toBe(undefined); // Events stored on redis matched the values we are expecting.
-    expect(foundEv2).not.toBe(undefined); // Events stored on redis matched the values we are expecting.
-    expect(foundEv3).not.toBe(undefined); // Events stored on redis matched the values we are expecting.
+    expect(foundEv1).not.toBe(undefined); // stored events matched the values we are expecting.
+    expect(foundEv2).not.toBe(undefined); // stored events matched the values we are expecting.
+    expect(foundEv3).not.toBe(undefined); // stored events matched the values we are expecting.
 
     wrapperMock.mockClear();
   });
@@ -58,7 +58,7 @@ describe('PLUGGABLE EVENTS CACHE', () => {
   test('`track` method result should not reject if wrapper operation fails', async () => {
     const wrapperMock = wrapperMockFactory();
     // @ts-ignore. I'll use a "bad" queue to force an exception with the pushItems wrapper operation.
-    wrapperMock._queues['non-list-key'] = 10;
+    wrapperMock._cache['non-list-key'] = 10;
     // @ts-expect-error. wrapperMock is adapted this time to properly handle unexpected exceptions
     const faultyCache = new EventsCachePluggable(loggerMock, {
       buildEventsKey: () => 'non-list-key'

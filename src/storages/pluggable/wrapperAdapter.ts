@@ -3,7 +3,7 @@ import { sanitizeBoolean as sBoolean } from '../../evaluator/value/sanitize';
 import { ILogger } from '../../logger/types';
 import { SplitError } from '../../utils/lang/errors';
 import { ICustomStorageWrapper } from '../types';
-import { logPrefix } from './constants';
+import { LOG_PREFIX } from './constants';
 
 // Sanitizers return the given value if it is of the expected type, or a new sanitized one if invalid.
 
@@ -50,7 +50,7 @@ const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: str
   ['close', undefined],
   ['getAndSet', sanitizeNullableString],
   ['getByPrefix', sanitizeArray],
-  ['pushItems', sanitizeBoolean],
+  ['pushItems', undefined],
   ['popItems', sanitizeArray],
   ['getItemsCount', sanitizeNumber],
   ['itemContains', sanitizeBoolean],
@@ -70,9 +70,9 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
 
   METHODS_TO_PROMISE_WRAP.forEach(([method, sanitizer]) => {
 
-    // Logs error and wraps it into an SplitError object
+    // Logs error and wraps it into an SplitError object (required to handle user callback errors in SDK readiness events)
     function handleError(e: any) {
-      log.error(`${logPrefix} Wrapper '${method}' operation threw an error. Message: ${e}`);
+      log.error(`${LOG_PREFIX} Wrapper '${method}' operation threw an error. Message: ${e}`);
       return Promise.reject(new SplitError(e));
     }
 
@@ -84,7 +84,7 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
           const sanitizedValue = sanitizer(value);
 
           // if value had to be sanitized, log a warning
-          if (sanitizedValue !== value) log.warn(`${logPrefix} Attempted to sanitize return value [${value}] of wrapper '${method}' operation which should be of type [${sanitizer.type}]. Sanitized and processed value => [${sanitizedValue}]`);
+          if (sanitizedValue !== value) log.warn(`${LOG_PREFIX} Attempted to sanitize return value [${value}] of wrapper '${method}' operation which should be of type [${sanitizer.type}]. Sanitized and processed value => [${sanitizedValue}]`);
 
           return sanitizedValue;
         })).catch(handleError);
