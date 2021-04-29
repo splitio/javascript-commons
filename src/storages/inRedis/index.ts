@@ -1,6 +1,5 @@
 import RedisAdapter from './RedisAdapter';
 import { IStorageAsync, IStorageFactoryParams } from '../types';
-import { IMetadata, IRedisMetadata } from '../../dtos/types';
 import KeyBuilderSS from '../KeyBuilderSS';
 import SplitsCacheInRedis from './SplitsCacheInRedis';
 import SegmentsCacheInRedis from './SegmentsCacheInRedis';
@@ -8,21 +7,12 @@ import ImpressionsCacheInRedis from './ImpressionsCacheInRedis';
 import EventsCacheInRedis from './EventsCacheInRedis';
 import LatenciesCacheInRedis from './LatenciesCacheInRedis';
 import CountsCacheInRedis from './CountsCacheInRedis';
-import { UNKNOWN } from '../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
+import { metadataBuilder } from '../metadataBuilder';
 
 export interface InRedisStorageOptions {
   prefix?: string
   options?: Record<string, any>
-}
-
-// exported for testing purposes
-export function metadataBuilder(metadata: IMetadata): IRedisMetadata {
-  return {
-    s: metadata.version,
-    i: metadata.ip || UNKNOWN,
-    n: metadata.hostname || UNKNOWN,
-  };
 }
 
 /**

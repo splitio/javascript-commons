@@ -23,7 +23,7 @@ describe('SEGMENTS CACHE PLUGGABLE', () => {
     expect(await cache.getChangeNumber('inexistent-segment')).toBe(-1); // -1 if the segment doesn't exist
 
     // mock segment keys
-    wrapperMock._queues[keyBuilder.buildSegmentNameKey('mocked-segment')] = ['b', 'd'];
+    wrapperMock._cache[keyBuilder.buildSegmentNameKey('mocked-segment')] = ['b', 'd'];
 
     expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
     expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);
