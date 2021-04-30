@@ -1,24 +1,60 @@
+import { toString, isString, toNumber } from '../../utils/lang';
+import { sanitizeBoolean as sBoolean } from '../../evaluator/value/sanitize';
 import { ILogger } from '../../logger/types';
 import { SplitError } from '../../utils/lang/errors';
 import { ICustomStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
-const METHODS_TO_PROMISE_WRAP: string[] = [
-  'get',
-  'set',
-  'getAndSet',
-  'del',
-  'getKeysByPrefix',
-  'getByPrefix',
-  'incr',
-  'decr',
-  'getMany',
-  'pushItems',
-  'popItems',
-  'getItemsCount',
-  'itemContains',
-  'connect',
-  'close'
+// Sanitizers return the given value if it is of the expected type, or a new sanitized one if invalid.
+// @TODO review or remove sanitizers. Could be expensive and error-prone for producer methods
+
+function sanitizeBoolean(val: any): boolean {
+  return sBoolean(val) || false;
+}
+sanitizeBoolean.type = 'boolean';
+
+function sanitizeNumber(val: any): number {
+  return toNumber(val);
+}
+sanitizeNumber.type = 'number';
+
+function sanitizeArrayOfStrings(val: any): string[] {
+  if (!Array.isArray(val)) return []; // if not an array, returns a new empty one
+  if (val.every(isString)) return val; // if all items are valid, return the given array
+  return val.filter(isString); // otherwise, return a new array filtering the invalid items
+}
+sanitizeArrayOfStrings.type = 'Array<string>';
+
+function sanitizeNullableString(val: any): string | null {
+  if (val === null) return val;
+  return toString(val); // if not null, sanitize value as an string
+}
+sanitizeNullableString.type = 'string | null';
+
+function sanitizeArrayOfNullableStrings(val: any): (string | null)[] {
+  const isStringOrNull = (v: any) => v === null || isString(v);
+  if (!Array.isArray(val)) return [];
+  if (val.every(isStringOrNull)) return val;
+  return val.filter(isStringOrNull); // otherwise, return a new array with items sanitized
+}
+sanitizeArrayOfNullableStrings.type = 'Array<string | null>';
+
+const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: string }][] = [
+  ['get', sanitizeNullableString],
+  ['set', sanitizeBoolean],
+  ['getAndSet', sanitizeNullableString],
+  ['del', sanitizeBoolean],
+  ['getKeysByPrefix', sanitizeArrayOfStrings],
+  ['getByPrefix', sanitizeArrayOfStrings],
+  ['incr', sanitizeBoolean],
+  ['decr', sanitizeBoolean],
+  ['getMany', sanitizeArrayOfNullableStrings],
+  ['pushItems', undefined],
+  ['popItems', sanitizeArrayOfStrings],
+  ['getItemsCount', sanitizeNumber],
+  ['itemContains', sanitizeBoolean],
+  ['connect', sanitizeBoolean],
+  ['close', undefined],
 ];
 
 /**
@@ -33,7 +69,7 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
 
   const wrapperAdapter: Record<string, Function> = {};
 
-  METHODS_TO_PROMISE_WRAP.forEach((method) => {
+  METHODS_TO_PROMISE_WRAP.forEach(([method, sanitizer]) => {
 
     // Logs error and wraps it into an SplitError object (required to handle user callback errors in SDK readiness events)
     function handleError(e: any) {
@@ -44,7 +80,15 @@ export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): IC
     wrapperAdapter[method] = function () {
       try {
         // @ts-ignore
-        return wrapper[method].apply(wrapper, arguments).then(value => value).catch(handleError);
+        return wrapper[method].apply(wrapper, arguments).then((value => {
+          if (!sanitizer) return value;
+          const sanitizedValue = sanitizer(value);
+
+          // if value had to be sanitized, log a warning
+          if (sanitizedValue !== value) log.warn(`${LOG_PREFIX} Attempted to sanitize return value [${value}] of wrapper '${method}' operation which should be of type [${sanitizer.type}]. Sanitized and processed value => [${sanitizedValue}]`);
+
+          return sanitizedValue;
+        })).catch(handleError);
       } catch (e) {
         return handleError(e);
       }
