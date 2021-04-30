@@ -3,9 +3,7 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { ISplitsCacheAsync } from '../types';
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
-import { SplitError } from '../../utils/lang/errors';
-
-const logPrefix = 'storage:redis: ';
+import { LOG_PREFIX } from './constants';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -90,11 +88,11 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
   /**
    * Get split definition or null if it's not defined.
-   * Returned promise is Rejected with an SplitError if redis operation fails.
+   * Returned promise is rejected if redis operation fails.
    */
   getSplit(name: string): Promise<string | null> {
     if (this.redisError) {
-      this.log.error(logPrefix + this.redisError);
+      this.log.error(LOG_PREFIX + this.redisError);
 
       return Promise.reject(this.redisError); // no need to wrap as an SplitError
     }
@@ -150,14 +148,14 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(logPrefix + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(logPrefix + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
@@ -179,11 +177,11 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
   /**
    * Fetches multiple splits definitions.
-   * Returned promise is Rejected with an SplitError if redis operation fails.
+   * Returned promise is rejected if redis operation fails.
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
     if (this.redisError) {
-      this.log.error(logPrefix + this.redisError);
+      this.log.error(LOG_PREFIX + this.redisError);
 
       return Promise.reject(this.redisError); // no need to wrap as an SplitError
     }
@@ -198,8 +196,8 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
         return Promise.resolve(splits);
       })
       .catch(e => {
-        this.log.error(logPrefix + `Could not grab splits due to an error: ${e}.`);
-        return Promise.reject(new SplitError(e));
+        this.log.error(LOG_PREFIX + `Could not grab splits due to an error: ${e}.`);
+        return Promise.reject(e);
       });
   }
 

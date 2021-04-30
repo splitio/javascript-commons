@@ -61,20 +61,24 @@ export interface ICustomStorageWrapper {
    */
   getMany: (keys: string[]) => Promise<(string | null)[]>
   /**
-   * Push given `items` to `key` queue.
+   * Push given `items` to `key` list. If key does not exist, an empty list is created for the key before pushing the items.
+   * Return a promise that resolves if the operation success,
+   * or rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a list.
    */
-  pushItems: (key: string, items: string[]) => Promise<boolean>
+  pushItems: (key: string, items: string[]) => Promise<void>
   /**
    * Pop `count` number of items from `key` queue.
-   * Return a promise that resolves with the list of removed items the removed members, or an empty array when key does not exist.
+   * Return a promise that resolves with the list of removed items the removed members,
+   * or an empty array when key does not exist or is not a list.
    */
   popItems: (key: string, count: number) => Promise<string[]>
   /**
-   * Return a promise that resolves with the number of items at the `key` queue, or 0 when key does not exist.
+   * Return a promise that resolves with the number of items at the `key` queue, or 0 when key does not exist or is not a list.
    */
   getItemsCount: (key: string) => Promise<number>
   /**
-   * Return a promise that resolves with true boolean value if `item` is a member of the set stored at `key`, or false otherwise.
+   * Return a promise that resolves with true boolean value if `item` is a member of the list stored at `key`,
+   * or false if it is not a member or key does not exist or is not a list.
    */
   itemContains: (key: string, item: string) => Promise<boolean>
 
