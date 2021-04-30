@@ -4,7 +4,7 @@ import { ICustomStorageWrapper, ISplitsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { usesSegments } from '../AbstractSplitsCacheSync';
 import { ISplit } from '../../dtos/types';
-import { logPrefix } from './constants';
+import { LOG_PREFIX } from './constants';
 import { SplitError } from '../../utils/lang/errors';
 
 /**
@@ -180,13 +180,13 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(logPrefix + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       }).catch(e => {
-        this.log.error(logPrefix + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
@@ -212,7 +212,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
 
       return isNaNNumber(i) ? -1 : i;
     }).catch((e) => {
-      this.log.error(logPrefix + 'Could not retrieve changeNumber from storage. Error: ' + e);
+      this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from storage. Error: ' + e);
       return -1;
     });
   }

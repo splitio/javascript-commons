@@ -6,6 +6,7 @@ import { ICustomStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
 // Sanitizers return the given value if it is of the expected type, or a new sanitized one if invalid.
+// @TODO review or remove sanitizers. might be expensive for producer methods
 
 function sanitizeBoolean(val: any): boolean {
   return sBoolean(val) || false;
@@ -17,41 +18,42 @@ function sanitizeNumber(val: any): number {
 }
 sanitizeNumber.type = 'number';
 
-function sanitizeArray(val: any): string[] {
+function sanitizeArrayOfStrings(val: any): string[] {
   if (!Array.isArray(val)) return []; // if not an array, returns a new empty one
   if (val.every(isString)) return val; // if all items are valid, return the given array
-  return val.filter(isString); // otherwise, return a new array filtering the invalid items
+  return val.map(toString); // otherwise, return a new array with items sanitized
 }
-sanitizeArray.type = 'Array<string>';
+sanitizeArrayOfStrings.type = 'Array<string>';
 
 function sanitizeNullableString(val: any): string | null {
   if (val === null) return val;
-  return toString(val);
+  return toString(val); // if not null, sanitize value as an string
 }
 sanitizeNullableString.type = 'string | null';
 
-function sanitizeArrayOfNullableString(val: any): (string | null)[] {
-  const isStringOrNull = (v: any) => v === null || isString(v);
+function sanitizeArrayOfNullableStrings(val: any): (string | null)[] {
   if (!Array.isArray(val)) return [];
-  if (val.every(isStringOrNull)) return val;
-  return val.filter(isStringOrNull);
+  if (val.every(v => v === null || isString(v))) return val; // if all items are string or null, return the given array
+  return val.map(v => v !== null ? toString(v) : null); // otherwise, return a new array with items sanitized
 }
-sanitizeArrayOfNullableString.type = 'Array<string | null>';
+sanitizeArrayOfNullableStrings.type = 'Array<string | null>';
 
 const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: string }][] = [
   ['get', sanitizeNullableString],
   ['set', sanitizeBoolean],
+  ['getAndSet', sanitizeNullableString],
   ['del', sanitizeBoolean],
-  ['getKeysByPrefix', sanitizeArray],
+  ['getKeysByPrefix', sanitizeArrayOfStrings],
+  ['getByPrefix', sanitizeArrayOfStrings],
   ['incr', sanitizeBoolean],
   ['decr', sanitizeBoolean],
-  ['getMany', sanitizeArrayOfNullableString],
+  ['getMany', sanitizeArrayOfNullableStrings],
   ['connect', sanitizeBoolean],
   ['close', undefined],
-  ['getAndSet', sanitizeNullableString],
-  ['getByPrefix', sanitizeArray],
+
+
   ['pushItems', undefined],
-  ['popItems', sanitizeArray],
+  ['popItems', sanitizeArrayOfStrings],
   ['getItemsCount', sanitizeNumber],
   ['itemContains', sanitizeBoolean],
 ];

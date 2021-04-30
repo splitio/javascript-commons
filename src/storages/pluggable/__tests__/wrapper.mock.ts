@@ -4,13 +4,13 @@ import { startsWith, toNumber } from '../../../utils/lang';
 export function wrapperMockFactory() {
 
   /** Holds items and list of items */
-  let _cache: Record<string, string> = {};
+  let _cache: Record<string, string | string[]> = {};
 
   return {
     _cache,
 
     get: jest.fn((key => {
-      return Promise.resolve(key in _cache ? _cache[key] : null);
+      return Promise.resolve(key in _cache ? _cache[key] as string : null);
     })),
     set: jest.fn((key: string, value: string) => {
       const result = key in _cache;
@@ -18,7 +18,7 @@ export function wrapperMockFactory() {
       return Promise.resolve(result);
     }),
     getAndSet: jest.fn((key: string, value: string) => {
-      const result = key in _cache ? _cache[key] : null;
+      const result = key in _cache ? _cache[key] as string : null;
       _cache[key] = value;
       return Promise.resolve(result);
     }),
@@ -31,7 +31,7 @@ export function wrapperMockFactory() {
       return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
     }),
     getByPrefix: jest.fn((prefix: string) => {
-      return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key]));
+      return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key] as string));
     }),
     incr: jest.fn((key: string) => {
       if (key in _cache) {
@@ -54,7 +54,7 @@ export function wrapperMockFactory() {
       return Promise.resolve(true);
     }),
     getMany: jest.fn((keys: string[]) => {
-      return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] : null));
+      return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] as string : null));
     }),
     pushItems: jest.fn((key: string, items: string[]) => { // @ts-ignore
       if (!(key in _cache)) _cache[key] = [];
