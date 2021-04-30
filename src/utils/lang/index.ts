@@ -168,11 +168,9 @@ export function isString(val: any): val is string {
  * Deep copy version of Object.assign using recursion.
  * There are some assumptions here. It's for internal use and we don't need verbose errors
  * or to ensure the data types or whatever. Parameters should always be correct (at least have a target and a source, of type object).
- * @param target The target object to copy to.
- * @param source The source object from which to copy properties.
  */
-export function merge<T extends { [key: string]: any }, U extends { [key: string]: any }>(target: T, source: U, ...rest: any[]): T & U {
-  let res: { [key: string]: any } = target;
+export function merge(target: { [key: string]: any }, source: { [key: string]: any }, ...rest: any[]): object {
+  let res = target;
 
   isObject(source) && Object.keys(source).forEach(key => {
     let val = source[key];
@@ -193,7 +191,7 @@ export function merge<T extends { [key: string]: any }, U extends { [key: string
     res = merge(res, nextSource, ...rest);
   }
 
-  return res as T & U;
+  return res;
 }
 
 /**
