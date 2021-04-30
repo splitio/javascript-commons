@@ -6,7 +6,7 @@ import { ICustomStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
 // Sanitizers return the given value if it is of the expected type, or a new sanitized one if invalid.
-// @TODO review or remove sanitizers. Could be expensive for producer methods
+// @TODO review or remove sanitizers. Could be expensive and error-prone for producer methods
 
 function sanitizeBoolean(val: any): boolean {
   return sBoolean(val) || false;
@@ -32,9 +32,10 @@ function sanitizeNullableString(val: any): string | null {
 sanitizeNullableString.type = 'string | null';
 
 function sanitizeArrayOfNullableStrings(val: any): (string | null)[] {
+  const isStringOrNull = (v: any) => v === null || isString(v);
   if (!Array.isArray(val)) return [];
-  if (val.every(v => v === null || isString(v))) return val;
-  return val.map(v => v !== null ? toString(v) : null); // otherwise, return a new array with items sanitized
+  if (val.every(isStringOrNull)) return val;
+  return val.filter(isStringOrNull); // otherwise, return a new array with items sanitized
 }
 sanitizeArrayOfNullableStrings.type = 'Array<string | null>';
 
@@ -48,14 +49,12 @@ const METHODS_TO_PROMISE_WRAP: [string, undefined | { (val: any): any, type: str
   ['incr', sanitizeBoolean],
   ['decr', sanitizeBoolean],
   ['getMany', sanitizeArrayOfNullableStrings],
-  ['connect', sanitizeBoolean],
-  ['close', undefined],
-
-
   ['pushItems', undefined],
   ['popItems', sanitizeArrayOfStrings],
   ['getItemsCount', sanitizeNumber],
   ['itemContains', sanitizeBoolean],
+  ['connect', sanitizeBoolean],
+  ['close', undefined],
 ];
 
 /**

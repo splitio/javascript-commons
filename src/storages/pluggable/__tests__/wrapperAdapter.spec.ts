@@ -61,7 +61,7 @@ const SANITIZED_RESULTS = {
   getKeysByPrefix: ['1', '2'],
   incr: false,
   decr: false,
-  getMany: ['1', null, 'false', 'true', '2', null],
+  getMany: ['1', null, '2', null],
   connect: false,
   getAndSet: 'true',
   getByPrefix: ['1', '2'],
