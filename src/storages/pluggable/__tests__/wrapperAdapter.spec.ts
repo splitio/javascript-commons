@@ -38,38 +38,6 @@ export const wrapperWithIssues = {
   itemContains: throwsException,
 };
 
-export const wrapperWithValuesToSanitize = {
-  get: () => Promise.resolve(10),
-  set: () => Promise.resolve('tRue'),
-  del: () => Promise.resolve(), // no result
-  getKeysByPrefix: () => Promise.resolve(['1', null, false, true, '2', null]),
-  incr: () => Promise.resolve('1'),
-  decr: () => Promise.resolve('0'),
-  getMany: () => Promise.resolve(['1', null, false, true, '2', null]),
-  connect: () => Promise.resolve(1),
-  getAndSet: () => Promise.resolve(true),
-  getByPrefix: () => Promise.resolve(['1', null, false, true, '2', null]),
-  popItems: () => Promise.resolve('invalid array'),
-  getItemsCount: () => Promise.resolve('10'),
-  itemContains: () => Promise.resolve('true'),
-};
-
-const SANITIZED_RESULTS = {
-  get: '10',
-  set: true,
-  del: false,
-  getKeysByPrefix: ['1', '2'],
-  incr: false,
-  decr: false,
-  getMany: ['1', null, '2', null],
-  connect: false,
-  getAndSet: 'true',
-  getByPrefix: ['1', '2'],
-  popItems: [],
-  getItemsCount: 10,
-  itemContains: true,
-};
-
 const VALID_METHOD_CALLS = {
   'get': ['some_key'],
   'set': ['some_key', 'some_value'],
@@ -134,24 +102,6 @@ describe('Wrapper Adapter', () => {
     }
 
     expect(loggerMock.error).toBeCalledTimes(methods.length);
-  });
-
-  test('sanitize wrapper call results', async () => {
-    const instance = wrapperAdapter(loggerMock, wrapperWithValuesToSanitize);
-    const methods = Object.keys(SANITIZED_RESULTS);
-
-    for (let i = 0; i < methods.length; i++) {
-      try {
-        const method = methods[i];
-        const result = await instance[method](...VALID_METHOD_CALLS[method]);
-
-        expect(result).toEqual(SANITIZED_RESULTS[method]); // result should be sanitized
-      } catch (e) {
-        expect(true).toBe(methods[i]); // promise shouldn't be rejected
-      }
-    }
-
-    expect(loggerMock.warn).toBeCalledTimes(methods.length); // one warning for each wrapper operation call which result had to be sanitized
   });
 
 });
