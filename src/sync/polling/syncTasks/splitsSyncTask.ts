@@ -1,6 +1,6 @@
 import { SplitError } from '../../../utils/lang/errors';
 import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
-import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from '../../../storages/types';
+import { ISegmentsCacheSync, ISplitsCacheBase, IStorageSync } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse } from '../../../dtos/types';
 import { IReadinessManager, ISplitsEventEmitter } from '../../../readiness/types';
@@ -84,7 +84,7 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
 export function splitChangesUpdaterFactory(
   log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
-  splitsCache: ISplitsCacheSync,
+  splitsCache: ISplitsCacheBase,
   segmentsCache: ISegmentsCacheSync,
   splitsEventEmitter: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number,
@@ -129,7 +129,7 @@ export function splitChangesUpdaterFactory(
           log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
-          // @TODO if allowing custom storages, wrap errors as SplitErrors to distinguish from user callback errors
+          // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
             // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
             splitsCache.setChangeNumber(splitChanges.till),

@@ -3,13 +3,105 @@ import { ILogger } from '../logger/types';
 import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
+/**
+ * Interface to define a custom wrapper storage.
+ */
+export interface ICustomStorageWrapper {
+  /**
+   * Return a promise that resolves with the element value associated with the specified `key`, or null if the key can't be found in the storage.
+   */
+  get: (key: string) => Promise<string | null>
+  /**
+   * Add or update an element with a specified `key` and `value`.
+   * Returns a promise that resolves with a boolean value:
+   *   - true if the element existed and was updated,
+   *   - or false if the element didn't exist and was added.
+   */
+  set: (key: string, value: string) => Promise<boolean>
+  /**
+   * Add or update an element with a specified `key` and `value`.
+   * Returns a promise that resolves with the previous value associated to the given `key`, or null if not set.
+   *   - true if the element existed and was updated,
+   *   - or false if the element didn't exist and was added.
+   */
+  getAndSet: (key: string, value: string) => Promise<string | null>
+  /**
+   * Remove the specified element by `key`.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the element existed and has been removed,
+   *   - or false if the element does not exist.
+   */
+  del: (key: string) => Promise<boolean>
+  /**
+   * Return a promise that resolves with the list of element keys that match with the given `prefix`.
+   */
+  getKeysByPrefix: (prefix: string) => Promise<string[]>
+  /**
+   * Return a promise that resolves with the list of element values that match with the given `prefix`.
+   */
+  getByPrefix: (prefix: string) => Promise<string[]>
+  /**
+   * Increment in 1 the given `key` value or set it in 1 if the value doesn't exist.
+   * Return a resolved promise with a boolean value:
+   *   - true if the value was incremented,
+   *   - or false if the value already existed and couldn't be parsed into a finite number.
+   * @param key
+   */
+  incr: (key: string) => Promise<boolean>
+  /**
+   * Decrement in 1 the given `key` value or set it in -1 if the value doesn't exist.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the value was decremented,
+   *   - or false if the value already existed and couldn't be parsed into a finite number.
+   * @param key
+   */
+  decr: (key: string) => Promise<boolean>
+  /**
+   * Return a promise that resolves with the list of elements associated with the specified list of `keys`.
+   */
+  getMany: (keys: string[]) => Promise<(string | null)[]>
+  /**
+   * Push given `items` to `key` list. If key does not exist, an empty list is created for the key before pushing the items.
+   * Return a promise that resolves if the operation success,
+   * or rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a list.
+   */
+  pushItems: (key: string, items: string[]) => Promise<void>
+  /**
+   * Pop `count` number of items from `key` queue.
+   * Return a promise that resolves with the list of removed items the removed members,
+   * or an empty array when key does not exist or is not a list.
+   */
+  popItems: (key: string, count: number) => Promise<string[]>
+  /**
+   * Return a promise that resolves with the number of items at the `key` queue, or 0 when key does not exist or is not a list.
+   */
+  getItemsCount: (key: string) => Promise<number>
+  /**
+   * Return a promise that resolves with true boolean value if `item` is a member of the list stored at `key`,
+   * or false if it is not a member or key does not exist or is not a list.
+   */
+  itemContains: (key: string, item: string) => Promise<boolean>
+
+  /**
+   * For storages that requires to be connected, like database servers.
+   * Return a promise that resolves with a boolean value:
+   *   - true if the operation succeeded,
+   *   - or false if the operation failed.
+   */
+  connect: () => Promise<boolean>
+  /**
+   * For storages that requires to be closed, for example, to release resources.
+   */
+  close: () => Promise<void>
+}
+
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplit(name: string, split: string): MaybeThenable<boolean>,
+  addSplit(name: string, split: string): MaybeThenable<boolean>, // @TODO remove as in spec
   addSplits(entries: [string, string][]): MaybeThenable<boolean[]>,
-  removeSplit(name: string): MaybeThenable<number>,
-  removeSplits(names: string[]): MaybeThenable<number>,
+  removeSplit(name: string): MaybeThenable<boolean>, // @TODO remove as in spec
+  removeSplits(names: string[]): MaybeThenable<boolean[]>,
   getSplit(name: string): MaybeThenable<string | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, string | null>>, // `fetchMany` in spec
   setChangeNumber(changeNumber: number): MaybeThenable<boolean>,
@@ -20,13 +112,14 @@ export interface ISplitsCacheBase {
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<void | boolean>,
   checkCache(): MaybeThenable<boolean>,
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
   addSplit(name: string, split: string): boolean,
   addSplits(entries: [string, string][]): boolean[]
-  removeSplit(name: string): number
-  removeSplits(names: string[]): number
+  removeSplit(name: string): boolean
+  removeSplits(names: string[]): boolean[]
   getSplit(name: string): string | null
   getSplits(names: string[]): Record<string, string | null>
   setChangeNumber(changeNumber: number): boolean
@@ -43,8 +136,8 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
   addSplit(name: string, split: string): Promise<boolean>,
   addSplits(entries: [string, string][]): Promise<boolean[]>,
-  removeSplit(name: string): Promise<number>,
-  removeSplits(names: string[]): Promise<number>,
+  removeSplit(name: string): Promise<boolean>,
+  removeSplits(names: string[]): Promise<boolean[]>,
   getSplit(name: string): Promise<string | null>,
   getSplits(names: string[]): Promise<Record<string, string | null>>,
   setChangeNumber(changeNumber: number): Promise<boolean>,
@@ -55,6 +148,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean>,
   checkCache(): Promise<boolean>,
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>
 }
 
 /** Segments cache */

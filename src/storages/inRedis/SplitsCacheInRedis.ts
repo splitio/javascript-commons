@@ -3,8 +3,7 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { ISplitsCacheAsync } from '../types';
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
-
-const logPrefix = 'storage:redis: ';
+import { LOG_PREFIX } from './constants';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -17,16 +16,18 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 }
 
 /**
- * Default ISplitsCacheSync implementation that stores split definitions in memory.
- * Supported by all JS runtimes.
+ * ISplitsCacheAsync implementation that stores split definitions in Redis.
+ * Supported by Node.
  */
 export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
+  private readonly log: ILogger;
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
   private redisError?: string;
 
-  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+    this.log = log;
     this.redis = redis;
     this.keys = keys;
 
@@ -39,6 +40,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     });
   }
 
+  // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
   addSplit(name: string, split: string): Promise<boolean> {
     return this.redis.set(
       this.keys.buildSplitKey(name), split
@@ -47,6 +49,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     );
   }
 
+  // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
   addSplits(entries: [string, string][]): Promise<boolean[]> {
     if (entries.length) {
       const cmds = entries.map(keyValuePair => ['set', this.keys.buildSplitKey(keyValuePair[0]), keyValuePair[1]]);
@@ -60,17 +63,22 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     }
   }
 
+  // @TODO implement for producer mode. Follow pluggable storage signature
+  killLocally(): Promise<boolean> {
+    throw new Error('Method not implemented.');
+  }
+
   /**
    * Remove a given split from Redis. Returns the number of deleted keys.
    */
-  removeSplit(name: string): Promise<number> {
+  removeSplit(name: string): Promise<any> {
     return this.redis.del(this.keys.buildSplitKey(name));
   }
 
   /**
    * Bulk delete of splits from Redis. Returns the number of deleted keys.
    */
-  removeSplits(names: string[]): Promise<number> {
+  removeSplits(names: string[]): Promise<any> {
     if (names.length) {
       return this.redis.del(names.map(n => this.keys.buildSplitKey(n)));
     } else {
@@ -80,12 +88,13 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
   /**
    * Get split definition or null if it's not defined.
+   * Returned promise is rejected if redis operation fails.
    */
   getSplit(name: string): Promise<string | null> {
     if (this.redisError) {
-      this.log.error(logPrefix + this.redisError);
+      this.log.error(LOG_PREFIX + this.redisError);
 
-      throw this.redisError;
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
     }
 
     return this.redis.get(this.keys.buildSplitKey(name));
@@ -103,7 +112,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
   }
 
   /**
-   * Get till number or null if it's not defined.
+   * Get till number or -1 if it's not defined.
    *
    * @TODO pending error handling
    */
@@ -135,16 +144,18 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     // If there is a number there should be > 0, otherwise the TT is considered as not existent.
     return this.redis.get(this.keys.buildTrafficTypeKey(trafficType))
       .then((ttCount: string | null | number) => {
+        if (ttCount === null) return false; // if entry doesn't exist, means that TT doesn't exist
+
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(logPrefix + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(logPrefix + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
@@ -166,13 +177,15 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
   /**
    * Fetches multiple splits definitions.
+   * Returned promise is rejected if redis operation fails.
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
     if (this.redisError) {
-      this.log.error(logPrefix + this.redisError);
+      this.log.error(LOG_PREFIX + this.redisError);
 
-      throw this.redisError;
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
     }
+
     const splits: Record<string, string | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
@@ -183,7 +196,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
         return Promise.resolve(splits);
       })
       .catch(e => {
-        this.log.error(logPrefix + `Could not grab splits due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not grab splits due to an error: ${e}.`);
         return Promise.reject(e);
       });
   }

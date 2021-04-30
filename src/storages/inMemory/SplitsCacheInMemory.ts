@@ -57,7 +57,7 @@ export default class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     }
   }
 
-  removeSplit(name: string): number {
+  removeSplit(name: string): boolean {
     const split = this.getSplit(name);
     if (split) {
       // Delete the Split
@@ -74,9 +74,9 @@ export default class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       // Update the segments count.
       if (usesSegments(parsedSplit)) this.splitsWithSegmentsCount--;
 
-      return 1;
+      return true;
     } else {
-      return 0;
+      return false;
     }
   }
 

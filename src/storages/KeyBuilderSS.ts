@@ -53,7 +53,7 @@ export default class KeyBuilderSS extends KeyBuilder {
   // }
 
   searchPatternForSplitKeys() {
-    return `${this.prefix}.split.*`;
+    return `${this.buildSplitKeyPrefix()}*`;
   }
 
   // NOT USED

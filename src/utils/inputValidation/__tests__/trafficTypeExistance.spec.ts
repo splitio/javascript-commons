@@ -57,7 +57,7 @@ describe('validateTrafficTypeExistance', () => {
     readinessManagerMock.isReady.mockImplementation(() => true);
 
     expect(validateTrafficTypeExistance(loggerMock, readinessManagerMock, splitsCacheMock, STANDALONE_MODE, TEST_EXISTENT_TT, 'test_method')).toBe(true); // If the SDK is in condition to validate but the TT exists, it will return true.
-    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the storage.
+    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existence with the storage.
     expect(loggerMock.warn).not.toBeCalled(); // If the SDK is in condition to validate but the TT exists, it will not log any warnings.
     expect(loggerMock.error).not.toBeCalled(); // If the SDK is in condition to validate but the TT exists, it will not log any errors.
   });
@@ -65,7 +65,7 @@ describe('validateTrafficTypeExistance', () => {
   test('Should return false and log warning if SDK Ready, not localhost mode and the traffic type does NOT exist in the storage', () => {
     // Ready, standalone, and the TT not exists in the storage.
     expect(validateTrafficTypeExistance(loggerMock, readinessManagerMock, splitsCacheMock, STANDALONE_MODE, TEST_NOT_EXISTENT_TT, 'test_method_y')).toBe(false); // If the SDK is in condition to validate but the TT does not exist in the storage, it will return false.
-    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_NOT_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the storage.
+    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_NOT_EXISTENT_TT]]); // If the SDK is in condition to validate, it checks that TT existence with the storage.
     expect(loggerMock.warn).toBeCalledWith(WARN_NOT_EXISTENT_TT, ['test_method_y', TEST_NOT_EXISTENT_TT]); // If the SDK is in condition to validate but the TT does not exist in the storage, it will log the expected warning.
     expect(loggerMock.error).not.toBeCalled(); // It logged a warning so no errors should be logged.
   });
@@ -75,7 +75,7 @@ describe('validateTrafficTypeExistance', () => {
 
     const validationPromise = validateTrafficTypeExistance(loggerMock, readinessManagerMock, splitsCacheMock, STANDALONE_MODE, TEST_EXISTENT_ASYNC_TT, 'test_method_z');
     expect(thenable(validationPromise)).toBe(true); // If the storage is async, it should also return a promise.
-    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_EXISTENT_ASYNC_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the async storage.
+    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_EXISTENT_ASYNC_TT]]); // If the SDK is in condition to validate, it checks that TT existence with the async storage.
     expect(loggerMock.warn).not.toBeCalled(); // We are still fetching the data from the storage, no logs yet.
     expect(loggerMock.error).not.toBeCalled(); // We are still fetching the data from the storage, no logs yet.
 
@@ -90,7 +90,7 @@ describe('validateTrafficTypeExistance', () => {
 
     const validationPromise2 = validateTrafficTypeExistance(loggerMock, readinessManagerMock, splitsCacheMock, STANDALONE_MODE, TEST_NOT_EXISTENT_ASYNC_TT, 'test_method_z');
     expect(thenable(validationPromise2)).toBe(true); // If the storage is async, it should also return a promise.
-    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_NOT_EXISTENT_ASYNC_TT]]); // If the SDK is in condition to validate, it checks that TT existance with the async storage.
+    expect(splitsCacheMock.trafficTypeExists.mock.calls).toEqual([[TEST_NOT_EXISTENT_ASYNC_TT]]); // If the SDK is in condition to validate, it checks that TT existence with the async storage.
     expect(loggerMock.warn).not.toBeCalled(); // We are still fetching the data from the storage, no logs yet.
     expect(loggerMock.error).not.toBeCalled(); // We are still fetching the data from the storage, no logs yet.
 

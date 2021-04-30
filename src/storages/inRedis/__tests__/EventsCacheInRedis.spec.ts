@@ -4,7 +4,7 @@ import isEqual from 'lodash/isEqual';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import EventsCacheInRedis from '../EventsCacheInRedis';
-import { metadataBuilder } from '../index';
+import { metadataBuilder } from '../../metadataBuilder';
 
 const prefix = 'events_cache_ut';
 const metadata = { version: 'js_someversion', ip: 'some_ip', hostname: 'some_hostname' };
