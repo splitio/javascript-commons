@@ -6,7 +6,7 @@ import { ICustomStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
 // Sanitizers return the given value if it is of the expected type, or a new sanitized one if invalid.
-// @TODO review or remove sanitizers. might be expensive for producer methods
+// @TODO review or remove sanitizers. Could be expensive for producer methods
 
 function sanitizeBoolean(val: any): boolean {
   return sBoolean(val) || false;
@@ -21,7 +21,7 @@ sanitizeNumber.type = 'number';
 function sanitizeArrayOfStrings(val: any): string[] {
   if (!Array.isArray(val)) return []; // if not an array, returns a new empty one
   if (val.every(isString)) return val; // if all items are valid, return the given array
-  return val.map(toString); // otherwise, return a new array with items sanitized
+  return val.filter(isString); // otherwise, return a new array filtering the invalid items
 }
 sanitizeArrayOfStrings.type = 'Array<string>';
 
@@ -33,7 +33,7 @@ sanitizeNullableString.type = 'string | null';
 
 function sanitizeArrayOfNullableStrings(val: any): (string | null)[] {
   if (!Array.isArray(val)) return [];
-  if (val.every(v => v === null || isString(v))) return val; // if all items are string or null, return the given array
+  if (val.every(v => v === null || isString(v))) return val;
   return val.map(v => v !== null ? toString(v) : null); // otherwise, return a new array with items sanitized
 }
 sanitizeArrayOfNullableStrings.type = 'Array<string | null>';

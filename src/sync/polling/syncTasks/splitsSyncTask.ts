@@ -129,7 +129,7 @@ export function splitChangesUpdaterFactory(
           log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
-          // @TODO in producer mode, keep consistency of wrapped storate by calling `setChangeNumber` if the other wrapper operations have succeeded
+          // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
             // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
             splitsCache.setChangeNumber(splitChanges.till),

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import thenable from '../../../utils/promise/thenable';
-import { logPrefix } from '../constants';
+import { LOG_PREFIX } from '../constants';
 import { SplitError } from '../../../utils/lang/errors';
 
 /** Mocks */
@@ -61,7 +61,7 @@ const SANITIZED_RESULTS = {
   getKeysByPrefix: ['1', '2'],
   incr: false,
   decr: false,
-  getMany: ['1', null, '2', null],
+  getMany: ['1', null, 'false', 'true', '2', null],
   connect: false,
   getAndSet: 'true',
   getByPrefix: ['1', '2'],
@@ -129,7 +129,7 @@ describe('Wrapper Adapter', () => {
         expect(true).toBe(false); // promise shouldn't be resolved
       } catch (e) {
         expect(e).toBeInstanceOf(SplitError);
-        expect(loggerMock.error).toHaveBeenCalledWith(`${logPrefix} Wrapper '${method}' operation threw an error. Message: ${e.message}`);
+        expect(loggerMock.error).toHaveBeenCalledWith(`${LOG_PREFIX} Wrapper '${method}' operation threw an error. Message: ${e.message}`);
       }
     }
 

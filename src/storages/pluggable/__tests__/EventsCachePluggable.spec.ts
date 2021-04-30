@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import { EventsCachePluggable } from '../EventsCachePluggable';
-import { metadataBuilder } from '../../inRedis';
+import { metadataBuilder } from '../../metadataBuilder';
 import { wrapperMockFactory } from './wrapper.mock';
 import { wrapperAdapter } from '../wrapperAdapter';
 

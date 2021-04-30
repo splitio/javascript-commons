@@ -1,7 +1,7 @@
 import { SplitsCachePluggable } from '../SplitsCachePluggable';
 import KeyBuilder from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { wrapperMock } from './wrapper.mock';
+import { wrapperMockFactory } from './wrapper.mock';
 
 const splitWithUserTT = '{ "trafficTypeName": "user_tt" }';
 const splitWithAccountTT = '{ "trafficTypeName": "account_tt" }';
@@ -10,13 +10,8 @@ const keysBuilder = new KeyBuilder();
 
 describe('SPLITS CACHE PLUGGABLE', () => {
 
-  afterEach(() => {
-    loggerMock.mockClear();
-    wrapperMock.mockClear();
-  });
-
   test('add/remove/get splits', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMock);
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
     // Assert addSplit and addSplits
     await cache.addSplits([
@@ -76,7 +71,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('set/get change number', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMock);
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
     expect(await cache.getChangeNumber()).toBe(-1); // if not set yet, changeNumber is -1
     await cache.setChangeNumber(123);
@@ -85,7 +80,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('trafficTypeExists', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMock);
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
     await cache.addSplits([
       ['split1', splitWithUserTT],
@@ -125,7 +120,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('usesSegments', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMock);
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
     await cache.addSplits([['split1', splitWithUserTT], ['split2', splitWithAccountTT],]);
     expect(await cache.usesSegments()).toBe(false); // 0 splits using segments
@@ -144,7 +139,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('killLocally', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMock);
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
     await cache.addSplit('lol1', splitWithUserTT);
     await cache.addSplit('lol2', splitWithAccountTT);
