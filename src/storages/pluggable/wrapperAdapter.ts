@@ -3,7 +3,7 @@ import { SplitError } from '../../utils/lang/errors';
 import { ICustomStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
-const METHODS_TO_PROMISE_WRAP: string[] = [
+export const METHODS_TO_PROMISE_WRAP: string[] = [
   'get',
   'set',
   'getAndSet',
