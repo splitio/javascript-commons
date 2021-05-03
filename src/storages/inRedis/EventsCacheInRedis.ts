@@ -1,5 +1,5 @@
 import { IEventsCacheAsync } from '../types';
-import { IRedisMetadata } from '../../dtos/types';
+import { IMetadata } from '../../dtos/types';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
@@ -10,10 +10,10 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
 
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
-  private readonly metadata: IRedisMetadata;
+  private readonly metadata: IMetadata;
   private readonly eventsKey: string;
 
-  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis, metadata: IRedisMetadata) {
+  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis, metadata: IMetadata) {
     this.keys = keys;
     this.redis = redis;
     this.metadata = metadata;

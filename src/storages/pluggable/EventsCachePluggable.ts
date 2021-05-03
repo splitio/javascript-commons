@@ -1,5 +1,5 @@
 import { ICustomStorageWrapper, IEventsCacheAsync } from '../types';
-import { IRedisMetadata } from '../../dtos/types';
+import { IMetadata } from '../../dtos/types';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
@@ -10,9 +10,9 @@ export class EventsCachePluggable implements IEventsCacheAsync {
   private readonly log: ILogger;
   private readonly wrapper: ICustomStorageWrapper;
   private readonly keys: KeyBuilderSS;
-  private readonly metadata: IRedisMetadata;
+  private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: ICustomStorageWrapper, metadata: IRedisMetadata) {
+  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
