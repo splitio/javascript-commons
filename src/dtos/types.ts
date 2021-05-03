@@ -194,7 +194,7 @@ export interface IMySegmentsResponse {
   mySegments: IMySegmentsResponseItem[]
 }
 
-/** Metadata for events, impressions and telemetry storages in consumer mode */
+/** Metadata internal type for storages */
 
 export interface IMetadata {
   /** SDK version */
