@@ -80,7 +80,7 @@ test('splitChangesUpdater / factory', (done) => {
     expect(removeSplits).toBeCalledTimes(1);
     expect(removeSplits).lastCalledWith([]);
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith('SDK_SPLITS_ARRIVED');
+    expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
     expect(result).toBe(true);
     done();
   });

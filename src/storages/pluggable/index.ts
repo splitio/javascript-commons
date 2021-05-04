@@ -44,8 +44,10 @@ export function PluggableStorage(options: PluggableStorageOptions) {
 
     // subscription to Wrapper connect event in order to emit SDK_READY event
     wrapper.connect().then(() => {
-      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      if (readinessManager) {
+        readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+        readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      }
     });
 
     return {

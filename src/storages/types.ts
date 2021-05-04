@@ -87,10 +87,14 @@ export interface ICustomStorageWrapper {
    * Return a promise that resolves with a boolean value:
    *   - true if the operation succeeded,
    *   - or false if the operation failed.
+   *
+   * Note: will be called once on SplitFactory instantiation.
    */
   connect: () => Promise<boolean>
   /**
    * For storages that requires to be closed, for example, to release resources.
+   *
+   * Note: will be called once on SplitFactory default client destroy.
    */
   close: () => Promise<void>
 }
