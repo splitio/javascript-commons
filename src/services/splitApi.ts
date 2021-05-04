@@ -1,5 +1,4 @@
 import { IPlatform } from '../sdkFactory/types';
-import buildMetadata from '../utils/settingsValidation/buildMetadata';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
@@ -21,9 +20,8 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
 
   const urls = settings.urls;
   const filterQueryString = (settings as ISettingsInternal).sync.__splitFiltersValidation && (settings as ISettingsInternal).sync.__splitFiltersValidation.queryString;
-  const metadata = buildMetadata(settings);
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const splitHttpClient = splitHttpClientFactory(settings.log, settings.core.authorizationKey, metadata, platform.getFetch, platform.getOptions);
+  const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 
   return {
     fetchAuth(userMatchingKeys?: string[]) {

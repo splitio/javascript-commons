@@ -4,18 +4,16 @@ import isEqual from 'lodash/isEqual';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import EventsCacheInRedis from '../EventsCacheInRedis';
-import { metadataBuilder } from '../../metadataBuilder';
 
 const prefix = 'events_cache_ut';
-const metadata = { version: 'js_someversion', ip: 'some_ip', hostname: 'some_hostname' };
+const fakeMetadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
 
 test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async () => {
   const connection = new Redis();
   // This piece is being tested elsewhere.
-  const keys = new KeyBuilderSS(prefix, metadata);
+  const keys = new KeyBuilderSS(prefix, fakeMetadata);
   const key = keys.buildEventsKey();
 
-  const fakeRedisMetadata = metadataBuilder(metadata);
   const fakeEvent1 = { event: 1 };
   const fakeEvent2 = { event: '2' };
   const fakeEvent3 = { event: null };
@@ -27,13 +25,13 @@ test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async
 
   expect(redisValues.length).toBe(0); // control assertion, there are no events previously queued.
 
-  const cache = new EventsCacheInRedis(loggerMock, keys, connection, fakeRedisMetadata);
+  const cache = new EventsCacheInRedis(loggerMock, keys, connection, fakeMetadata);
   // I'll use a "bad" instance so I can force an issue with the rpush command. I'll store an integer and will make the cache try to use rpush there.
   await connection.set('non-list-key', 10);
   // @ts-expect-error
   const faultyCache = new EventsCacheInRedis(loggerMock, {
     buildEventsKey: () => 'non-list-key'
-  }, connection, fakeRedisMetadata);
+  }, connection, fakeMetadata);
 
   // @ts-expect-error
   expect(await cache.track(fakeEvent1)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
@@ -58,7 +56,7 @@ test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async
   const findMatchingElem = (event: any) => {
     return find(redisValues, elem => {
       const parsedElem = JSON.parse(elem);
-      return isEqual(parsedElem.e, event) && isEqual(parsedElem.m, fakeRedisMetadata);
+      return isEqual(parsedElem.e, event) && isEqual(parsedElem.m, fakeMetadata);
     });
   };
 
