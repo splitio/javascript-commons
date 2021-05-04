@@ -83,7 +83,7 @@ export function segmentChangesUpdaterFactory(
       }
 
       return Promise.all(updaters).then(shouldUpdateFlags => {
-        // if at least one segment fetch successes, mark segments ready
+        // if at least one segment fetch succeeded, mark segments ready
         if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
           if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);

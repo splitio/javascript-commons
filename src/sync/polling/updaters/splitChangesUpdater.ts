@@ -26,7 +26,6 @@ function checkAllSegmentsExist(segmentsStorage: ISegmentsCacheBase): Promise<boo
  * Exported for testing purposes.
  */
 export function parseSegments({ conditions }: ISplit): ISet<string> {
-
   let segments = new _Set<string>();
 
   for (let i = 0; i < conditions.length; i++) {
