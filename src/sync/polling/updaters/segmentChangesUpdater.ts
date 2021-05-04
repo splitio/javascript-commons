@@ -1,5 +1,5 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
-import { ISegmentsCacheSync } from '../../../storages/types';
+import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISegmentChangesResponse } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
@@ -15,12 +15,17 @@ type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetch
  *  - fetches segment changes using `segmentChangesFetcher`
  *  - updates `segmentsCache`
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
+ *
+ * @param log logger instance
+ * @param segmentChangesFetcher fetcher of `/segmentChanges`
+ * @param segmentsCache segments storage, with sync or async methods
+ * @param readiness optional readiness manager. Not required for synchronizer or producer mode.
  */
 export function segmentChangesUpdaterFactory(
   log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
-  segmentsCache: ISegmentsCacheSync,
-  readiness: IReadinessManager,
+  segmentsCache: ISegmentsCacheBase,
+  readiness?: IReadinessManager,
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -46,56 +51,58 @@ export function segmentChangesUpdaterFactory(
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
-    let segments = segmentNames ? segmentNames : segmentsCache.getRegisteredSegments();
-    if (fetchOnlyNew) segments = segments.filter(segmentName => segmentsCache.getChangeNumber(segmentName) === -1);
+    let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segmentsCache.getRegisteredSegments());
 
-    // Async fetchers are collected here.
-    const updaters: Promise<number>[] = [];
+    return segmentsPromise.then(segments => {
+      if (fetchOnlyNew) segments = segments.filter(segmentName => segmentsCache.getChangeNumber(segmentName) === -1);
 
-    for (let index = 0; index < segments.length; index++) {
-      const segmentName = segments[index];
-      const since = segmentsCache.getChangeNumber(segmentName);
+      // Async fetchers are collected here.
+      const updaters: Promise<number>[] = [];
 
-      log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
+      for (let index = 0; index < segments.length; index++) {
+        const segmentName = segments[index];
+        log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
+        let sincePromise = Promise.resolve(segmentsCache.getChangeNumber(segmentName));
 
-      updaters.push(segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
-        let changeNumber = -1;
-        changes.forEach(x => {
-          if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
-          if (x.removed.length > 0) segmentsCache.removeFromSegment(segmentName, x.removed);
-          if (x.added.length > 0 || x.removed.length > 0) {
-            segmentsCache.setChangeNumber(segmentName, x.till);
-            changeNumber = x.till;
-          }
+        updaters.push(sincePromise.then(since => segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
+          let changeNumber = -1;
+          changes.forEach(x => {
+            if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
+            if (x.removed.length > 0) segmentsCache.removeFromSegment(segmentName, x.removed);
+            if (x.added.length > 0 || x.removed.length > 0) {
+              segmentsCache.setChangeNumber(segmentName, x.till);
+              changeNumber = x.till;
+            }
 
-          log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
-        });
+            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+          });
 
-        return changeNumber;
-      }));
+          return changeNumber;
+        })));
 
-    }
-
-    return Promise.all(updaters).then(shouldUpdateFlags => {
-      // if at least one segment fetch successes, mark segments ready
-      if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
-        readyOnAlreadyExistentState = false;
-        readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
-      }
-      // if at least one segment fetch fails, return false to indicate that there was some error (e.g., invalid json, HTTP error, etc)
-      if (shouldUpdateFlags.indexOf(-1) !== -1) return false;
-      return true;
-    }).catch(error => {
-      // handle user callback errors
-      if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
-
-      if (error.statusCode === 403) {
-        // @TODO although factory status is destroyed, synchronization is not stopped
-        readiness.destroy();
-        log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
       }
 
-      return false;
+      return Promise.all(updaters).then(shouldUpdateFlags => {
+        // if at least one segment fetch succeeded, mark segments ready
+        if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
+          readyOnAlreadyExistentState = false;
+          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+        }
+        // if at least one segment fetch fails, return false to indicate that there was some error (e.g., invalid json, HTTP error, etc)
+        if (shouldUpdateFlags.indexOf(-1) !== -1) return false;
+        return true;
+      }).catch(error => {
+        // handle user callback errors
+        if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
+
+        if (error.statusCode === 403) {
+          // @TODO although factory status is destroyed, synchronization is not stopped
+          if (readiness) readiness.destroy();
+          log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
+        }
+
+        return false;
+      });
     });
   };
 

@@ -1,4 +1,4 @@
-import { MaybeThenable, ISplitFiltersValidation, IMetadata } from '../dtos/types';
+import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
@@ -332,14 +332,14 @@ export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
   log: ILogger,
-  eventsQueueSize: number,
-  optimize: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
+  eventsQueueSize?: number,
+  optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
 
   // ATM, only used by InLocalStorage
   matchingKey?: string, /* undefined on server-side SDKs */
-  splitFiltersValidation: ISplitFiltersValidation,
+  splitFiltersValidation?: ISplitFiltersValidation,
 
   // Used by InRedis and Pluggable Storage
-  readinessManager: IReadinessManager,
+  readinessManager?: IReadinessManager,
   metadata: IMetadata,
 }
