@@ -1,5 +1,5 @@
 import { IImpressionsCacheAsync } from '../types';
-import { IRedisMetadata } from '../../dtos/types';
+import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
@@ -8,9 +8,9 @@ export default class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
 
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
-  private readonly metadata: IRedisMetadata;
+  private readonly metadata: IMetadata;
 
-  constructor(keys: KeyBuilderSS, redis: Redis, metadata: IRedisMetadata) {
+  constructor(keys: KeyBuilderSS, redis: Redis, metadata: IMetadata) {
     this.keys = keys;
     this.redis = redis;
     this.metadata = metadata;

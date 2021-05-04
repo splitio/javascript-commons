@@ -3,7 +3,7 @@ import { ISignalListener } from './types';
 import thenable from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
-import { logPrefixCleanup, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+import { LOG_PREFIX_CLEANUP, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 
 const SIGTERM = 'SIGTERM';
 const EVENT_NAME = 'for SIGTERM signal.';
@@ -49,14 +49,14 @@ export default class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, SIGTERM);
     };
 
-    this.settings.log.debug(logPrefixCleanup + 'Split SDK graceful shutdown after SIGTERM.');
+    this.settings.log.debug(`${LOG_PREFIX_CLEANUP}Split SDK graceful shutdown after SIGTERM.`);
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      this.settings.log.error(logPrefixCleanup + `Error with Split SDK graceful shutdown: ${err}`);
+      this.settings.log.error(`${LOG_PREFIX_CLEANUP}Error with Split SDK graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

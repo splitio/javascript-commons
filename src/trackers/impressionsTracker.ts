@@ -3,8 +3,7 @@ import thenable from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
 import { IImpressionCountsCacheBase, IImpressionsCacheBase } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
-import { IMetadata } from '../dtos/types';
-import { SplitIO, ImpressionDTO } from '../types';
+import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { ILogger } from '../logger/types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
@@ -24,7 +23,7 @@ export default function impressionsTrackerFactory(
   impressionsCache: IImpressionsCacheBase,
 
   // @TODO consider passing only an optional integrationsManager to handle impressions
-  { ip, hostname, version }: IMetadata,
+  { runtime: { ip, hostname }, version }: Pick<ISettings, 'version' | 'runtime'>,
   impressionListener?: SplitIO.IImpressionListener,
   integrationsManager?: IImpressionsHandler,
 

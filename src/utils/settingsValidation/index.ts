@@ -76,6 +76,11 @@ const base = {
     impressionsMode: OPTIMIZED
   },
 
+  runtime: {
+    ip: false,
+    hostname: false
+  },
+
   // Logger
   log: undefined
 };
@@ -130,7 +135,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // Current ip/hostname information
   // @ts-ignore, modify readonly prop
-  withDefaults.runtime = runtime(withDefaults);
+  if (runtime) withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
