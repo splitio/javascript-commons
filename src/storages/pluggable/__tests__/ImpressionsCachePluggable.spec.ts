@@ -3,11 +3,11 @@ import KeyBuilderSS from '../../KeyBuilderSS';
 import { ImpressionsCachePluggable } from '../ImpressionsCachePluggable';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMock } from './wrapper.mock';
-import { IRedisMetadata } from '../../../dtos/types';
+import { IMetadata } from '../../../dtos/types';
 
 const prefix = 'impr_cache_ut';
 const impressionsKey = `${prefix}.impressions`;
-const testMeta: IRedisMetadata = { i: 'some_ip', n: 'some_host', s: 'some_sdk_version' }; // @ts-ignore
+const testMeta: IMetadata = { i: 'some_ip', n: 'some_host', s: 'some_sdk_version' }; // @ts-ignore
 const keys = new KeyBuilderSS(prefix, testMeta);
 
 const o1 = {
