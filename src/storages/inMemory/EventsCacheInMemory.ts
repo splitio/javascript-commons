@@ -10,7 +10,12 @@ export default class EventsCacheInMemory implements IEventsCacheSync {
   private queue: SplitIO.EventData[];
   private queueByteSize: number;
 
-  constructor(eventsQueueSize: number) {
+  /**
+   *
+   * @param eventsQueueSize number of queued events to call onFullQueueCb.
+   * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
+   */
+  constructor(eventsQueueSize: number = 0) {
     this.maxQueue = eventsQueueSize;
     this.queue = [];
     this.queueByteSize = 0;
