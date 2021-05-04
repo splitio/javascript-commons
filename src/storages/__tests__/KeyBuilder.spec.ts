@@ -67,7 +67,7 @@ test('KEYS / traffic type keys', () => {
 
 test('KEYS / impressions', () => {
   const prefix = 'SPLITIO';
-  const metadata = { version: 'js-1234', ip: '10-10-10-10', hostname: 'UNKNOWN' };
+  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const expectedImpressionKey = `${prefix}.impressions`;
@@ -92,13 +92,13 @@ test('KEYS / events', () => {
 
 test('KEYS / latency keys', () => {
   const prefix = 'SPLITIO';
-  const metadata = { version: 'js-1234', ip: '10-10-10-10', hostname: 'UNKNOWN' };
+  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const metricName = 'unit testing metric name';
   const bucketNumber = '10';
 
-  const expectedLatencyKey = `${prefix}/${metadata.version}/${metadata.ip}/latency.${metricName}.bucket.${bucketNumber}`;
+  const expectedLatencyKey = `${prefix}/${metadata.s}/${metadata.i}/latency.${metricName}.bucket.${bucketNumber}`;
 
   expect(builder.buildLatencyKey(metricName, bucketNumber) === expectedLatencyKey).toBe(true);
 

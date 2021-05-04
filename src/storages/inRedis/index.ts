@@ -8,7 +8,6 @@ import EventsCacheInRedis from './EventsCacheInRedis';
 import LatenciesCacheInRedis from './LatenciesCacheInRedis';
 import CountsCacheInRedis from './CountsCacheInRedis';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-import { metadataBuilder } from '../metadataBuilder';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -23,18 +22,16 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
 
   const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
-  return function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+  return function InRedisStorageFactory({ log, readinessManager, metadata}: IStorageFactoryParams): IStorageAsync {
 
-    const log = params.log;
-    const metadata = metadataBuilder(params.metadata);
-    const keys = new KeyBuilderSS(prefix, { version: metadata.s, ip: metadata.i, hostname: metadata.n });
+    const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
 
     // subscription to Redis connect event in order to emit SDK_READY event
     // @TODO pass a callback to simplify custom storages
     redisClient.on('connect', () => {
-      params.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-      params.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     });
 
     return {
