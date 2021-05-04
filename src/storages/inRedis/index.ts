@@ -28,12 +28,12 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
     const redisClient = new RedisAdapter(log, options.options || {});
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
-    if (readinessManager) {
-      redisClient.on('connect', () => {
+    redisClient.on('connect', () => {
+      if (readinessManager) {
         readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
         readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-      });
-    }
+      }
+    });
 
     return {
       splits: new SplitsCacheInRedis(log, keys, redisClient),
