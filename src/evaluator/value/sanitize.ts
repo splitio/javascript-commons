@@ -28,7 +28,7 @@ function sanitizeArray(val: any): string[] | undefined {
   return arr.length ? arr : undefined;
 }
 
-function sanitizeBoolean(val: any): boolean | undefined {
+export function sanitizeBoolean(val: any): boolean | undefined {
   if (val === true || val === false) return val;
 
   if (typeof val === 'string') {
