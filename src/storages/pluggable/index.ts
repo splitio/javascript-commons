@@ -39,7 +39,6 @@ export function PluggableStorage(options: PluggableStorageOptions) {
   const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
   return function PluggableStorageFactory({ log, metadata, readinessManager }: IStorageFactoryParams): IStorageAsync {
-
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
