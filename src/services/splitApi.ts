@@ -14,9 +14,9 @@ function userKeyToQueryParam(userKey: string) {
  * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
  * @param settings validated settings object
- * @param platform environment-specific dependencies
+ * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
-export function splitApiFactory(settings: ISettings, platform: IPlatform): ISplitApi {
+export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = (settings as ISettingsInternal).sync.__splitFiltersValidation && (settings as ISettingsInternal).sync.__splitFiltersValidation.queryString;
