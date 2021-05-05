@@ -16,12 +16,13 @@ export interface PluggableStorageOptions {
 }
 
 /**
- * Validate the options given to the pluggable storage factory.
+ * Validate pluggable storage factory options.
+ *
  * @param options user options
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
 function validatePluggableStorageOptions(options: any) {
-  if (!isObject(options) || !isObject(options.wrapper)) throw new Error('No wrapper provided');
+  if (!isObject(options) || !isObject(options.wrapper)) throw new Error('No `wrapper` option was provided');
 
   const wrapper = options.wrapper;
   const missingMethods = METHODS_TO_PROMISE_WRAP.filter(method => typeof wrapper[method] !== 'function');

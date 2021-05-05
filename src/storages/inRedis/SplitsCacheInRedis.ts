@@ -24,11 +24,22 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
   private readonly log: ILogger;
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
+  private redisError?: string;
 
   constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
     this.log = log;
     this.redis = redis;
     this.keys = keys;
+
+    // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected and handled by redis storage adapters.
+    // But it is done just to avoid getting the ioredis message `Unhandled error event`.
+    this.redis.on('error', (e) => {
+      this.redisError = e;
+    });
+
+    this.redis.on('connect', () => {
+      this.redisError = undefined;
+    });
   }
 
   // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
@@ -82,6 +93,12 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    * Returned promise is rejected if redis operation fails.
    */
   getSplit(name: string): Promise<string | null> {
+    if (this.redisError) {
+      this.log.error(LOG_PREFIX + this.redisError);
+
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+    }
+
     return this.redis.get(this.keys.buildSplitKey(name));
   }
 
@@ -165,6 +182,12 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
    * Returned promise is rejected if redis operation fails.
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
+    if (this.redisError) {
+      this.log.error(LOG_PREFIX + this.redisError);
+
+      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+    }
+
     const splits: Record<string, string | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
