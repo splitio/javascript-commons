@@ -2,8 +2,8 @@ import { IEventEmitter, IStatusInterface } from '../types';
 
 /** Splits data emitter */
 
-type SDK_SPLITS_ARRIVED = 'SDK_SPLITS_ARRIVED'
-type SDK_SPLITS_CACHE_LOADED = 'SDK_SPLITS_CACHE_LOADED'
+type SDK_SPLITS_ARRIVED = 'state::splits-arrived'
+type SDK_SPLITS_CACHE_LOADED = 'state::splits-cache-loaded'
 type ISplitsEvent = SDK_SPLITS_ARRIVED | SDK_SPLITS_CACHE_LOADED
 
 export interface ISplitsEventEmitter extends IEventEmitter {
@@ -16,7 +16,7 @@ export interface ISplitsEventEmitter extends IEventEmitter {
 
 /** Segments data emitter */
 
-type SDK_SEGMENTS_ARRIVED = 'SDK_SEGMENTS_ARRIVED'
+type SDK_SEGMENTS_ARRIVED = 'state::segments-arrived'
 type ISegmentsEvent = SDK_SEGMENTS_ARRIVED
 
 export interface ISegmentsEventEmitter extends IEventEmitter {

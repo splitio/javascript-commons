@@ -31,6 +31,8 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     this.redis = redis;
     this.keys = keys;
 
+    // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected and handled by redis storage adapters.
+    // But it is done just to avoid getting the ioredis message `Unhandled error event`.
     this.redis.on('error', (e) => {
       this.redisError = e;
     });
