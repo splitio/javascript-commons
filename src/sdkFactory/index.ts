@@ -11,6 +11,7 @@ import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 /**
  * Modular SDK factory
@@ -28,6 +29,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
+  const readinessManager = sdkReadinessManager.readinessManager;
 
   // @TODO consider passing the settings object, so that each storage access only what it needs
   const storageFactoryParams = {
@@ -38,8 +40,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // Used by InRedis and Pluggable Storage
-    readinessManager: sdkReadinessManager.readinessManager,
+    // Used by InRedis and Pluggable Storage in consumer mode to emit SDK_READY
+    onReadyCb: () => {
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+    },
     metadata: metadataBuilder(settings),
     log
   };

@@ -1,6 +1,5 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
-import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
 /**
@@ -344,6 +343,6 @@ export interface IStorageFactoryParams {
   splitFiltersValidation?: ISplitFiltersValidation,
 
   // Used by InRedis and Pluggable Storage
-  readinessManager?: IReadinessManager,
+  onReadyCb?: () => void,
   metadata: IMetadata,
 }

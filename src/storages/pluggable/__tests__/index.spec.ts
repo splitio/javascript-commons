@@ -16,7 +16,8 @@ describe('PLUGGABLE STORAGE', () => {
 
   const internalSdkParams: IStorageFactoryParams = {
     log: loggerMock,
-    metadata
+    metadata,
+    onReadyCb: jest.fn()
   };
 
   afterEach(() => {
@@ -35,6 +36,8 @@ describe('PLUGGABLE STORAGE', () => {
 
     await storage.destroy();
     expect(wrapperMock.close).toBeCalledTimes(1); // wrapper close method should be called once when storage is destroyed
+
+    expect(internalSdkParams.onReadyCb).toBeCalledTimes(1); // onReady callback should be called when the wrapper connect resolved with true
   });
 
   test('throws an exception if wrapper doesn\'t implement the expected interface', async () => {

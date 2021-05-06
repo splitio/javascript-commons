@@ -5,8 +5,6 @@ import { SplitsCachePluggable } from './SplitsCachePluggable';
 import { SegmentsCachePluggable } from './SegmentsCachePluggable';
 import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
 import { EventsCachePluggable } from './EventsCachePluggable';
-
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 
@@ -41,16 +39,13 @@ export function PluggableStorage(options: PluggableStorageOptions) {
 
   const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
-  return function PluggableStorageFactory({ log, metadata, readinessManager }: IStorageFactoryParams): IStorageAsync {
+  return function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
     // subscription to Wrapper connect event in order to emit SDK_READY event
-    wrapper.connect().then(() => {
-      if (readinessManager) {
-        readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-        readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-      }
+    wrapper.connect().then((ready) => {
+      if (ready && onReadyCb) onReadyCb();
     });
 
     return {
