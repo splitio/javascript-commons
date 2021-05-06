@@ -42,17 +42,18 @@ describe('PLUGGABLE STORAGE', () => {
     expect(() => PluggableStorage({ wrapper: wrapperMock })).not.toThrow(); // not prefix but valid wrapper is OK
 
     // Throws exception if no object is passed as wrapper
-    const errorNoWrapper = 'No `wrapper` option was provided';
-    expect(() => PluggableStorage()).toThrow(errorNoWrapper);
-    expect(() => PluggableStorage({ wrapper: undefined })).toThrow(errorNoWrapper);
-    expect(() => PluggableStorage({ wrapper: 'invalid wrapper' })).toThrow(errorNoWrapper);
+    const errorNoValidWrapper = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
+    expect(() => PluggableStorage()).toThrow(errorNoValidWrapper);
+    expect(() => PluggableStorage({ wrapper: undefined })).toThrow(errorNoValidWrapper);
+    expect(() => PluggableStorage({ wrapper: 'invalid wrapper' })).toThrow(errorNoValidWrapper);
 
     // Throws exception if the given object is not a valid wrapper, informing which methods are missing
     const invalidWrapper = wrapperMockFactory();
     invalidWrapper.connect = undefined;
     invalidWrapper.close = 'invalid function';
-    expect(() => PluggableStorage({ wrapper: invalidWrapper })).toThrow('Wrapper instance must implement the following methods: connect,close');
-    expect(() => PluggableStorage({ wrapper: {} })).toThrow('Wrapper instance must implement the following methods: get,set,getAndSet,del,getKeysByPrefix,getByPrefix,incr,decr,getMany,pushItems,popItems,getItemsCount,itemContains,connect,close');
+    const errorNoValidWrapperInterface = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
+    expect(() => PluggableStorage({ wrapper: invalidWrapper })).toThrow(errorNoValidWrapperInterface);
+    expect(() => PluggableStorage({ wrapper: {} })).toThrow(errorNoValidWrapperInterface);
   });
 
 });

@@ -10,6 +10,9 @@ import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/consta
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 
+const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
+const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
+
 export interface PluggableStorageOptions {
   prefix?: string
   wrapper: ICustomStorageWrapper
@@ -22,11 +25,11 @@ export interface PluggableStorageOptions {
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
 function validatePluggableStorageOptions(options: any) {
-  if (!isObject(options) || !isObject(options.wrapper)) throw new Error('No `wrapper` option was provided');
+  if (!isObject(options) || !isObject(options.wrapper)) throw new Error(NO_VALID_WRAPPER);
 
   const wrapper = options.wrapper;
   const missingMethods = METHODS_TO_PROMISE_WRAP.filter(method => typeof wrapper[method] !== 'function');
-  if (missingMethods.length) throw new Error(`Wrapper instance must implement the following methods: ${missingMethods}`);
+  if (missingMethods.length) throw new Error(`${NO_VALID_WRAPPER_INTERFACE} The following methods are missing or invalid: ${missingMethods}`);
 }
 
 /**

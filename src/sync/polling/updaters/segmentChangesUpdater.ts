@@ -54,8 +54,6 @@ export function segmentChangesUpdaterFactory(
     let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segmentsCache.getRegisteredSegments());
 
     return segmentsPromise.then(segments => {
-      if (fetchOnlyNew) segments = segments.filter(segmentName => segmentsCache.getChangeNumber(segmentName) === -1);
-
       // Async fetchers are collected here.
       const updaters: Promise<number>[] = [];
 
@@ -64,21 +62,26 @@ export function segmentChangesUpdaterFactory(
         log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
         let sincePromise = Promise.resolve(segmentsCache.getChangeNumber(segmentName));
 
-        updaters.push(sincePromise.then(since => segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
-          let changeNumber = -1;
-          changes.forEach(x => {
-            if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
-            if (x.removed.length > 0) segmentsCache.removeFromSegment(segmentName, x.removed);
-            if (x.added.length > 0 || x.removed.length > 0) {
-              segmentsCache.setChangeNumber(segmentName, x.till);
-              changeNumber = x.till;
-            }
+        updaters.push(sincePromise.then(since => {
+          // if fetchOnlyNew flag, avoid processing already fetched segments
+          if (fetchOnlyNew && since !== -1) return -1;
 
-            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+          return segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
+            let changeNumber = -1;
+            changes.forEach(x => {
+              if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
+              if (x.removed.length > 0) segmentsCache.removeFromSegment(segmentName, x.removed);
+              if (x.added.length > 0 || x.removed.length > 0) {
+                segmentsCache.setChangeNumber(segmentName, x.till);
+                changeNumber = x.till;
+              }
+
+              log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            });
+
+            return changeNumber;
           });
-
-          return changeNumber;
-        })));
+        }));
 
       }
 
