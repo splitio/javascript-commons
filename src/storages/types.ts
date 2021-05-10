@@ -341,7 +341,8 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // Used by InRedis and Pluggable Storage
+  // This callback is invoked when the storage is ready to be used. If an error is passed, it means that the storge fail to connect and shouldn't be used.
+  // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer tasks to wait before using the storage.
   onReadyCb?: (error?: any) => void,
   metadata: IMetadata,
 }
