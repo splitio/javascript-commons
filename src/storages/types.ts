@@ -342,6 +342,6 @@ export interface IStorageFactoryParams {
   splitFiltersValidation?: ISplitFiltersValidation,
 
   // Used by InRedis and Pluggable Storage
-  onConnectCb?: (error?: any) => void,
+  onReadyCb?: (error?: any) => void,
   metadata: IMetadata,
 }
