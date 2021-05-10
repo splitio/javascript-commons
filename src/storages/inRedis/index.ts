@@ -21,14 +21,14 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
 
   const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
-  return function InRedisStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  return function InRedisStorageFactory({ log, metadata, onConnectCb }: IStorageFactoryParams): IStorageAsync {
 
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
-      if (onReadyCb) onReadyCb();
+      if (onConnectCb) onConnectCb();
     });
 
     return {

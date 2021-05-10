@@ -2,7 +2,7 @@ import { ISdkFactoryParams } from './types';
 import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
 import impressionsTrackerFactory from '../trackers/impressionsTracker';
 import eventTrackerFactory from '../trackers/eventTracker';
-import { IStorageSync } from '../storages/types';
+import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';
 import { getMatching } from '../utils/key';
@@ -32,7 +32,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const readinessManager = sdkReadinessManager.readinessManager;
 
   // @TODO consider passing the settings object, so that each storage access only what it needs
-  const storageFactoryParams = {
+  const storageFactoryParams: IStorageFactoryParams = {
     eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
 
@@ -41,7 +41,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
     // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
-    onReadyCb: !syncManagerFactory ? () => {
+    onConnectCb: !syncManagerFactory ? (e) => {
+      if (e) return; // don't emit SDK_READY if storage fail to connect.
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     } : undefined,

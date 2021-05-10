@@ -83,13 +83,12 @@ export interface ICustomStorageWrapper {
 
   /**
    * For storages that requires to be connected, like database servers.
-   * Return a promise that resolves with a boolean value:
-   *   - true if the operation succeeded,
-   *   - or false if the operation failed.
+   * Return a promise that resolves when the wrapper successfully connect to the underlying storage,
+   * or rejects if the wrapper fails to connect.
    *
    * Note: will be called once on SplitFactory instantiation.
    */
-  connect: () => Promise<boolean>
+  connect: () => Promise<void>
   /**
    * For storages that requires to be closed, for example, to release resources.
    *
@@ -343,6 +342,6 @@ export interface IStorageFactoryParams {
   splitFiltersValidation?: ISplitFiltersValidation,
 
   // Used by InRedis and Pluggable Storage
-  onReadyCb?: () => void,
+  onConnectCb?: (error?: any) => void,
   metadata: IMetadata,
 }

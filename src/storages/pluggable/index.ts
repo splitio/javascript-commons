@@ -39,13 +39,15 @@ export function PluggableStorage(options: PluggableStorageOptions) {
 
   const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
 
-  return function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  return function PluggableStorageFactory({ log, metadata, onConnectCb }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
     // subscription to Wrapper connect event in order to emit SDK_READY event
-    wrapper.connect().then((ready) => {
-      if (ready && onReadyCb) onReadyCb();
+    wrapper.connect().then(() => {
+      if (onConnectCb) onConnectCb();
+    }).catch((e) => {
+      if (onConnectCb) onConnectCb(e || new Error('Error connecting wrapper'));
     });
 
     return {
