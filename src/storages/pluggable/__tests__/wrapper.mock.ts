@@ -79,7 +79,7 @@ export function wrapperMockFactory() {
     }),
 
     // always connects and close
-    connect: jest.fn(() => Promise.resolve(true)),
+    connect: jest.fn(() => Promise.resolve()),
     close: jest.fn(() => Promise.resolve()),
 
     mockClear() {

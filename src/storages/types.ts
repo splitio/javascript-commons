@@ -1,6 +1,5 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
-import { IReadinessManager } from '../readiness/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
 /**
@@ -84,13 +83,12 @@ export interface ICustomStorageWrapper {
 
   /**
    * For storages that requires to be connected, like database servers.
-   * Return a promise that resolves with a boolean value:
-   *   - true if the operation succeeded,
-   *   - or false if the operation failed.
+   * Return a promise that resolves when the wrapper successfully connect to the underlying storage,
+   * or rejects if the wrapper fails to connect.
    *
    * Note: will be called once on SplitFactory instantiation.
    */
-  connect: () => Promise<boolean>
+  connect: () => Promise<void>
   /**
    * For storages that requires to be closed, for example, to release resources.
    *
@@ -343,7 +341,8 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // Used by InRedis and Pluggable Storage
-  readinessManager?: IReadinessManager,
+  // This callback is invoked when the storage is ready to be used. If an error is passed, it means that the storge fail to connect and shouldn't be used.
+  // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer tasks to wait before using the storage.
+  onReadyCb?: (error?: any) => void,
   metadata: IMetadata,
 }

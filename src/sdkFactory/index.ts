@@ -2,7 +2,7 @@ import { ISdkFactoryParams } from './types';
 import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
 import impressionsTrackerFactory from '../trackers/impressionsTracker';
 import eventTrackerFactory from '../trackers/eventTracker';
-import { IStorageSync } from '../storages/types';
+import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';
 import { getMatching } from '../utils/key';
@@ -11,6 +11,7 @@ import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 /**
  * Modular SDK factory
@@ -28,9 +29,10 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
+  const readinessManager = sdkReadinessManager.readinessManager;
 
   // @TODO consider passing the settings object, so that each storage access only what it needs
-  const storageFactoryParams = {
+  const storageFactoryParams: IStorageFactoryParams = {
     eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
 
@@ -38,8 +40,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // Used by InRedis and Pluggable Storage
-    readinessManager: sdkReadinessManager.readinessManager,
+    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
+    onReadyCb: !syncManagerFactory ? (error) => {
+      if (error) return; // don't emit SDK_READY if storage failed to connect.
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+    } : undefined,
     metadata: metadataBuilder(settings),
     log
   };
