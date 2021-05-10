@@ -40,11 +40,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // Used by InRedis and Pluggable Storage in consumer mode to emit SDK_READY
-    onReadyCb: () => {
+    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
+    onReadyCb: !syncManagerFactory ? () => {
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-    },
+    } : undefined,
     metadata: metadataBuilder(settings),
     log
   };
