@@ -41,8 +41,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
     // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
-    onReadyCb: !syncManagerFactory ? (e) => {
-      if (e) return; // don't emit SDK_READY if storage failed to connect.
+    onReadyCb: !syncManagerFactory ? (error) => {
+      if (error) return; // don't emit SDK_READY if storage failed to connect.
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     } : undefined,
