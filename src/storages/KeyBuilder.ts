@@ -37,6 +37,7 @@ export default class KeyBuilder {
     return `${this.prefix}.split.`;
   }
 
+  // @TODO remove, since it is not set by Synchronizer. ATM, only used by InLocalStorage.
   buildSplitsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }
