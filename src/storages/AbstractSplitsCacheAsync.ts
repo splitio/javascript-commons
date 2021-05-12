@@ -20,7 +20,7 @@ export default abstract class AbstractSplitsCacheAsync implements ISplitsCacheAs
   abstract clear(): Promise<boolean | void>
 
   // @TODO revisit segment-related methods ('usesSegments', 'getRegisteredSegments', 'registerSegments')
-  // noop, just keeping the interface. This is used by client-side API only, and so only implemented by InLocalStorage.
+  // noop, just keeping the interface. This is used by standalone client-side API only, and so only implemented by InMemory and InLocalStorage.
   usesSegments(): Promise<boolean> {
     return Promise.resolve(true);
   }
