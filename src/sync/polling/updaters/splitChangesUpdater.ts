@@ -80,8 +80,8 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
  *
  * @param log  Logger instance
  * @param splitChangesFetcher  Fetcher of `/splitChanges`
- * @param splitsCache  Splits storage, with sync or async methods
- * @param segmentsCache  Segments storage, with sync or async methods
+ * @param splits  Splits storage, with sync or async methods
+ * @param segments  Segments storage, with sync or async methods
  * @param splitsEventEmitter  Optional readiness manager. Not required for synchronizer or producer mode.
  * @param requestTimeoutBeforeReady  How long the updater will wait for the request to timeout. Default 0, i.e., never timeout.
  * @param retriesOnFailureBeforeReady  How many retries on `/splitChanges` we the updater do in case of failure or timeout. Default 0, i.e., no retries.

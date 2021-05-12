@@ -36,6 +36,9 @@ export const wrapperWithIssues = {
   popItems: invalidThenable,
   getItemsCount: 'invalid value',
   itemContains: throwsException,
+  addItems: { then: 10 },
+  removeItems: invalidThenable,
+  getItems: { then: () => { throw new Error(); } }
 };
 
 const VALID_METHOD_CALLS = {
@@ -51,9 +54,12 @@ const VALID_METHOD_CALLS = {
   'getAndSet': ['some_key', 'some_value'],
   'getByPrefix': ['some_prefix'],
   'pushItems': ['some_key_list', ['item1', 'item2']],
-  'popItems': ['some_key'],
-  'getItemsCount': ['some_key'],
-  'itemContains': ['some_key', 'some_value'],
+  'popItems': ['some_key_list'],
+  'getItemsCount': ['some_key_list'],
+  'itemContains': ['some_key_set', 'some_value'],
+  'addItems': ['some_key_set', ['item1', 'item2']],
+  'removeItems': ['some_key_set', ['item1', 'item2']],
+  'getItems': ['some_key_set'],
 };
 
 // Test target

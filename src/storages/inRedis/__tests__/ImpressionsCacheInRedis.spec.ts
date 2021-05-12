@@ -95,6 +95,7 @@ test('IMPRESSIONS CACHE IN REDIS / should not resolve track before calling expir
 
   // @ts-expect-error
   c.track([i1, i2]).then(() => {
+    connection.del(impressionsKey);
     connection.quit(); // Try to disconnect right away.
     expect(spy1).toBeCalled(); // Redis rpush was called once before executing external callback.
     // Following assertion fails if the expire takes place after disconnected and throws unhandledPromiseRejection

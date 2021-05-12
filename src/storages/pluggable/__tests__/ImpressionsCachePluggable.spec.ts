@@ -50,12 +50,12 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
 
     expect(await cache.track([o1])).toBe(true); // result should resolve to true
 
-    let state = wrapperMock._cache[impressionsKey];
+    let state = wrapperMock._cache[impressionsKey] as string[];
     expect(state.length).toBe(1); // impression should be stored
 
     expect(await cache.track([o2, o3])).toBe(true);
 
-    state = wrapperMock._cache[impressionsKey];
+    state = wrapperMock._cache[impressionsKey] as string[];
     expect(state.length).toBe(3);
     // This is testing both the track and the toJSON method.
     expect(state[0]).toBe(JSON.stringify({

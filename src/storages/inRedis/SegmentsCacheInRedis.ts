@@ -1,14 +1,19 @@
 import { Redis } from 'ioredis';
+import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
+import { SplitError } from '../../utils/lang/errors';
+import { LOG_PREFIX } from '../inLocalStorage/constants';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
 
 export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
 
+  private readonly log: ILogger;
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
 
-  constructor(keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+    this.log = log;
     this.redis = redis;
     this.keys = keys;
   }
@@ -50,12 +55,10 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
+    }).catch((e) => {
+      this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
+      return -1;
     });
-  }
-
-  // @TODO remove: not used and not part of interface
-  registerSegment(segment: string) {
-    return this.registerSegments([segment]);
   }
 
   registerSegments(segments: string[]) {
@@ -67,9 +70,12 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
   }
 
   getRegisteredSegments() {
-    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey());
+    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey())
+      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
+      .catch((e) => { throw new SplitError(e); });
   }
 
+  // @TODO remove/review. It is not being used.
   clear() {
     return this.redis.flushdb().then(status => status === 'OK');
   }
