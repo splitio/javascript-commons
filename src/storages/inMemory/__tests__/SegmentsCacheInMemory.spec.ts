@@ -1,33 +1,62 @@
+import { splitWithUserTT, splitWithAccountTT, parsedSplitWithSegments } from '../../__tests__/testUtils';
 import SegmentsCache from '../SegmentsCacheInMemory';
 
-test('SEGMENTS CACHE / in memory', () => {
-  const cache = new SegmentsCache();
+describe('SEGMENTS CACHE IN MEMORY', () => {
 
-  cache.addToSegment('mocked-segment', [
-    'a', 'b', 'c'
-  ]);
+  test('isInSegment, set/getChangeNumber, add/removeFromSegment', () => {
+    // @ts-ignore
+    const cache = new SegmentsCache();
 
-  cache.setChangeNumber('mocked-segment', 1);
+    cache.addToSegment('mocked-segment', [
+      'a', 'b', 'c'
+    ]);
 
-  cache.removeFromSegment('mocked-segment', [
-    'd'
-  ]);
+    cache.setChangeNumber('mocked-segment', 1);
 
-  expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    cache.removeFromSegment('mocked-segment', [
+      'd'
+    ]);
 
-  cache.addToSegment('mocked-segment', [
-    'd', 'e'
-  ]);
+    expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-  cache.removeFromSegment('mocked-segment', [
-    'a', 'c'
-  ]);
+    cache.addToSegment('mocked-segment', [
+      'd', 'e'
+    ]);
 
-  expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    cache.removeFromSegment('mocked-segment', [
+      'a', 'c'
+    ]);
 
-  expect(cache.isInSegment('mocked-segment', 'a')).toBe(false);
-  expect(cache.isInSegment('mocked-segment', 'b')).toBe(true); // b
-  expect(cache.isInSegment('mocked-segment', 'c')).toBe(false); // c
-  expect(cache.isInSegment('mocked-segment', 'd')).toBe(true); // d
-  expect(cache.isInSegment('mocked-segment', 'e')).toBe(true); // e
+    expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+
+    expect(cache.isInSegment('mocked-segment', 'a')).toBe(false);
+    expect(cache.isInSegment('mocked-segment', 'b')).toBe(true); // b
+    expect(cache.isInSegment('mocked-segment', 'c')).toBe(false); // c
+    expect(cache.isInSegment('mocked-segment', 'd')).toBe(true); // d
+    expect(cache.isInSegment('mocked-segment', 'e')).toBe(true); // e
+  });
+
+  test('get registered segments', async () => {
+    const splitCacheWithoutSplits = {
+      getAll() { return []; }
+    };
+    // @ts-expect-error
+    let cache = new SegmentsCache(splitCacheWithoutSplits);
+    expect(cache.getRegisteredSegments()).toEqual([]);
+
+    const splitCacheWithoutSegments = {
+      getAll() { return [splitWithUserTT, splitWithAccountTT]; }
+    };
+    // @ts-expect-error
+    cache = new SegmentsCache(splitCacheWithoutSegments);
+    expect(cache.getRegisteredSegments()).toEqual([]);
+
+    const splitCacheWithSegments = {
+      getAll() { return [JSON.stringify(parsedSplitWithSegments)]; }
+    };
+    // @ts-expect-error
+    cache = new SegmentsCache(splitCacheWithSegments);
+    expect(cache.getRegisteredSegments()).toEqual(['A', 'B']);
+  });
+
 });

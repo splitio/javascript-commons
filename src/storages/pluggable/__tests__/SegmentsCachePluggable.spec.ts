@@ -13,7 +13,7 @@ describe('SEGMENTS CACHE PLUGGABLE', () => {
     wrapperMock.mockClear();
   });
 
-  test('isInSegment, set/getChangeNumber', async () => {
+  test('isInSegment, set/getChangeNumber, add/removeFromSegment', async () => {
     // @ts-ignore
     const cache = new SegmentsCachePluggable(loggerMock, keyBuilder, wrapperMock);
 
