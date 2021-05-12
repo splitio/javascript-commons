@@ -11,3 +11,11 @@ export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
   expect(!storage.counts || typeof storage.counts === 'object').toBeTruthy;
   expect(!storage.impressionCounts || typeof storage.impressionCounts === 'object').toBeTruthy;
 }
+
+// Split mocks
+
+export const splitWithUserTT = '{ "trafficTypeName": "user_tt", "conditions": [] }';
+
+export const splitWithAccountTT = '{ "trafficTypeName": "account_tt", "conditions": [] }';
+
+export const splitWithAccountTTAndUsesSegments = '{ "trafficTypeName": "account_tt", "conditions": [{ "matcherGroup": { "matchers": [{ "matcherType": "IN_SEGMENT", "userDefinedSegmentMatcherData": { "segmentName": "employees" } }]}}] }';

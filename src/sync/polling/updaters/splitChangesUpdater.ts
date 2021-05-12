@@ -12,11 +12,12 @@ import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SE
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 
 // Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
+// Returns a promise that could be rejected.
 // @TODO review together with Segments and MySegments storage APIs
-function checkAllSegmentsExist(segmentsStorage: ISegmentsCacheBase): Promise<boolean> {
-  let registeredSegments = Promise.resolve(segmentsStorage.getRegisteredSegments());
-  return registeredSegments.then(segments => {
-    return Promise.all(segments.map(segmentName => segmentsStorage.getChangeNumber(segmentName)))
+function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
+  let registeredSegments = Promise.resolve(segments.getRegisteredSegments());
+  return registeredSegments.then(segmentNames => {
+    return Promise.all(segmentNames.map(segmentName => segments.getChangeNumber(segmentName)))
       .then(changeNumbers => changeNumbers.every(changeNumber => changeNumber !== -1));
   });
 }
@@ -88,8 +89,8 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
 export function splitChangesUpdaterFactory(
   log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
-  splitsCache: ISplitsCacheBase,
-  segmentsCache: ISegmentsCacheBase,
+  splits: ISplitsCacheBase,
+  segments: ISegmentsCacheBase,
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
@@ -135,16 +136,17 @@ export function splitChangesUpdaterFactory(
           // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
             // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
-            splitsCache.setChangeNumber(splitChanges.till),
-            splitsCache.addSplits(mutation.added),
-            splitsCache.removeSplits(mutation.removed),
-            segmentsCache.registerSegments(mutation.segments)
+            splits.setChangeNumber(splitChanges.till),
+            splits.addSplits(mutation.added),
+            splits.removeSplits(mutation.removed),
+            segments.registerSegments(mutation.segments)
           ]).then(() => {
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segmentsCache)))
-                .then(emitSplitsArrivedEvent => { if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED); });
+              Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segments)))
+                .then(emitSplitsArrivedEvent => { if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED); })
+                .catch(() => {/** noop. just to handle a possible `checkAllSegmentsExist` promise rejection on custom or redis storage */ });
             }
             return true;
           });
@@ -170,12 +172,12 @@ export function splitChangesUpdaterFactory(
 
       // After triggering the requests, if we have cached splits information let's notify that.
       if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splitsCache.checkCache()).then(cacheReady => { if (cacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED); });
+        Promise.resolve(splits.checkCache()).then(cacheReady => { if (cacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED); });
       }
       return fetcherPromise;
     }
 
-    let sincePromise = Promise.resolve(splitsCache.getChangeNumber());
+    let sincePromise = Promise.resolve(splits.getChangeNumber());
     return sincePromise.then(_splitChangesUpdater);
   };
 }

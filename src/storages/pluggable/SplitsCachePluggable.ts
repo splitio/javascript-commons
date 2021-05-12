@@ -1,16 +1,16 @@
-import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
+import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilder from '../KeyBuilder';
-import { ICustomStorageWrapper, ISplitsCacheAsync } from '../types';
+import { ICustomStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
-import { usesSegments } from '../AbstractSplitsCacheSync';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { SplitError } from '../../utils/lang/errors';
+import AbstractSplitsCacheAsync from '../AbstractSplitsCacheAsync';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
  */
-export class SplitsCachePluggable implements ISplitsCacheAsync {
+export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
@@ -23,39 +23,24 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
    * @param wrapper  Adapted wrapper storage.
    */
   constructor(log: ILogger, keys: KeyBuilder, wrapper: ICustomStorageWrapper) {
+    super();
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
   }
 
   private _decrementCounts(split: ISplit) {
-    const promises = [];
     if (split.trafficTypeName) {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      promises.push(this.wrapper.decr(ttKey));
+      return this.wrapper.decr(ttKey);
     }
-
-    if (usesSegments(split)) {
-      const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-      promises.push(this.wrapper.decr(segmentsCountKey));
-    }
-
-    return Promise.all(promises);
   }
 
   private _incrementCounts(split: ISplit) {
-    const promises = [];
     if (split.trafficTypeName) {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      promises.push(this.wrapper.incr(ttKey));
+      return this.wrapper.incr(ttKey);
     }
-
-    if (usesSegments(split)) {
-      const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-      promises.push(this.wrapper.incr(segmentsCountKey));
-    }
-
-    return Promise.all(promises);
   }
 
   /**
@@ -76,11 +61,11 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
         throw new SplitError('Error parsing split definition: ' + e);
       }
 
-      return Promise.all<boolean[], boolean, boolean[]>([
-        // If it's an update, we decrement the traffic type and segment count of the existing split,
-        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit),
+      return Promise.all([
         this.wrapper.set(splitKey, split),
-        this._incrementCounts(parsedSplit)
+        this._incrementCounts(parsedSplit),
+        // If it's an update, we decrement the traffic type and segment count of the existing split,
+        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
       ]);
     }).then(() => true);
   }
@@ -99,7 +84,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
    * The returned promise is resolved when the operation success, with a boolean indicating if the split existed or not.
    * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
    */
-  removeSplit(name: string): Promise<boolean> {
+  removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
         const parsedSplit = JSON.parse(split);
@@ -114,7 +99,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
    * The returned promise is resolved when the operation success, with a boolean array indicating if the splits existed or not.
    * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
    */
-  removeSplits(names: string[]): Promise<boolean[]> {
+  removeSplits(names: string[]): Promise<void> { // @ts-ignore
     return Promise.all(names.map(name => this.removeSplit(name)));
   }
 
@@ -197,7 +182,7 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
    * The returned promise is resolved when the operation success,
    * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
    */
-  setChangeNumber(changeNumber: number): Promise<boolean> {
+  setChangeNumber(changeNumber: number) {
     return this.wrapper.set(this.keys.buildSplitsTillKey(), changeNumber + '');
   }
 
@@ -217,58 +202,9 @@ export class SplitsCachePluggable implements ISplitsCacheAsync {
     });
   }
 
-  // @TODO revisit segment-related methods ('usesSegments', 'getRegisteredSegments', 'registerSegments')
-  usesSegments(): Promise<boolean> {
-    return this.wrapper.get(this.keys.buildSplitsWithSegmentCountKey())
-      .then(storedCount => {
-        const splitsWithSegmentsCount = storedCount ? toNumber(storedCount) : 0;
-        if (isFiniteNumber(splitsWithSegmentsCount)) {
-          return splitsWithSegmentsCount > 0;
-        } else {
-          return true; // If stored valus is invalid, assume we need them.
-        }
-      }).catch(() => true); // If wrapper operation fails, assume we need them.
-  }
-
-  // @TODO implement for DataLoader/Producer mode
-  clear(): Promise<boolean> {
+  // @TODO implement if required by DataLoader or producer mode
+  clear() {
     return Promise.resolve(true);
   }
 
-  /**
-   * Check if the splits information is already stored in cache.
-   * Noop, just keeping the interface. This is used by client-side implementations only.
-   */
-  checkCache(): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
-  /**
-   * Kill `name` split and set `defaultTreatment` and `changeNumber`.
-   * Used for SPLIT_KILL push notifications.
-   *
-   * @param {string} name
-   * @param {string} defaultTreatment
-   * @param {number} changeNumber
-   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the kill success updating the split or `false` if no split is updated,
-   * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
-   * The promise will never be rejected.
-   */
-  killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean> {
-    return this.getSplit(name).then(split => {
-
-      if (split) {
-        const parsedSplit: ISplit = JSON.parse(split);
-        if (!parsedSplit.changeNumber || parsedSplit.changeNumber < changeNumber) {
-          parsedSplit.killed = true;
-          parsedSplit.defaultTreatment = defaultTreatment;
-          parsedSplit.changeNumber = changeNumber;
-          const newSplit = JSON.stringify(parsedSplit);
-
-          return this.addSplit(name, newSplit);
-        }
-      }
-      return false;
-    }).catch(() => false);
-  }
 }

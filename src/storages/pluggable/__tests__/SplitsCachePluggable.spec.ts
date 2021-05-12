@@ -2,10 +2,8 @@ import { SplitsCachePluggable } from '../SplitsCachePluggable';
 import KeyBuilder from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMockFactory } from './wrapper.mock';
+import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
 
-const splitWithUserTT = '{ "trafficTypeName": "user_tt" }';
-const splitWithAccountTT = '{ "trafficTypeName": "account_tt" }';
-const splitWithAccountTTAndUsesSegments = '{ "trafficTypeName": "account_tt", "conditions": [{ "matcherGroup": { "matchers": [{ "matcherType": "IN_SEGMENT" }]}}] }';
 const keysBuilder = new KeyBuilder();
 
 describe('SPLITS CACHE PLUGGABLE', () => {
@@ -117,25 +115,6 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
 
-  });
-
-  test('usesSegments', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
-
-    await cache.addSplits([['split1', splitWithUserTT], ['split2', splitWithAccountTT],]);
-    expect(await cache.usesSegments()).toBe(false); // 0 splits using segments
-
-    await cache.addSplit('split3', splitWithAccountTTAndUsesSegments);
-    expect(await cache.usesSegments()).toBe(true); // 1 split using segments
-
-    await cache.addSplit('split4', splitWithAccountTTAndUsesSegments);
-    expect(await cache.usesSegments()).toBe(true); // 2 splits using segments
-
-    await cache.removeSplit('split3');
-    expect(await cache.usesSegments()).toBe(true); // 1 split using segments
-
-    await cache.removeSplit('split4');
-    expect(await cache.usesSegments()).toBe(false); // 0 splits using segments
   });
 
   test('killLocally', async () => {

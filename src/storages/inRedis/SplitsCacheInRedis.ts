@@ -1,9 +1,11 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilderSS from '../KeyBuilderSS';
-import { ISplitsCacheAsync } from '../types';
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { ISplit } from '../../dtos/types';
+import { SplitError } from '../../utils/lang/errors';
+import AbstractSplitsCacheAsync from '../AbstractSplitsCacheAsync';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -19,7 +21,7 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
  * ISplitsCacheAsync implementation that stores split definitions in Redis.
  * Supported by Node.
  */
-export default class SplitsCacheInRedis implements ISplitsCacheAsync {
+export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
   private readonly redis: Redis;
@@ -27,6 +29,7 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
   private redisError?: string;
 
   constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+    super();
     this.log = log;
     this.redis = redis;
     this.keys = keys;
@@ -42,50 +45,82 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     });
   }
 
-  // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
-  addSplit(name: string, split: string): Promise<boolean> {
-    return this.redis.set(
-      this.keys.buildSplitKey(name), split
-    ).then(
-      status => status === 'OK'
-    );
-  }
-
-  // @TODO fix: incr/decr TT and segments for producer mode. Follow pluggable storage signature
-  addSplits(entries: [string, string][]): Promise<boolean[]> {
-    if (entries.length) {
-      const cmds = entries.map(keyValuePair => ['set', this.keys.buildSplitKey(keyValuePair[0]), keyValuePair[1]]);
-
-      return this.redis.pipeline(cmds)
-        .exec()
-        .then(processPipelineAnswer)
-        .then(answers => answers.map((status: string) => status === 'OK'));
-    } else {
-      return Promise.resolve([true]);
+  private _decrementCounts(split: ISplit) {
+    if (split.trafficTypeName) {
+      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+      return this.redis.decr(ttKey);
     }
   }
 
-  // @TODO implement for producer mode. Follow pluggable storage signature
-  killLocally(): Promise<boolean> {
-    throw new Error('Method not implemented.');
+  private _incrementCounts(split: ISplit) {
+    if (split.trafficTypeName) {
+      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+      return this.redis.incr(ttKey);
+    }
   }
 
   /**
-   * Remove a given split from Redis. Returns the number of deleted keys.
+   * Add a given split.
+   * The returned promise is resolved when the operation success
+   * or rejected with if it fails (e.g., redis operation fails)
    */
-  removeSplit(name: string): Promise<any> {
-    return this.redis.del(this.keys.buildSplitKey(name));
+  addSplit(name: string, split: string): Promise<boolean> {
+    const splitKey = this.keys.buildSplitKey(name);
+    return this.redis.get(splitKey).then(splitFromStorage => {
+
+      // handling parsing error as SplitErrors
+      let parsedPreviousSplit, parsedSplit;
+      try {
+        parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
+        parsedSplit = JSON.parse(split);
+      } catch (e) {
+        throw new SplitError('Error parsing split definition: ' + e);
+      }
+
+      return Promise.all([
+        this.redis.set(splitKey, split),
+        this._incrementCounts(parsedSplit),
+        // If it's an update, we decrement the traffic type of the existing split,
+        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
+      ]);
+    }).then(([status]) => status === 'OK');
   }
 
   /**
-   * Bulk delete of splits from Redis. Returns the number of deleted keys.
+   * Add a list of splits.
+   * The returned promise is resolved when the operation success
+   * or rejected with an SplitError if it fails (e.g., redis operation fails)
+   */
+  addSplits(entries: [string, string][]): Promise<boolean[]> {
+    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])))
+      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
+      .catch((e) => { throw new SplitError(e); });
+  }
+
+  /**
+   * Remove a given split.
+   * The returned promise is resolved when the operation success, with 1 or 0 indicating if the split existed or not.
+   * or rejected if it fails (e.g., redis operation fails).
+   */
+  removeSplit(name: string): Promise<number> {
+    return this.getSplit(name).then((split) => {
+      if (split) {
+        const parsedSplit = JSON.parse(split);
+        this._decrementCounts(parsedSplit);
+      }
+      return this.redis.del(this.keys.buildSplitKey(name));
+    });
+  }
+
+  /**
+   * Remove a list of splits.
+   * The returned promise is resolved when the operation success,
+   * or rejected with an SplitError if it fails (e.g., redis operation fails).
    */
   removeSplits(names: string[]): Promise<any> {
-    if (names.length) {
-      return this.redis.del(names.map(n => this.keys.buildSplitKey(n)));
-    } else {
-      return Promise.resolve(0);
-    }
+    return Promise.all(names.map(name => this.removeSplit(name)))
+      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
+      .catch((e) => { throw new SplitError(e); });
   }
 
   /**
@@ -104,29 +139,38 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
 
   /**
    * Set till number.
-   *
-   * @TODO pending error handling
+   * The returned promise is resolved when the operation success,
+   * or rejected with an SplitError if it fails.
    */
   setChangeNumber(changeNumber: number): Promise<boolean> {
     return this.redis.set(this.keys.buildSplitsTillKey(), changeNumber + '').then(
       status => status === 'OK'
-    );
+    )
+      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
+      .catch((e) => { throw new SplitError(e); });
   }
 
   /**
    * Get till number or -1 if it's not defined.
-   *
-   * @TODO pending error handling
+   * The returned promise is resolved with the changeNumber or -1 if it doesn't exist or a redis operation fails.
+   * The promise will never be rejected.
    */
   getChangeNumber(): Promise<number> {
     return this.redis.get(this.keys.buildSplitsTillKey()).then((value: string | null) => {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
+    }).catch((e) => {
+      this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from storage. Error: ' + e);
+      return -1;
     });
   }
 
   /**
+   * Get list of all split definitions.
+   * The returned promise is resolved with the list of split definitions,
+   * or rejected if redis operation fails (no need to wrap the error as a SplitError).
+   *
    * @TODO we need to benchmark which is the maximun number of commands we could
    *       pipeline without kill redis performance.
    */
@@ -136,12 +180,23 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
     ).then(processPipelineAnswer);
   }
 
+  /**
+   * Get list of split names.
+   * The returned promise is resolved with the list of split names,
+   * or rejected if redis operation fails (no need to wrap the error as a SplitError).
+   */
   getSplitNames(): Promise<string[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys()).then(
       (listOfKeys) => listOfKeys.map(this.keys.extractKey)
     );
   }
 
+  /**
+   * Check traffic type existence.
+   * The returned promise is resolved with a boolean indicating whether the TT exist or not.
+   * In case of redis operation failure, the promise resolves with a true value, assuming that the TT might exist.
+   * It will never be rejected.
+   */
   trafficTypeExists(trafficType: string): Promise<boolean> {
     // If there is a number there should be > 0, otherwise the TT is considered as not existent.
     return this.redis.get(this.keys.buildTrafficTypeKey(trafficType))
@@ -163,17 +218,12 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
       });
   }
 
-  // noop, just keeping the interface. This is used by client-side implementations only.
-  usesSegments(): Promise<boolean> {
-    return Promise.resolve(true);
-  }
-
   /**
    * Delete everything in the current database.
    *
    * @NOTE documentation says it never fails.
    */
-  clear(): Promise<boolean> {
+  clear() {
     return this.redis.flushdb().then(status => status === 'OK');
   }
 
@@ -203,11 +253,4 @@ export default class SplitsCacheInRedis implements ISplitsCacheAsync {
       });
   }
 
-  /**
-   * Check if the splits information is already stored in cache. Redis would actually be the cache.
-   * Noop, just keeping the interface. This is used by client-side implementations only.
-   */
-  checkCache(): Promise<boolean> {
-    return Promise.resolve(true);
-  }
 }

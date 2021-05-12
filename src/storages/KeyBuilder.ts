@@ -37,6 +37,7 @@ export default class KeyBuilder {
     return `${this.prefix}.split.`;
   }
 
+  // Only used by InLocalStorage.
   buildSplitsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }
