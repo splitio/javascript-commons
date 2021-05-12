@@ -2,9 +2,7 @@ import Redis from 'ioredis';
 import SplitsCacheInRedis from '../SplitsCacheInRedis';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-
-const splitWithUserTT = '{ "trafficTypeName": "user_tt" }';
-const splitWithAccountTT = '{ "trafficTypeName": "account_tt" }';
+import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
 
 describe('SPLITS CACHE REDIS', () => {
 

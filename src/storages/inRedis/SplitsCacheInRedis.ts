@@ -223,7 +223,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    *
    * @NOTE documentation says it never fails.
    */
-  clear(): Promise<boolean> {
+  clear() {
     return this.redis.flushdb().then(status => status === 'OK');
   }
 

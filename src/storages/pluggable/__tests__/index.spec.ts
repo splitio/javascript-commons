@@ -5,7 +5,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { IStorageFactoryParams } from '../../types';
 import { wrapperMock, wrapperMockFactory } from './wrapper.mock';
 
-const metadata = {  s: 'version', i: 'ip', n: 'hostname' };
+const metadata = { s: 'version', i: 'ip', n: 'hostname' };
 const prefix = 'some_prefix';
 
 // Test target

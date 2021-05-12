@@ -1,10 +1,7 @@
 import SplitsCacheInLocal from '../SplitsCacheInLocal';
 import KeyBuilderCS from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-
-const splitWithUserTT = '{ "trafficTypeName": "user_tt" }';
-const splitWithAccountTT = '{ "trafficTypeName": "account_tt" }';
-const splitWithAccountTTAndUsesSegments = '{ "trafficTypeName": "account_tt", "conditions": [{ "matcherGroup": { "matchers": [{ "matcherType": "IN_SEGMENT" }]}}] }';
+import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments } from '../../__tests__/testUtils';
 
 test('SPLIT CACHE / LocalStorage', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));

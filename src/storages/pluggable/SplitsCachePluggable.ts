@@ -202,8 +202,8 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     });
   }
 
-  // @TODO implement if required for DataLoader/Producer mode
-  clear(): Promise<boolean> {
+  // @TODO implement if required by DataLoader or producer mode
+  clear() {
     return Promise.resolve(true);
   }
 
