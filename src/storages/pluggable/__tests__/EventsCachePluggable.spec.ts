@@ -28,7 +28,7 @@ describe('PLUGGABLE EVENTS CACHE', () => {
     // @ts-expect-error
     expect(await cache.track(fakeEvent3)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
 
-    const values = wrapperMock._cache[key];
+    const values = wrapperMock._cache[key] as string[];
 
     expect(values.length).toBe(3); // After pushing we should have as many events as we have stored.
     expect(typeof values[0]).toBe('string'); // All elements should be strings since those are stringified JSONs.

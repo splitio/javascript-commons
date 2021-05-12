@@ -17,6 +17,8 @@ export const METHODS_TO_PROMISE_WRAP: string[] = [
   'popItems',
   'getItemsCount',
   'itemContains',
+  'addItems',
+  'removeItems',
   'connect',
   'close'
 ];

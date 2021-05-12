@@ -1,54 +1,65 @@
 import Redis from 'ioredis';
 import SegmentsCacheInRedis from '../SegmentsCacheInRedis';
 import KeyBuilderSS from '../../KeyBuilderSS';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { splitWithUserTT, splitWithAccountTT, parsedSplitWithSegments } from '../../__tests__/testUtils';
 
-test('SEGMENTS CACHE IN Redis / suite', async () => {
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS();
-  const cache = new SegmentsCacheInRedis(keys, connection);
+describe('SEGMENTS CACHE IN REDIS', () => {
 
-  await cache.clear();
+  test('isInSegment, set/getChangeNumber, add/removeFromSegment', async () => {
+    const connection = new Redis();
 
-  await cache.addToSegment('mocked-segment', ['a', 'b', 'c']);
+    // @ts-expect-error
+    const cache = new SegmentsCacheInRedis(loggerMock, new KeyBuilderSS(), connection);
 
-  await cache.setChangeNumber('mocked-segment', 1);
+    await cache.clear();
 
-  await cache.removeFromSegment('mocked-segment', ['d']);
+    await cache.addToSegment('mocked-segment', ['a', 'b', 'c']);
 
-  expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    await cache.setChangeNumber('mocked-segment', 1);
 
-  await cache.addToSegment('mocked-segment', ['d', 'e']);
+    await cache.removeFromSegment('mocked-segment', ['d']);
 
-  await cache.removeFromSegment('mocked-segment', ['a', 'c']);
+    expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-  expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    expect(await cache.getChangeNumber('inexistent-segment')).toBe(-1); // -1 if the segment doesn't exist
 
-  expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
-  expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);
-  expect(await cache.isInSegment('mocked-segment', 'c')).toBe(false);
-  expect(await cache.isInSegment('mocked-segment', 'd')).toBe(true);
-  expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
+    await cache.addToSegment('mocked-segment', ['d', 'e']);
 
-  await connection.quit();
-});
+    await cache.removeFromSegment('mocked-segment', ['a', 'c']);
 
-test('SEGMENTS CACHE IN Redis / register segments', async () => {
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS();
+    expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-  const cache = new SegmentsCacheInRedis(keys, connection);
+    expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
+    expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);
+    expect(await cache.isInSegment('mocked-segment', 'c')).toBe(false);
+    expect(await cache.isInSegment('mocked-segment', 'd')).toBe(true);
+    expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
 
-  await cache.clear();
+    await connection.quit();
+  });
 
-  await cache.registerSegment('s1');
-  await cache.registerSegment('s2');
-  await cache.registerSegments(['s2', 's3', 's4']);
+  test('get registered segments', async () => {
+    const splitCacheWithoutSplits = {
+      getAll() { return Promise.resolve([]); }
+    };
+    // @ts-expect-error
+    let cache = new SegmentsCacheInRedis(loggerMock, new KeyBuilderSS(), undefined, splitCacheWithoutSplits);
+    expect(await cache.getRegisteredSegments()).toEqual([]);
 
-  const segments = await cache.getRegisteredSegments();
+    const splitCacheWithoutSegments = {
+      getAll() { return Promise.resolve([splitWithUserTT, splitWithAccountTT]); }
+    };
+    // @ts-expect-error
+    cache = new SegmentsCacheInRedis(loggerMock, new KeyBuilderSS(), undefined, splitCacheWithoutSegments);
+    expect(await cache.getRegisteredSegments()).toEqual([]);
 
-  ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
+    const splitCacheWithSegments = {
+      getAll() { return Promise.resolve([JSON.stringify(parsedSplitWithSegments)]); }
+    };
+    // @ts-expect-error
+    cache = new SegmentsCacheInRedis(loggerMock, new KeyBuilderSS(), undefined, splitCacheWithSegments);
+    expect(await cache.getRegisteredSegments()).toEqual(['A', 'B']);
+  });
 
-  await connection.quit();
 });

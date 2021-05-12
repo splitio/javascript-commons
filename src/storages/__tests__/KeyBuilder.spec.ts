@@ -43,11 +43,8 @@ test('KEYS / segments keys', () => {
   const expectedKey = `SPLITIO.segment.${segmentName}`;
   const expectedTill = `SPLITIO.segment.${segmentName}.till`;
 
-  const expectedSegmentRegistered = 'SPLITIO.segments.registered';
-
   expect(builder.buildSegmentNameKey(segmentName) === expectedKey).toBe(true);
   expect(builder.buildSegmentTillKey(segmentName) === expectedTill).toBe(true);
-  expect(builder.buildRegisteredSegmentsKey() === expectedSegmentRegistered).toBe(true);
 
   // NOT USED
   // const expectedReady = 'SPLITIO.segments.ready';

@@ -50,9 +50,11 @@ export function PluggableStorage(options: PluggableStorageOptions) {
       if (onReadyCb) onReadyCb(e || new Error('Error connecting wrapper'));
     });
 
+    const splits = new SplitsCachePluggable(log, keys, wrapper);
+
     return {
-      splits: new SplitsCachePluggable(log, keys, wrapper),
-      segments: new SegmentsCachePluggable(log, keys, wrapper),
+      splits,
+      segments: new SegmentsCachePluggable(log, keys, wrapper, splits),
       impressions: new ImpressionsCachePluggable(log, keys, wrapper, metadata),
       events: new EventsCachePluggable(log, keys, wrapper, metadata),
       // @TODO add telemetry cache when required

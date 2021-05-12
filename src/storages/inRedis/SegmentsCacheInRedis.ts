@@ -1,16 +1,23 @@
 import { Redis } from 'ioredis';
+import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
 import KeyBuilderSS from '../KeyBuilderSS';
-import { ISegmentsCacheAsync } from '../types';
+import { ISegmentsCacheAsync, ISplitsCacheAsync } from '../types';
+import { LOG_PREFIX } from './constants';
+import { getRegisteredSegments } from '../getRegisteredSegments';
 
 export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
 
+  private readonly log: ILogger;
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;
+  private readonly splits: ISplitsCacheAsync;
 
-  constructor(keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis, splits: ISplitsCacheAsync) {
+    this.log = log;
     this.redis = redis;
     this.keys = keys;
+    this.splits = splits;
   }
 
   addToSegment(name: string, segmentKeys: string[]) {
@@ -50,26 +57,19 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
+    }).catch((e) => {
+      this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
+      return -1;
     });
   }
 
-  // @TODO remove: not used and not part of interface
-  registerSegment(segment: string) {
-    return this.registerSegments([segment]);
-  }
-
-  registerSegments(segments: string[]) {
-    if (segments.length) {
-      return this.redis.sadd(this.keys.buildRegisteredSegmentsKey(), segments).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
+  // Segments are computed from splits.
+  // We should not register segments using the `PREFIX.segments.registered` key because GO synchronizer is not setting it.
   getRegisteredSegments() {
-    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey());
+    return this.splits.getAll().then(getRegisteredSegments);
   }
 
+  // @TODO remove/review. It is not being used.
   clear() {
     return this.redis.flushdb().then(status => status === 'OK');
   }

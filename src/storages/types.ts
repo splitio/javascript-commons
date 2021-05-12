@@ -119,15 +119,36 @@ export interface ICustomStorageWrapper {
    */
   getItemsCount: (key: string) => Promise<number>
   /**
-   * Returns if item is a member of a list.
+   * Returns if item is a member of a set.
    *
    * @function itemContains
-   * @param {string} key list key
+   * @param {string} key set key
    * @param {string} item item value
-   * @returns {Promise<boolean>} A promise that resolves with true boolean value if `item` is a member of the list stored at `key`, or false if it is not a member or `key` list does not exist.
-   * The promise rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a list.
+   * @returns {Promise<boolean>} A promise that resolves with true boolean value if `item` is a member of the set stored at `key`, or false if it is not a member or `key` set does not exist.
+   * The promise rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a set.
    */
   itemContains: (key: string, item: string) => Promise<boolean>
+  /**
+   * Add the specified `items` to the set stored at `key`. Those items that are already part of the set are ignored.
+   * If key does not exist, an empty set is created before adding the items.
+   *
+   * @function addItems
+   * @param {string} key set key
+   * @param {string} items items to add
+   * @returns {Promise<void>} A promise that resolves if the operation success.
+   * The promise rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a set.
+   */
+  addItems: (key: string, items: string[]) => Promise<void>
+  /**
+   * Remove the specified `items` from the set stored at `key`. Those items that are not part of the set are ignored.
+   *
+   * @function removeItems
+   * @param {string} key set key
+   * @param {string} items items to remove
+   * @returns {Promise<void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
+   * The promise rejects if the operation fails, for example, if there is a connectin error or the key holds a value that is not a set.
+   */
+  removeItems: (key: string, items: string[]) => Promise<void>
   /**
    * Connects to the underlying storage.
    * It is meant for storages that requires to be connected to some database or server. Otherwise it can just return a resolved promise.
@@ -207,10 +228,10 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
 /** Segments cache */
 
 export interface ISegmentsCacheBase {
+  // update(name: string, toAdd: string[], toRemove: string[], changeNumber: number): MaybeThenable<boolean | void>
   addToSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
   removeFromSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
-  registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
   setChangeNumber(name: string, changeNumber: number): MaybeThenable<boolean | void> // only for Server-Side
   getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
@@ -219,10 +240,10 @@ export interface ISegmentsCacheBase {
 
 // Same API for both variants: SegmentsCache and MySegmentsCache (client-side API)
 export interface ISegmentsCacheSync extends ISegmentsCacheBase {
+  // update(name: string, toAdd: string[], toRemove: string[], changeNumber: number): boolean
   addToSegment(name: string, segmentKeys: string[]): boolean
   removeFromSegment(name: string, segmentKeys: string[]): boolean
   isInSegment(name: string, key?: string): boolean
-  registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   setChangeNumber(name: string, changeNumber: number): boolean
   getChangeNumber(name: string): number
@@ -231,14 +252,14 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
 }
 
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
+  // update(name: string, toAdd: string[], toRemove: string[], changeNumber: number): Promise<boolean | void>
   addToSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   removeFromSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   isInSegment(name: string, key?: string): Promise<boolean>
-  registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
   setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
   getChangeNumber(name: string): Promise<number>
-  clear(): Promise<boolean>
+  clear(): Promise<boolean | void>
 }
 
 /**

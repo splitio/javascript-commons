@@ -31,12 +31,6 @@ export default abstract class AbstractSegmentsCacheSync implements ISegmentsCach
   abstract clear(): void
 
   /**
-   * For server-side synchronizer: add the given list of segments to the cache, with an empty list of keys. The segments that already exist are not modified.
-   * For client-side synchronizer: the method is not used.
-   */
-  registerSegments(names: string[]): boolean { return false; }
-
-  /**
    * For server-side synchronizer: get the list of segments in the cache.
    * For client-side synchronizer: the method is not used.
    */

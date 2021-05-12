@@ -14,10 +14,6 @@ export default class KeyBuilderSS extends KeyBuilder {
     this.metadata = metadata;
   }
 
-  buildRegisteredSegmentsKey() {
-    return `${this.prefix}.segments.registered`;
-  }
-
   private buildVersionablePrefix() {
     return `${this.prefix}/${this.metadata.s}/${this.metadata.i}`;
   }

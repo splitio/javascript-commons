@@ -31,9 +31,11 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
       if (onReadyCb) onReadyCb();
     });
 
+    const splits = new SplitsCacheInRedis(log, keys, redisClient);
+
     return {
-      splits: new SplitsCacheInRedis(log, keys, redisClient),
-      segments: new SegmentsCacheInRedis(keys, redisClient),
+      splits,
+      segments: new SegmentsCacheInRedis(log, keys, redisClient, splits),
       impressions: new ImpressionsCacheInRedis(keys, redisClient, metadata),
       events: new EventsCacheInRedis(log, keys, redisClient, metadata),
       latencies: new LatenciesCacheInRedis(keys, redisClient),

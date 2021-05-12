@@ -15,9 +15,11 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
   // InMemory storage is always ready
   if (params.onReadyCb) setTimeout(params.onReadyCb);
 
+  const splits = new SplitsCacheInMemory();
+
   return {
-    splits: new SplitsCacheInMemory(),
-    segments: new SegmentsCacheInMemory(),
+    splits,
+    segments: new SegmentsCacheInMemory(splits),
     impressions: new ImpressionsCacheInMemory(),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),

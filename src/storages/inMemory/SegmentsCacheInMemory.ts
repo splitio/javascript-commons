@@ -1,6 +1,8 @@
 import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { isIntegerNumber } from '../../utils/lang';
+import { ISplitsCacheSync } from '../types';
+import { getRegisteredSegments } from '../getRegisteredSegments';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
@@ -10,6 +12,12 @@ export default class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   private segmentCache: Record<string, ISet<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
+  private readonly splits: ISplitsCacheSync;
+
+  constructor(splits: ISplitsCacheSync) {
+    super();
+    this.splits = splits;
+  }
 
   addToSegment(name: string, segmentKeys: string[]): boolean {
     const values = this.segmentCache[name];
@@ -48,24 +56,8 @@ export default class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     this.segmentChangeNumber = {};
   }
 
-  private _registerSegment(name: string) {
-    if (!this.segmentCache[name]) {
-      this.segmentCache[name] = new _Set<string>();
-    }
-
-    return true;
-  }
-
-  registerSegments(names: string[]) {
-    for (let i = 0; i < names.length; i++) {
-      this._registerSegment(names[i]);
-    }
-
-    return true;
-  }
-
   getRegisteredSegments() {
-    return Object.keys(this.segmentCache);
+    return getRegisteredSegments(this.splits.getAll());
   }
 
   setChangeNumber(name: string, changeNumber: number) {

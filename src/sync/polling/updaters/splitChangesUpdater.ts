@@ -1,5 +1,4 @@
 import { SplitError } from '../../../utils/lang/errors';
-import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse } from '../../../dtos/types';
@@ -7,7 +6,7 @@ import { ISplitsEventEmitter } from '../../../readiness/types';
 import timeout from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 
 type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
 
@@ -22,28 +21,9 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
   });
 }
 
-/**
- * Collect segments from a raw split definition.
- * Exported for testing purposes.
- */
-export function parseSegments({ conditions }: ISplit): ISet<string> {
-  let segments = new _Set<string>();
-
-  for (let i = 0; i < conditions.length; i++) {
-    const matchers = conditions[i].matcherGroup.matchers;
-
-    matchers.forEach(matcher => {
-      if (matcher.matcherType === 'IN_SEGMENT') segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
-    });
-  }
-
-  return segments;
-}
-
 interface ISplitMutations {
   added: [string, string][],
   removed: string[],
-  segments: string[]
 }
 
 /**
@@ -52,22 +32,15 @@ interface ISplitMutations {
  * Exported for testing purposes.
  */
 export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
-  const segments = new _Set<string>();
   const computed = entries.reduce((accum, split) => {
     if (split.status === 'ACTIVE') {
       accum.added.push([split.name, JSON.stringify(split)]);
-
-      parseSegments(split).forEach((segmentName: string) => {
-        segments.add(segmentName);
-      });
     } else {
       accum.removed.push(split.name);
     }
 
     return accum;
-  }, { added: [], removed: [], segments: [] } as ISplitMutations);
-
-  computed.segments = setToArray(segments);
+  }, { added: [], removed: [] } as ISplitMutations);
 
   return computed;
 }
@@ -130,7 +103,6 @@ export function splitChangesUpdaterFactory(
 
           log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
           log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
-          log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
 
           // Write into storage
           // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
@@ -138,8 +110,7 @@ export function splitChangesUpdaterFactory(
             // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
             splits.setChangeNumber(splitChanges.till),
             splits.addSplits(mutation.added),
-            splits.removeSplits(mutation.removed),
-            segments.registerSegments(mutation.segments)
+            splits.removeSplits(mutation.removed)
           ]).then(() => {
 
             if (splitsEventEmitter) {

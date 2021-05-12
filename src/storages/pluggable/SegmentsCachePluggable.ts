@@ -2,9 +2,10 @@
 /* eslint-disable no-unused-vars */
 import { isNaNNumber } from '../../utils/lang';
 import KeyBuilder from '../KeyBuilder';
-import { ICustomStorageWrapper, ISegmentsCacheAsync } from '../types';
+import { ICustomStorageWrapper, ISegmentsCacheAsync, ISplitsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { getRegisteredSegments } from '../getRegisteredSegments';
 
 /**
  * ISegmentsCacheAsync implementation for pluggable storages.
@@ -14,15 +15,48 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
   private readonly wrapper: ICustomStorageWrapper;
+  private readonly splits: ISplitsCacheAsync;
 
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: ICustomStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: ICustomStorageWrapper, splits: ISplitsCacheAsync) {
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
+    this.splits = splits;
   }
 
   /**
-   * Returns if `key` is part of `name` segment.
+   * Add a list of `segmentKeys` to the given segment `name`.
+   * The returned promise is resolved when the operation success
+   * or rejected with an SplitError if wrapper operation fails.
+   */
+  addToSegment(name: string, segmentKeys: string[]) {
+    const segmentKey = this.keys.buildSegmentNameKey(name);
+
+    if (segmentKeys.length) {
+      return this.wrapper.addItems(segmentKey, segmentKeys);
+    } else {
+      return Promise.resolve();
+    }
+  }
+
+  /**
+   * Remove a list of `segmentKeys` from the given segment `name`.
+   * The returned promise is resolved when the operation success
+   * or rejected with an SplitError if wrapper operation fails.
+   */
+  removeFromSegment(name: string, segmentKeys: string[]) {
+    const segmentKey = this.keys.buildSegmentNameKey(name);
+
+    if (segmentKeys.length) {
+      return this.wrapper.removeItems(segmentKey, segmentKeys);
+    } else {
+      return Promise.resolve();
+    }
+  }
+
+  /**
+   * Returns a promise that resolves with a boolean value indicating if `key` is part of `name` segment.
+   * Promise can be rejected with an SplitError if wrapper operation fails.
    */
   isInSegment(name: string, key: string) {
     return this.wrapper.itemContains(this.keys.buildSegmentNameKey(name), key);
@@ -54,40 +88,14 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     });
   }
 
-  /**
-   * Add a list of `segmentKeys` to the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails, JSON parsing error)
-   *
-   * @TODO implement for DataLoader/Producer mode
-   */
-  addToSegment(name: string, segmentKeys: string[]) {
-    return Promise.resolve(true);
-  }
-
-  /**
-   * Remove a list of `segmentKeys` from the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails, JSON parsing error)
-   *
-   * @TODO implement for DataLoader/Producer mode
-   */
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    return Promise.resolve(true);
-  }
-
-  /** @TODO implement for DataLoader/Producer mode  */
-  registerSegments(names: string[]) {
-    return Promise.resolve(true);
-  }
-
-  /** @TODO implement for DataLoader/Producer mode  */
+  // Segments are computed from splits.
+  // We should not register segments using the `PREFIX.segments.registered` key because GO synchronizer is not setting it.
   getRegisteredSegments() {
-    return Promise.resolve([]);
+    return this.splits.getAll().then(getRegisteredSegments);
   }
 
-  /** @TODO implement for DataLoader/Producer mode  */
-  clear(): Promise<boolean> {
+  // @TODO implement if required by DataLoader or producer mode
+  clear() {
     return Promise.resolve(true);
   }
 }

@@ -1,12 +1,13 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
-import { ISegmentsCacheBase } from '../../../storages/types';
+import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { ISegmentChangesResponse } from '../../../dtos/types';
+import { ISegmentChangesResponse, MaybeThenable } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
 import { SplitError } from '../../../utils/lang/errors';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
+import thenable from '../../../utils/promise/thenable';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -24,7 +25,8 @@ type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetch
 export function segmentChangesUpdaterFactory(
   log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
-  segmentsCache: ISegmentsCacheBase,
+  splits: ISplitsCacheBase,
+  segments: ISegmentsCacheBase,
   readiness?: IReadinessManager,
 ): ISegmentChangesUpdater {
 
@@ -51,16 +53,16 @@ export function segmentChangesUpdaterFactory(
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
-    let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segmentsCache.getRegisteredSegments());
+    let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segments.getRegisteredSegments());
 
-    return segmentsPromise.then(segments => {
+    return segmentsPromise.then(segmentNames => {
       // Async fetchers are collected here.
       const updaters: Promise<number>[] = [];
 
-      for (let index = 0; index < segments.length; index++) {
-        const segmentName = segments[index];
+      for (let index = 0; index < segmentNames.length; index++) {
+        const segmentName = segmentNames[index];
         log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
-        let sincePromise = Promise.resolve(segmentsCache.getChangeNumber(segmentName));
+        let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
         updaters.push(sincePromise.then(since => {
           // if fetchOnlyNew flag, avoid processing already fetched segments
@@ -68,17 +70,19 @@ export function segmentChangesUpdaterFactory(
 
           return segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
             let changeNumber = -1;
+            const results: MaybeThenable<boolean | void>[] = [];
             changes.forEach(x => {
-              if (x.added.length > 0) segmentsCache.addToSegment(segmentName, x.added);
-              if (x.removed.length > 0) segmentsCache.removeFromSegment(segmentName, x.removed);
+              if (x.added.length > 0) results.push(segments.addToSegment(segmentName, x.added));
+              if (x.removed.length > 0) results.push(segments.removeFromSegment(segmentName, x.removed));
               if (x.added.length > 0 || x.removed.length > 0) {
-                segmentsCache.setChangeNumber(segmentName, x.till);
+                results.push(segments.setChangeNumber(segmentName, x.till));
                 changeNumber = x.till;
               }
 
               log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             });
-
+            // If at least one storage operation result is a promise, join all in a single promise.
+            if (results.some(result => thenable(result))) return Promise.all(results).then(() => changeNumber);
             return changeNumber;
           });
         }));
@@ -94,18 +98,19 @@ export function segmentChangesUpdaterFactory(
         // if at least one segment fetch fails, return false to indicate that there was some error (e.g., invalid json, HTTP error, etc)
         if (shouldUpdateFlags.indexOf(-1) !== -1) return false;
         return true;
-      }).catch(error => {
-        // handle user callback errors
-        if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
-
-        if (error.statusCode === 403) {
-          // @TODO although factory status is destroyed, synchronization is not stopped
-          if (readiness) readiness.destroy();
-          log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
-        }
-
-        return false;
       });
+
+    }).catch(error => {
+      // handle user callback errors
+      if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
+
+      if (error.statusCode === 403) {
+        // @TODO although factory status is destroyed, synchronization is not stopped
+        if (readiness) readiness.destroy();
+        log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
+      }
+
+      return false;
     });
   };
 

@@ -21,6 +21,7 @@ export default function segmentsSyncTaskFactory(
     segmentChangesUpdaterFactory(
       settings.log,
       segmentChangesFetcherFactory(fetchSegmentChanges),
+      storage.splits,
       storage.segments,
       readiness,
     ),
