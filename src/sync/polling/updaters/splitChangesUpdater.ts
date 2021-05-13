@@ -144,9 +144,13 @@ export function splitChangesUpdaterFactory(
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segments)))
-                .then(emitSplitsArrivedEvent => { if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED); })
-                .catch(() => {/** noop. just to handle a possible `checkAllSegmentsExist` promise rejection on custom or redis storage */ });
+              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segments)))
+                .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
+                .then(emitSplitsArrivedEvent => {
+                  // emit SDK events
+                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
+                  return true;
+                });
             }
             return true;
           });

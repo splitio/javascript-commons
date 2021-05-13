@@ -71,7 +71,7 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
 
   getRegisteredSegments() {
     return this.redis.smembers(this.keys.buildRegisteredSegmentsKey())
-      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
+      // Wrapping error to distinguish from user cb errors. @TODO remove if refactoring SDK error handling.
       .catch((e) => { throw new SplitError(e); });
   }
 
