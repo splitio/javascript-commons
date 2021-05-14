@@ -62,7 +62,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Add a given split.
    * The returned promise is resolved when the operation success
-   * or rejected with if it fails (e.g., redis operation fails)
+   * or rejected with an SplitError if it fails (e.g., redis operation fails)
    */
   addSplit(name: string, split: string): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);

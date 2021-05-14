@@ -12,7 +12,7 @@ import { ILogger } from '../../logger/types';
  */
 export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDTO[]): ImpressionsPayload {
   let groupedByFeature = groupBy(data, 'feature');
-  let dto: any[] = [];
+  let dto: ImpressionsPayload = [];
 
   // using forOwn instead of for...in since the last also iterates over prototype enumerables
   forOwn(groupedByFeature, (value, name) => {

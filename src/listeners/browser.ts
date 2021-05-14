@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
-import { IRecorderCacheConsumerSync, IStorageSync } from '../storages/types';
+import { IRecorderCacheProducerSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSyncTask';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSyncTask';
 import { ISplitApi } from '../services/types';
@@ -74,7 +74,7 @@ export default class BrowserSignalListener implements ISignalListener {
     if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
   }
 
-  private _flushData<TState>(url: string, cache: IRecorderCacheConsumerSync<TState>, postService: (body: string) => Promise<Response>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {
+  private _flushData<TState>(url: string, cache: IRecorderCacheProducerSync<TState>, postService: (body: string) => Promise<Response>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {
     // if there is data in cache, send it to backend
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.state()) : cache.state();

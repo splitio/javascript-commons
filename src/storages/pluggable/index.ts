@@ -53,8 +53,8 @@ export function PluggableStorage(options: PluggableStorageOptions) {
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
-      impressions: new ImpressionsCachePluggable(log, keys, wrapper, metadata),
-      events: new EventsCachePluggable(log, keys, wrapper, metadata),
+      impressions: new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      events: new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
       // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).

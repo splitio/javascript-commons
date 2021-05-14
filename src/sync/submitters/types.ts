@@ -1,20 +1,64 @@
+import { IMetadata } from '../../dtos/types';
+import { SplitIO } from '../../types';
+
 export type ImpressionsPayload = {
-  f: string, // Split name
-  i: { // Key Impressions
-    k: string; // Key
-    t: string; // Treatment
-    m: number; // Timestamp
-    c: number; // ChangeNumber
-    r?: string; // Rule label
-    b?: string; // Bucketing Key
-    pt?: number; // Previous time
+  /** Split name */
+  f: string,
+  /** Key Impressions */
+  i: {
+    /** Key */
+    k: string;
+    /** Treatment */
+    t: string;
+    /** Timestamp */
+    m: number;
+    /** ChangeNumber */
+    c: number;
+    /** Rule label */
+    r?: string;
+    /** Bucketing Key */
+    b?: string;
+    /** Previous time */
+    pt?: number;
   }[]
 }[]
 
 export type ImpressionCountsPayload = {
   pf: {
-    f: string // Split name
-    m: number // Time Frame
-    rc: number // Count
+    /** Split name */
+    f: string
+    /** Time Frame */
+    m: number
+    /** Count */
+    rc: number
   }[]
+}
+
+export type StoredImpressionWithMetadata = {
+  /** Metadata */
+  m: IMetadata,
+  /** Stored impression */
+  i: {
+    /** keyName */
+    k: string,
+    /** bucketingKey */
+    b?: string,
+    /** Split name */
+    f: string,
+    /** treatment */
+    t: string,
+    /** label */
+    r: string,
+    /** changeNumber */
+    c: number,
+    /** time */
+    m: number
+  }
+}
+
+export type StoredEventWithMetadata = {
+  /** Metadata */
+  m: IMetadata,
+  /** Stored event */
+  e: SplitIO.EventData
 }

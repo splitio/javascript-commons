@@ -1,5 +1,6 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
+import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO } from '../types';
 
 /**
@@ -287,94 +288,100 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   clear(): Promise<boolean | void>
 }
 
-/**
- * Producer API of Recorder caches (Impressions, Events and Metrics cache), used by recorders to push data.
- */
-export interface IRecorderCacheProducerBase<TArgs extends any[]> {
-  track(...args: TArgs): MaybeThenable<boolean | void>
+/** Recorder storages (impressions, events and telemetry) */
+
+export interface IImpressionsCacheBase {
+  // Consumer API method, used by impressions tracker, in standalone and consumer modes, to push impressions into the storage.
+  track(data: ImpressionDTO[]): MaybeThenable<void>
 }
 
-/**
- * Consumer API of Recorder caches, used by submitters to pop data and post it to Split BE.
- */
-export interface IRecorderCacheConsumerSync<TState> {
-  isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  clear(): void // clear cache data
-  state(): TState // get cache data
-}
-
-export interface IRecorderCacheSync<TArgs extends any[], TState> extends IRecorderCacheProducerBase<TArgs>, IRecorderCacheConsumerSync<TState> {
-  track(...args: TArgs): boolean | void
-}
-
-export interface IRecorderCacheAsync<TArgs extends any[]> extends IRecorderCacheProducerBase<TArgs> {
-  track(...args: TArgs): Promise<boolean | void>
-}
-
-/** Impressions cache */
-
-export interface IImpressionsCacheBase extends IRecorderCacheProducerBase<[ImpressionDTO[]]> {
-  track(data: ImpressionDTO[]): MaybeThenable<boolean>
-}
-
-export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<[ImpressionDTO[]], ImpressionDTO[]> {
-  track(data: ImpressionDTO[]): boolean
-}
-
-export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheAsync<[ImpressionDTO[]]> {
-  track(data: ImpressionDTO[]): Promise<boolean>
-}
-
-/** Impression counts cache */
-
-export interface IImpressionCountsCacheBase extends IRecorderCacheProducerBase<[string, number, number]> {
-  track(featureName: string, timeFrame: number, amount: number): MaybeThenable<void>
-}
-
-export interface IImpressionCountsCacheSync extends IImpressionCountsCacheBase, IRecorderCacheSync<[string, number, number], Record<string, number>> {
-  track(featureName: string, timeFrame: number, amount: number): void
-}
-
-export interface IImpressionCountsCacheAsync extends IImpressionCountsCacheBase, IRecorderCacheAsync<[string, number, number]> {
-  track(featureName: string, timeFrame: number, amount: number): Promise<void>
-}
-
-/** Events cache */
-
-export interface IEventsCacheBase extends IRecorderCacheProducerBase<[SplitIO.EventData, number | undefined]> {
+export interface IEventsCacheBase {
+  // Consumer API method, used by events tracker, in standalone and consumer modes, to push events into the storage.
   track(data: SplitIO.EventData, size?: number): MaybeThenable<boolean>
 }
 
-export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheSync<[SplitIO.EventData, number | undefined], SplitIO.EventData[]> {
-  track(data: SplitIO.EventData, size?: number): boolean,
+/** Impressions and events cache for standalone mode (sync) */
+
+// Producer API methods for sync recorder storages, used by submitters in standalone mode to pop data and post it to Split BE.
+export interface IRecorderCacheProducerSync<T> {
+  // @TODO names are inconsistent with spec
+  /* Checks if cache is empty. Returns true if the cache was just created or cleared */
+  isEmpty(): boolean
+  /* clears cache data */
+  clear(): void
+  /* Gets cache data */
+  state(): T
+}
+
+
+export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheProducerSync<ImpressionDTO[]> {
+  track(data: ImpressionDTO[]): void
+}
+
+export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
+  track(data: SplitIO.EventData, size?: number): boolean
   setOnFullQueueCb(cb: () => void): void
 }
 
-export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheAsync<[SplitIO.EventData, number | undefined]> {
+/** Impressions and events cache for consumer and producer mode (async) */
+
+// Producer API methods for async recorder storages, used by submitters in producer mode to pop data and post it to Split BE.
+export interface IRecorderCacheProducerAsync<T> {
+  /* returns the number of stored items */
+  count(): Promise<number>
+  /* removes the given number of items from the store. If not provided, it deletes all items */
+  drop(count?: number): Promise<void>
+  /* pops the given number of items from the store */
+  popNWithMetadata(count: number): Promise<T>
+}
+
+export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
+  // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
+  track(data: ImpressionDTO[]): Promise<void>
+}
+
+export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
+  // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
   track(data: SplitIO.EventData, size?: number): Promise<boolean>
 }
 
-/** Latencies cache */
+/**
+ * Impression counts cache for impressions dedup in standalone and producer mode.
+ * Only in memory. Named `ImpressionsCounter` in spec.
+ */
+export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
+  // Used by impressions tracker
+  track(featureName: string, timeFrame: number, amount: number): void
 
-export interface ILatenciesCacheBase extends IRecorderCacheProducerBase<[string, number]> { }
-
-export interface ILatenciesCacheSync extends ILatenciesCacheBase, IRecorderCacheSync<[string, number], Record<string, number[]>> {
-  track(metricName: string, latency: number): boolean
+  // Used by impressions count submitter in standalone and producer mode
+  isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
+  clear(): void // clear cache data
+  state(): Record<string, number> // get cache data
 }
 
-export interface ILatenciesCacheAsync extends ILatenciesCacheBase, IRecorderCacheAsync<[string, number]> {
+
+/** Latencies and metric counts cache */
+// @TODO remove. They are deprecated.
+
+export interface ILatenciesCacheSync extends IRecorderCacheProducerSync<Record<string, number[]>> {
+  track(metricName: string, latency: number): boolean
+  isEmpty(): boolean
+  clear(): void
+  state(): Record<string, number[]>
+}
+
+export interface ILatenciesCacheAsync {
   track(metricName: string, latency: number): Promise<boolean>
 }
 
-/** Counts cache */
-
-export interface ICountsCacheBase extends IRecorderCacheProducerBase<[string]> { }
-
-export interface ICountsCacheSync extends ICountsCacheBase, IRecorderCacheSync<[string], Record<string, number>> {
+export interface ICountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
   track(metricName: string): boolean
+  isEmpty(): boolean
+  clear(): void
+  state(): Record<string, number>
 }
 
-export interface ICountsCacheAsync extends ICountsCacheBase, IRecorderCacheAsync<[string]> {
+export interface ICountsCacheAsync {
   track(metricName: string): Promise<boolean>
 }
 
@@ -386,15 +393,14 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
-  TImpressionCountsCache extends IImpressionCountsCacheBase,
   TEventsCache extends IEventsCacheBase,
-  TLatenciesCache extends ILatenciesCacheBase,
-  TCountsCache extends ICountsCacheBase,
+  TLatenciesCache extends ILatenciesCacheSync | ILatenciesCacheAsync,
+  TCountsCache extends ICountsCacheSync | ICountsCacheAsync,
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
-  impressionCounts?: TImpressionCountsCache,
+  impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
@@ -405,7 +411,6 @@ export type IStorageSync = IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
-  IImpressionCountsCacheSync,
   IEventsCacheSync,
   ILatenciesCacheSync,
   ICountsCacheSync
@@ -419,7 +424,6 @@ export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync,
-  IImpressionCountsCacheAsync,
   IEventsCacheAsync,
   ILatenciesCacheAsync,
   ICountsCacheAsync
