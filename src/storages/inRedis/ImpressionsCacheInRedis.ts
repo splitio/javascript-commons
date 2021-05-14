@@ -21,16 +21,15 @@ export default class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
     this.metadata = metadata;
   }
 
-  track(impressions: ImpressionDTO[]): Promise<boolean> {
+  track(impressions: ImpressionDTO[]): Promise<void> { // @ts-ignore
     return this.redis.rpush(
       this.key,
       this._toJSON(impressions)
     ).then(queuedCount => {
       // If this is the creation of the key on Redis, set the expiration for it in 1hr.
       if (queuedCount === impressions.length) {
-        return this.redis.expire(this.key, IMPRESSIONS_TTL_REFRESH).then(result => result === 1); // 1 if the timeout was set. 0 if key does not exist.
+        return this.redis.expire(this.key, IMPRESSIONS_TTL_REFRESH);
       }
-      return true;
     });
   }
 

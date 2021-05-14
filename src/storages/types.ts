@@ -290,7 +290,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
 
 export interface IImpressionsCacheBase {
   // Consumer API method, used by impressions tracker, in standalone and consumer modes, to push impressions into the storage.
-  track(data: ImpressionDTO[]): MaybeThenable<boolean>
+  track(data: ImpressionDTO[]): MaybeThenable<void>
 }
 
 export interface IEventsCacheBase {
@@ -313,7 +313,7 @@ export interface IRecorderCacheProducerSync<T> {
 
 
 export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheProducerSync<ImpressionDTO[]> {
-  track(data: ImpressionDTO[]): boolean
+  track(data: ImpressionDTO[]): void
 }
 
 export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
@@ -335,7 +335,7 @@ export interface IRecorderCacheProducerAsync<T> {
 
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
-  track(data: ImpressionDTO[]): Promise<boolean>
+  track(data: ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {

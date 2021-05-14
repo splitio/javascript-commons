@@ -2,7 +2,6 @@ import { ICustomStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { LOG_PREFIX } from './constants';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 
 export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
@@ -22,20 +21,14 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
   /**
    * Push given impressions to the storage.
    * @param impressions  List of impresions to push.
-   * @returns  A promise that is resolved with a boolean value indicating if the push operation succeeded or failed.
-   * The promise will never be rejected.
+   * @returns  A promise that is resolved if the push operation succeeded
+   * or rejected if the wrapper operation fails.
    */
-  track(impressions: ImpressionDTO[]): Promise<boolean> {
+  track(impressions: ImpressionDTO[]): Promise<void> {
     return this.wrapper.pushItems(
       this.key,
       this._toJSON(impressions)
-    )
-      // We use boolean values to signal successful queueing
-      .then(() => true)
-      .catch((e) => {
-        this.log.error(LOG_PREFIX + ` Error adding event to queue: ${e}.`);
-        return false;
-      });
+    );
   }
 
   private _toJSON(impressions: ImpressionDTO[]): string[] {
@@ -71,7 +64,7 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
    * Removes the given number of impressions from the store. If a number is not provided, it deletes all items.
    * The returned promise rejects if the wrapper operation fails.
    */
-  drop(count?: number): Promise<any> {
+  drop(count?: number): Promise<void> { // @ts-ignore
     if (!count) return this.wrapper.del(this.key);
 
     return this.wrapper.popItems(this.key, count).then(() => { });

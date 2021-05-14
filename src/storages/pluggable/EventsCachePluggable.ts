@@ -23,7 +23,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
    * Push given event to the storage.
    * @param eventData  Event item to push.
    * @returns  A promise that is resolved with a boolean value indicating if the push operation succeeded or failed.
-   * The promise will never be rejected.
+   * Unlike `impressions::track`, The promise will never be rejected.
    */
   track(eventData: SplitIO.EventData): Promise<boolean> {
     return this.wrapper.pushItems(
@@ -33,7 +33,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
       // We use boolean values to signal successful queueing
       .then(() => true)
       .catch(e => {
-        this.log.error(LOG_PREFIX + ` Error adding event to queue: ${e}.`);
+        this.log.error(`${LOG_PREFIX}Error adding event to queue: ${e}.`);
         return false;
       });
   }
