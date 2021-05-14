@@ -24,22 +24,24 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
 
     // Impressions should be in redis
     const state = await connection.lrange(impressionsKey, 0, -1);
+    expect(state.length).toBe(3); // After pushing we should have on Redis as many impressions as we have stored.
     expect(state[0]).toBe(JSON.stringify(o1stored));
     expect(state[1]).toBe(JSON.stringify(o2stored));
     expect(state[2]).toBe(JSON.stringify(o3stored));
 
     // Testing popNWithMetadata and private toJSON methods.
-    expect(await c.popNWithMetadata(2)).toEqual([o1stored, o2stored]); // impressions are pop in FIFO order
+    expect(await c.popNWithMetadata(2)).toEqual([o1stored, o2stored]); // impressions are removed in FIFO order
     expect(await c.count()).toBe(1);
 
     expect(await c.popNWithMetadata(1)).toEqual([o3stored]);
     expect(await c.count()).toBe(0);
+    expect(await c.popNWithMetadata(100)).toEqual([]); // no more impressions
 
     // Testing drop method
     await c.track([o1, o2, o3]);
     expect(await c.count()).toBe(3);
     await c.drop();
-    expect(await c.count()).toBe(0); // storage should be empty after droping the storage
+    expect(await c.count()).toBe(0); // storage should be empty after droping it
 
     await connection.del(impressionsKey);
     await connection.quit();

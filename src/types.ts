@@ -592,7 +592,7 @@ export namespace SplitIO {
   export type EventData = {
     eventTypeId: string;
     value?: number;
-    properties: Properties;
+    properties?: Properties;
     trafficTypeName?: string;
     key?: string; // matching user key
     timestamp: number;

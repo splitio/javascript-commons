@@ -75,17 +75,18 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
     expect(await cache.count()).toBe(3); // count should return stored items
 
     // Testing popNWithMetadata and private toJSON methods.
-    expect(await cache.popNWithMetadata(2)).toEqual([o1stored, o2stored]); // impressions are pop in FIFO order
+    expect(await cache.popNWithMetadata(2)).toEqual([o1stored, o2stored]); // impressions are removed in FIFO order
     expect(await cache.count()).toBe(1);
 
     expect(await cache.popNWithMetadata(1)).toEqual([o3stored]);
     expect(await cache.count()).toBe(0);
+    expect(await cache.popNWithMetadata(100)).toEqual([]); // no more impressions
 
     // Testing drop method
     await cache.track([o1, o2, o3]);
     expect(await cache.count()).toBe(3);
     await cache.drop();
-    expect(await cache.count()).toBe(0); // storage should be empty after droping the storage
+    expect(await cache.count()).toBe(0); // storage should be empty after droping it
 
   });
 

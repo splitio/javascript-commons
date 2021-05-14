@@ -57,7 +57,13 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
     return this.redis.ltrim(this.key, count, -1);
   }
 
-  // @TODO follow Go implementation
+  /**
+   * Pop the given number of events from the storage.
+   * The returned promise rejects if the wrapper operation fails.
+   *
+   * NOTE: this method doesn't take into account MAX_EVENT_SIZE or MAX_QUEUE_BYTE_SIZE limits.
+   * It is the submitter responsability to handle that.
+   */
   popNWithMetadata(count: number): Promise<StoredEventWithMetadata[]> {
     return this.redis.lrange(this.key, 0, count - 1).then(items => {
       return this.redis.ltrim(this.key, items.length, -1).then(() => {

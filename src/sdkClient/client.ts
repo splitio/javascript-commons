@@ -103,7 +103,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
   function track(key: SplitIO.SplitKey, trafficTypeName: string, eventTypeId: string, value?: number, properties?: SplitIO.Properties, size = 1024) {
     const matchingKey = getMatching(key);
     const timestamp = Date.now();
-    const eventData = {
+    const eventData: SplitIO.EventData = {
       eventTypeId,
       trafficTypeName,
       value,
@@ -115,7 +115,7 @@ export default function clientFactory(params: IClientFactoryParams): SplitIO.ICl
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
     validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
-    return eventTracker.track(eventData as SplitIO.EventData, size);
+    return eventTracker.track(eventData, size);
   }
 
   return {
