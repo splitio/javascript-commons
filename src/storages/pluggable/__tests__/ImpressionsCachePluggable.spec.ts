@@ -1,5 +1,4 @@
 
-import KeyBuilderSS from '../../KeyBuilderSS';
 import { ImpressionsCachePluggable } from '../ImpressionsCachePluggable';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMock } from './wrapper.mock';
@@ -7,8 +6,7 @@ import { IMetadata } from '../../../dtos/types';
 
 const prefix = 'impr_cache_ut';
 const impressionsKey = `${prefix}.impressions`;
-const testMeta: IMetadata = { i: 'some_ip', n: 'some_host', s: 'some_sdk_version' }; // @ts-ignore
-const keys = new KeyBuilderSS(prefix, testMeta);
+const testMeta: IMetadata = { i: 'some_ip', n: 'some_host', s: 'some_sdk_version' };
 
 const o1 = {
   feature: 'test1',
@@ -46,7 +44,7 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
   });
 
   test('`track` method should push values into the pluggable storage', async () => {
-    const cache = new ImpressionsCachePluggable(loggerMock, keys, wrapperMock, testMeta);
+    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, testMeta);
 
     expect(await cache.track([o1])).toBe(true); // result should resolve to true
 
@@ -76,7 +74,7 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
   test('`track` method result should not reject if wrapper operation fails', async () => {
     // make wrapper operation fail
     wrapperMock.pushItems.mockImplementation(() => Promise.reject());
-    const cache = new ImpressionsCachePluggable(loggerMock, keys, wrapperMock, testMeta);
+    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, testMeta);
 
     expect(await cache.track([o1])).toBe(false); // result should resolve to false
   });

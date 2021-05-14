@@ -1,20 +1,20 @@
 import { ICustomStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
-import KeyBuilderSS from '../KeyBuilderSS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 
 export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly keys: KeyBuilderSS;
+  private readonly key: string;
   private readonly wrapper: ICustomStorageWrapper;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
     this.log = log;
-    this.keys = keys;
+    this.key = key;
     this.wrapper = wrapper;
     this.metadata = metadata;
   }
@@ -27,7 +27,7 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
    */
   track(impressions: ImpressionDTO[]): Promise<boolean> {
     return this.wrapper.pushItems(
-      this.keys.buildImpressionsKey(),
+      this.key,
       this._toJSON(impressions)
     )
       // We use boolean values to signal successful queueing
@@ -55,10 +55,36 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
           c: changeNumber,
           m: time
         }
-      });
+      } as StoredImpressionWithMetadata);
     });
   }
 
-  // @TODO implement producer methods
+  /**
+   * Returns a promise that resolves with the count of stored impressions, or 0 if there was some error.
+   * The promise will never be rejected.
+   */
+  count(): Promise<number> {
+    return this.wrapper.getItemsCount(this.key).catch(() => 0);
+  }
+
+  /**
+   * Removes the given number of impressions from the store. If a number is not provided, it deletes all items.
+   * The returned promise rejects if the wrapper operation fails.
+   */
+  drop(count?: number): Promise<any> {
+    if (!count) return this.wrapper.del(this.key);
+
+    return this.wrapper.popItems(this.key, count).then(() => { });
+  }
+
+  /**
+   * Pop the given number of impressions from the store.
+   * The returned promise rejects if the wrapper operation fails.
+   */
+  popNWithMetadata(count: number): Promise<StoredImpressionWithMetadata[]> {
+    return this.wrapper.popItems(this.key, count).then((items) => {
+      return items.map(item => JSON.parse(item) as StoredImpressionWithMetadata);
+    });
+  }
 
 }

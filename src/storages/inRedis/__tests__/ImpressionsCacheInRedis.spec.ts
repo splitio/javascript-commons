@@ -1,17 +1,15 @@
 import Redis from '../RedisAdapter';
-import KeyBuilderSS from '../../KeyBuilderSS';
 import ImpressionsCacheInRedis from '../ImpressionsCacheInRedis';
 import IORedis, { BooleanResponse } from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
+const fakeMetadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
+
 test('IMPRESSIONS CACHE IN REDIS / should incrementally store values', async () => {
-  const prefix = 'impr_cache_ut';
-  const impressionsKey = `${prefix}.impressions`;
-  const testMeta = { thisIsTheMeta: true };
   const connection = new Redis(loggerMock, {});
-  // @ts-expect-error
-  const keys = new KeyBuilderSS(prefix); // @ts-expect-error
-  const c = new ImpressionsCacheInRedis(keys, connection, testMeta);
+  const impressionsKey = 'impr_cache_ut.impressions';
+
+  const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
 
   const o1 = {
     feature: 'test1',
@@ -48,15 +46,15 @@ test('IMPRESSIONS CACHE IN REDIS / should incrementally store values', async () 
   const state = await connection.lrange(impressionsKey, 0, -1);
   // This is testing both the track and the toJSON method.
   expect(state[0]).toBe(JSON.stringify({
-    m: testMeta,
+    m: fakeMetadata,
     i: { k: o1.keyName, f: o1.feature, t: o1.treatment, c: o1.changeNumber, m: o1.time }
   }));
   expect(state[1]).toBe(JSON.stringify({
-    m: testMeta,
+    m: fakeMetadata,
     i: { k: o2.keyName, b: o2.bucketingKey, f: o2.feature, t: o2.treatment, r: o2.label, c: o2.changeNumber, m: o2.time }
   }));
   expect(state[2]).toBe(JSON.stringify({
-    m: testMeta,
+    m: fakeMetadata,
     i: { k: o3.keyName, f: o3.feature, t: o3.treatment, c: o3.changeNumber, m: o3.time }
   }));
 
@@ -65,13 +63,10 @@ test('IMPRESSIONS CACHE IN REDIS / should incrementally store values', async () 
 });
 
 test('IMPRESSIONS CACHE IN REDIS / should not resolve track before calling expire', async (done) => {
-  const prefix = 'impr_cache_ut_2';
-  const impressionsKey = `${prefix}.impressions`;
-  const testMeta = { thisIsTheMeta: true };
+  const impressionsKey = 'impr_cache_ut_2.impressions';
   const connection = new Redis(loggerMock, {});
-  // @ts-expect-error
-  const keys = new KeyBuilderSS(prefix); // @ts-expect-error
-  const c = new ImpressionsCacheInRedis(keys, connection, testMeta);
+
+  const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
 
   const i1 = { feature: 'test4', keyName: 'nicolas@split.io', treatment: 'off', time: Date.now(), changeNumber: 1 };
   const i2 = { feature: 'test5', keyName: 'matias@split.io', treatment: 'on', time: Date.now(), changeNumber: 2 };

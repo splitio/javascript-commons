@@ -2,36 +2,31 @@ import Redis from 'ioredis';
 import find from 'lodash/find';
 import isEqual from 'lodash/isEqual';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import KeyBuilderSS from '../../KeyBuilderSS';
 import EventsCacheInRedis from '../EventsCacheInRedis';
 
 const prefix = 'events_cache_ut';
+const eventsKey = `${prefix}.impressions`;
 const fakeMetadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
 
 test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async () => {
   const connection = new Redis();
-  // This piece is being tested elsewhere.
-  const keys = new KeyBuilderSS(prefix, fakeMetadata);
-  const key = keys.buildEventsKey();
 
   const fakeEvent1 = { event: 1 };
   const fakeEvent2 = { event: '2' };
   const fakeEvent3 = { event: null };
 
   // Clean up in case there are still keys there.
-  await connection.del(key);
+  await connection.del(eventsKey);
 
-  let redisValues = await connection.lrange(key, 0, -1);
+  let redisValues = await connection.lrange(eventsKey, 0, -1);
 
   expect(redisValues.length).toBe(0); // control assertion, there are no events previously queued.
 
-  const cache = new EventsCacheInRedis(loggerMock, keys, connection, fakeMetadata);
+  const cache = new EventsCacheInRedis(loggerMock, eventsKey, connection, fakeMetadata);
   // I'll use a "bad" instance so I can force an issue with the rpush command. I'll store an integer and will make the cache try to use rpush there.
   await connection.set('non-list-key', 10);
-  // @ts-expect-error
-  const faultyCache = new EventsCacheInRedis(loggerMock, {
-    buildEventsKey: () => 'non-list-key'
-  }, connection, fakeMetadata);
+
+  const faultyCache = new EventsCacheInRedis(loggerMock, 'non-list-key', connection, fakeMetadata);
 
   // @ts-expect-error
   expect(await cache.track(fakeEvent1)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
@@ -46,7 +41,7 @@ test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async
   // @ts-expect-error
   expect(await faultyCache.track(fakeEvent3)).toBe(false); // If the queueing operation was NOT successful, it should resolve the returned promise with "false" instead of rejecting it.
 
-  redisValues = await connection.lrange(key, 0, -1);
+  redisValues = await connection.lrange(eventsKey, 0, -1);
 
   expect(redisValues.length).toBe(3); // After pushing we should have on Redis as many events as we have stored.
   expect(typeof redisValues[0]).toBe('string'); // All elements should be strings since those are stringified JSONs.
@@ -69,6 +64,6 @@ test('EVENTS CACHE IN REDIS / should incrementally store values in redis', async
   expect(foundEv3).not.toBe(undefined); // Events stored on redis matched the values we are expecting.
 
   // Clean up then end.
-  await connection.del(key);
+  await connection.del(eventsKey);
   await connection.quit();
 });

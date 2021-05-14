@@ -34,8 +34,8 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
     return {
       splits: new SplitsCacheInRedis(log, keys, redisClient),
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
-      impressions: new ImpressionsCacheInRedis(keys, redisClient, metadata),
-      events: new EventsCacheInRedis(log, keys, redisClient, metadata),
+      impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
+      events: new EventsCacheInRedis(log, keys.buildEventsKey(), redisClient, metadata),
       latencies: new LatenciesCacheInRedis(keys, redisClient),
       counts: new CountsCacheInRedis(keys, redisClient),
 

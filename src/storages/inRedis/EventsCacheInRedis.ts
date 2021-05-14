@@ -1,24 +1,23 @@
 import { IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import KeyBuilderSS from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { StoredEventWithMetadata } from '../../sync/submitters/types';
 
 export default class EventsCacheInRedis implements IEventsCacheAsync {
 
+  private readonly log: ILogger;
+  private readonly key: string;
   private readonly redis: Redis;
-  private readonly keys: KeyBuilderSS;
   private readonly metadata: IMetadata;
-  private readonly eventsKey: string;
 
-  constructor(private readonly log: ILogger, keys: KeyBuilderSS, redis: Redis, metadata: IMetadata) {
-    this.keys = keys;
+  constructor(log: ILogger, key: string, redis: Redis, metadata: IMetadata) {
+    this.log = log;
+    this.key = key;
     this.redis = redis;
     this.metadata = metadata;
-
-    this.eventsKey = keys.buildEventsKey();
   }
 
   /**
@@ -26,7 +25,7 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
    */
   track(eventData: SplitIO.EventData): Promise<boolean> {
     return this.redis.rpush(
-      this.eventsKey,
+      this.key,
       this._toJSON(eventData)
     )
       // We use boolean values to signal successful queueing
@@ -44,6 +43,25 @@ export default class EventsCacheInRedis implements IEventsCacheAsync {
     return JSON.stringify({
       m: this.metadata,
       e: eventData
+    } as StoredEventWithMetadata);
+  }
+
+  count(): Promise<number> {
+    return this.redis.llen(this.key).catch(() => 0);
+  }
+
+  drop(count?: number): Promise<any> {
+    if (!count) return this.redis.del(this.key);
+
+    return this.redis.ltrim(this.key, count, -1);
+  }
+
+  // @TODO follow Go implementation
+  popNWithMetadata(count: number): Promise<StoredEventWithMetadata[]> {
+    return this.redis.lrange(this.key, 0, count - 1).then(items => {
+      return this.redis.ltrim(this.key, items.length, -1).then(() => {
+        return items.map(item => JSON.parse(item) as StoredEventWithMetadata);
+      });
     });
   }
 

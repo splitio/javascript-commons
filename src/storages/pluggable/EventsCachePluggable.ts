@@ -1,20 +1,20 @@
 import { ICustomStorageWrapper, IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import KeyBuilderSS from '../KeyBuilderSS';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { StoredEventWithMetadata } from '../../sync/submitters/types';
 
 export class EventsCachePluggable implements IEventsCacheAsync {
 
   private readonly log: ILogger;
   private readonly wrapper: ICustomStorageWrapper;
-  private readonly keys: KeyBuilderSS;
+  private readonly key: string;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
     this.log = log;
-    this.keys = keys;
+    this.key = key;
     this.wrapper = wrapper;
     this.metadata = metadata;
   }
@@ -27,7 +27,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
    */
   track(eventData: SplitIO.EventData): Promise<boolean> {
     return this.wrapper.pushItems(
-      this.keys.buildEventsKey(),
+      this.key,
       [this._toJSON(eventData)]
     )
       // We use boolean values to signal successful queueing
@@ -42,6 +42,35 @@ export class EventsCachePluggable implements IEventsCacheAsync {
     return JSON.stringify({
       m: this.metadata,
       e: eventData
+    } as StoredEventWithMetadata);
+  }
+
+  /**
+   * Returns a promise that resolves with the count of stored events, or 0 if there was some error.
+   * The promise will never be rejected.
+   */
+  count(): Promise<number> {
+    return this.wrapper.getItemsCount(this.key).catch(() => 0);
+  }
+
+  /**
+   * Removes the given number of events from the store. If a number is not provided, it deletes all items.
+   * The returned promise rejects if the wrapper operation fails.
+   */
+  drop(count?: number): Promise<any> {
+    if (!count) return this.wrapper.del(this.key);
+
+    return this.wrapper.popItems(this.key, count).then(() => { });
+  }
+
+  /**
+   * Pop the given number of events from the store.
+   * The returned promise rejects if the wrapper operation fails.
+   */
+  // @TODO follow Go implementation
+  popNWithMetadata(count: number): Promise<StoredEventWithMetadata[]> {
+    return this.wrapper.popItems(this.key, count).then((items) => {
+      return items.map(item => JSON.parse(item) as StoredEventWithMetadata);
     });
   }
 

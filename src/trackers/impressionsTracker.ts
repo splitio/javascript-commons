@@ -1,7 +1,7 @@
 import objectAssign from 'object-assign';
 import thenable from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
-import { IImpressionCountsCacheBase, IImpressionsCacheBase } from '../storages/types';
+import { IImpressionCountsCacheSync, IImpressionsCacheBase } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
@@ -30,7 +30,7 @@ export default function impressionsTrackerFactory(
   // if observer is provided, it implies `shouldAddPreviousTime` flag (i.e., if impressions previous time should be added or not)
   observer?: IImpressionObserver,
   // if countsCache is provided, it implies `isOptimized` flag (i.e., if impressions should be deduped or not)
-  countsCache?: IImpressionCountsCacheBase
+  countsCache?: IImpressionCountsCacheSync
 ): IImpressionsTracker {
 
   return {
