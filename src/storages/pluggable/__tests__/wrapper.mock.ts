@@ -4,7 +4,7 @@ import { startsWith, toNumber } from '../../../utils/lang';
 export function wrapperMockFactory() {
 
   /** Holds items and list of items */
-  let _cache: Record<string, string | string[]> = {};
+  let _cache: Record<string, string | string[] | Set<string>> = {};
 
   return {
     _cache,
@@ -74,8 +74,34 @@ export function wrapperMockFactory() {
       return Promise.resolve(Array.isArray(list) ? list.length : 0);
     }),
     itemContains: jest.fn((key: string, item: string) => {
-      const list = _cache[key];
-      return Promise.resolve(Array.isArray(list) && list.indexOf(item) > -1 ? true : false);
+      const set = _cache[key];
+      if (!set) return Promise.resolve(false);
+      if (set instanceof Set) return Promise.resolve(set.has(item));
+      return Promise.reject('key is not a set');
+    }),
+    addItems: jest.fn((key: string, items: string[]) => {
+      if (!(key in _cache)) _cache[key] = new Set();
+      const set = _cache[key];
+      if (set instanceof Set) {
+        items.forEach(item => set.add(item));
+        return Promise.resolve();
+      }
+      return Promise.reject('key is not a set');
+    }),
+    removeItems: jest.fn((key: string, items: string[]) => {
+      if (!(key in _cache)) _cache[key] = new Set();
+      const set = _cache[key];
+      if (set instanceof Set) {
+        items.forEach(item => set.delete(item));
+        return Promise.resolve();
+      }
+      return Promise.reject('key is not a set');
+    }),
+    getItems: jest.fn((key: string) => {
+      const set = _cache[key];
+      if (!set) return Promise.resolve([]);
+      if (set instanceof Set) return Promise.resolve(Array.from(set));
+      return Promise.reject('key is not a set');
     }),
 
     // always connects and close
@@ -99,6 +125,9 @@ export function wrapperMockFactory() {
       this.popItems.mockClear();
       this.getItemsCount.mockClear();
       this.itemContains.mockClear();
+      this.addItems.mockClear();
+      this.removeItems.mockClear();
+      this.getItems.mockClear();
     }
   };
 }
