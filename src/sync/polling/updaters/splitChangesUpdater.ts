@@ -110,6 +110,7 @@ export function splitChangesUpdaterFactory(
 
   /**
    * SplitChanges updater returns a promise that resolves with a `false` boolean value if it fails to fetch splits or synchronize them with the storage.
+   * Returned promise will not be rejected.
    *
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
@@ -181,7 +182,7 @@ export function splitChangesUpdaterFactory(
       return fetcherPromise;
     }
 
-    let sincePromise = Promise.resolve(splits.getChangeNumber());
+    let sincePromise = Promise.resolve(splits.getChangeNumber()); // `getChangeNumber` never rejects or throws error
     return sincePromise.then(_splitChangesUpdater);
   };
 }

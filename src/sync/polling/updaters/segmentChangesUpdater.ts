@@ -42,6 +42,7 @@ export function segmentChangesUpdaterFactory(
   /**
    * Segments updater returns a promise that resolves with a `false` boolean value if it fails at least to fetch a segment or synchronize it with the storage.
    * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
+   * Returned promise will not be rejected.
    *
    * @param {string[] | undefined} segmentNames list of segment names to fetch. By passing `undefined` it fetches the list of segments registered at the storage
    * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
@@ -108,6 +109,8 @@ export function segmentChangesUpdaterFactory(
           // @TODO although factory status is destroyed, synchronization is not stopped
           if (readiness) readiness.destroy();
           log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
+        } else {
+          log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
         }
 
         return false;
