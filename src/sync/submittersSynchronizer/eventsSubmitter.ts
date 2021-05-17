@@ -20,6 +20,12 @@ export function eventsSubmitterFactory(
   // returns a promise that resolves after events were removed from the storage, processed and sent to the backend.
   // Reject with the error (storage error or error POSTing events to the backend)
   return function eventsSubmitter() {
-    throw new Error('Not implemented yet');
+    // Just as an example
+    return eventsCache.count().then(count => {
+      return eventsCache.popNWithMetadata(count).then(events => {
+        const processedEvents = processEvents(events);
+        return postEventsBulk(JSON.stringify(processedEvents));
+      });
+    });
   };
 }
