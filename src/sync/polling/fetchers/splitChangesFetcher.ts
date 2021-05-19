@@ -1,4 +1,4 @@
-import { IFetchSplitChanges } from '../../../services/types';
+import { IFetchSplitChanges, IResponse } from '../../../services/types';
 import { ISplitChangesFetcher } from './types';
 
 /**
@@ -11,7 +11,7 @@ export default function splitChangesFetcherFactory(fetchSplitChanges: IFetchSpli
     since: number,
     noCache?: boolean,
     // Optional decorator for `fetchSplitChanges` promise, such as timeout or time tracker
-    decorator?: (promise: Promise<Response>) => Promise<Response>
+    decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ) {
 
     let splitsPromise = fetchSplitChanges(since, noCache);

@@ -28,7 +28,7 @@ export function mySegmentsUpdaterFactory(
   let startingUp = true;
 
   /** timeout and telemetry decorator for `splitChangesFetcher` promise  */
-  function _promiseDecorator(promise: Promise<Response>) {
+  function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
 

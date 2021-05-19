@@ -2,6 +2,7 @@ import { uniqueId } from '../lang';
 import timer from './timer';
 import thenable from '../promise/thenable';
 import { ILogger } from '../../logger/types';
+import { IResponse } from '../../services/types';
 
 // Based on ProducerMetricsCollector and ClientCollector classes
 interface MetricsCollector {
@@ -120,7 +121,7 @@ const TrackerAPI = {
    * @param {string} task - The name of the task.
    * @param {number | string} modifier - (optional) The modifier for the task, if any.
    */
-  __attachToPromise(log: ILogger, promise: Promise<Response>, task: string, collector: false | MetricsCollector, modifier?: number | string) {
+  __attachToPromise(log: ILogger, promise: Promise<IResponse>, task: string, collector: false | MetricsCollector, modifier?: number | string) {
     return promise.then(resp => {
       this.stop(log, task, modifier);
 
@@ -146,7 +147,7 @@ const TrackerAPI = {
    * @param {Promise} promise - (optional) The promise we are tracking.
    * @return {Function | Promise} The stop function for this specific task or the promise received with the callbacks registered.
    */
-  start(log: ILogger, task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<Response>, now?: () => number): Promise<Response> | (() => number) {
+  start(log: ILogger, task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<IResponse>, now?: () => number): Promise<IResponse> | (() => number) {
     const taskUniqueId = uniqueId();
     const taskCollector = getCollectorForTask(task, collectors);
     let result;

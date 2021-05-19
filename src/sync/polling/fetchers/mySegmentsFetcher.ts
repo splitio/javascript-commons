@@ -1,4 +1,4 @@
-import { IFetchMySegments } from '../../../services/types';
+import { IFetchMySegments, IResponse } from '../../../services/types';
 import { IMySegmentsResponseItem } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
 
@@ -11,7 +11,7 @@ export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegmen
   return function mySegmentsFetcher(
     noCache?: boolean,
     // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
-    decorator?: (promise: Promise<Response>) => Promise<Response>
+    decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ): Promise<string[]> {
 
     let mySegmentsPromise = fetchMySegments(userMatchingKey, noCache);
