@@ -74,7 +74,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
         const split = splits.getSplit(splitName);
 
         if (thenable(split)) {
-          return split.then(result => {
+          return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
             validateSplitExistance(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
@@ -93,8 +93,9 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
         }
         const currentSplits = splits.getAll();
 
-        if (thenable(currentSplits)) return currentSplits.then(objectsToViews);
-        return objectsToViews(currentSplits);
+        return thenable(currentSplits) ?
+          currentSplits.catch(() => []).then(objectsToViews) : // handle possible rejections when using pluggable storage
+          objectsToViews(currentSplits);
       },
       /**
        * Get the Split names present on the factory storage
@@ -103,7 +104,11 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
         if (!validateIfNotDestroyed(log, readinessManager, 'names') || !validateIfOperational(log, readinessManager, 'names')) {
           return [];
         }
-        return splits.getSplitNames();
+        const splitNames = splits.getSplitNames();
+
+        return thenable(splitNames) ?
+          splitNames.catch(() => []) : // handle possible rejections when using pluggable storage
+          splitNames;
       }
     }
   );

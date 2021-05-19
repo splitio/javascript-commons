@@ -29,7 +29,7 @@ export function mySegmentsUpdaterFactory(
   let startingUp = true;
 
   /** timeout and telemetry decorator for `splitChangesFetcher` promise  */
-  function _promiseDecorator(promise: Promise<Response>) {
+  function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
 
@@ -81,6 +81,7 @@ export function mySegmentsUpdaterFactory(
 
   /**
    * MySegments updater returns a promise that resolves with a `false` boolean value if it fails to fetch mySegments or synchronize them with the storage.
+   * Returned promise will not be rejected.
    *
    * @param {string[] | undefined} segmentList list of mySegments names to sync in the storage. If the list is `undefined`, it fetches them before syncing in the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch

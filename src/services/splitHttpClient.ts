@@ -1,4 +1,4 @@
-import { IFetch, IRequestOptions, ISplitHttpClient } from './types';
+import { IFetch, IRequestOptions, IResponse, ISplitHttpClient } from './types';
 import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
@@ -32,7 +32,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
   if (ip) headers['SplitSDKMachineIP'] = ip;
   if (hostname) headers['SplitSDKMachineName'] = hostname;
 
-  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<Response> {
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,

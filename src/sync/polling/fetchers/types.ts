@@ -1,9 +1,10 @@
 import { ISplitChangesResponse, ISegmentChangesResponse } from '../../../dtos/types';
+import { IResponse } from '../../../services/types';
 
 export type ISplitChangesFetcher = (
   since: number,
   noCache?: boolean,
-  decorator?: (promise: Promise<Response>) => Promise<Response>
+  decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
 ) => Promise<ISplitChangesResponse>
 
 export type ISegmentChangesFetcher = (
@@ -15,5 +16,5 @@ export type ISegmentChangesFetcher = (
 
 export type IMySegmentsFetcher = (
   noCache?: boolean,
-  decorator?: (promise: Promise<Response>) => Promise<Response>
+  decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
 ) => Promise<string[]>

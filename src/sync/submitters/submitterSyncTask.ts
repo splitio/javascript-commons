@@ -3,13 +3,14 @@ import { ISyncTask, ITimeTracker } from '../types';
 import { IRecorderCacheProducerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
+import { IResponse } from '../../services/types';
 
 /**
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
  */
 export function submitterSyncTaskFactory<TState extends { length?: number }>(
   log: ILogger,
-  postClient: (body: string) => Promise<Response>,
+  postClient: (body: string) => Promise<IResponse>,
   sourceCache: IRecorderCacheProducerSync<TState>,
   postRate: number,
   dataName: string,
