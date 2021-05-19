@@ -4,7 +4,6 @@ import { ICustomStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
-import { SplitError } from '../../utils/lang/errors';
 import AbstractSplitsCacheAsync from '../AbstractSplitsCacheAsync';
 
 /**
@@ -46,19 +45,19 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Add a given split.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails)
+   * or rejected if it fails (e.g., wrapper operation fails)
    */
   addSplit(name: string, split: string): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);
     return this.wrapper.get(splitKey).then(splitFromStorage => {
 
-      // handling parsing error as SplitErrors
+      // handling parsing error
       let parsedPreviousSplit, parsedSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         parsedSplit = JSON.parse(split);
       } catch (e) {
-        throw new SplitError('Error parsing split definition: ' + e);
+        throw new Error('Error parsing split definition: ' + e);
       }
 
       return Promise.all([
@@ -73,7 +72,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Add a list of splits.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails)
+   * or rejected if it fails (e.g., wrapper operation fails)
    */
   addSplits(entries: [string, string][]): Promise<boolean[]> {
     return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
@@ -82,7 +81,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Remove a given split.
    * The returned promise is resolved when the operation success, with a boolean indicating if the split existed or not.
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
@@ -97,7 +96,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Remove a list of splits.
    * The returned promise is resolved when the operation success, with a boolean array indicating if the splits existed or not.
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   removeSplits(names: string[]): Promise<void> { // @ts-ignore
     return Promise.all(names.map(name => this.removeSplit(name)));
@@ -106,7 +105,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Get split.
    * The returned promise is resolved with the split definition or null if it's not defined,
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   getSplit(name: string): Promise<string | null> {
     return this.wrapper.get(this.keys.buildSplitKey(name));
@@ -115,7 +114,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Get list of splits.
    * The returned promise is resolved with a map of split names to their split definition or null if it's not defined,
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   getSplits(names: string[]): Promise<Record<string, string | null>> {
     const keys = names.map(name => this.keys.buildSplitKey(name));
@@ -132,7 +131,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Get list of all split definitions.
    * The returned promise is resolved with the list of split definitions,
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   getAll(): Promise<string[]> {
     return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
@@ -143,7 +142,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Get list of split names.
    * The returned promise is resolved with the list of split names,
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   getSplitNames(): Promise<string[]> {
     return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
@@ -180,7 +179,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Set till number.
    * The returned promise is resolved when the operation success,
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   setChangeNumber(changeNumber: number) {
     return this.wrapper.set(this.keys.buildSplitsTillKey(), changeNumber + '');

@@ -1,7 +1,6 @@
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
-import { SplitError } from '../../utils/lang/errors';
 import { LOG_PREFIX } from '../inLocalStorage/constants';
 import KeyBuilderSS from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
@@ -70,9 +69,7 @@ export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
   }
 
   getRegisteredSegments() {
-    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey())
-      // Wrapping error to distinguish from user cb errors. @TODO remove if refactoring SDK error handling.
-      .catch((e) => { throw new SplitError(e); });
+    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey());
   }
 
   // @TODO remove/review. It is not being used.

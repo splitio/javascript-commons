@@ -25,7 +25,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   /**
    * Add a list of `segmentKeys` to the given segment `name`.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   addToSegment(name: string, segmentKeys: string[]) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
@@ -40,7 +40,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   /**
    * Remove a list of `segmentKeys` from the given segment `name`.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if wrapper operation fails.
+   * or rejected if wrapper operation fails.
    */
   removeFromSegment(name: string, segmentKeys: string[]) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
@@ -54,7 +54,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
 
   /**
    * Returns a promise that resolves with a boolean value indicating if `key` is part of `name` segment.
-   * Promise can be rejected with an SplitError if wrapper operation fails.
+   * Promise can be rejected if wrapper operation fails.
    */
   isInSegment(name: string, key: string) {
     return this.wrapper.itemContains(this.keys.buildSegmentNameKey(name), key);
@@ -63,7 +63,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   /**
    * Set till number for the given segment `name`.
    * The returned promise is resolved when the operation success,
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   setChangeNumber(name: string, changeNumber: number) {
     return this.wrapper.set(
@@ -90,7 +90,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   /**
    * Add the given segment names to the set of registered segments.
    * The returned promise is resolved when the operation success,
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   registerSegments(segments: string[]) {
     if (segments.length) {
@@ -102,7 +102,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
 
   /**
    * Returns a promise that resolves with the set of registered segments in a list,
-   * or rejected with an SplitError if it fails (e.g., wrapper operation fails).
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
   getRegisteredSegments() {
     return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
