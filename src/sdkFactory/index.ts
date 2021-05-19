@@ -1,9 +1,8 @@
 import { ISdkFactoryParams } from './types';
 import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
-import buildMetadata from '../utils/settingsValidation/buildMetadata';
 import impressionsTrackerFactory from '../trackers/impressionsTracker';
 import eventTrackerFactory from '../trackers/eventTracker';
-import { IStorageSync } from '../storages/types';
+import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';
 import { getMatching } from '../utils/key';
@@ -11,6 +10,8 @@ import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
+import { metadataBuilder } from '../storages/metadataBuilder';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 /**
  * Modular SDK factory
@@ -26,29 +27,31 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
   validateAndTrackApiKey(log, settings.core.authorizationKey);
 
-  const metadata = buildMetadata(settings);
-
   // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
+  const readinessManager = sdkReadinessManager.readinessManager;
 
-  const storageFactoryParams = {
+  // @TODO consider passing the settings object, so that each storage access only what it needs
+  const storageFactoryParams: IStorageFactoryParams = {
     eventsQueueSize: settings.scheduler.eventsQueueSize,
-    // @TODO consider removing next prop and creating impressionsCounts cache somewhere else to simplify custom storages
     optimize: shouldBeOptimized(settings),
-    // @TODO add support for dataloader. consider calling outside the storageFactory to simplify custom storages
-    dataLoader: undefined,
 
     // ATM, only used by InLocalStorage
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // ATM, only used by InRedisStorage. @TODO pass a callback to simplify custom storages.
-    readinessManager: sdkReadinessManager.readinessManager,
-    metadata,
+    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
+    onReadyCb: !syncManagerFactory ? (error) => {
+      if (error) return; // don't emit SDK_READY if storage failed to connect.
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+    } : undefined,
+    metadata: metadataBuilder(settings),
     log
   };
 
   const storage = storageFactory(storageFactoryParams);
+  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform);
@@ -65,7 +68,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(log, storage.impressions, metadata, impressionListener, integrationsManager, observer, storage.impressionCounts);
+  const impressionsTracker = impressionsTrackerFactory(log, storage.impressions, settings, impressionListener, integrationsManager, observer, storage.impressionCounts);
   const eventTracker = eventTrackerFactory(log, storage.events, integrationsManager);
 
   // signal listener

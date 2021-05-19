@@ -62,6 +62,7 @@ export function readinessManagerFactory(
   let isDestroyed = false;
 
   function checkIsReadyFromCache() {
+    // @TODO add condition to emit SDK_READY_FROM_CACHE only if SDK_READY has not been emitted
     if (!isReadyFromCache && splits.splitsCacheLoaded) {
       // Make it async, in case user callbacks throw an exception
       setTimeout(() => {

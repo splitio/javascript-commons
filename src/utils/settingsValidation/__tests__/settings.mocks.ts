@@ -97,5 +97,9 @@ export const settingsSplitApi = {
   sync: {
     impressionsMode: 'DEBUG'
   },
+  runtime: {
+    ip: false,
+    hostname: false
+  },
   log: loggerMock
 };

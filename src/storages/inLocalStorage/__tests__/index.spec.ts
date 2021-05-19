@@ -1,6 +1,7 @@
 // Mocks
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { IStorageFactoryParams } from '../../types';
+import { assertStorageInterface } from '../../__tests__/testUtils';
 const fakeInMemoryStorage = 'fakeStorage';
 const fakeInMemoryStorageFactory = jest.fn(() => fakeInMemoryStorage);
 jest.mock('../../inMemory/InMemoryStorageCS', () => {
@@ -41,7 +42,7 @@ describe('IN LOCAL STORAGE', () => {
     const storageFactory = InLocalStorage({ prefix: 'prefix' });
     const storage = storageFactory(internalSdkParams);
 
-    expect(typeof storage).toBe('object');
+    assertStorageInterface(storage); // the instance must implement the storage interface
     expect(fakeInMemoryStorageFactory).not.toBeCalled(); // doesn't call InMemoryStorage factory
 
   });

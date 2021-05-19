@@ -56,7 +56,8 @@ export interface ISdkFactoryParams {
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
   sdkClientMethodFactory: (params: ISdkClientFactoryParams) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
-  // Signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
+  // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
+  // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
     handler: (() => MaybeThenable<void>) | undefined, // Used by NodeSignalListener
     settings: ISettings, // Used by BrowserSignalListener

@@ -7,10 +7,12 @@ import { ISettings } from '../../types';
  */
 export interface ISettingsValidationParams {
   /**
+   * Object of values to overwrite default settings.
    * Version and startup properties are mandatory, because these values are not part of the base setting.
    */
   defaults: Partial<ISettings> & { version: string } & { startup: ISettings['startup'] },
-  runtime: (settings: ISettings) => ISettings['runtime'],
+  /** Function to overwrite runtime values (ip and hostname) which are false by default */
+  runtime?: (settings: ISettings) => ISettings['runtime'],
   /** Storage validator */
   storage?: (settings: ISettings) => ISettings['storage'],
   /** Integrations validator */

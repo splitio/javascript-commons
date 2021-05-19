@@ -1,6 +1,6 @@
 import syncTaskFactory from '../syncTask';
 import { ISyncTask, ITimeTracker } from '../types';
-import { IRecorderCacheConsumerSync } from '../../storages/types';
+import { IRecorderCacheProducerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
 
@@ -10,13 +10,13 @@ import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '.
 export function submitterSyncTaskFactory<TState extends { length?: number }>(
   log: ILogger,
   postClient: (body: string) => Promise<Response>,
-  sourceCache: IRecorderCacheConsumerSync<TState>,
+  sourceCache: IRecorderCacheProducerSync<TState>,
   postRate: number,
   dataName: string,
   latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
-): ISyncTask {
+): ISyncTask<[], void> {
 
   let retries = 0;
 

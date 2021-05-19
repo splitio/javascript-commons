@@ -122,6 +122,7 @@ function customMapper(model: UniversalAnalytics.Model, defaultEvent: SplitIO.Eve
 }
 // Updates defaultEvent
 function customMapper2(model: UniversalAnalytics.Model, defaultEvent: SplitIO.EventData) {
+  // @ts-ignore. The defaultEvent has a property value, that might be empty depending on the hitType
   defaultEvent.properties['someProp2'] = 'someProp2';
   return defaultEvent;
 }

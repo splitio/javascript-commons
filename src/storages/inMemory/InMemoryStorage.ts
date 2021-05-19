@@ -12,6 +12,9 @@ import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
 
+  // InMemory storage is always ready
+  if (params.onReadyCb) setTimeout(params.onReadyCb);
+
   return {
     splits: new SplitsCacheInMemory(),
     segments: new SegmentsCacheInMemory(),
