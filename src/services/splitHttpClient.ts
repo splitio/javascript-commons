@@ -67,8 +67,8 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
           log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
-        const networkError = new Error(msg);
-        // @ts-ignore. Passes `undefined` as statusCode if not an HTTP error (resp === undefined)
+        const networkError: Error & {statusCode?: number} = new Error(msg);
+        // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
         networkError.statusCode = resp && resp.status;
         throw networkError;
       }) : Promise.reject(new Error(messageNoFetch));
