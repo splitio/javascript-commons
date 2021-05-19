@@ -15,7 +15,6 @@
 
   "globals": {
     // global TS types
-    "Response": "readonly",
     "EventSource": "readonly", // @TODO remove. Configure as a type declaration
     "MessageEvent": "readonly", // @TODO remove. Configure as a type declaration
     "Event": "readonly", // @TODO remove. Configure as a type declaration
