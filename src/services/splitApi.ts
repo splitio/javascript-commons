@@ -55,16 +55,16 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
-    postEventsBulk(body: string) {
+    postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
-    postTestImpressionsBulk(body: string) {
+    postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/bulk`;
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
-        method: 'POST', body, headers: { SplitSDKImpressionsMode }
+        method: 'POST', body, headers: headers || { SplitSDKImpressionsMode }
       });
     },
 

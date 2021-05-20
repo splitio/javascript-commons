@@ -26,6 +26,7 @@ export type IResponse = {
 // Reduced version of Fetch API
 export type IFetch = (url: string, options?: IRequestOptions) => Promise<IResponse>
 
+// IFetch specialization
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, logErrorsAsInfo?: boolean) => Promise<IResponse>
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
