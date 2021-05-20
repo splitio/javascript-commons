@@ -60,6 +60,7 @@ describe('splitApi', () => {
 
     // Invoking any Service method, returns a rejected promise with Split error
     splitApi.fetchAuth().catch(error => {
+      expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Global fetch API is not available.');
       done();
     });
