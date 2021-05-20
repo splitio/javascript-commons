@@ -2,7 +2,6 @@
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import thenable from '../../../utils/promise/thenable';
 import { LOG_PREFIX } from '../constants';
-import { SplitError } from '../../../utils/lang/errors';
 
 /** Mocks */
 
@@ -102,8 +101,7 @@ describe('Wrapper Adapter', () => {
         await result;
         expect(true).toBe(false); // promise shouldn't be resolved
       } catch (e) {
-        expect(e).toBeInstanceOf(SplitError);
-        expect(loggerMock.error).toHaveBeenCalledWith(`${LOG_PREFIX} Wrapper '${method}' operation threw an error. Message: ${e.message}`);
+        expect(loggerMock.error).toHaveBeenCalledWith(`${LOG_PREFIX} Wrapper '${method}' operation threw an error. Message: ${e}`);
       }
     }
 

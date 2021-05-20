@@ -3,7 +3,6 @@ import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISegmentChangesResponse, MaybeThenable } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
-import { SplitError } from '../../../utils/lang/errors';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
@@ -102,9 +101,6 @@ export function segmentChangesUpdaterFactory(
     })
       // Handles rejected promises at `segmentChangesFetcher`, `segments.getRegisteredSegments` and other segment storage operations.
       .catch(error => {
-        // handle user callback errors
-        if (!(error instanceof SplitError)) setTimeout(() => { throw error; }, 0);
-
         if (error.statusCode === 403) {
           // @TODO although factory status is destroyed, synchronization is not stopped
           if (readiness) readiness.destroy();

@@ -74,12 +74,22 @@ export function readinessManagerFactory(
 
   function checkIsReadyOrUpdate(diff: any) {
     if (isReady) {
-      gate.emit(SDK_UPDATE, diff);
+      try {
+        gate.emit(SDK_UPDATE, diff);
+      } catch (e) {
+        // throws user callback exceptions in next tick
+        setTimeout(() => { throw e; }, 0);
+      }
     } else {
       if (splits.splitsArrived && segments.segmentsArrived) {
         clearTimeout(readyTimeoutId);
         isReady = true;
-        gate.emit(SDK_READY);
+        try {
+          gate.emit(SDK_READY);
+        } catch (e) {
+          // throws user callback exceptions in next tick
+          setTimeout(() => { throw e; }, 0);
+        }
       }
     }
   }

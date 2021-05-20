@@ -1,4 +1,3 @@
-import { SplitError } from '../../../utils/lang/errors';
 import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
@@ -157,12 +156,6 @@ export function splitChangesUpdaterFactory(
           });
         })
         .catch(error => {
-          // handle user callback errors
-          if (!(error instanceof SplitError)) {
-            setTimeout(() => { throw error; }, 0);
-            startingUp = false; // Stop retrying.
-          }
-
           log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
 
           if (startingUp && retriesOnFailureBeforeReady > retry) {

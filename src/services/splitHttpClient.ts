@@ -1,5 +1,4 @@
 import { IFetch, IRequestOptions, IResponse, ISplitHttpClient } from './types';
-import { SplitError, SplitNetworkError } from '../utils/lang/errors';
 import objectAssign from 'object-assign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
@@ -68,8 +67,10 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
           log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
+        const networkError: Error & {statusCode?: number} = new Error(msg);
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
-        throw new SplitNetworkError(msg, resp && resp.status);
-      }) : Promise.reject(new SplitError(messageNoFetch));
+        networkError.statusCode = resp && resp.status;
+        throw networkError;
+      }) : Promise.reject(new Error(messageNoFetch));
   };
 }

@@ -4,7 +4,6 @@ import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit } from '../../dtos/types';
-import { SplitError } from '../../utils/lang/errors';
 import AbstractSplitsCacheAsync from '../AbstractSplitsCacheAsync';
 
 /**
@@ -62,19 +61,19 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Add a given split.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., redis operation fails)
+   * or rejected if it fails (e.g., redis operation fails)
    */
   addSplit(name: string, split: string): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then(splitFromStorage => {
 
-      // handling parsing error as SplitErrors
+      // handling parsing errors
       let parsedPreviousSplit, parsedSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         parsedSplit = JSON.parse(split);
       } catch (e) {
-        throw new SplitError('Error parsing split definition: ' + e);
+        throw new Error('Error parsing split definition: ' + e);
       }
 
       return Promise.all([
@@ -89,12 +88,10 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Add a list of splits.
    * The returned promise is resolved when the operation success
-   * or rejected with an SplitError if it fails (e.g., redis operation fails)
+   * or rejected if it fails (e.g., redis operation fails)
    */
   addSplits(entries: [string, string][]): Promise<boolean[]> {
-    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])))
-      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
-      .catch((e) => { throw new SplitError(e); });
+    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
   }
 
   /**
@@ -115,12 +112,10 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Remove a list of splits.
    * The returned promise is resolved when the operation success,
-   * or rejected with an SplitError if it fails (e.g., redis operation fails).
+   * or rejected if it fails (e.g., redis operation fails).
    */
   removeSplits(names: string[]): Promise<any> {
-    return Promise.all(names.map(name => this.removeSplit(name)))
-      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
-      .catch((e) => { throw new SplitError(e); });
+    return Promise.all(names.map(name => this.removeSplit(name)));
   }
 
   /**
@@ -131,7 +126,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
-      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+      return Promise.reject(this.redisError);
     }
 
     return this.redis.get(this.keys.buildSplitKey(name));
@@ -140,14 +135,12 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Set till number.
    * The returned promise is resolved when the operation success,
-   * or rejected with an SplitError if it fails.
+   * or rejected if it fails.
    */
   setChangeNumber(changeNumber: number): Promise<boolean> {
     return this.redis.set(this.keys.buildSplitsTillKey(), changeNumber + '').then(
       status => status === 'OK'
-    )
-      // @TODO remove if refactoring SDK error handling (it is necessary to distinguish from user cb errors).
-      .catch((e) => { throw new SplitError(e); });
+    );
   }
 
   /**
@@ -169,7 +162,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Get list of all split definitions.
    * The returned promise is resolved with the list of split definitions,
-   * or rejected if redis operation fails (no need to wrap the error as a SplitError).
+   * or rejected if redis operation fails.
    *
    * @TODO we need to benchmark which is the maximun number of commands we could
    *       pipeline without kill redis performance.
@@ -183,7 +176,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Get list of split names.
    * The returned promise is resolved with the list of split names,
-   * or rejected if redis operation fails (no need to wrap the error as a SplitError).
+   * or rejected if redis operation fails.
    */
   getSplitNames(): Promise<string[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys()).then(
@@ -235,7 +228,7 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
-      return Promise.reject(this.redisError); // no need to wrap as an SplitError
+      return Promise.reject(this.redisError);
     }
 
     const splits: Record<string, string | null> = {};
