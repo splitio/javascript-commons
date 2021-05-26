@@ -39,9 +39,9 @@ export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => P
 
 export type IPostEventsBulk = (body: string) => Promise<IResponse>
 
-export type IPostTestImpressionsBulk = (body: string) => Promise<IResponse>
+export type IPostTestImpressionsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostTestImpressionsCount = (body: string) => Promise<IResponse>
+export type IPostTestImpressionsCount = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export type IPostMetricsCounters = (body: string) => Promise<IResponse>
 

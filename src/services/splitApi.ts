@@ -56,11 +56,23 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
+    /**
+     * Post events.
+     *
+     * @param body  Events bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
     postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
       return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
+    /**
+     * Post impressions.
+     *
+     * @param body  Impressions bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
     postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/bulk`;
       return splitHttpClient(url, {
