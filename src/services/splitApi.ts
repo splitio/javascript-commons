@@ -3,6 +3,7 @@ import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { ISettingsInternal } from '../utils/settingsValidation/types';
+import objectAssign from 'object-assign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -64,7 +65,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       const url = `${urls.events}/testImpressions/bulk`;
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
-        method: 'POST', body, headers: headers || { SplitSDKImpressionsMode }
+        method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
       });
     },
 
