@@ -81,9 +81,15 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       });
     },
 
-    postTestImpressionsCount(body: string) {
+    /**
+     * Post impressions counts.
+     *
+     * @param body  Impressions counts payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
     postMetricsCounters(body: string) {
