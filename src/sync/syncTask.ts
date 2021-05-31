@@ -7,10 +7,11 @@ import { ISyncTask } from './types';
  * The task can be executed once calling the "execute" method.
  * NOTE: Multiple calls to "execute" are not queued. Use "isExecuting" method to handle synchronization.
  *
- * @param log logger instance
- * @param task task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
- * @param period period in milliseconds to execute the task
- * @param taskName optional task name for logging
+ * @param log  Logger instance.
+ * @param task  Task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
+ * @param period  Period in milliseconds to execute the task.
+ * @param taskName  Optional task name for logging.
+ * @returns A sync task that wraps the given task.
  */
 export default function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
