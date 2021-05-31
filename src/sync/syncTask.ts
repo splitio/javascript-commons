@@ -15,14 +15,17 @@ import { ISyncTask } from './types';
  */
 export default function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
-  // flag that indicates if the task is being executed
+  // Flag that indicates if the task is being executed
   let executing = false;
-
   // flag that indicates if the task periodic execution has been started/stopped.
   let running = false;
-  let timeoutID: number | undefined;
+  // Auxiliar counter used to avoid race condition when calling `start` & `stop` intermittently
+  let runningId = 0;
+  // Params passed to `task` when called periodically
+  let runningArgs: Input;
+  // Id of the periodic call timeout
+  let timeoutID: any;
 
-  // @TODO check if we need to queued `execute` calls, to avoid some corner-case race conditions on submitters and updaters with streaming.
   function execute(...args: Input) {
     executing = true;
     log.debug(SYNC_TASK_EXECUTE, [taskName]);
@@ -33,7 +36,17 @@ export default function syncTaskFactory<Input extends any[], Output = any>(log: 
     // No need to handle promise rejection because it is a pre-condition that provided task never rejects.
   }
 
+  function periodicExecute(currentRunningId: number) {
+    return execute(...runningArgs).then((result) => {
+      // Call `setTimeout` if periodic execution was started and `currentRunningId === runningId`
+      // to avoid a race condition when calling `start`, `stop` and `start` again
+      if (running && currentRunningId === runningId) timeoutID = setTimeout(periodicExecute, period, currentRunningId);
+      return result;
+    });
+  }
+
   return {
+    // @TODO check if we need to queued `execute` calls, to avoid possible race conditions on submitters and updaters with streaming.
     execute,
 
     isExecuting() {
@@ -43,9 +56,10 @@ export default function syncTaskFactory<Input extends any[], Output = any>(log: 
     start(...args: Input) {
       if (!running) {
         running = true;
+        runningId++;
+        runningArgs = args;
         log.debug(SYNC_TASK_START, [taskName, period]);
-        timeoutID = setInterval(execute, period, ...args);
-        return execute(...args);
+        return periodicExecute(runningId);
       }
     },
 
@@ -53,7 +67,7 @@ export default function syncTaskFactory<Input extends any[], Output = any>(log: 
       running = false;
       if (timeoutID) {
         log.debug(SYNC_TASK_STOP, [taskName]);
-        clearInterval(timeoutID);
+        clearTimeout(timeoutID);
         timeoutID = undefined;
       }
     },
