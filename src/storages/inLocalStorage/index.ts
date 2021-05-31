@@ -2,6 +2,7 @@ import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSyncCS } from '../types';
+import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import SplitsCacheInLocal from './SplitsCacheInLocal';
@@ -21,7 +22,7 @@ export interface InLocalStorageOptions {
  */
 export function InLocalStorage(options: InLocalStorageOptions = {}) {
 
-  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+  const prefix = validatePrefix(options.prefix);
 
   return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
 

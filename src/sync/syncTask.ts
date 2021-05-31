@@ -3,25 +3,33 @@ import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 
 /**
- * factory of sync tasks
+ * Creates a syncTask that handles the periodic execution of a givan task ("start" and "stop" methods).
+ * The task can be executed once calling the "execute" method.
+ * NOTE: Multiple calls to "execute" are not queued. Use "isExecuting" method to handle synchronization.
+ *
+ * @param log logger instance
+ * @param task task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
+ * @param period period in milliseconds to execute the task
+ * @param taskName optional task name for logging
  */
-export default function syncTaskFactory<Input extends any[], Output>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
+export default function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
   // flag that indicates if the task is being executed
   let executing = false;
 
-  // flag that indicates if the task periodic execution has been started/stopped. We cannot use timeoutID because it is set after the first execution of the task.
+  // flag that indicates if the task periodic execution has been started/stopped.
   let running = false;
   let timeoutID: number | undefined;
 
+  // @TODO check if we need to queued `execute` calls, to avoid some corner-case race conditions on submitters and updaters with streaming.
   function execute(...args: Input) {
     executing = true;
     log.debug(SYNC_TASK_EXECUTE, [taskName]);
     return task(...args).then(result => {
       executing = false;
-      if (running) timeoutID = setTimeout(execute, period, ...args);
       return result;
     });
+    // No need to handle promise rejection because it is a pre-condition that provided task never rejects.
   }
 
   return {
@@ -35,6 +43,7 @@ export default function syncTaskFactory<Input extends any[], Output>(log: ILogge
       if (!running) {
         running = true;
         log.debug(SYNC_TASK_START, [taskName, period]);
+        timeoutID = setInterval(execute, period, ...args);
         return execute(...args);
       }
     },
@@ -43,7 +52,7 @@ export default function syncTaskFactory<Input extends any[], Output>(log: ILogge
       running = false;
       if (timeoutID) {
         log.debug(SYNC_TASK_STOP, [taskName]);
-        clearTimeout(timeoutID);
+        clearInterval(timeoutID);
         timeoutID = undefined;
       }
     },
