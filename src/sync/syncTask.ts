@@ -3,7 +3,7 @@ import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 
 /**
- * Creates a syncTask that handles the periodic execution of a givan task ("start" and "stop" methods).
+ * Creates a syncTask that handles the periodic execution of a given task ("start" and "stop" methods).
  * The task can be executed once calling the "execute" method.
  * NOTE: Multiple calls to "execute" are not queued. Use "isExecuting" method to handle synchronization.
  *
