@@ -58,15 +58,15 @@ export default function pushManagerFactory(
     userKeyHashes[hash] = userKey;
   }
 
+  // init workers
+  const segmentsUpdateWorker = userKey ? new MySegmentsUpdateWorker(pollingManager.segmentsSyncTask) : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
+  // [Only for server-side] we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
+  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
   // [Only for client-side] map of user keys to their corresponding MySegmentsUpdateWorkers. It has a two-fold intention:
   // - stop workers all together when push is disconnected
   // - keep the current list of user keys to authenticate
   const workers: Record<string, IUpdateWorker> = {};
-
-  // init workers
-  const segmentsUpdateWorker = userKey ? new MySegmentsUpdateWorker(pollingManager.segmentsSyncTask) : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
   if (userKey) workers[userKey] = segmentsUpdateWorker;
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits);
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;

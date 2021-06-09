@@ -5,8 +5,6 @@ import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/setti
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
 
-const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-
 function assertHeaders(settings: ISettings, headers: Record<string, string>) {
   expect(headers['Accept']).toBe('application/json');
   expect(headers['Content-Type']).toBe('application/json');
@@ -21,6 +19,7 @@ describe('splitApi', () => {
 
   test.each([settingsSplitApi, settingsWithRuntime])('performs requests with expected headers', (settings) => {
 
+    const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
     const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock });
 
     splitApi.fetchAuth();
@@ -38,17 +37,17 @@ describe('splitApi', () => {
     splitApi.postEventsBulk('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[4][1].headers);
 
-    splitApi.postMetricsCounters('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[5][1].headers);
-
-    splitApi.postMetricsTimes('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
-
     splitApi.postTestImpressionsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
-    expect(fetchMock.mock.calls[7][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
+    assertHeaders(settings, fetchMock.mock.calls[5][1].headers);
+    expect(fetchMock.mock.calls[5][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
 
     splitApi.postTestImpressionsCount('fake-body');
+    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
+
+    // Deprecated
+    splitApi.postMetricsCounters('fake-body');
+    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
+    splitApi.postMetricsTimes('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
 
     fetchMock.mockClear();
@@ -65,6 +64,21 @@ describe('splitApi', () => {
       done();
     });
 
+  });
+
+  test('performs requests with overwritten headers', () => {
+    const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock });
+
+    const newHeaders = { SplitSDKVersion: 'newVersion', SplitSDKMachineIP: 'newIp', SplitSDKMachineName: 'newHostname' };
+    const expectedHeaders = { ...settingsWithRuntime, version: newHeaders.SplitSDKVersion, runtime: { ip: newHeaders.SplitSDKMachineIP, hostname: newHeaders.SplitSDKMachineName } };
+
+    splitApi.postEventsBulk('fake-body', newHeaders);
+    assertHeaders(expectedHeaders, fetchMock.mock.calls[0][1].headers);
+
+    splitApi.postTestImpressionsBulk('fake-body', newHeaders);
+    assertHeaders(expectedHeaders, fetchMock.mock.calls[1][1].headers);
+    expect(fetchMock.mock.calls[1][1].headers['SplitSDKImpressionsMode']).toBe(settingsWithRuntime.sync.impressionsMode);
   });
 
 });

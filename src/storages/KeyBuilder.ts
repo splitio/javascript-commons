@@ -1,14 +1,22 @@
-import { startsWith } from '../utils/lang';
+import { endsWith, startsWith } from '../utils/lang';
 
 const everythingAtTheEnd = /[^.]+$/;
 
-export default class KeyBuilder {
+const DEFAULT_PREFIX = 'SPLITIO';
 
-  static DEFAULT_PREFIX = 'SPLITIO';
+export function validatePrefix(prefix: unknown) {
+  return prefix && typeof prefix === 'string' ?
+    endsWith(prefix, '.' + DEFAULT_PREFIX) ?
+      prefix : // suffix already appended
+      prefix + '.' + DEFAULT_PREFIX : // append suffix
+    DEFAULT_PREFIX; // use default prefix if none is provided
+}
+
+export default class KeyBuilder {
 
   protected readonly prefix: string;
 
-  constructor(prefix: string = KeyBuilder.DEFAULT_PREFIX) {
+  constructor(prefix: string = DEFAULT_PREFIX) {
     this.prefix = prefix;
   }
 

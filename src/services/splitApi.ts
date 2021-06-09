@@ -3,6 +3,7 @@ import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { ISettingsInternal } from '../utils/settingsValidation/types';
+import objectAssign from 'object-assign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -55,22 +56,40 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
-    postEventsBulk(body: string) {
+    /**
+     * Post events.
+     *
+     * @param body  Events bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
-    postTestImpressionsBulk(body: string) {
+    /**
+     * Post impressions.
+     *
+     * @param body  Impressions bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/bulk`;
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
-        method: 'POST', body, headers: { SplitSDKImpressionsMode }
+        method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
       });
     },
 
-    postTestImpressionsCount(body: string) {
+    /**
+     * Post impressions counts.
+     *
+     * @param body  Impressions counts payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
     postMetricsCounters(body: string) {

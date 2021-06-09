@@ -45,7 +45,7 @@ export default function pushManagerSSFactory(
   sseClient.setEventHandler(sseHandler);
 
   // init workers
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits);
+  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, pollingManager.segmentsSyncTask);
   const segmentsUpdateWorker = new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
 
   // flag that indicates if `disconnectPush` was called, either by the SyncManager (when the client is destroyed) or by a PUSH_NONRETRYABLE_ERROR error.

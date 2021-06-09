@@ -26,6 +26,7 @@ export type IResponse = {
 // Reduced version of Fetch API
 export type IFetch = (url: string, options?: IRequestOptions) => Promise<IResponse>
 
+// IFetch specialization
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, logErrorsAsInfo?: boolean) => Promise<IResponse>
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
@@ -36,11 +37,11 @@ export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?
 
 export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => Promise<IResponse>
 
-export type IPostEventsBulk = (body: string) => Promise<IResponse>
+export type IPostEventsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostTestImpressionsBulk = (body: string) => Promise<IResponse>
+export type IPostTestImpressionsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostTestImpressionsCount = (body: string) => Promise<IResponse>
+export type IPostTestImpressionsCount = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export type IPostMetricsCounters = (body: string) => Promise<IResponse>
 

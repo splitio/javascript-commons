@@ -7,6 +7,7 @@ import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
 import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
+import { validatePrefix } from '../KeyBuilder';
 
 const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -37,7 +38,7 @@ export function PluggableStorage(options: PluggableStorageOptions) {
 
   validatePluggableStorageOptions(options);
 
-  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+  const prefix = validatePrefix(options.prefix);
 
   return function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);

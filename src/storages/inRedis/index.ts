@@ -1,5 +1,6 @@
 import RedisAdapter from './RedisAdapter';
 import { IStorageAsync, IStorageFactoryParams } from '../types';
+import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderSS from '../KeyBuilderSS';
 import SplitsCacheInRedis from './SplitsCacheInRedis';
 import SegmentsCacheInRedis from './SegmentsCacheInRedis';
@@ -19,7 +20,7 @@ export interface InRedisStorageOptions {
  */
 export function InRedisStorage(options: InRedisStorageOptions = {}) {
 
-  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+  const prefix = validatePrefix(options.prefix);
 
   return function InRedisStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
 
