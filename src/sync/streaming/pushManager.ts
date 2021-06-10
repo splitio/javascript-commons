@@ -34,11 +34,15 @@ export default function pushManagerFactory(
   settings: ISettings,
 ): IPushManagerCS | undefined {
 
+  // `userKey` is the matching key of main client in client-side SDK.
+  // It can be used to check if running on client-side or server-side SDK.
+  const userKey = settings.core.key ? getMatching(settings.core.key) : undefined; //
   const log = settings.log;
 
   let sseClient: ISSEClient;
   try {
-    sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
+    // `useHeaders` false for client-side, even if the platform EventSource supports headers (e.g., React Native).
+    sseClient = new SSEClient(settings, userKey ? false : true, platform.getEventSource);
   } catch (e) {
     log.warn(STREAMING_FALLBACK, [e]);
     return;
@@ -52,7 +56,6 @@ export default function pushManagerFactory(
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
-  const userKey = settings.core.key ? getMatching(settings.core.key) : undefined; // matching key of main client
   if (userKey) {
     const hash = hashUserKey(userKey);
     userKeyHashes[hash] = userKey;

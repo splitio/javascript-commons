@@ -38,7 +38,7 @@ export const settingsWithKeyObject = {
 
 export const fullSettings: ISettings = {
   core: {
-    authorizationKey: 'asd',
+    authorizationKey: 'aaaabbbbcccc1234',
     key: 'some_key',
     labelsEnabled: false,
     IPAddressesEnabled: false

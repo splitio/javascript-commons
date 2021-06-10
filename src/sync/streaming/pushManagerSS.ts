@@ -32,7 +32,7 @@ export default function pushManagerSSFactory(
 
   let sseClient: ISSEClient;
   try {
-    sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
+    sseClient = new SSEClient(settings, true, platform.getEventSource);
   } catch (e) {
     log.warn(STREAMING_FALLBACK, [e]);
     return;

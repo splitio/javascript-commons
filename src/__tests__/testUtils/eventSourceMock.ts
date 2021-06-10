@@ -47,7 +47,8 @@ export default class EventSource {
   static readonly CLOSED: ReadyStateType = 2;
 
   private readonly __emitter: IEventEmitter;
-  onerror?: (evt: MessageEvent) => any;;
+  private readonly __eventSourceInitDict: EventSourceInitDict;
+  onerror?: (evt: MessageEvent) => any;
   onmessage?: (evt: MessageEvent) => any;
   onopen?: (evt?: MessageEvent) => any;
   readyState: ReadyStateType;
@@ -56,13 +57,14 @@ export default class EventSource {
 
   constructor(
     url: string,
-    configuration: EventSourceInitDict = defaultOptions
+    eventSourceInitDict: EventSourceInitDict = defaultOptions
   ) {
     this.url = url;
-    this.withCredentials = configuration.withCredentials;
+    this.withCredentials = eventSourceInitDict.withCredentials;
     this.readyState = 0;
     // @ts-ignore
     this.__emitter = new EventEmitter();
+    this.__eventSourceInitDict = arguments[1];
     sources[url] = this;
     if (__listener) setTimeout(__listener, 0, this);
   }
