@@ -72,7 +72,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const eventTracker = eventTrackerFactory(log, storage.events, integrationsManager);
 
   // signal listener
-  const signalListener = SignalListener && new SignalListener(syncManager && syncManager.flush, settings, storage, splitApi);
+  const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
 
   // Sdk client and manager
   const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });

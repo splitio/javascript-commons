@@ -1,4 +1,3 @@
-import { MaybeThenable } from '../dtos/types';
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
@@ -59,7 +58,7 @@ export interface ISdkFactoryParams {
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
-    handler: (() => MaybeThenable<void>) | undefined, // Used by NodeSignalListener
+    syncManager: ISyncManager | undefined, // Used by NodeSignalListener to flush data, and by BrowserSignalListener to close streaming connection.
     settings: ISettings, // Used by BrowserSignalListener
     storage: IStorageSync | IStorageAsync, // Used by BrowserSignalListener
     serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener

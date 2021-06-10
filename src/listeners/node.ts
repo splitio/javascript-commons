@@ -4,6 +4,7 @@ import thenable from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import { LOG_PREFIX_CLEANUP, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+import { ISyncManager } from '../sync/types';
 
 const SIGTERM = 'SIGTERM';
 const EVENT_NAME = 'for SIGTERM signal.';
@@ -17,10 +18,21 @@ const EVENT_NAME = 'for SIGTERM signal.';
  */
 export default class NodeSignalListener implements ISignalListener {
 
+  private handler: () => MaybeThenable<any>;
+  private settings: ISettings;
+
   constructor(
-    private handler: () => MaybeThenable<void>,
-    private settings: ISettings
+    syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
+    settings: ISettings
   ) {
+    // @TODO review handler logic when implementing Node SDK
+    this.handler = function () {
+      if (syncManager) {
+        // syncManager.stop();
+        return syncManager.flush();
+      }
+    };
+    this.settings = settings;
     this._sigtermHandler = this._sigtermHandler.bind(this);
   }
 
