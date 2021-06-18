@@ -7,10 +7,10 @@ import { fromImpressionCountsCollector } from '../sync/submitters/impressionCoun
 import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';
-import { MaybeThenable } from '../dtos/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
 import objectAssign from 'object-assign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+import { ISyncManager } from '../sync/types';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
@@ -24,7 +24,7 @@ export default class BrowserSignalListener implements ISignalListener {
   private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
 
   constructor(
-    handler: (() => MaybeThenable<void>) | undefined, // Not used, but passed by sdkFactory for NodeSignalListener
+    private syncManager: ISyncManager | undefined,
     private settings: ISettings,
     private storage: IStorageSync,
     private serviceApi: ISplitApi,
@@ -72,6 +72,9 @@ export default class BrowserSignalListener implements ISignalListener {
     this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
     this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
     if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+
+    // Close streaming connection
+    if (this.syncManager && this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
   private _flushData<TState>(url: string, cache: IRecorderCacheProducerSync<TState>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {

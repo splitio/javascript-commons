@@ -135,9 +135,9 @@ export default function pushManagerCSFactory(
 
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
+    sseClient.close();
     disconnected = true;
     log.info(STREAMING_DISCONNECTING);
-    sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
     connectPushRetryBackoff.reset();

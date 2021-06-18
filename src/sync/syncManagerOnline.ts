@@ -78,6 +78,7 @@ export function syncManagerOnlineFactory(
     let running = false;
 
     return {
+      pushManager,
 
       start() {
         // start syncing splits and segments
