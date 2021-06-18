@@ -36,7 +36,8 @@ export default function pushManagerCSFactory(
 
   let sseClient: ISSEClient;
   try {
-    sseClient = new SSEClient(settings.urls.streaming, platform.getEventSource);
+    // `useHeaders` false for client-side, even if the platform EventSource supports headers (e.g., React Native).
+    sseClient = new SSEClient(settings, false, platform.getEventSource);
   } catch (e) {
     log.warn(STREAMING_FALLBACK, [e]);
     return;
@@ -134,9 +135,9 @@ export default function pushManagerCSFactory(
 
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
+    sseClient.close();
     disconnected = true;
     log.info(STREAMING_DISCONNECTING);
-    sseClient.close();
 
     if (timeoutId) clearTimeout(timeoutId);
     connectPushRetryBackoff.reset();
