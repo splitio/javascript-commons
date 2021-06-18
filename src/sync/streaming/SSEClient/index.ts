@@ -55,6 +55,7 @@ export default class SSEClient implements ISSEClient {
 
     this.streamingUrl = settings.urls.streaming + '/sse';
     this.reopen = this.reopen.bind(this);
+    // @TODO get `useHeaders` flag from `getEventSource`, to use EventSource headers on client-side SDKs when possible.
     this.useHeaders = useHeaders;
     this.headers = buildSSEHeaders(settings);
   }
