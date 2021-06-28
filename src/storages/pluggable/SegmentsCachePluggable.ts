@@ -5,7 +5,7 @@ import KeyBuilderSS from '../KeyBuilderSS';
 import { ICustomStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { setToArray, _Set } from '../../utils/lang/sets';
+import { _Set } from '../../utils/lang/sets';
 
 /**
  * ISegmentsCacheAsync implementation for pluggable storages.

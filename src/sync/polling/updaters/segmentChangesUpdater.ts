@@ -94,14 +94,13 @@ export function segmentChangesUpdaterFactory(
           readyOnAlreadyExistentState = false;
           if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         }
-        // if at least one segment fetch fails, return false to indicate that there was some error (e.g., invalid json, HTTP error, etc)
-        if (shouldUpdateFlags.indexOf(-1) !== -1) return false;
         return true;
       });
     })
       // Handles rejected promises at `segmentChangesFetcher`, `segments.getRegisteredSegments` and other segment storage operations.
       .catch(error => {
-        if (error.statusCode === 403) {
+        if (error && error.statusCode === 403) {
+          // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
           // @TODO although factory status is destroyed, synchronization is not stopped
           if (readiness) readiness.destroy();
           log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);

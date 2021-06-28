@@ -14,13 +14,6 @@ function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, s
           return [flatMe[0], ...flatMe[1]];
         });
       }
-    })
-    .catch(err => {
-      // If the operation is forbidden it may be due to permissions, don't recover and propagate the error.
-      if (err.statusCode === 403) throw err;
-      // if something goes wrong with the request to the server, we are going to
-      // stop requesting information till the next round of downloading
-      return [];
     });
 }
 
