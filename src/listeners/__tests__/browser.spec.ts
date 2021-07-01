@@ -133,12 +133,15 @@ test('Browser JS listener / Impressions optimized mode', () => {
 });
 
 test('Browser JS listener / Impressions debug mode', () => {
-  const syncManagerMockWithPushManager = { pushManager: { stop: jest.fn() } };
+  const syncManagerMockWithPushManager = { start: jest.fn(), pushManager: { stop: jest.fn() } };
 
   // @ts-expect-error
   const listener = new BrowserSignalListener(syncManagerMockWithPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
+
+  // starting the listener must start the syncManager
+  expect(syncManagerMockWithPushManager.start).toBeCalled();
 
   // Assigned right function to right signal.
   expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
@@ -170,12 +173,15 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', () =
   // remove sendBeacon API
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
-  const syncManagerMockWithoutPushManager = {};
+  const syncManagerMockWithoutPushManager = { start: jest.fn() };
 
   // @ts-expect-error
   const listener = new BrowserSignalListener(syncManagerMockWithoutPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
+
+  // starting the listener must start the syncManager
+  expect(syncManagerMockWithoutPushManager.start).toBeCalled();
 
   // Assigned right function to right signal.
   expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);

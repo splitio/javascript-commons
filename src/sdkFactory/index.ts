@@ -78,7 +78,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
   const managerInstance = sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
-  syncManager && syncManager.start();
+  // If there is a signalListener, it is in charge of starting the syncManager.
+  // It is required for RN to consider the app state when the SDK is instantiated (foreground/background).
+  if (syncManager && !signalListener) syncManager.start();
   signalListener && signalListener.start();
 
   log.info(NEW_FACTORY);
