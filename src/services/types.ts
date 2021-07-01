@@ -27,6 +27,8 @@ export type IResponse = {
 export type IFetch = (url: string, options?: IRequestOptions) => Promise<IResponse>
 
 // IFetch specialization
+export type IHealthCheckAPI = () => Promise<boolean>
+
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, logErrorsAsInfo?: boolean) => Promise<IResponse>
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
@@ -48,6 +50,8 @@ export type IPostMetricsCounters = (body: string) => Promise<IResponse>
 export type IPostMetricsTimes = (body: string) => Promise<IResponse>
 
 export interface ISplitApi {
+  getSplitSDKHealthCheck: IHealthCheckAPI;
+  getEventsAPIHealthCheck: IHealthCheckAPI;
 	fetchAuth: IFetchAuth
 	fetchSplitChanges: IFetchSplitChanges
 	fetchSegmentChanges: IFetchSegmentChanges

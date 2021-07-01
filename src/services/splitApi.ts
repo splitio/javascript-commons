@@ -25,6 +25,16 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 
   return {
+    getSplitSDKHealthCheck() {
+      const url = `${urls.sdk}/version`;
+      return splitHttpClient(url).then(() => true).catch(() => false);
+    },
+
+    getEventsAPIHealthCheck() {
+      const url = `${urls.events}/version`;
+      return splitHttpClient(url).then(() => true).catch(() => false);
+    },
+
     fetchAuth(userMatchingKeys?: string[]) {
       let url = `${urls.auth}/auth`;
       if (userMatchingKeys) { // accounting the possibility that `userMatchingKeys` is undefined (server-side API)

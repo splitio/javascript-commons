@@ -53,7 +53,7 @@ describe('splitApi', () => {
     fetchMock.mockClear();
   });
 
-  test('reject requests if fetch Api is not provided', (done) => {
+  test('rejects requests if fetch Api is not provided', (done) => {
 
     const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => undefined });
 
@@ -81,4 +81,19 @@ describe('splitApi', () => {
     expect(fetchMock.mock.calls[1][1].headers['SplitSDKImpressionsMode']).toBe(settingsWithRuntime.sync.impressionsMode);
   });
 
+  test('performs APIs health service check', (done) => {
+    const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock });
+
+    splitApi.getSplitSDKHealthCheck().then((res) => {
+      expect(res).toEqual(true);
+    });
+    expect(fetchMock.mock.calls[0][0]).toMatch('sdk/version');
+
+    splitApi.getEventsAPIHealthCheck().then((res) => {
+      expect(res).toEqual(true);
+      done();
+    });
+    expect(fetchMock.mock.calls[1][0]).toMatch('events/version');
+  });
 });
