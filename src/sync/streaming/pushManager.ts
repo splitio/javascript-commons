@@ -212,6 +212,9 @@ export default function pushManagerFactory(
       stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which start polling.
 
       start() {
+        // Guard condition to avoid calling `connectPush` again if the `start` method is called multiple times.
+        if (disconnected === false) return;
+        disconnected = false;
         // Run in next event-loop cycle for optimization on client-side: if multiple clients are created in the same cycle than the factory, only one authentication is performed.
         setTimeout(connectPush);
       },
