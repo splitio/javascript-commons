@@ -83,7 +83,6 @@ export default class SSEClient implements ISSEClient {
     ).join(',');
     const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
 
-    // this.connection = new this.eventSource(url);
     this.connection = new this.eventSource(
       // For client-side SDKs, SplitSDKClientKey and SplitSDKClientKey metadata is passed as query params,
       // because native EventSource implementations for browser doesn't support headers.
@@ -93,9 +92,9 @@ export default class SSEClient implements ISSEClient {
     );
 
     if (this.handler) { // no need to check if SSEClient is used only by PushManager
-      this.connection.onopen = this.handler.handleOpen;
-      this.connection.onmessage = this.handler.handleMessage;
-      this.connection.onerror = this.handler.handleError;
+      this.connection.addEventListener('open', this.handler.handleOpen);
+      this.connection.addEventListener('message', this.handler.handleMessage);
+      this.connection.addEventListener('error', this.handler.handleError);
     }
   }
 
@@ -108,6 +107,7 @@ export default class SSEClient implements ISSEClient {
    * Re-open the connection with the last given authToken.
    *
    * @throws {TypeError} if `open` has not been previously called with an authToken
+   * @TODO this method is not used currently and could be removed.
    */
   reopen() {
     this.open(this.authToken as IAuthTokenPushEnabled);
