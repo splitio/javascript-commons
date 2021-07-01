@@ -50,7 +50,7 @@ export type IPostMetricsCounters = (body: string) => Promise<IResponse>
 export type IPostMetricsTimes = (body: string) => Promise<IResponse>
 
 export interface ISplitApi {
-  getSplitSDKHealthCheck: IHealthCheckAPI;
+  getSdkAPIHealthCheck: IHealthCheckAPI;
   getEventsAPIHealthCheck: IHealthCheckAPI;
 	fetchAuth: IFetchAuth
 	fetchSplitChanges: IFetchSplitChanges

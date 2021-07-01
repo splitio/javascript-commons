@@ -25,7 +25,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 
   return {
-    getSplitSDKHealthCheck() {
+    getSdkAPIHealthCheck() {
       const url = `${urls.sdk}/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
     },
