@@ -85,7 +85,7 @@ describe('splitApi', () => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
     const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock });
 
-    splitApi.getSplitAPIHealthCheck().then((res) => {
+    splitApi.getSplitSDKHealthCheck().then((res) => {
       expect(res).toEqual(true);
     });
     expect(fetchMock.mock.calls[0][0]).toMatch('sdk/version');
