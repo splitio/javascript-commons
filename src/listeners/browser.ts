@@ -39,7 +39,6 @@ export default class BrowserSignalListener implements ISignalListener {
    * We add a handler on unload events. The handler flushes remaining impressions and events to the backend.
    */
   start() {
-    this.syncManager?.start();
     if (typeof window !== 'undefined' && window.addEventListener) {
       this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
       window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
@@ -49,6 +48,7 @@ export default class BrowserSignalListener implements ISignalListener {
   /**
    * stop method.
    * Called when client is destroyed.
+   * We need to remove the handler for unload events, since it can break if called when Split context was destroyed.
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {

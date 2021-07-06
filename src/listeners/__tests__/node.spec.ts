@@ -7,13 +7,10 @@ const processKillSpy = jest.spyOn(process, 'kill').mockImplementation(() => true
 
 test('Node JS listener / Signal Listener class methods and start/stop functionality', () => {
 
-  const syncManagerMock = { start: jest.fn(), flush: jest.fn() }; // @ts-expect-error
+  const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
-
-  // starting the listener must start the syncManager
-  expect(syncManagerMock.start).toBeCalled();
 
   // Assigned right function to right signal.
   // @ts-expect-error
@@ -30,7 +27,7 @@ test('Node JS listener / Signal Listener class methods and start/stop functional
 
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler', () => {
 
-  const syncManagerMock = { start: jest.fn(), flush: jest.fn() }; // @ts-expect-error
+  const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
@@ -59,7 +56,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
 });
 
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
-  const syncManagerMock = { start: jest.fn(), flush: jest.fn(() => { throw 'some error'; }) }; // @ts-expect-error
+  const syncManagerMock = { flush: jest.fn(() => { throw 'some error'; }) }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
@@ -95,7 +92,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
       res();
     }, 0);
   });
-  const syncManagerMock = { start: jest.fn(), flush: jest.fn(() => fakePromise) };
+  const syncManagerMock = { flush: jest.fn(() => fakePromise) };
   // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
@@ -139,7 +136,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
       rej();
     }, 0);
   });
-  const syncManagerMock = { start: jest.fn(), flush: jest.fn(() => fakePromise) };
+  const syncManagerMock = { flush: jest.fn(() => fakePromise) };
   // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 

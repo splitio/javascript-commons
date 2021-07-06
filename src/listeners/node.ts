@@ -22,7 +22,7 @@ export default class NodeSignalListener implements ISignalListener {
   private settings: ISettings;
 
   constructor(
-    private syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
+    syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
     settings: ISettings
   ) {
     // @TODO review handler logic when implementing Node SDK
@@ -37,7 +37,6 @@ export default class NodeSignalListener implements ISignalListener {
   }
 
   start() {
-    this.syncManager?.start();
     this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
     // eslint-disable-next-line no-undef
     process.on(SIGTERM, this._sigtermHandler);
