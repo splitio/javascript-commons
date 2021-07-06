@@ -75,6 +75,11 @@ export function syncManagerOnlineFactory(
       pollingManager.syncAll();
     }
 
+    if (pushManager) {
+      pushManager.on(PUSH_SUBSYSTEM_UP, stopPollingAndSyncAll);
+      pushManager.on(PUSH_SUBSYSTEM_DOWN, startPolling);
+    }
+
     let running = false; // flag that indicates whether the syncManager has been started (true) or stopped (false)
     let startFirstTime = true; // flag to distinguish calling the `start` method for the first time, to support pausing and resuming the synchronization
 
@@ -87,11 +92,9 @@ export function syncManagerOnlineFactory(
       start() {
         // start syncing splits and segments
         if (pushManager) {
-          // Avoid calling `syncAll` when the syncManager is resumed
+          // Doesn't call `syncAll` when the syncManager is resuming
           if (startFirstTime) {
             pollingManager.syncAll();
-            pushManager.on(PUSH_SUBSYSTEM_UP, stopPollingAndSyncAll);
-            pushManager.on(PUSH_SUBSYSTEM_DOWN, startPolling);
             startFirstTime = false;
           }
           pushManager.start();

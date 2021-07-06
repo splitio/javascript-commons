@@ -209,7 +209,7 @@ export default function pushManagerFactory(
     Object.create(pushEmitter),
     {
       // Expose functionality for starting and stoping push mode:
-      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which start polling.
+      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which starts polling.
 
       start() {
         // Guard condition to avoid calling `connectPush` again if the `start` method is called multiple times.
