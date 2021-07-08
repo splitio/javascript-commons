@@ -18,7 +18,7 @@ test('pushManagerFactory returns undefined if EventSource is not available', () 
   expect(pushManager).toBe(undefined);
 });
 
-test('pushManager does not connect if it is stopped inmediatelly after being started', (done) => {
+test('pushManager does not connect to streaming if it is stopped inmediatelly after being started', (done) => {
   const fetchAuthMock = jest.fn();
 
   // @ts-ignore

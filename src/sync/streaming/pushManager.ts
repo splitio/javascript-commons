@@ -74,10 +74,10 @@ export default function pushManagerFactory(
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
 
-  // flag that indicates if `disconnectPush` was called (stopped), either by the SyncManager when the client is destroyed or by a PUSH_NONRETRYABLE_ERROR error.
+  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NONRETRYABLE_ERROR error.
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
-  // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting streaming is ignored.
+  // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
   let disabled: boolean | undefined;
 
   /** PushManager functions related to initialization */
