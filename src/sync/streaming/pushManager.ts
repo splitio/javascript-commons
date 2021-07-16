@@ -74,9 +74,11 @@ export default function pushManagerFactory(
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
 
-  // flag that indicates if `disconnectPush` was called, either by the SyncManager (when the client is destroyed) or by a PUSH_NONRETRYABLE_ERROR error.
+  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NONRETRYABLE_ERROR error.
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
+  // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
+  let disabled: boolean | undefined;
 
   /** PushManager functions related to initialization */
 
@@ -97,7 +99,8 @@ export default function pushManagerFactory(
   }
 
   function connectPush() {
-    disconnected = false;
+    if (disconnected) return;
+
     log.info(STREAMING_CONNECTING);
 
     const userKeys = userKey ? Object.keys(workers) : undefined;
@@ -141,8 +144,8 @@ export default function pushManagerFactory(
 
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
-    sseClient.close();
     disconnected = true;
+    sseClient.close();
     log.info(STREAMING_DISCONNECTING);
 
     if (timeoutId) clearTimeout(timeoutId);
@@ -166,6 +169,7 @@ export default function pushManagerFactory(
   /** Fallbacking without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
 
   pushEmitter.on(PUSH_NONRETRYABLE_ERROR, function handleNonRetryableError() {
+    disabled = true;
     // Note: `stopWorkers` is been called twice, but it is not harmful
     disconnectPush();
     pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
@@ -209,9 +213,12 @@ export default function pushManagerFactory(
     Object.create(pushEmitter),
     {
       // Expose functionality for starting and stoping push mode:
-      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which start polling.
+      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which starts polling.
 
       start() {
+        // Guard condition to avoid calling `connectPush` again if the `start` method is called multiple times or if push has been disabled.
+        if (disabled || disconnected === false) return;
+        disconnected = false;
         // Run in next event-loop cycle for optimization on client-side: if multiple clients are created in the same cycle than the factory, only one authentication is performed.
         setTimeout(connectPush);
       },
