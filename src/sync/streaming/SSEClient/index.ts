@@ -47,7 +47,7 @@ export default class SSEClient implements ISSEClient {
    * @param getEventSource Function to get the EventSource constructor.
    * @throws 'EventSource API is not available. ' if EventSource is not available.
    */
-  constructor(settings: ISettings, useHeaders?: boolean, getEventSource?: () => typeof EventSource | undefined) {
+  constructor(settings: ISettings, useHeaders?: boolean, getEventSource?: () => (typeof EventSource | undefined)) {
     // @ts-expect-error
     this.eventSource = getEventSource && getEventSource();
     // if eventSource is not available, throw an exception
@@ -100,7 +100,10 @@ export default class SSEClient implements ISSEClient {
 
   /** Close connection  */
   close() {
-    if (this.connection) this.connection.close();
+    if (this.connection) {
+      if (this.handler) this.handler.handleClose();
+      this.connection.close();
+    }
   }
 
   /**

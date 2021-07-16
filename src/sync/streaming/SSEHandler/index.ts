@@ -29,13 +29,25 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 
+  // Whether the SSEClient connection has been explicitly closed or not
+  let closeMethodInvoked = false;
+
   return {
     handleOpen() {
+      closeMethodInvoked = false;
       notificationKeeper.handleOpen();
+    },
+
+    /* Called when SSEClient.close method is called */
+    handleClose() {
+      closeMethodInvoked = true;
     },
 
     /* HTTP & Network errors */
     handleError(error) {
+      // Ignore EventSource errors if `close` method has been called, for those implementations that emit an error when closing.
+      if (closeMethodInvoked) return;
+
       let errorWithParsedData: INotificationError = error;
       try {
         errorWithParsedData = errorParser(error);
@@ -43,7 +55,7 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
         log.warn(STREAMING_PARSING_ERROR_FAILS, [err]);
       }
 
-      let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
+      let errorMessage = (errorWithParsedData.parsedData && errorWithParsedData.parsedData.message) || errorWithParsedData.message;
       log.error(ERROR_STREAMING_SSE, [errorMessage]);
 
       if (isRetryableError(errorWithParsedData)) {

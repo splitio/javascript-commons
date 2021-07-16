@@ -11,7 +11,7 @@ export const codesError: [number, string][] = [
   [c.ERROR_EVENTS_TRACKER, c.LOG_PREFIX_EVENTS_TRACKER + 'Failed to queue %s'],
   // synchronizer
   [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
-  [c.ERROR_STREAMING_SSE, c.LOG_PREFIX_SYNC_STREAMING + 'Fail to connect to streaming, with error message: %s'],
+  [c.ERROR_STREAMING_SSE, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to connect or error on streaming connection, with error message: %s'],
   [c.ERROR_STREAMING_AUTH, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to authenticate for streaming. Error: "%s".'],
   [c.ERROR_HTTP, ' Response status is not OK. Status: %s. URL: %s. Message: %s'],
   // client status
