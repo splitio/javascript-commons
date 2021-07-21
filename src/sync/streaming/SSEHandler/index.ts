@@ -3,7 +3,7 @@ import notificationKeeperFactory from './NotificationKeeper';
 import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
-import { INotificationError } from './types';
+import { INotificationError, INotificationMessage } from './types';
 import { ILogger } from '../../../logger/types';
 import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 
@@ -67,9 +67,10 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
 
     /* NotificationProcessor */
     handleMessage(message) {
-      let messageWithParsedData;
+      let messageWithParsedData: INotificationMessage | undefined;
       try {
         messageWithParsedData = messageParser(message);
+        if (!messageWithParsedData) return; // keepalive event messages are ignored
       } catch (err) {
         log.warn(STREAMING_PARSING_MESSAGE_FAILS, [err]);
         return;
