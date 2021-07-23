@@ -45,7 +45,7 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
 
     /* HTTP & Network errors */
     handleError(error) {
-      // Ignore EventSource errors if `close` method has been called, for those implementations that emit an error when closing.
+      // Ignore EventSource errors if `close` method has been called, for those implementations that emit an error when closing (e.g., RN Android).
       if (closeMethodInvoked) return;
 
       let errorWithParsedData: INotificationError = error;
@@ -70,7 +70,7 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       let messageWithParsedData: INotificationMessage | undefined;
       try {
         messageWithParsedData = messageParser(message);
-        if (!messageWithParsedData) return; // keepalive event messages are ignored
+        if (!messageWithParsedData) return; // Messages with empty data are ignored
       } catch (err) {
         log.warn(STREAMING_PARSING_MESSAGE_FAILS, [err]);
         return;
