@@ -22,8 +22,8 @@ export function errorParser(error: Event): INotificationError {
  * Also assigns the type OCCUPANCY, if it corresponds, so that all supported messages (e.g., SPLIT_UPDATE, CONTROL) have a type.
  *
  * @param message
- * @returns parsed notification message or undefined if the given event has not a non-empty data string.
- * For example, the EventSource implementation of React-Native for iOS emits a message event with empty data for each Ably keepalive comment.
+ * @returns parsed notification message or undefined if the given event data is falsy (e.g, '' or undefined).
+ * For example, the EventSource implementation of React-Native for iOS emits a message event with empty data for Ably keepalive comments.
  * @throws {SyntaxError} if `message.data` or `JSON.parse(message.data).data` are invalid JSON strings
  */
 export function messageParser(message: MessageEvent): INotificationMessage | undefined {

@@ -32,7 +32,6 @@ test('SSClient / setEventHandler, open and close methods', () => {
     handleOpen: jest.fn(),
     handleError: jest.fn(),
     handleMessage: jest.fn(),
-    handleClose: jest.fn(),
   };
 
   // instance SSEClient
@@ -64,7 +63,6 @@ test('SSClient / setEventHandler, open and close methods', () => {
   // close connection
   instance.close();
   expect(instance.connection.readyState).toBe(2); // connection readyState is CLOSED (2)
-  expect(handler.handleClose).toBeCalledTimes(1); // handleClose called when connection close method is called
 
   // open attempt without open event emitted
   instance.open(authDataSample);

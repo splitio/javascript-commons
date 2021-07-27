@@ -4,7 +4,6 @@ export interface ISseEventHandler {
   handleError: (ev: Event) => any;
   handleMessage: (ev: MessageEvent) => any;
   handleOpen: () => any;
-  handleClose: () => any;
 }
 
 export interface ISSEClient {

@@ -100,10 +100,7 @@ export default class SSEClient implements ISSEClient {
 
   /** Close connection  */
   close() {
-    if (this.connection) {
-      if (this.handler) this.handler.handleClose();
-      this.connection.close();
-    }
+    if (this.connection) this.connection.close();
   }
 
   /**

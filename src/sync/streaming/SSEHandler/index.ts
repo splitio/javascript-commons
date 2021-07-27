@@ -29,25 +29,13 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 
-  // Whether the SSEClient connection has been explicitly closed or not
-  let closeMethodInvoked = false;
-
   return {
     handleOpen() {
-      closeMethodInvoked = false;
       notificationKeeper.handleOpen();
-    },
-
-    /* Called when SSEClient.close method is called */
-    handleClose() {
-      closeMethodInvoked = true;
     },
 
     /* HTTP & Network errors */
     handleError(error) {
-      // Ignore EventSource errors if `close` method has been called, for those implementations that emit an error when closing (e.g., RN Android).
-      if (closeMethodInvoked) return;
-
       let errorWithParsedData: INotificationError = error;
       try {
         errorWithParsedData = errorParser(error);

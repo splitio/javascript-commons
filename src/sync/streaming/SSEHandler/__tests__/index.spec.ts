@@ -181,25 +181,3 @@ test('handlerMessage: ignore invalid events', () => {
   expect(pushEmitter.emit).toBeCalledTimes(1); // must handle massage if valid
 
 });
-
-test('handleClose: ignore errors after closing', () => {
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
-  sseHandler.handleOpen();
-  pushEmitter.emit.mockClear();
-
-  const error = 'some error';
-  sseHandler.handleError(error);
-  expect(pushEmitter.emit).toBeCalledTimes(1); // + PUSH_SUBSYSTEM_UP, + PUSH_RETRYABLE_ERROR
-
-  sseHandler.handleClose();
-  sseHandler.handleError(error);
-  expect(pushEmitter.emit).toBeCalledTimes(1);
-
-  sseHandler.handleOpen();
-  sseHandler.handleError(error);
-  expect(pushEmitter.emit).toBeCalledTimes(3); // + PUSH_SUBSYSTEM_UP, + PUSH_RETRYABLE_ERROR
-
-  sseHandler.handleClose();
-  sseHandler.handleError(error);
-  expect(pushEmitter.emit).toBeCalledTimes(3);
-});
