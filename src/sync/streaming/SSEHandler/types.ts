@@ -40,4 +40,4 @@ export interface IOccupancyData {
 
 export type INotificationData = IMySegmentsUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
-export type INotificationError = Event & { parsedData?: any }
+export type INotificationError = Event & { parsedData?: any, message?: string }

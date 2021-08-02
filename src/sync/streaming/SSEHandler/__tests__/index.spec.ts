@@ -13,17 +13,17 @@ import mySegmentsUpdateMessage from '../../../../__tests__/mocks/message.MY_SEGM
 import occupancy1ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.1.control_pri.1586987434450.json';
 import occupancy0ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.0.control_pri.1586987434550.json';
 import occupancy2ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.2.control_pri.1586987434650.json';
-const occupancy1ControlSec = {...occupancy1ControlPri, data: occupancy1ControlPri.data.replace('control_pri', 'control_sec')};
-const occupancy0ControlSec = {...occupancy0ControlPri, data: occupancy0ControlPri.data.replace('control_pri', 'control_sec')};
-const occupancy2ControlSec = {...occupancy2ControlPri, data: occupancy2ControlPri.data.replace('control_pri', 'control_sec')};
+const occupancy1ControlSec = { ...occupancy1ControlPri, data: occupancy1ControlPri.data.replace('control_pri', 'control_sec') };
+const occupancy0ControlSec = { ...occupancy0ControlPri, data: occupancy0ControlPri.data.replace('control_pri', 'control_sec') };
+const occupancy2ControlSec = { ...occupancy2ControlPri, data: occupancy2ControlPri.data.replace('control_pri', 'control_sec') };
 
 // control messages
 import controlStreamingPaused from '../../../../__tests__/mocks/message.CONTROL.STREAMING_PAUSED.control_pri.1586987434750.json';
 import controlStreamingResumed from '../../../../__tests__/mocks/message.CONTROL.STREAMING_RESUMED.control_pri.1586987434850.json';
 import controlStreamingDisabled from '../../../../__tests__/mocks/message.CONTROL.STREAMING_DISABLED.control_pri.1586987434950.json';
-const controlStreamingPausedSec = {...controlStreamingPaused, data: controlStreamingPaused.data.replace('control_pri', 'control_sec')};
-const controlStreamingResumedSec = {...controlStreamingResumed, data: controlStreamingResumed.data.replace('control_pri', 'control_sec')};
-const controlStreamingDisabledSec = {...controlStreamingDisabled, data: controlStreamingDisabled.data.replace('control_pri', 'control_sec')};
+const controlStreamingPausedSec = { ...controlStreamingPaused, data: controlStreamingPaused.data.replace('control_pri', 'control_sec') };
+const controlStreamingResumedSec = { ...controlStreamingResumed, data: controlStreamingResumed.data.replace('control_pri', 'control_sec') };
+const controlStreamingDisabledSec = { ...controlStreamingDisabled, data: controlStreamingDisabled.data.replace('control_pri', 'control_sec') };
 
 const pushEmitter = { emit: jest.fn() };
 
