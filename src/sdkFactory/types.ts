@@ -11,7 +11,8 @@ import { SplitIO, ISettings, IEventEmitter } from '../types';
 import { ISettingsInternal } from '../utils/settingsValidation/types';
 
 /**
- * Environment related dependencies
+ * Environment related dependencies.
+ * These getters are called only once per factory instantiation.
  */
 export interface IPlatform {
   getOptions?: () => object
