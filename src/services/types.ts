@@ -7,12 +7,12 @@ export type IRequestOptions = {
 export type IResponse = {
 	ok: boolean,
 	status: number,
-	json: () => Promise<any>,
+	json: () => Promise<any>, // Used to parse OK response body. Promise rejects if body cannot be parsed
+	text: () => Promise<string>, // Used to read Not OK response body. Promise never rejects
 
 	/** Other available properties when using Unfetch */
-	// statusText: string,
+	// statusText: string, // `undefined` in Web fetch since HTTP/2 doesn't have reason phrases anymore. `node-fetch` overwrites it depending on the status code
 	// url: string,
-	// text: () => Promise<string>,
 	// blob: () => Promise<Blob>,
 	// clone: () => IResponse,
 	// headers: {
