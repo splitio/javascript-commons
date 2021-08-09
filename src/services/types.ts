@@ -11,7 +11,7 @@ export type IResponse = {
 	text: () => Promise<string>, // Used to read Not OK response body. Promise never rejects
 
 	/** Other available properties when using Unfetch */
-	// statusText: string, // `undefined` in Web fetch if using HTTP/2: it doesn't have reason phrases anymore. `node-fetch` overwrites it according to the status code
+	// statusText: string, // `undefined` in Web fetch since HTTP/2 doesn't have reason phrases anymore. `node-fetch` overwrites it depending on the status code
 	// url: string,
 	// blob: () => Promise<Blob>,
 	// clone: () => IResponse,

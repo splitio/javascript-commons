@@ -12,7 +12,7 @@ import { ISettingsInternal } from '../utils/settingsValidation/types';
 
 /**
  * Environment related dependencies.
- * These getters are called only once per factory instantiation.
+ * These getters are called a fixed number of times per factory instantiation.
  */
 export interface IPlatform {
   getOptions?: () => object
