@@ -83,19 +83,19 @@ export interface ICustomStorageWrapper {
    *
    * @function incr
    * @param {string} key Key to increment
-   * @returns {Promise<void>} A promise that resolves if the operation success. The promise rejects if the operation fails,
+   * @returns {Promise<number>} A promise that resolves with the value of key after the increment. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  incr: (key: string) => Promise<void | boolean>
+  incr: (key: string) => Promise<number>
   /**
    * Decrements in 1 the given `key` value or set it in -1 if the value doesn't exist.
    *
    * @function decr
    * @param {string} key Key to decrement
-   * @returns {Promise<void>} A promise that resolves if the operation success. The promise rejects if the operation fails,
+   * @returns {Promise<number>} A promise that resolves with the value of key after the decrement. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  decr: (key: string) => Promise<void | boolean>
+  decr: (key: string) => Promise<number>
 
   /** Queue operations */
 
