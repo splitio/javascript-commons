@@ -9,8 +9,8 @@ describe('SPLITS CACHE REDIS', () => {
   test('add/remove/get splits & set/get change number', async () => {
     const connection = new Redis();
     // @ts-expect-error
-    const keys = new KeyBuilderSS();
-    const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+    const keysBuilder = new KeyBuilderSS();
+    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.clear();
 
@@ -51,6 +51,9 @@ describe('SPLITS CACHE REDIS', () => {
     expect(splits['lol1'] === null).toBe(true);
     expect(splits['lol2'] === splitWithAccountTT).toBe(true);
 
+    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
+    await connection.del(keysBuilder.buildSplitKey('lol2'));
+    await connection.del(keysBuilder.buildSplitsTillKey());
     await connection.quit();
   });
 
