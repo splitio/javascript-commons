@@ -78,7 +78,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('trafficTypeExists', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
+    const wrapper = wrapperMockFactory();
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper);
 
     await cache.addSplits([
       ['split1', splitWithUserTT],
@@ -98,10 +99,14 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
 
+    expect(await wrapper.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
+
     await cache.removeSplits(['split3', 'split2']); // it'll invoke a loop of removeSplit
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
+
+    expect(await wrapper.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe(null); // TT entry should be removed in the wrapper
 
     await cache.removeSplit('split1');
 

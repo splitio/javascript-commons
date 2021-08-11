@@ -58,32 +58,53 @@ describe('SPLITS CACHE REDIS', () => {
     const prefix = 'splits_cache_ut';
     const connection = new Redis();
     // @ts-expect-error
-    const keys = new KeyBuilderSS(prefix);
-    const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+    const keysBuilder = new KeyBuilderSS(prefix);
+    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    const testTTName = 'tt_test_name';
-    const testTTNameNoCount = 'tt_test_name_2';
-    const testTTNameInvalid = 'tt_test_name_3';
-    const ttKey = keys.buildTrafficTypeKey(testTTName);
-    const ttKeyNoCount = keys.buildTrafficTypeKey(testTTNameNoCount);
-    const ttKeyInvalid = keys.buildTrafficTypeKey(testTTNameInvalid);
+    await cache.addSplits([
+      ['split1', splitWithUserTT],
+      ['split2', splitWithAccountTT],
+      ['split3', splitWithUserTT],
+      ['malformed', '{}']
+    ]);
+    await cache.addSplit('split4', splitWithUserTT);
+    await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
 
-    await cache.clear();
-
-    await connection.set(ttKey, 3);
-    await connection.set(ttKeyNoCount, 0);
-    await connection.set(ttKeyInvalid, 'NaN');
-
-    expect(await cache.trafficTypeExists(testTTName)).toBe(true);
-    expect(await cache.trafficTypeExists(testTTNameNoCount)).toBe(false);
-    expect(await cache.trafficTypeExists(ttKeyInvalid)).toBe(false);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('not_existent_tt')).toBe(false);
 
-    await connection.del(ttKey);
-    await connection.del(ttKeyNoCount);
-    await connection.del(ttKeyInvalid);
+    await cache.removeSplit('split4');
 
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
+
+    expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
+
+    await cache.removeSplits(['split3', 'split2']); // it'll invoke a loop of removeSplit
+
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(false);
+
+    expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe(null); // TT entry should be removed in the wrapper
+
+    await cache.removeSplit('split1');
+
+    expect(await cache.trafficTypeExists('user_tt')).toBe(false);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(false);
+
+    await cache.addSplit('split1', splitWithUserTT);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+
+    await cache.addSplit('split1', splitWithAccountTT);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(false);
+
+    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
+    await connection.del(keysBuilder.buildSplitKey('malformed'));
+    await connection.del(keysBuilder.buildSplitKey('split1'));
     await connection.quit();
+
   });
 
   test('killLocally', async () => {

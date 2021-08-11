@@ -36,22 +36,24 @@ export function wrapperMockFactory() {
     incr: jest.fn((key: string) => {
       if (key in _cache) {
         const count = toNumber(_cache[key]) + 1;
-        if (isNaN(count)) return Promise.resolve(false);
+        if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
+        return Promise.resolve(count);
       } else {
         _cache[key] = '1';
+        return Promise.resolve(1);
       }
-      return Promise.resolve(true);
     }),
     decr: jest.fn((key: string) => {
       if (key in _cache) {
         const count = toNumber(_cache[key]) - 1;
-        if (isNaN(count)) return Promise.resolve(false);
+        if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
+        return Promise.resolve(count);
       } else {
         _cache[key] = '-1';
+        return Promise.resolve(-1);
       }
-      return Promise.resolve(true);
     }),
     getMany: jest.fn((keys: string[]) => {
       return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] as string : null));
