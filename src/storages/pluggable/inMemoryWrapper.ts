@@ -36,9 +36,6 @@ export function inMemoryWrapperFactory(): ICustomStorageWrapper & { _cache: Reco
     getKeysByPrefix(prefix: string) {
       return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
     },
-    getByPrefix(prefix: string) {
-      return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key] as string));
-    },
     incr(key: string) {
       if (key in _cache) {
         const count = toNumber(_cache[key]) + 1;

@@ -30,9 +30,6 @@ export function wrapperMockFactory() {
     getKeysByPrefix: jest.fn((prefix: string) => {
       return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
     }),
-    getByPrefix: jest.fn((prefix: string) => {
-      return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key] as string));
-    }),
     incr: jest.fn((key: string) => {
       if (key in _cache) {
         const count = toNumber(_cache[key]) + 1;
@@ -122,7 +119,6 @@ export function wrapperMockFactory() {
       this.connect.mockClear();
       this.close.mockClear();
       this.getAndSet.mockClear();
-      this.getByPrefix.mockClear();
       this.pushItems.mockClear();
       this.popItems.mockClear();
       this.getItemsCount.mockClear();

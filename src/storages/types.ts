@@ -58,15 +58,6 @@ export interface ICustomStorageWrapper {
    */
   getKeysByPrefix: (prefix: string) => Promise<string[]>
   /**
-   * Returns all values which keys match the given prefix.
-   *
-   * @function getByPrefix
-   * @param {string} prefix String prefix to match
-   * @returns {Promise<string[]>} A promise that resolves with the list of values which keys match the given `prefix`.
-   * The promise rejects if the operation fails.
-   */
-  getByPrefix: (prefix: string) => Promise<string[]>
-  /**
    * Returns the values of all given `keys`.
    *
    * @function getMany
