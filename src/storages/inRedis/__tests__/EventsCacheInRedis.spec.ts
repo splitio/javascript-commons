@@ -5,6 +5,7 @@ import { fakeMetadata, fakeEvent1, fakeEvent1stored, fakeEvent2, fakeEvent2store
 
 const prefix = 'events_cache_ut';
 const eventsKey = `${prefix}.events`;
+const nonListKey = 'non-list-key';
 
 test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` methods', async () => {
   const connection = new Redis();
@@ -18,9 +19,9 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
 
   const cache = new EventsCacheInRedis(loggerMock, eventsKey, connection, fakeMetadata);
   // I'll use a "bad" instance so I can force an issue with the rpush command. I'll store an integer and will make the cache try to use rpush there.
-  await connection.set('non-list-key', 10);
+  await connection.set(nonListKey, 10);
 
-  const faultyCache = new EventsCacheInRedis(loggerMock, 'non-list-key', connection, fakeMetadata);
+  const faultyCache = new EventsCacheInRedis(loggerMock, nonListKey, connection, fakeMetadata);
 
   expect(await cache.track(fakeEvent1)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
   expect(await cache.track(fakeEvent2)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
@@ -52,6 +53,6 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
   expect(await cache.count()).toBe(0); // storage should be empty after droping it
 
   // Clean up then end.
-  await connection.del(eventsKey);
+  await connection.del(eventsKey, nonListKey);
   await connection.quit();
 });
