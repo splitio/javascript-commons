@@ -47,7 +47,9 @@ export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   private _decrementCounts(split: ISplit) {
     if (split.trafficTypeName) {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.redis.decr(ttKey);
+      return this.redis.decr(ttKey).then(count => {
+        if (count === 0) return this.redis.del(ttKey);
+      });
     }
   }
 

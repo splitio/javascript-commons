@@ -58,15 +58,6 @@ export interface ICustomStorageWrapper {
    */
   getKeysByPrefix: (prefix: string) => Promise<string[]>
   /**
-   * Returns all values which keys match the given prefix.
-   *
-   * @function getByPrefix
-   * @param {string} prefix String prefix to match
-   * @returns {Promise<string[]>} A promise that resolves with the list of values which keys match the given `prefix`.
-   * The promise rejects if the operation fails.
-   */
-  getByPrefix: (prefix: string) => Promise<string[]>
-  /**
    * Returns the values of all given `keys`.
    *
    * @function getMany
@@ -83,19 +74,19 @@ export interface ICustomStorageWrapper {
    *
    * @function incr
    * @param {string} key Key to increment
-   * @returns {Promise<void>} A promise that resolves if the operation success. The promise rejects if the operation fails,
+   * @returns {Promise<number>} A promise that resolves with the value of key after the increment. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  incr: (key: string) => Promise<void | boolean>
+  incr: (key: string) => Promise<number>
   /**
    * Decrements in 1 the given `key` value or set it in -1 if the value doesn't exist.
    *
    * @function decr
    * @param {string} key Key to decrement
-   * @returns {Promise<void>} A promise that resolves if the operation success. The promise rejects if the operation fails,
+   * @returns {Promise<number>} A promise that resolves with the value of key after the decrement. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  decr: (key: string) => Promise<void | boolean>
+  decr: (key: string) => Promise<number>
 
   /** Queue operations */
 

@@ -31,7 +31,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private _decrementCounts(split: ISplit) {
     if (split.trafficTypeName) {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.wrapper.decr(ttKey);
+      return this.wrapper.decr(ttKey).then(count => {
+        if (count === 0) return this.wrapper.del(ttKey);
+      });
     }
   }
 

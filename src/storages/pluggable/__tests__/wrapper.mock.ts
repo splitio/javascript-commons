@@ -30,28 +30,27 @@ export function wrapperMockFactory() {
     getKeysByPrefix: jest.fn((prefix: string) => {
       return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
     }),
-    getByPrefix: jest.fn((prefix: string) => {
-      return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)).map(key => _cache[key] as string));
-    }),
     incr: jest.fn((key: string) => {
       if (key in _cache) {
         const count = toNumber(_cache[key]) + 1;
-        if (isNaN(count)) return Promise.resolve(false);
+        if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
+        return Promise.resolve(count);
       } else {
         _cache[key] = '1';
+        return Promise.resolve(1);
       }
-      return Promise.resolve(true);
     }),
     decr: jest.fn((key: string) => {
       if (key in _cache) {
         const count = toNumber(_cache[key]) - 1;
-        if (isNaN(count)) return Promise.resolve(false);
+        if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
+        return Promise.resolve(count);
       } else {
         _cache[key] = '-1';
+        return Promise.resolve(-1);
       }
-      return Promise.resolve(true);
     }),
     getMany: jest.fn((keys: string[]) => {
       return Promise.resolve(keys.map(key => _cache[key] ? _cache[key] as string : null));
@@ -120,7 +119,6 @@ export function wrapperMockFactory() {
       this.connect.mockClear();
       this.close.mockClear();
       this.getAndSet.mockClear();
-      this.getByPrefix.mockClear();
       this.pushItems.mockClear();
       this.popItems.mockClear();
       this.getItemsCount.mockClear();

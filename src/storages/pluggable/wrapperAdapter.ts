@@ -8,7 +8,6 @@ export const METHODS_TO_PROMISE_WRAP: string[] = [
   'getAndSet',
   'del',
   'getKeysByPrefix',
-  'getByPrefix',
   'incr',
   'decr',
   'getMany',
