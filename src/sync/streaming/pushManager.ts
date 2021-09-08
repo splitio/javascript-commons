@@ -3,7 +3,6 @@ import { ISSEClient } from './SSEClient/types';
 import { IStorageSync } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';
 import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
-import { IUpdateWorker } from './UpdateWorkers/types';
 import objectAssign from 'object-assign';
 import Backoff from '../../utils/Backoff';
 import SSEHandlerFactory from './SSEHandler';
@@ -16,9 +15,14 @@ import SSEClient from './SSEClient';
 import { IFetchAuth } from '../../services/types';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
-import { MY_SEGMENTS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP } from './constants';
+import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, STREAMING_RESET } from './constants';
 import { IPlatform } from '../../sdkFactory/types';
-import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT } from '../../logger/constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 } from '../../logger/constants';
+import { KeyList, UpdateStrategy } from './SSEHandler/types';
+import { isInBitmap, parseBitmap, parseKeyList } from './mySegmentsV2utils';
+import { ISet, _Set } from '../../utils/lang/sets';
+import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
+import { IAuthTokenPushEnabled } from './AuthClient/types';
 
 /**
  * PushManager factory:
@@ -54,22 +58,21 @@ export default function pushManagerFactory(
   const sseHandler = SSEHandlerFactory(log, pushEmitter);
   sseClient.setEventHandler(sseHandler);
 
+  // init workers
+  const segmentsUpdateWorker = userKey ? new MySegmentsUpdateWorker(pollingManager.segmentsSyncTask) : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
+  // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
+  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
+
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
+  // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
+  // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
+  const clients: Record<string, { hash64: Hash64, worker: MySegmentsUpdateWorker }> = {};
   if (userKey) {
     const hash = hashUserKey(userKey);
     userKeyHashes[hash] = userKey;
+    clients[userKey] = { hash64: hash64(userKey), worker: segmentsUpdateWorker as MySegmentsUpdateWorker };
   }
-
-  // init workers
-  const segmentsUpdateWorker = userKey ? new MySegmentsUpdateWorker(pollingManager.segmentsSyncTask) : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
-  // [Only for server-side] we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
-  // [Only for client-side] map of user keys to their corresponding MySegmentsUpdateWorkers. It has a two-fold intention:
-  // - stop workers all together when push is disconnected
-  // - keep the current list of user keys to authenticate
-  const workers: Record<string, IUpdateWorker> = {};
-  if (userKey) workers[userKey] = segmentsUpdateWorker;
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -78,32 +81,44 @@ export default function pushManagerFactory(
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
   // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
-  let disabled: boolean | undefined;
+  let disabled: boolean | undefined; // `disabled` implies `disconnected === true`
 
   /** PushManager functions related to initialization */
 
   const connectPushRetryBackoff = new Backoff(connectPush, settings.scheduler.pushRetryBackoffBase);
 
-  let timeoutId: ReturnType<typeof setTimeout>;
+  let timeoutIdTokenRefresh: ReturnType<typeof setTimeout>;
+  let timeoutIdSseOpen: ReturnType<typeof setTimeout>;
 
-  function scheduleTokenRefresh(issuedAt: number, expirationTime: number) {
-    // clear scheduled token refresh if exists (needed when resuming PUSH)
-    if (timeoutId) clearTimeout(timeoutId);
+  function scheduleTokenRefreshAndSse(authData: IAuthTokenPushEnabled) {
+    // clear scheduled tasks if exist
+    if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
+    if (timeoutIdSseOpen) clearTimeout(timeoutIdSseOpen);
 
-    // Set token refresh 10 minutes before expirationTime
-    const delayInSeconds = expirationTime - issuedAt - SECONDS_BEFORE_EXPIRATION;
+    // Set token refresh 10 minutes before `expirationTime - issuedAt`
+    const decodedToken = authData.decodedToken;
+    const refreshTokenDelay = decodedToken.exp - decodedToken.iat - SECONDS_BEFORE_EXPIRATION;
+    // connDelay is present in AuthV2 but not in AuthV1
+    const connDelay = authData.connDelay || 0;
 
-    log.info(STREAMING_REFRESH_TOKEN, [delayInSeconds]);
+    log.info(STREAMING_REFRESH_TOKEN, [refreshTokenDelay, connDelay]);
 
-    timeoutId = setTimeout(connectPush, delayInSeconds * 1000);
+    timeoutIdTokenRefresh = setTimeout(connectPush, refreshTokenDelay * 1000);
+
+    timeoutIdSseOpen = setTimeout(() => {
+      // halt if disconnected
+      if (disconnected) return;
+      sseClient.open(authData);
+    }, connDelay * 1000);
   }
 
   function connectPush() {
+    // Guard condition in case `stop/disconnectPush` has been called (e.g., calling SDK destroy, or app signal close/background)
     if (disconnected) return;
+    log.info(STREAMING_CONNECTING, [disconnected === undefined ? '' : 'Re-']);
+    disconnected = false;
 
-    log.info(STREAMING_CONNECTING);
-
-    const userKeys = userKey ? Object.keys(workers) : undefined;
+    const userKeys = userKey ? Object.keys(clients) : undefined;
     authenticate(userKeys).then(
       function (authData) {
         if (disconnected) return;
@@ -117,12 +132,10 @@ export default function pushManagerFactory(
         }
 
         // [Only for client-side] don't open SSE connection if a new shared client was added, since it means that a new authentication is taking place
-        if (userKeys && userKeys.length < Object.keys(workers).length) return;
+        if (userKeys && userKeys.length < Object.keys(clients).length) return;
 
-        // Connect to SSE and schedule refresh token
-        const decodedToken = authData.decodedToken;
-        sseClient.open(authData);
-        scheduleTokenRefresh(decodedToken.iat, decodedToken.exp);
+        // Schedule SSE connection and refresh token
+        scheduleTokenRefreshAndSse(authData);
       }
     ).catch(
       function (error) {
@@ -144,11 +157,15 @@ export default function pushManagerFactory(
 
   // close SSE connection and cancel scheduled tasks
   function disconnectPush() {
+    // Halt disconnecting, just to avoid redundant logs if called multiple times
+    if (disconnected) return;
     disconnected = true;
+
     sseClient.close();
     log.info(STREAMING_DISCONNECTING);
 
-    if (timeoutId) clearTimeout(timeoutId);
+    if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
+    if (timeoutIdSseOpen) clearTimeout(timeoutIdSseOpen);
     connectPushRetryBackoff.reset();
 
     stopWorkers();
@@ -157,14 +174,18 @@ export default function pushManagerFactory(
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
     splitsUpdateWorker.backoff.reset();
-    if (userKey) forOwn(workers, worker => worker.backoff.reset());
+    if (userKey) forOwn(clients, ({ worker }) => worker.backoff.reset());
     else segmentsUpdateWorker.backoff.reset();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
 
-  // restart backoff retry counter once push is connected
-  pushEmitter.on(PUSH_SUBSYSTEM_UP, () => { connectPushRetryBackoff.reset(); });
+  // Only required when streaming connects after a PUSH_RETRYABLE_ERROR.
+  // Otherwise it is unnecessary (e.g, STREAMING_RESUMED).
+  pushEmitter.on(PUSH_SUBSYSTEM_UP, () => {
+    connectPushRetryBackoff.reset();
+    stopWorkers();
+  });
 
   /** Fallbacking without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
 
@@ -189,20 +210,100 @@ export default function pushManagerFactory(
     pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
   });
 
+  /** STREAMING_RESET notification. Unlike a PUSH_RETRYABLE_ERROR, it doesn't emit PUSH_SUBSYSTEM_DOWN to fallback polling */
+
+  pushEmitter.on(STREAMING_RESET, function handleStreamingReset() {
+    if (disconnected) return; // should never happen
+
+    // Minimum required clean-up.
+    // `disconnectPush` cannot be called because it sets `disconnected` and thus `connectPush` will not execute
+    if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
+
+    connectPush();
+  });
+
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
   pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
   if (userKey) {
+    // @TODO remove
     pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
       const userKeyHash = channel.split('_')[2];
       const userKey = userKeyHashes[userKeyHash];
-      if (userKey && workers[userKey]) { // check context since it can be undefined if client has been destroyed
-        const mySegmentsUpdateWorker = workers[userKey];
-        mySegmentsUpdateWorker.put(
+      if (userKey && clients[userKey]) { // check existence since it can be undefined if client has been destroyed
+        clients[userKey].worker.put(
           parsedData.changeNumber,
           parsedData.includesPayload ? parsedData.segmentList ? parsedData.segmentList : [] : undefined);
       }
+    });
+    pushEmitter.on(MY_SEGMENTS_UPDATE_V2, function handleMySegmentsUpdate(parsedData) {
+      switch (parsedData.u) {
+        case UpdateStrategy.BoundedFetchRequest: {
+          let bitmap: Uint8Array;
+          try {
+            bitmap = parseBitmap(parsedData.d, parsedData.c);
+          } catch (e) {
+            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['BoundedFetchRequest', e]);
+            break;
+          }
+
+          forOwn(clients, ({ hash64, worker }) => {
+            if (isInBitmap(bitmap, hash64.hex)) {
+              // fetch mySegments
+              worker.put(parsedData.changeNumber);
+            }
+          });
+          return;
+        }
+        case UpdateStrategy.KeyList: {
+          let keyList: KeyList, added: ISet<string>, removed: ISet<string>;
+          try {
+            keyList = parseKeyList(parsedData.d, parsedData.c);
+            added = new _Set(keyList.a);
+            removed = new _Set(keyList.r);
+          } catch (e) {
+            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['KeyList', e]);
+            break;
+          }
+
+          forOwn(clients, ({ hash64, worker }) => {
+            if (added.has(hash64.dec)) {
+              worker.put(parsedData.changeNumber, {
+                name: parsedData.segmentName,
+                add: true
+              });
+              return;
+            }
+            if (removed.has(hash64.dec)) {
+              worker.put(parsedData.changeNumber, {
+                name: parsedData.segmentName,
+                add: false
+              });
+              return;
+            }
+          });
+          return;
+        }
+        case UpdateStrategy.SegmentRemoval:
+          if (!parsedData.segmentName) {
+            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['SegmentRemoval', 'No segment name was provided']);
+            break;
+          }
+
+          forOwn(clients, ({ worker }) =>
+            worker.put(parsedData.changeNumber, {
+              name: parsedData.segmentName,
+              add: false
+            })
+          );
+          return;
+      }
+
+      // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
+      forOwn(clients, ({ worker }) => {
+        worker.put(parsedData.changeNumber);
+      });
     });
   } else {
     pushEmitter.on(SEGMENT_UPDATE, (segmentsUpdateWorker as SegmentsUpdateWorker).put);
@@ -225,8 +326,7 @@ export default function pushManagerFactory(
 
       // [Only for client-side]
       add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
-        const mySegmentsUpdateWorker = new MySegmentsUpdateWorker(mySegmentsSyncTask);
-        workers[userKey] = mySegmentsUpdateWorker;
+        clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
 
         const hash = hashUserKey(userKey);
 
@@ -249,6 +349,7 @@ export default function pushManagerFactory(
       remove(userKey: string) {
         const hash = hashUserKey(userKey);
         delete userKeyHashes[hash];
+        delete clients[userKey];
       }
     }
   );

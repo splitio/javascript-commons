@@ -26,6 +26,7 @@ export const PUSH_SUBSYSTEM_DOWN = 'PUSH_SUBSYSTEM_DOWN';
 
 // Update-type push notifications, handled by NotificationProcessor
 export const MY_SEGMENTS_UPDATE = 'MY_SEGMENTS_UPDATE';
+export const MY_SEGMENTS_UPDATE_V2 = 'MY_SEGMENTS_UPDATE_V2';
 export const SEGMENT_UPDATE = 'SEGMENT_UPDATE';
 export const SPLIT_KILL = 'SPLIT_KILL';
 export const SPLIT_UPDATE = 'SPLIT_UPDATE';
@@ -33,6 +34,8 @@ export const SPLIT_UPDATE = 'SPLIT_UPDATE';
 // Control-type push notifications, handled by NotificationKeeper
 export const CONTROL = 'CONTROL';
 export const OCCUPANCY = 'OCCUPANCY';
+
+export const STREAMING_RESET = 'STREAMING_RESET';
 
 export enum ControlType {
   STREAMING_DISABLED = 'STREAMING_DISABLED',

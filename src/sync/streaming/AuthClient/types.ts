@@ -5,6 +5,7 @@ export interface IAuthTokenPushEnabled {
   token: string
   decodedToken: IDecodedJWTToken
   channels: { [channel: string]: string[] }
+  connDelay?: number
 }
 
 export interface IAuthTokenPushDisabled {
@@ -15,3 +16,5 @@ export interface IAuthTokenPushDisabled {
 export type IAuthToken = IAuthTokenPushDisabled | IAuthTokenPushEnabled
 
 export type IAuthenticate = (userKeys?: string[]) => Promise<IAuthToken>
+
+export type IAuthenticateV2 = (isClientSide?: boolean) => Promise<IAuthToken>
