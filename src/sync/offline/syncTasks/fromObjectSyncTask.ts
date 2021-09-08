@@ -21,6 +21,7 @@ export function fromObjectUpdaterFactory(
 ): () => Promise<boolean> {
 
   const log = settings.log;
+  let firstTime = true;
 
   return function objectUpdater() {
     const splits: [string, string][] = [];
@@ -57,7 +58,11 @@ export function fromObjectUpdaterFactory(
         storage.splits.addSplits(splits)
       ]).then(() => {
         readiness.splits.emit(SDK_SPLITS_ARRIVED);
-        readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+        // Only emits SDK_SEGMENTS_ARRIVED the first time for SDK_READY
+        if (firstTime) {
+          firstTime = false;
+          readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+        }
         return true;
       });
     } else {

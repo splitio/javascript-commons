@@ -69,6 +69,7 @@ describe('MANAGER API', () => {
 
 
     /** Teardown */
+    await cache.removeSplit(splitObject.name);
     await connection.quit();
   });
 
