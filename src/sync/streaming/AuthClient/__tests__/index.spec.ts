@@ -1,6 +1,6 @@
 // mocks and dependencies
 import { splitApiFactory } from '../../../../services/splitApi';
-import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat, userKeySample, userKeyBase64HashSample } from './dataMocks';
+import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat, userKeySample, userKeyBase64HashSample } from '../../__tests__/dataMocks';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import EventEmitter from '../../../../utils/MinEvents';

@@ -73,7 +73,6 @@ export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data 
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
 export type INotificationError = Event & { parsedData?: any, message?: string }
 
-// @TODO remove `string[]` from the union type when removing support for MY_SEGMENTS_UPDATE notifications
 export type SegmentsData = string[] | {
   /* segment name */
   name: string,

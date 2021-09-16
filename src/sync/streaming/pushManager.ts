@@ -227,7 +227,6 @@ export default function pushManagerFactory(
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
   pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
   if (userKey) {
-    // @TODO remove
     pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
       const userKeyHash = channel.split('_')[2];
       const userKey = userKeyHashes[userKeyHash];

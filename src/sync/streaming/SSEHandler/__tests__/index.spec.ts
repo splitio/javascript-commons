@@ -14,7 +14,7 @@ import unboundedMessage from '../../../../__tests__/mocks/message.V2.UNBOUNDED.1
 import boundedGzipMessage from '../../../../__tests__/mocks/message.V2.BOUNDED.GZIP.1457552651000';
 import keylistGzipMessage from '../../../../__tests__/mocks/message.V2.KEYLIST.GZIP.1457552652000';
 import segmentRemovalMessage from '../../../../__tests__/mocks/message.V2.SEGMENT_REMOVAL.1457552653000';
-import { keylists, bitmaps } from '../../AuthClient/__tests__/dataMocks';
+import { keylists, bitmaps } from '../../__tests__/dataMocks';
 
 // occupancy messages
 import occupancy1ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.1.control_pri.1586987434450.json';

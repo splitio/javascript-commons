@@ -1,6 +1,6 @@
 // @ts-nocheck
 import EventSourceMock from '../../../../__tests__/testUtils/eventSourceMock';
-import { authDataSample, channelsQueryParamSample } from '../../AuthClient/__tests__/dataMocks';
+import { authDataSample, channelsQueryParamSample } from '../../__tests__/dataMocks';
 import { fullSettings as settings } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { url } from '../../../../utils/settingsValidation/url';
 

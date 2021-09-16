@@ -1,5 +1,5 @@
 import { hash64 } from '../../../utils/murmur3/murmur3_64';
-import { keylists, bitmaps } from '../AuthClient/__tests__/dataMocks';
+import { keylists, bitmaps } from './dataMocks';
 
 import { parseKeyList, parseBitmap, isInBitmap } from '../mySegmentsV2utils';
 import { _Set } from '../../../utils/lang/sets';
