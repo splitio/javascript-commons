@@ -54,18 +54,18 @@ describe('SegmentsUpdateWorker ', () => {
 
     // assert calling `segmentsSyncTask.execute` if `isExecuting` is false
     expect(segmentsSyncTask.isExecuting()).toBe(false);
-    segmentsUpdateWorker.put(100, 'mocked_segment_1');
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_1' });
     expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({ 'mocked_segment_1': 100 }); // queues events (changeNumbers) if they are mayor than storage changeNumbers and maxChangeNumbers
     expect(segmentsSyncTask.execute).toBeCalledTimes(1); // synchronizes segment if `isExecuting` is false
     expect(segmentsSyncTask.execute.mock.calls).toEqual([[['mocked_segment_1'], true]]); // synchronizes segment with given name
 
     // assert queueing items if `isExecuting` is true
     expect(segmentsSyncTask.isExecuting()).toBe(true);
-    segmentsUpdateWorker.put(95, 'mocked_segment_1');
-    segmentsUpdateWorker.put(100, 'mocked_segment_2');
-    segmentsUpdateWorker.put(105, 'mocked_segment_1');
-    segmentsUpdateWorker.put(94, 'mocked_segment_1');
-    segmentsUpdateWorker.put(94, 'mocked_segment_3');
+    segmentsUpdateWorker.put({ changeNumber: 95, segmentName: 'mocked_segment_1' });
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_2' });
+    segmentsUpdateWorker.put({ changeNumber: 105, segmentName: 'mocked_segment_1' });
+    segmentsUpdateWorker.put({ changeNumber: 94, segmentName: 'mocked_segment_1' });
+    segmentsUpdateWorker.put({ changeNumber: 94, segmentName: 'mocked_segment_3' });
 
     expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({ 'mocked_segment_1': 105, 'mocked_segment_2': 100, 'mocked_segment_3': 94 }); // queues events
     expect(segmentsSyncTask.execute).toBeCalledTimes(1); // doesn't synchronize segment if `isExecuting` is true
@@ -80,7 +80,7 @@ describe('SegmentsUpdateWorker ', () => {
 
       // assert not rescheduling synchronization if some changeNumber is not updated as expected,
       // but rescheduling if a new item was queued with a greater changeNumber while the fetch was pending.
-      segmentsUpdateWorker.put(110, 'mocked_segment_1');
+      segmentsUpdateWorker.put({ changeNumber: 110, segmentName: 'mocked_segment_1' });
       segmentsSyncTask.__resolveSegmentsUpdaterCall(1, { 'mocked_segment_1': 100, 'mocked_segment_2': 100, 'mocked_segment_3': 94 });
       setTimeout(() => {
         expect(segmentsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
@@ -94,7 +94,7 @@ describe('SegmentsUpdateWorker ', () => {
           expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({ 'mocked_segment_1': -1, 'mocked_segment_2': -1, 'mocked_segment_3': -1 }); // maxChangeNumbers were cleaned
 
           // assert restarting retries, when a newer event is queued
-          segmentsUpdateWorker.put(110, 'mocked_segment_1'); // queued
+          segmentsUpdateWorker.put({ changeNumber: 110, segmentName: 'mocked_segment_1' }); // queued
           expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
 
           done();

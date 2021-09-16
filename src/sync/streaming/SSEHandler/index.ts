@@ -74,29 +74,13 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       switch (parsedData.type) {
         /* update events */
         case SPLIT_UPDATE:
-          pushEmitter.emit(SPLIT_UPDATE,
-            parsedData.changeNumber);
-          break;
         case SEGMENT_UPDATE:
-          pushEmitter.emit(SEGMENT_UPDATE,
-            parsedData.changeNumber,
-            parsedData.segmentName);
-          break;
-        // @TODO remove
-        case MY_SEGMENTS_UPDATE:
-          pushEmitter.emit(MY_SEGMENTS_UPDATE,
-            parsedData,
-            channel);
-          break;
         case MY_SEGMENTS_UPDATE_V2:
-          pushEmitter.emit(MY_SEGMENTS_UPDATE_V2,
-            parsedData);
-          break;
         case SPLIT_KILL:
-          pushEmitter.emit(SPLIT_KILL,
-            parsedData.changeNumber,
-            parsedData.splitName,
-            parsedData.defaultTreatment);
+          pushEmitter.emit(parsedData.type, parsedData);
+          break;
+        case MY_SEGMENTS_UPDATE:
+          pushEmitter.emit(parsedData.type, parsedData, channel);
           break;
 
         /* occupancy & control events, handled by NotificationManagerKeeper */

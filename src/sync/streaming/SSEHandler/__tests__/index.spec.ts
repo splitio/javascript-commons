@@ -10,10 +10,10 @@ import segmentUpdateMessage from '../../../../__tests__/mocks/message.SEGMENT_UP
 import mySegmentsUpdateMessage from '../../../../__tests__/mocks/message.MY_SEGMENTS_UPDATE.nicolas@split.io.1457552640000.json';
 
 // update messages MY_SEGMENTS_UPDATE_V2
-import unboundedMessage from '../../../../__tests__/mocks/message.V2.UNBOUNDED.1457552650000';
-import boundedGzipMessage from '../../../../__tests__/mocks/message.V2.BOUNDED.GZIP.1457552651000';
-import keylistGzipMessage from '../../../../__tests__/mocks/message.V2.KEYLIST.GZIP.1457552652000';
-import segmentRemovalMessage from '../../../../__tests__/mocks/message.V2.SEGMENT_REMOVAL.1457552653000';
+import unboundedMessage from '../../../../__tests__/mocks/message.V2.UNBOUNDED.1457552650000.json';
+import boundedGzipMessage from '../../../../__tests__/mocks/message.V2.BOUNDED.GZIP.1457552651000.json';
+import keylistGzipMessage from '../../../../__tests__/mocks/message.V2.KEYLIST.GZIP.1457552652000.json';
+import segmentRemovalMessage from '../../../../__tests__/mocks/message.V2.SEGMENT_REMOVAL.1457552653000.json';
 import { keylists, bitmaps } from '../../__tests__/dataMocks';
 
 // occupancy messages
@@ -33,7 +33,7 @@ const controlStreamingResumedSec = { ...controlStreamingResumed, data: controlSt
 const controlStreamingDisabledSec = { ...controlStreamingDisabled, data: controlStreamingDisabled.data.replace('control_pri', 'control_sec') };
 
 // streaming reset message, from `{orgHash}_{envHash}_control` channel
-import streamingReset from '../../../../__tests__/mocks/message.STREAMING_RESET';
+import streamingReset from '../../../../__tests__/mocks/message.STREAMING_RESET.json';
 
 const pushEmitter = { emit: jest.fn() };
 
@@ -47,7 +47,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
   expect(pushEmitter.emit.mock.calls[0][0]).toBe(PUSH_SUBSYSTEM_UP); // must emit PUSH_SUBSYSTEM_UP
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update message if streaming on
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, { type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }); // must handle update message if streaming on
 
   // OCCUPANCY messages
 
@@ -78,7 +78,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
   sseHandler.handleMessage(occupancy2ControlPri); // must not emit PUSH_SUBSYSTEM_UP, since streaming is already on
 
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update message if streaming on after an OCCUPANCY event
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, { type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }); // must handle update message if streaming on after an OCCUPANCY event
   sseHandler.handleMessage(streamingReset);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(STREAMING_RESET); // must handle streaming reset
   expect(pushEmitter.emit).toBeCalledTimes(7); // must not emit PUSH_SUBSYSTEM_UP if streaming is already on and another channel has publishers
@@ -112,7 +112,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   expect(pushEmitter.emit).toBeCalledTimes(4); // must not emit PUSH_SUBSYSTEM_UP if streaming on
 
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, 1457552620999); // must handle update message if streaming on after a CONTROL event
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, { type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }); // must handle update message if streaming on after a CONTROL event
   sseHandler.handleMessage(streamingReset);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(STREAMING_RESET); // must handle streaming reset
 
@@ -135,15 +135,15 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
-  let expectedParams = [1457552620999];
+  let expectedParams = [{ type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }];
   sseHandler.handleMessage(splitUpdateMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, ...expectedParams); // must emit SPLIT_UPDATE with the message change number
 
-  expectedParams = [1457552650000, 'whitelist', 'not_allowed'];
+  expectedParams = [{ type: 'SPLIT_KILL', changeNumber: 1457552650000, splitName: 'whitelist', defaultTreatment: 'not_allowed' }];
   sseHandler.handleMessage(splitKillMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_KILL, ...expectedParams); // must emit SPLIT_KILL with the message change number, split name and default treatment
 
-  expectedParams = [1457552640000, 'splitters'];
+  expectedParams = [{ type: 'SEGMENT_UPDATE', changeNumber: 1457552640000, segmentName: 'splitters' }];
   sseHandler.handleMessage(segmentUpdateMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SEGMENT_UPDATE, ...expectedParams); // must emit SEGMENT_UPDATE with the message change number and segment name
 
