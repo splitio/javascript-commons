@@ -226,6 +226,7 @@ export default function pushManagerFactory(
 
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
   pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
+
   if (userKey) {
     pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
       const userKeyHash = channel.split('_')[2];
@@ -249,8 +250,7 @@ export default function pushManagerFactory(
 
           forOwn(clients, ({ hash64, worker }) => {
             if (isInBitmap(bitmap, hash64.hex)) {
-              // fetch mySegments
-              worker.put(parsedData.changeNumber);
+              worker.put(parsedData.changeNumber); // fetch mySegments
             }
           });
           return;
