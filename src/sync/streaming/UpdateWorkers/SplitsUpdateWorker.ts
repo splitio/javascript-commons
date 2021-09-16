@@ -3,6 +3,7 @@ import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import Backoff from '../../../utils/Backoff';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
+import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
 import { IUpdateWorker } from './types';
 
 /**
@@ -60,7 +61,7 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
    *
    * @param {number} changeNumber change number of the SPLIT_UPDATE notification
    */
-  put(changeNumber: number) {
+  put({ changeNumber }: Pick<ISplitUpdateData, 'changeNumber'>) {
     const currentChangeNumber = this.splitsCache.getChangeNumber();
 
     if (changeNumber <= currentChangeNumber || changeNumber <= this.maxChangeNumber) return;
@@ -81,14 +82,14 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
    * @param {string} splitName name of split to kill
    * @param {string} defaultTreatment default treatment value
    */
-  killSplit(changeNumber: number, splitName: string, defaultTreatment: string) {
+  killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
     // @TODO handle retry due to errors in storage, once we allow the definition of custom async storages
     if (this.splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
       // trigger an SDK_UPDATE if Split was killed locally
       this.splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
     }
     // queues the SplitChanges fetch (only if changeNumber is newer)
-    this.put(changeNumber);
+    this.put({ changeNumber });
   }
 
 }

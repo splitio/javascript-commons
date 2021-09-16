@@ -257,8 +257,8 @@ export interface ISegmentsCacheBase {
 
 // Same API for both variants: SegmentsCache and MySegmentsCache (client-side API)
 export interface ISegmentsCacheSync extends ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys: string[]): boolean
-  removeFromSegment(name: string, segmentKeys: string[]): boolean
+  addToSegment(name: string, segmentKeys?: string[]): boolean
+  removeFromSegment(name: string, segmentKeys?: string[]): boolean
   isInSegment(name: string, key?: string): boolean
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]

@@ -35,7 +35,6 @@ export default class SSEClient implements ISSEClient {
   streamingUrl: string;
   connection?: InstanceType<typeof EventSource>;
   handler?: ISseEventHandler;
-  authToken?: IAuthTokenPushEnabled;
   useHeaders?: boolean;
   headers: Record<string, string>;
 
@@ -54,7 +53,6 @@ export default class SSEClient implements ISSEClient {
     if (!this.eventSource) throw new Error('EventSource API is not available. ');
 
     this.streamingUrl = settings.urls.streaming + '/sse';
-    this.reopen = this.reopen.bind(this);
     // @TODO get `useHeaders` flag from `getEventSource`, to use EventSource headers on client-side SDKs when possible.
     this.useHeaders = useHeaders;
     this.headers = buildSSEHeaders(settings);
@@ -72,8 +70,6 @@ export default class SSEClient implements ISSEClient {
    */
   open(authToken: IAuthTokenPushEnabled) {
     this.close(); // it closes connection if previously opened
-
-    this.authToken = authToken;
 
     const channelsQueryParam = Object.keys(authToken.channels).map(
       function (channel) {
@@ -101,15 +97,5 @@ export default class SSEClient implements ISSEClient {
   /** Close connection  */
   close() {
     if (this.connection) this.connection.close();
-  }
-
-  /**
-   * Re-open the connection with the last given authToken.
-   *
-   * @throws {TypeError} if `open` has not been previously called with an authToken
-   * @TODO this method is not used currently and could be removed.
-   */
-  reopen() {
-    this.open(this.authToken as IAuthTokenPushEnabled);
   }
 }

@@ -5,6 +5,7 @@ import timeout from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
+import { SegmentsData } from '../../streaming/SSEHandler/types';
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -38,9 +39,23 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing custom storages, handle async execution
-  function updateSegments(segments: string[]) {
-    // Update the list of segment names available
-    const shouldNotifyUpdate = mySegmentsCache.resetSegments(segments);
+  function updateSegments(segmentsData: SegmentsData) {
+
+    let shouldNotifyUpdate;
+    if (Array.isArray(segmentsData)) {
+      // Update the list of segment names available
+      shouldNotifyUpdate = mySegmentsCache.resetSegments(segmentsData);
+    } else {
+      // Add/Delete the segment
+      const { name, add } = segmentsData;
+      if (mySegmentsCache.isInSegment(name) !== add) {
+        shouldNotifyUpdate = true;
+        if (add) mySegmentsCache.addToSegment(name);
+        else mySegmentsCache.removeFromSegment(name);
+      } else {
+        shouldNotifyUpdate = false;
+      }
+    }
 
     // Notify update if required
     if (splitsCache.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
@@ -49,10 +64,10 @@ export function mySegmentsUpdaterFactory(
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentList?: string[], noCache?: boolean): Promise<boolean> {
-    const updaterPromise: Promise<boolean> = segmentList ?
-      // If segmentList is provided, there is no need to fetch mySegments
-      new Promise((res) => { updateSegments(segmentList); res(true); }) :
+  function _mySegmentsUpdater(retry: number, segmentsData?: SegmentsData, noCache?: boolean): Promise<boolean> {
+    const updaterPromise: Promise<boolean> = segmentsData ?
+      // If segmentsData is provided, there is no need to fetch mySegments
+      new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
       mySegmentsFetcher(noCache, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
@@ -79,11 +94,14 @@ export function mySegmentsUpdaterFactory(
    * MySegments updater returns a promise that resolves with a `false` boolean value if it fails to fetch mySegments or synchronize them with the storage.
    * Returned promise will not be rejected.
    *
-   * @param {string[] | undefined} segmentList list of mySegments names to sync in the storage. If the list is `undefined`, it fetches them before syncing in the storage.
+   * @param {SegmentsData | undefined} segmentsData it can be:
+   *  (1) the list of mySegments names to sync in the storage,
+   *  (2) an object with a segment name and action (true: add, or false: delete) to update the storage,
+   *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentList?: string[], noCache?: boolean) {
-    return _mySegmentsUpdater(0, segmentList, noCache);
+  return function mySegmentsUpdater(segmentsData?: SegmentsData, noCache?: boolean) {
+    return _mySegmentsUpdater(0, segmentsData, noCache);
   };
 
 }

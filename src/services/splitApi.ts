@@ -36,7 +36,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/auth`;
+      let url = `${urls.auth}/v2/auth`;
       if (userMatchingKeys) { // accounting the possibility that `userMatchingKeys` is undefined (server-side API)
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
         if (queryParams) // accounting the possibility that `userKeys` and thus `queryParams` are empty

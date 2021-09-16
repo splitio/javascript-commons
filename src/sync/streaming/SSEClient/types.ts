@@ -8,7 +8,6 @@ export interface ISseEventHandler {
 
 export interface ISSEClient {
   open(authToken: IAuthTokenPushEnabled): void,
-  reopen(): void,
   close(): void,
   setEventHandler(handler: ISseEventHandler): void
 }

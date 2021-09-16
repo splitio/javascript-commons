@@ -1,4 +1,4 @@
-import { base64sample, decodedBase64sample } from '../../../sync/streaming/AuthClient/__tests__/dataMocks';
+import { base64sample, decodedBase64sample } from '../../../sync/streaming/__tests__/dataMocks';
 
 import { encodeToBase64, decodeFromBase64 } from '../index';
 
