@@ -62,6 +62,14 @@ export default function notificationKeeperFactory(pushEmitter: IPushEventEmitter
     },
 
     handleControlEvent(controlType: ControlType, channel: string, timestamp: number) {
+      /* STREAMING_RESET control event is handled by PushManager directly since it doesn't require
+       * tracking timestamp and state like OCCUPANCY or CONTROL. It also ignores previous
+       * OCCUPANCY and CONTROL notifications, and whether PUSH_SUBSYSTEM_DOWN has been emitted or not */
+      if (controlType === ControlType.STREAMING_RESET) {
+        pushEmitter.emit(controlType);
+        return;
+      }
+
       for (let i = 0; i < channels.length; i++) {
         const c = channels[i];
         if (c.regex.test(channel)) {
