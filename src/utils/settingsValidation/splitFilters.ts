@@ -107,7 +107,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   }
 
   // Validate filters and group their values by filter type inside `groupedFilters` object
-  // Assign the valid filters to the output of the validator by using filter function
   res.validFilters = maybeSplitFilters.filter((filter, index) => {
     if (filter && validateFilterType(filter.type) && Array.isArray(filter.values)) {
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
