@@ -11,7 +11,7 @@ import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_F
 
 describe('validateSplitFilters', () => {
 
-  let defaultOutput = {
+  const defaultOutput = {
     validFilters: [],
     queryString: null,
     groupedFilters: { byName: [], byPrefix: [] }
@@ -38,11 +38,11 @@ describe('validateSplitFilters', () => {
 
   test('Returns object with null queryString, if `splitFilters` contains invalid filters or contains filters with no values or invalid values', () => {
 
-    let splitFilters: any[] = [
+    const splitFilters: any[] = [
       { type: 'byName', values: [] },
       { type: 'byName', values: [] },
       { type: 'byPrefix', values: [] }];
-    let output = {
+    const output = {
       validFilters: [...splitFilters],
       queryString: null,
       groupedFilters: { byName: [], byPrefix: [] }
