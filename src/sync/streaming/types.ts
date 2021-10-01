@@ -6,6 +6,7 @@ import { IFetchAuth } from '../../services/types';
 import { IStorageSync } from '../../storages/types';
 import { IEventEmitter, ISettings } from '../../types';
 import { IPlatform } from '../../sdkFactory/types';
+import { ControlType } from './constants';
 
 // Internal SDK events, subscribed by SyncManager and PushManager
 export type PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP'
@@ -24,9 +25,7 @@ export type SPLIT_UPDATE = 'SPLIT_UPDATE';
 export type CONTROL = 'CONTROL';
 export type OCCUPANCY = 'OCCUPANCY';
 
-export type STREAMING_RESET = 'STREAMING_RESET';
-
-export type IPushEvent = PUSH_SUBSYSTEM_UP | PUSH_SUBSYSTEM_DOWN | PUSH_NONRETRYABLE_ERROR | PUSH_RETRYABLE_ERROR | MY_SEGMENTS_UPDATE | MY_SEGMENTS_UPDATE_V2 | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL | STREAMING_RESET
+export type IPushEvent = PUSH_SUBSYSTEM_UP | PUSH_SUBSYSTEM_DOWN | PUSH_NONRETRYABLE_ERROR | PUSH_RETRYABLE_ERROR | MY_SEGMENTS_UPDATE | MY_SEGMENTS_UPDATE_V2 | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL | ControlType.STREAMING_RESET
 
 type IParsedData<T extends IPushEvent> =
   T extends MY_SEGMENTS_UPDATE ? IMySegmentsUpdateData :

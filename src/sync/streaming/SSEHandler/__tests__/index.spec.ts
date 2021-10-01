@@ -1,6 +1,6 @@
 // @ts-nocheck
 import SSEHandlerFactory from '..';
-import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, STREAMING_RESET } from '../../constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, ControlType } from '../../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
@@ -80,7 +80,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
 
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, { type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }); // must handle update message if streaming on after an OCCUPANCY event
   sseHandler.handleMessage(streamingReset);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(STREAMING_RESET); // must handle streaming reset
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(ControlType.STREAMING_RESET); // must handle streaming reset
   expect(pushEmitter.emit).toBeCalledTimes(7); // must not emit PUSH_SUBSYSTEM_UP if streaming is already on and another channel has publishers
 });
 
@@ -114,7 +114,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   sseHandler.handleMessage({ data: '{ "data": "{\\"type\\":\\"SPLIT_UPDATE\\",\\"changeNumber\\":1457552620999 }" }' });
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, { type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }); // must handle update message if streaming on after a CONTROL event
   sseHandler.handleMessage(streamingReset);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(STREAMING_RESET); // must handle streaming reset
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(ControlType.STREAMING_RESET); // must handle streaming reset
 
   sseHandler.handleMessage(controlStreamingDisabledSec); // testing STREAMING_DISABLED with second region
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // must emit PUSH_NONRETRYABLE_ERROR if received a STREAMING_DISABLED control message
@@ -168,7 +168,7 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
 
   sseHandler.handleMessage(streamingReset);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(STREAMING_RESET); // must emit STREAMING_RESET
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(ControlType.STREAMING_RESET); // must emit STREAMING_RESET
 
 });
 

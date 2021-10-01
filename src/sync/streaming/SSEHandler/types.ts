@@ -1,5 +1,5 @@
 import { ControlType } from '../constants';
-import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, STREAMING_RESET } from '../types';
+import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY } from '../types';
 
 export interface IMySegmentsUpdateData {
   type: MY_SEGMENTS_UPDATE,
@@ -65,11 +65,7 @@ export interface IOccupancyData {
   }
 }
 
-export interface IStreamingResetData {
-  type: STREAMING_RESET
-}
-
-export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData | IStreamingResetData
+export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
 export type INotificationError = Event & { parsedData?: any, message?: string }
 

@@ -41,7 +41,7 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
-  if (splits.splitsCacheLoaded) setTimeout(checkIsReadyFromCache, 0); // don't check status inmediately, to allow attach listeners
+  if (splits.splitsCacheLoaded) isReadyFromCache = true; // ready from cache, but doesn't emit SDK_READY_FROM_CACHE
   else splits.once(SDK_SPLITS_CACHE_LOADED, checkIsReadyFromCache);
 
   // emit SDK_READY_TIMED_OUT
@@ -62,13 +62,15 @@ export function readinessManagerFactory(
   let isDestroyed = false;
 
   function checkIsReadyFromCache() {
-    // @TODO add condition to emit SDK_READY_FROM_CACHE only if SDK_READY has not been emitted
-    if (!isReadyFromCache && splits.splitsCacheLoaded) {
-      // Make it async, in case user callbacks throw an exception
-      setTimeout(() => {
-        isReadyFromCache = true;
+    isReadyFromCache = true;
+    // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
+    if (!isReady) {
+      try {
         gate.emit(SDK_READY_FROM_CACHE);
-      }, 0);
+      } catch (e) {
+        // throws user callback exceptions in next tick
+        setTimeout(() => { throw e; }, 0);
+      }
     }
   }
 

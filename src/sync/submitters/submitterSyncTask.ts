@@ -17,6 +17,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
   latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
+  debugLogs?: boolean
 ): ISyncTask<[], void> {
 
   let retries = 0;
@@ -27,7 +28,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     const data = sourceCache.state();
 
     const dataCount: number | '' = typeof data.length === 'number' ? data.length : '';
-    log.info(SUBMITTERS_PUSH, [dataCount, dataName]);
+    log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCount, dataName]);
     const latencyTrackerStop = latencyTracker && latencyTracker.start();
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
