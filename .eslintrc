@@ -65,7 +65,21 @@
         "plugin:compat/recommended"
       ],
       "rules": {
-        "no-restricted-syntax": ["error", "ForOfStatement", "ForInStatement"],
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "ForOfStatement",
+            "message": "Avoid for-of syntax in favor of a smaller transpiled code"
+          },
+          {
+            "selector": "ForInStatement",
+            "message": "Don't use for-in syntax in libraries, because it might iterate over properties polluted by external code"
+          },
+          {
+            "selector": "TSEnumDeclaration[const=true]",
+            "message": "Don't declare const enums, because they are not supported by Babel wich is used for building RN SDK"
+          }
+        ],
         "compat/compat": ["error", "defaults, not ie < 10, not node < 6"],
         "no-throw-literal": "error"
       },
