@@ -8,13 +8,13 @@ export interface IMySegmentsUpdateData {
   segmentList?: string[]
 }
 
-export const enum Compression {
+export enum Compression {
   None = 0,
   Gzip = 1,
   Zlib = 2
 }
 
-export const enum UpdateStrategy {
+export enum UpdateStrategy {
   UnboundedFetchRequest = 0,
   BoundedFetchRequest = 1,
   KeyList = 2,

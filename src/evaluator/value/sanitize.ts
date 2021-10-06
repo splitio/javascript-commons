@@ -3,7 +3,7 @@ import { IDependencyMatcherValue } from '../types';
 import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
-import { matcherTypes, dataTypes } from '../matchers/matcherTypes';
+import { matcherTypes, matcherDataTypes } from '../matchers/matcherTypes';
 import { ENGINE_SANITIZE } from '../../logger/constants';
 
 function sanitizeNumber(val: any): number | undefined {
@@ -74,20 +74,20 @@ export default function sanitize(log: ILogger, matcherTypeID: number, value: str
   let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
 
   switch (dataType) {
-    case dataTypes.NUMBER:
-    case dataTypes.DATETIME:
+    case matcherDataTypes.NUMBER:
+    case matcherDataTypes.DATETIME:
       sanitizedValue = sanitizeNumber(value);
       break;
-    case dataTypes.STRING:
+    case matcherDataTypes.STRING:
       sanitizedValue = sanitizeString(value);
       break;
-    case dataTypes.SET:
+    case matcherDataTypes.SET:
       sanitizedValue = sanitizeArray(value);
       break;
-    case dataTypes.BOOLEAN:
+    case matcherDataTypes.BOOLEAN:
       sanitizedValue = sanitizeBoolean(value);
       break;
-    case dataTypes.NOT_SPECIFIED:
+    case matcherDataTypes.NOT_SPECIFIED:
       sanitizedValue = value;
       break;
     default:

@@ -1,7 +1,8 @@
 import fs from 'fs';
 import rl from 'readline';
 import * as murmur3 from '../murmur3';
-import { hash128 } from '../murmur3_128';
+import { hash128 as hash128x64 } from '../murmur3_128';
+import { hash128 as hash128x86 } from '../murmur3_128_x86';
 import { hash64 } from '../murmur3_64';
 
 [
@@ -57,8 +58,9 @@ function dec2hex(str: any) {
 }
 
 [
-  'murmur3_64_uuids.csv',
-].forEach(filename => {
+  { filename: 'murmur3_86_uuids.csv', hash128: hash128x86 },
+  { filename: 'murmur3_64_uuids.csv', hash128: hash128x64 }
+].forEach(({ filename, hash128 }) => {
 
   test('MURMUR3 128 / validate hashing behavior using sample data', (done) => {
     const parser = rl.createInterface({

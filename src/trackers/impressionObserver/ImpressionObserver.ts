@@ -12,8 +12,6 @@ export default class ImpressionObserver<K extends string | number> implements II
   }
 
   testAndSet(impression: ImpressionDTO) {
-    if (!impression) return;
-
     const hash = this.hasher(impression);
     const previous = this.cache.get(hash);
     this.cache.set(hash, impression.time);
