@@ -73,11 +73,11 @@
           },
           {
             "selector": "ForInStatement",
-            "message": "Don't use for-in syntax in libraries, because it might iterate over properties polluted by external code"
+            "message": "Don't use for-in syntax in libraries, because it iterates over members inherited from the prototype chain"
           },
           {
             "selector": "TSEnumDeclaration[const=true]",
-            "message": "Don't declare const enums, because they are not supported by Babel wich is used for building RN SDK"
+            "message": "Don't declare const enum, because it is not supported by Babel used for building RN SDK"
           }
         ],
         "compat/compat": ["error", "defaults, not ie < 10, not node < 6"],
