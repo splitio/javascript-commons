@@ -439,3 +439,15 @@ export interface IStorageFactoryParams {
   onReadyCb?: (error?: any) => void,
   metadata: IMetadata,
 }
+
+export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'CUSTOM';
+
+export type IStorageSyncFactory = {
+  type: StorageType,
+  (params: IStorageFactoryParams): IStorageSync
+}
+
+export type IStorageAsyncFactory = {
+  type: StorageType,
+  (params: IStorageFactoryParams): IStorageAsync
+}

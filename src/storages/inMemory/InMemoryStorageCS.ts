@@ -4,6 +4,7 @@ import ImpressionsCacheInMemory from './ImpressionsCacheInMemory';
 import EventsCacheInMemory from './EventsCacheInMemory';
 import { IStorageSyncCS, IStorageFactoryParams } from '../types';
 import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
+import { STORAGE_MEMORY } from '../../utils/constants';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -46,3 +47,5 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     },
   };
 }
+
+InMemoryStorageCSFactory.type = STORAGE_MEMORY;

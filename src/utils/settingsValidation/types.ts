@@ -1,4 +1,3 @@
-import { ISplitFiltersValidation } from '../../dtos/types';
 import { ISettings } from '../../types';
 
 /**
@@ -19,14 +18,4 @@ export interface ISettingsValidationParams {
   integrations?: (settings: ISettings) => ISettings['integrations'],
   /** Logger validator */
   logger: (settings: ISettings) => ISettings['log'],
-}
-
-/**
- * Settings interface extended with private properties used for internal purposes.
- */
-export interface ISettingsInternal extends ISettings {
-  readonly sync: ISettings['sync'] & {
-    __splitFiltersValidation: ISplitFiltersValidation
-  }
-  readonly impressionListener?: unknown
 }

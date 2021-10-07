@@ -8,7 +8,6 @@ import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStor
 import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
-import { ISettingsInternal } from '../utils/settingsValidation/types';
 
 /**
  * Environment related dependencies.
@@ -27,7 +26,7 @@ export interface IPlatform {
 export interface ISdkFactoryParams {
 
   // The settings must be already validated
-  settings: ISettingsInternal,
+  settings: ISettings,
 
   // Platform dependencies
   platform: IPlatform,

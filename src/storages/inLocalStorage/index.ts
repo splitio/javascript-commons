@@ -1,7 +1,7 @@
 import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSyncCS } from '../types';
+import { IStorageFactoryParams, IStorageSyncCS, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
@@ -12,6 +12,7 @@ import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
+import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -20,11 +21,11 @@ export interface InLocalStorageOptions {
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}) {
+export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 
-  return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
@@ -69,5 +70,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
         };
       },
     };
-  };
+  }
+
+  InLocalStorageCSFactory.type = STORAGE_LOCALSTORAGE;
+  return InLocalStorageCSFactory;
 }
