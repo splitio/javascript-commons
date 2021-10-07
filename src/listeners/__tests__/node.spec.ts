@@ -85,7 +85,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
   processKillSpy.mockClear();
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler', async (done) => {
+test('Node JS listener / Signal Listener SIGTERM callback with async handler', async () => {
 
   const fakePromise = new Promise<void>(res => {
     setTimeout(() => {
@@ -113,7 +113,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
   expect(listener.stop).not.toBeCalled();
   expect(processKillSpy).not.toBeCalled();
 
-  fakePromise.then(() => {
+  await fakePromise.then(() => {
     // Clean up is called even if there is an error.
     expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
@@ -122,14 +122,10 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
 
     // Reset the kill spy since it's used on other tests.
     processKillSpy.mockClear();
-
-    done();
   });
-
-  return fakePromise;
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler that throws an error', async (done) => {
+test('Node JS listener / Signal Listener SIGTERM callback with async handler that throws an error', async () => {
 
   const fakePromise = new Promise<void>((res, rej) => {
     setTimeout(() => {
@@ -158,7 +154,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
   expect(processKillSpy).not.toBeCalled();
 
   // Calling .then since the wrapUp handler does not throw.
-  (handlerPromise as Promise<void>).then(() => {
+  await (handlerPromise as Promise<void>).then(() => {
     // Clean up is called.
     expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
@@ -169,9 +165,5 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
     processOnSpy.mockRestore();
     processRemoveListenerSpy.mockRestore();
     processKillSpy.mockRestore();
-
-    done();
   });
-
-  return handlerPromise;
 });

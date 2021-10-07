@@ -47,7 +47,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     await connection.quit();
   });
 
-  test('`track` should not resolve before calling expire', async (done) => {
+  test('`track` should not resolve before calling expire', async () => {
     const impressionsKey = 'impr_cache_ut_2.impressions';
     const connection = new Redis(loggerMock, {});
 
@@ -74,7 +74,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     await connection.del(impressionsKey);
 
     // @ts-expect-error
-    c.track([i1, i2]).then(() => {
+    await c.track([i1, i2]).then(() => {
       connection.del(impressionsKey);
       connection.quit(); // Try to disconnect right away.
       expect(spy1).toBeCalled(); // Redis rpush was called once before executing external callback.
@@ -86,7 +86,6 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
       // Finally clean up and wrap up.
       spy1.mockRestore();
       spy2.mockRestore();
-      done();
     });
   });
 
