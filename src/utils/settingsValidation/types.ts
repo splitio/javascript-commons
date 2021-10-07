@@ -18,4 +18,6 @@ export interface ISettingsValidationParams {
   integrations?: (settings: ISettings) => ISettings['integrations'],
   /** Logger validator */
   logger: (settings: ISettings) => ISettings['log'],
+  /** Localhost mode validator */
+  localhost?: (settings: ISettings) => ISettings['sync']['localhostMode'],
 }

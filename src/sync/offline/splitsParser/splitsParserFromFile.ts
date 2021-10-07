@@ -7,8 +7,9 @@ import yaml from 'js-yaml';
 import { isString, endsWith, find, forOwn, uniq, } from '../../../utils/lang';
 import parseCondition, { IMockSplitEntry } from './parseCondition';
 import { ISplitPartial } from '../../../dtos/types';
-import { SplitIO } from '../../../types';
+import { ISettings, SplitIO } from '../../../types';
 import { ILogger } from '../../../logger/types';
+import { ISplitsParser } from './types';
 
 const logPrefix = 'sync:offline:splits-fetcher: ';
 
@@ -68,7 +69,7 @@ function arrangeConditions(mocksData: Record<string, Required<ISplitPartial> & {
   });
 }
 
-export function splitsParserFromFileFactory() {
+export function splitsParserFromFileFactory(): ISplitsParser {
 
   let previousMock = 'NO_MOCK_LOADED';
 
@@ -163,8 +164,8 @@ export function splitsParserFromFileFactory() {
   }
 
   // Load the content of a configuration file into an Object
-  return function splitsParserFromFile({ features, log }: { features?: SplitIO.MockedFeaturesFilePath, log: ILogger }): false | Record<string, ISplitPartial> {
-    const filePath = configFilesPath(features);
+  return function splitsParserFromFile({ features, log }: ISettings): false | Record<string, ISplitPartial> {
+    const filePath = configFilesPath(features as string);
     let mockData: false | Record<string, ISplitPartial>;
 
     // If we have a filePath, it means the extension is correct, choose the parser.

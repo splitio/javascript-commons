@@ -4,6 +4,7 @@ import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
+import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
  * EventEmitter interface with the minimal methods used by the SDK
@@ -99,7 +100,8 @@ export interface ISettings {
   readonly sync: {
     splitFilters: SplitIO.SplitFilter[],
     impressionsMode: SplitIO.ImpressionsMode,
-    __splitFiltersValidation: ISplitFiltersValidation
+    __splitFiltersValidation: ISplitFiltersValidation,
+    localhostMode: SplitIO.LocalhostFactory
   },
   readonly runtime: {
     ip: string | false
@@ -581,6 +583,13 @@ export namespace SplitIO {
    * @typedef {Promise<SplitNames>} SplitNamesAsync
    */
   export type SplitNamesAsync = Promise<SplitNames>;
+  /**
+   * Localhost mode factory.
+   */
+  export type LocalhostFactory = {
+    type?: 'localhost'
+    (params: ISyncManagerFactoryParams): ISyncManagerCS
+  }
   /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.

@@ -118,6 +118,7 @@ export const ERROR_EMPTY = 319;
 export const ERROR_EMPTY_ARRAY = 320;
 export const ERROR_INVALID_IMPRESSIONS_MODE = 321;
 export const ERROR_HTTP = 322;
+export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';

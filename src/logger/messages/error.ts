@@ -30,4 +30,5 @@ export const codesError: [number, string][] = [
   [c.ERROR_EMPTY_ARRAY, '%s: %s must be a non-empty array.'],
   // initialization / settings validation
   [c.ERROR_INVALID_IMPRESSIONS_MODE, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "impressionsMode". It should be one of the following values: %s. Defaulting to "%s" mode.'],
+  [c.ERROR_LOCALHOST_MODULE_REQUIRED, c.LOG_PREFIX_SETTINGS + ': you didn\'t pass a valid "sync.localhostMode". It should be defined for using the SDK in localhost mode']
 ];

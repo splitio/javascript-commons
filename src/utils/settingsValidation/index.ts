@@ -74,7 +74,8 @@ const base = {
   sync: {
     splitFilters: undefined,
     // impressions collection mode
-    impressionsMode: OPTIMIZED
+    impressionsMode: OPTIMIZED,
+    localhostMode: undefined
   },
 
   runtime: {
@@ -99,7 +100,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -143,6 +144,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // `integrations` returns an array of valid integration items.
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
+
+  if (localhost) withDefaults.sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
