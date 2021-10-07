@@ -195,7 +195,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
 describe('SDK Readiness Manager - Ready promise', () => {
 
-  test('.ready() promise behaviour for clients', async (done) => {
+  test('.ready() promise behaviour for clients', async () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
 
     const ready = sdkReadinessManager.sdkStatus.ready();
@@ -258,7 +258,6 @@ describe('SDK Readiness Manager - Ready promise', () => {
         loggerMock.mockClear();
         testPassedCount++;
         expect(testPassedCount).toBe(5);
-        done();
       },
       () => { throw new Error('It should be resolved on ready event, not rejected.'); }
     );
