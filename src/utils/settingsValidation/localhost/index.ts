@@ -12,7 +12,8 @@ import { LOCALHOST_MODE } from '../../constants';
 export function validateLocalhost(settings: ISettings) {
   const localhostMode = settings.sync.localhostMode;
 
-  if (settings.mode === LOCALHOST_MODE && (typeof localhostMode !== 'function' || localhostMode.type !== LOCALHOST_MODE)) {
+  // localhostMode.type is used for internal validation. Not considered part of the public API, and might be updated eventually.
+  if (settings.mode === LOCALHOST_MODE && (typeof localhostMode !== 'function' || localhostMode.type !== 'fromObject')) {
     settings.log.error(ERROR_LOCALHOST_MODULE_REQUIRED);
   }
   return localhostMode;

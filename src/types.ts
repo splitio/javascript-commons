@@ -587,7 +587,7 @@ export namespace SplitIO {
    * Localhost mode factory.
    */
   export type LocalhostFactory = {
-    type?: 'localhost'
+    type: 'fromObject' | 'fromFile'
     (params: ISyncManagerFactoryParams): ISyncManagerCS
   }
   /**
