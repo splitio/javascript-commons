@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { IEventsCacheSync } from '../../../storages/types';
 import { SplitIO, ISettings } from '../../../types';
-import GaToSplit, { validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
+import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
 import { gaMock, gaRemove, modelMock } from './gaMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
