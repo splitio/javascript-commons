@@ -144,7 +144,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
 
   // Call function
   // @ts-expect-error
-  const handlerPromise = listener._sigtermHandler();
+  const handlerPromise: Promise = listener._sigtermHandler();
 
   // Handler was properly called.
   expect(syncManagerMock.flush).toBeCalledTimes(1);
@@ -154,7 +154,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
   expect(processKillSpy).not.toBeCalled();
 
   // Calling .then since the wrapUp handler does not throw.
-  await (handlerPromise as Promise<void>).then(() => {
+  await handlerPromise.then(() => {
     // Clean up is called.
     expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.

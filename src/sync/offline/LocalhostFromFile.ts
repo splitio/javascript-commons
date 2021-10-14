@@ -6,6 +6,6 @@ import { SplitIO } from '../../types';
 // Requires Node 'fs' and 'path' APIs.
 export function LocalhostFromFile(): SplitIO.LocalhostFactory {
   const localhost = syncManagerOfflineFactory(splitsParserFromFileFactory) as SplitIO.LocalhostFactory;
-  localhost.type = 'fromFile';
+  localhost.type = 'LocalhostFromFile';
   return localhost;
 }

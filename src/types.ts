@@ -101,7 +101,7 @@ export interface ISettings {
     splitFilters: SplitIO.SplitFilter[],
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
-    localhostMode: SplitIO.LocalhostFactory
+    localhostMode?: SplitIO.LocalhostFactory
   },
   readonly runtime: {
     ip: string | false
@@ -587,7 +587,7 @@ export namespace SplitIO {
    * Localhost mode factory.
    */
   export type LocalhostFactory = {
-    type: 'fromObject' | 'fromFile'
+    type: 'LocalhostFromObject' | 'LocalhostFromFile'
     (params: ISyncManagerFactoryParams): ISyncManagerCS
   }
   /**
