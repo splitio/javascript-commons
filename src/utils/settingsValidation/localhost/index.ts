@@ -7,7 +7,7 @@ import { LOCALHOST_MODE } from '../../constants';
  *
  * @param {any} settings config object provided by the user to initialize the sdk
  *
- * @returns {Object | undefined} provided localhost mode module at `settings.sync.localhostMode`, or undefined if no module is provided or is invalid.
+ * @returns {Object | undefined} provided localhost mode module at `settings.sync.localhostMode`, or undefined if it is not provided or invalid.
  */
 export function validateLocalhost(settings: ISettings) {
   const localhostMode = settings.sync.localhostMode;

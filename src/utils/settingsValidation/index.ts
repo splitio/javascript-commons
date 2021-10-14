@@ -111,17 +111,18 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.log = log;
 
   // Scheduler periods
-  withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
-  withDefaults.scheduler.segmentsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.segmentsRefreshRate);
-  withDefaults.scheduler.metricsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.metricsRefreshRate);
-  withDefaults.scheduler.impressionsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.impressionsRefreshRate);
-  withDefaults.scheduler.offlineRefreshRate = fromSecondsToMillis(withDefaults.scheduler.offlineRefreshRate);
-  withDefaults.scheduler.eventsPushRate = fromSecondsToMillis(withDefaults.scheduler.eventsPushRate);
+  const { scheduler, startup } = withDefaults;
+  scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
+  scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
+  scheduler.metricsRefreshRate = fromSecondsToMillis(scheduler.metricsRefreshRate);
+  scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
+  scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
+  scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
 
   // Startup periods
-  withDefaults.startup.requestTimeoutBeforeReady = fromSecondsToMillis(withDefaults.startup.requestTimeoutBeforeReady);
-  withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
-  withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
+  startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
+  startup.readyTimeout = fromSecondsToMillis(startup.readyTimeout);
+  startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
@@ -152,7 +153,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
-    withDefaults.scheduler.pushRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.pushRetryBackoffBase);
+    scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
   // validate the `splitFilters` settings and parse splits query
