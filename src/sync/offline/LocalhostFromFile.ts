@@ -2,10 +2,11 @@ import { splitsParserFromFileFactory } from './splitsParser/splitsParserFromFile
 import { syncManagerOfflineFactory } from './syncManagerOffline';
 import { SplitIO } from '../../types';
 
-// Factory of Localhost SyncManager based on yaml file.
+// Singleton instance of the factory function for offline SyncManager from YAML file (a.k.a. localhostFromFile)
 // Requires Node 'fs' and 'path' APIs.
+const localhostFromFile = syncManagerOfflineFactory(splitsParserFromFileFactory) as SplitIO.LocalhostFactory;
+localhostFromFile.type = 'LocalhostFromFile';
+
 export function LocalhostFromFile(): SplitIO.LocalhostFactory {
-  const localhost = syncManagerOfflineFactory(splitsParserFromFileFactory) as SplitIO.LocalhostFactory;
-  localhost.type = 'LocalhostFromFile';
-  return localhost;
+  return localhostFromFile;
 }

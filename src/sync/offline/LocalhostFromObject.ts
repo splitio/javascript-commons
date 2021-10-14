@@ -2,9 +2,11 @@ import { splitsParserFromSettingsFactory } from './splitsParser/splitsParserFrom
 import { syncManagerOfflineFactory } from './syncManagerOffline';
 import { SplitIO } from '../../types';
 
-// Factory of Localhost SyncManager based on JS object.
+// Singleton instance of the factory function for offline SyncManager from object (a.k.a. localhostFromObject)
+// SDK instances instantiate their SyncManagers with the same factory
+const localhostFromObject = syncManagerOfflineFactory(splitsParserFromSettingsFactory) as SplitIO.LocalhostFactory;
+localhostFromObject.type = 'LocalhostFromObject';
+
 export function LocalhostFromObject(): SplitIO.LocalhostFactory {
-  const localhost = syncManagerOfflineFactory(splitsParserFromSettingsFactory) as SplitIO.LocalhostFactory;
-  localhost.type = 'LocalhostFromObject';
-  return localhost;
+  return localhostFromObject;
 }
