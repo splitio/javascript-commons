@@ -40,7 +40,7 @@ export interface ISdkFactoryParams {
   splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
 
   // SyncManager factory.
-  // It is not required when providing an asynchronous storage.
+  // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
   // It can create an offline or online sync manager, with or without streaming support.
   syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
 

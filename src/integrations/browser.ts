@@ -2,8 +2,8 @@ import { GOOGLE_ANALYTICS_TO_SPLIT, SPLIT_TO_GOOGLE_ANALYTICS } from '../utils/c
 import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './types';
 import { BrowserIntegration } from './ga/types';
 import pluggableIntegrationsManagerFactory from './pluggable';
-import GaToSplitPlugin from './ga/GaToSplitPlugin';
-import SplitToGaPlugin from './ga/SplitToGaPlugin';
+import { GoogleAnalyticsToSplit } from './ga/GoogleAnalyticsToSplit';
+import { SplitToGoogleAnalytics } from './ga/SplitToGoogleAnalytics';
 
 /**
  * IntegrationsManager factory for the browser variant of the isomorphic JS SDK.
@@ -23,8 +23,8 @@ export default function integrationsManagerFactory(
   const integrationFactories: Array<(params: IIntegrationFactoryParams) => IIntegration | void> = integrations
     .map(integrationOptions => {
       switch (integrationOptions.type) {
-        case GOOGLE_ANALYTICS_TO_SPLIT: return GaToSplitPlugin(integrationOptions);
-        case SPLIT_TO_GOOGLE_ANALYTICS: return SplitToGaPlugin(integrationOptions);
+        case GOOGLE_ANALYTICS_TO_SPLIT: return GoogleAnalyticsToSplit(integrationOptions);
+        case SPLIT_TO_GOOGLE_ANALYTICS: return SplitToGoogleAnalytics(integrationOptions);
       }
     })
     .filter(integrationFactory => {

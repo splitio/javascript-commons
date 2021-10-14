@@ -6,7 +6,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { gaMock, gaRemove } from './gaMock';
 
 // Test target
-import SplitToGa from '../SplitToGa';
+import { SplitToGa } from '../SplitToGa';
 
 const fakeImpressionPayload: SplitIO.ImpressionData = {
   impression: {

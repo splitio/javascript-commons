@@ -74,7 +74,8 @@ const base = {
   sync: {
     splitFilters: undefined,
     // impressions collection mode
-    impressionsMode: OPTIMIZED
+    impressionsMode: OPTIMIZED,
+    localhostMode: undefined
   },
 
   runtime: {
@@ -99,7 +100,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -110,17 +111,18 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.log = log;
 
   // Scheduler periods
-  withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
-  withDefaults.scheduler.segmentsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.segmentsRefreshRate);
-  withDefaults.scheduler.metricsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.metricsRefreshRate);
-  withDefaults.scheduler.impressionsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.impressionsRefreshRate);
-  withDefaults.scheduler.offlineRefreshRate = fromSecondsToMillis(withDefaults.scheduler.offlineRefreshRate);
-  withDefaults.scheduler.eventsPushRate = fromSecondsToMillis(withDefaults.scheduler.eventsPushRate);
+  const { scheduler, startup } = withDefaults;
+  scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
+  scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
+  scheduler.metricsRefreshRate = fromSecondsToMillis(scheduler.metricsRefreshRate);
+  scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
+  scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
+  scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
 
   // Startup periods
-  withDefaults.startup.requestTimeoutBeforeReady = fromSecondsToMillis(withDefaults.startup.requestTimeoutBeforeReady);
-  withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
-  withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
+  startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
+  startup.readyTimeout = fromSecondsToMillis(startup.readyTimeout);
+  startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
@@ -144,12 +146,14 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
+  if (localhost) withDefaults.sync.localhostMode = localhost(withDefaults);
+
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
-    withDefaults.scheduler.pushRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.pushRetryBackoffBase);
+    scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
   // validate the `splitFilters` settings and parse splits query

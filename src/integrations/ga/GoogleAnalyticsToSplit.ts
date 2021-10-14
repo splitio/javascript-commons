@@ -1,8 +1,8 @@
 import { IIntegrationFactoryParams } from '../types';
-import GaToSplit from './GaToSplit';
+import { GaToSplit } from './GaToSplit';
 import { GoogleAnalyticsToSplitOptions } from './types';
 
-export default function GaToSplitPlugin(options: GoogleAnalyticsToSplitOptions) {
+export function GoogleAnalyticsToSplit(options: GoogleAnalyticsToSplitOptions) {
 
   // GaToSplit integration factory
   return (params: IIntegrationFactoryParams) => {

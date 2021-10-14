@@ -1,9 +1,9 @@
-import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from './types';
-import fromObjectSyncTaskFactory from './offline/syncTasks/fromObjectSyncTask';
+import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from '../types';
+import fromObjectSyncTaskFactory from './syncTasks/fromObjectSyncTask';
 import objectAssign from 'object-assign';
-import { ISplitsParser } from './offline/splitsParser/types';
-import { IReadinessManager } from '../readiness/types';
-import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { ISplitsParser } from './splitsParser/types';
+import { IReadinessManager } from '../../readiness/types';
+import { SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 
 function flush() {
   return Promise.resolve();

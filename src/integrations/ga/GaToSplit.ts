@@ -182,7 +182,7 @@ export function fixEventTypeId(log: ILogger, eventTypeId: any) {
  * @param {object} coreSettings core settings used to define an identity if no one provided as SDK or plugin options
  * @param {object} log factory logger
  */
-export default function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIntegrationFactoryParams) {
+export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIntegrationFactoryParams) {
 
   const { storage, settings: { core: coreSettings, log } } = params;
 
