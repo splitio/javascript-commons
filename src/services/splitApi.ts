@@ -2,7 +2,6 @@ import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
-import { ISettingsInternal } from '../utils/settingsValidation/types';
 import objectAssign from 'object-assign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -20,7 +19,7 @@ function userKeyToQueryParam(userKey: string) {
 export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
 
   const urls = settings.urls;
-  const filterQueryString = (settings as ISettingsInternal).sync.__splitFiltersValidation && (settings as ISettingsInternal).sync.__splitFiltersValidation.queryString;
+  const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 

@@ -67,7 +67,12 @@ export const fullSettings: ISettings = {
   streamingEnabled: false,
   sync: {
     splitFilters: [],
-    impressionsMode: 'OPTIMIZED'
+    impressionsMode: 'OPTIMIZED',
+    __splitFiltersValidation: {
+      validFilters: [],
+      queryString: null,
+      groupedFilters: { byName: [], byPrefix: [] }
+    }
   },
   version: 'jest',
   runtime: {

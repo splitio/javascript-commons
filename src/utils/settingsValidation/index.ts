@@ -3,7 +3,8 @@ import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
-import { ISettingsInternal, ISettingsValidationParams } from './types';
+import { ISettingsValidationParams } from './types';
+import { ISettings } from '../../types';
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -101,7 +102,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const { defaults, runtime, storage, integrations, logger } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
-  const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
+  const withDefaults = merge({}, base, defaults, config) as ISettings;
 
   // ensure a valid logger.
   // First thing to validate, since other validators might use the logger.

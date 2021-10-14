@@ -55,7 +55,6 @@ export function fromObjectUpdaterFactory(
 
       return Promise.all([
         splitsCache.clear(), // required to sync removed splits from mock
-        splitsCache.setChangeNumber(Date.now()),
         splitsCache.addSplits(splits)
       ]).then(() => {
         readiness.splits.emit(SDK_SPLITS_ARRIVED);

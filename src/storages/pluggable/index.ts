@@ -1,4 +1,4 @@
-import { ICustomStorageWrapper, IStorageAsync, IStorageFactoryParams } from '../types';
+import { ICustomStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 
 import KeyBuilderSS from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
@@ -8,6 +8,7 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { validatePrefix } from '../KeyBuilder';
+import { STORAGE_CUSTOM } from '../../utils/constants';
 
 const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -34,13 +35,13 @@ function validatePluggableStorageOptions(options: any) {
 /**
  * Pluggable storage factory for consumer server-side & client-side SplitFactory.
  */
-export function PluggableStorage(options: PluggableStorageOptions) {
+export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyncFactory {
 
   validatePluggableStorageOptions(options);
 
   const prefix = validatePrefix(options.prefix);
 
-  return function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
@@ -63,5 +64,8 @@ export function PluggableStorage(options: PluggableStorageOptions) {
         return wrapper.close();
       }
     };
-  };
+  }
+
+  PluggableStorageFactory.type = STORAGE_CUSTOM;
+  return PluggableStorageFactory;
 }
