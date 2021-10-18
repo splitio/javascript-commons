@@ -59,7 +59,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
       const sharedStorage = (storage as IStorageSyncCS).shared(matchingKey);
-      const sharedSyncManager = (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
+      const sharedSyncManager = syncManager && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
@@ -74,7 +74,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
         validKey
       );
 
-      sharedSyncManager.start();
+      sharedSyncManager && sharedSyncManager.start();
 
       log.info(NEW_SHARED_CLIENT);
     } else {
