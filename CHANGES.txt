@@ -1,3 +1,10 @@
+1.0.0 (October 18, 2021)
+ - Updated localhost mode to emit SDK_READY_FROM_CACHE event in Browser when using localStorage (issue https://github.com/splitio/react-client/issues/34).
+ - Updated streaming logic to use the newest version of our streaming service.
+ - Updated dependencies for vulnerability fixes.
+ - Added pluggable storage module.
+ - BREAKING CHANGE on multiple modules due to general polishing, improvements and bug fixes.
+
 0.1.0 (March 30, 2021)
  - Initial public release. It includes common modules to be consumed by the different Split implementations written in JavaScript. Based on the original JS SDK in the `javascript-client` repository.
  - It's designed with a modular approach, with the following goals in mind:
