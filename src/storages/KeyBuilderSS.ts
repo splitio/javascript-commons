@@ -7,9 +7,9 @@ import { IMetadata } from '../dtos/types';
 
 export default class KeyBuilderSS extends KeyBuilder {
 
-  protected readonly metadata: Required<IMetadata>;
+  protected readonly metadata: IMetadata;
 
-  constructor(prefix: string, metadata: Required<IMetadata>) {
+  constructor(prefix: string, metadata: IMetadata) {
     super(prefix);
     this.metadata = metadata;
   }
@@ -19,7 +19,7 @@ export default class KeyBuilderSS extends KeyBuilder {
   }
 
   private buildVersionablePrefix() {
-    return `${this.prefix}/${this.metadata.version}/${this.metadata.ip}`;
+    return `${this.prefix}/${this.metadata.s}/${this.metadata.i}`;
   }
 
   buildImpressionsKey() {
@@ -53,7 +53,7 @@ export default class KeyBuilderSS extends KeyBuilder {
   // }
 
   searchPatternForSplitKeys() {
-    return `${this.prefix}.split.*`;
+    return `${this.buildSplitKeyPrefix()}*`;
   }
 
   // NOT USED

@@ -2,11 +2,12 @@ import { IReadinessManager } from '../../readiness/types';
 import { ISplitApi } from '../../services/types';
 import { IStorageSync } from '../../storages/types';
 import { ISettings } from '../../types';
+import { SegmentsData } from '../streaming/SSEHandler/types';
 import { ITask, ISyncTask } from '../types';
 
 export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean], boolean> { }
 
-export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean], boolean> { }
+export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: SegmentsData, noCache?: boolean, fetchOnlyNew?: boolean], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>

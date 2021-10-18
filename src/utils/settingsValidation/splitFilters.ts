@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, logPrefixSettings } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -39,7 +39,7 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  */
 function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(log, values, logPrefixSettings, `${type} filter`, `${type} filter value`);
+  let result = validateSplits(log, values, LOG_PREFIX_SETTINGS, `${type} filter`, `${type} filter value`);
 
   if (result) {
     // check max length
@@ -107,7 +107,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   }
 
   // Validate filters and group their values by filter type inside `groupedFilters` object
-  // Assign the valid filters to the output of the validator by using filter function
   res.validFilters = maybeSplitFilters.filter((filter, index) => {
     if (filter && validateFilterType(filter.type) && Array.isArray(filter.values)) {
       res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);

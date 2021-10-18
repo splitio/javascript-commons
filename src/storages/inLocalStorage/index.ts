@@ -1,7 +1,8 @@
 import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSyncCS } from '../types';
+import { IStorageFactoryParams, IStorageSyncCS, IStorageSyncFactory } from '../types';
+import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import SplitsCacheInLocal from './SplitsCacheInLocal';
@@ -10,7 +11,8 @@ import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
 import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
-import { logPrefix } from './constants';
+import { LOG_PREFIX } from './constants';
+import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -19,15 +21,15 @@ export interface InLocalStorageOptions {
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}) {
+export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
 
-  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+  const prefix = validatePrefix(options.prefix);
 
-  return function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
-      params.log.warn(logPrefix + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+      params.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 
@@ -68,5 +70,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}) {
         };
       },
     };
-  };
+  }
+
+  InLocalStorageCSFactory.type = STORAGE_LOCALSTORAGE;
+  return InLocalStorageCSFactory;
 }

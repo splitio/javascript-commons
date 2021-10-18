@@ -1,10 +1,10 @@
 import ImpressionObserver from './ImpressionObserver';
-import { hash128 } from '../../utils/murmur3/murmur3_128';
-import buildKey from './buildKey';
+import { hash128 } from '../../utils/murmur3/murmur3_128_x86';
+import { buildKey } from './buildKey';
 import { ImpressionDTO } from '../../types';
 
 export function hashImpression128(impression: ImpressionDTO) {
-  return impression ? hash128(buildKey(impression)).toString() : null;
+  return hash128(buildKey(impression));
 }
 
 const LAST_SEEN_CACHE_SIZE = 500000; // cache up to 500k impression hashes

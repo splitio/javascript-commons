@@ -10,7 +10,7 @@ const ECMA_SIZES = {
   NUMBER: 8
 };
 const MAX_PROPERTIES_AMOUNT = 300;
-const MAX_PROPERTIES_SIZE = 1024 * 32;
+const MAX_EVENT_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
 
 export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
@@ -55,7 +55,7 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
     else if (isBoolVal) output.size += ECMA_SIZES.BOOLEAN;
     else if (isStringVal) output.size += val.length * ECMA_SIZES.STRING;
 
-    if (output.size > MAX_PROPERTIES_SIZE) {
+    if (output.size > MAX_EVENT_SIZE) {
       log.error(ERROR_SIZE_EXCEEDED, [method]);
       output.properties = false;
       break;

@@ -194,18 +194,15 @@ export interface IMySegmentsResponse {
   mySegments: IMySegmentsResponseItem[]
 }
 
-/** Metadata internal types */
+/** Metadata internal type for storages */
 
 export interface IMetadata {
-  version: string // SDK version
-  ip: string | false // host IP
-  hostname: string | false // host name
-}
-
-export interface IRedisMetadata {
-  s: string // SDK version
-  i: string // host IP
-  n: string // host name
+  /** SDK version */
+  s: string
+  /** host IP */
+  i: string
+  /** host name */
+  n: string
 }
 
 export type ISplitFiltersValidation = {

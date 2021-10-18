@@ -45,5 +45,5 @@ export function latenciesSyncTaskFactory(
 ): ISyncTask {
 
   // don't retry metrics.
-  return submitterSyncTaskFactory(log, postMetricsLatencies, latenciesCache, metricsRefreshRate, 'latency metrics', latencyTracker, fromCache<number[]>('latencies'));
+  return submitterSyncTaskFactory(log, postMetricsLatencies, latenciesCache, metricsRefreshRate, 'latency metrics', latencyTracker, fromCache<number[]>('latencies'), 0, true);
 }

@@ -4,7 +4,7 @@ import { splitApiFactory } from '../../../../services/splitApi';
 import SegmentsCacheInMemory from '../../../../storages/inMemory/SegmentsCacheInMemory';
 import SplitsCacheInMemory from '../../../../storages/inMemory/SplitsCacheInMemory';
 import splitChangesFetcherFactory from '../../fetchers/splitChangesFetcher';
-import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation } from '../splitsSyncTask';
+import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation } from '../splitChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
@@ -80,7 +80,7 @@ test('splitChangesUpdater / factory', (done) => {
     expect(removeSplits).toBeCalledTimes(1);
     expect(removeSplits).lastCalledWith([]);
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith('SDK_SPLITS_ARRIVED');
+    expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
     expect(result).toBe(true);
     done();
   });

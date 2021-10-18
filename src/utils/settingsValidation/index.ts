@@ -3,7 +3,8 @@ import mode from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import validImpressionsMode from './impressionsMode';
-import { ISettingsInternal, ISettingsValidationParams } from './types';
+import { ISettingsValidationParams } from './types';
+import { ISettings } from '../../types';
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -73,7 +74,13 @@ const base = {
   sync: {
     splitFilters: undefined,
     // impressions collection mode
-    impressionsMode: OPTIMIZED
+    impressionsMode: OPTIMIZED,
+    localhostMode: undefined
+  },
+
+  runtime: {
+    ip: false,
+    hostname: false
   },
 
   // Logger
@@ -86,16 +93,17 @@ function fromSecondsToMillis(n: number) {
 
 /**
  * Validates the given config and use it to build a settings object.
+ * NOTE: it doesn't validate the Api Key. Call `validateApikey` or `validateAndTrackApiKey` for that after settings validation.
  *
  * @param config user defined configuration
  * @param validationParams defaults and fields validators used to validate and creates a settings object from a given config
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
-  const withDefaults = merge({}, base, defaults, config) as ISettingsInternal;
+  const withDefaults = merge({}, base, defaults, config) as ISettings;
 
   // ensure a valid logger.
   // First thing to validate, since other validators might use the logger.
@@ -103,17 +111,18 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.log = log;
 
   // Scheduler periods
-  withDefaults.scheduler.featuresRefreshRate = fromSecondsToMillis(withDefaults.scheduler.featuresRefreshRate);
-  withDefaults.scheduler.segmentsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.segmentsRefreshRate);
-  withDefaults.scheduler.metricsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.metricsRefreshRate);
-  withDefaults.scheduler.impressionsRefreshRate = fromSecondsToMillis(withDefaults.scheduler.impressionsRefreshRate);
-  withDefaults.scheduler.offlineRefreshRate = fromSecondsToMillis(withDefaults.scheduler.offlineRefreshRate);
-  withDefaults.scheduler.eventsPushRate = fromSecondsToMillis(withDefaults.scheduler.eventsPushRate);
+  const { scheduler, startup } = withDefaults;
+  scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
+  scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
+  scheduler.metricsRefreshRate = fromSecondsToMillis(scheduler.metricsRefreshRate);
+  scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
+  scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
+  scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
 
   // Startup periods
-  withDefaults.startup.requestTimeoutBeforeReady = fromSecondsToMillis(withDefaults.startup.requestTimeoutBeforeReady);
-  withDefaults.startup.readyTimeout = fromSecondsToMillis(withDefaults.startup.readyTimeout);
-  withDefaults.startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
+  startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
+  startup.readyTimeout = fromSecondsToMillis(startup.readyTimeout);
+  startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
@@ -130,19 +139,21 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // Current ip/hostname information
   // @ts-ignore, modify readonly prop
-  withDefaults.runtime = runtime(withDefaults);
+  if (runtime) withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
+  if (localhost) withDefaults.sync.localhostMode = localhost(withDefaults);
+
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
-    withDefaults.scheduler.pushRetryBackoffBase = fromSecondsToMillis(withDefaults.scheduler.pushRetryBackoffBase);
+    scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
   // validate the `splitFilters` settings and parse splits query

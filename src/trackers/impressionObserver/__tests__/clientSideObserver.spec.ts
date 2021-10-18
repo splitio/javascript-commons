@@ -72,9 +72,6 @@ test('Hasher 32 / Impression Hasher Does Not Crash', () => {
   // @ts-ignore
   imp1.treatment = null;
   expect(hashImpression32(imp1)).not.toBe(null);
-
-  // @ts-ignore
-  expect(hashImpression32(null)).toBe(null);
 });
 
 test('Client-side (Browser JS) / Impression Observer Basic Functionality', () => {

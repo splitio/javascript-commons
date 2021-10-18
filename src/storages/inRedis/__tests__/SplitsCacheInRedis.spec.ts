@@ -2,83 +2,157 @@ import Redis from 'ioredis';
 import SplitsCacheInRedis from '../SplitsCacheInRedis';
 import KeyBuilderSS from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
 
-test('SPLITS CACHE / Redis', async () => {
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS();
-  const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+const prefix = 'splits_cache_ut';
 
-  await cache.clear();
+describe('SPLITS CACHE REDIS', () => {
 
-  await cache.addSplits([
-    ['lol1', 'something'],
-    ['lol2', 'something else']
-  ]);
+  test('add/remove/get splits & set/get change number', async () => {
+    const connection = new Redis();
+    // @ts-expect-error
+    const keysBuilder = new KeyBuilderSS(prefix);
+    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-  let values = await cache.getAll();
+    await cache.clear();
 
-  expect(values.indexOf('something') !== -1).toBe(true);
-  expect(values.indexOf('something else') !== -1).toBe(true);
+    await cache.addSplits([
+      ['lol1', splitWithUserTT],
+      ['lol2', splitWithAccountTT]
+    ]);
 
-  let splitNames = await cache.getSplitNames();
+    let values = await cache.getAll();
 
-  expect(splitNames.indexOf('lol1') !== -1).toBe(true);
-  expect(splitNames.indexOf('lol2') !== -1).toBe(true);
+    expect(values.indexOf(splitWithUserTT) !== -1).toBe(true);
+    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
 
-  await cache.removeSplit('lol1');
+    let splitNames = await cache.getSplitNames();
 
-  values = await cache.getAll();
+    expect(splitNames.indexOf('lol1') !== -1).toBe(true);
+    expect(splitNames.indexOf('lol2') !== -1).toBe(true);
 
-  expect(values.indexOf('something') === -1).toBe(true);
-  expect(values.indexOf('something else') !== -1).toBe(true);
+    await cache.removeSplit('lol1');
 
-  expect(await cache.getSplit('lol1') == null).toBe(true);
-  expect(await cache.getSplit('lol2') === 'something else').toBe(true);
+    values = await cache.getAll();
 
-  await cache.setChangeNumber(123);
-  expect(await cache.getChangeNumber() === 123).toBe(true);
+    expect(values.indexOf(splitWithUserTT) === -1).toBe(true);
+    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
 
-  splitNames = await cache.getSplitNames();
+    expect(await cache.getSplit('lol1') == null).toBe(true);
+    expect(await cache.getSplit('lol2') === splitWithAccountTT).toBe(true);
 
-  expect(splitNames.indexOf('lol1') === -1).toBe(true);
-  expect(splitNames.indexOf('lol2') !== -1).toBe(true);
+    await cache.setChangeNumber(123);
+    expect(await cache.getChangeNumber() === 123).toBe(true);
 
-  const splits = await cache.getSplits(['lol1', 'lol2']);
-  expect(splits['lol1'] === null).toBe(true);
-  expect(splits['lol2'] === 'something else').toBe(true);
+    splitNames = await cache.getSplitNames();
 
-  await connection.quit();
-});
+    expect(splitNames.indexOf('lol1') === -1).toBe(true);
+    expect(splitNames.indexOf('lol2') !== -1).toBe(true);
 
-test('SPLITS CACHE / Redis / trafficTypeExists tests', async () => {
-  const prefix = 'splits_cache_ut';
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS(prefix);
-  const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+    const splits = await cache.getSplits(['lol1', 'lol2']);
+    expect(splits['lol1'] === null).toBe(true);
+    expect(splits['lol2'] === splitWithAccountTT).toBe(true);
 
-  const testTTName = 'tt_test_name';
-  const testTTNameNoCount = 'tt_test_name_2';
-  const testTTNameInvalid = 'tt_test_name_3';
-  const ttKey = keys.buildTrafficTypeKey(testTTName);
-  const ttKeyNoCount = keys.buildTrafficTypeKey(testTTNameNoCount);
-  const ttKeyInvalid = keys.buildTrafficTypeKey(testTTNameInvalid);
+    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
+    await connection.del(keysBuilder.buildSplitKey('lol2'));
+    await connection.del(keysBuilder.buildSplitsTillKey());
+    await connection.quit();
+  });
 
-  await cache.clear();
+  test('trafficTypeExists', async () => {
+    const prefix = 'splits_cache_ut';
+    const connection = new Redis();
+    // @ts-expect-error
+    const keysBuilder = new KeyBuilderSS(prefix);
+    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-  await connection.set(ttKey, 3);
-  await connection.set(ttKeyNoCount, 0);
-  await connection.set(ttKeyInvalid, 'NaN');
+    await cache.addSplits([
+      ['split1', splitWithUserTT],
+      ['split2', splitWithAccountTT],
+      ['split3', splitWithUserTT],
+      ['malformed', '{}']
+    ]);
+    await cache.addSplit('split4', splitWithUserTT);
+    await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
 
-  expect(await cache.trafficTypeExists(testTTName)).toBe(true);
-  expect(await cache.trafficTypeExists(testTTNameNoCount)).toBe(false);
-  expect(await cache.trafficTypeExists(ttKeyInvalid)).toBe(false);
-  expect(await cache.trafficTypeExists('not_existent_tt')).toBe(false);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('not_existent_tt')).toBe(false);
 
-  await connection.del(ttKey);
-  await connection.del(ttKeyNoCount);
-  await connection.del(ttKeyInvalid);
+    await cache.removeSplit('split4');
 
-  await connection.quit();
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
+
+    expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
+
+    await cache.removeSplits(['split3', 'split2']); // it'll invoke a loop of removeSplit
+
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(false);
+
+    expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe(null); // TT entry should be removed in the wrapper
+
+    await cache.removeSplit('split1');
+
+    expect(await cache.trafficTypeExists('user_tt')).toBe(false);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(false);
+
+    await cache.addSplit('split1', splitWithUserTT);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(true);
+
+    await cache.addSplit('split1', splitWithAccountTT);
+    expect(await cache.trafficTypeExists('account_tt')).toBe(true);
+    expect(await cache.trafficTypeExists('user_tt')).toBe(false);
+
+    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
+    await connection.del(keysBuilder.buildSplitKey('malformed'));
+    await connection.del(keysBuilder.buildSplitKey('split1'));
+    await connection.quit();
+
+  });
+
+  test('killLocally', async () => {
+    const connection = new Redis();
+    // @ts-expect-error
+    const keys = new KeyBuilderSS(prefix);
+    const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+
+    await cache.addSplit('lol1', splitWithUserTT);
+    await cache.addSplit('lol2', splitWithAccountTT);
+    const initialChangeNumber = await cache.getChangeNumber();
+
+    // kill an non-existent split
+    let updated = await cache.killLocally('nonexistent_split', 'other_treatment', 101);
+    const nonexistentSplit = await cache.getSplit('nonexistent_split');
+
+    expect(updated).toBe(false); // killLocally resolves without update if split doesn't exist
+    expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
+
+    // kill an existent split
+    updated = await cache.killLocally('lol1', 'some_treatment', 100);
+    let lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+
+    expect(updated).toBe(true); // killLocally resolves with update if split is changed
+    expect(lol1Split.killed).toBe(true); // existing split must be killed
+    expect(lol1Split.defaultTreatment).toBe('some_treatment'); // existing split must have new default treatment
+    expect(lol1Split.changeNumber).toBe(100); // existing split must have the given change number
+    expect(await cache.getChangeNumber()).toBe(initialChangeNumber); // cache changeNumber is not changed
+
+    // not update if changeNumber is old
+    updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
+    lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+
+    expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
+    expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
+
+    // Delete splits and TT keys
+    await cache.removeSplits(['lol1', 'lol2']);
+    await connection.del(keys.buildTrafficTypeKey('account_tt'));
+    await connection.del(keys.buildTrafficTypeKey('user_tt'));
+    expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
+
+    await connection.quit();
+  });
+
 });

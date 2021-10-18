@@ -72,9 +72,6 @@ test('Hasher 128 / Impression Hasher Does Not Crash', () => {
   // @ts-ignore
   imp1.treatment = null;
   expect(hashImpression128(imp1)).not.toBe(null);
-
-  // @ts-ignore
-  expect(hashImpression128(null)).toBe(null);
 });
 
 test('Server-side (Node JS) / Impression Observer Basic Functionality', () => {

@@ -10,26 +10,13 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
   abstract addSplit(name: string, split: string): boolean;
 
   addSplits(entries: [string, string][]): boolean[] {
-    const results: boolean[] = [];
-
-    entries.forEach(keyValuePair => {
-      results.push(this.addSplit(keyValuePair[0], keyValuePair[1]));
-    });
-
-    return results;
+    return entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1]));
   }
 
-  abstract removeSplit(name: string): number
+  abstract removeSplit(name: string): boolean
 
-  removeSplits(names: string[]): number {
-    let len = names.length;
-    let counter = 0;
-
-    for (let i = 0; i < len; i++) {
-      counter += this.removeSplit(names[i]);
-    }
-
-    return counter;
+  removeSplits(names: string[]): boolean[] {
+    return names.map(name => this.removeSplit(name));
   }
 
   abstract getSplit(name: string): string | null
@@ -63,7 +50,7 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
    * It is used as condition to emit SDK_SPLITS_CACHE_LOADED, and then SDK_READY_FROM_CACHE.
    */
   checkCache(): boolean {
-    return this.getChangeNumber() > -1;
+    return false;
   }
 
   /**

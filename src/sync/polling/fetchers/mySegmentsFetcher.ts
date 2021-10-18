@@ -1,5 +1,4 @@
-import { SplitError } from '../../../utils/lang/errors';
-import { IFetchMySegments } from '../../../services/types';
+import { IFetchMySegments, IResponse } from '../../../services/types';
 import { IMySegmentsResponseItem } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
 
@@ -12,7 +11,7 @@ export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegmen
   return function mySegmentsFetcher(
     noCache?: boolean,
     // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
-    decorator?: (promise: Promise<Response>) => Promise<Response>
+    decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ): Promise<string[]> {
 
     let mySegmentsPromise = fetchMySegments(userMatchingKey, noCache);
@@ -20,8 +19,7 @@ export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegmen
 
     // Extract segment names
     return mySegmentsPromise
-      // JSON parsing errors are handled as SplitErrors, to distinguish from user callback errors
-      .then(resp => resp.json().catch(error => { throw new SplitError(error.message); }))
+      .then(resp => resp.json())
       .then(json => json.mySegments.map((segment: IMySegmentsResponseItem) => segment.name));
   };
 

@@ -37,16 +37,19 @@ export default function promiseWrapper<T>(customPromise: Promise<T>, defaultOnRe
 
     const originalThen = newPromise.then;
 
-    newPromise.then = function (onfulfilled, onrejected) {
-      const result: Promise<any> = originalThen.call(newPromise, onfulfilled, onrejected);
-      if (typeof onfulfilled === 'function') hasOnFulfilled = true;
-      if (typeof onrejected === 'function') {
-        hasOnRejected = true;
-        return result;
-      } else {
-        return chain(result);
+    // Using `defineProperty` in case Promise.prototype.then property is not writable
+    Object.defineProperty(newPromise, 'then', {
+      value: function (onfulfilled: any, onrejected: any) {
+        const result: Promise<any> = originalThen.call(newPromise, onfulfilled, onrejected);
+        if (typeof onfulfilled === 'function') hasOnFulfilled = true;
+        if (typeof onrejected === 'function') {
+          hasOnRejected = true;
+          return result;
+        } else {
+          return chain(result);
+        }
       }
-    };
+    });
 
     return newPromise;
   }

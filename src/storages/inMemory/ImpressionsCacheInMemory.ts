@@ -10,7 +10,6 @@ export default class ImpressionsCacheInMemory implements IImpressionsCacheSync {
    */
   track(data: ImpressionDTO[]) {
     this.queue.push(...data);
-    return true;
   }
 
   /**

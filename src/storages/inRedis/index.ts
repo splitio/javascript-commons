@@ -1,6 +1,6 @@
 import RedisAdapter from './RedisAdapter';
-import { IStorageAsync, IStorageFactoryParams } from '../types';
-import { IMetadata, IRedisMetadata } from '../../dtos/types';
+import { IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
+import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderSS from '../KeyBuilderSS';
 import SplitsCacheInRedis from './SplitsCacheInRedis';
 import SegmentsCacheInRedis from './SegmentsCacheInRedis';
@@ -8,50 +8,36 @@ import ImpressionsCacheInRedis from './ImpressionsCacheInRedis';
 import EventsCacheInRedis from './EventsCacheInRedis';
 import LatenciesCacheInRedis from './LatenciesCacheInRedis';
 import CountsCacheInRedis from './CountsCacheInRedis';
-import { UNKNOWN } from '../../utils/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
+import { STORAGE_REDIS } from '../../utils/constants';
 
 export interface InRedisStorageOptions {
   prefix?: string
   options?: Record<string, any>
 }
 
-// exported for testing purposes
-export function metadataBuilder(metadata: IMetadata): IRedisMetadata {
-  return {
-    s: metadata.version,
-    i: metadata.ip || UNKNOWN,
-    n: metadata.hostname || UNKNOWN,
-  };
-}
-
 /**
  * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.
  * @see {@link https://www.npmjs.com/package/ioredis}
  */
-export function InRedisStorage(options: InRedisStorageOptions = {}) {
+export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
 
-  const prefix = options.prefix ? options.prefix + '.SPLITIO' : 'SPLITIO';
+  const prefix = validatePrefix(options.prefix);
 
-  return function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
 
-    const log = params.log;
-    const metadata = metadataBuilder(params.metadata);
-    const keys = new KeyBuilderSS(prefix, { version: metadata.s, ip: metadata.i, hostname: metadata.n });
+    const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
 
-    // subscription to Redis connect event in order to emit SDK_READY event
-    // @TODO pass a callback to simplify custom storages
+    // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
-      params.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-      params.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      if (onReadyCb) onReadyCb();
     });
 
     return {
       splits: new SplitsCacheInRedis(log, keys, redisClient),
-      segments: new SegmentsCacheInRedis(keys, redisClient),
-      impressions: new ImpressionsCacheInRedis(keys, redisClient, metadata),
-      events: new EventsCacheInRedis(log, keys, redisClient, metadata),
+      segments: new SegmentsCacheInRedis(log, keys, redisClient),
+      impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
+      events: new EventsCacheInRedis(log, keys.buildEventsKey(), redisClient, metadata),
       latencies: new LatenciesCacheInRedis(keys, redisClient),
       counts: new CountsCacheInRedis(keys, redisClient),
 
@@ -62,5 +48,8 @@ export function InRedisStorage(options: InRedisStorageOptions = {}) {
         // @TODO check that caches works as expected when redisClient is disconnected
       }
     };
-  };
+  }
+
+  InRedisStorageFactory.type = STORAGE_REDIS;
+  return InRedisStorageFactory;
 }

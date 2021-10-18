@@ -1,6 +1,7 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { LocalhostFromObject } from '../../../sync/offline/LocalhostFromObject';
 
 export const settingsWithKey = {
   core: {
@@ -38,7 +39,7 @@ export const settingsWithKeyObject = {
 
 export const fullSettings: ISettings = {
   core: {
-    authorizationKey: 'asd',
+    authorizationKey: 'aaaabbbbcccc1234',
     key: 'some_key',
     labelsEnabled: false,
     IPAddressesEnabled: false
@@ -61,13 +62,19 @@ export const fullSettings: ISettings = {
   },
   features: 'path/to/file',
   storage: InMemoryStorageCSFactory,
-  integrations: [()=>{}], //  A no-op integration
+  integrations: [() => { }], //  A no-op integration
   mode: 'standalone',
   debug: false,
   streamingEnabled: false,
   sync: {
     splitFilters: [],
-    impressionsMode: 'OPTIMIZED'
+    impressionsMode: 'OPTIMIZED',
+    localhostMode: LocalhostFromObject(),
+    __splitFiltersValidation: {
+      validFilters: [],
+      queryString: null,
+      groupedFilters: { byName: [], byPrefix: [] }
+    }
   },
   version: 'jest',
   runtime: {
@@ -96,6 +103,10 @@ export const settingsSplitApi = {
   },
   sync: {
     impressionsMode: 'DEBUG'
+  },
+  runtime: {
+    ip: false,
+    hostname: false
   },
   log: loggerMock
 };

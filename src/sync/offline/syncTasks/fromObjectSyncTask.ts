@@ -7,7 +7,7 @@ import syncTaskFactory from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
 /**
@@ -20,7 +20,8 @@ export function fromObjectUpdaterFactory(
   settings: ISettings,
 ): () => Promise<boolean> {
 
-  const log = settings.log;
+  const log = settings.log, splitsCache = storage.splits;
+  let startingUp = true;
 
   return function objectUpdater() {
     const splits: [string, string][] = [];
@@ -53,11 +54,20 @@ export function fromObjectUpdaterFactory(
       });
 
       return Promise.all([
-        storage.splits.clear(),
-        storage.splits.addSplits(splits)
+        splitsCache.clear(), // required to sync removed splits from mock
+        splitsCache.addSplits(splits)
       ]).then(() => {
         readiness.splits.emit(SDK_SPLITS_ARRIVED);
-        readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+        if (startingUp) {
+          startingUp = false;
+          Promise.resolve(splitsCache.checkCache()).then(cacheReady => {
+            // Emits SDK_READY_FROM_CACHE
+            if (cacheReady) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+            // Emits SDK_READY
+            readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+          });
+        }
         return true;
       });
     } else {

@@ -1,5 +1,4 @@
-import { SplitError } from '../../../utils/lang/errors';
-import { IFetchSplitChanges } from '../../../services/types';
+import { IFetchSplitChanges, IResponse } from '../../../services/types';
 import { ISplitChangesFetcher } from './types';
 
 /**
@@ -12,15 +11,13 @@ export default function splitChangesFetcherFactory(fetchSplitChanges: IFetchSpli
     since: number,
     noCache?: boolean,
     // Optional decorator for `fetchSplitChanges` promise, such as timeout or time tracker
-    decorator?: (promise: Promise<Response>) => Promise<Response>
+    decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ) {
 
     let splitsPromise = fetchSplitChanges(since, noCache);
     if (decorator) splitsPromise = decorator(splitsPromise);
 
-    return splitsPromise
-      // JSON parsing errors are handled as SplitErrors, to distinguish from user callback errors
-      .then(resp => resp.json().catch(error => { throw new SplitError(error.message); }));
+    return splitsPromise.then(resp => resp.json());
   };
 
 }

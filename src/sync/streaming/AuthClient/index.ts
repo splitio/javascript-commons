@@ -19,7 +19,6 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
   return function authenticate(userKeys?: string[]): Promise<IAuthToken> {
     let authPromise = fetchAuth(userKeys); // errors handled by fetchAuth service
     return authPromise
-      // no need to handle json parsing errors as SplitError, since no user callbacks are executed after this promise is resolved
       .then(resp => resp.json())
       .then(json => {
         if (json.token) { // empty token when `"pushEnabled": false`

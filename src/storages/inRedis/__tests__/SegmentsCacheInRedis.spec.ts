@@ -1,54 +1,59 @@
 import Redis from 'ioredis';
 import SegmentsCacheInRedis from '../SegmentsCacheInRedis';
 import KeyBuilderSS from '../../KeyBuilderSS';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('SEGMENTS CACHE IN Redis / suite', async () => {
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS();
-  const cache = new SegmentsCacheInRedis(keys, connection);
+// @ts-expect-error. Doesn't require metadata
+const keys = new KeyBuilderSS();
 
-  await cache.clear();
+describe('SEGMENTS CACHE IN REDIS', () => {
 
-  await cache.addToSegment('mocked-segment', ['a', 'b', 'c']);
+  test('isInSegment, set/getChangeNumber, add/removeFromSegment', async () => {
+    const connection = new Redis();
+    const cache = new SegmentsCacheInRedis(loggerMock, keys, connection);
 
-  await cache.setChangeNumber('mocked-segment', 1);
+    await cache.clear();
 
-  await cache.removeFromSegment('mocked-segment', ['d']);
+    await cache.addToSegment('mocked-segment', ['a', 'b', 'c']);
 
-  expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    await cache.setChangeNumber('mocked-segment', 1);
 
-  await cache.addToSegment('mocked-segment', ['d', 'e']);
+    await cache.removeFromSegment('mocked-segment', ['d']);
 
-  await cache.removeFromSegment('mocked-segment', ['a', 'c']);
+    expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-  expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    expect(await cache.getChangeNumber('inexistent-segment')).toBe(-1); // -1 if the segment doesn't exist
 
-  expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
-  expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);
-  expect(await cache.isInSegment('mocked-segment', 'c')).toBe(false);
-  expect(await cache.isInSegment('mocked-segment', 'd')).toBe(true);
-  expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
+    await cache.addToSegment('mocked-segment', ['d', 'e']);
 
-  await connection.quit();
-});
+    await cache.removeFromSegment('mocked-segment', ['a', 'c']);
 
-test('SEGMENTS CACHE IN Redis / register segments', async () => {
-  const connection = new Redis();
-  // @ts-expect-error
-  const keys = new KeyBuilderSS();
+    expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-  const cache = new SegmentsCacheInRedis(keys, connection);
+    expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
+    expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);
+    expect(await cache.isInSegment('mocked-segment', 'c')).toBe(false);
+    expect(await cache.isInSegment('mocked-segment', 'd')).toBe(true);
+    expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
 
-  await cache.clear();
+    await connection.quit();
+  });
 
-  await cache.registerSegment('s1');
-  await cache.registerSegment('s2');
-  await cache.registerSegments(['s2', 's3', 's4']);
+  test('registerSegment / getRegisteredSegments', async () => {
+    const connection = new Redis();
+    const cache = new SegmentsCacheInRedis(loggerMock, keys, connection);
 
-  const segments = await cache.getRegisteredSegments();
+    await cache.clear();
 
-  ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
+    await cache.registerSegments(['s1']);
+    await cache.registerSegments(['s2']);
+    await cache.registerSegments(['s2', 's3', 's4']);
 
-  await connection.quit();
+    const segments = await cache.getRegisteredSegments();
+
+    ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
+
+    await connection.quit();
+  });
+
 });

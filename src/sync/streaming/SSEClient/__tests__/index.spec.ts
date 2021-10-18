@@ -1,18 +1,28 @@
 // @ts-nocheck
 import EventSourceMock from '../../../../__tests__/testUtils/eventSourceMock';
-import { authDataSample, channelsQueryParamSample } from '../../AuthClient/__tests__/dataMocks';
+import { authDataSample, channelsQueryParamSample } from '../../__tests__/dataMocks';
+import { fullSettings as settings } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
+import { url } from '../../../../utils/settingsValidation/url';
 
 import SSClient from '../index';
 
-const URL = 'someurl';
+const EXPECTED_URL = url(settings, '/sse') +
+  '?channels=' + channelsQueryParamSample +
+  '&accessToken=' + authDataSample.token +
+  '&v=1.1&heartbeats=true';
+
+const EXPECTED_HEADERS = {
+  SplitSDKClientKey: '1234',
+  SplitSDKVersion: settings.version
+};
 
 test('SSClient / instance creation throws error if EventSource is not provided', () => {
-  expect(() => { new SSClient(URL); }).toThrow(Error);
-  expect(() => { new SSClient(URL, () => undefined); }).toThrow(Error);
+  expect(() => { new SSClient(settings); }).toThrow(Error);
+  expect(() => { new SSClient(settings, false, () => undefined); }).toThrow(Error);
 });
 
 test('SSClient / instance creation success if EventSource is provided', () => {
-  const instance = new SSClient(URL, () => EventSourceMock);
+  const instance = new SSClient(settings, false, () => EventSourceMock);
   expect(instance.eventSource).toBe(EventSourceMock);
 });
 
@@ -25,11 +35,8 @@ test('SSClient / setEventHandler, open and close methods', () => {
   };
 
   // instance SSEClient
-  const instance = new SSClient(URL, () => EventSourceMock);
+  const instance = new SSClient(settings, false, () => EventSourceMock);
   instance.setEventHandler(handler);
-
-  // error on first open without authToken
-  expect(instance.reopen).toThrow(Error); // throw error if reopen is invoked without a previous open call
 
   // open connection
   instance.open(authDataSample);
@@ -63,12 +70,6 @@ test('SSClient / setEventHandler, open and close methods', () => {
   instance.connection.emitOpen();
   expect(handler.handleOpen).toBeCalledTimes(1); // handleOpen called when connection is open
 
-  // reopen the connection
-  handler.handleOpen.mockClear();
-  instance.reopen();
-  instance.connection.emitOpen();
-  expect(handler.handleOpen).toBeCalledTimes(1); // handleOpen called if connection is reopen
-
   // remove event handler before opening a new connection
   handler.handleOpen.mockClear();
   instance.setEventHandler(undefined);
@@ -78,16 +79,44 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
 });
 
-test('SSClient / open method: URL', () => {
+test('SSClient / open method: URL with metadata query params', () => {
 
-  const instance = new SSClient(URL, () => EventSourceMock);
+  const instance = new SSClient(settings, false, () => EventSourceMock);
   instance.open(authDataSample);
 
-  const EXPECTED_URL = URL + '/sse' +
-    '?channels=' + channelsQueryParamSample +
-    '&accessToken=' + authDataSample.token +
-    '&v=1.1&heartbeats=true';
+  const EXPECTED_BROWSER_URL = EXPECTED_URL + `&SplitSDKVersion=${settings.version}&SplitSDKClientKey=${EXPECTED_HEADERS.SplitSDKClientKey}`;
+
+  expect(instance.connection.url).toBe(EXPECTED_BROWSER_URL); // URL is properly set for streaming connection
+  expect(instance.connection.__eventSourceInitDict).toBe(undefined); // No headers are passed for streaming connection
+});
+
+test('SSClient / open method: URL and metadata headers with IP and Hostname', () => {
+
+  const settingsWithRuntime = {
+    ...settings,
+    runtime: {
+      ip: 'some ip',
+      hostname: 'some hostname'
+    }
+  };
+  const instance = new SSClient(settingsWithRuntime, true, () => EventSourceMock);
+  instance.open(authDataSample);
 
   expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
+  expect(instance.connection.__eventSourceInitDict).toEqual({
+    headers: {
+      ...EXPECTED_HEADERS,
+      SplitSDKMachineIP: settingsWithRuntime.runtime.ip,
+      SplitSDKMachineName: settingsWithRuntime.runtime.hostname
+    }
+  }); // Headers are properly set for streaming connection
+});
 
+test('SSClient / open method: URL and metadata headers without IP and Hostname', () => {
+
+  const instance = new SSClient(settings, true, () => EventSourceMock);
+  instance.open(authDataSample);
+
+  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
+  expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS }); // Headers are properly set for streaming connection
 });

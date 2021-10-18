@@ -1,6 +1,7 @@
 import SplitsCacheInLocal from '../SplitsCacheInLocal';
 import KeyBuilderCS from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments } from '../../__tests__/testUtils';
 
 test('SPLIT CACHE / LocalStorage', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
@@ -73,12 +74,12 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([ // loop of addSplit
-    ['split1', '{ "trafficTypeName": "user_tt" }'],
-    ['split2', '{ "trafficTypeName": "account_tt" }'],
-    ['split3', '{ "trafficTypeName": "user_tt" }'],
+    ['split1', splitWithUserTT],
+    ['split2', splitWithAccountTT],
+    ['split3', splitWithUserTT],
     ['malformed', '{}']
   ]);
-  cache.addSplit('split4', '{ "trafficTypeName": "user_tt" }');
+  cache.addSplit('split4', splitWithUserTT);
 
   expect(cache.trafficTypeExists('user_tt')).toBe(true);
   expect(cache.trafficTypeExists('account_tt')).toBe(true);
@@ -99,10 +100,10 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
   expect(cache.trafficTypeExists('user_tt')).toBe(false);
   expect(cache.trafficTypeExists('account_tt')).toBe(false);
 
-  cache.addSplit('split1', '{ "trafficTypeName": "user_tt" }');
+  cache.addSplit('split1', splitWithUserTT);
   expect(cache.trafficTypeExists('user_tt')).toBe(true);
 
-  cache.addSplit('split1', '{ "trafficTypeName": "account_tt" }');
+  cache.addSplit('split1', splitWithAccountTT);
   expect(cache.trafficTypeExists('account_tt')).toBe(true);
   expect(cache.trafficTypeExists('user_tt')).toBe(false);
 
@@ -138,4 +139,26 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
   expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
   expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
+});
+
+test('SPLIT CACHE / LocalStorage / usesSegments', () => {
+  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+
+  expect(cache.usesSegments()).toBe(true); // true initially, until data is synchronized
+  cache.setChangeNumber(1); // to indicate that data has been synced.
+
+  cache.addSplits([['split1', splitWithUserTT], ['split2', splitWithAccountTT],]);
+  expect(cache.usesSegments()).toBe(false); // 0 splits using segments
+
+  cache.addSplit('split3', splitWithAccountTTAndUsesSegments);
+  expect(cache.usesSegments()).toBe(true); // 1 split using segments
+
+  cache.addSplit('split4', splitWithAccountTTAndUsesSegments);
+  expect(cache.usesSegments()).toBe(true); // 2 splits using segments
+
+  cache.removeSplit('split3');
+  expect(cache.usesSegments()).toBe(true); // 1 split using segments
+
+  cache.removeSplit('split4');
+  expect(cache.usesSegments()).toBe(false); // 0 splits using segments
 });

@@ -3,7 +3,7 @@ import KeyBuilderSS from '../../KeyBuilderSS';
 import CountsCacheInRedis from '../CountsCacheInRedis';
 
 const prefix = 'counts_cache_ut';
-const metadata = { version: 'v', ip: 'i', hostname: 'n' };
+const metadata = { s: 'version', i: 'ip', n: 'hostname' };
 
 test('COUNTS CACHE IN REDIS / cover basic behavior', async () => {
   const connection = new Redis({});

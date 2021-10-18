@@ -1,9 +1,9 @@
 // Splits events:
-export const SDK_SPLITS_ARRIVED = 'SDK_SPLITS_ARRIVED';
-export const SDK_SPLITS_CACHE_LOADED = 'SDK_SPLITS_CACHE_LOADED';
+export const SDK_SPLITS_ARRIVED = 'state::splits-arrived';
+export const SDK_SPLITS_CACHE_LOADED = 'state::splits-cache-loaded';
 
 // Segments events:
-export const SDK_SEGMENTS_ARRIVED = 'SDK_SEGMENTS_ARRIVED';
+export const SDK_SEGMENTS_ARRIVED = 'state::segments-arrived';
 
 // Readiness events:
 export const SDK_READY_TIMED_OUT = 'init::timeout';

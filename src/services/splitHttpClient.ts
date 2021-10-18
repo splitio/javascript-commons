@@ -1,22 +1,20 @@
-import { IFetch, IRequestOptions, ISplitHttpClient } from './types';
-import { SplitError, SplitNetworkError } from '../utils/lang/errors';
+import { IFetch, IRequestOptions, IResponse, ISplitHttpClient } from './types';
 import objectAssign from 'object-assign';
-import { IMetadata } from '../dtos/types';
-import { ILogger } from '../logger/types';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
+import { ISettings } from '../types';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
 /**
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
  *
- * @param apikey api key to set Authorization header
- * @param metadata data to set additional headers
+ * @param settings SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
  * @param options global request options
  * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
  */
-export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: IMetadata, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'version' | 'runtime' | 'core'>, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
 
+  const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
   const options = getOptions && getOptions();
   const fetch = getFetch && getFetch();
 
@@ -26,14 +24,14 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
   const headers: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apikey}`,
-    'SplitSDKVersion': metadata.version
+    'Authorization': `Bearer ${authorizationKey}`,
+    'SplitSDKVersion': version
   };
 
-  if (metadata.ip) headers['SplitSDKMachineIP'] = metadata.ip;
-  if (metadata.hostname) headers['SplitSDKMachineName'] = metadata.hostname;
+  if (ip) headers['SplitSDKMachineIP'] = ip;
+  if (hostname) headers['SplitSDKMachineName'] = hostname;
 
-  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<Response> {
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
@@ -45,8 +43,8 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
     return fetch ? fetch(url, request)
       // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#Checking_that_the_fetch_was_successful
       .then(response => {
-        if (!response.ok) { // eslint-disable-next-line no-throw-literal
-          throw { response };
+        if (!response.ok) {
+          return response.text().then(message => Promise.reject({ response, message }));
         }
         return response;
       })
@@ -58,19 +56,22 @@ export function splitHttpClientFactory(log: ILogger, apikey: string, metadata: I
           switch (resp.status) {
             case 404: msg = 'Invalid API key or resource not found.';
               break;
-            default: msg = resp.statusText;
+            // Don't use resp.statusText since reason phrase is removed in HTTP/2
+            default: msg = error.message;
               break;
           }
         } else { // Something else, either an error making the request or a Network error.
-          msg = error.message;
+          msg = error.message || 'Network Error';
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
           log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
+        const networkError: Error & { statusCode?: number } = new Error(msg);
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
-        throw new SplitNetworkError(msg, resp && resp.status);
-      }) : Promise.reject(new SplitError(messageNoFetch));
+        networkError.statusCode = resp && resp.status;
+        throw networkError;
+      }) : Promise.reject(new Error(messageNoFetch));
   };
 }

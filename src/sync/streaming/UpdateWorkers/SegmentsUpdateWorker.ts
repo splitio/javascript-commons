@@ -1,6 +1,7 @@
 import { ISegmentsCacheSync } from '../../../storages/types';
 import Backoff from '../../../utils/Backoff';
 import { ISegmentsSyncTask } from '../../polling/types';
+import { ISegmentUpdateData } from '../SSEHandler/types';
 import { IUpdateWorker } from './types';
 
 /**
@@ -66,7 +67,7 @@ export default class SegmentsUpdateWorker implements IUpdateWorker {
    * @param {number} changeNumber change number of the SEGMENT_UPDATE notification
    * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
    */
-  put(changeNumber: number, segmentName: string) {
+  put({ changeNumber, segmentName }: ISegmentUpdateData) {
     const currentChangeNumber = this.segmentsCache.getChangeNumber(segmentName);
 
     if (changeNumber <= currentChangeNumber || changeNumber <= this.maxChangeNumbers[segmentName]) return;
