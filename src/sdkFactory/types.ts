@@ -1,4 +1,3 @@
-import { MaybeThenable } from '../dtos/types';
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
@@ -9,10 +8,10 @@ import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStor
 import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
-import { ISettingsInternal } from '../utils/settingsValidation/types';
 
 /**
- * Environment related dependencies
+ * Environment related dependencies.
+ * These getters are called a fixed number of times per factory instantiation.
  */
 export interface IPlatform {
   getOptions?: () => object
@@ -27,7 +26,7 @@ export interface IPlatform {
 export interface ISdkFactoryParams {
 
   // The settings must be already validated
-  settings: ISettingsInternal,
+  settings: ISettings,
 
   // Platform dependencies
   platform: IPlatform,
@@ -41,7 +40,7 @@ export interface ISdkFactoryParams {
   splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
 
   // SyncManager factory.
-  // It is not required when providing an asynchronous storage.
+  // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
   // It can create an offline or online sync manager, with or without streaming support.
   syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
 
@@ -56,9 +55,10 @@ export interface ISdkFactoryParams {
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
   sdkClientMethodFactory: (params: ISdkClientFactoryParams) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
-  // Signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
+  // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
+  // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
-    handler: (() => MaybeThenable<void>) | undefined, // Used by NodeSignalListener
+    syncManager: ISyncManager | undefined, // Used by NodeSignalListener to flush data, and by BrowserSignalListener to close streaming connection.
     settings: ISettings, // Used by BrowserSignalListener
     storage: IStorageSync | IStorageAsync, // Used by BrowserSignalListener
     serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener

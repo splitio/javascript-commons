@@ -10,7 +10,7 @@ const logPrefix = 'split-to-ga: ';
 const noGaWarning = '`ga` command queue not found.';
 const noHit = 'No hit was sent.';
 
-export default class SplitToGa implements IIntegration {
+export class SplitToGa implements IIntegration {
 
   // A falsy object represents the default tracker
   static defaultTrackerNames = [''];

@@ -3,8 +3,6 @@ import { ISettings, SplitIO } from '../../../types';
 import { isObject, forOwn } from '../../../utils/lang';
 import parseCondition from './parseCondition';
 
-let previousMock: SplitIO.MockedFeaturesMap = { 'emptyMock': '1' };
-
 function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: string | SplitIO.TreatmentWithConfig) {
   if (typeof prev !== typeof curr) return true;
 
@@ -15,54 +13,60 @@ function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: s
   }
 }
 
-function mockUpdated(currentData: SplitIO.MockedFeaturesMap) {
-  const names = Object.keys(currentData);
+export function splitsParserFromSettingsFactory() {
 
-  // Different amount of items
-  if (names.length !== Object.keys(previousMock).length) {
-    previousMock = currentData;
-    return true;
+  let previousMock: SplitIO.MockedFeaturesMap = { 'emptyMock': '1' };
+
+  function mockUpdated(currentData: SplitIO.MockedFeaturesMap) {
+    const names = Object.keys(currentData);
+
+    // Different amount of items
+    if (names.length !== Object.keys(previousMock).length) {
+      previousMock = currentData;
+      return true;
+    }
+
+    return names.some(name => {
+      const newSplit = !previousMock[name];
+      const newTreatment = hasTreatmentChanged(previousMock[name], currentData[name]);
+      const changed = newSplit || newTreatment;
+
+      if (changed) previousMock = currentData;
+
+      return changed;
+    });
   }
 
-  return names.some(name => {
-    const newSplit = !previousMock[name];
-    const newTreatment = hasTreatmentChanged(previousMock[name], currentData[name]);
-    const changed = newSplit || newTreatment;
+  /**
+   *
+   * @param settings validated object with mocked features mapping.
+   */
+  return function splitsParserFromSettings(settings: ISettings): false | Record<string, ISplitPartial> {
+    const features = settings.features as SplitIO.MockedFeaturesMap || {};
 
-    if (changed) previousMock = currentData;
+    if (!mockUpdated(features)) return false;
 
-    return changed;
-  });
-}
+    const splitObjects: Record<string, ISplitPartial> = {};
 
-/**
- *
- * @param features validated object with mocked features mapping.
- */
-export default function splitsParserFromSettings(settings: ISettings): false | Record<string, ISplitPartial> {
-  const features = settings.features as SplitIO.MockedFeaturesMap || {};
+    forOwn(features, (data, splitName) => {
+      let treatment = data;
+      let config = null;
 
-  if (!mockUpdated(features)) return false;
+      if (isObject(data)) {
+        treatment = (data as SplitIO.TreatmentWithConfig).treatment;
+        config = (data as SplitIO.TreatmentWithConfig).config || config;
+      }
+      const configurations: Record<string, string> = {};
+      if (config !== null) configurations[treatment as string] = config;
 
-  const splitObjects: Record<string, ISplitPartial> = {};
+      splitObjects[splitName] = {
+        trafficTypeName: 'localhost',
+        conditions: [parseCondition({ treatment: treatment as string })],
+        configurations
+      };
+    });
 
-  forOwn(features, (data, splitName) => {
-    let treatment = data;
-    let config = null;
+    return splitObjects;
+  };
 
-    if (isObject(data)) {
-      treatment = (data as SplitIO.TreatmentWithConfig).treatment;
-      config = (data as SplitIO.TreatmentWithConfig).config || config;
-    }
-    const configurations: Record<string, string> = {};
-    if (config !== null) configurations[treatment as string] = config;
-
-    splitObjects[splitName] = {
-      trafficTypeName: 'localhost',
-      conditions: [parseCondition({ treatment: treatment as string })],
-      configurations
-    };
-  });
-
-  return splitObjects;
 }

@@ -6,7 +6,7 @@ import { ISplitApi } from '../../services/types';
 import { ISettings } from '../../types';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import thenable from '../../utils/promise/thenable';
-import { POLLING_START, POLLING_STOP, logPrefixSyncPolling } from '../../logger/constants';
+import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -30,8 +30,8 @@ export default function pollingManagerSSFactory(
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
-      log.debug(logPrefixSyncPolling + `Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
-      log.debug(logPrefixSyncPolling + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();
       if (thenable(startingUp)) {

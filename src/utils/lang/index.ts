@@ -89,7 +89,7 @@ export function get(obj: any, prop: any, val: any): any {
 /**
  * Parses an array into a map of different arrays, grouping by the specified prop value.
  */
-export function groupBy(source: any, prop: string): Record<string, any[]> {
+export function groupBy<T extends Record<string, any> >(source: T[], prop: string): Record<string, T[]> {
   const map: Record<string, any[]> = {};
 
   if (Array.isArray(source) && isString(prop)) {

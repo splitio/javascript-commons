@@ -15,7 +15,6 @@
 
   "globals": {
     // global TS types
-    "Response": "readonly",
     "EventSource": "readonly", // @TODO remove. Configure as a type declaration
     "MessageEvent": "readonly", // @TODO remove. Configure as a type declaration
     "Event": "readonly", // @TODO remove. Configure as a type declaration
@@ -66,7 +65,21 @@
         "plugin:compat/recommended"
       ],
       "rules": {
-        "no-restricted-syntax": ["error", "ForOfStatement", "ForInStatement", "ArrayPattern"],
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "ForOfStatement",
+            "message": "Avoid for-of syntax in favor of a smaller transpiled code"
+          },
+          {
+            "selector": "ForInStatement",
+            "message": "Don't use for-in syntax in libraries, because it iterates over members inherited from the prototype chain"
+          },
+          {
+            "selector": "TSEnumDeclaration[const=true]",
+            "message": "Don't declare const enum, because it is not supported by Babel used for building RN SDK"
+          }
+        ],
         "compat/compat": ["error", "defaults, not ie < 10, not node < 6"],
         "no-throw-literal": "error"
       },

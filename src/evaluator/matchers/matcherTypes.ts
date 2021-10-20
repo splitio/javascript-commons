@@ -19,7 +19,7 @@ export const matcherTypes: Record<string, number> = {
   MATCHES_STRING: 17
 };
 
-export const dataTypes = {
+export const matcherDataTypes = {
   BOOLEAN: 'BOOLEAN',
   STRING: 'STRING',
   NUMBER: 'NUMBER',
@@ -28,7 +28,7 @@ export const dataTypes = {
   NOT_SPECIFIED: 'NOT_SPECIFIED'
 };
 
-export function mapper(matcherType: string) {
+export function matcherTypesMapper(matcherType: string) {
   const type = matcherTypes[matcherType];
   if (type) return type;
   else return matcherTypes.UNDEFINED;

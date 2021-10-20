@@ -7,8 +7,8 @@ const processKillSpy = jest.spyOn(process, 'kill').mockImplementation(() => true
 
 test('Node JS listener / Signal Listener class methods and start/stop functionality', () => {
 
-  const handlerMock = jest.fn();
-  const listener = new NodeSignalListener(handlerMock, fullSettings);
+  const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
+  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
 
@@ -27,8 +27,8 @@ test('Node JS listener / Signal Listener class methods and start/stop functional
 
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler', () => {
 
-  const handlerMock = jest.fn();
-  const listener = new NodeSignalListener(handlerMock, fullSettings);
+  const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
+  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -36,7 +36,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
 
   // Control asserts.
   expect(listener.stop).not.toBeCalled();
-  expect(handlerMock).not.toBeCalled();
+  expect(syncManagerMock.flush).not.toBeCalled();
   expect(processKillSpy).not.toBeCalled();
 
   // Call function
@@ -44,7 +44,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock).toBeCalledTimes(1);
+  expect(syncManagerMock.flush).toBeCalledTimes(1);
 
   // Clean up is called.
   expect(listener.stop).toBeCalledTimes(1);
@@ -56,8 +56,8 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
 });
 
 test('Node JS listener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
-  const handlerMock = jest.fn(() => { throw 'some error'; });
-  const listener = new NodeSignalListener(handlerMock, fullSettings);
+  const syncManagerMock = { flush: jest.fn(() => { throw 'some error'; }) }; // @ts-expect-error
+  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -65,7 +65,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
 
   // Control asserts.
   expect(listener.stop).not.toBeCalled();
-  expect(handlerMock).not.toBeCalled();
+  expect(syncManagerMock.flush).not.toBeCalled();
   expect(processKillSpy).not.toBeCalled();
 
   // Call function.
@@ -73,7 +73,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock).toBeCalledTimes(1);
+  expect(syncManagerMock.flush).toBeCalledTimes(1);
 
   // Even if the handler throws, clean up is called.
   expect(listener.stop).toBeCalledTimes(1);
@@ -85,16 +85,16 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
   processKillSpy.mockClear();
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler', async (done) => {
+test('Node JS listener / Signal Listener SIGTERM callback with async handler', async () => {
 
   const fakePromise = new Promise<void>(res => {
     setTimeout(() => {
       res();
     }, 0);
   });
-  const handlerMock = jest.fn(() => fakePromise);
-
-  const listener = new NodeSignalListener(handlerMock, fullSettings);
+  const syncManagerMock = { flush: jest.fn(() => fakePromise) };
+  // @ts-expect-error
+  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');
@@ -107,13 +107,13 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
   listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock).toBeCalledTimes(1);
+  expect(syncManagerMock.flush).toBeCalledTimes(1);
 
   // Check that the wrap up is waiting for the promise to be resolved.
   expect(listener.stop).not.toBeCalled();
   expect(processKillSpy).not.toBeCalled();
 
-  fakePromise.then(() => {
+  await fakePromise.then(() => {
     // Clean up is called even if there is an error.
     expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
@@ -122,23 +122,19 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
 
     // Reset the kill spy since it's used on other tests.
     processKillSpy.mockClear();
-
-    done();
   });
-
-  return fakePromise;
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler that throws an error', async (done) => {
+test('Node JS listener / Signal Listener SIGTERM callback with async handler that throws an error', async () => {
 
   const fakePromise = new Promise<void>((res, rej) => {
     setTimeout(() => {
       rej();
     }, 0);
   });
-  const handlerMock = jest.fn(() => fakePromise);
-
-  const listener = new NodeSignalListener(handlerMock, fullSettings);
+  const syncManagerMock = { flush: jest.fn(() => fakePromise) };
+  // @ts-expect-error
+  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');
@@ -148,17 +144,17 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
 
   // Call function
   // @ts-expect-error
-  const handlerPromise = listener._sigtermHandler();
+  const handlerPromise: Promise = listener._sigtermHandler();
 
   // Handler was properly called.
-  expect(handlerMock).toBeCalledTimes(1);
+  expect(syncManagerMock.flush).toBeCalledTimes(1);
 
   // Check that the wrap up is waiting for the promise to be resolved.
   expect(listener.stop).not.toBeCalled();
   expect(processKillSpy).not.toBeCalled();
 
   // Calling .then since the wrapUp handler does not throw.
-  (handlerPromise as Promise<void>).then(() => {
+  await handlerPromise.then(() => {
     // Clean up is called.
     expect(listener.stop).toBeCalledTimes(1);
     // It called for kill again, so the shutdown keeps going.
@@ -169,9 +165,5 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler tha
     processOnSpy.mockRestore();
     processRemoveListenerSpy.mockRestore();
     processKillSpy.mockRestore();
-
-    done();
   });
-
-  return handlerPromise;
 });

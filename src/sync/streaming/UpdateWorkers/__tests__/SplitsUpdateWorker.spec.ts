@@ -62,16 +62,16 @@ describe('SplitsUpdateWorker', () => {
 
     // assert calling `splitsSyncTask.execute` if `isExecuting` is false
     expect(splitsSyncTask.isExecuting()).toBe(false);
-    splitUpdateWorker.put(100); // queued
+    splitUpdateWorker.put({ changeNumber: 100 }); // queued
     expect(splitUpdateWorker.maxChangeNumber).toBe(100); // queues changeNumber if it is mayor than storage changeNumber and maxChangeNumber
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // synchronizes splits if `isExecuting` is false
 
     // assert queueing changeNumber if `isExecuting` is true
     expect(splitsSyncTask.isExecuting()).toBe(true);
-    splitUpdateWorker.put(105); // queued
-    splitUpdateWorker.put(104); // not queued
-    splitUpdateWorker.put(106); // queued
-    splitUpdateWorker.put(103); // not queued
+    splitUpdateWorker.put({ changeNumber: 105 }); // queued
+    splitUpdateWorker.put({ changeNumber: 104 }); // not queued
+    splitUpdateWorker.put({ changeNumber: 106 }); // queued
+    splitUpdateWorker.put({ changeNumber: 103 }); // not queued
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // doesn't synchronize splits while `isExecuting` is true
     expect(splitUpdateWorker.maxChangeNumber).toBe(106); // queues changeNumber if it is mayor than currently maxChangeNumber and storage changeNumber
 
@@ -96,7 +96,7 @@ describe('SplitsUpdateWorker', () => {
           expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
 
           // assert restarting retries, when a newer event is queued
-          splitUpdateWorker.put(107); // queued
+          splitUpdateWorker.put({ changeNumber: 107 }); // queued
           expect(splitUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
 
           done();
@@ -116,7 +116,7 @@ describe('SplitsUpdateWorker', () => {
     const splitUpdateWorker = new SplitsUpdateWorker(cache, splitsSyncTask, splitsEventEmitterMock);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
-    splitUpdateWorker.killSplit(100, 'lol1', 'off'); // splitsCache.killLocally is synchronous
+    splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'lol1', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
     expect(splitUpdateWorker.maxChangeNumber).toBe(100); // queues changeNumber if split kill resolves with update
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // synchronizes splits if `isExecuting` is false
     expect(splitsEventEmitterMock.emit.mock.calls).toEqual([[SDK_SPLITS_ARRIVED, true]]); // emits `SDK_SPLITS_ARRIVED` with `isSplitKill` flag in true, if split kill resolves with update
@@ -127,7 +127,7 @@ describe('SplitsUpdateWorker', () => {
     setTimeout(() => {
       splitsSyncTask.execute.mockClear();
       splitsEventEmitterMock.emit.mockClear();
-      splitUpdateWorker.killSplit(90, 'lol1', 'on');
+      splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'lol1', defaultTreatment: 'on' });
 
       setTimeout(() => {
         expect(splitUpdateWorker.maxChangeNumber).toBe(100); // doesn't queues changeNumber if killLocally resolved without update (its changeNumber was minor than the split changeNumber

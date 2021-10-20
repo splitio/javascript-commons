@@ -1,9 +1,9 @@
-import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from './types';
-import fromObjectSyncTaskFactory from './offline/syncTasks/fromObjectSyncTask';
+import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from '../types';
+import fromObjectSyncTaskFactory from './syncTasks/fromObjectSyncTask';
 import objectAssign from 'object-assign';
-import { ISplitsParser } from './offline/splitsParser/types';
-import { IReadinessManager } from '../readiness/types';
-import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { ISplitsParser } from './splitsParser/types';
+import { IReadinessManager } from '../../readiness/types';
+import { SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 
 function flush() {
   return Promise.resolve();
@@ -16,7 +16,7 @@ function flush() {
  * @param splitsParser e.g., `splitsParserFromFile`, `splitsParserFromSettings`.
  */
 export function syncManagerOfflineFactory(
-  splitsParser: ISplitsParser
+  splitsParserFactory: () => ISplitsParser
 ): (params: ISyncManagerFactoryParams) => ISyncManagerCS {
 
   /**
@@ -29,7 +29,7 @@ export function syncManagerOfflineFactory(
   }: ISyncManagerFactoryParams): ISyncManagerCS {
 
     return objectAssign(
-      fromObjectSyncTaskFactory(splitsParser, storage, readiness, settings),
+      fromObjectSyncTaskFactory(splitsParserFactory(), storage, readiness, settings),
       {
         // fake flush, that resolves immediately
         flush,
@@ -38,7 +38,7 @@ export function syncManagerOfflineFactory(
         shared(matchingKey: string, readinessManager: IReadinessManager): ISyncManager {
           return {
             start() {
-              // In LOCALHOST mode, shared clients are ready in the next event cycle than created
+              // In LOCALHOST mode, shared clients are ready in the next event-loop cycle than created
               // SDK_READY cannot be emitted directly because this will not update the readiness status
               setTimeout(() => {
                 readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // SDK_SPLITS_ARRIVED emitted by main SyncManager

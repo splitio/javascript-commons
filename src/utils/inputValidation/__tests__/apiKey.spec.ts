@@ -86,9 +86,9 @@ describe('validateAndTrackApiKey', () => {
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
 
     expect(loggerMock.warn.mock.calls).toEqual([
-      [WARN_API_KEY, ['1 factory with this API Key']],
-      [WARN_API_KEY, ['2 factories with this API Key']],
-      [WARN_API_KEY, ['3 factories with this API Key']]
+      [WARN_API_KEY, ['1 factory/ies with this API Key']],
+      [WARN_API_KEY, ['2 factory/ies with this API Key']],
+      [WARN_API_KEY, ['3 factory/ies with this API Key']]
     ]); // We get a warning each time we register the same api key, with the number of instances we have.
 
     // We will release the used api key leaving only 1 "use" on the cache.
@@ -100,7 +100,7 @@ describe('validateAndTrackApiKey', () => {
 
     // So we get the warning again.
     expect(validateAndTrackApiKey(loggerMock, validApiKey)).toBe(validApiKey);
-    expect(loggerMock.warn).toBeCalledWith(WARN_API_KEY, ['1 factory with this API Key']);
+    expect(loggerMock.warn).toBeCalledWith(WARN_API_KEY, ['1 factory/ies with this API Key']);
 
     // Leave it with 0
     releaseApiKey(validApiKey);

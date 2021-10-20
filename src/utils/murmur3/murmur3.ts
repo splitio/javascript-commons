@@ -1,5 +1,5 @@
 /* eslint-disable no-fallthrough */
-import { UTF16ToUTF8, x86Fmix, x86Multiply, x86Rotl } from './commons';
+import { UTF16ToUTF8, x86Fmix, x86Multiply, x86Rotl } from './common';
 
 /*
  * +----------------------------------------------------------------------------------+
@@ -65,11 +65,11 @@ function hash32(key?: string, seed?: number) {
   return h1 >>> 0;
 }
 
-export function hash(str?: string, seed?: number): number {
-  // @ts-ignore
-  return hash32(UTF16ToUTF8(str), seed >>> 0);
+export function hash(str: string, seed?: number): number {
+
+  return hash32(UTF16ToUTF8(str), seed as number >>> 0);
 }
 
-export function bucket(str?: string, seed?: number): number {
+export function bucket(str: string, seed?: number): number {
   return Math.abs(hash(str, seed) % 100) + 1;
 }

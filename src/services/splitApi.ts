@@ -1,9 +1,8 @@
 import { IPlatform } from '../sdkFactory/types';
-import buildMetadata from '../utils/settingsValidation/buildMetadata';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
-import { ISettingsInternal } from '../utils/settingsValidation/types';
+import objectAssign from 'object-assign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -15,19 +14,28 @@ function userKeyToQueryParam(userKey: string) {
  * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
  * @param settings validated settings object
- * @param platform environment-specific dependencies
+ * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
-export function splitApiFactory(settings: ISettings, platform: IPlatform): ISplitApi {
+export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
 
   const urls = settings.urls;
-  const filterQueryString = (settings as ISettingsInternal).sync.__splitFiltersValidation && (settings as ISettingsInternal).sync.__splitFiltersValidation.queryString;
-  const metadata = buildMetadata(settings);
+  const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const splitHttpClient = splitHttpClientFactory(settings.log, settings.core.authorizationKey, metadata, platform.getFetch, platform.getOptions);
+  const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 
   return {
+    getSdkAPIHealthCheck() {
+      const url = `${urls.sdk}/version`;
+      return splitHttpClient(url).then(() => true).catch(() => false);
+    },
+
+    getEventsAPIHealthCheck() {
+      const url = `${urls.events}/version`;
+      return splitHttpClient(url).then(() => true).catch(() => false);
+    },
+
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/auth`;
+      let url = `${urls.auth}/v2/auth`;
       if (userMatchingKeys) { // accounting the possibility that `userMatchingKeys` is undefined (server-side API)
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
         if (queryParams) // accounting the possibility that `userKeys` and thus `queryParams` are empty
@@ -57,22 +65,40 @@ export function splitApiFactory(settings: ISettings, platform: IPlatform): ISpli
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
-    postEventsBulk(body: string) {
+    /**
+     * Post events.
+     *
+     * @param body  Events bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
-    postTestImpressionsBulk(body: string) {
+    /**
+     * Post impressions.
+     *
+     * @param body  Impressions bulk payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/bulk`;
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
-        method: 'POST', body, headers: { SplitSDKImpressionsMode }
+        method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
       });
     },
 
-    postTestImpressionsCount(body: string) {
+    /**
+     * Post impressions counts.
+     *
+     * @param body  Impressions counts payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body });
+      return splitHttpClient(url, { method: 'POST', body, headers });
     },
 
     postMetricsCounters(body: string) {

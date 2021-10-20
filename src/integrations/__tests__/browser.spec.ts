@@ -6,9 +6,9 @@ import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 // Mock integration modules (GaToSplit and SplitToGa).
 
 jest.mock('../ga/GaToSplit');
-import GaToSplitMock from '../ga/GaToSplit';
+import { GaToSplit as GaToSplitMock } from '../ga/GaToSplit';
 jest.mock('../ga/SplitToGa');
-import SplitToGaMock from '../ga/SplitToGa';
+import { SplitToGa as SplitToGaMock } from '../ga/SplitToGa';
 
 const SplitToGaQueueMethod = jest.fn();
 (SplitToGaMock as unknown as jest.Mock).mockImplementation(() => {

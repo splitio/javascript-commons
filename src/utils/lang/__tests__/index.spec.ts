@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   startsWith,
   endsWith,
@@ -32,7 +33,6 @@ test('LANG UTILS / startsWith', () => {
   expect(startsWith('myStr', ' yS')).toBe(false);
   expect(startsWith('myStr', null)).toBe(false);
   expect(startsWith(false, null)).toBe(false);
-  // @ts-ignore
   expect(startsWith()).toBe(false);
   expect(startsWith(null, 'ys')).toBe(false);
 
@@ -55,7 +55,6 @@ test('LANG UTILS / endsWith', () => {
   expect(endsWith('myStr', 'str', false)).toBe(false);
   expect(endsWith('myStr', null)).toBe(false);
   expect(endsWith(false, null)).toBe(false);
-  // @ts-ignore
   expect(endsWith()).toBe(false);
   expect(endsWith(null, 'ys')).toBe(false);
 
@@ -93,12 +92,10 @@ test('LANG UTILS / get', () => {
 test('LANG UTILS / getGlobal', () => {
   // positive
   expect(getGlobal('console')).toBe(console); // If the global property exists, return it.
-  // @ts-ignore
   global.something = 'something';
   expect(getGlobal('something')).toBe('something'); // If the global property exists, return it.
 
   // negative
-  // @ts-ignore
   expect(getGlobal()).toBe(undefined); expect(getGlobal(null)).toBe(undefined); // If the passed value is an invalid key type (neither a number or a string), return undefined.
   expect(getGlobal('non-existent-property')).toBe(undefined); // If the global property doesn't exist, return undefined.
 
@@ -107,13 +104,9 @@ test('LANG UTILS / getGlobal', () => {
 test('LANG UTILS / findIndex', () => {
   const arr = [1, 2, 3, 4, 3];
 
-  // @ts-ignore
   expect(findIndex()).toBe(-1); // If the parameters for findIndex are wrong it returns -1.
-  // @ts-ignore
   expect(findIndex(null, () => { })).toBe(-1); // If the parameters for findIndex are wrong it returns -1.
-  // @ts-ignore
   expect(findIndex({}, () => { })).toBe(-1); // If the parameters for findIndex are wrong it returns -1.
-  // @ts-ignore
   expect(findIndex({}, false)).toBe(-1); // If the parameters for findIndex are wrong it returns -1.
 
   expect(findIndex(arr, () => false)).toBe(-1); // If no element causes iteratee to return truthy, it returns -1.
@@ -128,7 +121,6 @@ test('LANG UTILS / findIndex', () => {
 });
 
 test('LANG UTILS / find', () => {
-  // @ts-ignore
   expect(find()).toBe(undefined); // We cant find the element if the collection is wrong type, so we return undefined.
   expect(find(null, () => true)).toBe(undefined); // We cant find the element if the collection is wrong type, so we return undefined.
 
@@ -157,11 +149,12 @@ test('LANG UTILS / find', () => {
 });
 
 test('LANG UTILS / isString', () => {
+  // positive
   expect(isString('')).toBe(true); // Should return true for strings.
   expect(isString('asd')).toBe(true); // Should return true for strings.
   expect(isString(new String('asdf'))).toBe(true); // Should return true for strings.
 
-  // @ts-ignore
+  // negative
   expect(isString()).toBe(false); // Should return false for non-strings.
   expect(isString(null)).toBe(false); // Should return false for non-strings.
   expect(isString([])).toBe(false); // Should return false for non-strings.
@@ -171,12 +164,13 @@ test('LANG UTILS / isString', () => {
 });
 
 test('LANG UTILS / isFiniteNumber', () => {
+  // positive
   expect(isFiniteNumber(1)).toBe(true); // Should return true for finite numbers.
   expect(isFiniteNumber(-0.5)).toBe(true); // Should return true for finite numbers.
   expect(isFiniteNumber(Number(0.5))).toBe(true); // Should return true for finite numbers.
   expect(isFiniteNumber(new Number(4))).toBe(true); // Should return true for finite numbers.
 
-  // @ts-ignore
+  // negative
   expect(isFiniteNumber()).toBe(false); // Should return false for anything that is not a finite number.
   expect(isFiniteNumber(Infinity)).toBe(false); // Should return false for anything that is not a finite number.
   expect(isFiniteNumber(-Infinity)).toBe(false); // Should return false for anything that is not a finite number.
@@ -192,11 +186,12 @@ test('LANG UTILS / isFiniteNumber', () => {
 });
 
 test('LANG UTILS / isNaNNumber', () => {
+  // positive
   expect(isNaNNumber(NaN)).toBe(true); // Should return true for NaN numbers of "number" type.
   expect(isNaNNumber(Number(NaN))).toBe(true); // Should return true for NaN numbers of "number" type.
   expect(isNaNNumber(new Number(NaN))).toBe(true); // Should return true for NaN Number objects.
 
-  // @ts-ignore
+  // negative
   expect(isNaNNumber()).toBe(false); // Should return false for anything that is not a NaN number.
   expect(isNaNNumber(Infinity)).toBe(false); // Should return false for anything that is not a NaN number.
   expect(isNaNNumber(-Infinity)).toBe(false); // Should return false for anything that is not a NaN number.
@@ -211,12 +206,13 @@ test('LANG UTILS / isNaNNumber', () => {
 });
 
 test('LANG UTILS / isIntegerNumber', () => {
+  // positive
   expect(isIntegerNumber(1)).toBe(true); // Should return true for integer numbers of "number" type.
   expect(isIntegerNumber(Number.MIN_SAFE_INTEGER)).toBe(true); // Should return true for integer numbers of "number" type.
   expect(isIntegerNumber(Number(4))).toBe(true); // Should return true for integer numbers of "number" type.
   expect(isIntegerNumber(new Number(4))).toBe(true); // Should return true for integer Number objects.
 
-  // @ts-ignore
+  // negative
   expect(isIntegerNumber()).toBe(false); // Should return false for anything that is not an integer numbers.
   expect(isIntegerNumber(Infinity)).toBe(false); // Should return false for anything that is not an integer numbers.
   expect(isIntegerNumber(-Infinity)).toBe(false); // Should return false for anything that is not an integer numbers.
@@ -234,12 +230,14 @@ test('LANG UTILS / isIntegerNumber', () => {
 });
 
 test('LANG UTILS / isObject', () => {
+  // positive
   expect(isObject({})).toBe(true); // Should return true for map objects.
   expect(isObject({ a: true })).toBe(true); // Should return true for map objects.
   expect(isObject(new Object())).toBe(true); // Should return true for map objects.
   expect(isObject(Object.create({}))).toBe(true); // Should return true for map objects.
   expect(isObject(Object.create(Object.prototype))).toBe(true); // Should return true for map objects.
 
+  // negative
   expect(isObject([])).toBe(false); // Should return false for anything that is not a map object.
   expect(isObject(() => { })).toBe(false); // Should return false for anything that is not a map object.
   expect(isObject(true)).toBe(false); // Should return false for anything that is not a map object.
@@ -435,20 +433,17 @@ test('LANG UTILS / uniqAsStrings', () => {
   const stringifier = (value: any) => { return Object.keys(value).sort().join(','); }; // returns a string with the ordered keys of the passed object
   expect(uniqAsStrings([{ a: '3' }, { a: '3', b: '2' }, { a: '3' }, { b: '2', a: '3' }], stringifier)).toEqual([{ a: '3' }, { a: '3', b: '2' }]); // uniqAsStrings should remove all duplicate values from array.
 
-  // @ts-ignore
   expect(() => { uniqAsStrings({}); }).toThrow(); // uniqAsStrings should be called with an array.
 
 });
 
 test('LANG UTILS / toString', () => {
-  // @ts-ignore
   expect(typeof toString()).toBe('string'); // It should ALWAYS return a string.
   expect(typeof toString(null)).toBe('string'); // It should ALWAYS return a string.
   expect(typeof toString(250)).toBe('string'); // It should ALWAYS return a string.
   expect(typeof toString('asdad')).toBe('string'); // It should ALWAYS return a string.
   expect(typeof toString(/regex/)).toBe('string'); // It should ALWAYS return a string.
 
-  // @ts-ignore
   expect(toString()).toBe(''); // And the returned string should be correct
   expect(toString('it is just me')).toBe('it is just me'); // And the returned string should be correct
   expect(toString(5)).toBe('5'); // And the returned string should be correct
@@ -466,7 +461,6 @@ test('LANG UTILS / toNumber', () => {
   expect(typeof toNumber('asdad')).toBe('number'); // It should ALWAYS return a number.
   expect(typeof toNumber(/regex/)).toBe('number'); // It should ALWAYS return a number.
 
-  // @ts-ignore
   expect(Number.isNaN(toNumber())).toBe(true); // The returned number should be NaN for values that cannot be converted
   expect(Number.isNaN(toNumber(/regex/))).toBe(true); // The returned number should be NaN for values that cannot be converted
   expect(Number.isNaN(toNumber({}))).toBe(true); // The returned number should be NaN for values that cannot be converted
@@ -522,9 +516,7 @@ test('LANG UTILS / groupBy', () => {
   expect(groupBy(true, 'team')).toEqual({}); // If the input is empty or wrong type, it will return an empty object.
   expect(groupBy('string', 'team')).toEqual({}); // If the input is empty or wrong type, it will return an empty object.
   expect(groupBy({}, 'team')).toEqual({}); // If the input is empty or wrong type, it will return an empty object.
-  // @ts-ignore
   expect(groupBy({ something: 1 }, null)).toEqual({}); // If the input is empty or wrong type, it will return an empty object.
-  // @ts-ignore
   expect(groupBy({ something: 1 })).toEqual({}); // If the input is empty or wrong type, it will return an empty object.
 
 });

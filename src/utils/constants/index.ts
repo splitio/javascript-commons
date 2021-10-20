@@ -1,3 +1,5 @@
+import { StorageType } from '../../storages/types';
+
 // Special treatments
 export const CONTROL = 'control';
 export const CONTROL_WITH_CONFIG = {
@@ -24,4 +26,7 @@ export const PRODUCER_MODE = 'producer';
 export const CONSUMER_MODE = 'consumer';
 
 // Storage types
-export const STORAGE_MEMORY = 'MEMORY';
+export const STORAGE_MEMORY: StorageType = 'MEMORY';
+export const STORAGE_LOCALSTORAGE: StorageType = 'LOCALSTORAGE';
+export const STORAGE_REDIS: StorageType = 'REDIS';
+export const STORAGE_CUSTOM: StorageType = 'CUSTOM';

@@ -1,7 +1,16 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
-import { ISettings } from '../../../types';
+import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { WARN_STORAGE_INVALID } from '../../../logger/constants';
+import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
+import { IStorageFactoryParams, IStorageSyncCS } from '../../../storages/types';
+
+export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSyncCS {
+  const result = InMemoryStorageCSFactory(params);
+  result.splits.checkCache = () => true; // to emit SDK_READY_FROM_CACHE
+  return result;
+}
+__InLocalStorageMockFactory.type = STORAGE_MEMORY;
 
 /**
  * This function validates `settings.storage` object
@@ -10,16 +19,20 @@ import { WARN_STORAGE_INVALID } from '../../../logger/constants';
  *
  * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
  */
-export function validateStorageCS(settings: { log: ILogger, storage?: any }): ISettings['storage'] {
-  const { storage, log } = settings;
+export function validateStorageCS(settings: { log: ILogger, storage?: any, mode?: SDKMode }): ISettings['storage'] {
+  let { storage = InMemoryStorageCSFactory, log, mode } = settings;
 
-  // validate storage
-  // @TODO validate its API (Splits cache, MySegments cache, etc) when supporting custom storages
-  if (storage) {
-    if (typeof storage === 'function') return storage;
+  // If an invalid storage is provided, fallback into MEMORY
+  if (typeof storage !== 'function' || storage.type !== STORAGE_MEMORY && storage.type !== STORAGE_LOCALSTORAGE) {
+    storage = InMemoryStorageCSFactory;
     log.warn(WARN_STORAGE_INVALID);
   }
 
+  // In localhost mode with InLocalStorage, fallback to a mock InLocalStorage to emit SDK_READY_FROM_CACHE
+  if (mode === LOCALHOST_MODE && storage.type === STORAGE_LOCALSTORAGE) {
+    return __InLocalStorageMockFactory;
+  }
+
   // return default InMemory storage if provided one is not valid
-  return InMemoryStorageCSFactory;
+  return storage;
 }

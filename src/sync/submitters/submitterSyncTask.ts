@@ -1,22 +1,24 @@
 import syncTaskFactory from '../syncTask';
 import { ISyncTask, ITimeTracker } from '../types';
-import { IRecorderCacheConsumerSync } from '../../storages/types';
+import { IRecorderCacheProducerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
+import { IResponse } from '../../services/types';
 
 /**
  * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
  */
 export function submitterSyncTaskFactory<TState extends { length?: number }>(
   log: ILogger,
-  postClient: (body: string) => Promise<Response>,
-  sourceCache: IRecorderCacheConsumerSync<TState>,
+  postClient: (body: string) => Promise<IResponse>,
+  sourceCache: IRecorderCacheProducerSync<TState>,
   postRate: number,
   dataName: string,
   latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
-): ISyncTask {
+  debugLogs?: boolean
+): ISyncTask<[], void> {
 
   let retries = 0;
 
@@ -26,7 +28,7 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     const data = sourceCache.state();
 
     const dataCount: number | '' = typeof data.length === 'number' ? data.length : '';
-    log.info(SUBMITTERS_PUSH, [dataCount, dataName]);
+    log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCount, dataName]);
     const latencyTrackerStop = latencyTracker && latencyTracker.start();
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);

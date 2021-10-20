@@ -1,8 +1,8 @@
 import { IIntegrationFactoryParams } from '../types';
-import SplitToGa from './SplitToGa';
+import { SplitToGa } from './SplitToGa';
 import { SplitToGoogleAnalyticsOptions } from './types';
 
-export default function SplitToGaPlugin(options: SplitToGoogleAnalyticsOptions = {}) {
+export function SplitToGoogleAnalytics(options: SplitToGoogleAnalyticsOptions = {}) {
 
   // SplitToGa integration factory
   return (params: IIntegrationFactoryParams) => {

@@ -47,7 +47,8 @@ export default class EventSource {
   static readonly CLOSED: ReadyStateType = 2;
 
   private readonly __emitter: IEventEmitter;
-  onerror?: (evt: MessageEvent) => any;;
+  private readonly __eventSourceInitDict: EventSourceInitDict;
+  onerror?: (evt: MessageEvent) => any;
   onmessage?: (evt: MessageEvent) => any;
   onopen?: (evt?: MessageEvent) => any;
   readyState: ReadyStateType;
@@ -56,13 +57,14 @@ export default class EventSource {
 
   constructor(
     url: string,
-    configuration: EventSourceInitDict = defaultOptions
+    eventSourceInitDict: EventSourceInitDict = defaultOptions
   ) {
     this.url = url;
-    this.withCredentials = configuration.withCredentials;
+    this.withCredentials = eventSourceInitDict.withCredentials;
     this.readyState = 0;
     // @ts-ignore
     this.__emitter = new EventEmitter();
+    this.__eventSourceInitDict = arguments[1];
     sources[url] = this;
     if (__listener) setTimeout(__listener, 0, this);
   }
@@ -81,24 +83,28 @@ export default class EventSource {
 
   emit(eventName: string, messageEvent?: MessageEvent) {
     this.__emitter.emit(eventName, messageEvent);
+
+    let listener: ((evt: any) => any) | undefined;
+    switch (eventName) {
+      case 'error': listener = this.onerror; break;
+      case 'open': listener = this.onopen; break;
+      case 'message': listener = this.onmessage; break;
+    }
+    if (typeof listener === 'function') {
+      listener(messageEvent);
+    }
   }
 
   emitError(error: MessageEvent) {
-    if (typeof this.onerror === 'function') {
-      this.onerror(error);
-    }
+    this.emit('error', error);
   }
 
   emitOpen() {
     this.readyState = 1;
-    if (typeof this.onopen === 'function') {
-      this.onopen();
-    }
+    this.emit('open');
   }
 
   emitMessage(message: MessageEvent) {
-    if (typeof this.onmessage === 'function') {
-      this.onmessage(message);
-    }
+    this.emit('message', message);
   }
 }

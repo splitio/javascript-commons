@@ -1,8 +1,10 @@
+import { ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
-import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync } from './storages/types';
+import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
+import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
  * EventEmitter interface with the minimal methods used by the SDK
@@ -55,6 +57,8 @@ export type SDKMode = 'standalone' | 'consumer' | 'localhost';
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
  * @interface ISettings
+ *
+ * NOTE: same ISettings interface from public type declarations extended with private properties.
  */
 export interface ISettings {
   readonly core: {
@@ -81,7 +85,7 @@ export interface ISettings {
     retriesOnFailureBeforeReady: number,
     eventsFirstPushWindow: number
   },
-  readonly storage: (params: IStorageFactoryParams) => IStorageSyncCS,
+  readonly storage: IStorageSyncFactory,
   readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
   readonly urls: {
     events: string,
@@ -96,12 +100,15 @@ export interface ISettings {
   readonly sync: {
     splitFilters: SplitIO.SplitFilter[],
     impressionsMode: SplitIO.ImpressionsMode,
+    __splitFiltersValidation: ISplitFiltersValidation,
+    localhostMode?: SplitIO.LocalhostFactory
   },
   readonly runtime: {
     ip: string | false
     hostname: string | false
   },
   readonly log: ILogger
+  readonly impressionListener?: unknown
 }
 /**
  * Log levels.
@@ -577,6 +584,13 @@ export namespace SplitIO {
    */
   export type SplitNamesAsync = Promise<SplitNames>;
   /**
+   * Localhost mode factory.
+   */
+  export type LocalhostFactory = {
+    type: 'LocalhostFromObject' | 'LocalhostFromFile'
+    (params: ISyncManagerFactoryParams): ISyncManagerCS
+  }
+  /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
    * @interface IImpressionListener
@@ -592,7 +606,7 @@ export namespace SplitIO {
   export type EventData = {
     eventTypeId: string;
     value?: number;
-    properties: Properties;
+    properties?: Properties;
     trafficTypeName?: string;
     key?: string; // matching user key
     timestamp: number;

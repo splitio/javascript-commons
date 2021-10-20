@@ -1,6 +1,7 @@
 import timer from '../timer';
 import tracker from '../index';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { IResponse } from '../../../services/types';
 
 test('TIMER / should count the time between two tasks', (done) => {
   const timerDuration = Math.floor(Math.random() * 1000); // In millis
@@ -24,18 +25,19 @@ describe('TIME TRACKER', () => {
   });
 
   test('start() / should return the correct type', () => {
-    const promise = new Promise<Response>(res => {
+    const promise = new Promise<IResponse>(res => {
       setTimeout(res, 1000);
     });
     const startNormal = tracker.start(loggerMock, tracker.TaskNames.SDK_READY);
     const startNormalFake = tracker.start(loggerMock, 'fakeTask3');
-    const startWithPromise = tracker.start(loggerMock, 'fakeTask4', undefined, promise) as Promise<any>;
+    const startWithPromise = tracker.start(loggerMock, 'fakeTask4', undefined, promise);
 
     expect(typeof startNormal).toBe('function'); // If we call start without a promise, it will return the stop function,
     // @ts-expect-error
     expect(typeof startNormal.setCollectorForTask).toBe('function'); // that has a function as well for setting the collector at a defered time, because it has a registered cb but no collector received.
     // @ts-expect-error
     expect(typeof startNormalFake.setCollectorForTask).toBe('undefined'); // If no callback is registered for the task, no collectors setup function is attached to returned one.
+    // @ts-expect-error
     expect(typeof startWithPromise.then).toBe('function'); // But if we pass a promise, we will get a promise back, with the necessary callbacks already handled.
   });
 

@@ -1,4 +1,4 @@
-import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, logPrefixInstantiation } from '../../logger/constants';
+import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, LOG_PREFIX_INSTANTIATION } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
 
@@ -8,14 +8,14 @@ const item = 'api_key';
 export function validateApiKey(log: ILogger, maybeApiKey: any): string | false {
   let apiKey: string | false = false;
   if (maybeApiKey == undefined) { // eslint-disable-line eqeqeq
-    log.error(ERROR_NULL, [logPrefixInstantiation, item]);
+    log.error(ERROR_NULL, [LOG_PREFIX_INSTANTIATION, item]);
   } else if (isString(maybeApiKey)) {
     if (maybeApiKey.length > 0)
       apiKey = maybeApiKey;
     else
-      log.error(ERROR_EMPTY, [logPrefixInstantiation, item]);
+      log.error(ERROR_EMPTY, [LOG_PREFIX_INSTANTIATION, item]);
   } else {
-    log.error(ERROR_INVALID, [logPrefixInstantiation, item]);
+    log.error(ERROR_INVALID, [LOG_PREFIX_INSTANTIATION, item]);
   }
 
   return apiKey;
@@ -36,7 +36,7 @@ export function validateAndTrackApiKey(log: ILogger, maybeApiKey: any): string |
         log.warn(WARN_API_KEY, ['an instance of the Split factory']);
       }
     } else {
-      log.warn(WARN_API_KEY, [`${usedKeysMap[apiKey]} ${usedKeysMap[apiKey] === 1 ? 'factory' : 'factories'} with this API Key`]);
+      log.warn(WARN_API_KEY, [`${usedKeysMap[apiKey]} factory/ies with this API Key`]);
       usedKeysMap[apiKey]++;
     }
   }

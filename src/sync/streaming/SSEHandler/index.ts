@@ -1,9 +1,9 @@
 import { errorParser, messageParser } from './NotificationParser';
 import notificationKeeperFactory from './NotificationKeeper';
-import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
-import { INotificationError } from './types';
+import { INotificationError, INotificationMessage } from './types';
 import { ILogger } from '../../../logger/types';
 import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 
@@ -43,7 +43,7 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
         log.warn(STREAMING_PARSING_ERROR_FAILS, [err]);
       }
 
-      let errorMessage = errorWithParsedData.parsedData && errorWithParsedData.parsedData.message;
+      let errorMessage = (errorWithParsedData.parsedData && errorWithParsedData.parsedData.message) || errorWithParsedData.message;
       log.error(ERROR_STREAMING_SSE, [errorMessage]);
 
       if (isRetryableError(errorWithParsedData)) {
@@ -55,9 +55,10 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
 
     /* NotificationProcessor */
     handleMessage(message) {
-      let messageWithParsedData;
+      let messageWithParsedData: INotificationMessage | undefined;
       try {
         messageWithParsedData = messageParser(message);
+        if (!messageWithParsedData) return; // Messages with empty data are ignored
       } catch (err) {
         log.warn(STREAMING_PARSING_MESSAGE_FAILS, [err]);
         return;
@@ -67,30 +68,19 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
       log.debug(STREAMING_NEW_MESSAGE, [data]);
 
       // we only handle update events if streaming is up.
-      if (!notificationKeeper.isStreamingUp() && parsedData.type !== OCCUPANCY && parsedData.type !== CONTROL)
+      if (!notificationKeeper.isStreamingUp() && [OCCUPANCY, CONTROL].indexOf(parsedData.type) === -1)
         return;
 
       switch (parsedData.type) {
         /* update events */
         case SPLIT_UPDATE:
-          pushEmitter.emit(SPLIT_UPDATE,
-            parsedData.changeNumber);
-          break;
         case SEGMENT_UPDATE:
-          pushEmitter.emit(SEGMENT_UPDATE,
-            parsedData.changeNumber,
-            parsedData.segmentName);
+        case MY_SEGMENTS_UPDATE_V2:
+        case SPLIT_KILL:
+          pushEmitter.emit(parsedData.type, parsedData);
           break;
         case MY_SEGMENTS_UPDATE:
-          pushEmitter.emit(MY_SEGMENTS_UPDATE,
-            parsedData,
-            channel);
-          break;
-        case SPLIT_KILL:
-          pushEmitter.emit(SPLIT_KILL,
-            parsedData.changeNumber,
-            parsedData.splitName,
-            parsedData.defaultTreatment);
+          pushEmitter.emit(parsedData.type, parsedData, channel);
           break;
 
         /* occupancy & control events, handled by NotificationManagerKeeper */
@@ -100,6 +90,7 @@ export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventE
         case CONTROL:
           notificationKeeper.handleControlEvent(parsedData.controlType, channel, timestamp);
           break;
+
         default:
           break;
       }

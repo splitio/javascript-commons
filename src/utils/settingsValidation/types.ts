@@ -1,4 +1,3 @@
-import { ISplitFiltersValidation } from '../../dtos/types';
 import { ISettings } from '../../types';
 
 /**
@@ -7,24 +6,18 @@ import { ISettings } from '../../types';
  */
 export interface ISettingsValidationParams {
   /**
+   * Object of values to overwrite default settings.
    * Version and startup properties are mandatory, because these values are not part of the base setting.
    */
   defaults: Partial<ISettings> & { version: string } & { startup: ISettings['startup'] },
-  runtime: (settings: ISettings) => ISettings['runtime'],
+  /** Function to overwrite runtime values (ip and hostname) which are false by default */
+  runtime?: (settings: ISettings) => ISettings['runtime'],
   /** Storage validator */
   storage?: (settings: ISettings) => ISettings['storage'],
   /** Integrations validator */
   integrations?: (settings: ISettings) => ISettings['integrations'],
-  /** Logger validator */
+  /** Logger validator (`settings.debug`) */
   logger: (settings: ISettings) => ISettings['log'],
-}
-
-/**
- * Settings interface extended with private properties used for internal purposes.
- */
-export interface ISettingsInternal extends ISettings {
-  readonly sync: ISettings['sync'] & {
-    __splitFiltersValidation: ISplitFiltersValidation
-  }
-  readonly impressionListener?: unknown
+  /** Localhost mode validator (`settings.sync.localhostMode`) */
+  localhost?: (settings: ISettings) => ISettings['sync']['localhostMode'],
 }
