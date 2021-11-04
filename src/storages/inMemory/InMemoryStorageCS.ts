@@ -5,6 +5,7 @@ import EventsCacheInMemory from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
 import { STORAGE_MEMORY } from '../../utils/constants';
+import { SplitIO } from '../../types';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -27,6 +28,18 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
+    },
+
+    // @ts-ignore, private method, for POC
+    getSnapshot(): SplitIO.PreloadedData {
+      return {
+        lastUpdated: Date.now(), // @ts-ignore accessing private prop
+        since: this.splits.changeNumber, // @ts-ignore accessing private prop
+        splitsData: this.splits.splitsCache,
+        mySegmentsData: { // @ts-ignore accessing private prop
+          [params.matchingKey as string]: Object.keys(this.segments.segmentCache)
+        }
+      };
     },
 
     // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)

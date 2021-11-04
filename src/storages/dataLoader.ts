@@ -3,25 +3,26 @@ import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../utils/constants/browser';
 import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
 
 /**
- * Factory of client-side storage loader
+ * Factory of storage loader
  *
  * @param preloadedData validated data following the format proposed in https://github.com/godaddy/split-javascript-data-loader
  * and extended with a `mySegmentsData` property.
  * @returns function to preload the storage
  */
-export function dataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoader {
+export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoader {
 
   /**
    * Storage-agnostic adaptation of `loadDataIntoLocalStorage` function
    * (https://github.com/godaddy/split-javascript-data-loader/blob/master/src/load-data.js)
    *
    * @param storage object containing `splits` and `segments` cache (client-side variant)
-   * @param userId user key string of the provided MySegmentsCache
+   * @param userKey user key (matching key) of the provided MySegmentsCache
    *
    * @TODO extend to support SegmentsCache (server-side variant) by making `userId` optional and adding the corresponding logic.
    * @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
+   * @TODO add logs, and input validation in this module, in favor of size reduction.
    */
-  return function loadData(storage: { splits: ISplitsCacheSync, segments: ISegmentsCacheSync }, userId: string) {
+  return function loadData(storage: { splits: ISplitsCacheSync, segments: ISegmentsCacheSync }, userKey: string) {
     // Do not load data if current preloadedData is empty
     if (Object.keys(preloadedData).length === 0) return;
 
@@ -42,12 +43,12 @@ export function dataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
     storage.splits.addSplits(Object.keys(splitsData).map(splitName => [splitName, splitsData[splitName]]));
 
     // add mySegments data
-    let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userId];
+    let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userKey];
     if (!mySegmentsData) {
       // segmentsData in an object where the property is the segment name and the pertaining value is a stringified object that contains the `added` array of userIds
       mySegmentsData = Object.keys(segmentsData).filter(segmentName => {
-        const userIds = JSON.parse(segmentsData[segmentName]).added;
-        return Array.isArray(userIds) && userIds.indexOf(userId) > -1;
+        const userKeys = JSON.parse(segmentsData[segmentName]).added;
+        return Array.isArray(userKeys) && userKeys.indexOf(userKey) > -1;
       });
     }
     storage.segments.resetSegments(mySegmentsData);

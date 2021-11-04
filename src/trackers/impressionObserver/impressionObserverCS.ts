@@ -4,7 +4,7 @@ import { buildKey } from './buildKey';
 import { ImpressionDTO } from '../../types';
 
 export function hashImpression32(impression: ImpressionDTO) {
-  return hash(buildKey(impression));
+  return hash(buildKey(impression)).toString();
 }
 
 const LAST_SEEN_CACHE_SIZE = 500; // cache up to 500 impression hashes

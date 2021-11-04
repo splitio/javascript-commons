@@ -50,7 +50,7 @@ export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSyn
    * It is used as condition to emit SDK_SPLITS_CACHE_LOADED, and then SDK_READY_FROM_CACHE.
    */
   checkCache(): boolean {
-    return false;
+    return this.getChangeNumber() > -1;
   }
 
   /**

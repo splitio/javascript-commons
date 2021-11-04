@@ -11,7 +11,7 @@ import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
 
 /**
  * Modular SDK factory
@@ -48,7 +48,14 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   };
 
   const storage = storageFactory(storageFactoryParams);
-  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
+
+  // @TODO dataLoader requires validation and avoid emitting SDK_READY_TIMED_OUT if 'onlyImpressionsAndEvents' and SDK_READY_FROM_CACHE is emitted
+  if (settings.dataLoader) {
+    settings.dataLoader(storage as IStorageSync, matchingKey);
+    if (settings.sync.onlyImpressionsAndEvents) {
+      Promise.resolve(storage.splits.checkCache()).then(cacheReady => { if (cacheReady) readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED); });
+    }
+  }
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform);
@@ -95,5 +102,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     Logger: createLoggerAPI(settings.log),
 
     settings,
+
+    __storage: storage
   };
 }
