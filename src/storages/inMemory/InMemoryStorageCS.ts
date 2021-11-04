@@ -2,7 +2,7 @@ import SplitsCacheInMemory from './SplitsCacheInMemory';
 import MySegmentsCacheInMemory from './MySegmentsCacheInMemory';
 import ImpressionsCacheInMemory from './ImpressionsCacheInMemory';
 import EventsCacheInMemory from './EventsCacheInMemory';
-import { IStorageSyncCS, IStorageFactoryParams } from '../types';
+import { IStorageSync, IStorageFactoryParams } from '../types';
 import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
 import { STORAGE_MEMORY } from '../../utils/constants';
 
@@ -11,14 +11,14 @@ import { STORAGE_MEMORY } from '../../utils/constants';
  *
  * @param params parameters required by EventsCacheSync
  */
-export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
 
   return {
     splits: new SplitsCacheInMemory(),
     segments: new MySegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.eventsQueueSize),
+    events: new EventsCacheInMemory(params.settings.scheduler.eventsQueueSize),
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

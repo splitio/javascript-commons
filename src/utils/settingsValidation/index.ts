@@ -75,7 +75,8 @@ const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined
+    localhostMode: undefined,
+    onlyImpressionsAndEvents: false
   },
 
   runtime: {

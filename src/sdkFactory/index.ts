@@ -31,14 +31,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
   const readinessManager = sdkReadinessManager.readinessManager;
 
-  // @TODO consider passing the settings object, so that each storage access only what it needs
-  const storageFactoryParams: IStorageFactoryParams = {
-    eventsQueueSize: settings.scheduler.eventsQueueSize,
-    optimize: shouldBeOptimized(settings),
+  const matchingKey = getMatching(settings.core.key);
 
-    // ATM, only used by InLocalStorage
-    matchingKey: getMatching(settings.core.key),
-    splitFiltersValidation: settings.sync.__splitFiltersValidation,
+  const storageFactoryParams: IStorageFactoryParams = {
+    settings,
+    optimize: shouldBeOptimized(settings),
+    matchingKey,
+    metadata: metadataBuilder(settings),
 
     // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
     onReadyCb: !syncManagerFactory ? (error) => {
@@ -46,8 +45,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     } : undefined,
-    metadata: metadataBuilder(settings),
-    log
   };
 
   const storage = storageFactory(storageFactoryParams);

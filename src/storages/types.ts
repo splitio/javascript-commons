@@ -1,7 +1,6 @@
-import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
-import { ILogger } from '../logger/types';
+import { MaybeThenable, IMetadata } from '../dtos/types';
 import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO } from '../types';
+import { SplitIO, ImpressionDTO, ISettings } from '../types';
 
 /**
  * Interface of a custom wrapper storage.
@@ -28,7 +27,7 @@ export interface ICustomStorageWrapper {
    * @returns {Promise<void>} A promise that resolves if the operation success, whether the key was added or updated.
    * The promise rejects if the operation fails.
    */
-  set: (key: string, value: string) => Promise<void | boolean>
+  set: (key: string, value: string) => Promise<boolean | void>
   /**
    * Add or update an item with a specified `key` and `value`.
    *
@@ -47,7 +46,7 @@ export interface ICustomStorageWrapper {
    * @returns {Promise<void>} A promise that resolves if the operation success, whether the key existed and was removed or it didn't exist.
    * The promise rejects if the operation fails, for example, if there is a connection error.
    */
-  del: (key: string) => Promise<void | boolean>
+  del: (key: string) => Promise<boolean | void>
   /**
    * Returns all keys matching the given prefix.
    *
@@ -140,20 +139,20 @@ export interface ICustomStorageWrapper {
    * @function addItems
    * @param {string} key Set key
    * @param {string} items Items to add
-   * @returns {Promise<void>} A promise that resolves if the operation success.
+   * @returns {Promise<boolean | void>} A promise that resolves if the operation success.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
-  addItems: (key: string, items: string[]) => Promise<void>
+  addItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Remove the specified `items` from the set stored at `key`. Those items that are not part of the set are ignored.
    *
    * @function removeItems
    * @param {string} key Set key
    * @param {string} items Items to remove
-   * @returns {Promise<void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
+   * @returns {Promise<boolean | void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
-  removeItems: (key: string, items: string[]) => Promise<void>
+  removeItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Returns all the items of the `key` set.
    *
@@ -271,7 +270,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   addToSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   removeFromSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
-  isInSegment(name: string, key?: string): Promise<boolean>
+  isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
   setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
@@ -396,6 +395,7 @@ export interface IStorageBase<
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
   destroy(): void,
+  shared?(matchingKey: string): this
 }
 
 export type IStorageSync = IStorageBase<
@@ -407,15 +407,11 @@ export type IStorageSync = IStorageBase<
   ICountsCacheSync
 >
 
-export interface IStorageSyncCS extends IStorageSync {
-  shared(matchingKey: string): IStorageSync
-}
-
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
-  IImpressionsCacheAsync,
-  IEventsCacheAsync,
+  IImpressionsCacheAsync | IImpressionsCacheSync,
+  IEventsCacheAsync | IEventsCacheSync,
   ILatenciesCacheAsync,
   ICountsCacheAsync
 >
@@ -425,19 +421,17 @@ export type IStorageAsync = IStorageBase<
 export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
-  log: ILogger,
-  eventsQueueSize?: number,
-  optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
+  settings: ISettings,
 
-  // ATM, only used by InLocalStorage
-  matchingKey?: string, /* undefined on server-side SDKs */
-  splitFiltersValidation?: ISplitFiltersValidation,
+  // Properties derived from settings
+  optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
+  matchingKey?: string, /* undefined on server-side SDKs. ATM, only used by InLocalStorage */
+  metadata: IMetadata,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
   onReadyCb?: (error?: any) => void,
-  metadata: IMetadata,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'CUSTOM';

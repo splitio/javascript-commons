@@ -21,7 +21,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     segments: new SegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.eventsQueueSize),
+    events: new EventsCacheInMemory(params.settings.scheduler.eventsQueueSize),
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

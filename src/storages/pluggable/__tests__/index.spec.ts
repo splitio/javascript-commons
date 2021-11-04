@@ -15,7 +15,7 @@ import { assertStorageInterface } from '../../__tests__/testUtils';
 describe('PLUGGABLE STORAGE', () => {
 
   const internalSdkParams: IStorageFactoryParams = {
-    log: loggerMock,
+    settings: { sync: {}, log: loggerMock },
     metadata,
     onReadyCb: jest.fn()
   };

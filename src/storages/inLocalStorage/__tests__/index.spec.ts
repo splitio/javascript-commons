@@ -16,7 +16,7 @@ import { InLocalStorage } from '../index';
 describe('IN LOCAL STORAGE', () => {
 
   // @ts-ignore
-  const internalSdkParams: IStorageFactoryParams = { log: loggerMock };
+  const internalSdkParams: IStorageFactoryParams = { settings: { log: loggerMock, scheduler: {}, sync: {} } };
 
   afterEach(() => {
     fakeInMemoryStorageFactory.mockClear();
