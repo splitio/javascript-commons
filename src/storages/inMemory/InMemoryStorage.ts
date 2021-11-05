@@ -13,15 +13,12 @@ import { STORAGE_MEMORY } from '../../utils/constants';
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
 
-  // InMemory storage is always ready
-  if (params.onReadyCb) setTimeout(params.onReadyCb);
-
   return {
     splits: new SplitsCacheInMemory(),
     segments: new SegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.settings.scheduler.eventsQueueSize),
+    events: new EventsCacheInMemory(params.eventsQueueSize),
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

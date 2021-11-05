@@ -122,8 +122,8 @@ export function syncManagerOnlineFactory(
         else return Promise.resolve();
       },
 
-      // Only used for client-side in standalone mode.
-      // Therefore, polling manager is defined and both polling and push managers implement the interfaces for client-side
+      // Only used for client-side in standalone mode: polling manager is defined and
+      // both polling and push managers implement the interfaces for client-side
       shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager {
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);

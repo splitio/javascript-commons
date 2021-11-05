@@ -18,7 +18,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     segments: new MySegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.settings.scheduler.eventsQueueSize),
+    events: new EventsCacheInMemory(params.eventsQueueSize),
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

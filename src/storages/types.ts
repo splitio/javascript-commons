@@ -1,6 +1,7 @@
-import { MaybeThenable, IMetadata } from '../dtos/types';
+import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
+import { ILogger } from '../logger/types';
 import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { SplitIO, ImpressionDTO } from '../types';
 
 /**
  * Interface of a custom wrapper storage.
@@ -406,6 +407,7 @@ export type IStorageSync = IStorageBase<
   ICountsCacheSync
 >
 
+// @TODO remove shared method to unify storage interfaces
 export interface IStorageSyncCS extends IStorageSync {
   shared(matchingKey: string): IStorageSync
 }
@@ -424,17 +426,22 @@ export type IStorageAsync = IStorageBase<
 export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
-  settings: ISettings,
-
-  // Properties derived from settings
+  log: ILogger,
+  eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
-  matchingKey?: string, /* undefined on server-side SDKs. ATM, only used by InLocalStorage */
-  metadata: IMetadata,
+
+  // ATM, only used by InLocalStorage
+  matchingKey?: string, /* undefined on server-side SDKs */
+  splitFiltersValidation?: ISplitFiltersValidation,
+
+  // ATM, only used by CustomStorage. true for partial consumer mode
+  trackInMemory?: boolean,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
   onReadyCb?: (error?: any) => void,
+  metadata: IMetadata,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'CUSTOM';

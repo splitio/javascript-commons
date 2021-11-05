@@ -26,27 +26,23 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
   const prefix = validatePrefix(options.prefix);
 
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
-    const {
-      log,
-      scheduler: { eventsQueueSize },
-      sync: { __splitFiltersValidation }
-    } = params.settings;
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
-      log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+      params.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 
+    const log = params.log;
     const keys = new KeyBuilderCS(prefix, params.matchingKey as string);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     return {
-      splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, __splitFiltersValidation),
+      splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, params.splitFiltersValidation),
       segments: new MySegmentsCacheInLocal(log, keys),
       impressions: new ImpressionsCacheInMemory(),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-      events: new EventsCacheInMemory(eventsQueueSize),
+      events: new EventsCacheInMemory(params.eventsQueueSize),
 
       destroy() {
         this.splits = new SplitsCacheInMemory();

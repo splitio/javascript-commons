@@ -23,7 +23,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
   const prefix = validatePrefix(options.prefix);
 
-  function InRedisStorageFactory({ settings: { log }, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
 
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});

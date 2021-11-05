@@ -43,9 +43,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ settings, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
-    const log = settings.log;
-    const onlyImpressionsAndEvents = settings.sync.onlyImpressionsAndEvents;
+  function PluggableStorageFactory({ log, metadata, onReadyCb, trackInMemory }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
@@ -59,8 +57,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
-      impressions: onlyImpressionsAndEvents ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
-      events: onlyImpressionsAndEvents ? new EventsCacheInMemory() : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
+      impressions: trackInMemory ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      events: trackInMemory ? new EventsCacheInMemory() : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
       // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).

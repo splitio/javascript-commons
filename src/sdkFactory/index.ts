@@ -31,20 +31,27 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
   const readinessManager = sdkReadinessManager.readinessManager;
 
-  const matchingKey = getMatching(settings.core.key);
-
+  // @TODO consider passing the settings object, so that each storage access only what it needs
   const storageFactoryParams: IStorageFactoryParams = {
-    settings,
+    log,
+    eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
-    matchingKey,
-    metadata: metadataBuilder(settings),
 
-    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
-    onReadyCb: !syncManagerFactory ? (error) => {
+    // ATM, only used by InLocalStorage
+    matchingKey: getMatching(settings.core.key),
+    splitFiltersValidation: settings.sync.__splitFiltersValidation,
+
+    // ATM, only used by CustomStorage. true for partial consumer mode
+    trackInMemory: settings.sync.onlyImpressionsAndEvents,
+
+    // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined
+    // or only instantiates submitters, and therefore it is not able to emit readiness events.
+    onReadyCb: (error) => {
       if (error) return; // don't emit SDK_READY if storage failed to connect.
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-    } : undefined,
+    },
+    metadata: metadataBuilder(settings)
   };
 
   const storage = storageFactory(storageFactoryParams);

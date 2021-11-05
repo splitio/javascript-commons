@@ -72,14 +72,13 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
       const matchingKey = getMatching(validKey);
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
-      // @ts-ignore @TODO remove shared method to unify storage interfaces
-      const sharedStorage = storage.shared ? (storage as IStorageSyncCS).shared(matchingKey) : undefined;
 
-      // Following type assertions are safe: if syncManager and sharedStorage are defined (standalone mode), they implement ISyncManagerCS and IStorageSync respectively
-      // Other options are:
-      // - Consumer mode: both syncManager and sharedStorage are undefined
-      // - Consumer mode with submitters: only syncManager is defined
-      const sharedSyncManager = syncManager && sharedStorage ? (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage) : undefined;
+      // 3 combinations are possible:
+      // - Standalone mode: both syncManager and storage.shared are defined
+      // - Consumer mode: both syncManager and storage.shared are undefined
+      // - Consumer mode with submitters: syncManager is defined but not storage.shared
+      const sharedStorage = (storage as IStorageSyncCS).shared && (storage as IStorageSyncCS).shared(matchingKey);
+      const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
