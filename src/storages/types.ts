@@ -395,7 +395,6 @@ export interface IStorageBase<
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
   destroy(): void,
-  shared?(matchingKey: string): this
 }
 
 export type IStorageSync = IStorageBase<
@@ -406,6 +405,10 @@ export type IStorageSync = IStorageBase<
   ILatenciesCacheSync,
   ICountsCacheSync
 >
+
+export interface IStorageSyncCS extends IStorageSync {
+  shared(matchingKey: string): IStorageSync
+}
 
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,

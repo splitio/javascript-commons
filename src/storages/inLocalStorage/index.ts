@@ -1,7 +1,7 @@
 import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { IStorageFactoryParams, IStorageSyncCS, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import KeyBuilderCS from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
@@ -25,7 +25,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
+  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
     const {
       log,
       scheduler: { eventsQueueSize },
