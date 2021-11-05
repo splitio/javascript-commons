@@ -15,18 +15,18 @@ import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
 const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
 
-export interface PluggableStorageOptions {
+export interface CustomStorageOptions {
   prefix?: string
   wrapper: ICustomStorageWrapper
 }
 
 /**
- * Validate pluggable storage factory options.
+ * Validate custom storage factory options.
  *
  * @param options user options
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
-function validatePluggableStorageOptions(options: any) {
+function validateCustomStorageOptions(options: any) {
   if (!isObject(options) || !isObject(options.wrapper)) throw new Error(NO_VALID_WRAPPER);
 
   const wrapper = options.wrapper;
@@ -35,15 +35,15 @@ function validatePluggableStorageOptions(options: any) {
 }
 
 /**
- * Pluggable storage factory for consumer server-side & client-side SplitFactory.
+ * Custom storage factory for consumer server-side & client-side SplitFactory.
  */
-export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyncFactory {
+export function CustomStorage(options: CustomStorageOptions): IStorageAsyncFactory {
 
-  validatePluggableStorageOptions(options);
+  validateCustomStorageOptions(options);
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb, trackInMemory }: IStorageFactoryParams): IStorageAsync {
+  function CustomStorageFactory({ log, metadata, onReadyCb, trackInMemory }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
@@ -68,6 +68,6 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     };
   }
 
-  PluggableStorageFactory.type = STORAGE_CUSTOM;
-  return PluggableStorageFactory;
+  CustomStorageFactory.type = STORAGE_CUSTOM;
+  return CustomStorageFactory;
 }

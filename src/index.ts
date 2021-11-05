@@ -8,7 +8,7 @@ export { InMemoryStorageCSFactory } from './storages/inMemory/InMemoryStorageCS'
 export { InLocalStorage } from './storages/inLocalStorage';
 
 // Pluggable storage factory for consumer/producer mode
-export { PluggableStorage } from './storages/pluggable';
+export { CustomStorage } from './storages/pluggable';
 
 // Pluggable storage factory for consumer/producer mode
 export { InRedisStorage } from './storages/inRedis';
