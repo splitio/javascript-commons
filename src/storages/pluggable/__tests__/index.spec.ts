@@ -9,7 +9,7 @@ const metadata = { s: 'version', i: 'ip', n: 'hostname' };
 const prefix = 'some_prefix';
 
 // Test target
-import { CustomStorage } from '../index';
+import { PluggableStorage } from '../index';
 import { assertStorageInterface } from '../../__tests__/testUtils';
 
 describe('PLUGGABLE STORAGE', () => {
@@ -25,7 +25,7 @@ describe('PLUGGABLE STORAGE', () => {
   });
 
   test('creates a storage instance', async () => {
-    const storageFactory = CustomStorage({ prefix, wrapper: wrapperMock });
+    const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
     const storage = storageFactory(internalSdkParams);
 
     assertStorageInterface(storage); // the instance must implement the storage interface
@@ -42,21 +42,21 @@ describe('PLUGGABLE STORAGE', () => {
 
   test('throws an exception if wrapper doesn\'t implement the expected interface', async () => {
 
-    expect(() => CustomStorage({ wrapper: wrapperMock })).not.toThrow(); // not prefix but valid wrapper is OK
+    expect(() => PluggableStorage({ wrapper: wrapperMock })).not.toThrow(); // not prefix but valid wrapper is OK
 
     // Throws exception if no object is passed as wrapper
     const errorNoValidWrapper = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
-    expect(() => CustomStorage()).toThrow(errorNoValidWrapper);
-    expect(() => CustomStorage({ wrapper: undefined })).toThrow(errorNoValidWrapper);
-    expect(() => CustomStorage({ wrapper: 'invalid wrapper' })).toThrow(errorNoValidWrapper);
+    expect(() => PluggableStorage()).toThrow(errorNoValidWrapper);
+    expect(() => PluggableStorage({ wrapper: undefined })).toThrow(errorNoValidWrapper);
+    expect(() => PluggableStorage({ wrapper: 'invalid wrapper' })).toThrow(errorNoValidWrapper);
 
     // Throws exception if the given object is not a valid wrapper, informing which methods are missing
     const invalidWrapper = wrapperMockFactory();
     invalidWrapper.connect = undefined;
     invalidWrapper.close = 'invalid function';
     const errorNoValidWrapperInterface = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
-    expect(() => CustomStorage({ wrapper: invalidWrapper })).toThrow(errorNoValidWrapperInterface);
-    expect(() => CustomStorage({ wrapper: {} })).toThrow(errorNoValidWrapperInterface);
+    expect(() => PluggableStorage({ wrapper: invalidWrapper })).toThrow(errorNoValidWrapperInterface);
+    expect(() => PluggableStorage({ wrapper: {} })).toThrow(errorNoValidWrapperInterface);
   });
 
 });
