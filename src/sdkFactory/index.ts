@@ -33,7 +33,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // @TODO consider passing the settings object, so that each storage access only what it needs
   const storageFactoryParams: IStorageFactoryParams = {
-    log,
     eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
 
@@ -48,7 +47,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
-    metadata: metadataBuilder(settings)
+    metadata: metadataBuilder(settings),
+    log
   };
 
   const storage = storageFactory(storageFactoryParams);

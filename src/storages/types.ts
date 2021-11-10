@@ -411,8 +411,8 @@ export type IStorageSync = IStorageBase<
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
-  IImpressionsCacheAsync | IImpressionsCacheSync,
-  IEventsCacheAsync | IEventsCacheSync,
+  IImpressionsCacheAsync,
+  IEventsCacheAsync,
   ILatenciesCacheAsync,
   ICountsCacheAsync
 >

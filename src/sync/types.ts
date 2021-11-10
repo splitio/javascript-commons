@@ -3,7 +3,6 @@ import { IPlatform } from '../sdkFactory/types';
 import { ISplitApi } from '../services/types';
 import { IStorageSync } from '../storages/types';
 import { ISettings } from '../types';
-import { IPollingManager } from './polling/types';
 import { IPushManager } from './streaming/types';
 
 export interface ITask<Input extends any[] = []> {
@@ -44,12 +43,11 @@ export interface ITimeTracker {
 
 export interface ISyncManager extends ITask {
   flush(): Promise<any>,
-  pollingManager?: IPollingManager
   pushManager?: IPushManager
 }
 
 export interface ISyncManagerCS extends ISyncManager {
-  shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager | undefined
+  shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager
 }
 
 export interface ISyncManagerFactoryParams {

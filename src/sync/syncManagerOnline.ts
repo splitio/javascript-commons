@@ -1,5 +1,8 @@
-import { ISyncManagerCS, ISyncManagerFactoryParams } from './types';
-import { submitterManagerFactory } from './submitters/submitterManager';
+import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from './types';
+import { syncTaskComposite } from './syncTaskComposite';
+import { eventsSyncTaskFactory } from './submitters/eventsSyncTask';
+import { impressionsSyncTaskFactory } from './submitters/impressionsSyncTask';
+import { impressionCountsSyncTaskFactory } from './submitters/impressionCountsSyncTask';
 import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
 import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
@@ -16,7 +19,7 @@ import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '..
  * @param pushManagerFactory optional to build a SyncManager with or without streaming support
  */
 export function syncManagerOnlineFactory(
-  pollingManagerFactory?: (...args: IPollingManagerFactoryParams) => IPollingManager,
+  pollingManagerFactory: (...args: IPollingManagerFactoryParams) => IPollingManager,
   pushManagerFactory?: (...args: IPushManagerFactoryParams) => IPushManager | undefined
 ): (params: ISyncManagerFactoryParams) => ISyncManagerCS {
 
@@ -34,24 +37,30 @@ export function syncManagerOnlineFactory(
     const log = settings.log;
 
     /** Polling Manager */
-    const pollingManager = pollingManagerFactory && pollingManagerFactory(splitApi, storage, readiness, settings);
+    const pollingManager = pollingManagerFactory(splitApi, storage, readiness, settings);
 
     /** Push Manager */
-    const pushManager = settings.streamingEnabled && pollingManager && pushManagerFactory ?
+    const pushManager = settings.streamingEnabled && pushManagerFactory ?
       pushManagerFactory(pollingManager, storage, readiness, splitApi.fetchAuth, platform, settings) :
       undefined;
 
     /** Submitter Manager */
-    // It is not inyected as push and polling managers, because at the moment it is mandatory
-    const submitter = submitterManagerFactory(settings, storage, splitApi);
+    // It is not inyected via a factory as push and polling managers, because at the moment it is mandatory and the same for server-side and client-side variants
+    const submitters = [
+      impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
+      eventsSyncTaskFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
+      // @TODO add telemetry submitter
+    ];
+    if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
+    const submitter = syncTaskComposite(submitters);
 
 
     /** Sync Manager logic */
 
     function startPolling() {
-      if (!pollingManager!.isRunning()) {
+      if (!pollingManager.isRunning()) {
         log.info(SYNC_START_POLLING);
-        pollingManager!.start();
+        pollingManager.start();
       } else {
         log.info(SYNC_CONTINUE_POLLING);
       }
@@ -60,10 +69,10 @@ export function syncManagerOnlineFactory(
     function stopPollingAndSyncAll() {
       log.info(SYNC_STOP_POLLING);
       // if polling, stop
-      if (pollingManager!.isRunning()) pollingManager!.stop();
+      if (pollingManager.isRunning()) pollingManager.stop();
 
       // fetch splits and segments. There is no need to catch this promise (it is always resolved)
-      pollingManager!.syncAll();
+      pollingManager.syncAll();
     }
 
     if (pushManager) {
@@ -82,17 +91,15 @@ export function syncManagerOnlineFactory(
        */
       start() {
         // start syncing splits and segments
-        if (pollingManager) {
-          if (pushManager) {
-            // Doesn't call `syncAll` when the syncManager is resuming
-            if (startFirstTime) {
-              pollingManager.syncAll();
-              startFirstTime = false;
-            }
-            pushManager.start();
-          } else {
-            pollingManager.start();
+        if (pushManager) {
+          // Doesn't call `syncAll` when the syncManager is resuming
+          if (startFirstTime) {
+            pollingManager.syncAll();
+            startFirstTime = false;
           }
+          pushManager.start();
+        } else {
+          pollingManager.start();
         }
 
         // start periodic data recording (events, impressions, telemetry).
@@ -106,7 +113,7 @@ export function syncManagerOnlineFactory(
       stop() {
         // stop syncing
         if (pushManager) pushManager.stop();
-        if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
+        if (pollingManager.isRunning()) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
         if (submitter) submitter.stop();
@@ -122,10 +129,9 @@ export function syncManagerOnlineFactory(
         else return Promise.resolve();
       },
 
-      // Only used for client-side in standalone mode: if polling and push managers
-      // are defined, they implement the interfaces for client-side
-      shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync) {
-        if (!pollingManager) return;
+      // [Only used for client-side]
+      // It assumes that polling and push managers implement the interfaces for client-side
+      shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager {
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
 
@@ -133,7 +139,7 @@ export function syncManagerOnlineFactory(
           isRunning: mySegmentsSyncTask.isRunning,
           start() {
             if (pushManager) {
-              if (pollingManager!.isRunning()) {
+              if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
                 if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
               } else {
