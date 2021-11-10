@@ -430,9 +430,6 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // ATM, only used by CustomStorage. True for partial consumer mode
-  trackInMemory?: boolean,
-
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
