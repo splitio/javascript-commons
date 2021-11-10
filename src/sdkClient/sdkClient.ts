@@ -37,11 +37,11 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
 
-          // Cleanup storage
-          storage.destroy();
-
           // Release the API Key if it is the main client
           if (!sharedClient) releaseApiKey(settings.core.authorizationKey);
+
+          // Cleanup storage
+          return storage.destroy();
         });
       }
     }

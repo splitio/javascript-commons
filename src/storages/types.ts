@@ -395,7 +395,7 @@ export interface IStorageBase<
   events: TEventsCache,
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
-  destroy(): void,
+  destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
 
