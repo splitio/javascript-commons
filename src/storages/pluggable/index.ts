@@ -34,6 +34,25 @@ function validatePluggableStorageOptions(options: any) {
   if (missingMethods.length) throw new Error(`${NO_VALID_WRAPPER_INTERFACE} The following methods are missing or invalid: ${missingMethods}`);
 }
 
+// subscription to wrapper connect event in order to emit SDK_READY event
+function wrapperConnect(wrapper: ICustomStorageWrapper, onReadyCb: (error?: any) => void) {
+  wrapper.connect().then(() => {
+    onReadyCb();
+  }).catch((e) => {
+    onReadyCb(e || new Error('Error connecting wrapper'));
+  });
+}
+
+// For consumer partial mode to have async return type in `client.track` method
+// No need to promisify impressions cache
+function promisifyEventsTrack(events: any) {
+  const origTrack = events.track;
+  events.track = function () {
+    return Promise.resolve(origTrack.apply(this, arguments));
+  };
+  return events;
+}
+
 /**
  * Pluggable storage factory for consumer server-side & client-side SplitFactory.
  */
@@ -43,27 +62,33 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb, trackInMemory }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory({ log, metadata, onReadyCb, trackInMemory, eventsQueueSize }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
-    // subscription to Wrapper connect event in order to emit SDK_READY event
-    wrapper.connect().then(() => {
-      if (onReadyCb) onReadyCb();
-    }).catch((e) => {
-      if (onReadyCb) onReadyCb(e || new Error('Error connecting wrapper'));
-    });
+    // emit SDK_READY event on main client
+    wrapperConnect(wrapper, onReadyCb);
 
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: trackInMemory ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
-      events: trackInMemory ? new EventsCacheInMemory() : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
+      events: trackInMemory ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
       // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).
       destroy() {
         return wrapper.close();
+      },
+
+      // emits SDK_READY event on shared clients and returns a reference to the storage
+      shared(_, onReadyCb) {
+        wrapperConnect(wrapper, onReadyCb);
+        return {
+          ...this,
+          // no-op destroy, to close the wrapper only when the main client is destroyed
+          destroy() { }
+        };
       }
     };
   }

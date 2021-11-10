@@ -3,7 +3,7 @@ import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
-import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
+import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
 import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
@@ -842,7 +842,7 @@ export namespace SplitIO {
      * Defines which kind of storage we should instanciate.
      * @property {Object} storage
      */
-    storage?: (params: IStorageFactoryParams) => IStorageSyncCS | IStorageAsync,
+    storage?: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
     /**
      * List of URLs that the SDK will use as base for it's synchronization functionalities, applicable only when running as standalone.
      * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.

@@ -2,7 +2,7 @@ import SplitsCacheInMemory from './SplitsCacheInMemory';
 import MySegmentsCacheInMemory from './MySegmentsCacheInMemory';
 import ImpressionsCacheInMemory from './ImpressionsCacheInMemory';
 import EventsCacheInMemory from './EventsCacheInMemory';
-import { IStorageSyncCS, IStorageFactoryParams } from '../types';
+import { IStorageSync, IStorageFactoryParams } from '../types';
 import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
 import { STORAGE_MEMORY } from '../../utils/constants';
 
@@ -11,7 +11,7 @@ import { STORAGE_MEMORY } from '../../utils/constants';
  *
  * @param params parameters required by EventsCacheSync
  */
-export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
 
   return {
     splits: new SplitsCacheInMemory(),

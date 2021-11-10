@@ -4,7 +4,7 @@ import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/s
 import { SplitIO, ImpressionDTO } from '../types';
 
 /**
- * Interface of a custom wrapper storage.
+ * Interface of a custom storage wrapper.
  */
 export interface ICustomStorageWrapper {
 
@@ -169,7 +169,7 @@ export interface ICustomStorageWrapper {
   /**
    * Connects to the underlying storage.
    * It is meant for storages that requires to be connected to some database or server. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory instantiation.
+   * Note: will be called once on SplitFactory instantiation and once per each shared client instantiation.
    *
    * @function connect
    * @returns {Promise<void>} A promise that resolves when the wrapper successfully connect to the underlying storage.
@@ -179,7 +179,7 @@ export interface ICustomStorageWrapper {
   /**
    * Disconnects the underlying storage.
    * It is meant for storages that requires to be closed, in order to release resources. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory client destroy.
+   * Note: will be called once on SplitFactory main client destroy.
    *
    * @function close
    * @returns {Promise<void>} A promise that resolves when the operation ends.
@@ -396,6 +396,7 @@ export interface IStorageBase<
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
   destroy(): void,
+  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
 
 export type IStorageSync = IStorageBase<
@@ -406,11 +407,6 @@ export type IStorageSync = IStorageBase<
   ILatenciesCacheSync,
   ICountsCacheSync
 >
-
-// @TODO remove shared method to unify storage interfaces
-export interface IStorageSyncCS extends IStorageSync {
-  shared(matchingKey: string): IStorageSync
-}
 
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
@@ -434,13 +430,13 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // ATM, only used by CustomStorage. true for partial consumer mode
+  // ATM, only used by CustomStorage. True for partial consumer mode
   trackInMemory?: boolean,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
-  onReadyCb?: (error?: any) => void,
+  onReadyCb: (error?: any) => void,
   metadata: IMetadata,
 }
 

@@ -6,10 +6,13 @@ import { ISet, setToArray, _Set } from '../../utils/lang/sets';
  * Creates a ICustomStorageWrapper implementation that stores items in memory.
  * The `_cache` property is the object were items are stored.
  * Intended for testing purposes.
+ *
+ * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves inmediatelly.
  */
-export function inMemoryWrapperFactory(): ICustomStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>> } {
+export function inMemoryWrapperFactory(connDelay?: number): ICustomStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>>, _setConnDelay(connDelay: number): void } {
 
   let _cache: Record<string, string | string[] | ISet<string>> = {};
+  let _connDelay = connDelay;
 
   return {
     /** Holds items (for key-value operations), list of items (for list operations) and set of items (for set operations) */
@@ -110,7 +113,18 @@ export function inMemoryWrapperFactory(): ICustomStorageWrapper & { _cache: Reco
     },
 
     // always connects and close
-    connect() { return Promise.resolve(); },
+    connect() {
+      if (typeof _connDelay === 'number') {
+        return new Promise(res => setTimeout(res, _connDelay));
+      } else {
+        return Promise.resolve();
+      }
+    },
     close() { return Promise.resolve(); },
+
+    // for testing
+    _setConnDelay(connDelay: number) {
+      _connDelay = connDelay;
+    }
   };
 }

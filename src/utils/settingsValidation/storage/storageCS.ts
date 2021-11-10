@@ -3,9 +3,9 @@ import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { WARN_STORAGE_INVALID } from '../../../logger/constants';
 import { LOCALHOST_MODE, STORAGE_CUSTOM, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
-import { IStorageFactoryParams, IStorageSyncCS } from '../../../storages/types';
+import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
 
-export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSyncCS {
+export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSync {
   const result = InMemoryStorageCSFactory(params);
   result.splits.checkCache = () => true; // to emit SDK_READY_FROM_CACHE
   return result;

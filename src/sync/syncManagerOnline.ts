@@ -1,4 +1,4 @@
-import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from './types';
+import { ISyncManagerCS, ISyncManagerFactoryParams } from './types';
 import { submitterManagerFactory } from './submitters/submitterManager';
 import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
@@ -122,9 +122,10 @@ export function syncManagerOnlineFactory(
         else return Promise.resolve();
       },
 
-      // Only used for client-side in standalone mode: polling manager is defined and
-      // both polling and push managers implement the interfaces for client-side
-      shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager {
+      // Only used for client-side in standalone mode: if polling and push managers
+      // are defined, they implement the interfaces for client-side
+      shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync) {
+        if (!pollingManager) return;
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
 

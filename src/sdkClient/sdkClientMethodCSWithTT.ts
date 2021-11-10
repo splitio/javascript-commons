@@ -5,10 +5,10 @@ import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
-import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
+import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
   // @ts-ignore
@@ -73,11 +73,17 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
 
-      // 3 combinations are possible:
-      // - Standalone mode: both syncManager and storage.shared are defined
-      // - Consumer mode: both syncManager and storage.shared are undefined
-      // - Consumer mode with submitters: syncManager is defined but not storage.shared
-      const sharedStorage = (storage as IStorageSyncCS).shared && (storage as IStorageSyncCS).shared(matchingKey);
+      const sharedStorage = storage.shared && storage.shared(matchingKey, (err) => {
+        // Emit SDK_READY in consumer mode for shared clients
+        if (err) return; // don't emit SDK_READY if storage failed to connect.
+        sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      });
+
+      // 3 possibilities:
+      // - Standalone mode: both syncManager and sharedSyncManager are defined
+      // - Consumer mode: both syncManager and sharedSyncManager are undefined
+      // - Consumer partial mode: syncManager is defined (only for submitters) but sharedSyncManager is undefined
+      // @ts-ignore
       const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
@@ -85,7 +91,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
       clientInstances[instanceId] = clientCSDecorator(
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
-          storage: sharedStorage,
+          storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
           sharedClient: true
