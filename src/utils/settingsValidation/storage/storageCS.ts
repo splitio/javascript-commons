@@ -2,7 +2,7 @@ import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemorySto
 import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { WARN_STORAGE_INVALID } from '../../../logger/constants';
-import { LOCALHOST_MODE, STORAGE_CUSTOM, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
+import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_CUSTOM, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
 import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
 
 export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSync {
@@ -19,7 +19,7 @@ __InLocalStorageMockFactory.type = STORAGE_MEMORY;
  *
  * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
  */
-export function validateStorageCS(settings: { log: ILogger, storage?: any, mode?: SDKMode }): ISettings['storage'] {
+export function validateStorageCS(settings: { log: ILogger, storage?: any, mode: SDKMode }): ISettings['storage'] {
   let { storage = InMemoryStorageCSFactory, log, mode } = settings;
 
   // If an invalid storage is provided, fallback into MEMORY
@@ -31,6 +31,15 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode?
   // In localhost mode with InLocalStorage, fallback to a mock InLocalStorage to emit SDK_READY_FROM_CACHE
   if (mode === LOCALHOST_MODE && storage.type === STORAGE_LOCALSTORAGE) {
     return __InLocalStorageMockFactory;
+  }
+
+  // @TODO check behaviour
+  if ([LOCALHOST_MODE, STANDALONE_MODE].indexOf(mode) === -1) {
+    // Consumer modes require an async storage
+    if (storage.type !== STORAGE_CUSTOM) throw new Error('A CustomStorage instance is required on consumer modes');
+  } else {
+    // Standalone and localhost modes require a sync storage
+    if (storage.type === STORAGE_CUSTOM) throw new Error('A CustomStorage instance cannot be used on standalone and localhost modes');
   }
 
   // return default InMemory storage if provided one is not valid

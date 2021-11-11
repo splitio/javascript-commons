@@ -10,7 +10,8 @@ const prefix = 'some_prefix';
 
 // Test target
 import { PluggableStorage } from '../index';
-import { assertStorageInterface } from '../../__tests__/testUtils';
+import { assertStorageInterface, assertSyncRecorderCacheInterface } from '../../__tests__/testUtils';
+import { CONSUMER_PARTIAL_MODE } from '../../../utils/constants';
 
 describe('PLUGGABLE STORAGE', () => {
 
@@ -70,4 +71,23 @@ describe('PLUGGABLE STORAGE', () => {
     expect(() => PluggableStorage({ wrapper: {} })).toThrow(errorNoValidWrapperInterface);
   });
 
+  test('creates a storage instance for partial consumer mode (events and impressions cache in memory)', async () => {
+    const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
+    const storage = storageFactory({ ...internalSdkParams, mode: CONSUMER_PARTIAL_MODE });
+
+    assertStorageInterface(storage);
+    expect(wrapperMock.connect).toBeCalledTimes(1);
+
+    // Sync cache
+    assertSyncRecorderCacheInterface(storage.events);
+    assertSyncRecorderCacheInterface(storage.impressions);
+
+    // But event track is async
+    const eventResult = storage.events.track('some data');
+    expect(typeof eventResult.then === 'function').toBeTruthy();
+    expect(await eventResult).toBe(true);
+
+    const impResult = storage.impressions.track(['some data']);
+    expect(impResult).toBe(undefined);
+  });
 });

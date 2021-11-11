@@ -8,7 +8,9 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { validatePrefix } from '../KeyBuilder';
-import { STORAGE_CUSTOM } from '../../utils/constants';
+import { CONSUMER_PARTIAL_MODE, STORAGE_CUSTOM } from '../../utils/constants';
+import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
+import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
 
 const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -41,6 +43,16 @@ function wrapperConnect(wrapper: ICustomStorageWrapper, onReadyCb: (error?: any)
   });
 }
 
+// Async return type in `client.track` method on consumer partial mode
+// No need to promisify impressions cache
+function promisifyEventsTrack(events: any) {
+  const origTrack = events.track;
+  events.track = function () {
+    return Promise.resolve(origTrack.apply(this, arguments));
+  };
+  return events;
+}
+
 /**
  * Pluggable storage factory for consumer server-side & client-side SplitFactory.
  */
@@ -50,9 +62,10 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
+    const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
 
     // emit SDK_READY event on main client
     wrapperConnect(wrapper, onReadyCb);
@@ -60,8 +73,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
-      impressions: new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
-      events: new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
+      impressions: isPartialConsumer ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
       // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).

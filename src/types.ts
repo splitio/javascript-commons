@@ -52,7 +52,7 @@ type EventConsts = {
  * SDK Modes.
  * @typedef {string} SDKMode
  */
-export type SDKMode = 'standalone' | 'consumer' | 'localhost';
+export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partial';
 /**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.

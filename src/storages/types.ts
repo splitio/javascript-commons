@@ -1,7 +1,7 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO } from '../types';
+import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
  * Interface of a custom storage wrapper.
@@ -411,8 +411,8 @@ export type IStorageSync = IStorageBase<
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
-  IImpressionsCacheAsync,
-  IEventsCacheAsync,
+  IImpressionsCacheAsync | IImpressionsCacheSync,
+  IEventsCacheAsync | IEventsCacheSync,
   ILatenciesCacheAsync,
   ICountsCacheAsync
 >
@@ -429,6 +429,9 @@ export interface IStorageFactoryParams {
   // ATM, only used by InLocalStorage
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
+
+  // ATM, only used by CustomStorage. True for partial consumer mode
+  mode?: SDKMode,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
