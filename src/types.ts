@@ -3,7 +3,7 @@ import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
-import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
+import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory } from './storages/types';
 import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
@@ -85,7 +85,7 @@ export interface ISettings {
     retriesOnFailureBeforeReady: number,
     eventsFirstPushWindow: number
   },
-  readonly storage: IStorageSyncFactory,
+  readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
   readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
   readonly urls: {
     events: string,

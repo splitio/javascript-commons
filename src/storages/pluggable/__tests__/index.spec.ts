@@ -31,13 +31,24 @@ describe('PLUGGABLE STORAGE', () => {
     assertStorageInterface(storage); // the instance must implement the storage interface
     expect(wrapperMock.connect).toBeCalledTimes(1); // wrapper connect method should be called once when storage is created
 
+    // shared storage has the same cache items than storage instance, but a no-op destroy
+    const sharedOnReadyCb = jest.fn();
+    const sharedStorage = storage.shared('some_key', sharedOnReadyCb);
+    assertStorageInterface(sharedStorage);
+    expect(sharedStorage.splits).toBe(storage.splits);
+    expect(wrapperMock.connect).toBeCalledTimes(2);
+
     expect(await storage.splits.getSplit('some_split')).toBe(null);
+    expect(await sharedStorage.splits.getSplit('some_split')).toBe(null);
+    expect(wrapperMock.get).toBeCalledTimes(2);
     expect(wrapperMock.get).toBeCalledWith(`${prefix}.SPLITIO.split.some_split`); // keys prefix should be the provided one
 
     await storage.destroy();
+    await sharedStorage.destroy();
     expect(wrapperMock.close).toBeCalledTimes(1); // wrapper close method should be called once when storage is destroyed
 
     expect(internalSdkParams.onReadyCb).toBeCalledTimes(1); // onReady callback should be called when the wrapper connect resolved with true
+    expect(sharedOnReadyCb).toBeCalledTimes(1);
   });
 
   test('throws an exception if wrapper doesn\'t implement the expected interface', async () => {

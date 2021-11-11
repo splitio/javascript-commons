@@ -63,7 +63,7 @@ export default class BrowserSignalListener implements ISignalListener {
    * using beacon API if possible, or falling back to regular post transport.
    */
   flushData() {
-    if (!this.syncManager) return; // In consumer mode there is not sync manager
+    if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
 
     const eventsUrl = this.settings.urls.events;
     const extraMetadata = {
