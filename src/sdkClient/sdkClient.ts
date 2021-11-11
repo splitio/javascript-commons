@@ -21,6 +21,7 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
       settings.log,
       clientFactory(params),
       sdkReadinessManager.readinessManager,
+      // storage is async if and only if mode is consumer or partial consumer
       [CONSUMER_MODE, CONSUMER_PARTIAL_MODE].indexOf(settings.mode) === -1 ? true : false,
     ),
 
