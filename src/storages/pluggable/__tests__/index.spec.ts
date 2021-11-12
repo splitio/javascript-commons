@@ -73,7 +73,7 @@ describe('PLUGGABLE STORAGE', () => {
 
   test('creates a storage instance for partial consumer mode (events and impressions cache in memory)', async () => {
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
-    const storage = storageFactory({ ...internalSdkParams, mode: CONSUMER_PARTIAL_MODE });
+    const storage = storageFactory({ ...internalSdkParams, mode: CONSUMER_PARTIAL_MODE, optimize: true });
 
     assertStorageInterface(storage);
     expect(wrapperMock.connect).toBeCalledTimes(1);
@@ -81,6 +81,7 @@ describe('PLUGGABLE STORAGE', () => {
     // Sync cache
     assertSyncRecorderCacheInterface(storage.events);
     assertSyncRecorderCacheInterface(storage.impressions);
+    assertSyncRecorderCacheInterface(storage.impressionCounts);
 
     // But event track is async
     const eventResult = storage.events.track('some data');

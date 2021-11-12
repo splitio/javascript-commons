@@ -11,6 +11,7 @@ import { validatePrefix } from '../KeyBuilder';
 import { CONSUMER_PARTIAL_MODE, STORAGE_CUSTOM } from '../../utils/constants';
 import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
+import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 
 const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -62,7 +63,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize, optimize }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
@@ -74,6 +75,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      impressionCounts: optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
