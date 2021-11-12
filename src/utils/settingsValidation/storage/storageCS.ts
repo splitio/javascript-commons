@@ -1,7 +1,7 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
-import { WARN_STORAGE_INVALID } from '../../../logger/constants';
+import { ERROR_STORAGE_INVALID } from '../../../logger/constants';
 import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_CUSTOM, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
 import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
 
@@ -17,7 +17,9 @@ __InLocalStorageMockFactory.type = STORAGE_MEMORY;
  *
  * @param {any} settings config object provided by the user to initialize the sdk
  *
- * @returns {Object} valid storage factory. It might be the default `InMemoryStorageCSFactory` if the provided storage is invalid.
+ * @returns {Object} valid storage factory. Default to `InMemoryStorageCSFactory` if the provided storage is invalid or not compatible with the sdk mode if mode is standalone or localhost
+ *
+ * @throws error if mode is consumer and the provided storage is not compatible
  */
 export function validateStorageCS(settings: { log: ILogger, storage?: any, mode: SDKMode }): ISettings['storage'] {
   let { storage = InMemoryStorageCSFactory, log, mode } = settings;
@@ -25,7 +27,7 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
   // If an invalid storage is provided, fallback into MEMORY
   if (typeof storage !== 'function' || [STORAGE_MEMORY, STORAGE_LOCALSTORAGE, STORAGE_CUSTOM].indexOf(storage.type) === -1) {
     storage = InMemoryStorageCSFactory;
-    log.warn(WARN_STORAGE_INVALID);
+    log.error(ERROR_STORAGE_INVALID);
   }
 
   // In localhost mode with InLocalStorage, fallback to a mock InLocalStorage to emit SDK_READY_FROM_CACHE
@@ -33,13 +35,15 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
     return __InLocalStorageMockFactory;
   }
 
-  // @TODO check behaviour
   if ([LOCALHOST_MODE, STANDALONE_MODE].indexOf(mode) === -1) {
     // Consumer modes require an async storage
-    if (storage.type !== STORAGE_CUSTOM) throw new Error('A CustomStorage instance is required on consumer modes');
+    if (storage.type !== STORAGE_CUSTOM) throw new Error('A CustomStorage instance is required on consumer mode');
   } else {
     // Standalone and localhost modes require a sync storage
-    if (storage.type === STORAGE_CUSTOM) throw new Error('A CustomStorage instance cannot be used on standalone and localhost modes');
+    if (storage.type === STORAGE_CUSTOM) {
+      storage = InMemoryStorageCSFactory;
+      log.error(ERROR_STORAGE_INVALID, ['. The provided storage requires to set consumer mode']);
+    }
   }
 
   // return default InMemory storage if provided one is not valid
