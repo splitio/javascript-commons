@@ -31,5 +31,5 @@ export const codesError: [number, string][] = [
   // initialization / settings validation
   [c.ERROR_INVALID_IMPRESSIONS_MODE, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "impressionsMode". It should be one of the following values: %s. Defaulting to "%s" mode.'],
   [c.ERROR_LOCALHOST_MODULE_REQUIRED, c.LOG_PREFIX_SETTINGS + ': an invalid value was received for "sync.localhostMode" config. A valid entity should be provided for localhost mode.'],
-  [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': The provided storage is invalid. Fallbacking into default MEMORY storage%s'],
+  [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': The provided storage is invalid.%s Fallbacking into default MEMORY storage'],
 ];

@@ -42,7 +42,7 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
     // Standalone and localhost modes require a sync storage
     if (storage.type === STORAGE_CUSTOM) {
       storage = InMemoryStorageCSFactory;
-      log.error(ERROR_STORAGE_INVALID, ['. The provided storage requires to set consumer mode']);
+      log.error(ERROR_STORAGE_INVALID, [' It requires consumer mode.']);
     }
   }
 
