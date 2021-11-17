@@ -68,7 +68,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     const wrapper = wrapperAdapter(log, options.wrapper);
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
 
-    // emit SDK_READY event on main client
+    // Connects to wrapper and emits SDK_READY event on main client
     wrapperConnect(wrapper, onReadyCb);
 
     return {

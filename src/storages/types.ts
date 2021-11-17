@@ -430,7 +430,7 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // ATM, only used by CustomStorage. True for partial consumer mode
+  // ATM, only used by CustomStorage
   mode?: SDKMode,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
