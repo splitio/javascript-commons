@@ -46,7 +46,7 @@ describe('PLUGGABLE STORAGE', () => {
 
     await storage.destroy();
     await sharedStorage.destroy();
-    expect(wrapperMock.close).toBeCalledTimes(1); // wrapper close method should be called once when storage is destroyed
+    expect(wrapperMock.disconnect).toBeCalledTimes(1); // wrapper disconnect method should be called once when storage is destroyed
 
     expect(internalSdkParams.onReadyCb).toBeCalledTimes(1); // onReady callback should be called when the wrapper connect resolved with true
     expect(sharedOnReadyCb).toBeCalledTimes(1);
@@ -65,7 +65,7 @@ describe('PLUGGABLE STORAGE', () => {
     // Throws exception if the given object is not a valid wrapper, informing which methods are missing
     const invalidWrapper = wrapperMockFactory();
     invalidWrapper.connect = undefined;
-    invalidWrapper.close = 'invalid function';
+    invalidWrapper.disconnect = 'invalid function';
     const errorNoValidWrapperInterface = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
     expect(() => PluggableStorage({ wrapper: invalidWrapper })).toThrow(errorNoValidWrapperInterface);
     expect(() => PluggableStorage({ wrapper: {} })).toThrow(errorNoValidWrapperInterface);

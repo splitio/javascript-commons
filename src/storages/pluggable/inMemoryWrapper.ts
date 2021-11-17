@@ -112,7 +112,7 @@ export function inMemoryWrapperFactory(connDelay?: number): ICustomStorageWrappe
       return Promise.reject('key is not a set');
     },
 
-    // always connects and close
+    // always connects and disconnects
     connect() {
       if (typeof _connDelay === 'number') {
         return new Promise(res => setTimeout(res, _connDelay));
@@ -120,7 +120,7 @@ export function inMemoryWrapperFactory(connDelay?: number): ICustomStorageWrappe
         return Promise.resolve();
       }
     },
-    close() { return Promise.resolve(); },
+    disconnect() { return Promise.resolve(); },
 
     // for testing
     _setConnDelay(connDelay: number) {

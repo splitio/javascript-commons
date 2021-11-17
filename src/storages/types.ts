@@ -177,15 +177,15 @@ export interface ICustomStorageWrapper {
    */
   connect: () => Promise<void>
   /**
-   * Disconnects the underlying storage.
+   * Disconnects from the underlying storage.
    * It is meant for storages that requires to be closed, in order to release resources. Otherwise it can just return a resolved promise.
    * Note: will be called once on SplitFactory main client destroy.
    *
-   * @function close
+   * @function disconnect
    * @returns {Promise<void>} A promise that resolves when the operation ends.
    * The promise never rejects.
    */
-  close: () => Promise<void>
+  disconnect: () => Promise<void>
 }
 
 /** Splits cache */

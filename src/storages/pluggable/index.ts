@@ -79,9 +79,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required
 
-      // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).
+      // Disconnect the underlying storage
       destroy() {
-        return wrapper.close();
+        return wrapper.disconnect();
       },
 
       // emits SDK_READY event on shared clients and returns a reference to the storage
@@ -89,7 +89,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
         wrapperConnect(wrapper, onReadyCb);
         return {
           ...this,
-          // no-op destroy, to close the wrapper only when the main client is destroyed
+          // no-op destroy, to disconnect the wrapper only when the main client is destroyed
           destroy() { }
         };
       }
