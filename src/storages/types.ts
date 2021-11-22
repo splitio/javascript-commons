@@ -4,9 +4,9 @@ import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/s
 import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
- * Interface of a custom storage wrapper.
+ * Interface of a pluggable storage wrapper.
  */
-export interface ICustomStorageWrapper {
+export interface IPluggableStorageWrapper {
 
   /** Key-Value operations */
 
@@ -430,7 +430,7 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
-  // ATM, only used by CustomStorage
+  // ATM, only used by PluggableStorage
   mode?: SDKMode,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
@@ -440,7 +440,7 @@ export interface IStorageFactoryParams {
   metadata: IMetadata,
 }
 
-export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'CUSTOM';
+export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
 export type IStorageSyncFactory = {
   type: StorageType,

@@ -40,7 +40,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // ATM, only used by CustomStorage
+    // ATM, only used by PluggableStorage
     mode: settings.mode,
 
     // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined

@@ -5,8 +5,8 @@ import { loggerMock as log } from '../../../../logger/__tests__/sdkLogger.mock';
 const mockInLocalStorageFactory = () => { };
 mockInLocalStorageFactory.type = 'LOCALSTORAGE';
 
-const mockCustomStorageFactory = () => { };
-mockCustomStorageFactory.type = 'CUSTOM';
+const mockPluggableStorageFactory = () => { };
+mockPluggableStorageFactory.type = 'PLUGGABLE';
 
 describe('storage validator for pluggable storage (client-side)', () => {
 
@@ -38,13 +38,13 @@ describe('storage validator for pluggable storage (client-side)', () => {
   });
 
   test('throws error if the provided storage factory is not compatible with the mode', () => {
-    expect(() => { validateStorageCS({ log, mode: 'consumer', storage: mockInLocalStorageFactory }); }).toThrow('A CustomStorage instance is required on consumer mode');
-    expect(() => { validateStorageCS({ log, mode: 'consumer_partial', storage: mockInLocalStorageFactory }); }).toThrow('A CustomStorage instance is required on consumer mode');
+    expect(() => { validateStorageCS({ log, mode: 'consumer', storage: mockInLocalStorageFactory }); }).toThrow('A PluggableStorage instance is required on consumer mode');
+    expect(() => { validateStorageCS({ log, mode: 'consumer_partial', storage: mockInLocalStorageFactory }); }).toThrow('A PluggableStorage instance is required on consumer mode');
 
     expect(log.error).not.toBeCalled();
 
-    expect(validateStorageCS({ log, mode: 'standalone', storage: mockCustomStorageFactory })).toBe(InMemoryStorageCSFactory);
-    expect(validateStorageCS({ log, mode: 'localhost', storage: mockCustomStorageFactory })).toBe(InMemoryStorageCSFactory);
+    expect(validateStorageCS({ log, mode: 'standalone', storage: mockPluggableStorageFactory })).toBe(InMemoryStorageCSFactory);
+    expect(validateStorageCS({ log, mode: 'localhost', storage: mockPluggableStorageFactory })).toBe(InMemoryStorageCSFactory);
 
     expect(log.error).toBeCalledTimes(2);
   });

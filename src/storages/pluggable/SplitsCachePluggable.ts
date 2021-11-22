@@ -1,6 +1,6 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import KeyBuilder from '../KeyBuilder';
-import { ICustomStorageWrapper } from '../types';
+import { IPluggableStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
@@ -13,15 +13,15 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
-  private readonly wrapper: ICustomStorageWrapper;
+  private readonly wrapper: IPluggableStorageWrapper;
 
   /**
-   * Create a SplitsCache that uses a custom storage wrapper.
+   * Create a SplitsCache that uses a storage wrapper.
    * @param log  Logger instance.
    * @param keys  Key builder.
    * @param wrapper  Adapted wrapper storage.
    */
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: ICustomStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper) {
     super();
     this.log = log;
     this.keys = keys;

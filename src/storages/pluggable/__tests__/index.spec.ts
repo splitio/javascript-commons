@@ -57,7 +57,7 @@ describe('PLUGGABLE STORAGE', () => {
     expect(() => PluggableStorage({ wrapper: wrapperMock })).not.toThrow(); // not prefix but valid wrapper is OK
 
     // Throws exception if no object is passed as wrapper
-    const errorNoValidWrapper = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
+    const errorNoValidWrapper = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
     expect(() => PluggableStorage()).toThrow(errorNoValidWrapper);
     expect(() => PluggableStorage({ wrapper: undefined })).toThrow(errorNoValidWrapper);
     expect(() => PluggableStorage({ wrapper: 'invalid wrapper' })).toThrow(errorNoValidWrapper);

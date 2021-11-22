@@ -1,6 +1,6 @@
 import { startsWith, toNumber } from '../../../utils/lang';
 
-// Creates an in memory ICustomStorageWrapper implementation with Jest mocks
+// Creates an in memory IPluggableStorageWrapper implementation with Jest mocks
 export function wrapperMockFactory() {
 
   /** Holds items and list of items */

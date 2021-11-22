@@ -1,4 +1,4 @@
-import { ICustomStorageWrapper, IImpressionsCacheAsync } from '../types';
+import { IPluggableStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
 import { ILogger } from '../../logger/types';
@@ -8,10 +8,10 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly wrapper: ICustomStorageWrapper;
+  private readonly wrapper: IPluggableStorageWrapper;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, key: string, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, wrapper: IPluggableStorageWrapper, metadata: IMetadata) {
     this.log = log;
     this.key = key;
     this.wrapper = wrapper;
