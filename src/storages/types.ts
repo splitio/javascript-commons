@@ -1,10 +1,10 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO } from '../types';
+import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
- * Interface of a custom wrapper storage.
+ * Interface of a custom storage wrapper.
  */
 export interface ICustomStorageWrapper {
 
@@ -28,7 +28,7 @@ export interface ICustomStorageWrapper {
    * @returns {Promise<void>} A promise that resolves if the operation success, whether the key was added or updated.
    * The promise rejects if the operation fails.
    */
-  set: (key: string, value: string) => Promise<void | boolean>
+  set: (key: string, value: string) => Promise<boolean | void>
   /**
    * Add or update an item with a specified `key` and `value`.
    *
@@ -47,7 +47,7 @@ export interface ICustomStorageWrapper {
    * @returns {Promise<void>} A promise that resolves if the operation success, whether the key existed and was removed or it didn't exist.
    * The promise rejects if the operation fails, for example, if there is a connection error.
    */
-  del: (key: string) => Promise<void | boolean>
+  del: (key: string) => Promise<boolean | void>
   /**
    * Returns all keys matching the given prefix.
    *
@@ -140,20 +140,20 @@ export interface ICustomStorageWrapper {
    * @function addItems
    * @param {string} key Set key
    * @param {string} items Items to add
-   * @returns {Promise<void>} A promise that resolves if the operation success.
+   * @returns {Promise<boolean | void>} A promise that resolves if the operation success.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
-  addItems: (key: string, items: string[]) => Promise<void>
+  addItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Remove the specified `items` from the set stored at `key`. Those items that are not part of the set are ignored.
    *
    * @function removeItems
    * @param {string} key Set key
    * @param {string} items Items to remove
-   * @returns {Promise<void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
+   * @returns {Promise<boolean | void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
-  removeItems: (key: string, items: string[]) => Promise<void>
+  removeItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Returns all the items of the `key` set.
    *
@@ -169,7 +169,7 @@ export interface ICustomStorageWrapper {
   /**
    * Connects to the underlying storage.
    * It is meant for storages that requires to be connected to some database or server. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory instantiation.
+   * Note: will be called once on SplitFactory instantiation and once per each shared client instantiation.
    *
    * @function connect
    * @returns {Promise<void>} A promise that resolves when the wrapper successfully connect to the underlying storage.
@@ -177,15 +177,15 @@ export interface ICustomStorageWrapper {
    */
   connect: () => Promise<void>
   /**
-   * Disconnects the underlying storage.
+   * Disconnects from the underlying storage.
    * It is meant for storages that requires to be closed, in order to release resources. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory client destroy.
+   * Note: will be called once on SplitFactory main client destroy.
    *
-   * @function close
+   * @function disconnect
    * @returns {Promise<void>} A promise that resolves when the operation ends.
    * The promise never rejects.
    */
-  close: () => Promise<void>
+  disconnect: () => Promise<void>
 }
 
 /** Splits cache */
@@ -271,7 +271,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   addToSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   removeFromSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
-  isInSegment(name: string, key?: string): Promise<boolean>
+  isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
   setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
@@ -395,7 +395,8 @@ export interface IStorageBase<
   events: TEventsCache,
   latencies?: TLatenciesCache,
   counts?: TCountsCache,
-  destroy(): void,
+  destroy(): void | Promise<void>,
+  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
 
 export type IStorageSync = IStorageBase<
@@ -407,15 +408,11 @@ export type IStorageSync = IStorageBase<
   ICountsCacheSync
 >
 
-export interface IStorageSyncCS extends IStorageSync {
-  shared(matchingKey: string): IStorageSync
-}
-
 export type IStorageAsync = IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
-  IImpressionsCacheAsync,
-  IEventsCacheAsync,
+  IImpressionsCacheAsync | IImpressionsCacheSync,
+  IEventsCacheAsync | IEventsCacheSync,
   ILatenciesCacheAsync,
   ICountsCacheAsync
 >
@@ -433,10 +430,13 @@ export interface IStorageFactoryParams {
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
 
+  // ATM, only used by CustomStorage
+  mode?: SDKMode,
+
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
-  onReadyCb?: (error?: any) => void,
+  onReadyCb: (error?: any) => void,
   metadata: IMetadata,
 }
 

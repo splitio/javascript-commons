@@ -1,6 +1,6 @@
 import objectAssign from 'object-assign';
 import { IStatusInterface, SplitIO } from '../types';
-import { CONSUMER_MODE } from '../utils/constants';
+import { CONSUMER_MODE, CONSUMER_PARTIAL_MODE } from '../utils/constants';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import clientFactory from './client';
 import clientInputValidationDecorator from './clientInputValidation';
@@ -21,8 +21,8 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
       settings.log,
       clientFactory(params),
       sdkReadinessManager.readinessManager,
-      // @TODO isStorageSync could be extracted from the storage itself (e.g. `storage.isSync`) to simplify interfaces
-      settings.mode === CONSUMER_MODE ? false : true,
+      // storage is async if and only if mode is consumer or partial consumer
+      [CONSUMER_MODE, CONSUMER_PARTIAL_MODE].indexOf(settings.mode) === -1 ? true : false,
     ),
 
     // Sdk destroy
@@ -37,11 +37,11 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
 
-          // Cleanup storage
-          storage.destroy();
-
           // Release the API Key if it is the main client
           if (!sharedClient) releaseApiKey(settings.core.authorizationKey);
+
+          // Cleanup storage
+          return storage.destroy();
         });
       }
     }

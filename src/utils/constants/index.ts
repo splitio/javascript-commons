@@ -1,4 +1,5 @@
 import { StorageType } from '../../storages/types';
+import { SDKMode } from '../../types';
 
 // Special treatments
 export const CONTROL = 'control';
@@ -20,10 +21,11 @@ export const DEBUG = 'DEBUG';
 export const OPTIMIZED = 'OPTIMIZED';
 
 // SDK Modes
-export const LOCALHOST_MODE = 'localhost';
-export const STANDALONE_MODE = 'standalone';
+export const LOCALHOST_MODE: SDKMode = 'localhost';
+export const STANDALONE_MODE: SDKMode = 'standalone';
 export const PRODUCER_MODE = 'producer';
-export const CONSUMER_MODE = 'consumer';
+export const CONSUMER_MODE: SDKMode = 'consumer';
+export const CONSUMER_PARTIAL_MODE: SDKMode = 'consumer_partial';
 
 // Storage types
 export const STORAGE_MEMORY: StorageType = 'MEMORY';

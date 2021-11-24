@@ -5,10 +5,10 @@ import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
-import { IStorageSyncCS } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
 import objectAssign from 'object-assign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
+import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 
 function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
   // @ts-ignore
@@ -72,15 +72,25 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
       const matchingKey = getMatching(validKey);
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
-      const sharedStorage = (storage as IStorageSyncCS).shared(matchingKey);
-      const sharedSyncManager = (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
+      const sharedStorage = storage.shared && storage.shared(matchingKey, (err) => {
+        if (err) return;
+        // Emit SDK_READY in consumer mode for shared clients
+        sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      });
+
+      // 3 possibilities:
+      // - Standalone mode: both syncManager and sharedSyncManager are defined
+      // - Consumer mode: both syncManager and sharedSyncManager are undefined
+      // - Consumer partial mode: syncManager is defined (only for submitters) but sharedSyncManager is undefined
+      // @ts-ignore
+      const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
       clientInstances[instanceId] = clientCSDecorator(
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
-          storage: sharedStorage,
+          storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
           sharedClient: true
@@ -89,7 +99,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
         validTrafficType
       );
 
-      sharedSyncManager.start();
+      sharedSyncManager && sharedSyncManager.start();
 
       log.info(NEW_SHARED_CLIENT);
     } else {

@@ -13,9 +13,6 @@ import { STORAGE_MEMORY } from '../../utils/constants';
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
 
-  // InMemory storage is always ready
-  if (params.onReadyCb) setTimeout(params.onReadyCb);
-
   return {
     splits: new SplitsCacheInMemory(),
     segments: new SegmentsCacheInMemory(),

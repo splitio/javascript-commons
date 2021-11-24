@@ -91,9 +91,8 @@ export const WARN_INTEGRATION_INVALID = 218;
 export const WARN_SPLITS_FILTER_IGNORED = 219;
 export const WARN_SPLITS_FILTER_INVALID = 220;
 export const WARN_SPLITS_FILTER_EMPTY = 221;
-export const WARN_STORAGE_INVALID = 222;
-export const WARN_API_KEY = 223;
-export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 224;
+export const WARN_API_KEY = 222;
+export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 223;
 
 export const ERROR_ENGINE_COMBINER_IFELSEIF = 300;
 export const ERROR_LOGLEVEL_INVALID = 301;
@@ -119,6 +118,7 @@ export const ERROR_EMPTY_ARRAY = 320;
 export const ERROR_INVALID_IMPRESSIONS_MODE = 321;
 export const ERROR_HTTP = 322;
 export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
+export const ERROR_STORAGE_INVALID = 324;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';

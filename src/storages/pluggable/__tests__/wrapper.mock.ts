@@ -103,9 +103,9 @@ export function wrapperMockFactory() {
       return Promise.reject('key is not a set');
     }),
 
-    // always connects and close
+    // always connects and disconnects
     connect: jest.fn(() => Promise.resolve()),
-    close: jest.fn(() => Promise.resolve()),
+    disconnect: jest.fn(() => Promise.resolve()),
 
     mockClear() {
       this._cache = {};
@@ -117,7 +117,7 @@ export function wrapperMockFactory() {
       this.decr.mockClear();
       this.getMany.mockClear();
       this.connect.mockClear();
-      this.close.mockClear();
+      this.disconnect.mockClear();
       this.getAndSet.mockClear();
       this.pushItems.mockClear();
       this.popItems.mockClear();

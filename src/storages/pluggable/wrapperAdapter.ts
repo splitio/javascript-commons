@@ -19,7 +19,7 @@ export const METHODS_TO_PROMISE_WRAP: string[] = [
   'removeItems',
   'getItems',
   'connect',
-  'close'
+  'disconnect'
 ];
 
 /**

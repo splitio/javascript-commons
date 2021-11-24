@@ -29,7 +29,6 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_SPLITS_FILTER_IGNORED, c.LOG_PREFIX_SETTINGS+': split filters have been configured but will have no effect if mode is not "%s", since synchronization is being deferred to an external tool.'],
   [c.WARN_SPLITS_FILTER_INVALID, c.LOG_PREFIX_SETTINGS+': split filter at position %s is invalid. It must be an object with a valid filter type ("byName" or "byPrefix") and a list of "values".'],
   [c.WARN_SPLITS_FILTER_EMPTY, c.LOG_PREFIX_SETTINGS+': splitFilters configuration must be a non-empty array of filter objects.'],
-  [c.WARN_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': The provided storage is invalid. Fallbacking into default MEMORY storage'],
   [c.WARN_API_KEY, c.LOG_PREFIX_SETTINGS+': You already have %s. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application'],
 
   [c.STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching MySegments due to an error processing %s notification: %s'],
