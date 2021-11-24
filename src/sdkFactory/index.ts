@@ -40,6 +40,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
+    // ATM, only used by CustomStorage
+    mode: settings.mode,
+
     // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined
     // or only instantiates submitters, and therefore it is not able to emit readiness events.
     onReadyCb: (error) => {

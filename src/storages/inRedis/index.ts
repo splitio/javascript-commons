@@ -30,7 +30,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
-      if (onReadyCb) onReadyCb();
+      onReadyCb();
     });
 
     return {

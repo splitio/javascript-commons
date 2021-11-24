@@ -77,6 +77,11 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
         // Emit SDK_READY in consumer mode for shared clients
         sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
       });
+
+      // 3 possibilities:
+      // - Standalone mode: both syncManager and sharedSyncManager are defined
+      // - Consumer mode: both syncManager and sharedSyncManager are undefined
+      // - Consumer partial mode: syncManager is defined (only for submitters) but sharedSyncManager is undefined
       // @ts-ignore
       const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 

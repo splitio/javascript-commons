@@ -16,7 +16,10 @@ function userKeyToQueryParam(userKey: string) {
  * @param settings validated settings object
  * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
-export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
+export function splitApiFactory(
+  settings: Pick<ISettings, 'urls' | 'sync' | 'log' | 'version' | 'runtime' | 'core'>,
+  platform: Pick<IPlatform, 'getFetch' | 'getOptions'>
+): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
