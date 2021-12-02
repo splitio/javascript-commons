@@ -1,3 +1,4 @@
+import { IEventSourceConstructor } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
@@ -31,9 +32,9 @@ function buildSSEHeaders(settings: ISettings) {
  */
 export default class SSEClient implements ISSEClient {
   // Instance properties:
-  eventSource: typeof EventSource;
+  eventSource?: IEventSourceConstructor;
   streamingUrl: string;
-  connection?: InstanceType<typeof EventSource>;
+  connection?: InstanceType<IEventSourceConstructor>;
   handler?: ISseEventHandler;
   useHeaders?: boolean;
   headers: Record<string, string>;
@@ -46,8 +47,7 @@ export default class SSEClient implements ISSEClient {
    * @param getEventSource Function to get the EventSource constructor.
    * @throws 'EventSource API is not available. ' if EventSource is not available.
    */
-  constructor(settings: ISettings, useHeaders?: boolean, getEventSource?: () => (typeof EventSource | undefined)) {
-    // @ts-expect-error
+  constructor(settings: ISettings, useHeaders?: boolean, getEventSource?: () => (IEventSourceConstructor | undefined)) {
     this.eventSource = getEventSource && getEventSource();
     // if eventSource is not available, throw an exception
     if (!this.eventSource) throw new Error('EventSource API is not available. ');
@@ -79,7 +79,7 @@ export default class SSEClient implements ISSEClient {
     ).join(',');
     const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
 
-    this.connection = new this.eventSource(
+    this.connection = new this.eventSource!(
       // For client-side SDKs, SplitSDKClientKey and SplitSDKClientKey metadata is passed as query params,
       // because native EventSource implementations for browser doesn't support headers.
       this.useHeaders ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,

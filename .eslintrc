@@ -15,7 +15,6 @@
 
   "globals": {
     // global TS types
-    "EventSource": "readonly", // @TODO remove. Configure as a type declaration
     "MessageEvent": "readonly", // @TODO remove. Configure as a type declaration
     "Event": "readonly", // @TODO remove. Configure as a type declaration
     "UniversalAnalytics": "readonly" // @TODO remove when moving GA integrations to Browser-SDK
