@@ -18,7 +18,7 @@ export default class EventEmitter implements IEventEmitter {
     boolean // whether it is a one-time listener or not
   ]>> = {};
 
-  private registerListener(type: string, listener: (...args: any[]) => void, oneTime: boolean): EventEmitter {
+  private registerListener(type: string, listener: (...args: any[]) => void, oneTime: boolean) {
     checkListener(listener);
 
     // To avoid recursion in the case that type === "newListener" before
@@ -33,27 +33,27 @@ export default class EventEmitter implements IEventEmitter {
     return this;
   }
 
-  addListener(type: string, listener: (...args: any[]) => void): EventEmitter {
+  addListener(type: string, listener: (...args: any[]) => void) {
     return this.registerListener(type, listener, false);
   }
 
   // alias of addListener
-  on(type: string, listener: (...args: any[]) => void): EventEmitter {
+  on(type: string, listener: (...args: any[]) => void) {
     return this.addListener(type, listener);
   }
 
-  once(type: string, listener: (...args: any[]) => void): EventEmitter {
+  once(type: string, listener: (...args: any[]) => void) {
     return this.registerListener(type, listener, true);
   }
 
-  // eslint-disable-next-line
-  removeListener(type: string, listener: (...args: any[]) => void): EventEmitter {
+  // @ts-ignore
+  removeListener(/* type: string, listener: (...args: any[]) => void */) {
     throw new Error('Method not implemented.');
   }
 
-  // alias of removeListener
-  off(type: string, listener: (...args: any[]) => void): EventEmitter {
-    return this.removeListener(type, listener);
+  // @ts-ignore alias of removeListener
+  off(/* type: string, listener: (...args: any[]) => void */) {
+    return this.removeListener(/* type, listener */);
   }
 
   emit(type: string, ...args: any[]): boolean {
@@ -68,7 +68,7 @@ export default class EventEmitter implements IEventEmitter {
     return true;
   }
 
-  removeAllListeners(type?: string): EventEmitter {
+  removeAllListeners(type?: string) {
     if (!this.listeners[REMOVE_LISTENER_EVENT]) {
       // if not listening for `removeListener`, no need to emit
       if (type) {
