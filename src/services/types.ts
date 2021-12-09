@@ -75,4 +75,4 @@ interface IEventSource {
 	close(): void
 }
 
-export type IEventSourceConstructor = new (url: string, eventSourceInitDict?: { headers?: object }) => IEventSource
+export type IEventSourceConstructor = new (url: string, eventSourceInitDict?: any) => IEventSource
