@@ -30,8 +30,6 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { IEventEmitter } from '../types';
-
 var R = typeof Reflect === 'object' ? Reflect : null;
 var ReflectApply = R && typeof R.apply === 'function'
   ? R.apply
@@ -39,14 +37,9 @@ var ReflectApply = R && typeof R.apply === 'function'
     return Function.prototype.apply.call(target, receiver, args);
   };
 
-function EventEmitter() {
+export default function EventEmitter() {
   EventEmitter.init.call(this);
 }
-
-export default EventEmitter as new () => IEventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
 
 EventEmitter.prototype._events = undefined;
 EventEmitter.prototype._eventsCount = 0;
