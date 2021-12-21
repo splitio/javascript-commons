@@ -1,5 +1,5 @@
 import { ILogger } from '../../logger/types';
-import { ICustomStorageWrapper } from '../types';
+import { IPluggableStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 
 export const METHODS_TO_PROMISE_WRAP: string[] = [
@@ -23,14 +23,14 @@ export const METHODS_TO_PROMISE_WRAP: string[] = [
 ];
 
 /**
- * Adapter of the Custom Storage Wrapper.
+ * Adapter of the Pluggable Storage Wrapper.
  * Used to handle exceptions as rejected promises, in order to simplify the error handling on storages.
  *
  * @param log logger instance
- * @param wrapper custom storage wrapper to adapt
+ * @param wrapper storage wrapper to adapt
  * @returns an adapted version of the given storage wrapper
  */
-export function wrapperAdapter(log: ILogger, wrapper: ICustomStorageWrapper): ICustomStorageWrapper {
+export function wrapperAdapter(log: ILogger, wrapper: IPluggableStorageWrapper): IPluggableStorageWrapper {
 
   const wrapperAdapter: Record<string, Function> = {};
 

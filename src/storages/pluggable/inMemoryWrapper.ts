@@ -1,15 +1,15 @@
-import { ICustomStorageWrapper } from '../types';
+import { IPluggableStorageWrapper } from '../types';
 import { startsWith, toNumber } from '../../utils/lang';
 import { ISet, setToArray, _Set } from '../../utils/lang/sets';
 
 /**
- * Creates a ICustomStorageWrapper implementation that stores items in memory.
+ * Creates a IPluggableStorageWrapper implementation that stores items in memory.
  * The `_cache` property is the object were items are stored.
  * Intended for testing purposes.
  *
  * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves inmediatelly.
  */
-export function inMemoryWrapperFactory(connDelay?: number): ICustomStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>>, _setConnDelay(connDelay: number): void } {
+export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>>, _setConnDelay(connDelay: number): void } {
 
   let _cache: Record<string, string | string[] | ISet<string>> = {};
   let _connDelay = connDelay;

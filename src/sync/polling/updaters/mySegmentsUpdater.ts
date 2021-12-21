@@ -38,7 +38,7 @@ export function mySegmentsUpdaterFactory(
     // mySegmentsPromise = tracker.start(tracker.TaskNames.MY_SEGMENTS_FETCH, startingUp ? metricCollectors : false, mySegmentsPromise);
   }
 
-  // @TODO if allowing custom storages, handle async execution
+  // @TODO if allowing pluggable storages, handle async execution
   function updateSegments(segmentsData: SegmentsData) {
 
     let shouldNotifyUpdate;

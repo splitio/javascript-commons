@@ -2,7 +2,7 @@ import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemorySto
 import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { ERROR_STORAGE_INVALID } from '../../../logger/constants';
-import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_CUSTOM, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
+import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_PLUGGABLE, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
 import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
 
 export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSync {
@@ -25,7 +25,7 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
   let { storage = InMemoryStorageCSFactory, log, mode } = settings;
 
   // If an invalid storage is provided, fallback into MEMORY
-  if (typeof storage !== 'function' || [STORAGE_MEMORY, STORAGE_LOCALSTORAGE, STORAGE_CUSTOM].indexOf(storage.type) === -1) {
+  if (typeof storage !== 'function' || [STORAGE_MEMORY, STORAGE_LOCALSTORAGE, STORAGE_PLUGGABLE].indexOf(storage.type) === -1) {
     storage = InMemoryStorageCSFactory;
     log.error(ERROR_STORAGE_INVALID);
   }
@@ -37,10 +37,10 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
 
   if ([LOCALHOST_MODE, STANDALONE_MODE].indexOf(mode) === -1) {
     // Consumer modes require an async storage
-    if (storage.type !== STORAGE_CUSTOM) throw new Error('A CustomStorage instance is required on consumer mode');
+    if (storage.type !== STORAGE_PLUGGABLE) throw new Error('A PluggableStorage instance is required on consumer mode');
   } else {
     // Standalone and localhost modes require a sync storage
-    if (storage.type === STORAGE_CUSTOM) {
+    if (storage.type === STORAGE_PLUGGABLE) {
       storage = InMemoryStorageCSFactory;
       log.error(ERROR_STORAGE_INVALID, [' It requires consumer mode.']);
     }

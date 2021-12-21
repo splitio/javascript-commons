@@ -3,7 +3,7 @@ import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISdkClientFactoryParams } from '../sdkClient/types';
-import { IFetch, ISplitApi } from '../services/types';
+import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
@@ -16,7 +16,7 @@ import { SplitIO, ISettings, IEventEmitter } from '../types';
 export interface IPlatform {
   getOptions?: () => object
   getFetch?: () => (IFetch | undefined)
-  getEventSource?: () => (typeof EventSource | undefined)
+  getEventSource?: () => (IEventSourceConstructor | undefined)
   EventEmitter: new () => IEventEmitter
 }
 

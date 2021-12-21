@@ -1,4 +1,4 @@
-import { ICustomStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
+import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 
 import KeyBuilderSS from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
@@ -8,17 +8,17 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { validatePrefix } from '../KeyBuilder';
-import { CONSUMER_PARTIAL_MODE, STORAGE_CUSTOM } from '../../utils/constants';
+import { CONSUMER_PARTIAL_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
 import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
 import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
 
-const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
+const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
 
 export interface PluggableStorageOptions {
   prefix?: string
-  wrapper: ICustomStorageWrapper
+  wrapper: IPluggableStorageWrapper
 }
 
 /**
@@ -36,7 +36,7 @@ function validatePluggableStorageOptions(options: any) {
 }
 
 // subscription to wrapper connect event in order to emit SDK_READY event
-function wrapperConnect(wrapper: ICustomStorageWrapper, onReadyCb: (error?: any) => void) {
+function wrapperConnect(wrapper: IPluggableStorageWrapper, onReadyCb: (error?: any) => void) {
   wrapper.connect().then(() => {
     onReadyCb();
   }).catch((e) => {
@@ -96,6 +96,6 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     };
   }
 
-  PluggableStorageFactory.type = STORAGE_CUSTOM;
+  PluggableStorageFactory.type = STORAGE_PLUGGABLE;
   return PluggableStorageFactory;
 }

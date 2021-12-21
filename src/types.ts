@@ -7,15 +7,16 @@ import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory
 import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
- * EventEmitter interface with the minimal methods used by the SDK
+ * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
+ * @see {@link https://nodejs.org/api/events.html}
  */
-export interface IEventEmitter extends Pick<NodeJS.EventEmitter, 'addListener' | 'on' | 'once' | 'removeListener' | 'off' | 'removeAllListeners' | 'emit'> {
-  addListener(event: string, listener: (...args: any[]) => void): any;
-  on(event: string, listener: (...args: any[]) => void): any
-  once(event: string, listener: (...args: any[]) => void): any
-  removeListener(event: string, listener: (...args: any[]) => void): any;
-  off(event: string, listener: (...args: any[]) => void): any;
-  removeAllListeners(event?: string): any
+export interface IEventEmitter {
+  addListener(event: string, listener: (...args: any[]) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  removeListener(event: string, listener: (...args: any[]) => void): this;
+  off(event: string, listener: (...args: any[]) => void): this;
+  removeAllListeners(event?: string): this
   emit(event: string, ...args: any[]): boolean
 }
 

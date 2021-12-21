@@ -31,4 +31,4 @@ export const CONSUMER_PARTIAL_MODE: SDKMode = 'consumer_partial';
 export const STORAGE_MEMORY: StorageType = 'MEMORY';
 export const STORAGE_LOCALSTORAGE: StorageType = 'LOCALSTORAGE';
 export const STORAGE_REDIS: StorageType = 'REDIS';
-export const STORAGE_CUSTOM: StorageType = 'CUSTOM';
+export const STORAGE_PLUGGABLE: StorageType = 'PLUGGABLE';
