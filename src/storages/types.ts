@@ -70,7 +70,7 @@ export interface IPluggableStorageWrapper {
   /** Integer operations */
 
   /**
-   * Increments in 1 the given `key` value or set it in 1 if the value doesn't exist.
+   * Increments in 1 the given `key` value or set it to 1 if the value doesn't exist.
    *
    * @function incr
    * @param {string} key Key to increment
@@ -79,7 +79,7 @@ export interface IPluggableStorageWrapper {
    */
   incr: (key: string) => Promise<number>
   /**
-   * Decrements in 1 the given `key` value or set it in -1 if the value doesn't exist.
+   * Decrements in 1 the given `key` value or set it to -1 if the value doesn't exist.
    *
    * @function decr
    * @param {string} key Key to decrement

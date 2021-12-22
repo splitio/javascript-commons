@@ -46,7 +46,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined
     // or only instantiates submitters, and therefore it is not able to emit readiness events.
     onReadyCb: (error) => {
-      if (error) return; // don't emit SDK_READY if storage failed to connect.
+      if (error) return; // Don't emit SDK_READY if storage failed to connect. Error message is logged by wrapperAdapter
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     },

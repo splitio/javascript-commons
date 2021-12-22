@@ -21,9 +21,9 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_TRIMMING_PROPERTIES, '%s: Event has more than 300 properties. Some of them will be trimmed when processed.'],
   [c.WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [c.WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
-  [c.WARN_NOT_EXISTENT_SPLIT, '%s: split "%s" does not exist in this environment, please double check what splits exist in the web console.'],
+  [c.WARN_NOT_EXISTENT_SPLIT, '%s: split "%s" does not exist in this environment, please double check what splits exist in the Split web console.'],
   [c.WARN_LOWERCASE_TRAFFIC_TYPE, '%s: traffic_type_name should be all lowercase - converting string to lowercase.'],
-  [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding split in this environment, make sure you\'re tracking your events to a valid traffic type defined in the web console.'],
+  [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding split in this environment, make sure you\'re tracking your events to a valid traffic type defined in the Split web console.'],
   // initialization / settings validation
   [c.WARN_INTEGRATION_INVALID, c.LOG_PREFIX_SETTINGS+': %s integration item(s) at settings is invalid. %s'],
   [c.WARN_SPLITS_FILTER_IGNORED, c.LOG_PREFIX_SETTINGS+': split filters have been configured but will have no effect if mode is not "%s", since synchronization is being deferred to an external tool.'],

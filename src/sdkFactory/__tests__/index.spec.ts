@@ -2,7 +2,7 @@ import { ISdkFactoryParams } from '../types';
 import { sdkFactory } from '../index';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { SplitIO } from '../../types';
-import EventEmitter from '../../utils/MinEvents';
+import { EventEmitter } from '../../utils/MinEvents';
 
 /** Mocks */
 
