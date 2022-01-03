@@ -1,14 +1,14 @@
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
-import AbstractSplitsCacheSync, { usesSegments } from '../AbstractSplitsCacheSync';
+import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
-import KeyBuilderCS from '../KeyBuilderCS';
+import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
  */
-export default class SplitsCacheInLocal extends AbstractSplitsCacheSync {
+export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly splitFiltersValidation: ISplitFiltersValidation;

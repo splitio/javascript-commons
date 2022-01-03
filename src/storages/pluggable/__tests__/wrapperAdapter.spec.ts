@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import thenable from '../../../utils/promise/thenable';
+import { thenable } from '../../../utils/promise/thenable';
 import { LOG_PREFIX } from '../constants';
 
 /** Mocks */

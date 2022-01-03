@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
-import SegmentsCacheInRedis from '../SegmentsCacheInRedis';
-import KeyBuilderSS from '../../KeyBuilderSS';
+import { SegmentsCacheInRedis } from '../SegmentsCacheInRedis';
+import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 // @ts-expect-error. Doesn't require metadata

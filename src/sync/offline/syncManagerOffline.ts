@@ -1,6 +1,6 @@
 import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from '../types';
-import fromObjectSyncTaskFactory from './syncTasks/fromObjectSyncTask';
-import objectAssign from 'object-assign';
+import { fromObjectSyncTaskFactory } from './syncTasks/fromObjectSyncTask';
+import { objectAssign } from '../../utils/lang/objectAssign';
 import { ISplitsParser } from './splitsParser/types';
 import { IReadinessManager } from '../../readiness/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';

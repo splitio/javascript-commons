@@ -1,4 +1,4 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { SplitIO } from '../types';
 
 
@@ -9,7 +9,7 @@ import { SplitIO } from '../types';
  * @param key validated split key
  * @param trafficType validated traffic type
  */
-export default function clientCSDecorator(client: SplitIO.IClient, key: SplitIO.SplitKey, trafficType?: string): SplitIO.ICsClient {
+export function clientCSDecorator(client: SplitIO.IClient, key: SplitIO.SplitKey, trafficType?: string): SplitIO.ICsClient {
   return objectAssign(client, {
     // In the client-side API, we bind a key to the client `getTreatment*` methods
     getTreatment: client.getTreatment.bind(client, key),

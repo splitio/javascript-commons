@@ -1,5 +1,5 @@
-import KeyBuilder from '../KeyBuilder';
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilder } from '../KeyBuilder';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 
 test('KEYS / splits keys', () => {
   const builder = new KeyBuilder();

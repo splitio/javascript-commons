@@ -1,8 +1,8 @@
-import LatenciesCache from '../LatenciesCacheInMemory';
+import { LatenciesCacheInMemory } from '../LatenciesCacheInMemory';
 
 test('METRICS (LATENCIES) CACHE IN MEMORY / should count based on ranges', () => {
   const metricName = 'testing';
-  const c1 = new LatenciesCache();
+  const c1 = new LatenciesCacheInMemory();
 
   c1.track(metricName, 1);
   c1.track(metricName, 1.2);
@@ -25,7 +25,7 @@ test('METRICS (LATENCIES) CACHE IN MEMORY / should count based on ranges', () =>
 
 test('METRICS (LATENCIES) CACHE IN MEMORY / clear', () => {
   const metricName = 'testing';
-  const c1 = new LatenciesCache();
+  const c1 = new LatenciesCacheInMemory();
 
   c1.track(metricName, 1);
   c1.track(metricName, 1000);

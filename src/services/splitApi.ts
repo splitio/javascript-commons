@@ -2,7 +2,7 @@ import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 

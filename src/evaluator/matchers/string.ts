@@ -1,7 +1,7 @@
 import { ENGINE_MATCHER_STRING_INVALID, ENGINE_MATCHER_STRING } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
-export default function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
+export function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
   return function stringMatcher(runtimeAttr: string): boolean {
     let re;
 

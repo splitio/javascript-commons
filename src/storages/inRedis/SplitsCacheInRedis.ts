@@ -1,10 +1,10 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit } from '../../dtos/types';
-import AbstractSplitsCacheAsync from '../AbstractSplitsCacheAsync';
+import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -20,7 +20,7 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
  * ISplitsCacheAsync implementation that stores split definitions in Redis.
  * Supported by Node.
  */
-export default class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
+export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
   private readonly redis: Redis;

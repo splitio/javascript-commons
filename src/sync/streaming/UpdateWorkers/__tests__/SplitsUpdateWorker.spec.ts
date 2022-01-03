@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
-import SplitsCacheInMemory from '../../../../storages/inMemory/SplitsCacheInMemory';
-import SplitsUpdateWorker from '../SplitsUpdateWorker';
+import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
+import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
 
 function splitsSyncTaskMock(splitStorage) {
 

@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
-import KeyBuilderSS from '../../KeyBuilderSS';
-import CountsCacheInRedis from '../CountsCacheInRedis';
+import { KeyBuilderSS } from '../../KeyBuilderSS';
+import { CountsCacheInRedis } from '../CountsCacheInRedis';
 
 const prefix = 'counts_cache_ut';
 const metadata = { s: 'version', i: 'ip', n: 'hostname' };

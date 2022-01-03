@@ -1,4 +1,4 @@
-import syncTaskFactory from '../syncTask';
+import { syncTaskFactory } from '../syncTask';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 const period = 30;

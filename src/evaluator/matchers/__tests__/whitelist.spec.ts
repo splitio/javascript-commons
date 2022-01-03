@@ -1,5 +1,5 @@
 import { matcherTypes } from '../matcherTypes';
-import matcherFactory from '..';
+import { matcherFactory } from '..';
 import { _Set } from '../../../utils/lang/sets';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';

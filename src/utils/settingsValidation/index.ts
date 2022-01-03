@@ -1,8 +1,8 @@
 import { merge } from '../lang';
-import mode from './mode';
+import { mode } from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
-import validImpressionsMode from './impressionsMode';
+import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 

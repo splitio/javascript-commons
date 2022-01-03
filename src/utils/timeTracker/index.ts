@@ -1,6 +1,6 @@
 import { uniqueId } from '../lang';
-import timer from './timer';
-import thenable from '../promise/thenable';
+import { timer } from './timer';
+import { thenable } from '../promise/thenable';
 import { ILogger } from '../../logger/types';
 import { IResponse } from '../../services/types';
 
@@ -112,7 +112,8 @@ function getCallbackForTask(task: string, collector: MetricsCollector | false): 
   return false;
 }
 
-const TrackerAPI = {
+// Our "time tracker" API
+export const TrackerAPI = {
   /**
    * "Private" method, used to attach count/countException and stop callbacks to a promise.
    *
@@ -223,6 +224,3 @@ const TrackerAPI = {
    */
   TaskNames: CONSTANTS
 };
-
-// Our "time tracker" API
-export default TrackerAPI;

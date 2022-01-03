@@ -1,4 +1,4 @@
-import Backoff from '../../../utils/Backoff';
+import { Backoff } from '../../../utils/Backoff';
 
 export interface IUpdateWorker {
   readonly backoff: Backoff,

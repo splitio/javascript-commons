@@ -1,6 +1,6 @@
 import { ICountsCacheSync } from '../types';
 
-export default class CountsCacheInMemory implements ICountsCacheSync {
+export class CountsCacheInMemory implements ICountsCacheSync {
 
   private counters: Record<string, number> = {};
 

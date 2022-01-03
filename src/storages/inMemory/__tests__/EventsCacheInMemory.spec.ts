@@ -1,16 +1,16 @@
 // @ts-nocheck
-import EventsCache from '../EventsCacheInMemory';
+import { EventsCacheInMemory } from '../EventsCacheInMemory';
 
 test('EVENTS CACHE / Should be able to instantiate and start with an empty queue', () => {
   let cache;
-  const createInstance = () => cache = new EventsCache(500); // 500 as eventsQueueSize
+  const createInstance = () => cache = new EventsCacheInMemory(500); // 500 as eventsQueueSize
 
   expect(createInstance).not.toThrow(); // Creation should not throw.
   expect(cache.state()).toEqual([]); // The queue starts empty.
 });
 
 test('EVENTS CACHE / Should be able to add items sequentially and retrieve the queue', () => {
-  const cache = new EventsCache(500);
+  const cache = new EventsCacheInMemory(500);
   const queueValues = [1, '2', { p: 3 }, ['4']];
 
   expect(cache.track.bind(cache, queueValues[0])).not.toThrow(); // Calling track should not throw
@@ -26,7 +26,7 @@ test('EVENTS CACHE / Should be able to add items sequentially and retrieve the q
 });
 
 test('EVENTS CACHE / Should be able to clear the queue and accumulated byte size', () => {
-  const cache = new EventsCache(500);
+  const cache = new EventsCacheInMemory(500);
 
   cache.track('test1', 2019);
   cache.clear();
@@ -36,7 +36,7 @@ test('EVENTS CACHE / Should be able to clear the queue and accumulated byte size
 });
 
 test('EVENTS CACHE / Should be able to tell if the queue is empty', () => {
-  const cache = new EventsCache(500);
+  const cache = new EventsCacheInMemory(500);
 
   expect(cache.state().length === 0).toBe(true); // The queue is empty,
   expect(cache.isEmpty()).toBe(true); // so if it is empty, it returns true.
@@ -48,7 +48,7 @@ test('EVENTS CACHE / Should be able to tell if the queue is empty', () => {
 });
 
 test('EVENTS CACHE / Should be able to return the DTO we will send to BE', () => {
-  const cache = new EventsCache(500);
+  const cache = new EventsCacheInMemory(500);
   const queueValues = [1, '2', { p: 3 }, ['4']];
 
   cache.track(queueValues[0]);
@@ -63,7 +63,7 @@ test('EVENTS CACHE / Should be able to return the DTO we will send to BE', () =>
 test('EVENTS CACHE / Should call "onFullQueueCb" when the queue is full (count wise).', () => {
 
   let cbCalled = 0;
-  const cache = new EventsCache(3); // small eventsQueueSize to be reached
+  const cache = new EventsCacheInMemory(3); // small eventsQueueSize to be reached
   cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
 
   cache.track(0);
@@ -89,7 +89,7 @@ test('EVENTS CACHE / Should call "onFullQueueCb" when the queue is full (count w
 test('EVENTS CACHE / Should call "onFullQueueCb" when the queue is full (size wise).', () => {
 
   let cbCalled = 0;
-  const cache = new EventsCache(99999999); // big eventsQueueSize to never be reached
+  const cache = new EventsCacheInMemory(99999999); // big eventsQueueSize to never be reached
   cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
 
   // The track method receives the size, which calculation is validated elsewhere.
@@ -108,7 +108,7 @@ test('EVENTS CACHE / Should call "onFullQueueCb" when the queue is full (size wi
 
 test('EVENTS CACHE / Should not throw if the "onFullQueueCb" callback was not provided.', () => {
 
-  const cache = new EventsCache(3); // small eventsQueueSize to be reached
+  const cache = new EventsCacheInMemory(3); // small eventsQueueSize to be reached
 
   cache.track(0, 2048);
   cache.track(1, 1024); // Cache still not full,

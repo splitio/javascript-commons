@@ -1,7 +1,7 @@
 import { ENGINE_MATCHER_BOOLEAN } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
-export default function booleanMatcherContext(log: ILogger, ruleAttr: boolean) /*: Function */ {
+export function booleanMatcherContext(log: ILogger, ruleAttr: boolean) /*: Function */ {
   return function booleanMatcher(runtimeAttr: boolean): boolean {
     let booleanMatches = ruleAttr === runtimeAttr;
 

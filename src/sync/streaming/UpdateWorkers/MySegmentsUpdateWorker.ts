@@ -1,12 +1,12 @@
 import { ISegmentsSyncTask } from '../../polling/types';
-import Backoff from '../../../utils/Backoff';
+import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
 import { SegmentsData } from '../SSEHandler/types';
 
 /**
  * MySegmentsUpdateWorker class
  */
-export default class MySegmentsUpdateWorker implements IUpdateWorker {
+export class MySegmentsUpdateWorker implements IUpdateWorker {
 
   private readonly mySegmentsSyncTask: ISegmentsSyncTask;
   private maxChangeNumber: number;

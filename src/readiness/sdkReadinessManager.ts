@@ -1,5 +1,5 @@
-import objectAssign from 'object-assign';
-import promiseWrapper from '../utils/promise/wrapper';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { promiseWrapper } from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
@@ -19,7 +19,7 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
  * by the SDK. It is required to properly log the warning 'No listeners for SDK Readiness detected'
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
-export default function sdkReadinessManagerFactory(
+export function sdkReadinessManagerFactory(
   log: ILogger,
   EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,

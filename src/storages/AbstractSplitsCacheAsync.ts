@@ -5,7 +5,7 @@ import { ISplit } from '../dtos/types';
  * This class provides a skeletal implementation of the ISplitsCacheAsync interface
  * to minimize the effort required to implement this interface.
  */
-export default abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
+export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
   abstract addSplit(name: string, split: string): Promise<boolean>
   abstract addSplits(entries: [string, string][]): Promise<boolean[] | void>

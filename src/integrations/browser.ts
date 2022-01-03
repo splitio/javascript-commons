@@ -1,7 +1,7 @@
 import { GOOGLE_ANALYTICS_TO_SPLIT, SPLIT_TO_GOOGLE_ANALYTICS } from '../utils/constants/browser';
 import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './types';
 import { BrowserIntegration } from './ga/types';
-import pluggableIntegrationsManagerFactory from './pluggable';
+import { pluggableIntegrationsManagerFactory } from './pluggable';
 import { GoogleAnalyticsToSplit } from './ga/GoogleAnalyticsToSplit';
 import { SplitToGoogleAnalytics } from './ga/SplitToGoogleAnalytics';
 
@@ -14,7 +14,7 @@ import { SplitToGoogleAnalytics } from './ga/SplitToGoogleAnalytics';
  *
  * @returns integration manager or undefined if `integrations` are not present in settings.
  */
-export default function integrationsManagerFactory(
+export function integrationsManagerFactory(
   integrations: BrowserIntegration[],
   params: IIntegrationFactoryParams
 ): IIntegrationManager | undefined {

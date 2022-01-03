@@ -1,7 +1,7 @@
-import MySegmentsCache from '../MySegmentsCacheInMemory';
+import { MySegmentsCacheInMemory } from '../MySegmentsCacheInMemory';
 
 test('MY SEGMENTS CACHE / in memory', () => {
-  const cache = new MySegmentsCache();
+  const cache = new MySegmentsCacheInMemory();
 
   cache.addToSegment('mocked-segment');
 

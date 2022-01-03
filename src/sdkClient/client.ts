@@ -1,5 +1,5 @@
 import { evaluateFeature, evaluateFeatures } from '../evaluator';
-import thenable from '../utils/promise/thenable';
+import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
 import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
@@ -15,7 +15,7 @@ import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
  * Creator of base client with getTreatments and track methods.
  */
 // @TODO missing time tracking to collect telemetry
-export default function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
+export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager: { readinessManager }, storage, settings: { log, mode }, impressionsTracker, eventTracker } = params;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {

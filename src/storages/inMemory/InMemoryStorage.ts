@@ -1,9 +1,9 @@
-import SplitsCacheInMemory from './SplitsCacheInMemory';
-import SegmentsCacheInMemory from './SegmentsCacheInMemory';
-import ImpressionsCacheInMemory from './ImpressionsCacheInMemory';
-import EventsCacheInMemory from './EventsCacheInMemory';
+import { SplitsCacheInMemory } from './SplitsCacheInMemory';
+import { SegmentsCacheInMemory } from './SegmentsCacheInMemory';
+import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
+import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync } from '../types';
-import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { STORAGE_MEMORY } from '../../utils/constants';
 
 /**

@@ -3,7 +3,7 @@ import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
 import { ISplitPartial } from '../../../dtos/types';
-import syncTaskFactory from '../../syncTask';
+import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
@@ -79,7 +79,7 @@ export function fromObjectUpdaterFactory(
 /**
  * PollingManager in Offline mode
  */
-export default function fromObjectSyncTaskFactory(
+export function fromObjectSyncTaskFactory(
   splitsParser: ISplitsParser,
   storage: { splits: ISplitsCacheSync },
   readiness: IReadinessManager,

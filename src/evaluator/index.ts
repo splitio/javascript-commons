@@ -1,5 +1,5 @@
-import Engine from './Engine';
-import thenable from '../utils/promise/thenable';
+import { Engine } from './Engine';
+import { thenable } from '../utils/promise/thenable';
 import * as LabelsConstants from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
