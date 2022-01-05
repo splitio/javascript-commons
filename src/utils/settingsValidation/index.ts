@@ -122,7 +122,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // Startup periods
   startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
   startup.readyTimeout = fromSecondsToMillis(startup.readyTimeout);
-  startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
+  startup.eventsFirstPushWindow = fromSecondsToMillis(startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop

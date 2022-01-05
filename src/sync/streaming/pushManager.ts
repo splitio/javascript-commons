@@ -115,7 +115,8 @@ export function pushManagerFactory(
   function connectPush() {
     // Guard condition in case `stop/disconnectPush` has been called (e.g., calling SDK destroy, or app signal close/background)
     if (disconnected) return;
-    log.info(STREAMING_CONNECTING, [disconnected === undefined ? '' : 'Re-']);
+    // @TODO distinguish log for 'Connecting' (1st time) and 'Re-connecting'
+    log.info(STREAMING_CONNECTING);
     disconnected = false;
 
     const userKeys = userKey ? Object.keys(clients) : undefined;
