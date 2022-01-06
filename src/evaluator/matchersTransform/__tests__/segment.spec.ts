@@ -1,4 +1,4 @@
-import transform from '../segment';
+import { segmentTransform } from '../segment';
 
 test('TRANSFORMS / a segment object should be flatten to a string', function () {
   const segmentName = 'employees';
@@ -6,14 +6,14 @@ test('TRANSFORMS / a segment object should be flatten to a string', function () 
     segmentName
   };
 
-  const plainSegmentName = transform(sample);
+  const plainSegmentName = segmentTransform(sample);
 
   expect(segmentName).toBe(plainSegmentName); // extracted segmentName matches
 });
 
 test('TRANSFORMS / if there is none segmentName entry, returns undefined', function () {
   const sample = undefined;
-  const undefinedSegmentName = transform(sample);
+  const undefinedSegmentName = segmentTransform(sample);
 
   expect(undefinedSegmentName).toBe(undefined); // expected to be undefined
 });

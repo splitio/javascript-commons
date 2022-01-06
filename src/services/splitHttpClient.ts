@@ -1,5 +1,5 @@
 import { IFetch, IRequestOptions, IResponse, ISplitHttpClient } from './types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
 

@@ -1,4 +1,4 @@
-import LRUCache from '..';
+import { LRUCache } from '..';
 
 test('Check Cache', () => {
   const cache = new LRUCache(5);

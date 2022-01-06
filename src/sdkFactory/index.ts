@@ -1,7 +1,7 @@
 import { ISdkFactoryParams } from './types';
-import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
-import impressionsTrackerFactory from '../trackers/impressionsTracker';
-import eventTrackerFactory from '../trackers/eventTracker';
+import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
+import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
+import { eventTrackerFactory } from '../trackers/eventTracker';
 import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';

@@ -1,5 +1,5 @@
-import objectAssign from 'object-assign';
-import thenable from '../utils/promise/thenable';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { thenable } from '../utils/promise/thenable';
 import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
 import { SplitIO } from '../types';
@@ -12,7 +12,7 @@ import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constant
  * @param eventsCache cache to save events
  * @param integrationsManager optional event handler used for integrations
  */
-export default function eventTrackerFactory(
+export function eventTrackerFactory(
   log: ILogger,
   eventsCache: IEventsCacheBase,
   integrationsManager?: IEventsHandler

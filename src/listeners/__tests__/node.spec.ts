@@ -1,4 +1,4 @@
-import NodeSignalListener from '../node';
+import { NodeSignalListener } from '../node';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const processOnSpy = jest.spyOn(process, 'on');

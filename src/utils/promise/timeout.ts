@@ -1,4 +1,4 @@
-export default function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
+export function timeout<T>(ms: number, promise: Promise<T>): Promise<T> {
   if (ms < 1) return promise;
 
   return new Promise((resolve, reject) => {

@@ -1,7 +1,7 @@
 import { IMap, _Map } from '../lang/maps';
 import { LinkedList, Node } from './LinkedList';
 
-export default class LRUCache<K, V> {
+export class LRUCache<K, V> {
   maxLen: number;
   items: IMap<K, Node<{ key: K, value: V }>>;
   lru: LinkedList<{ key: K, value: V }>;

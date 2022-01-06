@@ -1,5 +1,5 @@
 // @ts-nocheck
-import parser from '..';
+import { parser } from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';

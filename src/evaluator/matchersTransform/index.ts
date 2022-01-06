@@ -1,9 +1,9 @@
 import { findIndex } from '../../utils/lang';
 import { matcherTypes, matcherTypesMapper, matcherDataTypes } from '../matchers/matcherTypes';
-import segmentTransform from './segment';
-import whitelistTransform from './whitelist';
-import setTransform from './set';
-import numericTransform from './unaryNumeric';
+import { segmentTransform } from './segment';
+import { whitelistTransform } from './whitelist';
+import { setTransform } from './set';
+import { numericTransform } from './unaryNumeric';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { IBetweenMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData, IWhitelistMatcherData } from '../../dtos/types';
 import { IMatcherDto } from '../types';
@@ -11,7 +11,7 @@ import { IMatcherDto } from '../types';
 /**
  * Flat the complex matcherGroup structure into something handy.
  */
-export default function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
+export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
 
   let parsedMatchers = matchers.map(matcher => {
     let {

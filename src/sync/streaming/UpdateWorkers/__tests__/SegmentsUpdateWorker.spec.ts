@@ -1,6 +1,6 @@
 // @ts-nocheck
-import SegmentsCacheInMemory from '../../../../storages/inMemory/SegmentsCacheInMemory';
-import SegmentsUpdateWorker from '../SegmentsUpdateWorker';
+import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
+import { SegmentsUpdateWorker } from '../SegmentsUpdateWorker';
 
 function segmentsSyncTaskMock(segmentsStorage) {
 

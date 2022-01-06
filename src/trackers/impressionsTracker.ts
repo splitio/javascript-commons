@@ -1,5 +1,5 @@
-import objectAssign from 'object-assign';
-import thenable from '../utils/promise/thenable';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { thenable } from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
 import { IImpressionCountsCacheSync, IImpressionsCacheBase } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
@@ -18,7 +18,7 @@ import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIO
  * @param observer optional impression observer. If provided, previous time (pt property) is included in impression instances
  * @param countsCache optional cache to save impressions count. If provided, impressions will be deduped (OPTIMIZED mode)
  */
-export default function impressionsTrackerFactory(
+export function impressionsTrackerFactory(
   log: ILogger,
   impressionsCache: IImpressionsCacheBase,
 

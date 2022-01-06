@@ -69,7 +69,7 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
 /**
  * Sanitize matcher value
  */
-export default function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes) {
+export function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes: SplitIO.Attributes) {
   const processor = getProcessingFunction(matcherTypeID, dataType);
   let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
 

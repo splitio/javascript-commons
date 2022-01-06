@@ -8,7 +8,7 @@ import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 
@@ -19,7 +19,7 @@ const EVENT_NAME = 'for unload page event.';
 /**
  * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
  */
-export default class BrowserSignalListener implements ISignalListener {
+export class BrowserSignalListener implements ISignalListener {
 
   private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
 

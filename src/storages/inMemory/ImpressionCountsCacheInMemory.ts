@@ -1,7 +1,7 @@
 import { truncateTimeFrame } from '../../utils/time';
 import { IImpressionCountsCacheSync } from '../types';
 
-export default class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
+export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
   private cache: Record<string, number> = {};
 
   /**

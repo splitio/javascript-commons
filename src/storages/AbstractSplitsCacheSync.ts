@@ -5,7 +5,7 @@ import { ISplit } from '../dtos/types';
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
  * to minimize the effort required to implement this interface.
  */
-export default abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
+export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
   abstract addSplit(name: string, split: string): boolean;
 

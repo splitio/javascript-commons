@@ -1,9 +1,9 @@
-import SegmentsCache from '../SegmentsCacheInMemory';
+import { SegmentsCacheInMemory } from '../SegmentsCacheInMemory';
 
 describe('SEGMENTS CACHE IN MEMORY', () => {
 
   test('isInSegment, set/getChangeNumber, add/removeFromSegment', () => {
-    const cache = new SegmentsCache();
+    const cache = new SegmentsCacheInMemory();
 
     cache.addToSegment('mocked-segment', [
       'a', 'b', 'c'
@@ -29,7 +29,7 @@ describe('SEGMENTS CACHE IN MEMORY', () => {
   });
 
   test('registerSegment / getRegisteredSegments', async () => {
-    const cache = new SegmentsCache();
+    const cache = new SegmentsCacheInMemory();
 
     await cache.registerSegments(['s1']);
     await cache.registerSegments(['s2']);

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 import { isNaNNumber } from '../../utils/lang';
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';

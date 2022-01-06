@@ -1,4 +1,4 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import {
   validateAttributes,
   validateEvent,
@@ -22,7 +22,7 @@ import { ILogger } from '../logger/types';
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export default function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient, readinessManager: IReadinessManager, isStorageSync = false): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient, readinessManager: IReadinessManager, isStorageSync = false): TClient {
 
   /**
    * Avoid repeating this validations code

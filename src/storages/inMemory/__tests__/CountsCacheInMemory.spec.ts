@@ -1,7 +1,7 @@
-import CountsCache from '../CountsCacheInMemory';
+import { CountsCacheInMemory } from '../CountsCacheInMemory';
 
 test('COUNT CACHE IN MEMORY / should count metric names incrementatly', () => {
-  const cache = new CountsCache();
+  const cache = new CountsCacheInMemory();
 
   cache.track('counted-metric-one');
   cache.track('counted-metric-one');

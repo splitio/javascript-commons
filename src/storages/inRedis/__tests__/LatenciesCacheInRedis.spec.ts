@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
-import KeyBuilderSS from '../../KeyBuilderSS';
-import LatenciesCacheInRedis from '../LatenciesCacheInRedis';
+import { KeyBuilderSS } from '../../KeyBuilderSS';
+import { LatenciesCacheInRedis } from '../LatenciesCacheInRedis';
 
 const prefix = 'latencies_cache_UT';
 const metadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };

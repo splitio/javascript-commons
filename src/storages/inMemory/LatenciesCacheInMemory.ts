@@ -1,7 +1,7 @@
 import { ILatenciesCacheSync } from '../types';
-import findLatencyIndex from '../findLatencyIndex';
+import { findLatencyIndex } from '../findLatencyIndex';
 
-export default class LatenciesCacheInMemory implements ILatenciesCacheSync {
+export class LatenciesCacheInMemory implements ILatenciesCacheSync {
 
   private counters: Record<string, number[]> = {};
 

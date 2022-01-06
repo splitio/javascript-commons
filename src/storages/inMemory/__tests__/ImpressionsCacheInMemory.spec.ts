@@ -1,8 +1,8 @@
 
-import ImpressionsCache from '../ImpressionsCacheInMemory';
+import { ImpressionsCacheInMemory } from '../ImpressionsCacheInMemory';
 
 test('IMPRESSIONS CACHE IN MEMORY / should incrementally store values', () => {
-  const c = new ImpressionsCache();
+  const c = new ImpressionsCacheInMemory();
 
   // @ts-expect-error
   c.track([0]); // @ts-expect-error

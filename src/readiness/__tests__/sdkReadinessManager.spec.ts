@@ -2,7 +2,7 @@
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { IEventEmitter } from '../../types';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
-import sdkReadinessManagerFactory from '../sdkReadinessManager';
+import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
 

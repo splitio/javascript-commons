@@ -1,13 +1,13 @@
-import RedisAdapter from './RedisAdapter';
+import { RedisAdapter } from './RedisAdapter';
 import { IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 import { validatePrefix } from '../KeyBuilder';
-import KeyBuilderSS from '../KeyBuilderSS';
-import SplitsCacheInRedis from './SplitsCacheInRedis';
-import SegmentsCacheInRedis from './SegmentsCacheInRedis';
-import ImpressionsCacheInRedis from './ImpressionsCacheInRedis';
-import EventsCacheInRedis from './EventsCacheInRedis';
-import LatenciesCacheInRedis from './LatenciesCacheInRedis';
-import CountsCacheInRedis from './CountsCacheInRedis';
+import { KeyBuilderSS } from '../KeyBuilderSS';
+import { SplitsCacheInRedis } from './SplitsCacheInRedis';
+import { SegmentsCacheInRedis } from './SegmentsCacheInRedis';
+import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
+import { EventsCacheInRedis } from './EventsCacheInRedis';
+import { LatenciesCacheInRedis } from './LatenciesCacheInRedis';
+import { CountsCacheInRedis } from './CountsCacheInRedis';
 import { STORAGE_REDIS } from '../../utils/constants';
 
 export interface InRedisStorageOptions {

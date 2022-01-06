@@ -1,6 +1,6 @@
 import { IFetchAuth } from '../../../services/types';
 import { IAuthenticate, IAuthToken } from './types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../../../utils/lang/objectAssign';
 import { encodeToBase64 } from '../../../utils/base64';
 import { decodeJWTtoken } from '../../../utils/jwt';
 import { hash } from '../../../utils/murmur3/murmur3';

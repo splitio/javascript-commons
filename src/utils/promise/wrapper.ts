@@ -16,7 +16,7 @@
  * @returns a promise that doesn't need to be handled for rejection (except when using async/await syntax) and
  * includes a method named `hasOnFulfilled` that returns true if the promise has attached an onFulfilled handler.
  */
-export default function promiseWrapper<T>(customPromise: Promise<T>, defaultOnRejected: (_: any) => any): Promise<T> & { hasOnFulfilled: () => boolean } {
+export function promiseWrapper<T>(customPromise: Promise<T>, defaultOnRejected: (_: any) => any): Promise<T> & { hasOnFulfilled: () => boolean } {
 
   let hasOnFulfilled = false;
   let hasOnRejected = false;

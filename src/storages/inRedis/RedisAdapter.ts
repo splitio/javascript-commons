@@ -2,8 +2,8 @@ import ioredis from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
-import thenable from '../../utils/promise/thenable';
-import timeout from '../../utils/promise/timeout';
+import { thenable } from '../../utils/promise/thenable';
+import { timeout } from '../../utils/promise/timeout';
 
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
@@ -32,7 +32,7 @@ interface IRedisCommand {
 /**
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
  */
-export default class RedisAdapter extends ioredis {
+export class RedisAdapter extends ioredis {
   private readonly log: ILogger
   private _options: object;
   private _notReadyCommandsQueue?: IRedisCommand[];

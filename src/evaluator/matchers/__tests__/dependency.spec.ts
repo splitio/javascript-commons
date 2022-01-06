@@ -1,5 +1,5 @@
 import { matcherTypes } from '../matcherTypes';
-import matcherFactory from '..';
+import { matcherFactory } from '..';
 import { evaluateFeature } from '../../index';
 import { IMatcher, IMatcherDto } from '../../types';
 import { IStorageSync } from '../../../storages/types';

@@ -2,10 +2,10 @@ import Redis from 'ioredis';
 import splitObject from './mocks/input.json';
 import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
-import SplitsCacheInRedis from '../../storages/inRedis/SplitsCacheInRedis';
+import { SplitsCacheInRedis } from '../../storages/inRedis/SplitsCacheInRedis';
 import { SplitsCachePluggable } from '../../storages/pluggable/SplitsCachePluggable';
 import { wrapperAdapter } from '../../storages/pluggable/wrapperAdapter';
-import KeyBuilderSS from '../../storages/KeyBuilderSS';
+import { KeyBuilderSS } from '../../storages/KeyBuilderSS';
 import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 

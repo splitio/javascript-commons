@@ -1,11 +1,11 @@
-import clientCSDecorator from './clientCS';
+import { clientCSDecorator } from './clientCS';
 import { ISdkClientFactoryParams } from './types';
 import { SplitIO } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
 import { ISyncManagerCS } from '../sync/types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 

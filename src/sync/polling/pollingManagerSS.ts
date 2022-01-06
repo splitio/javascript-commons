@@ -1,17 +1,17 @@
-import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
-import segmentsSyncTaskFactory from './syncTasks/segmentsSyncTask';
+import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
+import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IStorageSync } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';
 import { ISplitApi } from '../../services/types';
 import { ISettings } from '../../types';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
-import thenable from '../../utils/promise/thenable';
+import { thenable } from '../../utils/promise/thenable';
 import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
-export default function pollingManagerSSFactory(
+export function pollingManagerSSFactory(
   splitApi: ISplitApi,
   storage: IStorageSync,
   readiness: IReadinessManager,

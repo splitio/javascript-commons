@@ -1,4 +1,4 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { IEventEmitter } from '../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
@@ -12,7 +12,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
   // - `/mySegments` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
-  splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
+  splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });
 
   return splitsEventEmitter;

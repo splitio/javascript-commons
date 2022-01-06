@@ -1,4 +1,4 @@
-import syncTaskFactory from '../syncTask';
+import { syncTaskFactory } from '../syncTask';
 import { ISyncTask, ITimeTracker } from '../types';
 import { IRecorderCacheProducerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
