@@ -1,5 +1,5 @@
 import { errorParser, messageParser } from './NotificationParser';
-import notificationKeeperFactory from './NotificationKeeper';
+import { notificationKeeperFactory } from './NotificationKeeper';
 import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
@@ -25,7 +25,7 @@ function isRetryableError(error: INotificationError) {
  * @param log factory logger
  * @param pushEmitter emitter for events related to streaming support
  */
-export default function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
+export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
 
   const notificationKeeper = notificationKeeperFactory(pushEmitter);
 

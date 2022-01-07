@@ -1,9 +1,9 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { IStatusInterface, SplitIO } from '../types';
 import { CONSUMER_MODE, CONSUMER_PARTIAL_MODE } from '../utils/constants';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
-import clientFactory from './client';
-import clientInputValidationDecorator from './clientInputValidation';
+import { clientFactory } from './client';
+import { clientInputValidationDecorator } from './clientInputValidation';
 import { ISdkClientFactoryParams } from './types';
 
 /**

@@ -1,7 +1,7 @@
 import { ISplitPartial } from '../../../dtos/types';
 import { ISettings, SplitIO } from '../../../types';
 import { isObject, forOwn } from '../../../utils/lang';
-import parseCondition from './parseCondition';
+import { parseCondition } from './parseCondition';
 
 function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: string | SplitIO.TreatmentWithConfig) {
   if (typeof prev !== typeof curr) return true;

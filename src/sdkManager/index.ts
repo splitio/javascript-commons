@@ -1,5 +1,5 @@
-import objectAssign from 'object-assign';
-import thenable from '../utils/promise/thenable';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
 import { validateSplit, validateSplitExistance, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';

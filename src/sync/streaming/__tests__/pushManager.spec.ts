@@ -1,4 +1,4 @@
-import pushManagerFactory from '../pushManager';
+import { pushManagerFactory } from '../pushManager';
 import { EventEmitter } from '../../../utils/MinEvents';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
 import { IPushManagerCS } from '../types';

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import parser from '..';
+import { parser } from '..';
 import { ISplitCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 

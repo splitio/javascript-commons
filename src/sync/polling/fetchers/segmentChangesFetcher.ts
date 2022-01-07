@@ -21,7 +21,7 @@ function greedyFetch(fetchSegmentChanges: IFetchSegmentChanges, since: number, s
  * Factory of SegmentChanges fetcher.
  * SegmentChanges fetcher is a wrapper around `segmentChanges` API service that parses the response and handle errors and retries.
  */
-export default function segmentChangesFetcherFactory(fetchSegmentChanges: IFetchSegmentChanges): ISegmentChangesFetcher {
+export function segmentChangesFetcherFactory(fetchSegmentChanges: IFetchSegmentChanges): ISegmentChangesFetcher {
 
   return function segmentChangesFetcher(
     since: number,

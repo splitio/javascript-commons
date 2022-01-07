@@ -1,4 +1,4 @@
-import BrowserSignalListener from '../browser';
+import { BrowserSignalListener } from '../browser';
 import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';

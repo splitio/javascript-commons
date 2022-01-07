@@ -3,8 +3,8 @@ import { forOwn } from '../../utils/lang';
 import { IReadinessManager } from '../../readiness/types';
 import { ISplitApi } from '../../services/types';
 import { IStorageSync } from '../../storages/types';
-import mySegmentsSyncTaskFactory from './syncTasks/mySegmentsSyncTask';
-import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
+import { mySegmentsSyncTaskFactory } from './syncTasks/mySegmentsSyncTask';
+import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
@@ -14,7 +14,7 @@ import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger
  * Expose start / stop mechanism for polling data from services.
  * For client-side API with multiple clients.
  */
-export default function pollingManagerCSFactory(
+export function pollingManagerCSFactory(
   splitApi: ISplitApi,
   storage: IStorageSync,
   readiness: IReadinessManager,

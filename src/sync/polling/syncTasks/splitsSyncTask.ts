@@ -1,8 +1,8 @@
 import { IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import syncTaskFactory from '../../syncTask';
+import { syncTaskFactory } from '../../syncTask';
 import { ISplitsSyncTask } from '../types';
-import splitChangesFetcherFactory from '../fetchers/splitChangesFetcher';
+import { splitChangesFetcherFactory } from '../fetchers/splitChangesFetcher';
 import { IFetchSplitChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { splitChangesUpdaterFactory } from '../updaters/splitChangesUpdater';
@@ -10,7 +10,7 @@ import { splitChangesUpdaterFactory } from '../updaters/splitChangesUpdater';
 /**
  * Creates a sync task that periodically executes a `splitChangesUpdater` task
  */
-export default function splitsSyncTaskFactory(
+export function splitsSyncTaskFactory(
   fetchSplitChanges: IFetchSplitChanges,
   storage: IStorageSync,
   readiness: IReadinessManager,

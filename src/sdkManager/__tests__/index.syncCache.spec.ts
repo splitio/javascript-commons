@@ -1,7 +1,7 @@
 import splitObject from './mocks/input.json';
 import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
-import SplitsCacheInMemory from '../../storages/inMemory/SplitsCacheInMemory';
+import { SplitsCacheInMemory } from '../../storages/inMemory/SplitsCacheInMemory';
 import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 

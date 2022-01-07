@@ -1,5 +1,5 @@
 // @ts-nocheck
-import MySegmentsUpdateWorker from '../MySegmentsUpdateWorker';
+import { MySegmentsUpdateWorker } from '../MySegmentsUpdateWorker';
 
 function mySegmentsSyncTaskMock() {
 

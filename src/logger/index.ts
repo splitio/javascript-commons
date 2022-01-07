@@ -1,4 +1,4 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { ILoggerOptions, ILogger } from './types';
 import { find } from '../utils/lang';
 import { LogLevel } from '../types';

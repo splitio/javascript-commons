@@ -1,7 +1,7 @@
-import SplitsCache from '../SplitsCacheInMemory';
+import { SplitsCacheInMemory } from '../SplitsCacheInMemory';
 
 test('SPLITS CACHE / In Memory', () => {
-  const cache = new SplitsCache();
+  const cache = new SplitsCacheInMemory();
 
   cache.addSplit('lol1', '{ "name": "something"}');
   cache.addSplit('lol2', '{ "name": "something else"}');
@@ -31,7 +31,7 @@ test('SPLITS CACHE / In Memory', () => {
 });
 
 test('SPLITS CACHE / In Memory / Get Keys', () => {
-  const cache = new SplitsCache();
+  const cache = new SplitsCacheInMemory();
 
   cache.addSplit('lol1', '{ "name": "something"}');
   cache.addSplit('lol2', '{ "name": "something else"}');
@@ -43,7 +43,7 @@ test('SPLITS CACHE / In Memory / Get Keys', () => {
 });
 
 test('SPLITS CACHE / In Memory / trafficTypeExists and ttcache tests', () => {
-  const cache = new SplitsCache();
+  const cache = new SplitsCacheInMemory();
 
   cache.addSplits([ // loop of addSplit
     ['split1', '{ "trafficTypeName": "user_tt" }'],
@@ -82,7 +82,7 @@ test('SPLITS CACHE / In Memory / trafficTypeExists and ttcache tests', () => {
 });
 
 test('SPLITS CACHE / In Memory / killLocally', () => {
-  const cache = new SplitsCache();
+  const cache = new SplitsCacheInMemory();
   cache.addSplit('lol1', '{ "name": "something"}');
   cache.addSplit('lol2', '{ "name": "something else"}');
   const initialChangeNumber = cache.getChangeNumber();

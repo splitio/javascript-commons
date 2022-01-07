@@ -1,7 +1,7 @@
 import { ISplitPartition } from '../../dtos/types';
 import { findIndex } from '../../utils/lang';
 
-export default class Treatments {
+export class Treatments {
 
   private _ranges: number[];
   private _treatments: string[];

@@ -1,9 +1,9 @@
 import { ILatenciesCacheAsync } from '../types';
-import KeyBuilderSS from '../KeyBuilderSS';
-import findLatencyIndex from '../findLatencyIndex';
+import { KeyBuilderSS } from '../KeyBuilderSS';
+import { findLatencyIndex } from '../findLatencyIndex';
 import { Redis } from 'ioredis';
 
-export default class LatenciesCacheInRedis implements ILatenciesCacheAsync {
+export class LatenciesCacheInRedis implements ILatenciesCacheAsync {
 
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;

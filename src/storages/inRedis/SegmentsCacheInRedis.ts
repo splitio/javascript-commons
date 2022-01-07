@@ -2,10 +2,10 @@ import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
 import { LOG_PREFIX } from '../inLocalStorage/constants';
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
 
-export default class SegmentsCacheInRedis implements ISegmentsCacheAsync {
+export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
 
   private readonly log: ILogger;
   private readonly redis: Redis;

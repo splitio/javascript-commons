@@ -30,7 +30,7 @@ function buildSSEHeaders(settings: ISettings) {
 /**
  * Handles streaming connections with EventSource API
  */
-export default class SSEClient implements ISSEClient {
+export class SSEClient implements ISSEClient {
   // Instance properties:
   eventSource?: IEventSourceConstructor;
   streamingUrl: string;

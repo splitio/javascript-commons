@@ -3,6 +3,6 @@ import { IInSegmentMatcherData } from '../../dtos/types';
 /**
  * Extract segment name as a plain string.
  */
-export default function transform(segment?: IInSegmentMatcherData) {
+export function segmentTransform(segment?: IInSegmentMatcherData) {
   return segment ? segment.segmentName : undefined;
 }

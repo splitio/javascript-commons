@@ -11,7 +11,7 @@ function checkListener(listener: unknown) {
 }
 
 // @TODO implement missing methods, check spec and add UTs
-export default class EventEmitter implements IEventEmitter {
+export class EventEmitter implements IEventEmitter {
 
   private listeners: Record<string, Array<[
     (...args: any[]) => void, // the event listener

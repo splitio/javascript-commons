@@ -9,6 +9,4 @@ function nowFactory() {
   }
 }
 
-const now = nowFactory();
-
-export default now;
+export const now = nowFactory();

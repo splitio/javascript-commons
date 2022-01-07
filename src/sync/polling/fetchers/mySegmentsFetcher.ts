@@ -6,7 +6,7 @@ import { IMySegmentsFetcher } from './types';
  * Factory of MySegments fetcher.
  * MySegments fetcher is a wrapper around `mySegments` API service that parses the response and handle errors.
  */
-export default function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments, userMatchingKey: string): IMySegmentsFetcher {
+export function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments, userMatchingKey: string): IMySegmentsFetcher {
 
   return function mySegmentsFetcher(
     noCache?: boolean,

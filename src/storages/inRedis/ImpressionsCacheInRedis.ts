@@ -7,7 +7,7 @@ import { ILogger } from '../../logger/types';
 
 const IMPRESSIONS_TTL_REFRESH = 3600; // 1 hr
 
-export default class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
+export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;

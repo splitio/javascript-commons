@@ -1,6 +1,6 @@
 import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
 import { SegmentsCachePluggable } from './SegmentsCachePluggable';
 import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
@@ -9,9 +9,9 @@ import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { validatePrefix } from '../KeyBuilder';
 import { CONSUMER_PARTIAL_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
-import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
-import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
-import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
+import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
+import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';

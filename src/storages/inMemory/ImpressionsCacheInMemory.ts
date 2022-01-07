@@ -1,7 +1,7 @@
 import { IImpressionsCacheSync } from '../types';
 import { ImpressionDTO } from '../../types';
 
-export default class ImpressionsCacheInMemory implements IImpressionsCacheSync {
+export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
 
   private queue: ImpressionDTO[] = [];
 

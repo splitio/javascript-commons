@@ -1,5 +1,5 @@
-import timer from '../timer';
-import tracker from '../index';
+import { timer } from '../timer';
+import { TrackerAPI } from '../index';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { IResponse } from '../../../services/types';
 
@@ -19,18 +19,18 @@ test('TIMER / should count the time between two tasks', (done) => {
 describe('TIME TRACKER', () => {
 
   test('should have the correct API', () => {
-    expect(typeof tracker.start).toBe('function'); // It should have the correct API.
-    expect(typeof tracker.stop).toBe('function'); // It should have the correct API.
-    expect(typeof tracker.TaskNames).toBe('object'); // It should have the correct API.
+    expect(typeof TrackerAPI.start).toBe('function'); // It should have the correct API.
+    expect(typeof TrackerAPI.stop).toBe('function'); // It should have the correct API.
+    expect(typeof TrackerAPI.TaskNames).toBe('object'); // It should have the correct API.
   });
 
   test('start() / should return the correct type', () => {
     const promise = new Promise<IResponse>(res => {
       setTimeout(res, 1000);
     });
-    const startNormal = tracker.start(loggerMock, tracker.TaskNames.SDK_READY);
-    const startNormalFake = tracker.start(loggerMock, 'fakeTask3');
-    const startWithPromise = tracker.start(loggerMock, 'fakeTask4', undefined, promise);
+    const startNormal = TrackerAPI.start(loggerMock, TrackerAPI.TaskNames.SDK_READY);
+    const startNormalFake = TrackerAPI.start(loggerMock, 'fakeTask3');
+    const startWithPromise = TrackerAPI.start(loggerMock, 'fakeTask4', undefined, promise);
 
     expect(typeof startNormal).toBe('function'); // If we call start without a promise, it will return the stop function,
     // @ts-expect-error
@@ -42,14 +42,14 @@ describe('TIME TRACKER', () => {
   });
 
   test('stop() / should stop the timer and return the time, if any', () => {
-    tracker.start(loggerMock, 'test_task');
+    TrackerAPI.start(loggerMock, 'test_task');
 
     // creating two tasks with the same task name
-    const stopFromStart = tracker.start(loggerMock, 'fakeTask5') as () => number;
-    const stopFromStart2 = tracker.start(loggerMock, 'fakeTask5') as () => number;
+    const stopFromStart = TrackerAPI.start(loggerMock, 'fakeTask5') as () => number;
+    const stopFromStart2 = TrackerAPI.start(loggerMock, 'fakeTask5') as () => number;
 
-    const stopNotExistentTask = tracker.stop(loggerMock, 'not_existent');
-    const stopNotExistentTaskAndModifier = tracker.stop(loggerMock, 'test_task', 'mod');
+    const stopNotExistentTask = TrackerAPI.stop(loggerMock, 'not_existent');
+    const stopNotExistentTaskAndModifier = TrackerAPI.stop(loggerMock, 'test_task', 'mod');
 
     expect(typeof stopNotExistentTask).toBe('undefined'); // If we try to stop a timer that does not exist, we get undefined.
     expect(typeof stopNotExistentTaskAndModifier).toBe('undefined'); // If we try to stop a timer that does not exist, we get undefined.

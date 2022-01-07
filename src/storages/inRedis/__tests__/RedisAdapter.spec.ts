@@ -49,11 +49,11 @@ const timeoutMock = jest.fn(function timeout(ms, originalPromise) {
 });
 
 jest.mock('../../../utils/promise/timeout');
-import timeout from '../../../utils/promise/timeout';
+import { timeout } from '../../../utils/promise/timeout';
 (timeout as jest.Mock).mockImplementation(timeoutMock);
 
 // Test target
-import RedisAdapter from '../RedisAdapter';
+import { RedisAdapter } from '../RedisAdapter';
 
 function clearAllMocks() {
   loggerMock.mockClear();

@@ -1,11 +1,11 @@
-import KeyBuilder from './KeyBuilder';
+import { KeyBuilder } from './KeyBuilder';
 import { IMetadata } from '../dtos/types';
 
 // NOT USED
 // const everythingAfterCount = /count\.([^/]+)$/;
 // const latencyMetricNameAndBucket = /latency\.([^/]+)\.bucket\.([0-9]+)$/;
 
-export default class KeyBuilderSS extends KeyBuilder {
+export class KeyBuilderSS extends KeyBuilder {
 
   protected readonly metadata: IMetadata;
 

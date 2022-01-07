@@ -4,7 +4,7 @@ import { assertClientApi } from './testUtils';
 
 /** Mocks */
 import * as clientCS from '../clientCS';
-const clientCSDecoratorSpy = jest.spyOn(clientCS, 'default');
+const clientCSDecoratorSpy = jest.spyOn(clientCS, 'clientCSDecorator');
 
 import { settingsWithKey, settingsWithKeyAndTT, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
 

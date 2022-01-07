@@ -6,7 +6,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';
 
-export default class EventsCacheInRedis implements IEventsCacheAsync {
+export class EventsCacheInRedis implements IEventsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;

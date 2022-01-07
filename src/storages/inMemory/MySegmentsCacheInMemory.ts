@@ -1,10 +1,10 @@
-import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
+import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 
 /**
  * Default MySegmentsCacheInMemory implementation that stores MySegments in memory.
  * Supported by all JS runtimes.
  */
-export default class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
+export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   private segmentCache: Record<string, boolean> = {};
 

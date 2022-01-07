@@ -6,7 +6,7 @@ import { ISegmentsCacheSync } from './types';
  * This class provides a skeletal implementation of the ISegmentsCacheSync interface
  * to minimize the effort required to implement this interface.
  */
-export default abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
+export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
   /**
    * For server-side synchronizer: add `segmentKeys` list of keys to `name` segment.
    * For client-side synchronizer: add `name` segment to the cache. `segmentKeys` is undefined.

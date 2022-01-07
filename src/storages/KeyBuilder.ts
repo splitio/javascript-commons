@@ -12,7 +12,7 @@ export function validatePrefix(prefix: unknown) {
     DEFAULT_PREFIX; // use default prefix if none is provided
 }
 
-export default class KeyBuilder {
+export class KeyBuilder {
 
   protected readonly prefix: string;
 

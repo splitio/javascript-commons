@@ -1,7 +1,7 @@
 import { startsWith } from '../utils/lang';
-import KeyBuilder from './KeyBuilder';
+import { KeyBuilder } from './KeyBuilder';
 
-export default class KeyBuilderCS extends KeyBuilder {
+export class KeyBuilderCS extends KeyBuilder {
 
   protected readonly regexSplitsCacheKey: RegExp;
   protected readonly matchingKey: string;
