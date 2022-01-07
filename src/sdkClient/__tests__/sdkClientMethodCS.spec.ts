@@ -227,8 +227,8 @@ describe('sdkClientMethodCSFactory', () => {
     assertClientApi(client, params.sdkReadinessManager.sdkStatus);
 
     // but with false as binded key and TT
-    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), false);
-    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), false, false);
+    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false);
+    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false, false);
   });
 
 });

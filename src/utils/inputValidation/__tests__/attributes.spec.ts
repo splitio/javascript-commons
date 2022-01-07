@@ -1,7 +1,7 @@
 import { ERROR_NOT_PLAIN_OBJECT } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-import { validateAttributes } from '../attributes';
+import { validateAttributes, validateAttributesDeep } from '../attributes';
 
 const invalidAttributes = [
   [],
@@ -47,5 +47,42 @@ describe('INPUT VALIDATION for Attributes', () => {
     }
 
     expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
+  });
+});
+
+describe('DEEP INPUT VALIDATION for Attributes', () => {
+
+  afterEach(() => { loggerMock.mockClear(); });
+
+  test('Should return true if it is a valid attributes map without logging any errors', () => {
+    const validAttributes = { amIvalid: 'yes', 'are_you_sure': true, howMuch: 10, 'spell': ['1', '0'] };
+
+    expect(validateAttributesDeep(loggerMock, validAttributes, 'some_method_attrs')).toEqual(true); // It should return true if it is valid.
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
+
+  });
+
+  test('Should return false and log error if attributes map is invalid', () => {
+
+    expect(validateAttributesDeep(loggerMock, { '': 'empty' }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute key is not a string
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': new Date() }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': { 'some': 'object' } }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': Infinity }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
+
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
+
+  });
+
+  test('Should return true if attributes map is valid', () => {
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': 'attributeValue' }, 'some_method_args')).toEqual(true); // It should be valid if the attribute value is a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': ['attribute', 'value'] }, 'some_method_args')).toEqual(true); // It should be valid if the attribute value is a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': 25 }, 'some_method_args')).toEqual(true); // It should be valid if the attribute value is a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': false }, 'some_method_args')).toEqual(true); // It should be valid if the attribute value is a String, Number, Boolean or Lists.
+    expect(validateAttributesDeep(loggerMock, { 'attributeKey': Date.now() }, 'some_method_args')).toEqual(true); // It should be valid if the attribute value is a String, Number, Boolean or Lists.
+
+    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
+    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
+
   });
 });
