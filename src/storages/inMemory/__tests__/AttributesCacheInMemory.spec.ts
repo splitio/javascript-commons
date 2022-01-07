@@ -3,7 +3,7 @@ import { AttributesCacheInMemory } from '../AttributesCacheInMemory';
 
 describe('ATTRIBUTES CACHE', () => {
 
-  test('ATTRIBUTES CACHE / Should ..', () => {
+  test('ATTRIBUTES CACHE / Attributes in memory storage test basic usage ', () => {
 
     const cache = new AttributesCacheInMemory();
 
