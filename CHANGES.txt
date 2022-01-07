@@ -1,16 +1,16 @@
 1.1.0 (December 22, 2021)
  - Added support for the SDK to run in "consumer" and "partial consumer" modes, with a pluggable implementation of it's internal storage, enabling
   customers to implement this caching with any storage technology of choice and connect it to the SDK instance to use instead of its default in-memory storage.
- - Updated multiple modules due to general polishing and improvements.
+ - Updated multiple modules due to general polishing and improvements, including the replacement of default exports with named exports, to avoid runtime errors with some particular configurations of Webpack projects.
  - Updated ioredis dependency for vulnerability fixes.
  - Bugfixing - Fixed issue returning dynamic configs if treatment name contains a dot (".").
 
 1.0.0 (October 20, 2021)
  - BREAKING CHANGE on multiple modules due to general polishing, improvements and bug fixes. In most cases the change is to use named exports. This affected mostly modules related with synchronization and storages.
-   - Updated streaming logic to use the newest version of our streaming service, including:
-     - Integration with Auth service V2, connecting to the new channels and applying the received connection delay.
-     - Implemented handling of the new MySegmentsV2 notification types (SegmentRemoval, KeyList, Bounded and Unbounded)
-     - New control notification for environment scoped streaming reset.
+ - Updated streaming logic to use the newest version of our streaming service, including:
+   - Integration with Auth service V2, connecting to the new channels and applying the received connection delay.
+   - Implemented handling of the new MySegmentsV2 notification types (SegmentRemoval, KeyList, Bounded and Unbounded)
+   - New control notification for environment scoped streaming reset.
  - Updated localhost mode to emit SDK_READY_FROM_CACHE event in Browser when using localStorage (Related to issue https://github.com/splitio/react-client/issues/34).
  - Updated dependencies for vulnerability fixes.
 
