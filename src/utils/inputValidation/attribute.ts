@@ -1,4 +1,4 @@
-import { isString, isFiniteNumber, isBoolean } from '../../../src/utils/lang';
+import { isString, isFiniteNumber, isBoolean } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
 
 export function validateAttribute(log: ILogger, attributeKey: string, attributeValue: Object, method: string): boolean {

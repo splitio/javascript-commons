@@ -1,5 +1,5 @@
 import { AttributesCacheInMemory } from '../storages/inMemory/AttributesCacheInMemory';
-import { validateAttributesDeep } from '../../src/utils/inputValidation/attributes';
+import { validateAttributesDeep } from '../utils/inputValidation/attributes';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
 import { objectAssign } from '../utils/lang/objectAssign';
