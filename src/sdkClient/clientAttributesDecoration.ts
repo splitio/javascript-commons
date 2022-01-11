@@ -83,23 +83,31 @@ export function ClientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   }
 
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatment(maybeKey, maybeSplit, maybeAttributes);
+    return clientGetTreatment(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
   function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, maybeAttributes);
+    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
   function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatments(maybeKey, maybeSplits, maybeAttributes);
+    return clientGetTreatments(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
   function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, maybeAttributes);
+    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
     return clientTrack(maybeKey, maybeTT, maybeEvent, maybeEventValue, maybeProperties);
+  }
+
+  function combineAttributes(maybeAttributes: SplitIO.Attributes | undefined): SplitIO.Attributes | undefined{
+    const storedAttributes = attributeStorage.getAll();
+    if (Object.keys(storedAttributes).length > 0) {
+      return objectAssign({}, storedAttributes, maybeAttributes);
+    }
+    return maybeAttributes;
   }
 
   return objectAssign(client, {
