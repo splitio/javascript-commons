@@ -5,7 +5,7 @@ import { ISplitChangesFetcher } from './types';
  * Factory of SplitChanges fetcher.
  * SplitChanges fetcher is a wrapper around `splitChanges` API service that parses the response and handle errors.
  */
-export default function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges): ISplitChangesFetcher {
+export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges): ISplitChangesFetcher {
 
   return function splitChangesFetcher(
     since: number,

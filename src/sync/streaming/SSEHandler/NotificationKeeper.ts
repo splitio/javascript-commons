@@ -9,7 +9,7 @@ const CONTROL_CHANNEL_REGEXS = [/control_pri$/, /control_sec$/];
  * @param pushEmitter emitter for events related to streaming support
  */
 // @TODO update logic to handle OCCUPANCY for any region and rename according to new spec (e.g.: PUSH_SUBSYSTEM_UP --> PUSH_SUBSYSTEM_UP)
-export default function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
+export function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
 
   let channels = CONTROL_CHANNEL_REGEXS.map(regex => ({
     regex,

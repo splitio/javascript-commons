@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 import { isNaNNumber } from '../../utils/lang';
-import KeyBuilderSS from '../KeyBuilderSS';
-import { ICustomStorageWrapper, ISegmentsCacheAsync } from '../types';
+import { KeyBuilderSS } from '../KeyBuilderSS';
+import { IPluggableStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { _Set } from '../../utils/lang/sets';
@@ -14,9 +14,9 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
 
   private readonly log: ILogger;
   private readonly keys: KeyBuilderSS;
-  private readonly wrapper: ICustomStorageWrapper;
+  private readonly wrapper: IPluggableStorageWrapper;
 
-  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: ICustomStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilderSS, wrapper: IPluggableStorageWrapper) {
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;

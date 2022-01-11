@@ -3,7 +3,7 @@ import { IEventsCacheSync } from '../types';
 
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M
 
-export default class EventsCacheInMemory implements IEventsCacheSync {
+export class EventsCacheInMemory implements IEventsCacheSync {
 
   private onFullQueue?: () => void;
   private readonly maxQueue: number;

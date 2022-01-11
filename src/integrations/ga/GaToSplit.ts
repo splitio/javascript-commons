@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-import objectAssign from 'object-assign';
+import { objectAssign } from '../../utils/lang/objectAssign';
 import { isString, isFiniteNumber, uniqAsStrings } from '../../utils/lang';
 import {
   validateEvent,

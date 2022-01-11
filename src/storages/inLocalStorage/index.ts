@@ -1,14 +1,14 @@
-import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
-import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
-import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSyncCS, IStorageSyncFactory } from '../types';
+import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
+import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
+import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
-import KeyBuilderCS from '../KeyBuilderCS';
+import { KeyBuilderCS } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
-import SplitsCacheInLocal from './SplitsCacheInLocal';
-import MySegmentsCacheInLocal from './MySegmentsCacheInLocal';
-import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
-import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
+import { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
+import { MySegmentsCacheInMemory } from '../inMemory/MySegmentsCacheInMemory';
+import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
@@ -25,7 +25,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSyncCS {
+  function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {

@@ -1,5 +1,5 @@
 import { SplitsCachePluggable } from '../SplitsCachePluggable';
-import KeyBuilder from '../../KeyBuilder';
+import { KeyBuilder } from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMockFactory } from './wrapper.mock';
 import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';

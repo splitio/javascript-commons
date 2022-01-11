@@ -1,5 +1,5 @@
-import MySegmentsCacheInLocal from '../MySegmentsCacheInLocal';
-import KeyBuilderCS from '../../KeyBuilderCS';
+import { MySegmentsCacheInLocal } from '../MySegmentsCacheInLocal';
+import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('SEGMENT CACHE / in LocalStorage', () => {

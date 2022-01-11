@@ -1,8 +1,8 @@
 import { ICountsCacheAsync } from '../types';
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
 
-export default class CountsCacheInRedis implements ICountsCacheAsync {
+export class CountsCacheInRedis implements ICountsCacheAsync {
 
   private readonly redis: Redis;
   private readonly keys: KeyBuilderSS;

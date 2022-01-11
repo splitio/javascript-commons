@@ -3,19 +3,20 @@ import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 /* eslint-disable no-use-before-define */
 
-import { IStorageFactoryParams, IStorageSyncCS, IStorageSync, IStorageAsync, IStorageSyncFactory } from './storages/types';
+import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory } from './storages/types';
 import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
 
 /**
- * EventEmitter interface with the minimal methods used by the SDK
+ * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
+ * @see {@link https://nodejs.org/api/events.html}
  */
-export interface IEventEmitter extends Pick<NodeJS.EventEmitter, 'addListener' | 'on' | 'once' | 'removeListener' | 'off' | 'removeAllListeners' | 'emit'> {
-  addListener(event: string, listener: (...args: any[]) => void): any;
-  on(event: string, listener: (...args: any[]) => void): any
-  once(event: string, listener: (...args: any[]) => void): any
-  removeListener(event: string, listener: (...args: any[]) => void): any;
-  off(event: string, listener: (...args: any[]) => void): any;
-  removeAllListeners(event?: string): any
+export interface IEventEmitter {
+  addListener(event: string, listener: (...args: any[]) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  removeListener(event: string, listener: (...args: any[]) => void): this;
+  off(event: string, listener: (...args: any[]) => void): this;
+  removeAllListeners(event?: string): this
   emit(event: string, ...args: any[]): boolean
 }
 
@@ -52,7 +53,7 @@ type EventConsts = {
  * SDK Modes.
  * @typedef {string} SDKMode
  */
-export type SDKMode = 'standalone' | 'consumer' | 'localhost';
+export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partial';
 /**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
@@ -85,7 +86,7 @@ export interface ISettings {
     retriesOnFailureBeforeReady: number,
     eventsFirstPushWindow: number
   },
-  readonly storage: IStorageSyncFactory,
+  readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
   readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
   readonly urls: {
     events: string,
@@ -93,7 +94,7 @@ export interface ISettings {
     auth: string,
     streaming: string
   },
-  readonly debug: boolean | LogLevel,
+  readonly debug: boolean | LogLevel | ILogger,
   readonly version: string,
   features: SplitIO.MockedFeaturesFilePath | SplitIO.MockedFeaturesMap,
   readonly streamingEnabled: boolean,
@@ -841,7 +842,7 @@ export namespace SplitIO {
      * Defines which kind of storage we should instanciate.
      * @property {Object} storage
      */
-    storage?: (params: IStorageFactoryParams) => IStorageSyncCS,
+    storage?: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
     /**
      * List of URLs that the SDK will use as base for it's synchronization functionalities, applicable only when running as standalone.
      * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.

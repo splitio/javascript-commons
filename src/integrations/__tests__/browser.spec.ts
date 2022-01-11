@@ -33,7 +33,7 @@ function clearMocks() {
 }
 
 // Test target
-import browserIMF from '../browser';
+import { integrationsManagerFactory as browserIMF } from '../browser';
 import { BrowserIntegration } from '../ga/types';
 
 describe('IntegrationsManagerFactory for browser', () => {

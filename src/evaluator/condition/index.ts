@@ -1,5 +1,5 @@
 import { getTreatment, shouldApplyRollout } from './engineUtils';
-import thenable from '../../utils/promise/thenable';
+import { thenable } from '../../utils/promise/thenable';
 import * as LabelsConstants from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
@@ -22,7 +22,7 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 }
 
 // Condition factory
-export default function conditionContext(log: ILogger, matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
+export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
   return function conditionEvaluator(key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
 

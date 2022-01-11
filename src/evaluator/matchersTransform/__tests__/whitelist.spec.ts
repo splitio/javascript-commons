@@ -1,4 +1,4 @@
-import transform from '../whitelist';
+import { whitelistTransform } from '../whitelist';
 
 test('TRANSFORMS / a whitelist Array should be casted into a Set', function () {
   let sample = {
@@ -9,7 +9,7 @@ test('TRANSFORMS / a whitelist Array should be casted into a Set', function () {
     ]
   };
 
-  let sampleSet = transform(sample);
+  let sampleSet = whitelistTransform(sample);
 
   sample.whitelist.forEach(item => {
     if (!sampleSet.has(item)) {
@@ -18,7 +18,7 @@ test('TRANSFORMS / a whitelist Array should be casted into a Set', function () {
   });
 
   // @ts-ignore
-  sampleSet = transform({});
+  sampleSet = whitelistTransform({});
   expect(sampleSet.size).toBe(0); // Empty Set if passed an object without a whitelist
 
   expect(true).toBe(true); // Everything looks fine

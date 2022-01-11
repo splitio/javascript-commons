@@ -1,4 +1,4 @@
-import BrowserSignalListener from '../browser';
+import { BrowserSignalListener } from '../browser';
 import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
@@ -105,9 +105,36 @@ function triggerUnloadEvent() {
 
 /* Mocks end */
 
-test('Browser JS listener / Impressions optimized mode', () => {
-
+test('Browser JS listener / consumer mode', () => {
+  // No SyncManager ==> consumer mode
   const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+
+  listener.start();
+
+  // Assigned right function to right signal.
+  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
+
+  triggerUnloadEvent();
+
+  // Unload event was triggered, but sendBeacon and post services should not be called
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
+  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+
+  // pre-check and call stop
+  expect(global.window.removeEventListener).not.toBeCalled();
+  listener.stop();
+
+  // removed correct listener from correct signal on stop.
+  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
+});
+
+test('Browser JS listener / standalone mode / Impressions optimized mode', () => {
+  const syncManagerMock = {};
+
+  // @ts-expect-error
+  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
 
@@ -132,7 +159,7 @@ test('Browser JS listener / Impressions optimized mode', () => {
   expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
 });
 
-test('Browser JS listener / Impressions debug mode', () => {
+test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const syncManagerMockWithPushManager = { pushManager: { stop: jest.fn() } };
 
   // @ts-expect-error
@@ -166,7 +193,7 @@ test('Browser JS listener / Impressions debug mode', () => {
   expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
 });
 
-test('Browser JS listener / Impressions debug mode without sendBeacon API', () => {
+test('Browser JS listener / standalone mode / Impressions debug mode without sendBeacon API', () => {
   // remove sendBeacon API
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;

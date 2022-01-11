@@ -1,7 +1,7 @@
 import { ISdkFactoryParams } from './types';
-import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
-import impressionsTrackerFactory from '../trackers/impressionsTracker';
-import eventTrackerFactory from '../trackers/eventTracker';
+import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
+import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
+import { eventTrackerFactory } from '../trackers/eventTracker';
 import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';
@@ -40,12 +40,16 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     matchingKey: getMatching(settings.core.key),
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
-    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
-    onReadyCb: !syncManagerFactory ? (error) => {
-      if (error) return; // don't emit SDK_READY if storage failed to connect.
+    // ATM, only used by PluggableStorage
+    mode: settings.mode,
+
+    // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined,
+    // or partial consumer mode, where it only has submitters, and therefore it doesn't emit readiness events.
+    onReadyCb: (error) => {
+      if (error) return; // Don't emit SDK_READY if storage failed to connect. Error message is logged by wrapperAdapter
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-    } : undefined,
+    },
     metadata: metadataBuilder(settings),
     log
   };

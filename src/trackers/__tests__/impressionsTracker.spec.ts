@@ -1,5 +1,5 @@
-import impressionsTrackerFactory from '../impressionsTracker';
-import ImpressionCountsCacheInMemory from '../../storages/inMemory/ImpressionCountsCacheInMemory';
+import { impressionsTrackerFactory } from '../impressionsTracker';
+import { ImpressionCountsCacheInMemory } from '../../storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionObserverSSFactory } from '../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { ImpressionDTO } from '../../types';

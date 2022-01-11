@@ -1,4 +1,4 @@
-import Treatments from '..';
+import { Treatments } from '..';
 
 test('TREATMENTS / parse 2 treatments', () => {
   let t = Treatments.parse([{

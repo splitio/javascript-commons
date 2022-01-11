@@ -1,7 +1,6 @@
-import Engine from './Engine';
-import thenable from '../utils/promise/thenable';
+import { Engine } from './Engine';
+import { thenable } from '../utils/promise/thenable';
 import * as LabelsConstants from '../utils/labels';
-import { get } from '../utils/lang';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
@@ -106,17 +105,17 @@ function getEvaluation(
     const split = Engine.parse(log, splitJSON, storage);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
-    // If the storage is async, evaluation and changeNumber will return a thenable
+    // If the storage is async and the evaluated split uses segment, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
         result.changeNumber = split.getChangeNumber();
-        result.config = get(splitJSON, `configurations.${result.treatment}`, null);
+        result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
 
         return result;
       });
     } else {
       evaluation.changeNumber = split.getChangeNumber(); // Always sync and optional
-      evaluation.config = get(splitJSON, `configurations.${evaluation.treatment}`, null);
+      evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
     }
   }
 

@@ -7,7 +7,7 @@ export interface IMockSplitEntry {
   config?: string
 }
 
-export default function parseCondition(data: IMockSplitEntry): ISplitCondition {
+export function parseCondition(data: IMockSplitEntry): ISplitCondition {
   const treatment = data.treatment;
 
   if (data.keys) {

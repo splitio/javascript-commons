@@ -12,7 +12,7 @@
  *
  */
 
-import EventEmitter from '../../utils/MinEvents';
+import { EventEmitter } from '../../utils/MinEvents';
 import { IEventEmitter } from '../../types';
 
 type ReadyStateType = 0 | 1 | 2;

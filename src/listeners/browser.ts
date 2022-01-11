@@ -8,7 +8,7 @@ import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 
@@ -19,7 +19,7 @@ const EVENT_NAME = 'for unload page event.';
 /**
  * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
  */
-export default class BrowserSignalListener implements ISignalListener {
+export class BrowserSignalListener implements ISignalListener {
 
   private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
 
@@ -63,6 +63,8 @@ export default class BrowserSignalListener implements ISignalListener {
    * using beacon API if possible, or falling back to regular post transport.
    */
   flushData() {
+    if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
+
     const eventsUrl = this.settings.urls.events;
     const extraMetadata = {
       // sim stands for Sync/Split Impressions Mode
@@ -74,7 +76,7 @@ export default class BrowserSignalListener implements ISignalListener {
     if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
 
     // Close streaming connection
-    if (this.syncManager && this.syncManager.pushManager) this.syncManager.pushManager.stop();
+    if (this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
   private _flushData<TState>(url: string, cache: IRecorderCacheProducerSync<TState>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {

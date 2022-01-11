@@ -1,5 +1,5 @@
 import * as engineUtils from '../engineUtils';
-import Treatments from '../../treatments';
+import { Treatments } from '../../treatments';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 const treatmentsMock = Treatments.parse([{

@@ -1,7 +1,7 @@
 import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheBase } from '../../../storages/types';
 import { LOCALHOST_MODE, STANDALONE_MODE } from '../../constants';
-import thenable from '../../promise/thenable';
+import { thenable } from '../../promise/thenable';
 import { WARN_NOT_EXISTENT_TT } from '../../../logger/constants';
 
 /** Mocks */

@@ -1,7 +1,7 @@
 import { ENGINE_MATCHER_LESS } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
-export default function lessThanEqualMatcherContext(log: ILogger, ruleAttr: number) /*: function */ {
+export function lessThanEqualMatcherContext(log: ILogger, ruleAttr: number) /*: function */ {
   return function lessThanEqualMatcher(runtimeAttr: number): boolean {
     let isLessEqualThan = runtimeAttr <= ruleAttr;
 

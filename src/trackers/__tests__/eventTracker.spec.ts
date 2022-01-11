@@ -1,6 +1,6 @@
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { SplitIO } from '../../types';
-import eventTrackerFactory from '../eventTracker';
+import { eventTrackerFactory } from '../eventTracker';
 
 /* Mocks */
 

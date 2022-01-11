@@ -11,7 +11,7 @@ import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './
  *
  * @returns integration manager or undefined if `integrations` are not present in settings.
  */
-export default function integrationsManagerFactory(
+export function pluggableIntegrationsManagerFactory(
   integrations: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
   params: IIntegrationFactoryParams
 ): IIntegrationManager | undefined {

@@ -50,8 +50,8 @@ export type IPostMetricsCounters = (body: string) => Promise<IResponse>
 export type IPostMetricsTimes = (body: string) => Promise<IResponse>
 
 export interface ISplitApi {
-  getSdkAPIHealthCheck: IHealthCheckAPI
-  getEventsAPIHealthCheck: IHealthCheckAPI
+	getSdkAPIHealthCheck: IHealthCheckAPI
+	getEventsAPIHealthCheck: IHealthCheckAPI
 	fetchAuth: IFetchAuth
 	fetchSplitChanges: IFetchSplitChanges
 	fetchSegmentChanges: IFetchSegmentChanges
@@ -62,3 +62,17 @@ export interface ISplitApi {
 	postMetricsCounters: IPostMetricsCounters
 	postMetricsTimes: IPostMetricsTimes
 }
+
+// Minimal version of EventSource API used by the SDK
+interface EventSourceEventMap {
+	'error': Event
+	'message': MessageEvent
+	'open': Event
+}
+
+interface IEventSource {
+	addEventListener<K extends keyof EventSourceEventMap>(type: K, listener: (this: IEventSource, ev: EventSourceEventMap[K]) => any): void
+	close(): void
+}
+
+export type IEventSourceConstructor = new (url: string, eventSourceInitDict?: any) => IEventSource

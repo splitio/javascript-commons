@@ -2,7 +2,7 @@ import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -16,7 +16,10 @@ function userKeyToQueryParam(userKey: string) {
  * @param settings validated settings object
  * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
-export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
+export function splitApiFactory(
+  settings: Pick<ISettings, 'urls' | 'sync' | 'log' | 'version' | 'runtime' | 'core'>,
+  platform: Pick<IPlatform, 'getFetch' | 'getOptions'>
+): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;

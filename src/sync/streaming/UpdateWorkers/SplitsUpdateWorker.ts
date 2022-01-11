@@ -1,7 +1,7 @@
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
-import Backoff from '../../../utils/Backoff';
+import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
 import { IUpdateWorker } from './types';
@@ -9,7 +9,7 @@ import { IUpdateWorker } from './types';
 /**
  * SplitsUpdateWorker class
  */
-export default class SplitsUpdateWorker implements IUpdateWorker {
+export class SplitsUpdateWorker implements IUpdateWorker {
 
   private readonly splitsCache: ISplitsCacheSync;
   private readonly splitsSyncTask: ISplitsSyncTask;
@@ -83,7 +83,6 @@ export default class SplitsUpdateWorker implements IUpdateWorker {
    * @param {string} defaultTreatment default treatment value
    */
   killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
-    // @TODO handle retry due to errors in storage, once we allow the definition of custom async storages
     if (this.splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
       // trigger an SDK_UPDATE if Split was killed locally
       this.splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);

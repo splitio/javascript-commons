@@ -3,7 +3,7 @@ import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
-import timeout from '../../../utils/promise/timeout';
+import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
@@ -168,9 +168,12 @@ export function splitChangesUpdaterFactory(
           return false;
         });
 
-      // After triggering the requests, if we have cached splits information let's notify that.
+      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
+      // Wrapping in a promise since checkCache can be async.
       if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splits.checkCache()).then(cacheReady => { if (cacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED); });
+        Promise.resolve(splits.checkCache()).then(isCacheReady => {
+          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
+        });
       }
       return fetcherPromise;
     }

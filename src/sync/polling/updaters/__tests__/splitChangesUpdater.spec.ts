@@ -1,14 +1,14 @@
 import { ISplit } from '../../../../dtos/types';
 import { readinessManagerFactory } from '../../../../readiness/readinessManager';
 import { splitApiFactory } from '../../../../services/splitApi';
-import SegmentsCacheInMemory from '../../../../storages/inMemory/SegmentsCacheInMemory';
-import SplitsCacheInMemory from '../../../../storages/inMemory/SplitsCacheInMemory';
-import splitChangesFetcherFactory from '../../fetchers/splitChangesFetcher';
+import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
+import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
+import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
 import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation } from '../splitChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
-import EventEmitter from '../../../../utils/MinEvents';
+import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 const activeSplitWithSegments = {

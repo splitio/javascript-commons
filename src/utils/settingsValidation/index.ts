@@ -1,8 +1,8 @@
 import { merge } from '../lang';
-import mode from './mode';
+import { mode } from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
-import validImpressionsMode from './impressionsMode';
+import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 
@@ -122,7 +122,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // Startup periods
   startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
   startup.readyTimeout = fromSecondsToMillis(startup.readyTimeout);
-  startup.eventsFirstPushWindow = fromSecondsToMillis(withDefaults.startup.eventsFirstPushWindow);
+  startup.eventsFirstPushWindow = fromSecondsToMillis(startup.eventsFirstPushWindow);
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop

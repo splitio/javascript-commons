@@ -1,8 +1,8 @@
 import { ImpressionDTO } from '../../types';
-import LRUCache from '../../utils/LRUCache';
+import { LRUCache } from '../../utils/LRUCache';
 import { IImpressionObserver } from './types';
 
-export default class ImpressionObserver<K extends string | number> implements IImpressionObserver {
+export class ImpressionObserver<K extends string | number = string> implements IImpressionObserver {
   private cache: LRUCache<K, number>;
   private hasher: (impression: ImpressionDTO) => K;
 

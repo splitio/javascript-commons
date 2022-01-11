@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import EventsCacheInRedis from '../EventsCacheInRedis';
+import { EventsCacheInRedis } from '../EventsCacheInRedis';
 import { fakeMetadata, fakeEvent1, fakeEvent1stored, fakeEvent2, fakeEvent2stored, fakeEvent3, fakeEvent3stored } from '../../pluggable/__tests__/EventsCachePluggable.spec';
 
 const prefix = 'events_cache_ut';

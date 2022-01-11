@@ -3,15 +3,15 @@ import { ISSEClient } from './SSEClient/types';
 import { IStorageSync } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';
 import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
-import objectAssign from 'object-assign';
-import Backoff from '../../utils/Backoff';
-import SSEHandlerFactory from './SSEHandler';
-import MySegmentsUpdateWorker from './UpdateWorkers/MySegmentsUpdateWorker';
-import SegmentsUpdateWorker from './UpdateWorkers/SegmentsUpdateWorker';
-import SplitsUpdateWorker from './UpdateWorkers/SplitsUpdateWorker';
+import { objectAssign } from '../../utils/lang/objectAssign';
+import { Backoff } from '../../utils/Backoff';
+import { SSEHandlerFactory } from './SSEHandler';
+import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
+import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
+import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
-import SSEClient from './SSEClient';
+import { SSEClient } from './SSEClient';
 import { IFetchAuth } from '../../services/types';
 import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
@@ -29,7 +29,7 @@ import { IAuthTokenPushEnabled } from './AuthClient/types';
  * - for server-side if key is not provided in settings.
  * - for client-side, with support for multiple clients, if key is provided in settings
  */
-export default function pushManagerFactory(
+export function pushManagerFactory(
   pollingManager: IPollingManager,
   storage: IStorageSync,
   readiness: IReadinessManager,
@@ -115,7 +115,8 @@ export default function pushManagerFactory(
   function connectPush() {
     // Guard condition in case `stop/disconnectPush` has been called (e.g., calling SDK destroy, or app signal close/background)
     if (disconnected) return;
-    log.info(STREAMING_CONNECTING, [disconnected === undefined ? '' : 'Re-']);
+    // @TODO distinguish log for 'Connecting' (1st time) and 'Re-connecting'
+    log.info(STREAMING_CONNECTING);
     disconnected = false;
 
     const userKeys = userKey ? Object.keys(clients) : undefined;
