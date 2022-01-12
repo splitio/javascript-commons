@@ -1,6 +1,6 @@
 # Split Javascript SDK common components
 
-[![npm version](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-commons.svg)](https://badge.fury.io/js/%40splitsoftware%2Fsplitio) [![Build Status](https://travis-ci.com/splitio/javascript-commons.svg?branch=main)](https://travis-ci.com/splitio/javascript-commons)
+[![npm version](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-commons.svg)](https://badge.fury.io/js/%40splitsoftware%2Fsplitio-commons) [![Build Status](https://github.com/splitio/javascript-commons/actions/workflows/ci.yml/badge.svg)](https://github.com/splitio/javascript-commons/actions/workflows/ci.yml)
 
 ## Overview
 This library is designed to work with Split, the platform for controlled rollouts, which serves features to your users via a Split feature flag to manage your complete customer experience.

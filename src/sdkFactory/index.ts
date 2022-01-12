@@ -43,8 +43,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // ATM, only used by PluggableStorage
     mode: settings.mode,
 
-    // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined
-    // or only instantiates submitters, and therefore it is not able to emit readiness events.
+    // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined,
+    // or partial consumer mode, where it only has submitters, and therefore it doesn't emit readiness events.
     onReadyCb: (error) => {
       if (error) return; // Don't emit SDK_READY if storage failed to connect. Error message is logged by wrapperAdapter
       readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
