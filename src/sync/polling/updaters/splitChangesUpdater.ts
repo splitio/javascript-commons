@@ -168,9 +168,12 @@ export function splitChangesUpdaterFactory(
           return false;
         });
 
-      // After triggering the requests, if we have cached splits information let's notify that.
+      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
+      // Wrapping in a promise since checkCache can be async.
       if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splits.checkCache()).then(cacheReady => { if (cacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED); });
+        Promise.resolve(splits.checkCache()).then(isCacheReady => {
+          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
+        });
       }
       return fetcherPromise;
     }
