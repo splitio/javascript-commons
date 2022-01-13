@@ -67,6 +67,7 @@ export class AttributesCacheInMemory {
    */
   clear() {
     this.attributesCache = {};
+    return true;
   }
 
 }

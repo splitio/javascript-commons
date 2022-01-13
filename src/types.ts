@@ -1146,7 +1146,7 @@ export namespace SplitIO {
     /**
      * Remove all the stored attributes in the client's in memory attribute storage
      */
-    clearAttributes(): any
+    clearAttributes(): boolean
   }
   /**
    * Representation of a manager instance with synchronous storage of the SDK.
