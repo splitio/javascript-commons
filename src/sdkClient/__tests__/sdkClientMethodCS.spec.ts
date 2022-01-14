@@ -293,7 +293,7 @@ describe('sdkClientMethodCSFactory', () => {
     expect(client.getAttribute('attributeName3')).toEqual('attributeValue3');
     expect(client.getAttribute('attributeName4')).toEqual('attributeValue4');
 
-    client.clearAttributes();
+    expect(client.clearAttributes()).toEqual(true);
 
     expect(client.getAttributes()).toEqual({});
   });
@@ -324,7 +324,7 @@ describe('sdkClientMethodCSFactory', () => {
     expect(emmanuelClient.getAttributes()).toEqual({ name: 'Emmanuel', email: 'emmanuel@split.io' });
     expect(emilianoClient.getAttributes()).toEqual({ name: 'Emiliano', email: 'emiliano@split.io' });
 
-    emmanuelClient.clearAttributes();
+    expect(emmanuelClient.clearAttributes()).toEqual(true);
 
     expect(emmanuelClient.getAttributes()).toEqual({});
     expect(emilianoClient.getAttributes()).toEqual({ name: 'Emiliano', email: 'emiliano@split.io' });

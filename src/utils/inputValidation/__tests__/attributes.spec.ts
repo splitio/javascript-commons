@@ -66,6 +66,8 @@ describe('DEEP INPUT VALIDATION for Attributes', () => {
   test('Should return false and log error if attributes map is invalid', () => {
 
     expect(validateAttributesDeep(loggerMock, { '': 'empty' }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute key is not a string
+    // @ts-ignore
+    expect(validateAttributesDeep(loggerMock, { 'attrKey': null }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
     expect(validateAttributesDeep(loggerMock, { 'attributeKey': new Date() }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
     expect(validateAttributesDeep(loggerMock, { 'attributeKey': { 'some': 'object' } }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
     expect(validateAttributesDeep(loggerMock, { 'attributeKey': Infinity }, 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.

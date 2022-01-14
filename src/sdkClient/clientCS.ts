@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ILogger } from '../logger/types';
 import { SplitIO } from '../types';
-import { ClientAttributesDecoration } from './clientAttributesDecoration';
+import { clientAttributesDecoration } from './clientAttributesDecoration';
 
 
 /**
@@ -13,7 +13,7 @@ import { ClientAttributesDecoration } from './clientAttributesDecoration';
  */
 export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: SplitIO.SplitKey, trafficType?: string): SplitIO.ICsClient {
 
-  let clientCS = ClientAttributesDecoration(log, client);
+  let clientCS = clientAttributesDecoration(log, client);
 
   return objectAssign(clientCS, {
     // In the client-side API, we bind a key to the client `getTreatment*` methods
@@ -23,13 +23,6 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: Sp
     getTreatmentsWithConfig: clientCS.getTreatmentsWithConfig.bind(clientCS, key),
 
     // Key is bound to the `track` method. Same thing happens with trafficType but only if provided
-    track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key),
-
-    setAttribute: clientCS.setAttribute,
-    getAttribute: clientCS.getAttribute,
-    setAttributes: clientCS.setAttributes,
-    getAttributes: clientCS.getAttributes,
-    removeAttribute: clientCS.removeAttribute,
-    clearAttributes: clientCS.clearAttributes
+    track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key)
   }) as SplitIO.ICsClient;
 }
