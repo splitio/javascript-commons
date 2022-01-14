@@ -29,6 +29,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
   const validKey = validateKey(log, key, method);
 
   const mainClientInstance = clientCSDecorator(
+    log,
     sdkClientFactory(params) as SplitIO.IClient, // @ts-ignore
     validKey
   );
@@ -74,6 +75,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
       clientInstances[instanceId] = clientCSDecorator(
+        log,
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
           storage: sharedStorage || storage,
