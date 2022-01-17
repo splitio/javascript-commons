@@ -1,82 +1,23 @@
-import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
+import { clientAttributesDecoration } from '../clientAttributesDecoration';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
-import { settingsWithKey } from '../../utils/settingsValidation/__tests__/settings.mocks';
-
-const partialStorages: { destroy: jest.Mock }[] = [];
-
-const storageMock = {
-  destroy: jest.fn(),
-  shared: jest.fn(() => {
-    partialStorages.push({ destroy: jest.fn() });
-    return partialStorages[partialStorages.length - 1];
-  })
-};
-
-const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { destroy: jest.Mock } }[] = [];
-
-const sdkReadinessManagerMock = {
-  sdkStatus: jest.fn(),
-  readinessManager: {
-    destroy: jest.fn(),
-    isDestroyed: jest.fn(() => { return false; }),
-    isReady: jest.fn(() => { return true; })
+// mocked methods return the provided attributes object (2nd argument), to assert that it was properly passed
+const clientMock = {
+  getTreatment(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+    return maybeAttributes;
   },
-  shared: jest.fn(() => {
-    partialSdkReadinessManagers.push({
-      sdkStatus: jest.fn(),
-      readinessManager: { destroy: jest.fn() },
-    });
-    return partialSdkReadinessManagers[partialSdkReadinessManagers.length - 1];
-  })
+  getTreatmentWithConfig(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+    return maybeAttributes;
+  },
+  getTreatments(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+    return maybeAttributes;
+  },
+  getTreatmentsWithConfig(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+    return maybeAttributes;
+  }
 };
-
-const partialSyncManagers: { start: jest.Mock, stop: jest.Mock, flush: jest.Mock }[] = [];
-
-const syncManagerMock = {
-  stop: jest.fn(),
-  flush: jest.fn(() => Promise.resolve()),
-  shared: jest.fn(() => {
-    partialSyncManagers.push({ start: jest.fn(), stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) });
-    return partialSyncManagers[partialSyncManagers.length - 1];
-  })
-};
-
-const params = {
-  storage: storageMock,
-  sdkReadinessManager: sdkReadinessManagerMock,
-  syncManager: syncManagerMock,
-  signalListener: { stop: jest.fn() },
-  settings: settingsWithKey
-};
-
-// We are testing attributes binding feature and we just need to know how the attributes are combined before evaluation
-// So input validation decorator is mocked to return the combined attributes instead of evaluation so we can verify them
-jest.mock('../clientInputValidation', () => {
-  return {
-    clientInputValidationDecorator() {
-      return {
-        getTreatment(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
-          return maybeAttributes;
-        },
-        getTreatmentWithConfig(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
-          return maybeAttributes;
-        },
-        getTreatments(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
-          return maybeAttributes;
-        },
-        getTreatmentsWithConfig(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
-          return maybeAttributes;
-        }
-      };
-    }
-  };
-});
-
 // @ts-expect-error
-const sdkClientMethod = sdkClientMethodCSFactory(params);
-const client = sdkClientMethod();
-
-//expect(client).toBe(AttributesDecorationMockedClient);
+const client = clientAttributesDecoration(loggerMock, clientMock);
 
 test('ATTRIBUTES DECORATION / storage', () => {
 
@@ -182,21 +123,21 @@ describe('ATTRIBUTES DECORATION / evaluation', () => {
   test('Evaluation attributes logic and precedence / getTreatment', () => {
 
     // If the same attribute is “cached” and provided on the function, the value received on the function call takes precedence.
-    expect(client.getTreatment('split')).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
-    expect(client.getTreatment('split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatment('key', 'split')).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatment('key', 'split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
     expect(client.getAttributes()).toEqual({}); // Attributes in memory storage must be empty
     client.setAttribute('func_attr_bool', false);
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false }); // In memory attribute storage must have the unique stored attribute
-    expect(client.getTreatment('split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
+    expect(client.getTreatment('key', 'split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatment('split', null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
-    expect(client.getTreatment('split', { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatment('key', 'split', null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatment('key', 'split', { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
     client.setAttributes({ func_attr_str: 'false' });
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false, 'func_attr_str': 'false' }); // In memory attribute storage must have two stored attributes
-    expect(client.getTreatment('split', { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
+    expect(client.getTreatment('key', 'split', { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatment('split', null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
-    expect(client.getTreatment('split')).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatment('key', 'split', null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatment('key', 'split')).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
     expect(client.clearAttributes()).toEqual(true);
 
   });
@@ -204,21 +145,21 @@ describe('ATTRIBUTES DECORATION / evaluation', () => {
   test('Evaluation attributes logic and precedence / getTreatments', () => {
 
     // If the same attribute is “cached” and provided on the function, the value received on the function call takes precedence.
-    expect(client.getTreatments(['split'])).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
-    expect(client.getTreatments(['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatments('key', ['split'])).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatments('key', ['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
     expect(client.getAttributes()).toEqual({}); // Attributes in memory storage must be empty
     client.setAttribute('func_attr_bool', false);
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false }); // In memory attribute storage must have the unique stored attribute
-    expect(client.getTreatments(['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
+    expect(client.getTreatments('key', ['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatments(['split'], null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
-    expect(client.getTreatments(['split'], { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatments('key', ['split'], null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatments('key', ['split'], { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
     client.setAttributes({ func_attr_str: 'false' });
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false, 'func_attr_str': 'false' }); // In memory attribute storage must have two stored attributes
-    expect(client.getTreatments(['split'], { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
+    expect(client.getTreatments('key', ['split'], { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatments(['split'], null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
-    expect(client.getTreatments(['split'])).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatments('key', ['split'], null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatments('key', ['split'])).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
     expect(client.clearAttributes()).toEqual(true);
 
   });
@@ -226,21 +167,21 @@ describe('ATTRIBUTES DECORATION / evaluation', () => {
   test('Evaluation attributes logic and precedence / getTreatmentWithConfig', () => {
 
     // If the same attribute is “cached” and provided on the function, the value received on the function call takes precedence.
-    expect(client.getTreatmentWithConfig('split')).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
-    expect(client.getTreatmentWithConfig('split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatmentWithConfig('key', 'split')).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatmentWithConfig('key', 'split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
     expect(client.getAttributes()).toEqual({}); // Attributes in memory storage must be empty
     client.setAttribute('func_attr_bool', false);
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false }); // In memory attribute storage must have the unique stored attribute
-    expect(client.getTreatmentWithConfig('split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
+    expect(client.getTreatmentWithConfig('key', 'split', { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatmentWithConfig('split', null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
-    expect(client.getTreatmentWithConfig('split', { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatmentWithConfig('key', 'split', null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatmentWithConfig('key', 'split', { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
     client.setAttributes({ func_attr_str: 'false' });
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false, 'func_attr_str': 'false' }); // In memory attribute storage must have two stored attributes
-    expect(client.getTreatmentWithConfig('split', { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
+    expect(client.getTreatmentWithConfig('key', 'split', { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatmentWithConfig('split', null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
-    expect(client.getTreatmentWithConfig('split')).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatmentWithConfig('key', 'split', null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatmentWithConfig('key', 'split')).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
     expect(client.clearAttributes()).toEqual(true);
 
   });
@@ -248,21 +189,21 @@ describe('ATTRIBUTES DECORATION / evaluation', () => {
   test('Evaluation attributes logic and precedence / getTreatmentsWithConfig', () => {
 
     // If the same attribute is “cached” and provided on the function, the value received on the function call takes precedence.
-    expect(client.getTreatmentsWithConfig(['split'])).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
-    expect(client.getTreatmentsWithConfig(['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatmentsWithConfig('key', ['split'])).toEqual(undefined); // Nothing changes if no attributes were provided using the new api
+    expect(client.getTreatmentsWithConfig('key', ['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Nothing changes if no attributes were provided using the new api
     expect(client.getAttributes()).toEqual({}); // Attributes in memory storage must be empty
     client.setAttribute('func_attr_bool', false);
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false }); // In memory attribute storage must have the unique stored attribute
-    expect(client.getTreatmentsWithConfig(['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
+    expect(client.getTreatmentsWithConfig('key', ['split'], { func_attr_bool: true, func_attr_str: 'true' })).toEqual({ func_attr_bool: true, func_attr_str: 'true' }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatmentsWithConfig(['split'], null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
-    expect(client.getTreatmentsWithConfig(['split'], { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatmentsWithConfig('key', ['split'], null)).toEqual({ func_attr_bool: false }); // API attributes should be kept in memory and use for evaluations
+    expect(client.getTreatmentsWithConfig('key', ['split'], { func_attr_str: 'true' })).toEqual({ func_attr_bool: false, func_attr_str: 'true' }); // API attributes should be kept in memory and use for evaluations
     client.setAttributes({ func_attr_str: 'false' });
     expect(client.getAttributes()).toEqual({ 'func_attr_bool': false, 'func_attr_str': 'false' }); // In memory attribute storage must have two stored attributes
-    expect(client.getTreatmentsWithConfig(['split'], { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
+    expect(client.getTreatmentsWithConfig('key', ['split'], { func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 })).toEqual({ func_attr_bool: true, func_attr_str: 'true', func_attr_number: 1 }); // Function attributes has precedence against api ones
     // @ts-ignore
-    expect(client.getTreatmentsWithConfig(['split'], null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
-    expect(client.getTreatmentsWithConfig(['split'])).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatmentsWithConfig('key', ['split'], null)).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
+    expect(client.getTreatmentsWithConfig('key', ['split'])).toEqual({ func_attr_bool: false, func_attr_str: 'false' }); // If the getTreatment function is called without attributes, stored attributes will be used to evaluate.
     client.clearAttributes();
 
   });
