@@ -7,7 +7,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 /**
  * Add in memory attributes storage methods and combine them with any attribute received from the getTreatment/s call 
  */
-export function clientAttributesDecoration<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient): any {
+export function clientAttributesDecoration<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient) {
 
   const attributeStorage = new AttributesCacheInMemory();
 
@@ -19,23 +19,31 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   const clientTrack = client.track;
 
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatment(maybeKey, maybeSplit, maybeAttributes);
+    return clientGetTreatment(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
   function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, maybeAttributes);
+    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
   function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatments(maybeKey, maybeSplits, maybeAttributes);
+    return clientGetTreatments(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
   function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, maybeAttributes);
+    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
     return clientTrack(maybeKey, maybeTT, maybeEvent, maybeEventValue, maybeProperties);
+  }
+
+  function combineAttributes(maybeAttributes: SplitIO.Attributes | undefined): SplitIO.Attributes | undefined{
+    const storedAttributes = attributeStorage.getAll();
+    if (Object.keys(storedAttributes).length > 0) {
+      return objectAssign({}, storedAttributes, maybeAttributes);
+    }
+    return maybeAttributes;
   }
 
   return objectAssign(client, {
