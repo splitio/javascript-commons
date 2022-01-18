@@ -1108,6 +1108,45 @@ export namespace SplitIO {
      * @returns {boolean} Whether the event was added to the queue succesfully or not.
      */
     track(...args: [trafficType: string, eventType: string, value?: number, properties?: Properties] | [eventType: string, value?: number, properties?: Properties]): boolean,
+    /**
+     * Add an attribute to client's in memory attributes storage
+     * @function setAttribute
+     * @param {string} attributeName Attrinute name
+     * @param {string, number, boolean, list} attributeValue Attribute value
+     * @returns {boolean} true if the attribute was stored and false otherways
+     */
+    setAttribute(attributeName: string, attributeValue: Object): boolean,
+    /**
+     * Returns the attribute with the given key
+     * @function getAttribute
+     * @param {string} attributeName Attribute name
+     * @returns {Object} Attribute with the given key
+     */
+    getAttribute(attributeName: string): Object,
+    /**
+     * Add to client's in memory attributes storage the attributes in 'attributes'
+     * @function setAttributes
+     * @param {Object} attributes Object with attributes to store
+     * @returns true if attributes were stored an false otherways
+     */
+    setAttributes(attributes: Record<string, Object>): boolean,
+    /**
+     * Return all the attributes stored in client's in memory attributes storage
+     * @function getAttributes
+     * @returns {Object} returns all the stored attributes
+     */
+    getAttributes(): Record<string, Object>,
+    /**
+     * Removes from client's in memory attributes storage the attribute with the given key
+     * @function removeAttribute
+     * @param {string} attributeName 
+     * @returns {boolean} true if attribute was removed and false otherways
+     */
+    removeAttribute(attributeName: string): boolean,
+    /**
+     * Remove all the stored attributes in the client's in memory attribute storage
+     */
+    clearAttributes(): boolean
   }
   /**
    * Representation of a manager instance with synchronous storage of the SDK.
