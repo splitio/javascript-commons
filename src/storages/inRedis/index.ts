@@ -6,8 +6,6 @@ import { SplitsCacheInRedis } from './SplitsCacheInRedis';
 import { SegmentsCacheInRedis } from './SegmentsCacheInRedis';
 import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
-import { LatenciesCacheInRedis } from './LatenciesCacheInRedis';
-import { CountsCacheInRedis } from './CountsCacheInRedis';
 import { STORAGE_REDIS } from '../../utils/constants';
 
 export interface InRedisStorageOptions {
@@ -38,8 +36,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
       impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
       events: new EventsCacheInRedis(log, keys.buildEventsKey(), redisClient, metadata),
-      latencies: new LatenciesCacheInRedis(keys, redisClient),
-      counts: new CountsCacheInRedis(keys, redisClient),
+      // @TODO add new telemetry cache
 
       // When using REDIS we should:
       // 1- Disconnect from the storage
