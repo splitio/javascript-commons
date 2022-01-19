@@ -51,6 +51,20 @@ const params = {
   settings: settingsWithKey
 };
 
+const invalidAttributes = [
+  new Date(),
+  { some: 'object' },
+  Infinity
+];
+
+const validAttributes = [
+  25, // number
+  Date.now(), // number
+  'string', // string
+  ['string', 'list'], // list
+  false // boolean
+];
+
 /** End mocks */
 
 describe('sdkClientMethodCSFactory', () => {
@@ -227,8 +241,94 @@ describe('sdkClientMethodCSFactory', () => {
     assertClientApi(client, params.sdkReadinessManager.sdkStatus);
 
     // but with false as binded key and TT
-    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), false);
-    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), false, false);
+    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false);
+    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false, false);
+  });
+
+  test.each(testTargets)('attributes binding - main client', (sdkClientMethodCSFactory) => {
+    // @ts-expect-error
+    const sdkClientMethod = sdkClientMethodCSFactory(params);
+
+    // should return a function
+    expect(typeof sdkClientMethod).toBe('function');
+
+    // calling the function should return a client instance
+    const client = sdkClientMethod();
+    assertClientApi(client, params.sdkReadinessManager.sdkStatus);
+
+    expect(client.setAttribute('attributeName1', 'attributeValue1')).toEqual(true);
+    expect(client.setAttribute('attributeName2', 'attributeValue2')).toEqual(true);
+
+    expect(client.setAttribute('', 'empty')).toEqual(false); // Attribute name should not be an empty string
+    expect(client.setAttribute({ '': 'empty' })).toEqual(false); // Attribute name should not be an empty string
+
+    invalidAttributes.forEach(invalidValue => {
+      expect(client.setAttribute('attributeName', invalidValue)).toEqual(false);
+      expect(client.setAttributes({ attributeName: invalidValue })).toEqual(false);
+    });
+
+    expect(client.getAttributes()).toEqual({ attributeName1: 'attributeValue1', attributeName2: 'attributeValue2' });
+
+    validAttributes.forEach(validValue => {
+      expect(client.setAttribute('attributeName', validValue)).toEqual(true);
+    });
+
+    validAttributes.forEach(validValue => {
+      expect(client.setAttributes({ attributeName: validValue })).toEqual(true);
+    });
+
+    expect(client.getAttributes()).toEqual({ attributeName: false, attributeName1: 'attributeValue1', attributeName2: 'attributeValue2' });
+
+    expect(client.removeAttribute('attributeName1')).toEqual(true);
+
+    expect(client.getAttribute('attributeName1')).toEqual(undefined);
+    expect(client.getAttribute('attributeName2')).toEqual('attributeValue2');
+
+    expect(client.setAttributes({
+      'attributeName3': 'attributeValue3',
+      'attributeName4': 'attributeValue4'
+    })).toEqual(true);
+
+    expect(client.getAttribute('attributeName2')).toEqual('attributeValue2');
+    expect(client.getAttribute('attributeName3')).toEqual('attributeValue3');
+    expect(client.getAttribute('attributeName4')).toEqual('attributeValue4');
+
+    expect(client.clearAttributes()).toEqual(true);
+
+    expect(client.getAttributes()).toEqual({});
+  });
+
+
+  test.each(testTargets)('attributes binding - shared clients', (sdkClientMethodCSFactory) => {
+    // @ts-expect-error
+    const sdkClientMethod = sdkClientMethodCSFactory(params);
+
+    // should return a function
+    expect(typeof sdkClientMethod).toBe('function');
+
+    // calling the function should return a client instance
+    const emmanuelClient = sdkClientMethod('emmanuel@split.io');
+    const emilianoClient = sdkClientMethod('emiliano@split.io');
+    assertClientApi(emmanuelClient);
+    assertClientApi(emilianoClient);
+
+    expect(emmanuelClient.setAttribute('name', 'Emmanuel')).toEqual(true);
+    expect(emilianoClient.setAttribute('name', 'Emiliano')).toEqual(true);
+
+    expect(emmanuelClient.getAttribute('name')).toEqual('Emmanuel');
+    expect(emilianoClient.getAttribute('name')).toEqual('Emiliano');
+
+    expect(emmanuelClient.setAttributes({ email: 'emmanuel@split.io' })).toEqual(true);
+    expect(emilianoClient.setAttributes({ email: 'emiliano@split.io' })).toEqual(true);
+
+    expect(emmanuelClient.getAttributes()).toEqual({ name: 'Emmanuel', email: 'emmanuel@split.io' });
+    expect(emilianoClient.getAttributes()).toEqual({ name: 'Emiliano', email: 'emiliano@split.io' });
+
+    expect(emmanuelClient.clearAttributes()).toEqual(true);
+
+    expect(emmanuelClient.getAttributes()).toEqual({});
+    expect(emilianoClient.getAttributes()).toEqual({ name: 'Emiliano', email: 'emiliano@split.io' });
+
   });
 
 });
