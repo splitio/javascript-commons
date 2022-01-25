@@ -62,3 +62,126 @@ export type StoredEventWithMetadata = {
   /** Stored event */
   e: SplitIO.EventData
 }
+
+/**
+ * Telemetry usage stats
+ */
+
+export type QUEUED = 0;
+export type DROPPED = 1;
+export type DEDUPED = 2;
+export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
+export type EventDataType = QUEUED | DROPPED;
+
+export type SPLITS = 'sp';
+export type IMPRESSIONS = 'im';
+export type IMPRESSIONS_COUNT = 'ic';
+export type EVENTS = 'ev';
+export type TELEMETRY = 'te';
+export type TOKEN = 'to';
+export type SEGMENT = 'se';
+export type MY_SEGMENT = 'ms';
+export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT;
+
+export type LastSync = Record<OperationType, number | undefined>
+export type HttpErrors = Record<OperationType, { [statusCode: string]: number }>
+export type HttpLatencies = Record<OperationType, Array<number>>
+
+export type TREATMENT = 't';
+export type TREATMENTS = 'ts';
+export type TREATMENT_WITH_CONFIG = 'tc';
+export type TREATMENTS_WITH_CONFIG = 'tcs';
+export type TRACK = 'tr';
+export type Method = TREATMENT | TREATMENTS | TREATMENT_WITH_CONFIG | TREATMENTS_WITH_CONFIG | TRACK;
+
+export type MethodLatencies = Record<Method, Array<number>>;
+
+export type MethodExceptions = Record<Method, number>;
+
+export type CONNECTION_ESTABLISHED = 0;
+export type OCCUPANCY_PRI = 10;
+export type OCCUPANCY_SEC = 20;
+export type STREAMING_STATUS = 30;
+export type SSE_CONNECTION_ERROR = 40;
+export type TOKEN_REFRESH = 50;
+export type ABLY_ERROR = 60;
+export type SYNC_MODE_UPDATE = 70;
+export type EventType = CONNECTION_ESTABLISHED | OCCUPANCY_PRI | OCCUPANCY_SEC | STREAMING_STATUS | SSE_CONNECTION_ERROR | TOKEN_REFRESH | ABLY_ERROR | SYNC_MODE_UPDATE;
+
+export type StreamingEvent = {
+  e: EventType, // eventType
+  d: number, // eventData
+  t: number, // timestamp
+}
+
+// 'metrics/usage' JSON request body
+export type TelemetryUsageStatsPayload = {
+  lS: LastSync, // lastSynchronization
+  mL: MethodLatencies, // clientMethodLatencies
+  mE: MethodExceptions, // methodExceptions
+  hE: HttpErrors, // httpErrors
+  hL: HttpLatencies, // httpLatencies
+  tR: number, // tokenRefreshes
+  aR: number, // authRejections
+  iQ: number, // impressionsQueued
+  iDe: number, // impressionsDeduped
+  iDr: number, // impressionsDropped
+  spC: number, // splitCount
+  seC: number, // segmentCount
+  skC: number, // segmentKeyCount
+  sL: number, // sessionLengthMs
+  eQ: number, // eventsQueued
+  eD: number, // eventsDropped
+  sE: Array<StreamingEvent>, // streamingEvents
+  t?: Array<string>, // tags
+}
+
+/**
+ * Telemetry config stats
+ */
+
+export type STANDALONE_ENUM = 0;
+export type CONSUMER_ENUM = 1;
+export type CONSUMER_PARTIAL_ENUM = 2;
+export type OperationMode = STANDALONE_ENUM | CONSUMER_ENUM | CONSUMER_PARTIAL_ENUM
+
+export type OPTIMIZED_ENUM = 0;
+export type DEBUG_ENUM = 1;
+export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM;
+
+export type RefreshRates = {
+  sp: number, // splits
+  se: number, // mySegments
+  im: number, // impressions
+  ev: number, // events
+  te: number, // telemetry
+}
+
+export type UrlOverrides = {
+  s: boolean, // sdkUrl
+  e: boolean, // events
+  a: boolean, // auth
+  st: boolean, // stream
+  t: boolean, // telemetry
+}
+
+// 'metrics/config' JSON request body
+export type TelemetryConfigStatsPayload = {
+  oM?: OperationMode, // operationMode
+  st: 'memory' | 'redis' | 'pluggable' | 'localstorage', // storage
+  sE: boolean, // streamingEnabled
+  rR: RefreshRates, // refreshRates
+  uO: UrlOverrides, // urlOverrides
+  iQ: number, // impressionsQueueSize
+  eQ: number, // eventsQueueSize
+  iM: ImpressionsMode, // impressionsMode
+  iL: boolean, // impressionsListenerEnabled
+  hP: boolean, // httpProxyDetected
+  aF: number, // activeFactories
+  rF: number, // redundantActiveFactories
+  tR: number, // timeUntilSDKReady
+  tC: number, // timeUntilSDKReadyFromCache
+  nR: number, // SDKNotReadyUsage
+  t?: Array<string>, // tags
+  i?: Array<string>, // integrations
+}
