@@ -1,6 +1,6 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
 import { ILogger } from '../logger/types';
-import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
+import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
@@ -351,29 +351,73 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
 }
 
 
-/** Latencies and metric counts cache */
-// @TODO remove. They are deprecated.
+/**
+ * Telemetry storage interface for standalone and partial consumer modes.
+ * Methods are sync because data is stored in memory.
+ */
 
-export interface ILatenciesCacheSync extends IRecorderCacheProducerSync<Record<string, number[]>> {
-  track(metricName: string, latency: number): boolean
-  isEmpty(): boolean
-  clear(): void
-  state(): Record<string, number[]>
+export interface TelemetryInitConsumerSync {
+  getTimeUntilReady(): number | undefined;
+  getTimeUntilReadyFromCache(): number | undefined;
+  getNonReadyUsage(): number;
+  // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
 }
 
-export interface ILatenciesCacheAsync {
-  track(metricName: string, latency: number): Promise<boolean>
+export interface TelemetryRuntimeConsumerSync {
+  getImpressionStats(type: ImpressionDataType): number;
+  getEventStats(type: EventDataType): number;
+  getLastSynchronization(): LastSync;
+  popHttpErrors(): HttpErrors;
+  popHttpLatencies(): HttpLatencies;
+  popAuthRejections(): number;
+  popTokenRefreshes(): number;
+  popStreamingEvents(): Array<StreamingEvent>;
+  popTags(): Array<string> | undefined;
+  getSessionLength(): number | undefined;
 }
 
-export interface ICountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
-  track(metricName: string): boolean
-  isEmpty(): boolean
-  clear(): void
-  state(): Record<string, number>
+export interface TelemetryEvaluationConsumerSync {
+  popExceptions(): MethodExceptions;
+  popLatencies(): MethodLatencies;
 }
 
-export interface ICountsCacheAsync {
-  track(metricName: string): Promise<boolean>
+export interface TelemetryStorageConsumerSync extends TelemetryInitConsumerSync, TelemetryRuntimeConsumerSync, TelemetryEvaluationConsumerSync { }
+
+export interface TelemetryInitProducerSync {
+  recordTimeUntilReady(ms: number): void;
+  recordTimeUntilReadyFromCache(ms: number): void;
+  recordNonReadyUsage(): void;
+  // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
+}
+
+export interface TelemetryRuntimeProducerSync {
+  addTag(tag: string): void;
+  recordImpressionStats(type: ImpressionDataType, count: number): void;
+  recordEventStats(type: EventDataType, count: number): void;
+  recordSuccessfulSync(resource: OperationType, timeMs: number): void;
+  recordSyncError(resource: OperationType, status: number): void;
+  recordSyncLatency(resource: OperationType, latencyMs: number): void;
+  recordAuthRejections(): void;
+  recordTokenRefreshes(): void;
+  recordStreamingEvents(streamingEvent: StreamingEvent): void;
+  recordSessionLength(ms: number): void;
+}
+
+export interface TelemetryEvaluationProducerSync {
+  recordLatency(method: Method, latencyMs: number): void;
+  recordException(method: Method): void;
+}
+
+export interface TelemetryStorageProducerSync extends TelemetryInitProducerSync, TelemetryRuntimeProducerSync, TelemetryEvaluationProducerSync { }
+
+export interface TelemetryCacheSync extends TelemetryStorageConsumerSync, TelemetryStorageProducerSync { }
+
+/**
+ * Telemetry storage interface for consumer mode.
+ * Methods are async because data is stored in Redis or a pluggable storage.
+ */
+export interface TelemetryCacheAsync {
+  // @TODO
 }
 
 /**
@@ -385,16 +429,14 @@ export interface IStorageBase<
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
   TEventsCache extends IEventsCacheBase,
-  TLatenciesCache extends ILatenciesCacheSync | ILatenciesCacheAsync,
-  TCountsCache extends ICountsCacheSync | ICountsCacheAsync,
+  TTelemetryCache extends TelemetryCacheSync | TelemetryCacheAsync
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
-  latencies?: TLatenciesCache,
-  counts?: TCountsCache,
+  telemetry?: TTelemetryCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
@@ -404,8 +446,7 @@ export type IStorageSync = IStorageBase<
   ISegmentsCacheSync,
   IImpressionsCacheSync,
   IEventsCacheSync,
-  ILatenciesCacheSync,
-  ICountsCacheSync
+  TelemetryCacheSync
 >
 
 export type IStorageAsync = IStorageBase<
@@ -413,8 +454,7 @@ export type IStorageAsync = IStorageBase<
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
-  ILatenciesCacheAsync,
-  ICountsCacheAsync
+  TelemetryCacheAsync | TelemetryCacheSync
 >
 
 /** StorageFactory */

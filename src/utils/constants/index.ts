@@ -32,3 +32,30 @@ export const STORAGE_MEMORY: StorageType = 'MEMORY';
 export const STORAGE_LOCALSTORAGE: StorageType = 'LOCALSTORAGE';
 export const STORAGE_REDIS: StorageType = 'REDIS';
 export const STORAGE_PLUGGABLE: StorageType = 'PLUGGABLE';
+
+// Telemetry
+export const QUEUED = 0;
+export const DROPPED = 1;
+export const DEDUPED = 2;
+
+export const STANDALONE_ENUM = 0;
+export const CONSUMER_ENUM = 1;
+export const CONSUMER_PARTIAL_ENUM = 2;
+
+export const OPTIMIZED_ENUM = 0;
+export const DEBUG_ENUM = 1;
+
+export const SPLITS = 'sp';
+export const IMPRESSIONS = 'im';
+export const IMPRESSIONS_COUNT = 'ic';
+export const EVENTS = 'ev';
+export const TELEMETRY = 'te';
+export const TOKEN = 'to';
+export const SEGMENT = 'se';
+export const MY_SEGMENT = 'ms';
+
+export const TREATMENT = 't';
+export const TREATMENTS = 'ts';
+export const TREATMENT_WITH_CONFIG = 'tc';
+export const TREATMENTS_WITH_CONFIG = 'tcs';
+export const TRACK = 'tr';
