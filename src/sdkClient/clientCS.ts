@@ -23,6 +23,8 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: Sp
     getTreatmentsWithConfig: clientCS.getTreatmentsWithConfig.bind(clientCS, key),
 
     // Key is bound to the `track` method. Same thing happens with trafficType but only if provided
-    track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key)
+    track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key),
+
+    isBrowserClient: true
   }) as SplitIO.ICsClient;
 }

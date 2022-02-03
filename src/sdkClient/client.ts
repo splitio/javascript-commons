@@ -123,6 +123,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     getTreatmentWithConfig,
     getTreatments,
     getTreatmentsWithConfig,
-    track
+    track,
+    isBrowserClient: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;
 }
