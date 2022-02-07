@@ -1,7 +1,6 @@
-import { SplitIO } from '../../../types';
 import { keyParser, getMatching, getBucketing } from '../index';
 
-test('keyParser / if a string is passed as param, it should return a object', () => {
+test('keyParser / if a string is passed as a param, it should return a object', () => {
 
   const key = 'some key';
   const keyParsed = keyParser(key);
@@ -24,7 +23,7 @@ test('keyParser / should return the keys configurations', () => {
   expect(keyParsed.bucketingKey).toBe(bucketingKey); // matching key should be equal to bucketingKey
 });
 
-test('getMatching / if a string is passed as a param it should return a string', () => {
+test('getMatching / if a string is passed as a param, it should return a string', () => {
 
   const key = 'some key';
   const keyParsed = getMatching(key);
@@ -33,7 +32,7 @@ test('getMatching / if a string is passed as a param it should return a string',
   expect(keyParsed).toBe(key); // key parsed should be equal to key
 });
 
-test('getMatching / if a object is passed as a param it should return a string', () => {
+test('getMatching / if a object is passed as a param, it should return a string', () => {
 
   const key = {
     matchingKey: 'some key',
@@ -46,7 +45,7 @@ test('getMatching / if a object is passed as a param it should return a string',
   expect(keyParsed).toBe(key.matchingKey); // key parsed should be equal to key
 });
 
-test('getBucketing / should return undefined if a string is passed as a param and return undefined is set', () => {
+test('getBucketing / if a string is passed as a param, it should return undefined', () => {
 
   const key = 'simple key';
 
@@ -55,11 +54,11 @@ test('getBucketing / should return undefined if a string is passed as a param an
   expect(keyParsed).toBe(undefined); // key parsed should return undefined
 });
 
-test('getBucketing / should return undefined if a string is passed as a param and return undefined is set', () => {
+test('getBucketing / if a object is passed as a param, it should return the bucketingKey value', () => {
 
-  const key = { bucketingKey: 'test_buck_key' };
+  const key: any = { bucketingKey: 'test_buck_key' };
 
-  const keyParsed = getBucketing(key as SplitIO.SplitKeyObject);
+  const keyParsed = getBucketing(key);
 
-  expect(keyParsed).toBe('test_buck_key'); // key parsed should return undefined
+  expect(keyParsed).toBe('test_buck_key'); // key parsed should return the bucketingKey
 });
