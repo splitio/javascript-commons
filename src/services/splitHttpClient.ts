@@ -49,7 +49,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
         return response;
       })
       .catch(error => {
-        const resp = error.response;
+        const resp = error && error.response;
         let msg = '';
 
         if (resp) { // An HTTP error

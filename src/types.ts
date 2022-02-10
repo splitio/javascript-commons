@@ -381,6 +381,10 @@ interface IBasicClient extends IStatusInterface {
    * @returns {Promise<void>}
    */
   destroy(): Promise<void>
+
+  // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
+  // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
+  isBrowserClient: boolean
 }
 /**
  * Common definitions between SDK instances for different environments interface.
@@ -1139,7 +1143,7 @@ export namespace SplitIO {
     /**
      * Removes from client's in memory attributes storage the attribute with the given key
      * @function removeAttribute
-     * @param {string} attributeName 
+     * @param {string} attributeName
      * @returns {boolean} true if attribute was removed and false otherways
      */
     removeAttribute(attributeName: string): boolean,
