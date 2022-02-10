@@ -40,7 +40,7 @@ export function pushManagerFactory(
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
-  const userKey = settings.core.key ? getMatching(settings.core.key) : undefined; //
+  const userKey = settings.core.key ? getMatching(settings.core.key) : undefined;
   const log = settings.log;
 
   let sseClient: ISSEClient;
@@ -59,7 +59,8 @@ export function pushManagerFactory(
   sseClient.setEventHandler(sseHandler);
 
   // init workers
-  const segmentsUpdateWorker = userKey ? new MySegmentsUpdateWorker(pollingManager.segmentsSyncTask) : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
+  // MySegmentsUpdateWorker (client-side) are initiated in `add` method
+  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
 
@@ -68,11 +69,6 @@ export function pushManagerFactory(
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
   const clients: Record<string, { hash64: Hash64, worker: MySegmentsUpdateWorker }> = {};
-  if (userKey) {
-    const hash = hashUserKey(userKey);
-    userKeyHashes[hash] = userKey;
-    clients[userKey] = { hash64: hash64(userKey), worker: segmentsUpdateWorker as MySegmentsUpdateWorker };
-  }
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -176,7 +172,7 @@ export function pushManagerFactory(
   function stopWorkers() {
     splitsUpdateWorker.backoff.reset();
     if (userKey) forOwn(clients, ({ worker }) => worker.backoff.reset());
-    else segmentsUpdateWorker.backoff.reset();
+    else (segmentsUpdateWorker as SegmentsUpdateWorker).backoff.reset();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
@@ -306,37 +302,40 @@ export function pushManagerFactory(
     // Expose Event Emitter functionality and Event constants
     Object.create(pushEmitter),
     {
-      // Expose functionality for starting and stoping push mode:
-      stop: disconnectPush, // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which starts polling.
-
+      // Stop/pause push mode
+      stop() {
+        disconnectPush(); // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which starts polling.
+        if (userKey) this.remove(userKey); // Necessary to properly resume streaming in client-side (e.g., RN SDK transition to foreground).
+      },
+      // Start/resume push mode
       start() {
         // Guard condition to avoid calling `connectPush` again if the `start` method is called multiple times or if push has been disabled.
         if (disabled || disconnected === false) return;
         disconnected = false;
-        // Run in next event-loop cycle for optimization on client-side: if multiple clients are created in the same cycle than the factory, only one authentication is performed.
-        setTimeout(connectPush);
+
+        if (userKey) this.add(userKey, pollingManager.segmentsSyncTask); // client-side
+        else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for tests consistency
       },
 
       // [Only for client-side]
       add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
-        clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
-
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
           userKeyHashes[hash] = userKey;
+          clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
-        }
 
-        // Reconnects in case of a new client.
-        // Run in next event-loop cycle to save authentication calls
-        // in case the user is creating several clients in the current cycle.
-        setTimeout(function checkForReconnect() {
-          if (connectForNewClient) {
-            connectForNewClient = false;
-            connectPush();
-          }
-        }, 0);
+          // Reconnects in case of a new client.
+          // Run in next event-loop cycle to save authentication calls
+          // in case multiple clients are created in the current cycle.
+          setTimeout(function checkForReconnect() {
+            if (connectForNewClient) {
+              connectForNewClient = false;
+              connectPush();
+            }
+          }, 0);
+        }
       },
       // [Only for client-side]
       remove(userKey: string) {
