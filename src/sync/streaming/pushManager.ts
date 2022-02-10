@@ -314,7 +314,7 @@ export function pushManagerFactory(
         disconnected = false;
 
         if (userKey) this.add(userKey, pollingManager.segmentsSyncTask); // client-side
-        else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for tests consistency
+        else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for consistency with client-side
       },
 
       // [Only for client-side]

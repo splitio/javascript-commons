@@ -41,8 +41,6 @@ describe('pushManager in client-side', () => {
   });
 
   test('re-authenticates asynchronously when it is resumed and when new users are added', async () => {
-
-    // @TODO assert log messages
     const fetchAuthMock = jest.fn(() => Promise.reject({ message: 'error' }));
 
     // @ts-ignore
@@ -54,7 +52,9 @@ describe('pushManager in client-side', () => {
       }
     }) as IPushManagerCS;
 
-    // calling start multiple times has no effect (authenticates only once)
+    // calling start again has no effect (authenticates asynchronously only once)
+    pushManager.start();
+    pushManager.stop();
     pushManager.start();
     pushManager.start();
 
@@ -135,9 +135,12 @@ describe('pushManager in server-side', () => {
       }
     }) as IPushManagerCS;
 
-    // calling start multiple times has no effect (authenticates asynchronously only once)
+    // calling start again has no effect (authenticates asynchronously only once)
     pushManager.start();
     pushManager.start();
+    // @TODO pausing & resuming synchronously is not working as expected in server-side
+    // pushManager.stop();
+    // pushManager.start();
     expect(fetchAuthMock).toHaveBeenCalledTimes(0);
     await new Promise(res => setTimeout(res));
     expect(fetchAuthMock).toHaveBeenLastCalledWith(undefined);
