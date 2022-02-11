@@ -81,9 +81,6 @@ export function syncManagerOnlineFactory(
        * Method used to start the syncManager for the first time, or resume it after being stopped.
        */
       start() {
-        if (running) return;
-        running = true;
-
         // start syncing splits and segments
         if (pollingManager) {
           if (pushManager) {
@@ -100,21 +97,20 @@ export function syncManagerOnlineFactory(
 
         // start periodic data recording (events, impressions, telemetry).
         if (submitter) submitter.start();
+        running = true;
       },
 
       /**
        * Method used to stop/pause the syncManager.
        */
       stop() {
-        if (!running) return;
-        running = false;
-
         // stop syncing
         if (pushManager) pushManager.stop();
         if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
         if (submitter) submitter.stop();
+        running = false;
       },
 
       isRunning() {
