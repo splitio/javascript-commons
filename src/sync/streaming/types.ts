@@ -1,11 +1,7 @@
 import { IMySegmentsUpdateData, IMySegmentsUpdateV2Data, ISegmentUpdateData, ISplitUpdateData, ISplitKillData } from './SSEHandler/types';
 import { ITask } from '../types';
-import { IPollingManager, ISegmentsSyncTask } from '../polling/types';
-import { IReadinessManager } from '../../readiness/types';
-import { IFetchAuth } from '../../services/types';
-import { IStorageSync } from '../../storages/types';
-import { IEventEmitter, ISettings } from '../../types';
-import { IPlatform } from '../../sdkFactory/types';
+import { ISegmentsSyncTask } from '../polling/types';
+import { IEventEmitter } from '../../types';
 import { ControlType } from './constants';
 
 // Internal SDK events, subscribed by SyncManager and PushManager
@@ -45,26 +41,10 @@ export interface IPushEventEmitter extends IEventEmitter {
 }
 
 /**
- * PushManager for server-side
+ * PushManager
  */
-export interface IPushManager extends ITask, IPushEventEmitter { }
-
-/**
- * PushManager for client-side with support for multiple clients
- */
-export interface IPushManagerCS extends IPushManager {
+export interface IPushManager extends ITask, IPushEventEmitter {
+  // Methods used in client-side, to support multiple clients
   add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask): void,
   remove(userKey: string): void
 }
-
-/**
- * Signature of push manager factory/constructor
- */
-export type IPushManagerFactoryParams = [
-  pollingManager: IPollingManager,
-  storage: IStorageSync,
-  readiness: IReadinessManager,
-  fetchAuth: IFetchAuth,
-  platform: IPlatform,
-  settings: ISettings
-]

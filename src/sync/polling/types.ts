@@ -1,7 +1,5 @@
 import { IReadinessManager } from '../../readiness/types';
-import { ISplitApi } from '../../services/types';
 import { IStorageSync } from '../../storages/types';
-import { ISettings } from '../../types';
 import { SegmentsData } from '../streaming/SSEHandler/types';
 import { ITask, ISyncTask } from '../types';
 
@@ -23,13 +21,3 @@ export interface IPollingManagerCS extends IPollingManager {
   remove(matchingKey: string): void;
   get(matchingKey: string): ISegmentsSyncTask | undefined
 }
-
-/**
- * Signature of polling manager factory/constructor
- */
-export type IPollingManagerFactoryParams = [
-  splitApi: ISplitApi,
-  storage: IStorageSync,
-  readiness: IReadinessManager,
-  settings: ISettings,
-]

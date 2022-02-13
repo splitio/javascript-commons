@@ -23,6 +23,7 @@ export function mySegmentsUpdaterFactory(
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
+  matchingKey: string
 ): IMySegmentsUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -69,7 +70,7 @@ export function mySegmentsUpdaterFactory(
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
-      mySegmentsFetcher(noCache, _promiseDecorator).then(segments => {
+      mySegmentsFetcher(matchingKey, noCache, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
         startingUp = false;
 

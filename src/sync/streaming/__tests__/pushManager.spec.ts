@@ -1,24 +1,34 @@
 import { EventEmitter } from '../../../utils/MinEvents';
 import { fullSettings, fullSettingsServerSide } from '../../../utils/settingsValidation/__tests__/settings.mocks';
-import { IPushManagerCS } from '../types';
 import { syncTaskFactory } from '../../__tests__/syncTask.mock';
 
 // Test target
 import { pushManagerFactory } from '../pushManager';
+import { IPushManager } from '../types';
 
-const platformMock = {
-  getEventSource: jest.fn(() => { return () => { }; }),
-  EventEmitter
+const paramsMock = {
+  platform: {
+    getEventSource: jest.fn(() => { return () => { }; }),
+    EventEmitter
+  },
+  settings: fullSettings,
+  storage: {},
+  readiness: {}
 };
 
 test('pushManagerFactory returns undefined if EventSource is not available', () => {
-  // @ts-ignore
-  const pushManager = pushManagerFactory({}, {}, {}, () => { }, {
-    getEventSource: () => undefined,
-    EventEmitter
-  }, fullSettings);
+  const params = {
+    ...paramsMock,
+    platform: {
+      getEventSource: () => undefined,
+      EventEmitter
+    }
+  }; // @ts-ignore
+  const pushManagerCS = pushManagerFactory(params, {}); // @ts-ignore
+  const pushManagerSS = pushManagerFactory(params, {});
 
-  expect(pushManager).toBe(undefined);
+  expect(pushManagerCS).toBe(undefined);
+  expect(pushManagerSS).toBe(undefined);
 });
 
 describe('pushManager in client-side', () => {
@@ -26,8 +36,9 @@ describe('pushManager in client-side', () => {
   test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
     const fetchAuthMock = jest.fn();
 
-    // @ts-ignore
-    const pushManager = pushManagerFactory({}, {}, {}, fetchAuthMock, platformMock, fullSettings) as IPushManagerCS;
+    const pushManager = pushManagerFactory({ // @ts-ignore
+      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }
+    }, {}) as IPushManager;
 
     pushManager.start();
     pushManager.start();
@@ -43,14 +54,15 @@ describe('pushManager in client-side', () => {
   test('re-authenticates asynchronously when it is resumed and when new users are added', async () => {
     const fetchAuthMock = jest.fn(() => Promise.reject({ message: 'error' }));
 
-    // @ts-ignore
-    const pushManager = pushManagerFactory({}, {}, {}, fetchAuthMock, platformMock, {
-      ...fullSettings,
-      scheduler: {
-        ...fullSettings.scheduler,
-        pushRetryBackoffBase: 10 // high authentication backoff
+    const pushManager = pushManagerFactory({ // @ts-ignore
+      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: {
+        ...fullSettings,
+        scheduler: {
+          ...fullSettings.scheduler,
+          pushRetryBackoffBase: 10 // high authentication backoff
+        }
       }
-    }) as IPushManagerCS;
+    }, {}) as IPushManager;
 
     // calling start again has no effect (authenticates asynchronously only once)
     pushManager.start();
@@ -109,8 +121,9 @@ describe('pushManager in server-side', () => {
   test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
     const fetchAuthMock = jest.fn();
 
-    // @ts-ignore
-    const pushManager = pushManagerFactory({}, {}, {}, fetchAuthMock, platformMock, fullSettingsServerSide) as IPushManagerCS;
+    const pushManager = pushManagerFactory({ // @ts-ignore
+      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: fullSettingsServerSide
+    }, {}) as IPushManager;
 
     pushManager.start();
     pushManager.start();
@@ -126,14 +139,15 @@ describe('pushManager in server-side', () => {
   test('re-authenticates asynchronously when it is resumed', async () => {
     const fetchAuthMock = jest.fn(() => Promise.reject({ message: 'error' }));
 
-    // @ts-ignore
-    const pushManager = pushManagerFactory({}, {}, {}, fetchAuthMock, platformMock, {
-      ...fullSettingsServerSide,
-      scheduler: {
-        ...fullSettingsServerSide.scheduler,
-        pushRetryBackoffBase: 10 // high authentication backoff
+    const pushManager = pushManagerFactory({ // @ts-ignore
+      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: {
+        ...fullSettingsServerSide,
+        scheduler: {
+          ...fullSettingsServerSide.scheduler,
+          pushRetryBackoffBase: 10 // high authentication backoff
+        }
       }
-    }) as IPushManagerCS;
+    }, {}) as IPushManager;
 
     // calling start again has no effect (authenticates asynchronously only once)
     pushManager.start();

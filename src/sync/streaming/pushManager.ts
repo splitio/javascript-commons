@@ -1,7 +1,5 @@
-import { IPushEventEmitter, IPushManagerCS } from './types';
+import { IPushEventEmitter, IPushManager } from './types';
 import { ISSEClient } from './SSEClient/types';
-import { IStorageSync } from '../../storages/types';
-import { IReadinessManager } from '../../readiness/types';
 import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
@@ -12,17 +10,15 @@ import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
-import { IFetchAuth } from '../../services/types';
-import { ISettings } from '../../types';
 import { getMatching } from '../../utils/key';
 import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
-import { IPlatform } from '../../sdkFactory/types';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 } from '../../logger/constants';
 import { KeyList, UpdateStrategy } from './SSEHandler/types';
 import { isInBitmap, parseBitmap, parseKeyList } from './mySegmentsV2utils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
+import { ISyncManagerFactoryParams } from '../types';
 
 /**
  * PushManager factory:
@@ -30,13 +26,11 @@ import { IAuthTokenPushEnabled } from './AuthClient/types';
  * - for client-side, with support for multiple clients, if key is provided in settings
  */
 export function pushManagerFactory(
+  params: ISyncManagerFactoryParams,
   pollingManager: IPollingManager,
-  storage: IStorageSync,
-  readiness: IReadinessManager,
-  fetchAuth: IFetchAuth,
-  platform: IPlatform,
-  settings: ISettings,
-): IPushManagerCS | undefined {
+): IPushManager | undefined {
+
+  const { settings, storage, splitApi, readiness, platform } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -51,7 +45,7 @@ export function pushManagerFactory(
     log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
-  const authenticate = authenticateFactory(fetchAuth);
+  const authenticate = authenticateFactory(splitApi.fetchAuth);
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
@@ -60,7 +54,7 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(storage.segments, pollingManager.segmentsSyncTask);
+  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
 

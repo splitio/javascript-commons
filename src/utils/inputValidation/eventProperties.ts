@@ -1,4 +1,5 @@
-import { isObject, shallowClone, isString, isFiniteNumber, isBoolean } from '../lang';
+import { isObject, isString, isFiniteNumber, isBoolean } from '../lang';
+import { objectAssign } from '../lang/objectAssign';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
@@ -22,7 +23,8 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
   }
 
   const keys = Object.keys(maybeProperties);
-  const clone = shallowClone(maybeProperties);
+  // Shallow clone
+  const clone = objectAssign({}, maybeProperties);
   // To avoid calculating the size twice we'll return it from here.
   const output = {
     properties: clone,

@@ -2,8 +2,8 @@ import { ISyncManagerCS, ISyncManagerFactoryParams } from './types';
 import { submitterManagerFactory } from './submitters/submitterManager';
 import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
-import { IPushManagerFactoryParams, IPushManager, IPushManagerCS } from './streaming/types';
-import { IPollingManager, IPollingManagerCS, IPollingManagerFactoryParams } from './polling/types';
+import { IPushManager } from './streaming/types';
+import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 
@@ -16,34 +16,28 @@ import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '..
  * @param pushManagerFactory optional to build a SyncManager with or without streaming support
  */
 export function syncManagerOnlineFactory(
-  pollingManagerFactory?: (...args: IPollingManagerFactoryParams) => IPollingManager,
-  pushManagerFactory?: (...args: IPushManagerFactoryParams) => IPushManager | undefined
+  pollingManagerFactory?: (params: ISyncManagerFactoryParams) => IPollingManager,
+  pushManagerFactory?: (params: ISyncManagerFactoryParams, pollingManager: IPollingManager) => IPushManager | undefined,
 ): (params: ISyncManagerFactoryParams) => ISyncManagerCS {
 
   /**
    * SyncManager factory for modular SDK
    */
-  return function ({
-    settings,
-    platform,
-    splitApi,
-    storage,
-    readiness
-  }: ISyncManagerFactoryParams): ISyncManagerCS {
+  return function (params: ISyncManagerFactoryParams): ISyncManagerCS {
 
-    const log = settings.log;
+    const { log, streamingEnabled } = params.settings;
 
     /** Polling Manager */
-    const pollingManager = pollingManagerFactory && pollingManagerFactory(splitApi, storage, readiness, settings);
+    const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
 
     /** Push Manager */
-    const pushManager = settings.streamingEnabled && pollingManager && pushManagerFactory ?
-      pushManagerFactory(pollingManager, storage, readiness, splitApi.fetchAuth, platform, settings) :
+    const pushManager = streamingEnabled && pollingManager && pushManagerFactory ?
+      pushManagerFactory(params, pollingManager) :
       undefined;
 
     /** Submitter Manager */
     // It is not inyected as push and polling managers, because at the moment it is required
-    const submitter = submitterManagerFactory(settings, storage, splitApi);
+    const submitter = submitterManagerFactory(params);
 
 
     /** Sync Manager logic */
@@ -141,7 +135,7 @@ export function syncManagerOnlineFactory(
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
-              (pushManager as IPushManagerCS).add(matchingKey, mySegmentsSyncTask);
+              pushManager.add(matchingKey, mySegmentsSyncTask);
             } else {
               if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
             }
@@ -151,7 +145,7 @@ export function syncManagerOnlineFactory(
             const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);
             if (mySegmentsSyncTask) {
               // stop syncing
-              if (pushManager) (pushManager as IPushManagerCS).remove(matchingKey);
+              if (pushManager) pushManager.remove(matchingKey);
               if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
 
               (pollingManager as IPollingManagerCS).remove(matchingKey);

@@ -2,15 +2,11 @@ import { syncTaskComposite } from '../syncTaskComposite';
 import { eventsSyncTaskFactory } from './eventsSyncTask';
 import { impressionsSyncTaskFactory } from './impressionsSyncTask';
 import { impressionCountsSyncTaskFactory } from './impressionCountsSyncTask';
-import { ISplitApi } from '../../services/types';
-import { IStorageSync } from '../../storages/types';
-import { ISettings } from '../../types';
+import { ISyncManagerFactoryParams } from '../types';
 
-export function submitterManagerFactory(
-  settings: ISettings,
-  storage: IStorageSync,
-  splitApi: ISplitApi,
-) {
+export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
+
+  const { settings, storage, splitApi } = params;
   const log = settings.log;
   const submitters = [
     impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
