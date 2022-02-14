@@ -19,7 +19,7 @@ export class SegmentsUpdateWorker implements IUpdateWorker {
    * @param {Object} segmentsCache segments data cache
    * @param {Object} segmentsSyncTask task for syncing segments data
    */
-  constructor(segmentsCache: ISegmentsCacheSync, segmentsSyncTask: ISegmentsSyncTask) {
+  constructor(segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync) {
     this.segmentsCache = segmentsCache;
     this.segmentsSyncTask = segmentsSyncTask;
     this.maxChangeNumbers = {};

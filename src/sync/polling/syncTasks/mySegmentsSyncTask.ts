@@ -21,12 +21,13 @@ export function mySegmentsSyncTaskFactory(
     settings.log,
     mySegmentsUpdaterFactory(
       settings.log,
-      mySegmentsFetcherFactory(fetchMySegments, matchingKey),
+      mySegmentsFetcherFactory(fetchMySegments),
       storage.splits,
       storage.segments,
       readiness.segments,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
+      matchingKey
     ),
     settings.scheduler.segmentsRefreshRate,
     'mySegmentsUpdater',

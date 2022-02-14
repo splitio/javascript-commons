@@ -65,7 +65,7 @@ export const fullSettings: ISettings = {
   integrations: [() => { }], //  A no-op integration
   mode: 'standalone',
   debug: false,
-  streamingEnabled: false,
+  streamingEnabled: true,
   sync: {
     splitFilters: [],
     impressionsMode: 'OPTIMIZED',
@@ -88,6 +88,15 @@ export const fullSettings: ISettings = {
     streaming: 'streaming'
   },
   log: loggerMock
+};
+
+export const fullSettingsServerSide = {
+  ...fullSettings,
+  core: {
+    ...fullSettings.core,
+    key: undefined,
+  },
+  features: '.split'
 };
 
 export const settingsSplitApi = {

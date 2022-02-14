@@ -1,13 +1,13 @@
 import { ENGINE_MATCHER_ENDS_WITH } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
-import { endsWith as strEndsWith } from '../../utils/lang';
+import { endsWith } from '../../utils/lang';
 
 export function endsWithMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
   return function endsWithMatcher(runtimeAttr: string): boolean {
-    let endsWith = ruleAttr.some(e => strEndsWith(runtimeAttr, e));
+    let strEndsWith = ruleAttr.some(e => endsWith(runtimeAttr, e));
 
-    log.debug(ENGINE_MATCHER_ENDS_WITH, [runtimeAttr, ruleAttr, endsWith]);
+    log.debug(ENGINE_MATCHER_ENDS_WITH, [runtimeAttr, ruleAttr, strEndsWith]);
 
-    return endsWith;
+    return strEndsWith;
   };
 }

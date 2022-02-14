@@ -18,11 +18,11 @@ import {
   toNumber,
   forOwn,
   groupBy,
-  shallowClone,
   isBoolean
 } from '../index';
 import { getFnName } from '../getFnName';
 import { getGlobal } from '../getGlobal';
+import { objectAssign } from '../objectAssign';
 
 test('LANG UTILS / startsWith', () => {
   expect(startsWith('myStr', 'myS')).toBe(true);
@@ -529,7 +529,7 @@ test('LANG UTILS / getFnName', () => {
 
 });
 
-test('LANG UTILS / shallowClone', () => {
+test('LANG UTILS / objectAssign', () => {
   const toClone = {
     aProperty: 1,
     another: 'two',
@@ -539,7 +539,7 @@ test('LANG UTILS / shallowClone', () => {
     bool: true
   };
 
-  const clone = shallowClone(toClone);
+  const clone = objectAssign({}, toClone);
 
   expect(clone).toEqual(toClone); // The structure of the shallow clone should be the same since references are copied too.
   expect(clone).not.toBe(toClone); // But the reference to the object itself is differente since it is a clone
@@ -558,4 +558,3 @@ test('LANG UTILS / isBoolean', () => {
   [true, false].forEach(val => expect(isBoolean(val)).toBe(true));
 
 });
-

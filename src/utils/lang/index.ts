@@ -195,20 +195,6 @@ export function merge(target: { [key: string]: any }, source: { [key: string]: a
 }
 
 /**
- * Shallow clone an object
- */
-export function shallowClone(obj: any): any {
-  const keys = Object.keys(obj);
-  const output: Record<string, any> = {};
-
-  for (let i = 0; i < keys.length; i++) {
-    output[keys[i]] = obj[keys[i]];
-  }
-
-  return output;
-}
-
-/**
  * Checks if the target string starts with the sub string.
  */
 export function startsWith(target: any, sub: any): boolean {
