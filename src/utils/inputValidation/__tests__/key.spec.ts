@@ -9,7 +9,7 @@ const invalidKeys = [
   { key: null, msg: ERROR_NULL },
   { key: undefined, msg: ERROR_NULL },
   { key: () => { }, msg: ERROR_INVALID },
-  { key: new Promise(r => r()), msg: ERROR_INVALID },
+  { key: new Promise<void>(r => r()), msg: ERROR_INVALID },
   { key: Symbol('asd'), msg: ERROR_INVALID },
   { key: [], msg: ERROR_INVALID },
   { key: true, msg: ERROR_INVALID },
