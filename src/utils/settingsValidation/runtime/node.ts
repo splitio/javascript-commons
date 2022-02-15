@@ -4,7 +4,7 @@ import ipFunction from 'ip';
 import { UNKNOWN, NA, CONSUMER_MODE } from '../../constants';
 import { ISettings } from '../../../types';
 
-export function validateRuntime(settings: ISettings) {
+export function validateRuntime(settings: ISettings): ISettings['runtime'] {
   const isIPAddressesEnabled = settings.core.IPAddressesEnabled === true;
   const isConsumerMode = settings.mode === CONSUMER_MODE;
 
