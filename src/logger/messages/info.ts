@@ -29,5 +29,5 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.STREAMING_DISCONNECTING, c.LOG_PREFIX_SYNC_STREAMING + 'Disconnecting streaming.'],
   [c.SYNC_START_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming not available. Starting polling.'],
   [c.SYNC_CONTINUE_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming couldn\'t connect. Continue polling.'],
-  [c.SYNC_STOP_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming (re)connected. Syncing and stopping polling.'],
+  [c.SYNC_STOP_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming connected. Syncing and stopping polling.'],
 ]);

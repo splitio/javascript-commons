@@ -78,11 +78,6 @@ const base = {
     localhostMode: undefined
   },
 
-  runtime: {
-    ip: false,
-    hostname: false
-  },
-
   // Logger
   log: undefined
 };
@@ -139,7 +134,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // Current ip/hostname information
   // @ts-ignore, modify readonly prop
-  if (runtime) withDefaults.runtime = runtime(withDefaults);
+  withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.

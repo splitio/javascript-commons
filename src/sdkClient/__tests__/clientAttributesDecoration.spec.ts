@@ -32,10 +32,12 @@ test('ATTRIBUTES DECORATION / storage', () => {
   expect(client.getAttribute('attributeName1')).toEqual(undefined); // It should throw undefined
   expect(client.getAttribute('attributeName2')).toEqual('newAttributeValue2'); // It should be equal
 
-  client.setAttributes({
+  expect(client.setAttributes({
     'attributeName3': 'attributeValue3',
     'attributeName4': 'attributeValue4'
-  });
+  })).toEqual(true); // @ts-ignore
+  expect(client.setAttributes(undefined)).toEqual(false); // @ts-ignore
+  expect(client.setAttributes(null)).toEqual(false);
 
   expect(client.getAttributes()).toEqual({ attributeName2: 'newAttributeValue2', attributeName3: 'attributeValue3', attributeName4: 'attributeValue4' }); // It should be equal
 
@@ -48,7 +50,11 @@ test('ATTRIBUTES DECORATION / storage', () => {
 
 describe('ATTRIBUTES DECORATION / validation', () => {
 
-  test('Should return true if it is a valid attributes map without logging any errors', () => {
+  beforeEach(() => {
+    loggerMock.mockClear();
+  });
+
+  test('Should return true if it is a valid attributes map without logging any errors and warnings', () => {
     const validAttributes = { amIvalid: 'yes', 'are_you_sure': true, howMuch: 10, 'spell': ['1', '0'] };
 
     expect(client.setAttributes(validAttributes)).toEqual(true); // It should return true if it is valid.
@@ -63,6 +69,8 @@ describe('ATTRIBUTES DECORATION / validation', () => {
 
     expect(Object.keys(client.getAttributes()).length).toEqual(0); // It should be zero after clearing attributes
 
+    expect(loggerMock.error).not.toBeCalled(); // no error logs
+    expect(loggerMock.warn).not.toBeCalled(); // no warning logs
   });
 
   test('Should return false if it is an invalid attributes map', () => {
@@ -82,12 +90,17 @@ describe('ATTRIBUTES DECORATION / validation', () => {
       '': 'attributeValue'
     };
 
-    expect(client.setAttributes(attributes)).toEqual(false); // It should be invalid if the attribute key is not a string
+    expect(client.setAttributes(attributes)).toEqual(false); // @ts-ignore // It should be invalid if the attribute key is not a string
+    expect(client.setAttributes(undefined)).toEqual(false); // @ts-ignore // It should be invalid if the attributes param is nullish. Doesn't log an error
+    expect(client.setAttributes(null)).toEqual(false); // @ts-ignore // It should be invalid if the attributes param is nullish. Doesn't log an error
+    expect(client.setAttributes('invalid')).toEqual(false); // It should be invalid if the attributes param is not an object
 
     expect(Object.keys(client.getAttributes()).length).toEqual(0); // It should be zero after trying to add an invalid attribute
 
     expect(client.clearAttributes()).toEqual(true);
 
+    expect(loggerMock.error).toBeCalledTimes(1); // error logs
+    expect(loggerMock.warn).toBeCalledTimes(5); // warning logs
   });
 
   test('Should return true if attributes map is valid', () => {
@@ -114,6 +127,8 @@ describe('ATTRIBUTES DECORATION / validation', () => {
 
     expect(client.clearAttributes()).toEqual(true);
 
+    expect(loggerMock.error).toBeCalledTimes(0); // no error logs
+    expect(loggerMock.warn).toBeCalledTimes(0); // no warning logs
   });
 
 });

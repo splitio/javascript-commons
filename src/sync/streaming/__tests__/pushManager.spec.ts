@@ -65,10 +65,12 @@ describe('pushManager in client-side', () => {
     }, {}) as IPushManager;
 
     // calling start again has no effect (authenticates asynchronously only once)
+    expect(pushManager.isRunning()).toBe(false);
     pushManager.start();
     pushManager.stop();
     pushManager.start();
     pushManager.start();
+    expect(pushManager.isRunning()).toBe(true);
 
     // authenticates asynchronously, only once for both users
     const mySegmentsSyncTask = syncTaskFactory();
@@ -85,7 +87,9 @@ describe('pushManager in client-side', () => {
     expect(fetchAuthMock).toHaveBeenLastCalledWith([fullSettings.core.key, 'user2', 'user3', 'user4']);
 
     // pausing
+    expect(pushManager.isRunning()).toBe(true);
     pushManager.stop();
+    expect(pushManager.isRunning()).toBe(false);
     pushManager.stop();
     await new Promise(res => setTimeout(res));
     expect(fetchAuthMock).toHaveBeenCalledTimes(2);
@@ -150,8 +154,10 @@ describe('pushManager in server-side', () => {
     }, {}) as IPushManager;
 
     // calling start again has no effect (authenticates asynchronously only once)
+    expect(pushManager.isRunning()).toBe(false);
     pushManager.start();
     pushManager.start();
+    expect(pushManager.isRunning()).toBe(true);
     // @TODO pausing & resuming synchronously is not working as expected in server-side
     // pushManager.stop();
     // pushManager.start();
@@ -160,8 +166,10 @@ describe('pushManager in server-side', () => {
     expect(fetchAuthMock).toHaveBeenLastCalledWith(undefined);
 
     // pausing
+    expect(pushManager.isRunning()).toBe(true);
     pushManager.stop();
     pushManager.stop();
+    expect(pushManager.isRunning()).toBe(false);
     await new Promise(res => setTimeout(res));
     expect(fetchAuthMock).toHaveBeenCalledTimes(1);
 

@@ -1,11 +1,14 @@
-import { IIntegrationFactoryParams } from '../types';
+import { IIntegrationFactoryParams, IntegrationFactory } from '../types';
 import { GaToSplit } from './GaToSplit';
 import { GoogleAnalyticsToSplitOptions } from './types';
 
-export function GoogleAnalyticsToSplit(options: GoogleAnalyticsToSplitOptions) {
+export function GoogleAnalyticsToSplit(options: GoogleAnalyticsToSplitOptions): IntegrationFactory {
 
   // GaToSplit integration factory
-  return (params: IIntegrationFactoryParams) => {
+  function GoogleAnalyticsToSplitFactory(params: IIntegrationFactoryParams) {
     return GaToSplit(options, params);
-  };
+  }
+
+  GoogleAnalyticsToSplitFactory.type = 'GOOGLE_ANALYTICS_TO_SPLIT';
+  return GoogleAnalyticsToSplitFactory;
 }

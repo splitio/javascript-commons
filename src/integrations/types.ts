@@ -12,3 +12,8 @@ export interface IIntegrationFactoryParams {
   storage: { events: IEventsCacheBase }
   settings: ISettings
 }
+
+export type IntegrationFactory = {
+  readonly type: string
+  (params: IIntegrationFactoryParams): IIntegration | void
+}
