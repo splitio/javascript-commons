@@ -315,6 +315,11 @@ export function pushManagerFactory(
         else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for consistency with client-side
       },
 
+      // true/false if start or stop was called last respectively
+      isRunning(){
+        return disconnected === false;
+      },
+
       // [Only for client-side]
       add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
         const hash = hashUserKey(userKey);
