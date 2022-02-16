@@ -71,6 +71,7 @@ export function pushManagerFactory(
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
   // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
+  // true if STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE or Auth errors.
   let disabled: boolean | undefined; // `disabled` implies `disconnected === true`
 
   /** PushManager functions related to initialization */
@@ -296,12 +297,15 @@ export function pushManagerFactory(
     // Expose Event Emitter functionality and Event constants
     Object.create(pushEmitter),
     {
-      // Stop/pause push mode
+      // Stop/pause push mode.
+      // It doesn't emit events. Neither PUSH_SUBSYSTEM_DOWN to start polling.
       stop() {
         disconnectPush(); // `handleNonRetryableError` cannot be used as `stop`, because it emits PUSH_SUBSYSTEM_DOWN event, which starts polling.
         if (userKey) this.remove(userKey); // Necessary to properly resume streaming in client-side (e.g., RN SDK transition to foreground).
       },
-      // Start/resume push mode
+
+      // Start/resume push mode.
+      // It eventually emits PUSH_SUBSYSTEM_DOWN, that starts polling, or PUSH_SUBSYSTEM_UP, that executes a syncAll
       start() {
         // Guard condition to avoid calling `connectPush` again if the `start` method is called multiple times or if push has been disabled.
         if (disabled || disconnected === false) return;

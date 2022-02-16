@@ -443,7 +443,7 @@ export interface IStorageFactoryParams {
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
 export type IStorageSyncFactory = {
-  type: StorageType,
+  readonly type: StorageType,
   (params: IStorageFactoryParams): IStorageSync
 }
 
