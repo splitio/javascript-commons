@@ -33,6 +33,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // @TODO consider passing the settings object, so that each storage access only what it needs
   const storageFactoryParams: IStorageFactoryParams = {
+    impressionsQueueSize: settings.scheduler.impressionsQueueSize,
     eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
 

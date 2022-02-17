@@ -6,6 +6,9 @@ import { ImpressionDTO } from '../../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ImpressionsPayload } from './types';
 import { ILogger } from '../../logger/types';
+import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+
+const DATA_NAME = 'impressions';
 
 /**
  * Converts `impressions` data from cache into request payload.
@@ -50,5 +53,13 @@ export function impressionsSyncTaskFactory(
 ): ISyncTask {
 
   // retry impressions only once.
-  return submitterSyncTaskFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+  const syncTask = submitterSyncTaskFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, DATA_NAME, latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+
+  // register impressions submitter to be executed when impressions cache is full
+  impressionsCache.setOnFullQueueCb(() => {
+    log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
+    syncTask.execute();
+  });
+
+  return syncTask;
 }
