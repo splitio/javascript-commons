@@ -73,6 +73,7 @@ export interface ISettings {
   readonly scheduler: {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
+    impressionsQueueSize: number,
     metricsRefreshRate: number,
     segmentsRefreshRate: number,
     offlineRefreshRate: number,
@@ -255,6 +256,13 @@ interface INodeBasicSettings extends ISharedSettings {
      * @default 300
      */
     impressionsRefreshRate?: number,
+    /**
+     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     * @property {number} impressionsQueueSize
+     * @default 30000
+     */
+    impressionsQueueSize?: number,
     /**
      * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
      * @property {number} metricsRefreshRate
@@ -769,6 +777,13 @@ export namespace SplitIO {
        * @default 60
        */
       impressionsRefreshRate?: number,
+      /**
+       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       * @property {number} impressionsQueueSize
+       * @default 30000
+       */
+      impressionsQueueSize?: number,
       /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate

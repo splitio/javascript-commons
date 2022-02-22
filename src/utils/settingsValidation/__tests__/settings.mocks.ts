@@ -52,6 +52,7 @@ export const fullSettings: ISettings = {
     offlineRefreshRate: 1,
     eventsPushRate: 1,
     eventsQueueSize: 1,
+    impressionsQueueSize: 1,
     pushRetryBackoffBase: 1
   },
   startup: {

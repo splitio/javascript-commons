@@ -40,7 +40,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     return {
       splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, params.splitFiltersValidation),
       segments: new MySegmentsCacheInLocal(log, keys),
-      impressions: new ImpressionsCacheInMemory(),
+      impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
 

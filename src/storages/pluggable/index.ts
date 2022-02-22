@@ -63,7 +63,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize, optimize }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, optimize }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
@@ -74,7 +74,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
-      impressions: isPartialConsumer ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       // @TODO add telemetry cache when required

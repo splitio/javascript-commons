@@ -16,7 +16,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
   return {
     splits: new SplitsCacheInMemory(),
     segments: new SegmentsCacheInMemory(),
-    impressions: new ImpressionsCacheInMemory(),
+    impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
 

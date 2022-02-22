@@ -38,6 +38,8 @@ const base = {
     eventsPushRate: 60,
     // how many events will be queued before flushing
     eventsQueueSize: 500,
+    // how many impressions will be queued before flushing
+    impressionsQueueSize: 30000,
     // backoff base seconds to wait before re attempting to connect to push notifications
     pushRetryBackoffBase: 1,
   },

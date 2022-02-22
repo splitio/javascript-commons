@@ -3,7 +3,9 @@ import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ILogger } from '../../logger/types';
-import { SUBMITTERS_PUSH_FULL_EVENTS_QUEUE } from '../../logger/constants';
+import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+
+const DATA_NAME = 'events';
 
 /**
  * Sync task that periodically posts tracked events
@@ -18,7 +20,7 @@ export function eventsSyncTaskFactory(
 ): ISyncTask {
 
   // don't retry events.
-  const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, 'queued events', latencyTracker);
+  const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, DATA_NAME, latencyTracker);
 
   // Set a timer for the first push of events,
   if (eventsFirstPushWindow > 0) {
@@ -34,9 +36,9 @@ export function eventsSyncTaskFactory(
     };
   }
 
-  // register eventsSubmitter to be executed when events cache is full
+  // register events submitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.info(SUBMITTERS_PUSH_FULL_EVENTS_QUEUE);
+    log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
     syncTask.execute();
   });
 
