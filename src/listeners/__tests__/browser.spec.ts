@@ -85,11 +85,12 @@ beforeAll(() => {
   });
 });
 
-// clean mocks
-afterEach(() => {
+// clear mocks
+beforeEach(() => {
   (global.window.addEventListener as jest.Mock).mockClear();
   (global.window.removeEventListener as jest.Mock).mockClear();
   if (global.window.navigator.sendBeacon) (global.window.navigator.sendBeacon as jest.Mock).mockClear();
+  Object.values(fakeSplitApi).forEach(method => method.mockClear());
 });
 
 // delete mocks from global
@@ -226,4 +227,35 @@ test('Browser JS listener / standalone mode / Impressions debug mode without sen
 
   // restore sendBeacon API
   global.navigator.sendBeacon = sendBeacon;
+});
+
+test('Browser JS listener / standalone mode / user consent status', () => {
+  const syncManagerMock = {};
+  const settings = { ...fullSettings };
+
+  // @ts-expect-error
+  const listener = new BrowserSignalListener(syncManagerMock, settings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+
+  listener.start();
+
+  settings.userConsent = 'unknown';
+  triggerUnloadEvent();
+  settings.userConsent = 'declined';
+  triggerUnloadEvent();
+
+  // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should not be called
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
+  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+
+  settings.userConsent = 'granted';
+  triggerUnloadEvent();
+  settings.userConsent = undefined;
+  triggerUnloadEvent();
+
+  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 6 times (3 times per event in optimized mode).
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(6);
+
+  listener.stop();
 });
