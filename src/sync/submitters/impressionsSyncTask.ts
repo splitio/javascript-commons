@@ -6,7 +6,7 @@ import { ImpressionDTO } from '../../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ImpressionsPayload } from './types';
 import { ILogger } from '../../logger/types';
-import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+import { SUBMITTERS_PUSH_FULL_QUEUE, SUBMITTERS_PUSH_FULL_QUEUE_DROPPED } from '../../logger/constants';
 
 const DATA_NAME = 'impressions';
 
@@ -57,8 +57,13 @@ export function impressionsSyncTaskFactory(
 
   // register impressions submitter to be executed when impressions cache is full
   impressionsCache.setOnFullQueueCb(() => {
-    log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
-    syncTask.execute();
+    if (syncTask.isRunning()) {
+      log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
+      syncTask.execute();
+    } else { // If submitter is stopped (e.g., user consent declined, or app state offline), we drop items
+      log.warn(SUBMITTERS_PUSH_FULL_QUEUE_DROPPED);
+      impressionsCache.clear();
+    }
   });
 
   return syncTask;

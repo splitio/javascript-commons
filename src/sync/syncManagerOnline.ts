@@ -6,6 +6,7 @@ import { IPushManager } from './streaming/types';
 import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
+import { CONSENT_GRANTED } from '../utils/constants';
 
 /**
  * Online SyncManager factory.
@@ -39,6 +40,11 @@ export function syncManagerOnlineFactory(
     // It is not inyected as push and polling managers, because at the moment it is required
     const submitter = submitterManagerFactory(params);
 
+    function isUserConsentGranted() {
+      const userConsent = params.settings.userConsent;
+      // undefined userConsent is handled as granted to avoid a breaking change with users that don't use this features
+      return !userConsent || userConsent === CONSENT_GRANTED;
+    }
 
     /** Sync Manager logic */
 
@@ -69,12 +75,18 @@ export function syncManagerOnlineFactory(
     let startFirstTime = true; // flag to distinguish calling the `start` method for the first time, to support pausing and resuming the synchronization
 
     return {
+      // Exposed for fine-grained control of synchronization.
+      // E.g.: user consent, app state changes (Page hide, Foreground/Background, Online/Offline).
+      pollingManager,
       pushManager,
+      submitter,
 
       /**
        * Method used to start the syncManager for the first time, or resume it after being stopped.
        */
       start() {
+        running = true;
+
         // start syncing splits and segments
         if (pollingManager) {
           if (pushManager) {
@@ -90,21 +102,21 @@ export function syncManagerOnlineFactory(
         }
 
         // start periodic data recording (events, impressions, telemetry).
-        if (submitter) submitter.start();
-        running = true;
+        if (isUserConsentGranted()) submitter.start();
       },
 
       /**
        * Method used to stop/pause the syncManager.
        */
       stop() {
+        running = false;
+
         // stop syncing
         if (pushManager) pushManager.stop();
         if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
-        if (submitter) submitter.stop();
-        running = false;
+        submitter.stop();
       },
 
       isRunning() {
@@ -112,7 +124,7 @@ export function syncManagerOnlineFactory(
       },
 
       flush() {
-        if (submitter) return submitter.execute();
+        if (isUserConsentGranted()) return submitter.execute();
         else return Promise.resolve();
       },
 

@@ -13,6 +13,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.STREAMING_FALLBACK, c.LOG_PREFIX_SYNC_STREAMING + 'Falling back to polling mode. Reason: %s'],
   [c.SUBMITTERS_PUSH_FAILS, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Droping %s %s after retry. Reason: %s.'],
   [c.SUBMITTERS_PUSH_RETRY, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Failed to push %s %s, keeping data to retry on next iteration. Reason: %s.'],
+  [c.SUBMITTERS_PUSH_FULL_QUEUE_DROPPED, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Droping %s from full queue. Reason: user consent declined.'],
   // client status
   [c.CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
   [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],
