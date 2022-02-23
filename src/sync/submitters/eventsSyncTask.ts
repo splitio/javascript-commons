@@ -3,7 +3,7 @@ import { IPostEventsBulk } from '../../services/types';
 import { ISyncTask, ITimeTracker } from '../types';
 import { submitterSyncTaskFactory } from './submitterSyncTask';
 import { ILogger } from '../../logger/types';
-import { SUBMITTERS_PUSH_FULL_QUEUE, SUBMITTERS_PUSH_FULL_QUEUE_DROPPED } from '../../logger/constants';
+import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
 
 const DATA_NAME = 'events';
 
@@ -41,10 +41,9 @@ export function eventsSyncTaskFactory(
     if (syncTask.isRunning()) {
       log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
       syncTask.execute();
-    } else { // If submitter is stopped (e.g., user consent declined, or app state offline), we drop items
-      log.warn(SUBMITTERS_PUSH_FULL_QUEUE_DROPPED);
-      eventsCache.clear();
     }
+    // If submitter is stopped (e.g., user consent declined or unknown, or app state offline), we don't send the data.
+    // Data will be sent when submitter is resumed.
   });
 
   return syncTask;
