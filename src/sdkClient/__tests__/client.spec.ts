@@ -1,4 +1,3 @@
-import { ISettings } from '../../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { clientFactory } from '../client';
 
@@ -6,7 +5,7 @@ test('client should track or not events and impressions depending on user consen
   const sdkReadinessManager = { readinessManager: { isReady: () => true } };
   const storage = { splits: { trafficTypeExists: () => true } };
 
-  const settings: ISettings = { ...fullSettings, userConsent: undefined };
+  const settings = { ...fullSettings };
   const eventTracker = { track: jest.fn() };
   const impressionsTracker = { track: jest.fn() };
 
@@ -18,19 +17,19 @@ test('client should track or not events and impressions depending on user consen
   client.track('some_key', 'some_tt', 'some_event');
   expect(eventTracker.track).toBeCalledTimes(1); // event should be tracked if userConsent is undefined
 
-  settings.userConsent = 'unknown';
+  settings.userConsent = 'UNKNOWN';
   client.getTreatment('some_key', 'some_split');
   expect(impressionsTracker.track).toBeCalledTimes(2); // impression should be tracked if userConsent is unknown
   client.track('some_key', 'some_tt', 'some_event');
   expect(eventTracker.track).toBeCalledTimes(2); // event should be tracked if userConsent is unknown
 
-  settings.userConsent = 'granted';
+  settings.userConsent = 'GRANTED';
   client.getTreatment('some_key', 'some_split');
   expect(impressionsTracker.track).toBeCalledTimes(3); // impression should be tracked if userConsent is granted
   client.track('some_key', 'some_tt', 'some_event');
   expect(eventTracker.track).toBeCalledTimes(3); // event should be tracked if userConsent is granted
 
-  settings.userConsent = 'declined';
+  settings.userConsent = 'DECLINED';
   client.getTreatment('some_key', 'some_split');
   expect(impressionsTracker.track).toBeCalledTimes(3); // impression should not be tracked if userConsent is declined
   client.track('some_key', 'some_tt', 'some_event');

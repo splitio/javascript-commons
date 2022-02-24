@@ -58,7 +58,7 @@ export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partia
  * User consent status.
  * @typedef {string} ConsentStatus
  */
-export type ConsentStatus = 'granted' | 'declined' | 'unknown';
+export type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
 /**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
@@ -116,7 +116,7 @@ export interface ISettings {
   },
   readonly log: ILogger
   readonly impressionListener?: unknown
-  userConsent?: ConsentStatus
+  readonly userConsent?: ConsentStatus
 }
 /**
  * Log levels.
