@@ -97,7 +97,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, userConsent } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, consent } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -163,7 +163,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
-  withDefaults.userConsent = userConsent(withDefaults);
+  withDefaults.userConsent = consent(withDefaults);
 
   return withDefaults;
 }

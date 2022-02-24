@@ -19,7 +19,8 @@ const minimalSettingsParams = {
     version: 'javascript-test',
   },
   runtime: () => ({ ip: false, hostname: false } as ISettings['runtime']),
-  logger: () => (loggerMock as ISettings['log'])
+  logger: () => (loggerMock as ISettings['log']),
+  consent: () => undefined
 };
 
 describe('settingsValidation', () => {
