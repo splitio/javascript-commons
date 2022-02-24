@@ -1,4 +1,3 @@
-import { ISettings } from '../../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { syncTaskFactory } from './syncTask.mock';
 
@@ -11,7 +10,7 @@ jest.mock('../submitters/submitterManager', () => {
 import { syncManagerOnlineFactory } from '../syncManagerOnline';
 
 test('syncManagerOnline should start or not the submitter depending on user consent status', () => {
-  const settings: ISettings = { ...fullSettings };
+  const settings = { ...fullSettings };
 
   // @ts-ignore
   const syncManager = syncManagerOnlineFactory()({ settings });
@@ -22,19 +21,19 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   syncManager.stop();
   expect(submitter.stop).toBeCalledTimes(1);
 
-  settings.userConsent = 'unknown';
+  settings.userConsent = 'UNKNOWN';
   syncManager.start();
   expect(submitter.start).toBeCalledTimes(1); // Submitter should not be started if userConsent is unknown
   syncManager.stop();
   expect(submitter.stop).toBeCalledTimes(2);
 
-  settings.userConsent = 'granted';
+  settings.userConsent = 'GRANTED';
   syncManager.start();
   expect(submitter.start).toBeCalledTimes(2); // Submitter should be started if userConsent is granted
   syncManager.stop();
   expect(submitter.stop).toBeCalledTimes(3);
 
-  settings.userConsent = 'declined';
+  settings.userConsent = 'DECLINED';
   syncManager.start();
   expect(submitter.start).toBeCalledTimes(2); // Submitter should not be started if userConsent is declined
   syncManager.stop();

@@ -238,9 +238,9 @@ test('Browser JS listener / standalone mode / user consent status', () => {
 
   listener.start();
 
-  settings.userConsent = 'unknown';
+  settings.userConsent = 'UNKNOWN';
   triggerUnloadEvent();
-  settings.userConsent = 'declined';
+  settings.userConsent = 'DECLINED';
   triggerUnloadEvent();
 
   // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should not be called
@@ -249,7 +249,7 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
   expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
 
-  settings.userConsent = 'granted';
+  settings.userConsent = 'GRANTED';
   triggerUnloadEvent();
   settings.userConsent = undefined;
   triggerUnloadEvent();
