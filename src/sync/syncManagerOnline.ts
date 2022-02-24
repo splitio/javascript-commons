@@ -6,7 +6,7 @@ import { IPushManager } from './streaming/types';
 import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
-import { CONSENT_GRANTED } from '../utils/constants';
+import { isConsentGranted } from '../utils/consent';
 
 /**
  * Online SyncManager factory.
@@ -26,7 +26,7 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISyncManagerFactoryParams): ISyncManagerCS {
 
-    const { log, streamingEnabled } = params.settings;
+    const { settings, settings: { log, streamingEnabled } } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
@@ -39,12 +39,6 @@ export function syncManagerOnlineFactory(
     /** Submitter Manager */
     // It is not inyected as push and polling managers, because at the moment it is required
     const submitter = submitterManagerFactory(params);
-
-    function isUserConsentGranted() {
-      const userConsent = params.settings.userConsent;
-      // undefined userConsent is handled as granted to avoid a breaking change with users that don't use this features
-      return !userConsent || userConsent === CONSENT_GRANTED;
-    }
 
     /** Sync Manager logic */
 
@@ -102,7 +96,7 @@ export function syncManagerOnlineFactory(
         }
 
         // start periodic data recording (events, impressions, telemetry).
-        if (isUserConsentGranted()) submitter.start();
+        if (isConsentGranted(settings)) submitter.start();
       },
 
       /**
@@ -124,7 +118,7 @@ export function syncManagerOnlineFactory(
       },
 
       flush() {
-        if (isUserConsentGranted()) return submitter.execute();
+        if (isConsentGranted(settings)) return submitter.execute();
         else return Promise.resolve();
       },
 
