@@ -14,6 +14,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.NEW_FACTORY, ' New Split SDK instance created.'],
   [c.EVENTS_TRACKER_SUCCESS, c.LOG_PREFIX_EVENTS_TRACKER + 'Successfully queued %s'],
   [c.IMPRESSIONS_TRACKER_SUCCESS, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Successfully stored %s impression(s).'],
+  [c.USER_CONSENT_UPDATED, ' User consent changed from %s to %s.'],
 
   // synchronizer
   [c.POLLING_SMART_PAUSING, c.LOG_PREFIX_SYNC_POLLING + 'Turning segments data polling %s.'],

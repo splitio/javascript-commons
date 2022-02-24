@@ -11,7 +11,7 @@ jest.mock('../submitters/submitterManager', () => {
 import { syncManagerOnlineFactory } from '../syncManagerOnline';
 
 test('syncManagerOnline should start or not the submitter depending on user consent status', () => {
-  const settings: ISettings = { ...fullSettings, userConsent: undefined };
+  const settings: ISettings = { ...fullSettings };
 
   // @ts-ignore
   const syncManager = syncManagerOnlineFactory()({ settings });

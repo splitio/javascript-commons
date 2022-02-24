@@ -6,7 +6,7 @@ test('client should track or not events and impressions depending on user consen
   const sdkReadinessManager = { readinessManager: { isReady: () => true } };
   const storage = { splits: { trafficTypeExists: () => true } };
 
-  const settings: ISettings = { ...fullSettings, userConsent: undefined };
+  const settings: ISettings = { ...fullSettings };
   const eventTracker = { track: jest.fn() };
   const impressionsTracker = { track: jest.fn() };
 
