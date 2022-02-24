@@ -12,28 +12,28 @@ test('userConsentProps', () => {
   // getUserConsent returns settings.userConsent
   expect(props.getUserConsent()).toBe(settings.userConsent);
 
-  // setting user consent to 'granted'
+  // setting user consent to 'GRANTED'
   expect(props.setUserConsent(true)).toBe(true);
   expect(props.setUserConsent(true)).toBe(true); // calling again has no affect
   expect(syncManager.submitter.start).toBeCalledTimes(1); // submitter resumed
   expect(syncManager.submitter.stop).toBeCalledTimes(0);
-  expect(props.getUserConsent()).toBe('granted');
+  expect(props.getUserConsent()).toBe('GRANTED');
 
-  // setting user consent to 'declined'
+  // setting user consent to 'DECLINED'
   expect(props.setUserConsent(false)).toBe(true);
   expect(props.setUserConsent(false)).toBe(true); // calling again has no affect
   expect(syncManager.submitter.start).toBeCalledTimes(1);
   expect(syncManager.submitter.stop).toBeCalledTimes(1); // submitter paused
-  expect(props.getUserConsent()).toBe('declined');
+  expect(props.getUserConsent()).toBe('DECLINED');
 
   // Invalid values have no effect
-  expect(props.setUserConsent('declined')).toBe(false); // strings are not valid
-  expect(props.setUserConsent('granted')).toBe(false);
+  expect(props.setUserConsent('DECLINED')).toBe(false); // strings are not valid
+  expect(props.setUserConsent('GRANTED')).toBe(false);
   expect(props.setUserConsent(undefined)).toBe(false);
   expect(props.setUserConsent({})).toBe(false);
 
   expect(syncManager.submitter.start).toBeCalledTimes(1);
   expect(syncManager.submitter.stop).toBeCalledTimes(1);
-  expect(props.getUserConsent()).toBe('declined');
+  expect(props.getUserConsent()).toBe('DECLINED');
 
 });
