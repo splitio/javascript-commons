@@ -20,4 +20,6 @@ export interface ISettingsValidationParams {
   logger: (settings: ISettings) => ISettings['log'],
   /** Localhost mode validator (`settings.sync.localhostMode`) */
   localhost?: (settings: ISettings) => ISettings['sync']['localhostMode'],
+  /** User consent validator (`settings.userConsent`) */
+  userConsent: (settings: ISettings) => ISettings['userConsent'],
 }

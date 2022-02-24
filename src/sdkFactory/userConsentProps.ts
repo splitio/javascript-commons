@@ -23,7 +23,7 @@ export function userConsentProps(settings: ISettings, syncManager?: ISyncManager
         if (consent) syncManager?.submitter?.start();
         else syncManager?.submitter?.stop();
 
-        log.info(USER_CONSENT_UPDATED, [settings.userConsent, newConsentStatus]);
+        log.info(USER_CONSENT_UPDATED, [settings.userConsent, newConsentStatus]); // @ts-ignore, modify readonly prop
         settings.userConsent = newConsentStatus;
       }
 

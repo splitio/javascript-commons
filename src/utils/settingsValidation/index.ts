@@ -97,7 +97,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, userConsent } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -160,6 +160,10 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid impressionsMode
   withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
+
+  // ensure a valid user consent value
+  // @ts-ignore, modify readonly prop
+  withDefaults.userConsent = userConsent(withDefaults);
 
   return withDefaults;
 }
