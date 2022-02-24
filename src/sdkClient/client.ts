@@ -4,7 +4,7 @@ import { getMatching, getBucketing } from '../utils/key';
 import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
 import { SDK_NOT_READY } from '../utils/labels';
-import { CONTROL } from '../utils/constants';
+import { CONSENT_DECLINED, CONTROL } from '../utils/constants';
 import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
@@ -16,13 +16,14 @@ import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
  */
 // @TODO missing time tracking to collect telemetry
 export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings: { log, mode }, impressionsTracker, eventTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker } = params;
+  const { log, mode } = settings;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
       const treatment = processEvaluation(evaluationResult, splitName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
-      impressionsTracker.track(queue, attributes);
+      if (settings.userConsent !== CONSENT_DECLINED) impressionsTracker.track(queue, attributes);
       return treatment;
     };
 
@@ -42,7 +43,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
       Object.keys(evaluationResults).forEach(splitName => {
         treatments[splitName] = processEvaluation(evaluationResults[splitName], splitName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
       });
-      impressionsTracker.track(queue, attributes);
+      if (settings.userConsent !== CONSENT_DECLINED) impressionsTracker.track(queue, attributes);
       return treatments;
     };
 
@@ -115,7 +116,8 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
     validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
-    return eventTracker.track(eventData, size);
+    if (settings.userConsent !== CONSENT_DECLINED) return eventTracker.track(eventData, size);
+    else return false;
   }
 
   return {

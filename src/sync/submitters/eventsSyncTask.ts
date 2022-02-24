@@ -38,8 +38,12 @@ export function eventsSyncTaskFactory(
 
   // register events submitter to be executed when events cache is full
   eventsCache.setOnFullQueueCb(() => {
-    log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
-    syncTask.execute();
+    if (syncTask.isRunning()) {
+      log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
+      syncTask.execute();
+    }
+    // If submitter is stopped (e.g., user consent declined or unknown, or app state offline), we don't send the data.
+    // Data will be sent when submitter is resumed.
   });
 
   return syncTask;
