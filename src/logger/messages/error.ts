@@ -30,7 +30,7 @@ export const codesError: [number, string][] = [
   [c.ERROR_EMPTY_ARRAY, '%s: %s must be a non-empty array.'],
   [c.ERROR_NOT_BOOLEAN, '%s: you must provide a boolean param.'],
   // initialization / settings validation
-  [c.ERROR_INVALID_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "%s" config param. It must be one of the following values: %s. Defaulting to "%s".'],
+  [c.ERROR_INVALID_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "%s" config param. It should be one of the following values: %s. Defaulting to "%s".'],
   [c.ERROR_LOCALHOST_MODULE_REQUIRED, c.LOG_PREFIX_SETTINGS + ': an invalid value was received for "sync.localhostMode" config. A valid entity should be provided for localhost mode.'],
   [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': The provided storage is invalid.%s Fallbacking into default MEMORY storage'],
 ];

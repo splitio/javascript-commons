@@ -67,9 +67,29 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
     // Scan current values from localStorage
     const storedSegmentNames = Object.keys(localStorage).reduce((accum, key) => {
-      const name = this.keys.extractSegmentName(key);
+      let segmentName = this.keys.extractSegmentName(key);
 
-      if (name) accum.push(name);
+      if (segmentName) {
+        accum.push(segmentName);
+      } else {
+        // @BREAKING: This is only to clean up "old" keys. Remove this whole else code block.
+        segmentName = this.keys.extractOldSegmentKey(key);
+
+        if (segmentName) { // this was an old segment key, let's clean up.
+          const newSegmentKey = this.keys.buildSegmentNameKey(segmentName);
+          try {
+            // If the new format key is not there, create it.
+            if (!localStorage.getItem(newSegmentKey) && names.indexOf(segmentName) > -1) {
+              localStorage.setItem(newSegmentKey, DEFINED);
+              // we are migrating a segment, let's track it.
+              accum.push(segmentName);
+            }
+            localStorage.removeItem(key); // we migrated the current key, let's delete it.
+          } catch (e) {
+            this.log.error(e);
+          }
+        }
+      }
 
       return accum;
     }, [] as string[]);
