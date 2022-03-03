@@ -89,7 +89,7 @@ export function get(obj: any, prop: any, val: any): any {
 /**
  * Parses an array into a map of different arrays, grouping by the specified prop value.
  */
-export function groupBy<T extends Record<string, any> >(source: T[], prop: string): Record<string, T[]> {
+export function groupBy<T extends Record<string, any>>(source: T[], prop: string): Record<string, T[]> {
   const map: Record<string, any[]> = {};
 
   if (Array.isArray(source) && isString(prop)) {
@@ -162,6 +162,13 @@ export function isObject(obj: any): boolean {
  */
 export function isString(val: any): val is string {
   return typeof val === 'string' || val instanceof String;
+}
+
+/**
+ * String sanitizer. Returns the provided value converted to uppercase if it is a string.
+ */
+export function stringToUpperCase(val: any) {
+  return isString(val) ? val.toUpperCase() : val;
 }
 
 /**
