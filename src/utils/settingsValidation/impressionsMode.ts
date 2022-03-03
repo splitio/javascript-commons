@@ -2,9 +2,10 @@ import { ERROR_INVALID_CONFIG_PARAM } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { SplitIO } from '../../types';
 import { DEBUG, OPTIMIZED } from '../constants';
+import { stringToUpperCase } from '../lang';
 
 export function validImpressionsMode(log: ILogger, impressionsMode: any): SplitIO.ImpressionsMode {
-  if (typeof impressionsMode === 'string') impressionsMode = impressionsMode.toUpperCase();
+  impressionsMode = stringToUpperCase(impressionsMode);
 
   if ([DEBUG, OPTIMIZED].indexOf(impressionsMode) > -1) return impressionsMode;
 
