@@ -70,4 +70,6 @@ export interface ISdkFactoryParams {
   // Impression observer factory. If provided, will be used for impressions dedupe
   impressionsObserverFactory?: () => IImpressionObserver
 
+  // Optional function to assign additional properties to the factory instance
+  extraProps?: (settings: ISettings, syncManager?: ISyncManager) => object
 }

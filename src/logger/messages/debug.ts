@@ -31,9 +31,9 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   // SDK
   [c.CLEANUP_REGISTERING, c.LOG_PREFIX_CLEANUP + 'Registering cleanup handler %s'],
   [c.CLEANUP_DEREGISTERING, c.LOG_PREFIX_CLEANUP + 'Deregistering cleanup handler %s'],
-  [c.RETRIEVE_CLIENT_DEFAULT, ' Retrieving default SDK client.'],
-  [c.RETRIEVE_CLIENT_EXISTING, ' Retrieving existing SDK client.'],
-  [c.RETRIEVE_MANAGER, ' Retrieving manager instance.'],
+  [c.RETRIEVE_CLIENT_DEFAULT, 'Retrieving default SDK client.'],
+  [c.RETRIEVE_CLIENT_EXISTING, 'Retrieving existing SDK client.'],
+  [c.RETRIEVE_MANAGER, 'Retrieving manager instance.'],
   // synchronizer
   [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Splits data: \n%s'],
   [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up split update using since = %s'],
