@@ -22,17 +22,24 @@ export function eventsSyncTaskFactory(
   // don't retry events.
   const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, DATA_NAME, latencyTracker);
 
-  // Set a timer for the first push of events,
+  // Set a timer for the first push window of events.
+  // Not implemented in the base submitter or sync task, since this feature is only used by the events submitter.
   if (eventsFirstPushWindow > 0) {
+    let running = false;
     let stopEventPublisherTimeout: ReturnType<typeof setTimeout>;
     const originalStart = syncTask.start;
     syncTask.start = () => {
+      running = true;
       stopEventPublisherTimeout = setTimeout(originalStart, eventsFirstPushWindow);
     };
     const originalStop = syncTask.stop;
     syncTask.stop = () => {
+      running = false;
       clearTimeout(stopEventPublisherTimeout);
       originalStop();
+    };
+    syncTask.isRunning = () => {
+      return running;
     };
   }
 
