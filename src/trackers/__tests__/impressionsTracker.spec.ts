@@ -3,48 +3,51 @@ import { ImpressionCountsCacheInMemory } from '../../storages/inMemory/Impressio
 import { impressionObserverSSFactory } from '../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { ImpressionDTO } from '../../types';
-import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 /* Mocks */
 
-function generateMocks() {
-  const fakeImpressionsCache = {
-    track: jest.fn()
-  };
-  const fakeSettings = {
-    runtime: {
-      hostname: 'fake-hostname',
-      ip: 'fake-ip'
-    },
-    version: 'jest-test',
-  };
-  const fakeListener = {
-    logImpression: jest.fn()
-  };
-  const fakeIntegrationsManager = {
-    handleImpression: jest.fn()
-  };
-
-  return {
-    fakeImpressionsCache, fakeSettings, fakeListener, fakeIntegrationsManager
-  };
-}
+const fakeImpressionsCache = {
+  track: jest.fn()
+};
+const fakeListener = {
+  logImpression: jest.fn()
+};
+const fakeIntegrationsManager = {
+  handleImpression: jest.fn()
+};
+const fakeSettings = {
+  ...fullSettings,
+  runtime: {
+    hostname: 'fake-hostname',
+    ip: 'fake-ip'
+  },
+  version: 'jest-test'
+};
+const fakeSettingsWithListener = {
+  ...fakeSettings,
+  impressionListener: fakeListener
+};
 
 /* Tests */
 
 describe('Impressions Tracker', () => {
 
+  beforeEach(() => {
+    fakeImpressionsCache.track.mockClear();
+    fakeListener.logImpression.mockClear();
+    fakeIntegrationsManager.handleImpression.mockClear();
+  });
+
   test('Tracker API', () => {
     expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const { fakeImpressionsCache, fakeSettings } = generateMocks();
-    const instance = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings);
+    const instance = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache);
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method which will actually track queued impressions.
   });
 
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
-    const { fakeImpressionsCache, fakeSettings } = generateMocks();
-    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache);
 
     const imp1 = {
       feature: '10',
@@ -64,8 +67,7 @@ describe('Impressions Tracker', () => {
   });
 
   test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
-    const { fakeImpressionsCache, fakeSettings, fakeListener, fakeIntegrationsManager } = generateMocks();
-    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings, fakeListener, fakeIntegrationsManager);
+    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, fakeIntegrationsManager);
 
     const fakeImpression = {
       feature: 'impression'
@@ -135,13 +137,12 @@ describe('Impressions Tracker', () => {
   } as ImpressionDTO;
 
   test('Should track 3 impressions with Previous Time.', () => {
-    const { fakeImpressionsCache, fakeSettings } = generateMocks();
     impression.time = impression2.time = 123456789;
     impression3.time = 1234567891;
 
     const trackers = [
-      impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings, undefined, undefined, impressionObserverSSFactory()),
-      impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings, undefined, undefined, impressionObserverCSFactory())
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverSSFactory()),
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory())
     ];
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
@@ -163,13 +164,12 @@ describe('Impressions Tracker', () => {
   });
 
   test('Should track 2 impressions in OPTIMIZED mode (providing ImpressionCountsCache).', () => {
-    const { fakeImpressionsCache, fakeSettings } = generateMocks();
     impression.time = Date.now();
     impression2.time = Date.now();
     impression3.time = Date.now();
 
     const impressionCountsCache = new ImpressionCountsCacheInMemory();
-    const tracker = impressionsTrackerFactory(loggerMock, fakeImpressionsCache, fakeSettings, undefined, undefined, impressionObserverCSFactory(), impressionCountsCache);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory(), impressionCountsCache);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
@@ -185,6 +185,27 @@ describe('Impressions Tracker', () => {
     expect(lastArgs[0][1].feature).toBe('qc_team_2');
 
     expect(Object.keys(impressionCountsCache.state()).length).toBe(2);
+  });
+
+  test('Should track or not impressions depending on user consent status', () => {
+    const settings = { ...fullSettings };
+
+    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache);
+
+    tracker.track([impression]);
+    expect(fakeImpressionsCache.track).toBeCalledTimes(1); // impression should be tracked if userConsent is undefined
+
+    settings.userConsent = 'UNKNOWN';
+    tracker.track([impression]);
+    expect(fakeImpressionsCache.track).toBeCalledTimes(2); // impression should be tracked if userConsent is unknown
+
+    settings.userConsent = 'GRANTED';
+    tracker.track([impression]);
+    expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should be tracked if userConsent is granted
+
+    settings.userConsent = 'DECLINED';
+    tracker.track([impression]);
+    expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should not be tracked if userConsent is declined
   });
 
 });

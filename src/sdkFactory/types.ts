@@ -64,7 +64,6 @@ export interface ISdkFactoryParams {
     serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener
 
   // @TODO review impressionListener and integrations interfaces. What about handling impressionListener as an integration ?
-  impressionListener?: SplitIO.IImpressionListener,
   integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,
 
   // Impression observer factory. If provided, will be used for impressions dedupe
