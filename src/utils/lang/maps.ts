@@ -79,4 +79,18 @@ interface IMapConstructor {
   readonly prototype: IMap<any, any>;
 }
 
-export const _Map: IMapConstructor = typeof Map !== 'undefined' ? Map : MapPoly;
+/**
+ * return the Map constructor to use. If native Map is not available or it doesn't support the required features (e.g., IE11),
+ * a ponyfill with minimal features is returned instead.
+ *
+ * Exported for testing purposes only.
+ */
+export function __getMapConstructor(): IMapConstructor {
+  // eslint-disable-next-line compat/compat
+  if (typeof Array.from === 'function' && typeof Map === 'function' && Map.prototype && Map.prototype.values) {
+    return Map;
+  }
+  return MapPoly;
+}
+
+export const _Map = __getMapConstructor();
