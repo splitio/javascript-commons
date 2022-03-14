@@ -398,7 +398,7 @@ interface IBasicClient extends IStatusInterface {
 
   // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
   // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
-  isBrowserClient: boolean
+  isClientSide: boolean
 }
 /**
  * Common definitions between SDK instances for different environments interface.
