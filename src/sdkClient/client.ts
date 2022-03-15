@@ -4,7 +4,7 @@ import { getMatching, getBucketing } from '../utils/key';
 import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
 import { SDK_NOT_READY } from '../utils/labels';
-import { CONSENT_DECLINED, CONTROL } from '../utils/constants';
+import { CONTROL } from '../utils/constants';
 import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
@@ -23,7 +23,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
       const treatment = processEvaluation(evaluationResult, splitName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
-      if (settings.userConsent !== CONSENT_DECLINED) impressionsTracker.track(queue, attributes);
+      impressionsTracker.track(queue, attributes);
       return treatment;
     };
 
@@ -43,7 +43,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
       Object.keys(evaluationResults).forEach(splitName => {
         treatments[splitName] = processEvaluation(evaluationResults[splitName], splitName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
       });
-      if (settings.userConsent !== CONSENT_DECLINED) impressionsTracker.track(queue, attributes);
+      impressionsTracker.track(queue, attributes);
       return treatments;
     };
 
@@ -116,8 +116,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
     validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
-    if (settings.userConsent !== CONSENT_DECLINED) return eventTracker.track(eventData, size);
-    else return false;
+    return eventTracker.track(eventData, size);
   }
 
   return {
@@ -126,6 +125,6 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     getTreatments,
     getTreatmentsWithConfig,
     track,
-    isBrowserClient: false
+    isClientSide: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;
 }

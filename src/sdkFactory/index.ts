@@ -20,7 +20,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
-    syncManagerFactory, SignalListener, impressionsObserverFactory, impressionListener,
+    syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory } = params;
   const log = settings.log;
 
@@ -74,8 +74,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(log, storage.impressions, settings, impressionListener, integrationsManager, observer, storage.impressionCounts);
-  const eventTracker = eventTrackerFactory(log, storage.events, integrationsManager);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager);
 
   // signal listener
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);

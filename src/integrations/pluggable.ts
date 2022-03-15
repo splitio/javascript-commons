@@ -29,10 +29,10 @@ export function pluggableIntegrationsManagerFactory(
 
   // Exception safe methods: each integration module is responsable for handling errors
   return {
-    handleImpression: function (impressionData: SplitIO.ImpressionData) {
+    handleImpression(impressionData: SplitIO.ImpressionData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_IMPRESSION, payload: impressionData }));
     },
-    handleEvent: function (eventData: SplitIO.EventData) {
+    handleEvent(eventData: SplitIO.EventData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_EVENT, payload: eventData }));
     }
   };
