@@ -164,6 +164,9 @@ export class RedisAdapter extends ioredis {
     } else { // If it IS the string URL, that'll be the first param for ioredis.
       result.unshift(options.url);
     }
+    if (options.connectionTimeout) {
+      merge(opts, { connectTimeout: options.connectionTimeout });
+    }
     if (options.tls) {
       merge(opts, { tls: options.tls });
     }
