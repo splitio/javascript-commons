@@ -220,31 +220,6 @@ describe('sdkClientMethodCSFactory', () => {
     if (!ignoresTT) expect(() => sdkClientMethod('valid-key', ['invalid-TT'])).toThrow('Shared Client needs a valid traffic type or no traffic type at all.');
   });
 
-  test.each(testTargets)('invalid key/TT binds a false key/TT in the default client', (sdkClientMethodCSFactory, ignoresTT) => {
-    const paramsWithInvalidKeyAndTT = {
-      ...params,
-      settings: {
-        ...params.settings,
-        core: {
-          key: true, // invalid key
-          trafficType: '' // invalid TT
-        }
-      }
-    };
-
-    (clientCSDecoratorSpy as jest.Mock).mockClear();
-    // @ts-expect-error
-    const sdkClientMethod = sdkClientMethodCSFactory(paramsWithInvalidKeyAndTT);
-
-    // calling the function should return a client instance
-    const client = sdkClientMethod();
-    assertClientApi(client, params.sdkReadinessManager.sdkStatus);
-
-    // but with false as binded key and TT
-    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false);
-    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false, false);
-  });
-
   test.each(testTargets)('attributes binding - main client', (sdkClientMethodCSFactory) => {
     // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
