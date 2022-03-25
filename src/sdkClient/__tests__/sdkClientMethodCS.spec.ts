@@ -2,10 +2,6 @@ import { sdkClientMethodCSFactory as sdkClientMethodCSWithTTFactory } from '../s
 import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
 import { assertClientApi } from './testUtils';
 
-/** Mocks */
-import * as clientCS from '../clientCS';
-const clientCSDecoratorSpy = jest.spyOn(clientCS, 'clientCSDecorator');
-
 import { settingsWithKey, settingsWithKeyAndTT, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const partialStorages: { destroy: jest.Mock }[] = [];
