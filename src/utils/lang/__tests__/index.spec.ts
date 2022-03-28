@@ -231,26 +231,26 @@ test('LANG UTILS / isIntegerNumber', () => {
 
 test('LANG UTILS / isObject', () => {
   // positive
-  expect(isObject({})).toBe(true); // Should return true for map objects.
-  expect(isObject({ a: true })).toBe(true); // Should return true for map objects.
-  expect(isObject(new Object())).toBe(true); // Should return true for map objects.
-  expect(isObject(Object.create({}))).toBe(true); // Should return true for map objects.
-  expect(isObject(Object.create(Object.prototype))).toBe(true); // Should return true for map objects.
+  expect(isObject({})).toBe(true); // Should return true for plain objects (objects created by the Object built-in constructor).
+  expect(isObject({ a: true })).toBe(true); // Should return true for plain objects.
+  expect(isObject(new Object())).toBe(true); // Should return true for plain objects.
+  expect(isObject(Object.create({}))).toBe(true); // Should return true for plain objects.
+  expect(isObject(Object.create(Object.prototype))).toBe(true); // Should return true for plain objects.
 
   // negative
-  expect(isObject([])).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(() => { })).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(true)).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(false)).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(null)).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(undefined)).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(1)).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject('asd')).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(function () { })).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(Symbol('test'))).toBe(false); // Should return false for anything that is not a map object.
-  expect(isObject(new Promise(res => res()))).toBe(false); // Should return false for anything that is not a map object.
+  expect(isObject([])).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(() => { })).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(true)).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(false)).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(null)).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(undefined)).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(1)).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject('asd')).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(function () { })).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(Symbol('test'))).toBe(false); // Should return false for anything that is not a plain object.
+  expect(isObject(new Promise(res => res()))).toBe(false); // Should return false for anything that is not a plain object.
   // Object.create(null) creates an object with no prototype which may be tricky to handle. Filtering that out too.
-  expect(isObject(Object.create(null))).toBe(false); // Should return false for anything that is not a map object.
+  expect(isObject(Object.create(null))).toBe(false); // Should return false for anything that is not a plain object.
 
 });
 
