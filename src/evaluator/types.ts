@@ -6,7 +6,7 @@ import { ILogger } from '../logger/types';
 
 export interface IDependencyMatcherValue {
   key: SplitIO.SplitKey,
-  attributes: SplitIO.Attributes
+  attributes?: SplitIO.Attributes
 }
 
 export interface IMatcherDto {
@@ -27,7 +27,7 @@ export interface IEvaluation {
 
 export type IEvaluationResult = IEvaluation & { treatment: string }
 
-export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
+export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
 export type IEvaluator = (key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | undefined>
 

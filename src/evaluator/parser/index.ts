@@ -31,7 +31,7 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
       const matcher = matcherFactory(log, matcherDto, storage);
 
       // Evaluator function.
-      return (key: string, attributes: SplitIO.Attributes, splitEvaluator: ISplitEvaluator) => {
+      return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
         const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
 
