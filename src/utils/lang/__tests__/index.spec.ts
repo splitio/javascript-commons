@@ -255,10 +255,23 @@ test('LANG UTILS / isObject', () => {
 
   // validate on a different VM context
   const ctx = vm.createContext({ isObject });
-  vm.runInContext('var plainObjectResult = isObject({}); var arrayResult = isObject([]); var nullResult = isObject(null);', ctx);
-  expect(ctx.plainObjectResult).toBe(true);
-  expect(ctx.arrayResult).toBe(false);
-  expect(ctx.nullResult).toBe(false);
+  vm.runInContext(`
+    var positives =
+      isObject({}) &&
+      isObject({ a: true }) &&
+      isObject(new Object()) &&
+      isObject(Object.create({})) &&
+      isObject(Object.create(Object.prototype));
+    var negatives =
+      isObject([]) ||
+      isObject(() => { }) ||
+      isObject(null) ||
+      isObject(undefined) ||
+      isObject(new Promise(res => res())) ||
+      isObject(Object.create(null));
+    `, ctx);
+  expect(ctx.positives).toBe(true);
+  expect(ctx.negatives).toBe(false);
 });
 
 test('LANG UTILS / uniqueId', () => {
