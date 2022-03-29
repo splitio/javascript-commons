@@ -1,4 +1,5 @@
 // @ts-nocheck
+import vm from 'vm';
 import {
   startsWith,
   endsWith,
@@ -252,6 +253,12 @@ test('LANG UTILS / isObject', () => {
   // Object.create(null) creates an object with no prototype which may be tricky to handle. Filtering that out too.
   expect(isObject(Object.create(null))).toBe(false); // Should return false for anything that is not a plain object.
 
+  // validate on a different VM context
+  const ctx = vm.createContext({ isObject });
+  vm.runInContext('var plainObjectResult = isObject({}); var arrayResult = isObject([]); var nullResult = isObject(null);', ctx);
+  expect(ctx.plainObjectResult).toBe(true);
+  expect(ctx.arrayResult).toBe(false);
+  expect(ctx.nullResult).toBe(false);
 });
 
 test('LANG UTILS / uniqueId', () => {

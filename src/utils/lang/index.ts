@@ -154,16 +154,13 @@ function _isObject(o: any) {
   return Object.prototype.toString.call(o) === '[object Object]';
 }
 
-/**
- * Validates if a value is an object created by the Object constructor (plain object).
- * Adapted from:
- *
+/*
  * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
  *
  * Copyright (c) 2014-2017, Jon Schlinkert.
  * Released under the MIT License.
  */
-export function isObject(o: any): boolean {
+function _isPlainObject(o: any) {
   if (_isObject(o) === false) return false;
 
   // If has modified constructor
@@ -179,6 +176,14 @@ export function isObject(o: any): boolean {
 
   // Most likely a plain Object
   return true;
+}
+
+/**
+ * Validates if a value is an object created by the Object constructor (plain object).
+ * It uses `_isPlainObject` to avoid false negatives when validating values on a separate VM context.
+ */
+export function isObject(obj: any): boolean {
+  return obj !== null && typeof obj === 'object' && (obj.constructor === Object || _isPlainObject(obj));
 }
 
 /**
