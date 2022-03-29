@@ -1,4 +1,5 @@
 // @ts-nocheck
+import vm from 'vm';
 import {
   startsWith,
   endsWith,
@@ -252,6 +253,25 @@ test('LANG UTILS / isObject', () => {
   // Object.create(null) creates an object with no prototype which may be tricky to handle. Filtering that out too.
   expect(isObject(Object.create(null))).toBe(false); // Should return false for anything that is not a plain object.
 
+  // validate on a different VM context
+  const ctx = vm.createContext({ isObject });
+  vm.runInContext(`
+    var positives =
+      isObject({}) &&
+      isObject({ a: true }) &&
+      isObject(new Object()) &&
+      isObject(Object.create({})) &&
+      isObject(Object.create(Object.prototype));
+    var negatives =
+      isObject([]) ||
+      isObject(() => { }) ||
+      isObject(null) ||
+      isObject(undefined) ||
+      isObject(new Promise(res => res())) ||
+      isObject(Object.create(null));
+    `, ctx);
+  expect(ctx.positives).toBe(true);
+  expect(ctx.negatives).toBe(false);
 });
 
 test('LANG UTILS / uniqueId', () => {

@@ -150,35 +150,15 @@ export function isNaNNumber(val: any): boolean {
   return val !== val;
 }
 
-function _isObject(o: any) {
-  return Object.prototype.toString.call(o) === '[object Object]';
-}
-
 /**
  * Validates if a value is an object created by the Object constructor (plain object).
- * Adapted from:
- *
- * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
- *
- * Copyright (c) 2014-2017, Jon Schlinkert.
- * Released under the MIT License.
+ * It checks `constructor.name` to avoid false negatives when validating values on a separate VM context, which has its own global built-ins.
  */
-export function isObject(o: any): boolean {
-  if (_isObject(o) === false) return false;
-
-  // If has modified constructor
-  const ctor = o.constructor;
-  if (ctor === undefined) return false; // `Object.create(null)`
-
-  // If has modified prototype
-  const prot = ctor.prototype;
-  if (_isObject(prot) === false) return false;
-
-  // If constructor does not have an Object-specific method
-  if (Object.prototype.hasOwnProperty.call(prot, 'isPrototypeOf') === false) return false;
-
-  // Most likely a plain Object
-  return true;
+export function isObject(obj: any) {
+  return obj !== null && typeof obj === 'object' && (
+    obj.constructor === Object ||
+    (obj.constructor != null && obj.constructor.name === 'Object')
+  );
 }
 
 /**
