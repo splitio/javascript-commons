@@ -151,10 +151,14 @@ export function isNaNNumber(val: any): boolean {
 }
 
 /**
- * Validates if a value is an object with the Object prototype (map object).
+ * Validates if a value is an object created by the Object constructor (plain object).
+ * It checks `constructor.name` to avoid false negatives when validating values on a separate VM context, which has its own global built-ins.
  */
-export function isObject(obj: any): boolean {
-  return obj !== null && typeof obj === 'object' && obj.constructor === Object;
+export function isObject(obj: any) {
+  return obj !== null && typeof obj === 'object' && (
+    obj.constructor === Object ||
+    (obj.constructor != null && obj.constructor.name === 'Object')
+  );
 }
 
 /**
