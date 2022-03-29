@@ -191,7 +191,7 @@ describe('settingsValidation', () => {
   });
 
   test('validates and sanitizes key and traffic type in client-side', () => {
-    const clientSideValidationParams = { ...minimalSettingsParams, isClientSide: true };
+    const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
 
     const samples = [{
       key: '  valid-key  ', settingsKey: 'valid-key', // key string is trimmed
@@ -225,6 +225,19 @@ describe('settingsValidation', () => {
       expect(settings.core.key).toEqual(settingsKey);
       expect(settings.core.trafficType).toEqual(settingsTrafficType);
     });
+  });
+
+  test('validates and sanitizes key, while traffic type is ignored', () => {
+    const settings = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+        key: true,
+        trafficType: true
+      }
+    }, { ...minimalSettingsParams, acceptKey: true });
+
+    expect(settings.core.key).toEqual(false); // key is validated
+    expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
 });
 

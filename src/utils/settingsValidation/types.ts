@@ -10,8 +10,10 @@ export interface ISettingsValidationParams {
    * Version and startup properties are required, because they are not defined in the base settings.
    */
   defaults: Partial<ISettings> & { version: string } & { startup: ISettings['startup'] },
-  /** If true, validates core.key and core.trafficType */
-  isClientSide?: boolean,
+  /** If true, validates core.key */
+  acceptKey?: boolean,
+  /** If true, validates core.trafficType */
+  acceptTT?: boolean,
   /** Define runtime values (`settings.runtime`) */
   runtime: (settings: ISettings) => ISettings['runtime'],
   /** Storage validator (`settings.storage`) */

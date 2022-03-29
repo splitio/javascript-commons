@@ -99,7 +99,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, isClientSide, runtime, storage, integrations, logger, localhost, consent } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, consent } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -131,8 +131,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
 
-  // In client-side, validate key and TT
-  if (isClientSide) {
+  // Validate key and TT (for client-side)
+  if (validationParams.acceptKey) {
     const maybeKey = withDefaults.core.key;
     // Although `key` is required in client-side, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
     if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
@@ -144,9 +144,11 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
       withDefaults.core.key = validateKey(log, maybeKey, 'Client instantiation');
     }
 
-    const maybeTT = withDefaults.core.trafficType;
-    if (maybeTT !== undefined) { // @ts-ignore, assigning false
-      withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
+    if (validationParams.acceptTT) {
+      const maybeTT = withDefaults.core.trafficType;
+      if (maybeTT !== undefined) { // @ts-ignore
+        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
+      }
     }
   }
 
