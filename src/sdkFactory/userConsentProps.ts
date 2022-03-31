@@ -19,13 +19,12 @@ export function userConsentProps(settings: ISettings, syncManager?: ISyncManager
 
       const newConsentStatus = consent ? CONSENT_GRANTED : CONSENT_DECLINED;
 
-      if (settings.userConsent !== newConsentStatus) { // @ts-ignore, modify readonly prop
+      if (settings.userConsent !== newConsentStatus) {
+        log.info(USER_CONSENT_UPDATED, [settings.userConsent, newConsentStatus]); // @ts-ignore, modify readonly prop
         settings.userConsent = newConsentStatus;
 
         if (consent) syncManager?.submitter?.start(); // resumes submitters if transitioning to GRANTED
         else syncManager?.submitter?.stop(); // pauses submitters if transitioning to DECLINED
-
-        log.info(USER_CONSENT_UPDATED, [settings.userConsent, newConsentStatus]);
       } else {
         log.info(USER_CONSENT_NOT_UPDATED, [newConsentStatus]);
       }
