@@ -88,7 +88,8 @@ export const fullSettings: ISettings = {
     auth: 'auth',
     streaming: 'streaming'
   },
-  log: loggerMock
+  log: loggerMock,
+  userConsent: undefined
 };
 
 export const fullSettingsServerSide = {

@@ -89,7 +89,7 @@ export function get(obj: any, prop: any, val: any): any {
 /**
  * Parses an array into a map of different arrays, grouping by the specified prop value.
  */
-export function groupBy<T extends Record<string, any> >(source: T[], prop: string): Record<string, T[]> {
+export function groupBy<T extends Record<string, any>>(source: T[], prop: string): Record<string, T[]> {
   const map: Record<string, any[]> = {};
 
   if (Array.isArray(source) && isString(prop)) {
@@ -151,10 +151,14 @@ export function isNaNNumber(val: any): boolean {
 }
 
 /**
- * Validates if a value is an object with the Object prototype (map object).
+ * Validates if a value is an object created by the Object constructor (plain object).
+ * It checks `constructor.name` to avoid false negatives when validating values on a separate VM context, which has its own global built-ins.
  */
-export function isObject(obj: any): boolean {
-  return obj !== null && typeof obj === 'object' && obj.constructor === Object;
+export function isObject(obj: any) {
+  return obj !== null && typeof obj === 'object' && (
+    obj.constructor === Object ||
+    (obj.constructor != null && obj.constructor.name === 'Object')
+  );
 }
 
 /**
@@ -162,6 +166,13 @@ export function isObject(obj: any): boolean {
  */
 export function isString(val: any): val is string {
   return typeof val === 'string' || val instanceof String;
+}
+
+/**
+ * String sanitizer. Returns the provided value converted to uppercase if it is a string.
+ */
+export function stringToUpperCase(val: any) {
+  return isString(val) ? val.toUpperCase() : val;
 }
 
 /**

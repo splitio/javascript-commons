@@ -10,10 +10,13 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   // SDK
   [c.IMPRESSION, c.LOG_PREFIX_IMPRESSIONS_TRACKER +'Split: %s. Key: %s. Evaluation: %s. Label: %s'],
   [c.IMPRESSION_QUEUEING, c.LOG_PREFIX_IMPRESSIONS_TRACKER +'Queueing corresponding impression.'],
-  [c.NEW_SHARED_CLIENT, ' New shared client instance created.'],
-  [c.NEW_FACTORY, ' New Split SDK instance created.'],
+  [c.NEW_SHARED_CLIENT, 'New shared client instance created.'],
+  [c.NEW_FACTORY, 'New Split SDK instance created.'],
   [c.EVENTS_TRACKER_SUCCESS, c.LOG_PREFIX_EVENTS_TRACKER + 'Successfully queued %s'],
   [c.IMPRESSIONS_TRACKER_SUCCESS, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Successfully stored %s impression(s).'],
+  [c.USER_CONSENT_UPDATED, 'setUserConsent: consent status changed from %s to %s.'],
+  [c.USER_CONSENT_NOT_UPDATED, 'setUserConsent: call had no effect because it was the current consent status (%s).'],
+  [c.USER_CONSENT_INITIAL, 'Starting the SDK with %s user consent. No data will be sent.'],
 
   // synchronizer
   [c.POLLING_SMART_PAUSING, c.LOG_PREFIX_SYNC_POLLING + 'Turning segments data polling %s.'],

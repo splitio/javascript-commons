@@ -16,7 +16,8 @@ import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
  */
 // @TODO missing time tracking to collect telemetry
 export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings: { log, mode }, impressionsTracker, eventTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker } = params;
+  const { log, mode } = settings;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const wrapUp = (evaluationResult: IEvaluationResult) => {
@@ -124,6 +125,6 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     getTreatments,
     getTreatmentsWithConfig,
     track,
-    isBrowserClient: false
+    isClientSide: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;
 }

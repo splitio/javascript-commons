@@ -68,6 +68,9 @@ export const SYNC_CONTINUE_POLLING = 118;
 export const SYNC_STOP_POLLING = 119;
 export const EVENTS_TRACKER_SUCCESS = 120;
 export const IMPRESSIONS_TRACKER_SUCCESS = 121;
+export const USER_CONSENT_UPDATED = 122;
+export const USER_CONSENT_NOT_UPDATED = 123;
+export const USER_CONSENT_INITIAL = 124;
 
 export const ENGINE_VALUE_INVALID = 200;
 export const ENGINE_VALUE_NO_ATTRIBUTES = 201;
@@ -115,10 +118,11 @@ export const ERROR_INVALID_KEY_OBJECT = 317;
 export const ERROR_INVALID = 318;
 export const ERROR_EMPTY = 319;
 export const ERROR_EMPTY_ARRAY = 320;
-export const ERROR_INVALID_IMPRESSIONS_MODE = 321;
+export const ERROR_INVALID_CONFIG_PARAM = 321;
 export const ERROR_HTTP = 322;
 export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
 export const ERROR_STORAGE_INVALID = 324;
+export const ERROR_NOT_BOOLEAN = 325;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';

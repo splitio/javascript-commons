@@ -55,6 +55,11 @@ type EventConsts = {
  */
 export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partial';
 /**
+ * User consent status.
+ * @typedef {string} ConsentStatus
+ */
+export type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
+/**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
  * @interface ISettings
@@ -111,6 +116,7 @@ export interface ISettings {
   },
   readonly log: ILogger
   readonly impressionListener?: unknown
+  readonly userConsent?: ConsentStatus
 }
 /**
  * Log levels.
@@ -392,7 +398,7 @@ interface IBasicClient extends IStatusInterface {
 
   // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
   // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
-  isBrowserClient: boolean
+  isClientSide: boolean
 }
 /**
  * Common definitions between SDK instances for different environments interface.

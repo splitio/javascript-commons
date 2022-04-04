@@ -23,15 +23,10 @@ const method = 'Client instantiation';
 export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
 
-  // Keeping similar behaviour as in the isomorphic JS SDK: if settings key is invalid,
-  // `false` value is used as binded key of the default client, but trafficType is ignored
-  // @TODO handle as a non-recoverable error
-  const validKey = validateKey(log, key, method);
-
   const mainClientInstance = clientCSDecorator(
     log,
     sdkClientFactory(params) as SplitIO.IClient, // @ts-ignore
-    validKey
+    key
   );
 
   const parsedDefaultKey = keyParser(key);

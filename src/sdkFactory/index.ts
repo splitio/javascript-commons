@@ -12,14 +12,15 @@ import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * Modular SDK factory
  */
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
 
-  const { settings, platform, storageFactory, splitApiFactory,
-    syncManagerFactory, SignalListener, impressionsObserverFactory, impressionListener,
+  const { settings, platform, storageFactory, splitApiFactory, extraProps,
+    syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory } = params;
   const log = settings.log;
 
@@ -73,8 +74,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(log, storage.impressions, settings, impressionListener, integrationsManager, observer, storage.impressionCounts);
-  const eventTracker = eventTrackerFactory(log, storage.events, integrationsManager);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager);
 
   // signal listener
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
@@ -88,12 +89,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   log.info(NEW_FACTORY);
 
-  return {
+  // @ts-ignore
+  return objectAssign({
     // Split evaluation and event tracking engine
     client: clientMethod,
 
     // Manager API to explore available information
-    // @ts-ignore
     manager() {
       log.debug(RETRIEVE_MANAGER);
       return managerInstance;
@@ -103,5 +104,5 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     Logger: createLoggerAPI(settings.log),
 
     settings,
-  };
+  }, extraProps && extraProps(settings, syncManager));
 }
