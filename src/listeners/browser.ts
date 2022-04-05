@@ -11,7 +11,7 @@ import { OPTIMIZED, DEBUG } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
-import { isConsentGranted } from '../utils/consent';
+import { isConsentGranted } from '../consent';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
