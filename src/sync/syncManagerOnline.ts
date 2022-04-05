@@ -6,7 +6,7 @@ import { IPushManager } from './streaming/types';
 import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
-import { isConsentGranted } from '../utils/consent';
+import { isConsentGranted } from '../consent';
 
 /**
  * Online SyncManager factory.

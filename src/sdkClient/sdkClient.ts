@@ -3,13 +3,13 @@ import { IStatusInterface, SplitIO } from '../types';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
-import { ISdkClientFactoryParams } from './types';
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings, sharedClient } = params;
+export function sdkClientFactory(params: ISdkFactoryContext, isMainClient = true): SplitIO.IClient | SplitIO.IAsyncClient {
+  const { sdkReadinessManager, syncManager, storage, signalListener, settings } = params;
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
@@ -35,7 +35,7 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
           signalListener && signalListener.stop();
 
           // Release the API Key if it is the main client
-          if (!sharedClient) releaseApiKey(settings.core.authorizationKey);
+          if (isMainClient) releaseApiKey(settings.core.authorizationKey);
 
           // Cleanup storage
           return storage.destroy();
