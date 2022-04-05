@@ -1,5 +1,4 @@
 import { clientCSDecorator } from './clientCS';
-import { ISdkClientFactoryParams } from './types';
 import { SplitIO } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
@@ -9,6 +8,7 @@ import { ISyncManagerCS } from '../sync/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
   // @ts-ignore
@@ -22,12 +22,12 @@ const method = 'Client instantiation';
  * where clients can have a binded TT for the track method, which is provided via the settings
  * (default client) or the client method (shared clients).
  */
-export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
-    sdkClientFactory(params) as SplitIO.IClient, // @ts-ignore
+    sdkClientFactory(params) as SplitIO.IClient,
     key,
     trafficType
   );
@@ -86,8 +86,7 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
           storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
-          sharedClient: true
-        })) as SplitIO.IClient,
+        }), true) as SplitIO.IClient,
         validKey,
         validTrafficType
       );

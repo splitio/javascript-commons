@@ -81,7 +81,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
 
   // Sdk client and manager
-  const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
+  const ctx = { eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener };
+  const clientMethod = sdkClientMethodFactory(ctx);
   const managerInstance = sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
   syncManager && syncManager.start();
@@ -104,5 +105,5 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     Logger: createLoggerAPI(settings.log),
 
     settings,
-  }, extraProps && extraProps(settings, syncManager));
+  }, extraProps && extraProps(ctx));
 }
