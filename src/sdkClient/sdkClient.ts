@@ -8,7 +8,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkFactoryContext, isMainClient = true): SplitIO.IClient | SplitIO.IAsyncClient {
+export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager, syncManager, storage, signalListener, settings } = params;
 
   return objectAssign(
@@ -35,7 +35,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isMainClient = true
           signalListener && signalListener.stop();
 
           // Release the API Key if it is the main client
-          if (isMainClient) releaseApiKey(settings.core.authorizationKey);
+          if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
 
           // Cleanup storage
           return storage.destroy();
