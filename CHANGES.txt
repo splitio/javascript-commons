@@ -1,3 +1,17 @@
+1.3.0 (April 6, 2022)
+ - Added user consent feature to allow delaying or disabling the data tracking from SDK until user consent is explicitly granted or declined. Read more in our docs.
+ - Added `scheduler.impressionsQueueSize` property to SDK configuration to limit the amount of impressions tracked in memory. Read more in our docs.
+ - Added support to accept TLS configuration options to the Redis storage in NodeJS. Read more in our docs.
+ - Updated format for MySegments keys in LocalStorage, keeping backwards compatibility (issue https://github.com/splitio/javascript-client/issues/638).
+ - Updated some modules due to general polishing and refactors, including updates in some log messages.
+ - Updated some dependencies for vulnerability fixes.
+ - Bugfixing - Updated internal isObject utility function, to avoid unexpected behaviors on frameworks and libraries that uses multiple VM contexts, like NuxtJS dev server.
+ - Bugfixing - Fixed validation of `core.key` SDK configuration param, to parse it into a string and log a warning when passing a number (Related to issue https://github.com/splitio/react-native-client/issues/19).
+ - Bugfixing - Fixed validation of `sync.impressionsMode` SDK configuration param, to avoid an exception on SplitFactory instantiation when passing a non-string value.
+ - Bugfixing - Fixed an issue with `connectionTimeout` options params of Redis storage, that was being ignored and not passed down to the underlying ioredis client.
+ - Bugfixing - Fixed streaming synchronization issue with multiple clients.
+ - Bugfixing - Fixed issue with internal Map ponyfill that results in logger not working properly on IE11 browser.
+
 1.2.0 (January 19, 2022)
  - Added support to SDK clients on browser to optionally bind attributes to the client, keeping these loaded within the SDK along with the user ID, for easier usage when requesting flag.
 
