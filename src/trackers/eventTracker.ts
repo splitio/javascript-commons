@@ -2,9 +2,10 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { ISettings, SplitIO } from '../types';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
+import { CONSENT_DECLINED } from '../utils/constants';
+import { isStorageSync } from './impressionObserver/utils';
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
@@ -13,10 +14,13 @@ import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constant
  * @param integrationsManager optional event handler used for integrations
  */
 export function eventTrackerFactory(
-  log: ILogger,
+  settings: ISettings,
   eventsCache: IEventsCacheBase,
   integrationsManager?: IEventsHandler
 ): IEventTracker {
+
+  const log = settings.log;
+  const isSync = isStorageSync(settings);
 
   function queueEventsCallback(eventData: SplitIO.EventData, tracked: boolean) {
     const { eventTypeId, trafficTypeName, key, value, timestamp, properties } = eventData;
@@ -44,6 +48,10 @@ export function eventTrackerFactory(
 
   return {
     track(eventData: SplitIO.EventData, size?: number) {
+      if (settings.userConsent === CONSENT_DECLINED) {
+        return isSync ? false : Promise.resolve(false);
+      }
+
       const tracked = eventsCache.track(eventData, size);
 
       if (thenable(tracked)) {

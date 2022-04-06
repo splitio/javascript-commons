@@ -52,6 +52,7 @@ export const fullSettings: ISettings = {
     offlineRefreshRate: 1,
     eventsPushRate: 1,
     eventsQueueSize: 1,
+    impressionsQueueSize: 1,
     pushRetryBackoffBase: 1
   },
   startup: {
@@ -65,7 +66,7 @@ export const fullSettings: ISettings = {
   integrations: [() => { }], //  A no-op integration
   mode: 'standalone',
   debug: false,
-  streamingEnabled: false,
+  streamingEnabled: true,
   sync: {
     splitFilters: [],
     impressionsMode: 'OPTIMIZED',
@@ -87,7 +88,17 @@ export const fullSettings: ISettings = {
     auth: 'auth',
     streaming: 'streaming'
   },
-  log: loggerMock
+  log: loggerMock,
+  userConsent: undefined
+};
+
+export const fullSettingsServerSide = {
+  ...fullSettings,
+  core: {
+    ...fullSettings.core,
+    key: undefined,
+  },
+  features: '.split'
 };
 
 export const settingsSplitApi = {

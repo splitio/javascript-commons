@@ -55,6 +55,11 @@ type EventConsts = {
  */
 export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partial';
 /**
+ * User consent status.
+ * @typedef {string} ConsentStatus
+ */
+export type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
+/**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
  * @interface ISettings
@@ -73,6 +78,7 @@ export interface ISettings {
   readonly scheduler: {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
+    impressionsQueueSize: number,
     metricsRefreshRate: number,
     segmentsRefreshRate: number,
     offlineRefreshRate: number,
@@ -110,6 +116,7 @@ export interface ISettings {
   },
   readonly log: ILogger
   readonly impressionListener?: unknown
+  readonly userConsent?: ConsentStatus
 }
 /**
  * Log levels.
@@ -256,6 +263,13 @@ interface INodeBasicSettings extends ISharedSettings {
      */
     impressionsRefreshRate?: number,
     /**
+     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     * @property {number} impressionsQueueSize
+     * @default 30000
+     */
+    impressionsQueueSize?: number,
+    /**
      * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
      * @property {number} metricsRefreshRate
      * @default 120
@@ -381,6 +395,10 @@ interface IBasicClient extends IStatusInterface {
    * @returns {Promise<void>}
    */
   destroy(): Promise<void>
+
+  // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
+  // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
+  isClientSide: boolean
 }
 /**
  * Common definitions between SDK instances for different environments interface.
@@ -766,6 +784,13 @@ export namespace SplitIO {
        */
       impressionsRefreshRate?: number,
       /**
+       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       * @property {number} impressionsQueueSize
+       * @default 30000
+       */
+      impressionsQueueSize?: number,
+      /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
@@ -1139,7 +1164,7 @@ export namespace SplitIO {
     /**
      * Removes from client's in memory attributes storage the attribute with the given key
      * @function removeAttribute
-     * @param {string} attributeName 
+     * @param {string} attributeName
      * @returns {boolean} true if attribute was removed and false otherways
      */
     removeAttribute(attributeName: string): boolean,

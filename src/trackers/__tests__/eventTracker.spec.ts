@@ -1,5 +1,5 @@
-import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { SplitIO } from '../../types';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { eventTrackerFactory } from '../eventTracker';
 
 /* Mocks */
@@ -12,30 +12,30 @@ const fakeIntegrationsManager = {
   handleEvent: jest.fn()
 };
 
+const fakeEvent = {
+  eventTypeId: 'eventTypeId',
+  trafficTypeName: 'trafficTypeName',
+  value: 0,
+  timestamp: Date.now(),
+  key: 'matchingKey',
+  properties: {
+    prop1: 'prop1',
+    prop2: 0,
+  }
+};
+
 /* Tests */
 describe('Event Tracker', () => {
 
   test('Tracker API', () => {
     expect(typeof eventTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const instance = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
+    const instance = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager);
 
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method.
   });
 
-  test('Propagate the event into the event cache and integrations manager, and return its result (a boolean or a promise that resolves to boolean)', (done) => {
-    const fakeEvent = {
-      eventTypeId: 'eventTypeId',
-      trafficTypeName: 'trafficTypeName',
-      value: 0,
-      timestamp: Date.now(),
-      key: 'matchingKey',
-      properties: {
-        prop1: 'prop1',
-        prop2: 0,
-      }
-    };
-
+  test('Propagate the event into the event cache and integrations manager, and return its result (a boolean or a promise that resolves to boolean)', async () => {
     fakeEventsCache.track.mockImplementation((eventData: SplitIO.EventData, size: number) => {
       if (eventData === fakeEvent) {
         switch (size) {
@@ -46,46 +46,61 @@ describe('Event Tracker', () => {
       }
     });
 
-    const tracker = eventTrackerFactory(loggerMock, fakeEventsCache, fakeIntegrationsManager);
+    const tracker = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager);
     const result1 = tracker.track(fakeEvent, 1);
 
     expect(fakeEventsCache.track.mock.calls[0]).toEqual([fakeEvent, 1]); // Should be present in the event cache.
     expect(fakeIntegrationsManager.handleEvent).not.toBeCalled(); // The integration manager handleEvent method should not be executed synchronously.
     expect(result1).toBe(true); // Should return the value of the event cache.
 
-    setTimeout(() => {
-      expect(fakeIntegrationsManager.handleEvent.mock.calls[0]).toEqual([fakeEvent]); // A copy of the tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
-      expect(fakeIntegrationsManager.handleEvent.mock.calls[0][0]).not.toBe(fakeEvent); // Should not send the original event.
+    await new Promise(res => setTimeout(res));
+    expect(fakeIntegrationsManager.handleEvent.mock.calls[0]).toEqual([fakeEvent]); // A copy of the tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
+    expect(fakeIntegrationsManager.handleEvent.mock.calls[0][0]).not.toBe(fakeEvent); // Should not send the original event.
 
-      const result2 = tracker.track(fakeEvent, 2) as Promise<boolean>;
+    const result2 = tracker.track(fakeEvent, 2) as Promise<boolean>;
 
-      expect(fakeEventsCache.track.mock.calls[1]).toEqual([fakeEvent, 2]); // Should be present in the event cache.
+    expect(fakeEventsCache.track.mock.calls[1]).toEqual([fakeEvent, 2]); // Should be present in the event cache.
 
-      result2.then(tracked => {
-        expect(tracked).toBe(false); // Should return the value of the event cache resolved promise.
+    let tracked = await result2;
+    expect(tracked).toBe(false); // Should return the value of the event cache resolved promise.
 
-        setTimeout(() => {
-          expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Untracked event should not be sent to integration manager.
+    await new Promise(res => setTimeout(res));
+    expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Untracked event should not be sent to integration manager.
 
-          const result3 = tracker.track(fakeEvent, 3) as Promise<boolean>;
+    const result3 = tracker.track(fakeEvent, 3) as Promise<boolean>;
 
-          expect(fakeEventsCache.track.mock.calls[2]).toEqual([fakeEvent, 3]); // Should be present in the event cache.
+    expect(fakeEventsCache.track.mock.calls[2]).toEqual([fakeEvent, 3]); // Should be present in the event cache.
 
-          result3.then(tracked => {
-            expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Tracked event should not be sent to integration manager synchronously
-            expect(tracked).toBe(true); // Should return the value of the event cache resolved promise.
+    tracked = await result3;
+    expect(fakeIntegrationsManager.handleEvent).toBeCalledTimes(1); // Tracked event should not be sent to integration manager synchronously
+    expect(tracked).toBe(true); // Should return the value of the event cache resolved promise.
 
-            setTimeout(() => {
-              expect(fakeIntegrationsManager.handleEvent.mock.calls[1]).toEqual([fakeEvent]); // A copy of tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
-              expect(fakeIntegrationsManager.handleEvent.mock.calls[1][0]).not.toBe(fakeEvent); // Should not send the original event.
+    await new Promise(res => setTimeout(res));
+    expect(fakeIntegrationsManager.handleEvent.mock.calls[1]).toEqual([fakeEvent]); // A copy of tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
+    expect(fakeIntegrationsManager.handleEvent.mock.calls[1][0]).not.toBe(fakeEvent); // Should not send the original event.
 
-              done();
-            }, 0);
-          });
+  });
 
-        }, 0);
-      });
-    }, 0);
+  test('Should track or not events depending on user consent status', () => {
+    const settings = { ...fullSettings };
+    const fakeEventsCache = { track: jest.fn(() => true) };
+
+    const tracker = eventTrackerFactory(settings, fakeEventsCache);
+
+    expect(tracker.track(fakeEvent)).toBe(true);
+    expect(fakeEventsCache.track).toBeCalledTimes(1); // event should be tracked if userConsent is undefined
+
+    settings.userConsent = 'UNKNOWN';
+    expect(tracker.track(fakeEvent)).toBe(true);
+    expect(fakeEventsCache.track).toBeCalledTimes(2); // event should be tracked if userConsent is unknown
+
+    settings.userConsent = 'GRANTED';
+    expect(tracker.track(fakeEvent)).toBe(true);
+    expect(fakeEventsCache.track).toBeCalledTimes(3); // event should be tracked if userConsent is granted
+
+    settings.userConsent = 'DECLINED';
+    expect(tracker.track(fakeEvent)).toBe(false);
+    expect(fakeEventsCache.track).toBeCalledTimes(3); // event should not be tracked if userConsent is declined
   });
 
 });

@@ -19,7 +19,8 @@ const minimalSettingsParams = {
     version: 'javascript-test',
   },
   runtime: () => ({ ip: false, hostname: false } as ISettings['runtime']),
-  logger: () => (loggerMock as ISettings['log'])
+  logger: () => (loggerMock as ISettings['log']),
+  consent: () => undefined
 };
 
 describe('settingsValidation', () => {
@@ -187,6 +188,56 @@ describe('settingsValidation', () => {
     expect(settings.storage).toBe(storageMock);
     expect(settings.integrations).toBe(integrationsValidatorResult);
     expect(integrationsValidatorMock).toBeCalledWith(settings);
+  });
+
+  test('validates and sanitizes key and traffic type in client-side', () => {
+    const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
+
+    const samples = [{
+      key: '  valid-key  ', settingsKey: 'valid-key', // key string is trimmed
+      trafficType: 'VALID-TT', settingsTrafficType: 'valid-tt', // TT is converted to lowercase
+    }, {
+      key: undefined, settingsKey: false, // undefined key is not valid in client-side
+      trafficType: undefined, settingsTrafficType: undefined,
+    }, {
+      key: null, settingsKey: false,
+      trafficType: null, settingsTrafficType: false,
+    }, {
+      key: true, settingsKey: false,
+      trafficType: true, settingsTrafficType: false,
+    }, {
+      key: 1.5, settingsKey: '1.5', // finite number as key is parsed
+      trafficType: 100, settingsTrafficType: false,
+    }, {
+      key: { matchingKey: 100, bucketingKey: ' BUCK ' }, settingsKey: { matchingKey: '100', bucketingKey: 'BUCK' },
+      trafficType: {}, settingsTrafficType: false,
+    }];
+
+    samples.forEach(({ key, trafficType, settingsKey, settingsTrafficType }) => {
+      const settings = settingsValidation({
+        core: {
+          authorizationKey: 'dummy token',
+          key,
+          trafficType
+        }
+      }, clientSideValidationParams);
+
+      expect(settings.core.key).toEqual(settingsKey);
+      expect(settings.core.trafficType).toEqual(settingsTrafficType);
+    });
+  });
+
+  test('validates and sanitizes key, while traffic type is ignored', () => {
+    const settings = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+        key: true,
+        trafficType: true
+      }
+    }, { ...minimalSettingsParams, acceptKey: true });
+
+    expect(settings.core.key).toEqual(false); // key is validated
+    expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
 });
 

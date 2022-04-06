@@ -32,3 +32,8 @@ export const STORAGE_MEMORY: StorageType = 'MEMORY';
 export const STORAGE_LOCALSTORAGE: StorageType = 'LOCALSTORAGE';
 export const STORAGE_REDIS: StorageType = 'REDIS';
 export const STORAGE_PLUGGABLE: StorageType = 'PLUGGABLE';
+
+// User consent
+export const CONSENT_GRANTED = 'GRANTED'; // The user has granted consent for tracking events and impressions
+export const CONSENT_DECLINED = 'DECLINED'; // The user has declined consent for tracking events and impressions
+export const CONSENT_UNKNOWN = 'UNKNOWN'; // The user has neither granted nor declined consent for tracking events and impressions

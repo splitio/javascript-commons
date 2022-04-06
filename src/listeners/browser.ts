@@ -11,6 +11,7 @@ import { OPTIMIZED, DEBUG } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
+import { isConsentGranted } from '../consent';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
@@ -65,15 +66,18 @@ export class BrowserSignalListener implements ISignalListener {
   flushData() {
     if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
 
-    const eventsUrl = this.settings.urls.events;
-    const extraMetadata = {
-      // sim stands for Sync/Split Impressions Mode
-      sim: this.settings.sync.impressionsMode === OPTIMIZED ? OPTIMIZED : DEBUG
-    };
+    // Flush data if there is user consent
+    if (isConsentGranted(this.settings)) {
+      const eventsUrl = this.settings.urls.events;
+      const extraMetadata = {
+        // sim stands for Sync/Split Impressions Mode
+        sim: this.settings.sync.impressionsMode === OPTIMIZED ? OPTIMIZED : DEBUG
+      };
 
-    this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
-    this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
-    if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+      this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
+      this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
+      if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+    }
 
     // Close streaming connection
     if (this.syncManager.pushManager) this.syncManager.pushManager.stop();
@@ -84,7 +88,7 @@ export class BrowserSignalListener implements ISignalListener {
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.state()) : cache.state();
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
-        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exceptions
+        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exception
       }
       cache.clear();
     }

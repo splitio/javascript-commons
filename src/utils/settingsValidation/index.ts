@@ -5,6 +5,8 @@ import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
+import { validateKey } from '../inputValidation/key';
+import { validateTrafficType } from '../inputValidation/trafficType';
 
 const base = {
   // Define which kind of object you want to retrieve from SplitFactory
@@ -38,6 +40,8 @@ const base = {
     eventsPushRate: 60,
     // how many events will be queued before flushing
     eventsQueueSize: 500,
+    // how many impressions will be queued before flushing
+    impressionsQueueSize: 30000,
     // backoff base seconds to wait before re attempting to connect to push notifications
     pushRetryBackoffBase: 1,
   },
@@ -78,11 +82,6 @@ const base = {
     localhostMode: undefined
   },
 
-  runtime: {
-    ip: false,
-    hostname: false
-  },
-
   // Logger
   log: undefined
 };
@@ -100,7 +99,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, consent } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -132,14 +131,30 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
 
-  // Although `key` is mandatory according to TS declaration files, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
-  if (withDefaults.mode === LOCALHOST_MODE && withDefaults.core.key === undefined) {
-    withDefaults.core.key = 'localhost_key';
+  // Validate key and TT (for client-side)
+  if (validationParams.acceptKey) {
+    const maybeKey = withDefaults.core.key;
+    // Although `key` is required in client-side, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
+    if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
+      withDefaults.core.key = 'localhost_key';
+    } else {
+      // Keeping same behaviour than JS SDK: if settings key or TT are invalid,
+      // `false` value is used as binded key/TT of the default client, which leads to some issues.
+      // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
+      withDefaults.core.key = validateKey(log, maybeKey, 'Client instantiation');
+    }
+
+    if (validationParams.acceptTT) {
+      const maybeTT = withDefaults.core.trafficType;
+      if (maybeTT !== undefined) { // @ts-ignore
+        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
+      }
+    }
   }
 
   // Current ip/hostname information
   // @ts-ignore, modify readonly prop
-  if (runtime) withDefaults.runtime = runtime(withDefaults);
+  withDefaults.runtime = runtime(withDefaults);
 
   // ensure a valid list of integrations.
   // `integrations` returns an array of valid integration items.
@@ -163,6 +178,10 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid impressionsMode
   withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
+
+  // ensure a valid user consent value
+  // @ts-ignore, modify readonly prop
+  withDefaults.userConsent = consent(withDefaults);
 
   return withDefaults;
 }

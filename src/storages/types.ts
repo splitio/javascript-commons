@@ -298,7 +298,7 @@ export interface IRecorderCacheProducerSync<T> {
   // @TODO names are inconsistent with spec
   /* Checks if cache is empty. Returns true if the cache was just created or cleared */
   isEmpty(): boolean
-  /* clears cache data */
+  /* Clears cache data */
   clear(): void
   /* Gets cache data */
   state(): T
@@ -307,10 +307,13 @@ export interface IRecorderCacheProducerSync<T> {
 
 export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheProducerSync<ImpressionDTO[]> {
   track(data: ImpressionDTO[]): void
+  /* Registers callback for full queue */
+  setOnFullQueueCb(cb: () => void): void
 }
 
 export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
   track(data: SplitIO.EventData, size?: number): boolean
+  /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
 
@@ -423,6 +426,7 @@ export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
   log: ILogger,
+  impressionsQueueSize?: number,
   eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
 
@@ -443,7 +447,7 @@ export interface IStorageFactoryParams {
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
 export type IStorageSyncFactory = {
-  type: StorageType,
+  readonly type: StorageType,
   (params: IStorageFactoryParams): IStorageSync
 }
 

@@ -82,7 +82,7 @@ export function splitsParserFromFileFactory(): ISplitsParser {
     try {
       data = fs.readFileSync(filePath, 'utf-8');
     } catch (e) {
-      log.error(e.message);
+      log.error(e && (e as Error).message);
 
       return {};
     }
