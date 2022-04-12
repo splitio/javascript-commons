@@ -92,9 +92,9 @@ describe('TELEMETRY CACHE', () => {
   test('http errors', () => {
     expect(cache.popHttpErrors()).toEqual({});
     operationTypes.forEach((operation) => {
-      cache.recordSyncError(operation, 400);
-      cache.recordSyncError(operation, 400);
-      cache.recordSyncError(operation, 500);
+      cache.recordHttpError(operation, 400);
+      cache.recordHttpError(operation, 400);
+      cache.recordHttpError(operation, 500);
     });
 
     const httpErrors = { '400': 2, '500': 1 };
@@ -103,16 +103,16 @@ describe('TELEMETRY CACHE', () => {
     expect(cache.popHttpErrors()).toEqual({});
 
     // Set a single http error
-    cache.recordSyncError(MY_SEGMENT, 400);
+    cache.recordHttpError(MY_SEGMENT, 400);
     expect(cache.popHttpErrors()).toEqual({ 'ms': { 400: 1 } });
   });
 
   test('http latencies', () => {
     expect(cache.popHttpLatencies()).toEqual({});
     operationTypes.forEach((operation) => {
-      cache.recordSyncLatency(operation, 300);
-      cache.recordSyncLatency(operation, 400);
-      cache.recordSyncLatency(operation, 500);
+      cache.recordHttpLatency(operation, 300);
+      cache.recordHttpLatency(operation, 400);
+      cache.recordHttpLatency(operation, 500);
     });
 
     const latencies = [300, 400, 500];
@@ -122,7 +122,7 @@ describe('TELEMETRY CACHE', () => {
 
     // MAX_LATENCY_BUCKET_COUNT === 23
     for (let i = 0; i < 100; i++) {
-      cache.recordSyncLatency(MY_SEGMENT, i);
+      cache.recordHttpLatency(MY_SEGMENT, i);
     }
     expect(cache.popHttpLatencies()).toEqual({ 'ms': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] });
     expect(cache.popHttpLatencies()).toEqual({});

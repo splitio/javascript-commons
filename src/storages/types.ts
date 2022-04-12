@@ -398,8 +398,8 @@ export interface TelemetryRuntimeProducerSync {
   recordImpressionStats(type: ImpressionDataType, count: number): void;
   recordEventStats(type: EventDataType, count: number): void;
   recordSuccessfulSync(resource: OperationType, timeMs: number): void;
-  recordSyncError(resource: OperationType, status: number): void;
-  recordSyncLatency(resource: OperationType, latencyMs: number): void;
+  recordHttpError(resource: OperationType, status: number): void;
+  recordHttpLatency(resource: OperationType, latencyMs: number): void;
   recordAuthRejections(): void;
   recordTokenRefreshes(): void;
   recordStreamingEvents(streamingEvent: StreamingEvent): void;
