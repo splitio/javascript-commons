@@ -25,6 +25,9 @@ const methods: Method[] = [
   TRACK
 ];
 
+const latencies = [0, 0.500, 1.400, 17.085, 7999.999];
+const latencyBuckets = [2, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+
 describe('TELEMETRY CACHE', () => {
   const cache = new TelemetryCacheInMemory();
 
@@ -110,21 +113,13 @@ describe('TELEMETRY CACHE', () => {
   test('http latencies', () => {
     expect(cache.popHttpLatencies()).toEqual({});
     operationTypes.forEach((operation) => {
-      cache.recordHttpLatency(operation, 300);
-      cache.recordHttpLatency(operation, 400);
-      cache.recordHttpLatency(operation, 500);
+      latencies.forEach((latency) => {
+        cache.recordHttpLatency(operation, latency);
+      });
     });
 
-    const latencies = [300, 400, 500];
-    const expectedLatencies = { 'sp': latencies, 'im': latencies, 'ic': latencies, 'ev': latencies, 'te': latencies, 'to': latencies, 'se': latencies, 'ms': latencies };
-    expect(cache.popHttpLatencies()).toEqual(expectedLatencies);
-    expect(cache.popHttpLatencies()).toEqual({});
-
-    // MAX_LATENCY_BUCKET_COUNT === 23
-    for (let i = 0; i < 100; i++) {
-      cache.recordHttpLatency(MY_SEGMENT, i);
-    }
-    expect(cache.popHttpLatencies()).toEqual({ 'ms': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] });
+    const expectedLatencyBuckets = { 'sp': latencyBuckets, 'im': latencyBuckets, 'ic': latencyBuckets, 'ev': latencyBuckets, 'te': latencyBuckets, 'to': latencyBuckets, 'se': latencyBuckets, 'ms': latencyBuckets };
+    expect(cache.popHttpLatencies()).toEqual(expectedLatencyBuckets);
     expect(cache.popHttpLatencies()).toEqual({});
   });
 
@@ -204,21 +199,13 @@ describe('TELEMETRY CACHE', () => {
   test('method latencies', () => {
     expect(cache.popLatencies()).toEqual({});
     methods.forEach((method) => {
-      cache.recordLatency(method, 300);
-      cache.recordLatency(method, 400);
-      cache.recordLatency(method, 500);
+      latencies.forEach((latency) => {
+        cache.recordLatency(method, latency);
+      });
     });
 
-    const latencies = [300, 400, 500];
-    const expectedLatencies = { 't': latencies, 'ts': latencies, 'tc': latencies, 'tcs': latencies, 'tr': latencies };
-    expect(cache.popLatencies()).toEqual(expectedLatencies);
-    expect(cache.popLatencies()).toEqual({});
-
-    // MAX_LATENCY_BUCKET_COUNT === 23
-    for (let i = 0; i < 100; i++) {
-      cache.recordLatency(TRACK, i);
-    }
-    expect(cache.popLatencies()).toEqual({ 'tr': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22] });
+    const expectedLatencyBuckets = { 't': latencyBuckets, 'ts': latencyBuckets, 'tc': latencyBuckets, 'tcs': latencyBuckets, 'tr': latencyBuckets };
+    expect(cache.popLatencies()).toEqual(expectedLatencyBuckets);
     expect(cache.popLatencies()).toEqual({});
   });
 
