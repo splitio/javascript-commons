@@ -1,15 +1,11 @@
-import { endsWith, startsWith } from '../utils/lang';
+import { startsWith } from '../utils/lang';
 
 const everythingAtTheEnd = /[^.]+$/;
 
 const DEFAULT_PREFIX = 'SPLITIO';
 
 export function validatePrefix(prefix: unknown) {
-  return prefix && typeof prefix === 'string' ?
-    endsWith(prefix, '.' + DEFAULT_PREFIX) ?
-      prefix : // suffix already appended
-      prefix + '.' + DEFAULT_PREFIX : // append suffix
-    DEFAULT_PREFIX; // use default prefix if none is provided
+  return prefix ? prefix + '.SPLITIO' : 'SPLITIO';
 }
 
 export class KeyBuilder {

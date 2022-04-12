@@ -5,18 +5,18 @@ import { validateSplitExistance } from '../utils/inputValidation/splitExistance'
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
-import { IClientFactoryParams } from './types';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
-
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 /**
  * Creator of base client with getTreatments and track methods.
  */
 // @TODO missing time tracking to collect telemetry
-export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings: { log, mode }, impressionsTracker, eventTracker } = params;
+export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker } = params;
+  const { log, mode } = settings;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const wrapUp = (evaluationResult: IEvaluationResult) => {
@@ -123,6 +123,7 @@ export function clientFactory(params: IClientFactoryParams): SplitIO.IClient | S
     getTreatmentWithConfig,
     getTreatments,
     getTreatmentsWithConfig,
-    track
+    track,
+    isClientSide: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;
 }

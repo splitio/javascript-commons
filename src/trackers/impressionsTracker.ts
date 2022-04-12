@@ -5,8 +5,8 @@ import { IImpressionCountsCacheSync, IImpressionsCacheBase } from '../storages/t
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
-import { ILogger } from '../logger/types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
+import { CONSENT_DECLINED } from '../utils/constants';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -19,22 +19,21 @@ import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIO
  * @param countsCache optional cache to save impressions count. If provided, impressions will be deduped (OPTIMIZED mode)
  */
 export function impressionsTrackerFactory(
-  log: ILogger,
+  settings: ISettings,
   impressionsCache: IImpressionsCacheBase,
-
-  // @TODO consider passing only an optional integrationsManager to handle impressions
-  { runtime: { ip, hostname }, version }: Pick<ISettings, 'version' | 'runtime'>,
-  impressionListener?: SplitIO.IImpressionListener,
   integrationsManager?: IImpressionsHandler,
-
   // if observer is provided, it implies `shouldAddPreviousTime` flag (i.e., if impressions previous time should be added or not)
   observer?: IImpressionObserver,
   // if countsCache is provided, it implies `isOptimized` flag (i.e., if impressions should be deduped or not)
   countsCache?: IImpressionCountsCacheSync
 ): IImpressionsTracker {
 
+  const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
+
   return {
     track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes) {
+      if (settings.userConsent === CONSENT_DECLINED) return;
+
       const impressionsCount = impressions.length;
 
       const impressionsToStore: ImpressionDTO[] = []; // Track only the impressions that are going to be stored
@@ -85,7 +84,7 @@ export function impressionsTrackerFactory(
             // integrationsManager.handleImpression does not throw errors
             if (integrationsManager) integrationsManager.handleImpression(impressionData);
 
-            try { // An exception on the listeners should not break the SDK.
+            try { // @ts-ignore. An exception on the listeners should not break the SDK.
               if (impressionListener) impressionListener.logImpression(impressionData);
             } catch (err) {
               log.error(ERROR_IMPRESSIONS_LISTENER, [err]);

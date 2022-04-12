@@ -17,8 +17,7 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
    * @param {string[] | undefined} userKeys set of user Keys to track MY_SEGMENTS_CHANGES. It is undefined for server-side API.
    */
   return function authenticate(userKeys?: string[]): Promise<IAuthToken> {
-    let authPromise = fetchAuth(userKeys); // errors handled by fetchAuth service
-    return authPromise
+    return fetchAuth(userKeys)
       .then(resp => resp.json())
       .then(json => {
         if (json.token) { // empty token when `"pushEnabled": false`

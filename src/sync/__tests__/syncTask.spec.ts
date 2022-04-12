@@ -64,7 +64,7 @@ test('syncTaskFactory', (done) => {
         syncTask.stop();
         expect(asyncTask).toBeCalledTimes(7);
 
-        // // Resume periodic execution
+        // Resume periodic execution
         syncTask.start(); // Inmediatelly call task
         syncTask.start(); // No effect
         expect(asyncTask).toBeCalledTimes(8);

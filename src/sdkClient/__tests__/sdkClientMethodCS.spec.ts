@@ -2,10 +2,6 @@ import { sdkClientMethodCSFactory as sdkClientMethodCSWithTTFactory } from '../s
 import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
 import { assertClientApi } from './testUtils';
 
-/** Mocks */
-import * as clientCS from '../clientCS';
-const clientCSDecoratorSpy = jest.spyOn(clientCS, 'clientCSDecorator');
-
 import { settingsWithKey, settingsWithKeyAndTT, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const partialStorages: { destroy: jest.Mock }[] = [];
@@ -218,31 +214,6 @@ describe('sdkClientMethodCSFactory', () => {
     const sdkClientMethod = sdkClientMethodCSFactory(params);
     expect(() => sdkClientMethod({ matchingKey: settingsWithKey.core.key, bucketingKey: undefined })).toThrow('Shared Client needs a valid key.');
     if (!ignoresTT) expect(() => sdkClientMethod('valid-key', ['invalid-TT'])).toThrow('Shared Client needs a valid traffic type or no traffic type at all.');
-  });
-
-  test.each(testTargets)('invalid key/TT binds a false key/TT in the default client', (sdkClientMethodCSFactory, ignoresTT) => {
-    const paramsWithInvalidKeyAndTT = {
-      ...params,
-      settings: {
-        ...params.settings,
-        core: {
-          key: true, // invalid key
-          trafficType: '' // invalid TT
-        }
-      }
-    };
-
-    (clientCSDecoratorSpy as jest.Mock).mockClear();
-    // @ts-expect-error
-    const sdkClientMethod = sdkClientMethodCSFactory(paramsWithInvalidKeyAndTT);
-
-    // calling the function should return a client instance
-    const client = sdkClientMethod();
-    assertClientApi(client, params.sdkReadinessManager.sdkStatus);
-
-    // but with false as binded key and TT
-    if (ignoresTT) expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false);
-    else expect(clientCSDecoratorSpy).toHaveBeenCalledWith(expect.anything(), expect.anything(), false, false);
   });
 
   test.each(testTargets)('attributes binding - main client', (sdkClientMethodCSFactory) => {

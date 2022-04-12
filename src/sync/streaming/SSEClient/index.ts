@@ -1,5 +1,6 @@
 import { IEventSourceConstructor } from '../../../services/types';
 import { ISettings } from '../../../types';
+import { isString } from '../../../utils/lang';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
 
@@ -15,7 +16,7 @@ const CONTROL_CHANNEL_REGEX = /^control_/;
  */
 function buildSSEHeaders(settings: ISettings) {
   const headers: Record<string, string> = {
-    SplitSDKClientKey: settings.core.authorizationKey.slice(-4),
+    SplitSDKClientKey: isString(settings.core.authorizationKey) ? settings.core.authorizationKey.slice(-4) : '',
     SplitSDKVersion: settings.version,
   };
 

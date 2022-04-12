@@ -15,6 +15,7 @@ export type ISegmentChangesFetcher = (
 ) => Promise<ISegmentChangesResponse[]>
 
 export type IMySegmentsFetcher = (
+  userMatchingKey: string,
   noCache?: boolean,
   decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
 ) => Promise<string[]>
