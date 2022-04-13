@@ -90,20 +90,17 @@ test('KEYS / events', () => {
 
 });
 
-test('KEYS / latency keys', () => {
+test('KEYS / latency and exception keys (telemetry)', () => {
   const prefix = 'SPLITIO';
   const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
-  const metricName = 'unit testing metric name';
-  const bucketNumber = '10';
+  const methodName = 't'; // treatment
+  const bucketNumber = 10;
 
-  const expectedLatencyKey = `${prefix}/${metadata.s}/${metadata.i}/latency.${metricName}.bucket.${bucketNumber}`;
+  const expectedLatencyKey = `${prefix}.telemetry.latencies::${metadata.s}/${metadata.n}/${metadata.i}/treatment/${bucketNumber}`;
+  expect(builder.buildLatencyKey(methodName, bucketNumber)).toBe(expectedLatencyKey);
 
-  expect(builder.buildLatencyKey(metricName, bucketNumber) === expectedLatencyKey).toBe(true);
-
-  // NOT USED
-  // const metricNameAndBucket = builder.extractLatencyMetricNameAndBucket(expectedLatencyKey);
-  // expect(metricName === metricNameAndBucket.metricName).toBe(true);
-  // expect(bucketNumber === metricNameAndBucket.bucketNumber).toBe(true);
+  const expectedExceptionKey = `${prefix}.telemetry.exceptions::${metadata.s}/${metadata.n}/${metadata.i}/treatment`;
+  expect(builder.buildExceptionKey(methodName)).toBe(expectedExceptionKey);
 });

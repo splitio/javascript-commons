@@ -419,9 +419,20 @@ export interface TelemetryCacheSync extends TelemetryStorageConsumerSync, Teleme
  * Telemetry storage interface for consumer mode.
  * Methods are async because data is stored in Redis or a pluggable storage.
  */
-export interface TelemetryCacheAsync {
-  // @TODO
+
+export interface TelemetryEvaluationConsumerAsync {
+  popExceptions(): Promise<MethodExceptions>;
+  popLatencies(): Promise<MethodLatencies>;
 }
+
+export interface TelemetryEvaluationProducerAsync {
+  recordLatency(method: Method, latencyMs: number): Promise<any>;
+  recordException(method: Method): Promise<any>;
+}
+
+// ATM it only implements the producer API, used by the SDK.
+// @TODO implement consumer API for JS Synchronizer.
+export interface TelemetryCacheAsync extends TelemetryEvaluationProducerAsync { }
 
 /**
  * Storages

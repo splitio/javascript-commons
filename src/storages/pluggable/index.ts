@@ -77,7 +77,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
-      // @TODO add telemetry cache when required
+      // @TODO not supported by Synchronizer yet
+      // telemetry: isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper),
 
       // Disconnect the underlying storage
       destroy() {
