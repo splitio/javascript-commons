@@ -28,7 +28,7 @@ export function impressionsTrackerFactory(
   countsCache?: IImpressionCountsCacheSync
 ): IImpressionsTracker {
 
-  const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
+  const { log, impressionListener, runtime: { ip, hostname } } = settings;
 
   return {
     track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes) {
@@ -74,9 +74,9 @@ export function impressionsTrackerFactory(
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
             impression: objectAssign({}, impressions[i]),
             attributes,
-            ip: ip as string,
-            hostname: hostname as string,
-            sdkLanguageVersion: version
+            ip,
+            hostname,
+            sdkLanguageVersion: settings.version
           };
 
           // Wrap in a timeout because we don't want it to be blocking.
