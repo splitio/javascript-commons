@@ -15,10 +15,12 @@ export class TelemetryCachePluggable implements TelemetryCacheAsync {
   constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly wrapper: IPluggableStorageWrapper) { }
 
   recordLatency(method: Method, latencyMs: number) {
-    return this.wrapper.incr(this.keys.buildLatencyKey(method, findLatencyIndex(latencyMs)));
+    return this.wrapper.incr(this.keys.buildLatencyKey(method, findLatencyIndex(latencyMs)))
+      .catch(() => { /* Handle rejections for telemetry */ });
   }
   recordException(method: Method) {
-    return this.wrapper.incr(this.keys.buildExceptionKey(method));
+    return this.wrapper.incr(this.keys.buildExceptionKey(method))
+      .catch(() => { /* Handle rejections for telemetry */ });
   }
 
 }

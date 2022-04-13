@@ -17,11 +17,13 @@ export class TelemetryCacheInRedis implements TelemetryCacheAsync {
 
   recordLatency(method: Method, latencyMs: number) {
     const [key, field] = this.keys.buildLatencyKey(method, findLatencyIndex(latencyMs)).split('::');
-    return this.redis.hincrby(key, field, 1);
+    return this.redis.hincrby(key, field, 1)
+      .catch(() => { /* Handle rejections for telemetry */ });
   }
   recordException(method: Method) {
     const [key, field] = this.keys.buildExceptionKey(method).split('::');
-    return this.redis.hincrby(key, field, 1);
+    return this.redis.hincrby(key, field, 1)
+      .catch(() => { /* Handle rejections for telemetry */ });
   }
 
 }
