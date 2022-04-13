@@ -535,8 +535,8 @@ export namespace SplitIO {
   export type ImpressionData = {
     impression: ImpressionDTO,
     attributes?: SplitIO.Attributes,
-    ip: string,
-    hostname: string,
+    ip: string| false,
+    hostname: string | false,
     sdkLanguageVersion: string
   };
   /**

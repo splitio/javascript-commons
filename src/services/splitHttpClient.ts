@@ -14,24 +14,26 @@ const messageNoFetch = 'Global fetch API is not available.';
  */
 export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'version' | 'runtime' | 'core'>, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
 
-  const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
+  const log = settings.log;
   const options = getOptions && getOptions();
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${authorizationKey}`,
-    'SplitSDKVersion': version
-  };
-
-  if (ip) headers['SplitSDKMachineIP'] = ip;
-  if (hostname) headers['SplitSDKMachineName'] = hostname;
-
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
+
+    const { core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
+
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authorizationKey}`,
+      'SplitSDKVersion': version
+    };
+
+    if (ip) headers['SplitSDKMachineIP'] = ip;
+    if (hostname) headers['SplitSDKMachineName'] = hostname;
 
     const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
