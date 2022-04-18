@@ -15,14 +15,18 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
  */
 // @TODO missing time tracking to collect telemetry
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
+    const stopTelemetryTracker = telemetryTracker.start(withConfig ? 'tc' : 't');
+
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
       const treatment = processEvaluation(evaluationResult, splitName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
       impressionsTracker.track(queue, attributes);
+
+      stopTelemetryTracker(queue[0] && queue[0].label);
       return treatment;
     };
 
@@ -36,6 +40,8 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function getTreatments(key: SplitIO.SplitKey, splitNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
+    const stopTelemetryTracker = telemetryTracker.start(withConfig ? 'tcs' : 'ts');
+
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
@@ -43,6 +49,8 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
         treatments[splitName] = processEvaluation(evaluationResults[splitName], splitName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
       });
       impressionsTracker.track(queue, attributes);
+
+      stopTelemetryTracker(queue[0] && queue[0].label);
       return treatments;
     };
 
@@ -101,6 +109,8 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function track(key: SplitIO.SplitKey, trafficTypeName: string, eventTypeId: string, value?: number, properties?: SplitIO.Properties, size = 1024) {
+    const stopTelemetryTracker = telemetryTracker.start('tr');
+
     const matchingKey = getMatching(key);
     const timestamp = Date.now();
     const eventData: SplitIO.EventData = {
@@ -115,6 +125,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
     validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
+    stopTelemetryTracker();
     return eventTracker.track(eventData, size);
   }
 
