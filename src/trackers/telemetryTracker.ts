@@ -12,7 +12,7 @@ export function telemetryTrackerFactory(
   if (telemetryCache && now) {
 
     return {
-      start(method: Method) {
+      trackEval(method: Method) {
         const timeTracker = timer(now);
 
         return (label?: string) => {
@@ -30,7 +30,7 @@ export function telemetryTrackerFactory(
 
   } else { // If there is not `telemetryCache` or `now` time tracker, return a mock telemetry tracker
     return {
-      start() {
+      trackEval() {
         return () => { };
       }
     };

@@ -26,5 +26,5 @@ export interface ITelemetryTracker {
   /**
    * Creates a telemetry evaluator tracker, to record Latencies, Exceptions and NonReadyUsage of client operations (getTreatments and track method calls)
    */
-  start(method: Method): (label?: string) => void
+  trackEval(method: Method): (label?: string) => void
 }

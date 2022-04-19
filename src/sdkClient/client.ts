@@ -4,7 +4,7 @@ import { getMatching, getBucketing } from '../utils/key';
 import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
 import { SDK_NOT_READY } from '../utils/labels';
-import { CONTROL } from '../utils/constants';
+import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
@@ -19,7 +19,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { log, mode } = settings;
 
   function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
-    const stopTelemetryTracker = telemetryTracker.start(withConfig ? 'tc' : 't');
+    const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
@@ -40,7 +40,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function getTreatments(key: SplitIO.SplitKey, splitNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
-    const stopTelemetryTracker = telemetryTracker.start(withConfig ? 'tcs' : 'ts');
+    const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDTO[] = [];
@@ -109,7 +109,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function track(key: SplitIO.SplitKey, trafficTypeName: string, eventTypeId: string, value?: number, properties?: SplitIO.Properties, size = 1024) {
-    const stopTelemetryTracker = telemetryTracker.start('tr');
+    const stopTelemetryTracker = telemetryTracker.trackEval(TRACK);
 
     const matchingKey = getMatching(key);
     const timestamp = Date.now();
