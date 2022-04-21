@@ -1,43 +1,47 @@
 import { EXCEPTION, SDK_NOT_READY } from '../../utils/labels';
 import { telemetryTrackerFactory } from '../telemetryTracker';
 
-test('Telemetry Tracker', async () => {
+describe('Telemetry Tracker', () => {
 
   const fakeNow = jest.fn(() => { return Date.now(); });
   const fakeTelemetryCache = {
     recordLatency: jest.fn(),
     recordException: jest.fn(),
-    recordNonReadyUsage: jest.fn()
+    recordNonReadyUsage: jest.fn(),
   };
-
+  // @ts-ignore
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
 
-  let stopTracker = tracker.start('t');
-  stopTracker();
+  test('trackEval', async () => {
 
-  stopTracker = tracker.start('ts');
-  stopTracker(EXCEPTION);
+    let stopTracker = tracker.trackEval('t');
+    stopTracker();
 
-  stopTracker = tracker.start('tc');
-  stopTracker(SDK_NOT_READY);
+    stopTracker = tracker.trackEval('ts');
+    stopTracker(EXCEPTION);
 
-  stopTracker = tracker.start('tcs');
+    stopTracker = tracker.trackEval('tc');
+    stopTracker(SDK_NOT_READY);
 
-  await new Promise(res => setTimeout(res, 200));
-  stopTracker();
+    stopTracker = tracker.trackEval('tcs');
 
-  expect(fakeTelemetryCache.recordException).toBeCalledTimes(1);
-  expect(fakeTelemetryCache.recordNonReadyUsage).toBeCalledTimes(1);
-  expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(4);
+    await new Promise(res => setTimeout(res, 50));
+    stopTracker();
 
-  const latency = fakeTelemetryCache.recordLatency.mock.calls[3][1];
-  expect(latency > 200 && latency < 250).toBeTruthy(); // last tracked latency is around 200 ms
+    expect(fakeTelemetryCache.recordException).toBeCalledTimes(1);
+    expect(fakeTelemetryCache.recordNonReadyUsage).toBeCalledTimes(1);
+    expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(4);
+
+    const latency = fakeTelemetryCache.recordLatency.mock.calls[3][1];
+    expect(latency >= 50 && latency < 100).toBeTruthy(); // last tracked latency is around 200 ms
+  });
+
 });
 
 test('Telemetry Tracker no-op', () => {
   // The instance must implement the TelemetryTracker API even if no cache is provided
   const tracker = telemetryTrackerFactory();
 
-  const stopTracker = tracker.start('tr');
-  expect(stopTracker()).toBe(undefined);
+  const stopEvalTracker = tracker.trackEval('tr');
+  expect(stopEvalTracker()).toBe(undefined);
 });

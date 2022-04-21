@@ -1,11 +1,11 @@
-import { TelemetryCacheAsync, TelemetryCacheSync } from '../storages/types';
+import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
 import { Method } from '../sync/submitters/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
 
 export function telemetryTrackerFactory(
-  telemetryCache?: TelemetryCacheAsync | TelemetryCacheSync,
+  telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
   now?: () => number
 ): ITelemetryTracker {
 
@@ -28,11 +28,10 @@ export function telemetryTrackerFactory(
       }
     };
 
-  } else { // If there is not `telemetryCache` or `now` time tracker, return a mock telemetry tracker
+  } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
+    const noopTrack = () => () => { };
     return {
-      trackEval() {
-        return () => { };
-      }
+      trackEval: noopTrack
     };
   }
 }
