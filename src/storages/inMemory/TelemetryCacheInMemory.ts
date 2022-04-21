@@ -1,9 +1,14 @@
 import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies } from '../../sync/submitters/types';
+import { findLatencyIndex } from '../findLatencyIndex';
 import { TelemetryCacheSync } from '../types';
 
-const MAX_LATENCY_BUCKET_COUNT = 23;
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
+
+function newBuckets() {
+  // MAX_LATENCY_BUCKET_COUNT (length) is 23;
+  return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+}
 
 export class TelemetryCacheInMemory implements TelemetryCacheSync {
 
@@ -77,7 +82,7 @@ export class TelemetryCacheInMemory implements TelemetryCacheSync {
     return result;
   }
 
-  recordSyncError(resource: OperationType, status: number) {
+  recordHttpError(resource: OperationType, status: number) {
     if (!this.httpErrors[resource]) this.httpErrors[resource] = {};
     if (!this.httpErrors[resource][status]) {
       this.httpErrors[resource][status] = 1;
@@ -95,11 +100,11 @@ export class TelemetryCacheInMemory implements TelemetryCacheSync {
     return result;
   }
 
-  recordSyncLatency(resource: OperationType, latencyMs: number) {
-    if (!this.httpLatencies[resource]) this.httpLatencies[resource] = [];
-    if (this.httpLatencies[resource].length < MAX_LATENCY_BUCKET_COUNT) {
-      this.httpLatencies[resource].push(latencyMs);
+  recordHttpLatency(resource: OperationType, latencyMs: number) {
+    if (!this.httpLatencies[resource]) {
+      this.httpLatencies[resource] = newBuckets();
     }
+    this.httpLatencies[resource][findLatencyIndex(latencyMs)]++;
   }
 
   private authRejections = 0;
@@ -187,10 +192,10 @@ export class TelemetryCacheInMemory implements TelemetryCacheSync {
   }
 
   recordLatency(method: Method, latencyMs: number) {
-    if (!this.latencies[method]) this.latencies[method] = [];
-    if (this.latencies[method].length < MAX_LATENCY_BUCKET_COUNT) {
-      this.latencies[method].push(latencyMs);
+    if (!this.latencies[method]) {
+      this.latencies[method] = newBuckets();
     }
+    this.latencies[method][findLatencyIndex(latencyMs)]++;
   }
 
 }
