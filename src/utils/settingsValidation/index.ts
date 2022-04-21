@@ -55,6 +55,8 @@ const base = {
     auth: 'https://auth.split.io/api',
     // Streaming Server
     streaming: 'https://streaming.split.io',
+    // Telemetry Server
+    telemetry: 'https://telemetry.split.io',
   },
 
   // Defines which kind of storage we should instanciate.

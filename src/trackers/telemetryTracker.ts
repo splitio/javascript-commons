@@ -1,11 +1,12 @@
-import { TelemetryCacheAsync, TelemetryCacheSync } from '../storages/types';
-import { Method } from '../sync/submitters/types';
+import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
+import { Method, OperationType } from '../sync/submitters/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
+import { NetworkError } from '../services/types';
 
 export function telemetryTrackerFactory(
-  telemetryCache?: TelemetryCacheAsync | TelemetryCacheSync,
+  telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
   now?: () => number
 ): ITelemetryTracker {
 
@@ -25,14 +26,22 @@ export function telemetryTrackerFactory(
               telemetryCache?.recordNonReadyUsage();
           }
         };
-      }
+      },
+      trackHttp(operation: OperationType) {
+        const timeTracker = timer(now);
+
+        return (error?: NetworkError) => {
+          (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, timeTracker());
+          if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
+        };
+      },
     };
 
-  } else { // If there is not `telemetryCache` or `now` time tracker, return a mock telemetry tracker
+  } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
+    const noopTrack = () => () => { };
     return {
-      trackEval() {
-        return () => { };
-      }
+      trackEval: noopTrack,
+      trackHttp: noopTrack
     };
   }
 }

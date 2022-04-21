@@ -37,6 +37,7 @@ describe('settingsValidation', () => {
       events: 'https://events.split.io/api',
       auth: 'https://auth.split.io/api',
       streaming: 'https://streaming.split.io',
+      telemetry: 'https://telemetry.split.io',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
   });
@@ -73,6 +74,7 @@ describe('settingsValidation', () => {
       events: 'events-url',
       auth: 'auth-url',
       streaming: 'streaming-url',
+      telemetry: 'telemetry-url',
     };
 
     const settings = settingsValidation({

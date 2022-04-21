@@ -1,6 +1,7 @@
 import { SplitIO, ImpressionDTO } from '../types';
-import { Method } from '../sync/submitters/types';
+import { Method, OperationType } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
+import { NetworkError } from '../services/types';
 
 /** Events tracker */
 
@@ -27,4 +28,8 @@ export interface ITelemetryTracker {
    * Creates a telemetry evaluator tracker, to record Latencies, Exceptions and NonReadyUsage of client operations (getTreatments and track method calls)
    */
   trackEval(method: Method): (label?: string) => void
+  /**
+   * Creates a telemetry runtime tracker, to record Latencies and Exceptions of HTTP requests
+   */
+  trackHttp(method: OperationType): (error?: NetworkError) => void
 }

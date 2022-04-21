@@ -5,7 +5,7 @@ import { IResponse } from '../../../services/types';
 
 test('TIMER / should count the time between two tasks', (done) => {
   const timerDuration = Math.floor(Math.random() * 1000); // In millis
-  const stopTimer = timer();
+  const stopTimer = timer(Date.now);
 
   setTimeout(() => {
     const elapsedTime = stopTimer();

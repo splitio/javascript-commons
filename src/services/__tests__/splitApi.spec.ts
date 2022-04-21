@@ -5,6 +5,8 @@ import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/setti
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
 
+const telemetryTrackerMock = { trackHttp() { return () => { }; } };
+
 function assertHeaders(settings: ISettings, headers: Record<string, string>) {
   expect(headers['Accept']).toBe('application/json');
   expect(headers['Content-Type']).toBe('application/json');
@@ -20,7 +22,7 @@ describe('splitApi', () => {
   test.each([settingsSplitApi, settingsWithRuntime])('performs requests with expected headers', (settings) => {
 
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock });
+    const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     splitApi.fetchAuth();
     assertHeaders(settings, fetchMock.mock.calls[0][1].headers);
@@ -44,10 +46,9 @@ describe('splitApi', () => {
     splitApi.postTestImpressionsCount('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
 
-    // Deprecated
-    splitApi.postMetricsCounters('fake-body');
+    splitApi.postMetricsConfig('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
-    splitApi.postMetricsTimes('fake-body');
+    splitApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
 
     fetchMock.mockClear();
@@ -55,7 +56,7 @@ describe('splitApi', () => {
 
   test('rejects requests if fetch Api is not provided', (done) => {
 
-    const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => undefined });
+    const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => undefined }, telemetryTrackerMock);
 
     // Invoking any Service method, returns a rejected promise with Split error
     splitApi.fetchAuth().catch(error => {
@@ -68,7 +69,7 @@ describe('splitApi', () => {
 
   test('performs requests with overwritten headers', () => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock });
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     const newHeaders = { SplitSDKVersion: 'newVersion', SplitSDKMachineIP: 'newIp', SplitSDKMachineName: 'newHostname' };
     const expectedHeaders = { ...settingsWithRuntime, version: newHeaders.SplitSDKVersion, runtime: { ip: newHeaders.SplitSDKMachineIP, hostname: newHeaders.SplitSDKMachineName } };
@@ -83,7 +84,7 @@ describe('splitApi', () => {
 
   test('performs APIs health service check', (done) => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock });
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     splitApi.getSdkAPIHealthCheck().then((res) => {
       expect(res).toEqual(true);
