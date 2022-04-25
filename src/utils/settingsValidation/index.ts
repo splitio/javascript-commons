@@ -30,8 +30,8 @@ const base = {
     featuresRefreshRate: 30,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
-    // publish metrics each 120 sec
-    metricsRefreshRate: 120,
+    // publish telemetry stats each 3600 secs (1 hour)
+    telemetryRefreshRate: 3600,
     // publish evaluations each 60 sec
     impressionsRefreshRate: 60,
     // fetch offline changes each 15 sec
@@ -113,10 +113,14 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
-  scheduler.metricsRefreshRate = fromSecondsToMillis(scheduler.metricsRefreshRate);
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
+  // @TODO handle min 60 secs
+  scheduler.telemetryRefreshRate = fromSecondsToMillis(scheduler.telemetryRefreshRate);
+
+  // Log deprecation for old telemetry param
+  if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');
 
   // Startup periods
   startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);

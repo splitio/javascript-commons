@@ -47,7 +47,7 @@ export const fullSettings: ISettings = {
   scheduler: {
     featuresRefreshRate: 1,
     impressionsRefreshRate: 1,
-    metricsRefreshRate: 1,
+    telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,
     offlineRefreshRate: 1,
     eventsPushRate: 1,
