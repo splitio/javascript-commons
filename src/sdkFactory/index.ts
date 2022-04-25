@@ -76,8 +76,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts);
-  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
   // signal listener
