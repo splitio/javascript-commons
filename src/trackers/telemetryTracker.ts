@@ -13,17 +13,17 @@ export function telemetryTrackerFactory(
 
     return {
       trackEval(method: Method) {
-        const timeTracker = timer(now);
+        const stopTimer = timer(now);
 
         return (label?: string) => {
-          telemetryCache.recordLatency(method, timeTracker());
-
           switch (label) {
             case EXCEPTION:
-              telemetryCache.recordException(method); break;
+              telemetryCache.recordException(method);
+              return; // Don't track latency on exceptions
             case SDK_NOT_READY: // @ts-ignore. TelemetryCacheAsync doesn't implement the method
               telemetryCache?.recordNonReadyUsage();
           }
+          telemetryCache.recordLatency(method, stopTimer());
         };
       }
     };
