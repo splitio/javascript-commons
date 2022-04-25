@@ -33,6 +33,7 @@ export function telemetryTrackerFactory(
         return (error?: NetworkError) => {
           (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, timeTracker());
           if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
+          else (telemetryCache as TelemetryCacheSync).recordSuccessfulSync(operation, now());
         };
       },
     };

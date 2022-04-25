@@ -10,6 +10,7 @@ describe('Telemetry Tracker', () => {
     recordNonReadyUsage: jest.fn(),
     recordHttpLatency: jest.fn(),
     recordHttpError: jest.fn(),
+    recordSuccessfulSync: jest.fn(),
   };
   // @ts-ignore
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
@@ -52,6 +53,7 @@ describe('Telemetry Tracker', () => {
     stopTracker();
 
     expect(fakeTelemetryCache.recordHttpError).toBeCalledTimes(1);
+    expect(fakeTelemetryCache.recordSuccessfulSync).toBeCalledTimes(2);
     expect(fakeTelemetryCache.recordHttpLatency).toBeCalledTimes(3);
 
     const latency = fakeTelemetryCache.recordHttpLatency.mock.calls[2][1];
