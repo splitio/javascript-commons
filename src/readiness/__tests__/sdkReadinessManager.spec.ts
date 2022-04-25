@@ -309,7 +309,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
           .then(() => { throw new Error(); })
           .then(() => { throw new Error(); })
           .catch((error) => {
-            expect(error).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
+            expect(error instanceof Error).toBe(true);
+            expect(error.message).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
             expect(loggerMock.error).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
             done();
           });
