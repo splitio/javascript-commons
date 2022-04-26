@@ -73,6 +73,7 @@ export const SSE_CONNECTION_ERROR = 40;
 export const TOKEN_REFRESH = 50;
 export const ABLY_ERROR = 60;
 export const SYNC_MODE_UPDATE = 70;
+export const AUTH_REJECTION = 80;
 
 export const STREAMING = 0;
 export const POLLING = 1;

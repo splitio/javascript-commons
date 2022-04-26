@@ -26,7 +26,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     {
       destroy() {
         // record stat before flushing data
-        if (!isSharedClient) params.telemetryTracker.trackSessionLength();
+        if (!isSharedClient) params.telemetryTracker.sessionLength();
 
         // Stop background jobs
         syncManager && syncManager.stop();

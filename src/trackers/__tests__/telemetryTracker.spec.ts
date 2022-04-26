@@ -11,7 +11,8 @@ describe('Telemetry Tracker', () => {
     recordNonReadyUsage: jest.fn(),
     recordHttpLatency: jest.fn(),
     recordHttpError: jest.fn(),
-    recordSessionLength: jest.fn()
+    recordSessionLength: jest.fn(),
+    recordStreamingEvents: jest.fn(),
   };
   // @ts-ignore
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
@@ -62,12 +63,17 @@ describe('Telemetry Tracker', () => {
   });
 
   test('trackSessionLength', () => {
-    tracker.trackSessionLength();
+    tracker.sessionLength();
     expect(fakeTelemetryCache.recordSessionLength).toBeCalledTimes(1);
 
     const expectedSessionLength = Date.now() - startTimestamp;
     const sessionLength = fakeTelemetryCache.recordSessionLength.mock.calls[0][0];
     expect(nearlyEqual(sessionLength, expectedSessionLength)).toBeTruthy();
+  });
+
+  test('streamingEvent', () => {
+    tracker.streamingEvent(10, 1);
+    expect(fakeTelemetryCache.recordStreamingEvents).toBeCalledTimes(1);
   });
 
 });
@@ -81,4 +87,7 @@ test('Telemetry Tracker no-op', () => {
 
   const stopHttpTracker = tracker.trackHttp('ev');
   expect(stopHttpTracker()).toBe(undefined);
+
+  expect(tracker.sessionLength()).toBe(undefined);
+  expect(tracker.streamingEvent(10, 1)).toBe(undefined);
 });

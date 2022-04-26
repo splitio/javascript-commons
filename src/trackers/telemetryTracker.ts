@@ -1,9 +1,9 @@
 import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
-import { Method, OperationType } from '../sync/submitters/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
 import { NetworkError } from '../services/types';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../utils/constants';
 
 export function telemetryTrackerFactory(
   telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
@@ -14,10 +14,10 @@ export function telemetryTrackerFactory(
     const startTime = timer(now);
 
     return {
-      trackEval(method: Method) {
+      trackEval(method) {
         const timeTracker = timer(now);
 
-        return (label?: string) => {
+        return (label) => {
           telemetryCache.recordLatency(method, timeTracker());
 
           switch (label) {
@@ -28,7 +28,7 @@ export function telemetryTrackerFactory(
           }
         };
       },
-      trackHttp(operation: OperationType) {
+      trackHttp(operation) {
         const timeTracker = timer(now);
 
         return (error?: NetworkError) => {
@@ -36,8 +36,18 @@ export function telemetryTrackerFactory(
           if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
         };
       },
-      trackSessionLength() { // @ts-ignore
-        telemetryCache?.recordSessionLength(startTime());
+      sessionLength() {
+        (telemetryCache as TelemetryCacheSync).recordSessionLength(startTime());
+      },
+      streamingEvent(e, d) {
+        if (e === AUTH_REJECTION) {
+          (telemetryCache as TelemetryCacheSync).recordAuthRejections();
+        } else {
+          (telemetryCache as TelemetryCacheSync).recordStreamingEvents({
+            e, d, t: now()
+          });
+          if (e === TOKEN_REFRESH) (telemetryCache as TelemetryCacheSync).recordTokenRefreshes();
+        }
       }
     };
 
@@ -46,7 +56,8 @@ export function telemetryTrackerFactory(
     return {
       trackEval: noopTrack,
       trackHttp: noopTrack,
-      trackSessionLength: noopTrack
+      sessionLength: () => { },
+      streamingEvent: () => { }
     };
   }
 }

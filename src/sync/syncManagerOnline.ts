@@ -27,7 +27,7 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISyncManagerFactoryParams): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled }, storage: { telemetry } } = params;
+    const { settings, settings: { log, streamingEnabled }, telemetryTracker } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
@@ -49,11 +49,7 @@ export function syncManagerOnlineFactory(
       } else {
         log.info(SYNC_START_POLLING);
         pollingManager!.start();
-        if (telemetry) telemetry.recordStreamingEvents({
-          e: SYNC_MODE_UPDATE,
-          d: POLLING,
-          t: Date.now()
-        });
+        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, POLLING);
       }
     }
 
@@ -62,11 +58,7 @@ export function syncManagerOnlineFactory(
       // if polling, stop
       if (pollingManager!.isRunning()) {
         pollingManager!.stop();
-        if (telemetry) telemetry.recordStreamingEvents({
-          e: SYNC_MODE_UPDATE,
-          d: STREAMING,
-          t: Date.now()
-        });
+        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
       }
 
       // fetch splits and segments. There is no need to catch this promise (it is always resolved)
