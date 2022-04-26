@@ -32,4 +32,8 @@ export interface ITelemetryTracker {
    * Creates a telemetry runtime tracker, to record Latencies and Exceptions of HTTP requests
    */
   trackHttp(method: OperationType): (error?: NetworkError) => void
+  /**
+   * Records session length
+   */
+  trackSessionLength(): void
 }

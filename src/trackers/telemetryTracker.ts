@@ -11,6 +11,7 @@ export function telemetryTrackerFactory(
 ): ITelemetryTracker {
 
   if (telemetryCache && now) {
+    const startTime = timer(now);
 
     return {
       trackEval(method: Method) {
@@ -35,13 +36,17 @@ export function telemetryTrackerFactory(
           if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
         };
       },
+      trackSessionLength() { // @ts-ignore
+        telemetryCache?.recordSessionLength(startTime());
+      }
     };
 
   } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
     const noopTrack = () => () => { };
     return {
       trackEval: noopTrack,
-      trackHttp: noopTrack
+      trackHttp: noopTrack,
+      trackSessionLength: noopTrack
     };
   }
 }

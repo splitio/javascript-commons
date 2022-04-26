@@ -25,6 +25,9 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     // Sdk destroy
     {
       destroy() {
+        // record stat before flushing data
+        if (!isSharedClient) params.telemetryTracker.trackSessionLength();
+
         // Stop background jobs
         syncManager && syncManager.stop();
         const flush = syncManager ? syncManager.flush() : Promise.resolve();

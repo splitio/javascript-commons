@@ -30,7 +30,7 @@ export function pushManagerFactory(
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 
-  const { settings, storage, splitApi, readiness, platform } = params;
+  const { settings, storage: { segments, splits, telemetry }, splitApi, readiness, platform } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -54,9 +54,9 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
+  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
+  const splitsUpdateWorker = new SplitsUpdateWorker(splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
@@ -94,7 +94,10 @@ export function pushManagerFactory(
 
     log.info(STREAMING_REFRESH_TOKEN, [refreshTokenDelay, connDelay]);
 
-    timeoutIdTokenRefresh = setTimeout(connectPush, refreshTokenDelay * 1000);
+    timeoutIdTokenRefresh = setTimeout(() => {
+      if (telemetry) telemetry.recordTokenRefreshes();
+      connectPush();
+    }, refreshTokenDelay * 1000);
 
     timeoutIdSseOpen = setTimeout(() => {
       // halt if disconnected
@@ -137,6 +140,7 @@ export function pushManagerFactory(
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
+          if (telemetry) telemetry.recordAuthRejections();
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
           return;
         }
@@ -316,7 +320,7 @@ export function pushManagerFactory(
       },
 
       // true/false if start or stop was called last respectively
-      isRunning(){
+      isRunning() {
         return disconnected === false;
       },
 
