@@ -64,3 +64,20 @@ export const TREATMENTS = 'ts';
 export const TREATMENT_WITH_CONFIG = 'tc';
 export const TREATMENTS_WITH_CONFIG = 'tcs';
 export const TRACK = 'tr';
+
+export const CONNECTION_ESTABLISHED = 0;
+export const OCCUPANCY_PRI = 10;
+export const OCCUPANCY_SEC = 20;
+export const STREAMING_STATUS = 30;
+export const SSE_CONNECTION_ERROR = 40;
+export const TOKEN_REFRESH = 50;
+export const ABLY_ERROR = 60;
+export const SYNC_MODE_UPDATE = 70;
+
+export const STREAMING = 0;
+export const POLLING = 1;
+export const REQUESTED = 0;
+export const NON_REQUESTED = 1;
+export const DISABLED = 0;
+export const ENABLED = 1;
+export const PAUSED = 2;

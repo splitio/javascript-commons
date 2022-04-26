@@ -19,6 +19,7 @@ import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { ISyncManagerFactoryParams } from '../types';
+import { TOKEN_REFRESH } from '../../utils/constants';
 
 /**
  * PushManager factory:
@@ -94,16 +95,22 @@ export function pushManagerFactory(
 
     log.info(STREAMING_REFRESH_TOKEN, [refreshTokenDelay, connDelay]);
 
-    timeoutIdTokenRefresh = setTimeout(() => {
-      if (telemetry) telemetry.recordTokenRefreshes();
-      connectPush();
-    }, refreshTokenDelay * 1000);
+    timeoutIdTokenRefresh = setTimeout(connectPush, refreshTokenDelay * 1000);
 
     timeoutIdSseOpen = setTimeout(() => {
       // halt if disconnected
       if (disconnected) return;
       sseClient.open(authData);
     }, connDelay * 1000);
+
+    if (telemetry) {
+      telemetry.recordTokenRefreshes();
+      telemetry.recordStreamingEvents({
+        e: TOKEN_REFRESH,
+        d: decodedToken.exp,
+        t: Date.now()
+      });
+    }
   }
 
   function connectPush() {

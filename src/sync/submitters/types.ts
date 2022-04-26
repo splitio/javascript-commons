@@ -110,7 +110,7 @@ export type EventType = CONNECTION_ESTABLISHED | OCCUPANCY_PRI | OCCUPANCY_SEC |
 
 export type StreamingEvent = {
   e: EventType, // eventType
-  d: number, // eventData
+  d?: number, // eventData
   t: number, // timestamp
 }
 
