@@ -2,9 +2,9 @@ import { syncTaskComposite } from '../syncTaskComposite';
 import { eventsSyncTaskFactory } from './eventsSyncTask';
 import { impressionsSyncTaskFactory } from './impressionsSyncTask';
 import { impressionCountsSyncTaskFactory } from './impressionCountsSyncTask';
-import { ISyncManagerFactoryParams } from '../types';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
-export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
+export function submitterManagerFactory(params: ISdkFactoryContextSync) {
 
   const { settings, storage, splitApi } = params;
   const log = settings.log;

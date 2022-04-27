@@ -1,10 +1,11 @@
 import { ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
+import { ISdkFactoryContext } from './sdkFactory/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory } from './storages/types';
-import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
+import { ISyncManagerCS } from './sync/types';
 
 /**
  * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
@@ -611,7 +612,7 @@ export namespace SplitIO {
    */
   export type LocalhostFactory = {
     type: 'LocalhostFromObject' | 'LocalhostFromFile'
-    (params: ISyncManagerFactoryParams): ISyncManagerCS
+    (params: ISdkFactoryContext): ISyncManagerCS
   }
   /**
    * Impression listener interface. This is the interface that needs to be implemented

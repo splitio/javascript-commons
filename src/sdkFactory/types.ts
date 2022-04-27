@@ -1,24 +1,13 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
-import { ISdkReadinessManager } from '../readiness/types';
+import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
-import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
+import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
-
-export interface ISdkFactoryContext {
-  storage: IStorageSync | IStorageAsync,
-  sdkReadinessManager: ISdkReadinessManager,
-  settings: ISettings
-  impressionsTracker: IImpressionsTracker,
-  eventTracker: IEventTracker,
-  telemetryTracker: ITelemetryTracker
-  signalListener?: ISignalListener
-  syncManager?: ISyncManager,
-}
 
 /**
  * Environment related dependencies.
@@ -30,6 +19,32 @@ export interface IPlatform {
   getEventSource?: () => (IEventSourceConstructor | undefined)
   EventEmitter: new () => IEventEmitter,
   now?: () => number
+}
+
+export interface ISdkFactoryContext {
+  platform: IPlatform,
+  sdkReadinessManager: ISdkReadinessManager,
+  readiness: IReadinessManager,
+  settings: ISettings
+  impressionsTracker: IImpressionsTracker,
+  eventTracker: IEventTracker,
+  telemetryTracker: ITelemetryTracker,
+  storage: IStorageSync | IStorageAsync,
+  signalListener?: ISignalListener
+  splitApi?: ISplitApi
+  syncManager?: ISyncManager,
+}
+
+export interface ISdkFactoryContextSync extends ISdkFactoryContext {
+  storage: IStorageSync,
+  splitApi: ISplitApi
+  syncManager: ISyncManager,
+}
+
+export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
+  storage: IStorageAsync,
+  splitApi: undefined,
+  syncManager: undefined
 }
 
 /**
@@ -54,7 +69,7 @@ export interface ISdkFactoryParams {
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
   // It can create an offline or online sync manager, with or without streaming support.
-  syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
+  syncManagerFactory?: (params: ISdkFactoryContextSync) => ISyncManager,
 
   // Sdk manager factory
   sdkManagerFactory: (

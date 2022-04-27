@@ -1,9 +1,10 @@
-import { ISyncManager, ISyncManagerCS, ISyncManagerFactoryParams } from '../types';
+import { ISyncManager, ISyncManagerCS } from '../types';
 import { fromObjectSyncTaskFactory } from './syncTasks/fromObjectSyncTask';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { ISplitsParser } from './splitsParser/types';
 import { IReadinessManager } from '../../readiness/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 function flush() {
   return Promise.resolve();
@@ -17,7 +18,7 @@ function flush() {
  */
 export function syncManagerOfflineFactory(
   splitsParserFactory: () => ISplitsParser
-): (params: ISyncManagerFactoryParams) => ISyncManagerCS {
+): (params: ISdkFactoryContextSync) => ISyncManagerCS {
 
   /**
    * SyncManager factory for modular SDK
@@ -26,7 +27,7 @@ export function syncManagerOfflineFactory(
     settings,
     readiness,
     storage,
-  }: ISyncManagerFactoryParams): ISyncManagerCS {
+  }: ISdkFactoryContextSync): ISyncManagerCS {
 
     return objectAssign(
       fromObjectSyncTaskFactory(splitsParserFactory(), storage, readiness, settings),
