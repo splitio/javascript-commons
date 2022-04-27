@@ -33,9 +33,9 @@ describe('Telemetry Tracker', () => {
 
     expect(fakeTelemetryCache.recordException).toBeCalledTimes(1);
     expect(fakeTelemetryCache.recordNonReadyUsage).toBeCalledTimes(1);
-    expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(4);
+    expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(3);
 
-    const latency = fakeTelemetryCache.recordLatency.mock.calls[3][1];
+    const latency = fakeTelemetryCache.recordLatency.mock.calls[2][1];
     expect(latency >= 50 && latency < 100).toBeTruthy(); // last tracked latency is around 200 ms
   });
 
