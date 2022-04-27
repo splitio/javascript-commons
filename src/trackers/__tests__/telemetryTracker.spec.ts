@@ -1,4 +1,5 @@
 import { EXCEPTION, SDK_NOT_READY } from '../../utils/labels';
+import { nearlyEqual } from '../../__tests__/testUtils';
 import { telemetryTrackerFactory } from '../telemetryTracker';
 
 describe('Telemetry Tracker', () => {
@@ -9,7 +10,7 @@ describe('Telemetry Tracker', () => {
     recordException: jest.fn(),
     recordNonReadyUsage: jest.fn(),
   };
-  // @ts-ignore
+
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
 
   test('trackEval', async () => {
@@ -25,7 +26,7 @@ describe('Telemetry Tracker', () => {
 
     stopTracker = tracker.trackEval('tcs');
 
-    await new Promise(res => setTimeout(res, 50));
+    await new Promise(res => setTimeout(res, 100));
     stopTracker();
 
     expect(fakeTelemetryCache.recordException).toBeCalledTimes(1);
@@ -33,7 +34,7 @@ describe('Telemetry Tracker', () => {
     expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(3);
 
     const latency = fakeTelemetryCache.recordLatency.mock.calls[2][1];
-    expect(latency >= 50 && latency < 100).toBeTruthy(); // last tracked latency is around 200 ms
+    expect(nearlyEqual(latency, 100)).toBeTruthy(); // last tracked latency is around 100 ms
   });
 
 });

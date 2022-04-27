@@ -1,5 +1,4 @@
 import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
-import { Method } from '../sync/submitters/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
@@ -12,10 +11,10 @@ export function telemetryTrackerFactory(
   if (telemetryCache && now) {
 
     return {
-      trackEval(method: Method) {
-        const stopTimer = timer(now);
+      trackEval(method) {
+        const evalTime = timer(now);
 
-        return (label?: string) => {
+        return (label) => {
           switch (label) {
             case EXCEPTION:
               telemetryCache.recordException(method);
@@ -23,15 +22,15 @@ export function telemetryTrackerFactory(
             case SDK_NOT_READY: // @ts-ignore. TelemetryCacheAsync doesn't implement the method
               telemetryCache?.recordNonReadyUsage();
           }
-          telemetryCache.recordLatency(method, stopTimer());
+          telemetryCache.recordLatency(method, evalTime());
         };
-      }
+      },
     };
 
   } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
     const noopTrack = () => () => { };
     return {
-      trackEval: noopTrack
+      trackEval: noopTrack,
     };
   }
 }
