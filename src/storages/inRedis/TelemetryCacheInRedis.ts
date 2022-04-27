@@ -8,7 +8,7 @@ import { Redis } from 'ioredis';
 export class TelemetryCacheInRedis implements TelemetryCacheAsync {
 
   /**
-   * Create a Telemetry cache that uses a storage wrapper.
+   * Create a Telemetry cache that uses Redis as storage.
    * @param log  Logger instance.
    * @param keys  Key builder.
    * @param redis  Redis client.
