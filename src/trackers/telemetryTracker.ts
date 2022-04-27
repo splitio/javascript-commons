@@ -1,9 +1,7 @@
 import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
-import { Method, OperationType } from '../sync/submitters/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
-import { NetworkError } from '../services/types';
 
 export function telemetryTrackerFactory(
   telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
@@ -13,10 +11,10 @@ export function telemetryTrackerFactory(
   if (telemetryCache && now) {
 
     return {
-      trackEval(method: Method) {
-        const stopTimer = timer(now);
+      trackEval(method) {
+        const evalTime = timer(now);
 
-        return (label?: string) => {
+        return (label) => {
           switch (label) {
             case EXCEPTION:
               telemetryCache.recordException(method);
@@ -24,14 +22,14 @@ export function telemetryTrackerFactory(
             case SDK_NOT_READY: // @ts-ignore. TelemetryCacheAsync doesn't implement the method
               telemetryCache?.recordNonReadyUsage();
           }
-          telemetryCache.recordLatency(method, stopTimer());
+          telemetryCache.recordLatency(method, evalTime());
         };
       },
-      trackHttp(operation: OperationType) {
-        const timeTracker = timer(now);
+      trackHttp(operation) {
+        const httpTime = timer(now);
 
-        return (error?: NetworkError) => {
-          (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, timeTracker());
+        return (error) => {
+          (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, httpTime());
           if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
           else (telemetryCache as TelemetryCacheSync).recordSuccessfulSync(operation, now());
         };
@@ -42,7 +40,7 @@ export function telemetryTrackerFactory(
     const noopTrack = () => () => { };
     return {
       trackEval: noopTrack,
-      trackHttp: noopTrack
+      trackHttp: noopTrack,
     };
   }
 }
