@@ -93,12 +93,16 @@ export interface ISettings {
     eventsFirstPushWindow: number
   },
   readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
-  readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
+  readonly integrations: Array<{
+    readonly type: string,
+    (params: IIntegrationFactoryParams): IIntegration | void
+  }>,
   readonly urls: {
     events: string,
     sdk: string,
     auth: string,
-    streaming: string
+    streaming: string,
+    telemetry: string
   },
   readonly debug: boolean | LogLevel | ILogger,
   readonly version: string,
@@ -664,7 +668,13 @@ export namespace SplitIO {
      * @property {string} streaming
      * @default 'https://streaming.split.io'
      */
-    streaming?: string
+    streaming?: string,
+    /**
+     * String property to override the base URL where the SDK will post telemetry data.
+     * @property {string} telemetry
+     * @default 'https://telemetry.split.io'
+     */
+    telemetry?: string
   };
   /**
    * SplitFilter type.

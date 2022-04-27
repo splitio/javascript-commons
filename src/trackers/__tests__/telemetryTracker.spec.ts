@@ -9,6 +9,9 @@ describe('Telemetry Tracker', () => {
     recordLatency: jest.fn(),
     recordException: jest.fn(),
     recordNonReadyUsage: jest.fn(),
+    recordHttpLatency: jest.fn(),
+    recordHttpError: jest.fn(),
+    recordSuccessfulSync: jest.fn(),
   };
 
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
@@ -37,6 +40,26 @@ describe('Telemetry Tracker', () => {
     expect(nearlyEqual(latency, 100)).toBeTruthy(); // last tracked latency is around 100 ms
   });
 
+  test('trackHttp', async () => {
+
+    let stopTracker = tracker.trackHttp('ev');
+    stopTracker();
+
+    stopTracker = tracker.trackHttp('ic'); // @ts-ignore
+    stopTracker({ statusCode: 400 });
+
+    stopTracker = tracker.trackHttp('im');
+
+    await new Promise(res => setTimeout(res, 100));
+    stopTracker();
+
+    expect(fakeTelemetryCache.recordHttpError).toBeCalledTimes(1);
+    expect(fakeTelemetryCache.recordSuccessfulSync).toBeCalledTimes(2);
+    expect(fakeTelemetryCache.recordHttpLatency).toBeCalledTimes(3);
+
+    const latency = fakeTelemetryCache.recordHttpLatency.mock.calls[2][1];
+    expect(nearlyEqual(latency, 100)).toBeTruthy(); // last tracked latency is around 100 ms
+  });
 });
 
 test('Telemetry Tracker no-op', () => {
@@ -45,4 +68,7 @@ test('Telemetry Tracker no-op', () => {
 
   const stopEvalTracker = tracker.trackEval('tr');
   expect(stopEvalTracker()).toBe(undefined);
+
+  const stopHttpTracker = tracker.trackHttp('ev');
+  expect(stopHttpTracker()).toBe(undefined);
 });

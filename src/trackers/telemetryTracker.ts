@@ -25,12 +25,22 @@ export function telemetryTrackerFactory(
           telemetryCache.recordLatency(method, evalTime());
         };
       },
+      trackHttp(operation) {
+        const httpTime = timer(now);
+
+        return (error) => {
+          (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, httpTime());
+          if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
+          else (telemetryCache as TelemetryCacheSync).recordSuccessfulSync(operation, now());
+        };
+      },
     };
 
   } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
     const noopTrack = () => () => { };
     return {
       trackEval: noopTrack,
+      trackHttp: noopTrack,
     };
   }
 }
