@@ -1,4 +1,5 @@
 import { SplitIO, ImpressionDTO } from '../types';
+import { Method } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 
 /** Events tracker */
@@ -17,4 +18,13 @@ export interface IImpressionsHandler {
 
 export interface IImpressionsTracker {
   track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes): void
+}
+
+/** Telemetry tracker */
+
+export interface ITelemetryTracker {
+  /**
+   * Creates a telemetry evaluator tracker, to record Latencies, Exceptions and NonReadyUsage of client operations (getTreatments and track method calls)
+   */
+  trackEval(method: Method): (label?: string) => void
 }

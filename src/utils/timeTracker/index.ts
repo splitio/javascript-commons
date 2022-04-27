@@ -148,7 +148,7 @@ export const TrackerAPI = {
    * @param {Promise} promise - (optional) The promise we are tracking.
    * @return {Function | Promise} The stop function for this specific task or the promise received with the callbacks registered.
    */
-  start(log: ILogger, task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<IResponse>, now?: () => number): Promise<IResponse> | (() => number) {
+  start(log: ILogger, task: string, collectors?: Record<string, MetricsCollector>, promise?: Promise<IResponse>, now: () => number = Date.now): Promise<IResponse> | (() => number) {
     const taskUniqueId = uniqueId();
     const taskCollector = getCollectorForTask(task, collectors);
     let result;
