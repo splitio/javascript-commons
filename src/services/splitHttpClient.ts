@@ -1,4 +1,4 @@
-import { IFetch, IRequestOptions, IResponse, ISplitHttpClient } from './types';
+import { IFetch, IRequestOptions, IResponse, ISplitHttpClient, NetworkError } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
@@ -31,7 +31,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
   if (ip) headers['SplitSDKMachineIP'] = ip;
   if (hostname) headers['SplitSDKMachineName'] = hostname;
 
-  return function httpClient(url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
+  return function httpClient(tracker: (error?: NetworkError) => void, url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
@@ -46,6 +46,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
         if (!response.ok) {
           return response.text().then(message => Promise.reject({ response, message }));
         }
+        tracker();
         return response;
       })
       .catch(error => {
@@ -68,9 +69,11 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
           log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
         }
 
-        const networkError: Error & { statusCode?: number } = new Error(msg);
+        const networkError: NetworkError = new Error(msg);
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
         networkError.statusCode = resp && resp.status;
+
+        tracker(networkError);
         throw networkError;
       }) : Promise.reject(new Error(messageNoFetch));
   };

@@ -4,13 +4,14 @@ import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoCh
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../../../utils/MinEvents';
+import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 
 // module to test
 import { authenticateFactory, hashUserKey } from '../index';
 
 const authorizationKey = settingsSplitApi.core.authorizationKey;
 const authUrl = settingsSplitApi.urls.auth; // @ts-ignore
-const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter });
+const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter }, telemetryTrackerFactory());
 const authenticate = authenticateFactory(splitApi.fetchAuth);
 
 test('hashUserKey', () => {

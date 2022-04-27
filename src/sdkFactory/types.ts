@@ -6,7 +6,7 @@ import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
-import { IImpressionsTracker, IEventTracker } from '../trackers/types';
+import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
 
 export interface ISdkFactoryContext {
@@ -15,6 +15,7 @@ export interface ISdkFactoryContext {
   settings: ISettings
   impressionsTracker: IImpressionsTracker,
   eventTracker: IEventTracker,
+  telemetryTracker: ITelemetryTracker
   signalListener?: ISignalListener
   syncManager?: ISyncManager,
 }
@@ -27,7 +28,8 @@ export interface IPlatform {
   getOptions?: () => object
   getFetch?: () => (IFetch | undefined)
   getEventSource?: () => (IEventSourceConstructor | undefined)
-  EventEmitter: new () => IEventEmitter
+  EventEmitter: new () => IEventEmitter,
+  now?: () => number
 }
 
 /**

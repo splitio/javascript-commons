@@ -2,6 +2,7 @@ import { ISdkFactoryParams } from './types';
 import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
 import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
+import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
 import { ISplitApi } from '../services/types';
@@ -24,11 +25,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory } = params;
   const log = settings.log;
 
-  // @TODO handle non-recoverable errors: not start sync, mark the SDK as destroyed, etc.
+  // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
+  // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
+
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
   validateAndTrackApiKey(log, settings.core.authorizationKey);
 
-  // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
   const readinessManager = sdkReadinessManager.readinessManager;
 
@@ -76,12 +78,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const observer = impressionsObserverFactory && impressionsObserverFactory();
   const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager);
+  const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
   // signal listener
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
 
   // Sdk client and manager
-  const ctx = { eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener };
+  const ctx = { eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, settings, storage, syncManager, signalListener };
   const clientMethod = sdkClientMethodFactory(ctx);
   const managerInstance = sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
