@@ -1,12 +1,16 @@
-import { ISplitApi } from '../../services/types';
-import { IStorageSync } from '../../storages/types';
+import { IStorageSync, TelemetryCacheSync } from '../../storages/types';
 import { submitterFactory } from './submitter';
-import { TelemetryUsageStatsPayload } from './types';
-import { QUEUED, DEDUPED, DROPPED } from '../../utils/constants';
-import { ILogger } from '../../logger/types';
+import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
+import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM } from '../../utils/constants';
+import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
+import { ISettings } from '../../types';
+import { base } from '../../utils/settingsValidation';
+import { usedKeysMap } from '../../utils/inputValidation/apiKey';
+import { ISyncManagerFactoryParams } from '../types';
+import { timer } from '../../utils/timeTracker/timer';
 
 /**
- * Converts data from telemetry cache into request payload.
+ * Converts data from telemetry cache into /metrics/usage request payload.
  */
 export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: IStorageSync) {
   return {
@@ -39,14 +43,95 @@ export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: ISto
   };
 }
 
+function mapOperationMode(mode: ISettings['mode']) {
+  switch (mode) {
+    case STANDALONE_MODE: return STANDALONE_ENUM;
+    case CONSUMER_MODE: return CONSUMER_ENUM;
+    case CONSUMER_PARTIAL_MODE: return CONSUMER_PARTIAL_ENUM;
+  }
+}
+
+function mapImpressionsMode(mode: ISettings['sync']['impressionsMode']) {
+  switch (mode) {
+    case OPTIMIZED: return OPTIMIZED_ENUM;
+    case DEBUG: return DEBUG_ENUM;
+  }
+}
+
+function getActiveFactories() {
+  return Object.keys(usedKeysMap).length;
+}
+
+function getRedundantActiveFactories() {
+  return Object.keys(usedKeysMap).reduce((acum, apiKey) => {
+    return acum + usedKeysMap[apiKey] - 1;
+  }, 0);
+}
+
+/**
+ * Converts data from telemetry cache and settings into /metrics/config request payload.
+ */
+export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache: TelemetryCacheSync) {
+  return {
+    isEmpty() { return false; },
+    clear() { },
+
+    state(): TelemetryConfigStatsPayload {
+      const { urls, scheduler } = settings;
+
+      return {
+        oM: mapOperationMode(settings.mode), // @ts-ignore lower case of storage type
+        st: settings.storagetype.toLowerCase(),
+        sE: settings.streamingEnabled,
+        rR: {
+          sp: scheduler.featuresRefreshRate,
+          se: scheduler.segmentsRefreshRate,
+          im: scheduler.impressionsRefreshRate,
+          ev: scheduler.eventsPushRate,
+          te: scheduler.telemetryRefreshRate,
+        }, // refreshRates
+        uO: {
+          s: urls.sdk !== base.urls.sdk,
+          e: urls.events !== base.urls.events,
+          a: urls.auth !== base.urls.auth,
+          st: urls.streaming !== base.urls.streaming,
+          t: urls.telemetry !== base.urls.telemetry,
+        }, // urlOverrides
+        iQ: scheduler.impressionsQueueSize,
+        eQ: scheduler.eventsQueueSize,
+        iM: mapImpressionsMode(settings.sync.impressionsMode),
+        iL: settings.impressionListener ? true : false,
+        hP: false, // @TODO proxy not supported
+        aF: getActiveFactories(),
+        rF: getRedundantActiveFactories(),
+        tR: telemetryCache.getTimeUntilReady() as number,
+        tC: telemetryCache.getTimeUntilReadyFromCache(),
+        nR: telemetryCache.getNonReadyUsage(),
+        t: telemetryCache.popTags(),
+        i: settings.integrations && settings.integrations.map(int => int.type),
+      };
+    }
+  };
+}
+
 /**
  * Submitter that periodically posts telemetry data
  */
-export function telemetrySubmitterFactory(
-  log: ILogger,
-  splitApi: ISplitApi,
-  storage: IStorageSync,
-  telemetryRefreshRate: number,
-) {
+export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
+  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi, platform: { now }, readiness } = params;
+  const startTime = timer(now || Date.now);
+
+  readiness.gate.once(SDK_READY_FROM_CACHE, () => {
+    storage.telemetry.recordTimeUntilReadyFromCache(startTime());
+  });
+
+  readiness.gate.once(SDK_READY, () => {
+    storage.telemetry.recordTimeUntilReady(startTime());
+
+    // Post telemetry config data once the SDK is ready
+    const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(settings, storage.telemetry), 0, 'telemetry config', undefined, 0, true);
+    postMetricsConfigTask.execute();
+  });
+
   return submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true);
 }
