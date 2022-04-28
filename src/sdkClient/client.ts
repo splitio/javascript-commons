@@ -13,7 +13,6 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Creator of base client with getTreatments and track methods.
  */
-// @TODO missing time tracking to collect telemetry
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;

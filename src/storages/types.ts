@@ -331,11 +331,13 @@ export interface IRecorderCacheProducerAsync<T> {
 
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
+  // The result promise can reject.
   track(data: ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
   // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
+  // The result promise cannot reject.
   track(data: SplitIO.EventData, size?: number): Promise<boolean>
 }
 
