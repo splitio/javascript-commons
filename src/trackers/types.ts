@@ -36,7 +36,7 @@ export interface ITelemetryTracker {
   /**
    * Records session length
    */
-  sessionLength(): void,
+  sessionLength(): void
   /**
    * Records streaming event
    */
