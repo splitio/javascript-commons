@@ -1,7 +1,11 @@
+import { ITelemetryTracker } from '../../../trackers/types';
+import { CONNECTION_ESTABLISHED, DISABLED, ENABLED, OCCUPANCY_PRI, OCCUPANCY_SEC, PAUSED, STREAMING_STATUS } from '../../../utils/constants';
+import { StreamingEventType } from '../../submitters/types';
 import { ControlType, PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN } from '../constants';
 import { IPushEventEmitter } from '../types';
 
 const CONTROL_CHANNEL_REGEXS = [/control_pri$/, /control_sec$/];
+const STREAMING_EVENT_TYPES: StreamingEventType[] = [OCCUPANCY_PRI, OCCUPANCY_SEC];
 
 /**
  * Factory of notification keeper, which process OCCUPANCY and CONTROL notifications and emits the corresponding push events.
@@ -9,7 +13,7 @@ const CONTROL_CHANNEL_REGEXS = [/control_pri$/, /control_sec$/];
  * @param pushEmitter emitter for events related to streaming support
  */
 // @TODO update logic to handle OCCUPANCY for any region and rename according to new spec (e.g.: PUSH_SUBSYSTEM_UP --> PUSH_SUBSYSTEM_UP)
-export function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
+export function notificationKeeperFactory(pushEmitter: IPushEventEmitter, telemetryTracker: ITelemetryTracker) {
 
   let channels = CONTROL_CHANNEL_REGEXS.map(regex => ({
     regex,
@@ -30,6 +34,7 @@ export function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
 
   return {
     handleOpen() {
+      telemetryTracker.streamingEvent(CONNECTION_ESTABLISHED);
       pushEmitter.emit(PUSH_SUBSYSTEM_UP);
     },
 
@@ -41,6 +46,8 @@ export function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
       for (let i = 0; i < channels.length; i++) {
         const c = channels[i];
         if (c.regex.test(channel)) {
+          telemetryTracker.streamingEvent(STREAMING_EVENT_TYPES[i], publishers);
+
           if (timestamp > c.oTime) {
             c.oTime = timestamp;
             c.hasPublishers = publishers !== 0;
@@ -76,11 +83,14 @@ export function notificationKeeperFactory(pushEmitter: IPushEventEmitter) {
           if (timestamp > c.cTime) {
             c.cTime = timestamp;
             if (controlType === ControlType.STREAMING_DISABLED) {
+              telemetryTracker.streamingEvent(STREAMING_STATUS, DISABLED);
               pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
             } else if (hasPublishers) {
               if (controlType === ControlType.STREAMING_PAUSED && hasResumed) {
+                telemetryTracker.streamingEvent(STREAMING_STATUS, PAUSED);
                 pushEmitter.emit(PUSH_SUBSYSTEM_DOWN);
               } else if (controlType === ControlType.STREAMING_RESUMED && !hasResumed) {
+                telemetryTracker.streamingEvent(STREAMING_STATUS, ENABLED);
                 pushEmitter.emit(PUSH_SUBSYSTEM_UP);
               }
               // nothing to do when hasPublishers === false:

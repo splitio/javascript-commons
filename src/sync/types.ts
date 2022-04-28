@@ -2,6 +2,7 @@ import { IReadinessManager } from '../readiness/types';
 import { IPlatform } from '../sdkFactory/types';
 import { ISplitApi } from '../services/types';
 import { IStorageSync } from '../storages/types';
+import { ITelemetryTracker } from '../trackers/types';
 import { ISettings } from '../types';
 import { IPollingManager } from './polling/types';
 import { IPushManager } from './streaming/types';
@@ -58,5 +59,6 @@ export interface ISyncManagerFactoryParams {
   readiness: IReadinessManager,
   storage: IStorageSync,
   splitApi: ISplitApi,
-  platform: IPlatform
+  platform: IPlatform,
+  telemetryTracker: ITelemetryTracker
 }

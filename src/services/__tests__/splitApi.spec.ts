@@ -5,7 +5,7 @@ import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/setti
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
 
-const telemetryTrackerMock = { trackHttp() { return () => { }; } };
+const telemetryTrackerMock = { trackHttp: jest.fn(() => () => { }) };
 
 function assertHeaders(settings: ISettings, headers: Record<string, string>) {
   expect(headers['Accept']).toBe('application/json');
@@ -51,6 +51,9 @@ describe('splitApi', () => {
     splitApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
 
+    expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(9);
+
+    telemetryTrackerMock.trackHttp.mockClear();
     fetchMock.mockClear();
   });
 
