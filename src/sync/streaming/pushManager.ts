@@ -31,7 +31,7 @@ export function pushManagerFactory(
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 
-  const { settings, storage: { segments, splits }, splitApi, readiness, platform, telemetryTracker } = params;
+  const { settings, storage, splitApi, readiness, platform, telemetryTracker } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -55,9 +55,9 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, segments);
+  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
+  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};

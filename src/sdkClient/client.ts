@@ -13,7 +13,6 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Creator of base client with getTreatments and track methods.
  */
-// @TODO missing time tracking to collect telemetry
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
@@ -125,8 +124,17 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
     validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
-    stopTelemetryTracker();
-    return eventTracker.track(eventData, size);
+    const result = eventTracker.track(eventData, size);
+
+    if (thenable(result)) {
+      return result.then((result) => {
+        stopTelemetryTracker();
+        return result;
+      });
+    } else {
+      stopTelemetryTracker();
+      return result;
+    }
   }
 
   return {

@@ -82,8 +82,8 @@ export function impressionsTrackerFactory(
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
             impression: objectAssign({}, impressions[i]),
             attributes,
-            ip: ip as string,
-            hostname: hostname as string,
+            ip,
+            hostname,
             sdkLanguageVersion: version
           };
 

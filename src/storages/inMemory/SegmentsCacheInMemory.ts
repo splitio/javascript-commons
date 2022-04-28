@@ -68,6 +68,12 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     return Object.keys(this.segmentCache);
   }
 
+  getKeysCount() {
+    return Object.keys(this.segmentCache).reduce((acum, segmentName) => {
+      return acum + this.segmentCache[segmentName].size;
+    }, 0);
+  }
+
   setChangeNumber(name: string, changeNumber: number) {
     this.segmentChangeNumber[name] = changeNumber;
 

@@ -1,29 +1,26 @@
 import { IEventsCacheSync } from '../../storages/types';
 import { IPostEventsBulk } from '../../services/types';
-import { ISyncTask, ITimeTracker } from '../types';
-import { submitterSyncTaskFactory } from './submitterSyncTask';
+import { submitterFactory } from './submitter';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
 
 const DATA_NAME = 'events';
 
 /**
- * Sync task that periodically posts tracked events
+ * Submitter that periodically posts tracked events
  */
-export function eventsSyncTaskFactory(
+export function eventsSubmitterFactory(
   log: ILogger,
   postEventsBulk: IPostEventsBulk,
   eventsCache: IEventsCacheSync,
   eventsPushRate: number,
   eventsFirstPushWindow: number,
-  latencyTracker?: ITimeTracker
-): ISyncTask {
+) {
 
   // don't retry events.
-  const syncTask = submitterSyncTaskFactory(log, postEventsBulk, eventsCache, eventsPushRate, DATA_NAME, latencyTracker);
+  const syncTask = submitterFactory(log, postEventsBulk, eventsCache, eventsPushRate, DATA_NAME);
 
   // Set a timer for the first push window of events.
-  // Not implemented in the base submitter or sync task, since this feature is only used by the events submitter.
   if (eventsFirstPushWindow > 0) {
     let running = false;
     let stopEventPublisherTimeout: ReturnType<typeof setTimeout>;

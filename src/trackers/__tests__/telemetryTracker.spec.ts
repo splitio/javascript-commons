@@ -11,10 +11,11 @@ describe('Telemetry Tracker', () => {
     recordNonReadyUsage: jest.fn(),
     recordHttpLatency: jest.fn(),
     recordHttpError: jest.fn(),
+    recordSuccessfulSync: jest.fn(),
     recordSessionLength: jest.fn(),
     recordStreamingEvents: jest.fn(),
   };
-  // @ts-ignore
+
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
   const startTimestamp = Date.now();
 
@@ -36,9 +37,9 @@ describe('Telemetry Tracker', () => {
 
     expect(fakeTelemetryCache.recordException).toBeCalledTimes(1);
     expect(fakeTelemetryCache.recordNonReadyUsage).toBeCalledTimes(1);
-    expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(4);
+    expect(fakeTelemetryCache.recordLatency).toBeCalledTimes(3);
 
-    const latency = fakeTelemetryCache.recordLatency.mock.calls[3][1];
+    const latency = fakeTelemetryCache.recordLatency.mock.calls[2][1];
     expect(nearlyEqual(latency, 100)).toBeTruthy(); // last tracked latency is around 100 ms
   });
 
@@ -56,6 +57,7 @@ describe('Telemetry Tracker', () => {
     stopTracker();
 
     expect(fakeTelemetryCache.recordHttpError).toBeCalledTimes(1);
+    expect(fakeTelemetryCache.recordSuccessfulSync).toBeCalledTimes(2);
     expect(fakeTelemetryCache.recordHttpLatency).toBeCalledTimes(3);
 
     const latency = fakeTelemetryCache.recordHttpLatency.mock.calls[2][1];

@@ -51,7 +51,7 @@ export function sdkReadinessManagerFactory(
 
   // default onRejected handler, that just logs the error, if ready promise doesn't have one.
   function defaultOnRejected(err: any) {
-    log.error(err);
+    log.error(err && err.message);
   }
 
   function generateReadyPromise() {
@@ -62,7 +62,9 @@ export function sdkReadinessManagerFactory(
         if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(CLIENT_NO_LISTENER);
         resolve();
       });
-      readinessManager.gate.once(SDK_READY_TIMED_OUT, reject);
+      readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
+        reject(new Error(message));
+      });
     }), defaultOnRejected);
 
     return promise;
@@ -106,10 +108,10 @@ export function sdkReadinessManagerFactory(
          * @function ready
          * @returns {Promise<void>}
          */
-        ready: () => {
+        ready() {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {
-              return promiseWrapper(Promise.reject('Split SDK has emitted SDK_READY_TIMED_OUT event.'), defaultOnRejected);
+              return promiseWrapper(Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
             } else {
               return Promise.resolve();
             }
@@ -118,7 +120,7 @@ export function sdkReadinessManagerFactory(
         },
 
         // Expose status for internal purposes only. Not considered part of the public API, and might be updated eventually.
-        __getStatus: () => {
+        __getStatus() {
           return {
             isReady: readinessManager.isReady(),
             isReadyFromCache: readinessManager.isReadyFromCache(),

@@ -262,6 +262,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   isInSegment(name: string, key?: string): boolean
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
+  getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean
   getChangeNumber(name: string): number
   resetSegments(names: string[]): boolean // only for Sync Client-Side
@@ -331,11 +332,13 @@ export interface IRecorderCacheProducerAsync<T> {
 
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
+  // The result promise can reject.
   track(data: ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
   // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
+  // The result promise cannot reject.
   track(data: SplitIO.EventData, size?: number): Promise<boolean>
 }
 
@@ -442,34 +445,34 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
-  TEventsCache extends IEventsCacheBase,
-  TTelemetryCache extends TelemetryCacheSync | TelemetryCacheAsync
+  TEventsCache extends IEventsCacheBase
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
-  telemetry?: TTelemetryCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
 
-export type IStorageSync = IStorageBase<
+export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
-  IEventsCacheSync,
-  TelemetryCacheSync
->
+  IEventsCacheSync
+  > {
+  telemetry: TelemetryCacheSync
+}
 
-export type IStorageAsync = IStorageBase<
+export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
-  IEventsCacheAsync | IEventsCacheSync,
-  TelemetryCacheAsync | TelemetryCacheSync
->
+  IEventsCacheAsync | IEventsCacheSync
+> {
+  telemetry?: TelemetryCacheAsync
+}
 
 /** StorageFactory */
 

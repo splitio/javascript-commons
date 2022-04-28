@@ -9,7 +9,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
 export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings } = params;
+  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker } = params;
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
@@ -26,7 +26,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     {
       destroy() {
         // record stat before flushing data
-        if (!isSharedClient) params.telemetryTracker.sessionLength();
+        if (!isSharedClient) telemetryTracker.sessionLength();
 
         // Stop background jobs
         syncManager && syncManager.stop();

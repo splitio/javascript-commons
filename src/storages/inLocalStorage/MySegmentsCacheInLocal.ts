@@ -72,7 +72,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
       if (segmentName) {
         accum.push(segmentName);
       } else {
-        // @BREAKING: This is only to clean up "old" keys. Remove this whole else code block.
+        // @TODO @BREAKING: This is only to clean up "old" keys. Remove this whole else code block and reuse `getRegisteredSegments` method.
         segmentName = this.keys.extractOldSegmentKey(key);
 
         if (segmentName) { // this was an old segment key, let's clean up.
@@ -119,6 +119,18 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     }
 
     return isDiff;
+  }
+
+  getRegisteredSegments(): string[] {
+    return Object.keys(localStorage).reduce<string[]>((accum, key) => {
+      const segmentName = this.keys.extractSegmentName(key);
+      if (segmentName) accum.push(segmentName);
+      return accum;
+    }, []);
+  }
+
+  getKeysCount() {
+    return 1;
   }
 
 }

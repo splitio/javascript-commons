@@ -1,4 +1,5 @@
 import { SplitIO } from '../../types';
+import { QUEUED } from '../../utils/constants';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { eventTrackerFactory } from '../eventTracker';
 
@@ -6,6 +7,10 @@ import { eventTrackerFactory } from '../eventTracker';
 
 const fakeEventsCache = {
   track: jest.fn()
+};
+
+const fakeTelemetryCache = {
+  recordEventStats: jest.fn()
 };
 
 const fakeIntegrationsManager = {
@@ -45,13 +50,14 @@ describe('Event Tracker', () => {
         }
       }
     });
-
-    const tracker = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager);
+    // @ts-ignore
+    const tracker = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager, fakeTelemetryCache);
     const result1 = tracker.track(fakeEvent, 1);
 
     expect(fakeEventsCache.track.mock.calls[0]).toEqual([fakeEvent, 1]); // Should be present in the event cache.
     expect(fakeIntegrationsManager.handleEvent).not.toBeCalled(); // The integration manager handleEvent method should not be executed synchronously.
     expect(result1).toBe(true); // Should return the value of the event cache.
+    expect(fakeTelemetryCache.recordEventStats).toBeCalledWith(QUEUED, 1);
 
     await new Promise(res => setTimeout(res));
     expect(fakeIntegrationsManager.handleEvent.mock.calls[0]).toEqual([fakeEvent]); // A copy of the tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
@@ -79,6 +85,7 @@ describe('Event Tracker', () => {
     expect(fakeIntegrationsManager.handleEvent.mock.calls[1]).toEqual([fakeEvent]); // A copy of tracked event should be sent to integration manager after the timeout wrapping make it to the queue stack.
     expect(fakeIntegrationsManager.handleEvent.mock.calls[1][0]).not.toBe(fakeEvent); // Should not send the original event.
 
+    expect(fakeTelemetryCache.recordEventStats).toBeCalledTimes(1); // Only the first of the 3 track calls is using sync events cache
   });
 
   test('Should track or not events depending on user consent status', () => {
