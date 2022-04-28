@@ -2,6 +2,7 @@ import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../utils/constants';
 
 export function telemetryTrackerFactory(
   telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
@@ -9,6 +10,7 @@ export function telemetryTrackerFactory(
 ): ITelemetryTracker {
 
   if (telemetryCache && now) {
+    const startTime = timer(now);
 
     return {
       trackEval(method) {
@@ -34,6 +36,19 @@ export function telemetryTrackerFactory(
           else (telemetryCache as TelemetryCacheSync).recordSuccessfulSync(operation, now());
         };
       },
+      sessionLength() {
+        (telemetryCache as TelemetryCacheSync).recordSessionLength(startTime());
+      },
+      streamingEvent(e, d) {
+        if (e === AUTH_REJECTION) {
+          (telemetryCache as TelemetryCacheSync).recordAuthRejections();
+        } else {
+          (telemetryCache as TelemetryCacheSync).recordStreamingEvents({
+            e, d, t: now()
+          });
+          if (e === TOKEN_REFRESH) (telemetryCache as TelemetryCacheSync).recordTokenRefreshes();
+        }
+      }
     };
 
   } else { // If there is not `telemetryCache` or `now` time tracker, return a no-op telemetry tracker
@@ -41,6 +56,8 @@ export function telemetryTrackerFactory(
     return {
       trackEval: noopTrack,
       trackHttp: noopTrack,
+      sessionLength: () => { },
+      streamingEvent: () => { },
     };
   }
 }

@@ -6,18 +6,8 @@ import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError, INotificationMessage } from './types';
 import { ILogger } from '../../../logger/types';
 import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
-
-function isRetryableError(error: INotificationError) {
-  if (error.parsedData && error.parsedData.code) {
-    const code = error.parsedData.code;
-    // 401 errors due to invalid or expired token (e.g., if refresh token coudn't be executed)
-    if (40140 <= code && code <= 40149) return true;
-    // Others 4XX errors (e.g., bad request from the SDK)
-    if (40000 <= code && code <= 49999) return false;
-  }
-  // network errors or 5XX HTTP errors
-  return true;
-}
+import { ABLY_ERROR, NON_REQUESTED, SSE_CONNECTION_ERROR } from '../../../utils/constants';
+import { ITelemetryTracker } from '../../../trackers/types';
 
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
@@ -25,9 +15,26 @@ function isRetryableError(error: INotificationError) {
  * @param log factory logger
  * @param pushEmitter emitter for events related to streaming support
  */
-export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter): ISseEventHandler {
+export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, telemetryTracker: ITelemetryTracker): ISseEventHandler {
 
-  const notificationKeeper = notificationKeeperFactory(pushEmitter);
+  const notificationKeeper = notificationKeeperFactory(pushEmitter, telemetryTracker);
+
+  function isRetryableError(error: INotificationError): boolean {
+    if (error.parsedData && error.parsedData.code) {
+      // Ably error
+      const code = error.parsedData.code;
+      telemetryTracker.streamingEvent(ABLY_ERROR, code);
+
+      // 401 errors due to invalid or expired token (e.g., if refresh token coudn't be executed)
+      if (40140 <= code && code <= 40149) return true;
+      // Others 4XX errors (e.g., bad request from the SDK)
+      if (40000 <= code && code <= 49999) return false;
+    } else {
+      // network errors or 5XX HTTP errors
+      telemetryTracker.streamingEvent(SSE_CONNECTION_ERROR, NON_REQUESTED);
+    }
+    return true;
+  }
 
   return {
     handleOpen() {

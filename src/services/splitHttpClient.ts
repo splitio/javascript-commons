@@ -31,7 +31,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
   if (ip) headers['SplitSDKMachineIP'] = ip;
   if (hostname) headers['SplitSDKMachineName'] = hostname;
 
-  return function httpClient(tracker: (error?: NetworkError) => void, url: string, reqOpts: IRequestOptions = {}, logErrorsAsInfo: boolean = false): Promise<IResponse> {
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
@@ -46,7 +46,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
         if (!response.ok) {
           return response.text().then(message => Promise.reject({ response, message }));
         }
-        tracker();
+        latencyTracker();
         return response;
       })
       .catch(error => {
@@ -73,7 +73,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
         // passes `undefined` as statusCode if not an HTTP error (resp === undefined)
         networkError.statusCode = resp && resp.status;
 
-        tracker(networkError);
+        latencyTracker(networkError);
         throw networkError;
       }) : Promise.reject(new Error(messageNoFetch));
   };

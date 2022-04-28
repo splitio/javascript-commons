@@ -1,5 +1,5 @@
 import { SplitIO, ImpressionDTO } from '../types';
-import { Method, OperationType } from '../sync/submitters/types';
+import { StreamingEventType, Method, OperationType } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
 
@@ -22,6 +22,7 @@ export interface IImpressionsTracker {
 }
 
 /** Telemetry tracker */
+export type AUTH_REJECTION = 80;
 
 export interface ITelemetryTracker {
   /**
@@ -32,4 +33,12 @@ export interface ITelemetryTracker {
    * Creates a telemetry runtime tracker, to record Latencies and Exceptions of HTTP requests
    */
   trackHttp(method: OperationType): (error?: NetworkError) => void
+  /**
+   * Records session length
+   */
+  sessionLength(): void
+  /**
+   * Records streaming event
+   */
+  streamingEvent(e: StreamingEventType | AUTH_REJECTION, d?: number): void
 }
