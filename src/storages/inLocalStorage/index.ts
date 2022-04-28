@@ -13,6 +13,7 @@ import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browse
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
 import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -43,6 +44,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
+      telemetry: new TelemetryCacheInMemory(),
 
       destroy() {
         this.splits = new SplitsCacheInMemory();
@@ -62,6 +64,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,
+          telemetry: this.telemetry,
 
           destroy() {
             this.splits = new SplitsCacheInMemory();

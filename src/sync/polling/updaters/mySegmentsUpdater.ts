@@ -33,10 +33,6 @@ export function mySegmentsUpdaterFactory(
   function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
-
-    // @TODO telemetry
-    // NOTE: We only collect metrics on startup.
-    // mySegmentsPromise = tracker.start(tracker.TaskNames.MY_SEGMENTS_FETCH, startingUp ? metricCollectors : false, mySegmentsPromise);
   }
 
   // @TODO if allowing pluggable storages, handle async execution
