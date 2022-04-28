@@ -1,20 +1,19 @@
 import { syncTaskFactory } from '../syncTask';
-import { ISyncTask, ITimeTracker } from '../types';
+import { ISyncTask } from '../types';
 import { IRecorderCacheProducerSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
 import { IResponse } from '../../services/types';
 
 /**
- * Base function to create submitter sync tasks, such as ImpressionsSyncTask and EventsSyncTask
+ * Base function to create submitters, such as ImpressionsSubmitter and EventsSubmitter
  */
-export function submitterSyncTaskFactory<TState extends { length?: number }>(
+export function submitterFactory<TState>(
   log: ILogger,
   postClient: (body: string) => Promise<IResponse>,
   sourceCache: IRecorderCacheProducerSync<TState>,
   postRate: number,
   dataName: string,
-  latencyTracker?: ITimeTracker,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
   debugLogs?: boolean
@@ -26,32 +25,28 @@ export function submitterSyncTaskFactory<TState extends { length?: number }>(
     if (sourceCache.isEmpty()) return Promise.resolve();
 
     const data = sourceCache.state();
-
-    const dataCount: number | '' = typeof data.length === 'number' ? data.length : '';
-    log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCount, dataName]);
-    const latencyTrackerStop = latencyTracker && latencyTracker.start();
+    // @ts-ignore
+    const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
+    log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
     if (!maxRetries) sourceCache.clear();
 
-    const postPromise = postClient(jsonPayload).then(() => {
+    return postClient(jsonPayload).then(() => {
       retries = 0;
       sourceCache.clear(); // we clear the queue if request successes.
     }).catch(err => {
       if (!maxRetries) {
-        log.warn(SUBMITTERS_PUSH_FAILS, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else if (retries === maxRetries) {
         retries = 0;
         sourceCache.clear(); // we clear the queue if request fails after retries.
-        log.warn(SUBMITTERS_PUSH_FAILS, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else {
         retries++;
-        log.warn(SUBMITTERS_PUSH_RETRY, [dataCount, dataName, err]);
+        log.warn(SUBMITTERS_PUSH_RETRY, [dataCountMessage, err]);
       }
     });
-
-    // if latencyTracker provided, attach stop callback to postEventsPromise
-    return latencyTrackerStop ? postPromise.then(latencyTrackerStop).catch(latencyTrackerStop) : postPromise;
   }
 
   return syncTaskFactory(log, postData, postRate, dataName + ' submitter');

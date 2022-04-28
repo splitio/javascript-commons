@@ -11,8 +11,8 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.STREAMING_PARSING_ERROR_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE error notification: %s'],
   [c.STREAMING_PARSING_MESSAGE_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE message notification: %s'],
   [c.STREAMING_FALLBACK, c.LOG_PREFIX_SYNC_STREAMING + 'Falling back to polling mode. Reason: %s'],
-  [c.SUBMITTERS_PUSH_FAILS, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Droping %s %s after retry. Reason: %s.'],
-  [c.SUBMITTERS_PUSH_RETRY, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Failed to push %s %s, keeping data to retry on next iteration. Reason: %s.'],
+  [c.SUBMITTERS_PUSH_FAILS, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Droping %s after retry. Reason: %s.'],
+  [c.SUBMITTERS_PUSH_RETRY, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Failed to push %s, keeping data to retry on next iteration. Reason: %s.'],
   // client status
   [c.CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
   [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],

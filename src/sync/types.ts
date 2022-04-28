@@ -36,10 +36,6 @@ export interface ISyncTask<Input extends any[] = [], Output = any> extends ITask
   isExecuting(): boolean
 }
 
-export interface ITimeTracker {
-  start(): () => void // start tracking time and return a function to call for stopping the tracking
-}
-
 /** SyncManager */
 
 export interface ISyncManager extends ITask {

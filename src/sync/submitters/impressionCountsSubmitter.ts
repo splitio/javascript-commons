@@ -1,7 +1,6 @@
-import { ISyncTask, ITimeTracker } from '../types';
 import { IPostTestImpressionsCount } from '../../services/types';
 import { IImpressionCountsCacheSync } from '../../storages/types';
-import { submitterSyncTaskFactory } from './submitterSyncTask';
+import { submitterFactory } from './submitter';
 import { ImpressionCountsPayload } from './types';
 import { ILogger } from '../../logger/types';
 
@@ -32,15 +31,14 @@ export function fromImpressionCountsCollector(impressionsCount: Record<string, n
 const IMPRESSIONS_COUNT_RATE = 1800000; // 30 minutes
 
 /**
- * Sync task that periodically posts impression counts
+ * Submitter that periodically posts impression counts
  */
-export function impressionCountsSyncTaskFactory(
+export function impressionCountsSubmitterFactory(
   log: ILogger,
   postTestImpressionsCount: IPostTestImpressionsCount,
   impressionCountsCache: IImpressionCountsCacheSync,
-  latencyTracker?: ITimeTracker
-): ISyncTask {
+) {
 
   // retry impressions counts only once.
-  return submitterSyncTaskFactory(log, postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', latencyTracker, fromImpressionCountsCollector, 1);
+  return submitterFactory(log, postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', fromImpressionCountsCollector, 1);
 }
