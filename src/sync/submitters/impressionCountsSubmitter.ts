@@ -1,8 +1,6 @@
-import { IPostTestImpressionsCount } from '../../services/types';
-import { IImpressionCountsCacheSync } from '../../storages/types';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { submitterFactory } from './submitter';
 import { ImpressionCountsPayload } from './types';
-import { ILogger } from '../../logger/types';
 
 /**
  * Converts `impressionCounts` data from cache into request payload.
@@ -33,12 +31,16 @@ const IMPRESSIONS_COUNT_RATE = 1800000; // 30 minutes
 /**
  * Submitter that periodically posts impression counts
  */
-export function impressionCountsSubmitterFactory(
-  log: ILogger,
-  postTestImpressionsCount: IPostTestImpressionsCount,
-  impressionCountsCache: IImpressionCountsCacheSync,
-) {
+export function impressionCountsSubmitterFactory(params: ISdkFactoryContextSync) {
 
-  // retry impressions counts only once.
-  return submitterFactory(log, postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', fromImpressionCountsCollector, 1);
+  const {
+    settings: { log },
+    splitApi: { postTestImpressionsCount },
+    storage: { impressionCounts }
+  } = params;
+
+  if (impressionCounts) {
+    // retry impressions counts only once.
+    return submitterFactory(log, postTestImpressionsCount, impressionCounts, IMPRESSIONS_COUNT_RATE, 'impression counts', fromImpressionCountsCollector, 1);
+  }
 }

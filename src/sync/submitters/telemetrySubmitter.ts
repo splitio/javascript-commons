@@ -6,8 +6,8 @@ import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
 import { ISettings } from '../../types';
 import { base } from '../../utils/settingsValidation';
 import { usedKeysMap } from '../../utils/inputValidation/apiKey';
-import { ISyncManagerFactoryParams } from '../types';
 import { timer } from '../../utils/timeTracker/timer';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Converts data from telemetry cache into /metrics/usage request payload.
@@ -117,7 +117,7 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
 /**
  * Submitter that periodically posts telemetry data
  */
-export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
+export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
   const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi, platform: { now }, readiness } = params;
   const startTime = timer(now || Date.now);
 

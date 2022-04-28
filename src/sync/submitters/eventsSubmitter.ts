@@ -1,24 +1,22 @@
-import { IEventsCacheSync } from '../../storages/types';
-import { IPostEventsBulk } from '../../services/types';
 import { submitterFactory } from './submitter';
-import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 const DATA_NAME = 'events';
 
 /**
  * Submitter that periodically posts tracked events
  */
-export function eventsSubmitterFactory(
-  log: ILogger,
-  postEventsBulk: IPostEventsBulk,
-  eventsCache: IEventsCacheSync,
-  eventsPushRate: number,
-  eventsFirstPushWindow: number,
-) {
+export function eventsSubmitterFactory(params: ISdkFactoryContextSync) {
+
+  const {
+    settings: { log, scheduler: { eventsPushRate }, startup: { eventsFirstPushWindow } },
+    splitApi: { postEventsBulk },
+    storage: { events },
+  } = params;
 
   // don't retry events.
-  const syncTask = submitterFactory(log, postEventsBulk, eventsCache, eventsPushRate, DATA_NAME);
+  const syncTask = submitterFactory(log, postEventsBulk, events, eventsPushRate, DATA_NAME);
 
   // Set a timer for the first push window of events.
   if (eventsFirstPushWindow > 0) {
@@ -41,7 +39,7 @@ export function eventsSubmitterFactory(
   }
 
   // register events submitter to be executed when events cache is full
-  eventsCache.setOnFullQueueCb(() => {
+  events.setOnFullQueueCb(() => {
     if (syncTask.isRunning()) {
       log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
       syncTask.execute();

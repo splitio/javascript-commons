@@ -6,10 +6,18 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 describe('Events submitter', () => {
 
   let __onFullQueueCb: () => void;
-  const postEventsBulkMock = jest.fn();
   const eventsCacheMock = {
     isEmpty: jest.fn(() => true),
     setOnFullQueueCb: jest.fn(function (onFullQueueCb) { __onFullQueueCb = onFullQueueCb; })
+  };
+  const params = {
+    settings: {
+      log: loggerMock,
+      scheduler: { eventsPushRate: 30000 },
+      startup: { eventsFirstPushWindow: 0 }
+    },
+    splitApi: { postEventsBulkMock: jest.fn() },
+    storage: { events: eventsCacheMock }
   };
 
   beforeEach(() => {
@@ -17,8 +25,9 @@ describe('Events submitter', () => {
   });
 
   test('with eventsFirstPushWindow', async () => {
-    const eventsFirstPushWindow = 20; // @ts-ignore
-    const eventsSubmitter = eventsSubmitterFactory(loggerMock, postEventsBulkMock, eventsCacheMock, 30000, eventsFirstPushWindow);
+    const eventsFirstPushWindow = 20;
+    params.settings.startup.eventsFirstPushWindow = eventsFirstPushWindow; // @ts-ignore
+    const eventsSubmitter = eventsSubmitterFactory(params);
 
     eventsSubmitter.start();
     expect(eventsSubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
@@ -40,8 +49,9 @@ describe('Events submitter', () => {
   });
 
   test('without eventsFirstPushWindow', async () => {
-    // @ts-ignore
-    const eventsSubmitter = eventsSubmitterFactory(loggerMock, postEventsBulkMock, eventsCacheMock, 30000);
+    const eventsFirstPushWindow = 0;
+    params.settings.startup.eventsFirstPushWindow = eventsFirstPushWindow; // @ts-ignore
+    const eventsSubmitter = eventsSubmitterFactory(params);
 
     eventsSubmitter.start();
     expect(eventsSubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
