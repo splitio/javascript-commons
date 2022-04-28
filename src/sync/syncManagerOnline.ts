@@ -7,6 +7,7 @@ import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 import { isConsentGranted } from '../consent';
+import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 
 /**
  * Online SyncManager factory.
@@ -26,7 +27,7 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISyncManagerFactoryParams): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled } } = params;
+    const { settings, settings: { log, streamingEnabled }, telemetryTracker } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
@@ -48,13 +49,17 @@ export function syncManagerOnlineFactory(
       } else {
         log.info(SYNC_START_POLLING);
         pollingManager!.start();
+        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, POLLING);
       }
     }
 
     function stopPollingAndSyncAll() {
       log.info(SYNC_STOP_POLLING);
       // if polling, stop
-      if (pollingManager!.isRunning()) pollingManager!.stop();
+      if (pollingManager!.isRunning()) {
+        pollingManager!.stop();
+        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
+      }
 
       // fetch splits and segments. There is no need to catch this promise (it is always resolved)
       pollingManager!.syncAll();

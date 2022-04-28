@@ -106,11 +106,11 @@ export type SSE_CONNECTION_ERROR = 40;
 export type TOKEN_REFRESH = 50;
 export type ABLY_ERROR = 60;
 export type SYNC_MODE_UPDATE = 70;
-export type EventType = CONNECTION_ESTABLISHED | OCCUPANCY_PRI | OCCUPANCY_SEC | STREAMING_STATUS | SSE_CONNECTION_ERROR | TOKEN_REFRESH | ABLY_ERROR | SYNC_MODE_UPDATE;
+export type StreamingEventType = CONNECTION_ESTABLISHED | OCCUPANCY_PRI | OCCUPANCY_SEC | STREAMING_STATUS | SSE_CONNECTION_ERROR | TOKEN_REFRESH | ABLY_ERROR | SYNC_MODE_UPDATE;
 
 export type StreamingEvent = {
-  e: EventType, // eventType
-  d: number, // eventData
+  e: StreamingEventType, // eventType
+  d?: number, // eventData
   t: number, // timestamp
 }
 

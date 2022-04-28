@@ -19,6 +19,7 @@ import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { ISyncManagerFactoryParams } from '../types';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 
 /**
  * PushManager factory:
@@ -30,7 +31,7 @@ export function pushManagerFactory(
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 
-  const { settings, storage, splitApi, readiness, platform } = params;
+  const { settings, storage, splitApi, readiness, platform, telemetryTracker } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -49,7 +50,7 @@ export function pushManagerFactory(
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
-  const sseHandler = SSEHandlerFactory(log, pushEmitter);
+  const sseHandler = SSEHandlerFactory(log, pushEmitter, telemetryTracker);
   sseClient.setEventHandler(sseHandler);
 
   // init workers
@@ -101,6 +102,8 @@ export function pushManagerFactory(
       if (disconnected) return;
       sseClient.open(authData);
     }, connDelay * 1000);
+
+    telemetryTracker.streamingEvent(TOKEN_REFRESH, decodedToken.exp);
   }
 
   function connectPush() {
@@ -137,6 +140,7 @@ export function pushManagerFactory(
 
         // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
+          telemetryTracker.streamingEvent(AUTH_REJECTION);
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
           return;
         }
@@ -316,7 +320,7 @@ export function pushManagerFactory(
       },
 
       // true/false if start or stop was called last respectively
-      isRunning(){
+      isRunning() {
         return disconnected === false;
       },
 
