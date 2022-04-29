@@ -51,3 +51,26 @@ export function submitterFactory<TState>(
 
   return syncTaskFactory(log, postData, postRate, dataName + ' submitter');
 }
+
+/**
+ * Decorates a provided submitter with a first execution window
+ */
+export function firstPushWindowDecorator(submitter: ISyncTask, firstPushWindow: number) {
+  let running = false;
+  let stopEventPublisherTimeout: ReturnType<typeof setTimeout>;
+  const originalStart = submitter.start;
+  submitter.start = () => {
+    running = true;
+    stopEventPublisherTimeout = setTimeout(originalStart, firstPushWindow);
+  };
+  const originalStop = submitter.stop;
+  submitter.stop = () => {
+    running = false;
+    clearTimeout(stopEventPublisherTimeout);
+    originalStop();
+  };
+  submitter.isRunning = () => {
+    return running;
+  };
+  return submitter;
+}

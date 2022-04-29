@@ -1,5 +1,5 @@
 import { IStorageSync, TelemetryCacheSync } from '../../storages/types';
-import { submitterFactory } from './submitter';
+import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
 import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
@@ -133,5 +133,8 @@ export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
     postMetricsConfigTask.execute();
   });
 
-  return submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true);
+  return firstPushWindowDecorator(
+    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    telemetryRefreshRate
+  );
 }
