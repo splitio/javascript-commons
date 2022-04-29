@@ -1,26 +1,33 @@
 import { telemetrySubmitterFactory } from '../telemetrySubmitter';
-import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { InMemoryStorageFactory } from '../../../storages/inMemory/InMemoryStorage';
+import { SDK_READY, SDK_READY_FROM_CACHE } from '../../../readiness/constants';
+import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
 
 describe('Telemetry submitter', () => {
 
   const telemetryRefreshRate = 100; // 100 ms
   const postMetricsUsage = jest.fn(() => Promise.resolve());
+  const postMetricsConfig = jest.fn(() => Promise.resolve());
+  const readinessGateCallbacks: Record<string, () => void> = {};
   const params = {
-    settings: {
-      log: loggerMock,
-      scheduler: { telemetryRefreshRate }
-    },
-    splitApi: { postMetricsUsage }, // @ts-ignore
+    settings: { ...fullSettings, scheduler: { ...fullSettings.scheduler, telemetryRefreshRate } },
+    splitApi: { postMetricsUsage, postMetricsConfig }, // @ts-ignore
     storage: InMemoryStorageFactory({}),
-    platform: {},
-    readiness: { gate: { once: jest.fn() } }
+    platform: {
+      now: () => 123 // by returning a fixed timestamp, all latencies are equal to 0
+    },
+    readiness: {
+      gate: {
+        once: jest.fn((e: string, cb: () => void) => {
+          readinessGateCallbacks[e] = cb;
+        })
+      }
+    }
   };
-  const popLatenciesSpy = jest.spyOn(params.storage.telemetry, 'popLatencies');
 
-  test('submits metrics/usage periodically', async () => {
-    // @ts-ignore
+  test('submits metrics/usage periodically', async () => { // @ts-ignore
     const telemetrySubmitter = telemetrySubmitterFactory(params);
+    const popLatenciesSpy = jest.spyOn(params.storage.telemetry, 'popLatencies');
 
     telemetrySubmitter.start();
     expect(telemetrySubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
@@ -38,6 +45,24 @@ describe('Telemetry submitter', () => {
     expect(telemetrySubmitter.isRunning()).toEqual(true);
     telemetrySubmitter.stop();
     expect(telemetrySubmitter.isRunning()).toEqual(false);
+  });
+
+  test('submits metrics/config when SDK is ready', async () => { // @ts-ignore
+    const telemetrySubmitter = telemetrySubmitterFactory(params);
+    const recordTimeUntilReadyFromCacheSpy = jest.spyOn(params.storage.telemetry, 'recordTimeUntilReadyFromCache');
+    const recordTimeUntilReadySpy = jest.spyOn(params.storage.telemetry, 'recordTimeUntilReady');
+
+    telemetrySubmitter.start();
+
+    readinessGateCallbacks[SDK_READY_FROM_CACHE]();
+    expect(recordTimeUntilReadyFromCacheSpy).toBeCalledTimes(1);
+
+    readinessGateCallbacks[SDK_READY]();
+    expect(recordTimeUntilReadySpy).toBeCalledTimes(1);
+
+    expect(postMetricsConfig).toBeCalledWith(JSON.stringify({
+      oM: 0, st: 'memory', sE: true, rR: { sp: 1, se: 1, im: 1, ev: 1, te: 100 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, aF: 0, rF: 0, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration']
+    }));
   });
 
 });

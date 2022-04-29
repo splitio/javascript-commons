@@ -81,7 +81,7 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
 
       return {
         oM: mapOperationMode(settings.mode), // @ts-ignore lower case of storage type
-        st: settings.storagetype.toLowerCase(),
+        st: settings.storage.type.toLowerCase(),
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate,
@@ -121,6 +121,11 @@ export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
   const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi, platform: { now }, readiness } = params;
   const startTime = timer(now || Date.now);
 
+  const submitter = firstPushWindowDecorator(
+    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    telemetryRefreshRate
+  );
+
   readiness.gate.once(SDK_READY_FROM_CACHE, () => {
     storage.telemetry.recordTimeUntilReadyFromCache(startTime());
   });
@@ -128,13 +133,12 @@ export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
   readiness.gate.once(SDK_READY, () => {
     storage.telemetry.recordTimeUntilReady(startTime());
 
-    // Post telemetry config data once the SDK is ready
-    const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(settings, storage.telemetry), 0, 'telemetry config', undefined, 0, true);
-    postMetricsConfigTask.execute();
+    // Post config data when the SDK is ready and if the telemetry submitter was started
+    if (submitter.isRunning()) {
+      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(settings, storage.telemetry), 0, 'telemetry config', undefined, 0, true);
+      postMetricsConfigTask.execute();
+    }
   });
 
-  return firstPushWindowDecorator(
-    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
-    telemetryRefreshRate
-  );
+  return submitter;
 }
