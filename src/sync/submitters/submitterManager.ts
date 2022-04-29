@@ -14,6 +14,6 @@ export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
     eventsSubmitterFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
   ];
   if (storage.impressionCounts) submitters.push(impressionCountsSubmitterFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
-  if (storage.telemetry) submitters.push(telemetrySubmitterFactory(log, splitApi, storage, settings.scheduler.telemetryRefreshRate));
+  if (storage.telemetry) submitters.push(telemetrySubmitterFactory(params));
   return syncTaskComposite(submitters);
 }

@@ -1,12 +1,11 @@
-import { ISplitApi } from '../../services/types';
 import { IStorageSync } from '../../storages/types';
-import { submitterFactory } from './submitter';
+import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload } from './types';
 import { QUEUED, DEDUPED, DROPPED } from '../../utils/constants';
-import { ILogger } from '../../logger/types';
+import { ISyncManagerFactoryParams } from '../types';
 
 /**
- * Converts data from telemetry cache into request payload.
+ * Converts data from telemetry cache into /metrics/usage request payload.
  */
 export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: IStorageSync) {
   return {
@@ -42,11 +41,11 @@ export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: ISto
 /**
  * Submitter that periodically posts telemetry data
  */
-export function telemetrySubmitterFactory(
-  log: ILogger,
-  splitApi: ISplitApi,
-  storage: IStorageSync,
-  telemetryRefreshRate: number,
-) {
-  return submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true);
+export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
+  const { settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi } = params;
+
+  return firstPushWindowDecorator(
+    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    telemetryRefreshRate
+  );
 }
