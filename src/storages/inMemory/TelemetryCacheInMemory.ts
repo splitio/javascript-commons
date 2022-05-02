@@ -10,6 +10,15 @@ function newBuckets() {
   return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
+const ACCEPTANCE_RANGE = 0.001;
+
+/**
+ * Used on client-side. 0.1% of instances will track telemetry
+ */
+export function shouldRecordTelemetry() {
+  return Math.random() <= ACCEPTANCE_RANGE;
+}
+
 export class TelemetryCacheInMemory implements TelemetryCacheSync {
 
   private timeUntilReady?: number;

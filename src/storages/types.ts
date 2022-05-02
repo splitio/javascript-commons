@@ -445,13 +445,15 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
-  TEventsCache extends IEventsCacheBase
+  TEventsCache extends IEventsCacheBase,
+  TTelemetryCache extends TelemetryCacheSync | TelemetryCacheAsync
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
+  telemetry?: TTelemetryCache
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
@@ -460,19 +462,17 @@ export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
-  IEventsCacheSync
-  > {
-  telemetry: TelemetryCacheSync
-}
+  IEventsCacheSync,
+  TelemetryCacheSync
+  > { }
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
-  IEventsCacheAsync | IEventsCacheSync
-> {
-  telemetry?: TelemetryCacheAsync
-}
+  IEventsCacheAsync | IEventsCacheSync,
+  TelemetryCacheAsync
+  > { }
 
 /** StorageFactory */
 
