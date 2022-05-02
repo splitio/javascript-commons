@@ -5,6 +5,7 @@ import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { STORAGE_MEMORY } from '../../utils/constants';
+import { TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -19,6 +20,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
+    telemetry: new TelemetryCacheInMemory(),
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
@@ -37,6 +39,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         impressions: this.impressions,
         impressionCounts: this.impressionCounts,
         events: this.events,
+        telemetry: this.telemetry,
 
         // Set a new splits cache to clean it for the client without affecting other clients
         destroy() {
