@@ -92,8 +92,9 @@ describe('settingsValidation', () => {
 
     const locatorSchedulerFeaturesRefreshRate = _.property('scheduler.featuresRefreshRate');
     const locatorSchedulerSegmentsRefreshRate = _.property('scheduler.segmentsRefreshRate');
-    const locatorSchedulerMetricsRefreshRate = _.property('scheduler.metricsRefreshRate');
+    const locatorSchedulerTelemetryRefreshRate = _.property('scheduler.telemetryRefreshRate');
     const locatorSchedulerImpressionsRefreshRate = _.property('scheduler.impressionsRefreshRate');
+    const locatorSchedulerEventsPushRate = _.property('scheduler.eventsPushRate');
 
     const locatorUrlsSDK = _.property('urls.sdk');
     const locatorUrlsEvents = _.property('urls.events');
@@ -127,8 +128,9 @@ describe('settingsValidation', () => {
 
     expect(locatorSchedulerFeaturesRefreshRate(settings) !== undefined).toBe(true); // scheduler.featuresRefreshRate should be present
     expect(locatorSchedulerSegmentsRefreshRate(settings) !== undefined).toBe(true); // scheduler.segmentsRefreshRate should be present
-    expect(locatorSchedulerMetricsRefreshRate(settings)).toBe(120 * 1000); // scheduler.metricsRefreshRate should be present
+    expect(locatorSchedulerTelemetryRefreshRate(settings)).toBe(3600 * 1000); // scheduler.telemetryRefreshRate should be present
     expect(locatorSchedulerImpressionsRefreshRate(settings) !== undefined).toBe(true); // scheduler.impressionsRefreshRate should be present
+    expect(locatorSchedulerEventsPushRate(settings) !== undefined).toBe(true); // scheduler.eventsPushRate should be present
 
     expect(locatorUrlsSDK(settings) !== undefined).toBe(true); // urls.sdk should be present
     expect(locatorUrlsEvents(settings) !== undefined).toBe(true); // urls.events should be present
@@ -241,6 +243,17 @@ describe('settingsValidation', () => {
     expect(settings.core.key).toEqual(false); // key is validated
     expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
+
+  test('validate min values', () => {
+    const settings = settingsValidation({
+      scheduler: {
+        telemetryRefreshRate: 0
+      }
+    }, minimalSettingsParams);
+
+    expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
+  });
+
 });
 
 test('SETTINGS / urls should be correctly assigned', () => {

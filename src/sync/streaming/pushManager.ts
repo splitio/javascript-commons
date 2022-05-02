@@ -183,7 +183,7 @@ export function pushManagerFactory(
     stopWorkers();
   });
 
-  /** Fallbacking without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
+  /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
 
   pushEmitter.on(PUSH_NONRETRYABLE_ERROR, function handleNonRetryableError() {
     disabled = true;
@@ -192,7 +192,7 @@ export function pushManagerFactory(
     pushEmitter.emit(PUSH_SUBSYSTEM_DOWN); // no harm if polling already
   });
 
-  /** Fallbacking with retry due to recoverable SSE and Authentication errors */
+  /** Fallback to polling with retry due to recoverable SSE and Authentication errors */
 
   pushEmitter.on(PUSH_RETRYABLE_ERROR, function handleRetryableError() { // HTTP or network error in SSE connection
     // SSE connection is closed to avoid repeated errors due to retries

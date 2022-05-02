@@ -79,7 +79,11 @@ export interface ISettings {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
     impressionsQueueSize: number,
-    metricsRefreshRate: number,
+    /**
+     * @deprecated
+     */
+    metricsRefreshRate?: number,
+    telemetryRefreshRate: number,
     segmentsRefreshRate: number,
     offlineRefreshRate: number,
     eventsPushRate: number,
@@ -277,8 +281,15 @@ interface INodeBasicSettings extends ISharedSettings {
      * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
      * @property {number} metricsRefreshRate
      * @default 120
+     * @deprecated This parameter is ignored now.
      */
     metricsRefreshRate?: number,
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     * @property {number} telemetryRefreshRate
+     * @default 3600
+     */
+    telemetryRefreshRate?: number,
     /**
      * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
      * @property {number} segmentsRefreshRate
@@ -804,8 +815,15 @@ export namespace SplitIO {
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
+       * @deprecated This parameter is ignored now.
        */
       metricsRefreshRate?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       * @property {number} telemetryRefreshRate
+       * @default 3600
+       */
+      telemetryRefreshRate?: number,
       /**
        * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
        * @property {number} segmentsRefreshRate
