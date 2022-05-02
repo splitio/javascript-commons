@@ -63,6 +63,9 @@ describe('Telemetry submitter', () => {
     expect(postMetricsConfig).toBeCalledWith(JSON.stringify({
       oM: 0, st: 'memory', sE: true, rR: { sp: 1, se: 1, im: 1, ev: 1, te: 100 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, aF: 0, rF: 0, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration']
     }));
+
+    // Stop submitter, to not execute the 1st periodic metrics/usage POST
+    telemetrySubmitter.stop();
   });
 
 });
