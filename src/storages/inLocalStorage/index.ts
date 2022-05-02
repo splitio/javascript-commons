@@ -12,7 +12,7 @@ import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 
 export interface InLocalStorageOptions {
@@ -44,7 +44,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
-      telemetry: shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
+      telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
 
       destroy() {
         this.splits = new SplitsCacheInMemory();
