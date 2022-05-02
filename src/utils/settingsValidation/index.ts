@@ -7,6 +7,7 @@ import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { validateTrafficType } from '../inputValidation/trafficType';
+import { ERROR_MIN_CONFIG_PARAM } from '../../logger/constants';
 
 // Exported for telemetry
 export const base = {
@@ -112,6 +113,13 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const log = logger(withDefaults); // @ts-ignore, modify readonly prop
   withDefaults.log = log;
 
+  function validateMinValue(paramName: string, actualValue: number, minValue: number) {
+    if (actualValue >= minValue) return actualValue;
+    // actualValue is not a number or is lower than minValue
+    log.error(ERROR_MIN_CONFIG_PARAM, [paramName, minValue]);
+    return minValue;
+  }
+
   // Scheduler periods
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
@@ -119,8 +127,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
-  // @TODO handle min 60 secs
-  scheduler.telemetryRefreshRate = fromSecondsToMillis(scheduler.telemetryRefreshRate);
+  scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Log deprecation for old telemetry param
   if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');
