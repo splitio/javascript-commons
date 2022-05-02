@@ -243,6 +243,17 @@ describe('settingsValidation', () => {
     expect(settings.core.key).toEqual(false); // key is validated
     expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
+
+  test('validate min values', () => {
+    const settings = settingsValidation({
+      scheduler: {
+        telemetryRefreshRate: 0
+      }
+    }, minimalSettingsParams);
+
+    expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
+  });
+
 });
 
 test('SETTINGS / urls should be correctly assigned', () => {
