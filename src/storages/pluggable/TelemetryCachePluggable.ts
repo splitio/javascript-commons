@@ -1,10 +1,10 @@
 import { ILogger } from '../../logger/types';
 import { Method } from '../../sync/submitters/types';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { IPluggableStorageWrapper, TelemetryCacheAsync } from '../types';
+import { IPluggableStorageWrapper, ITelemetryCacheAsync } from '../types';
 import { findLatencyIndex } from '../findLatencyIndex';
 
-export class TelemetryCachePluggable implements TelemetryCacheAsync {
+export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
   /**
    * Create a Telemetry cache that uses a storage wrapper.

@@ -3,7 +3,7 @@ import { eventsSubmitterFactory } from './eventsSubmitter';
 import { impressionsSubmitterFactory } from './impressionsSubmitter';
 import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
 import { ISyncManagerFactoryParams } from '../types';
-import { telemetrySubmitterFactory } from './telemetrySubmitter';
+import { ISyncManagerFactoryParamsWithTelemetry, telemetrySubmitterFactory } from './telemetrySubmitter';
 
 export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
 
@@ -14,6 +14,6 @@ export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
     eventsSubmitterFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
   ];
   if (storage.impressionCounts) submitters.push(impressionCountsSubmitterFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
-  if (storage.telemetry) submitters.push(telemetrySubmitterFactory(params));
+  if (storage.telemetry) submitters.push(telemetrySubmitterFactory(params as ISyncManagerFactoryParamsWithTelemetry));
   return syncTaskComposite(submitters);
 }

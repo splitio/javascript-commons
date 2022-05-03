@@ -14,7 +14,7 @@ describe('Telemetry submitter', () => {
     splitApi: { postMetricsUsage }, // @ts-ignore
     storage: InMemoryStorageFactory({}),
   };
-  const popLatenciesSpy = jest.spyOn(params.storage.telemetry, 'popLatencies');
+  const popLatenciesSpy = jest.spyOn(params.storage.telemetry!, 'popLatencies');
 
   test('submits metrics/usage periodically', async () => {
     // @ts-ignore

@@ -362,14 +362,14 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
  * Methods are sync because data is stored in memory.
  */
 
-export interface TelemetryInitConsumerSync {
+export interface ITelemetryInitConsumerSync {
   getTimeUntilReady(): number | undefined;
   getTimeUntilReadyFromCache(): number | undefined;
   getNonReadyUsage(): number;
   // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
 }
 
-export interface TelemetryRuntimeConsumerSync {
+export interface ITelemetryRuntimeConsumerSync {
   getImpressionStats(type: ImpressionDataType): number;
   getEventStats(type: EventDataType): number;
   getLastSynchronization(): LastSync;
@@ -382,21 +382,21 @@ export interface TelemetryRuntimeConsumerSync {
   getSessionLength(): number | undefined;
 }
 
-export interface TelemetryEvaluationConsumerSync {
+export interface ITelemetryEvaluationConsumerSync {
   popExceptions(): MethodExceptions;
   popLatencies(): MethodLatencies;
 }
 
-export interface TelemetryStorageConsumerSync extends TelemetryInitConsumerSync, TelemetryRuntimeConsumerSync, TelemetryEvaluationConsumerSync { }
+export interface ITelemetryStorageConsumerSync extends ITelemetryInitConsumerSync, ITelemetryRuntimeConsumerSync, ITelemetryEvaluationConsumerSync { }
 
-export interface TelemetryInitProducerSync {
+export interface ITelemetryInitProducerSync {
   recordTimeUntilReady(ms: number): void;
   recordTimeUntilReadyFromCache(ms: number): void;
   recordNonReadyUsage(): void;
   // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
 }
 
-export interface TelemetryRuntimeProducerSync {
+export interface ITelemetryRuntimeProducerSync {
   addTag(tag: string): void;
   recordImpressionStats(type: ImpressionDataType, count: number): void;
   recordEventStats(type: EventDataType, count: number): void;
@@ -409,33 +409,33 @@ export interface TelemetryRuntimeProducerSync {
   recordSessionLength(ms: number): void;
 }
 
-export interface TelemetryEvaluationProducerSync {
+export interface ITelemetryEvaluationProducerSync {
   recordLatency(method: Method, latencyMs: number): void;
   recordException(method: Method): void;
 }
 
-export interface TelemetryStorageProducerSync extends TelemetryInitProducerSync, TelemetryRuntimeProducerSync, TelemetryEvaluationProducerSync { }
+export interface ITelemetryStorageProducerSync extends ITelemetryInitProducerSync, ITelemetryRuntimeProducerSync, ITelemetryEvaluationProducerSync { }
 
-export interface TelemetryCacheSync extends TelemetryStorageConsumerSync, TelemetryStorageProducerSync { }
+export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync { }
 
 /**
  * Telemetry storage interface for consumer mode.
  * Methods are async because data is stored in Redis or a pluggable storage.
  */
 
-export interface TelemetryEvaluationConsumerAsync {
+export interface ITelemetryEvaluationConsumerAsync {
   popExceptions(): Promise<MethodExceptions>;
   popLatencies(): Promise<MethodLatencies>;
 }
 
-export interface TelemetryEvaluationProducerAsync {
+export interface ITelemetryEvaluationProducerAsync {
   recordLatency(method: Method, latencyMs: number): Promise<any>;
   recordException(method: Method): Promise<any>;
 }
 
-// ATM it only implements the producer API, used by the SDK.
+// ATM it only implements the producer API, used by the SDK in consumer mode.
 // @TODO implement consumer API for JS Synchronizer.
-export interface TelemetryCacheAsync extends TelemetryEvaluationProducerAsync { }
+export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync { }
 
 /**
  * Storages
@@ -445,13 +445,15 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
-  TEventsCache extends IEventsCacheBase
+  TEventsCache extends IEventsCacheBase,
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
+  telemetry?: TTelemetryCache
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
@@ -460,19 +462,17 @@ export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
-  IEventsCacheSync
-  > {
-  telemetry: TelemetryCacheSync
-}
+  IEventsCacheSync,
+  ITelemetryCacheSync
+  > { }
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
-  IEventsCacheAsync | IEventsCacheSync
-> {
-  telemetry?: TelemetryCacheAsync
-}
+  IEventsCacheAsync | IEventsCacheSync,
+  ITelemetryCacheAsync
+  > { }
 
 /** StorageFactory */
 
@@ -483,13 +483,11 @@ export interface IStorageFactoryParams {
   impressionsQueueSize?: number,
   eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
+  mode: SDKMode,
 
   // ATM, only used by InLocalStorage
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,
-
-  // ATM, only used by PluggableStorage
-  mode?: SDKMode,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
