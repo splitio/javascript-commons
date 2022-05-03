@@ -1,4 +1,4 @@
-import { IStorageSync, TelemetryCacheSync } from '../../storages/types';
+import { ITelemetryCacheSync } from '../../storages/types';
 import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
 import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM } from '../../utils/constants';
@@ -9,10 +9,12 @@ import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { ISyncManagerFactoryParams } from '../types';
 import { timer } from '../../utils/timeTracker/timer';
 
+export type ISyncManagerFactoryParamsWithTelemetry = ISyncManagerFactoryParams & { storage: { telemetry: ITelemetryCacheSync } }
+
 /**
  * Converts data from telemetry cache into /metrics/usage request payload.
  */
-export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: IStorageSync) {
+export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: ISyncManagerFactoryParamsWithTelemetry['storage']) {
   return {
     isEmpty() { return false; }, // There is always data in telemetry cache
     clear() { }, //  No-op
@@ -71,7 +73,7 @@ function getRedundantActiveFactories() {
 /**
  * Converts data from telemetry cache and settings into /metrics/config request payload.
  */
-export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache: TelemetryCacheSync) {
+export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache: ITelemetryCacheSync) {
   return {
     isEmpty() { return false; },
     clear() { },
@@ -117,7 +119,7 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
 /**
  * Submitter that periodically posts telemetry data
  */
-export function telemetrySubmitterFactory(params: ISyncManagerFactoryParams) {
+export function telemetrySubmitterFactory(params: ISyncManagerFactoryParamsWithTelemetry) {
   const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi, platform: { now }, readiness } = params;
   const startTime = timer(now || Date.now);
 
