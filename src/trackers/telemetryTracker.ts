@@ -1,11 +1,11 @@
-import { TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
+import { ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../utils/constants';
 
 export function telemetryTrackerFactory(
-  telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync,
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
   now?: () => number
 ): ITelemetryTracker {
 
@@ -21,7 +21,7 @@ export function telemetryTrackerFactory(
             case EXCEPTION:
               telemetryCache.recordException(method);
               return; // Don't track latency on exceptions
-            case SDK_NOT_READY: // @ts-ignore. TelemetryCacheAsync doesn't implement the method
+            case SDK_NOT_READY: // @ts-ignore ITelemetryCacheAsync doesn't implement the method
               telemetryCache?.recordNonReadyUsage();
           }
           telemetryCache.recordLatency(method, evalTime());
@@ -31,22 +31,22 @@ export function telemetryTrackerFactory(
         const httpTime = timer(now);
 
         return (error) => {
-          (telemetryCache as TelemetryCacheSync).recordHttpLatency(operation, httpTime());
-          if (error && error.statusCode) (telemetryCache as TelemetryCacheSync).recordHttpError(operation, error.statusCode);
-          else (telemetryCache as TelemetryCacheSync).recordSuccessfulSync(operation, now());
+          (telemetryCache as ITelemetryCacheSync).recordHttpLatency(operation, httpTime());
+          if (error && error.statusCode) (telemetryCache as ITelemetryCacheSync).recordHttpError(operation, error.statusCode);
+          else (telemetryCache as ITelemetryCacheSync).recordSuccessfulSync(operation, now());
         };
       },
       sessionLength() {
-        (telemetryCache as TelemetryCacheSync).recordSessionLength(startTime());
+        (telemetryCache as ITelemetryCacheSync).recordSessionLength(startTime());
       },
       streamingEvent(e, d) {
         if (e === AUTH_REJECTION) {
-          (telemetryCache as TelemetryCacheSync).recordAuthRejections();
+          (telemetryCache as ITelemetryCacheSync).recordAuthRejections();
         } else {
-          (telemetryCache as TelemetryCacheSync).recordStreamingEvents({
+          (telemetryCache as ITelemetryCacheSync).recordStreamingEvents({
             e, d, t: now()
           });
-          if (e === TOKEN_REFRESH) (telemetryCache as TelemetryCacheSync).recordTokenRefreshes();
+          if (e === TOKEN_REFRESH) (telemetryCache as ITelemetryCacheSync).recordTokenRefreshes();
         }
       }
     };

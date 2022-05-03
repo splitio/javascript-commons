@@ -2,8 +2,8 @@
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
 import { IRecorderCacheProducerSync, IStorageSync } from '../storages/types';
-import { fromImpressionsCollector } from '../sync/submitters/impressionsSyncTask';
-import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSyncTask';
+import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
+import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';

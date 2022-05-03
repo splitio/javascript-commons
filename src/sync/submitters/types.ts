@@ -129,7 +129,7 @@ export type TelemetryUsageStatsPayload = {
   spC: number, // splitCount
   seC: number, // segmentCount
   skC: number, // segmentKeyCount
-  sL: number, // sessionLengthMs
+  sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
   eD: number, // eventsDropped
   sE: Array<StreamingEvent>, // streamingEvents
@@ -180,7 +180,7 @@ export type TelemetryConfigStatsPayload = {
   aF: number, // activeFactories
   rF: number, // redundantActiveFactories
   tR: number, // timeUntilSDKReady
-  tC: number, // timeUntilSDKReadyFromCache
+  tC?: number, // timeUntilSDKReadyFromCache
   nR: number, // SDKNotReadyUsage
   t?: Array<string>, // tags
   i?: Array<string>, // integrations
