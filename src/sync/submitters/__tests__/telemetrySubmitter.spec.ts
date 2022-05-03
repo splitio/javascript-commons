@@ -27,7 +27,7 @@ describe('Telemetry submitter', () => {
 
   test('submits metrics/usage periodically', async () => { // @ts-ignore
     const telemetrySubmitter = telemetrySubmitterFactory(params);
-    const popLatenciesSpy = jest.spyOn(params.storage.telemetry, 'popLatencies');
+    const popLatenciesSpy = jest.spyOn(params.storage.telemetry!, 'popLatencies');
 
     telemetrySubmitter.start();
     expect(telemetrySubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
@@ -49,8 +49,8 @@ describe('Telemetry submitter', () => {
 
   test('submits metrics/config when SDK is ready', async () => { // @ts-ignore
     const telemetrySubmitter = telemetrySubmitterFactory(params);
-    const recordTimeUntilReadyFromCacheSpy = jest.spyOn(params.storage.telemetry, 'recordTimeUntilReadyFromCache');
-    const recordTimeUntilReadySpy = jest.spyOn(params.storage.telemetry, 'recordTimeUntilReady');
+    const recordTimeUntilReadyFromCacheSpy = jest.spyOn(params.storage.telemetry!, 'recordTimeUntilReadyFromCache');
+    const recordTimeUntilReadySpy = jest.spyOn(params.storage.telemetry!, 'recordTimeUntilReady');
 
     telemetrySubmitter.start();
 
