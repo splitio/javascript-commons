@@ -22,7 +22,7 @@ export function telemetryTrackerFactory(
               telemetryCache.recordException(method);
               return; // Don't track latency on exceptions
             case SDK_NOT_READY: // @ts-ignore ITelemetryCacheAsync doesn't implement the method
-              telemetryCache?.recordNonReadyUsage();
+              if (telemetryCache.recordNonReadyUsage) telemetryCache.recordNonReadyUsage();
           }
           telemetryCache.recordLatency(method, evalTime());
         };
@@ -36,8 +36,8 @@ export function telemetryTrackerFactory(
           else (telemetryCache as ITelemetryCacheSync).recordSuccessfulSync(operation, now());
         };
       },
-      sessionLength() {
-        (telemetryCache as ITelemetryCacheSync).recordSessionLength(startTime());
+      sessionLength() { // @ts-ignore ITelemetryCacheAsync doesn't implement the method
+        if (telemetryCache.recordSessionLength) telemetryCache.recordSessionLength(startTime());
       },
       streamingEvent(e, d) {
         if (e === AUTH_REJECTION) {

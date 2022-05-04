@@ -70,7 +70,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
   // splitApi is used by SyncManager and Browser signal listener
-  const splitApi = splitApiFactory && splitApiFactory(settings, platform);
+  const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
   const syncManager = syncManagerFactory && syncManagerFactory({
     settings,

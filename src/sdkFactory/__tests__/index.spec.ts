@@ -19,6 +19,12 @@ jest.mock('../../logger/sdkLogger', () => {
     createLoggerAPI: () => loggerApiMock
   };
 });
+const telemetryTrackerMock = 'telemetryTracker';
+jest.mock('../../trackers/telemetryTracker', () => {
+  return {
+    telemetryTrackerFactory: () => telemetryTrackerMock
+  };
+});
 
 // IAsyncSDK, minimal params
 const paramsForAsyncSDK = {
@@ -74,7 +80,7 @@ function assertModulesCalled(params: any) {
     expect(SignalListenerInstanceMock.start).toBeCalledTimes(1);
   }
   if (params.splitApiFactory) {
-    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform]]);
+    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform, telemetryTrackerMock]]);
   }
   if (params.integrationsManagerFactory) {
     expect(params.integrationsManagerFactory.mock.calls).toEqual([[{ settings: params.settings, storage: mockStorage }]]);
