@@ -9,7 +9,8 @@ import { validateKey } from '../inputValidation/key';
 import { validateTrafficType } from '../inputValidation/trafficType';
 import { ERROR_MIN_CONFIG_PARAM } from '../../logger/constants';
 
-const base = {
+// Exported for telemetry
+export const base = {
   // Define which kind of object you want to retrieve from SplitFactory
   mode: STANDALONE_MODE,
 
