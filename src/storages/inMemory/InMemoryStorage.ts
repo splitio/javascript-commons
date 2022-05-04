@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { STORAGE_MEMORY } from '../../utils/constants';
+import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 
 /**
@@ -20,7 +20,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
-    telemetry: new TelemetryCacheInMemory(),
+    telemetry: params.mode !== LOCALHOST_MODE ? new TelemetryCacheInMemory() : undefined, // Always track telemetry in standalone mode on server-side
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

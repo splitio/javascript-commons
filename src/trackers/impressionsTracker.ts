@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
-import { IImpressionCountsCacheSync, IImpressionsCacheBase, TelemetryCacheSync, TelemetryCacheAsync } from '../storages/types';
+import { IImpressionCountsCacheSync, IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
@@ -26,7 +26,7 @@ export function impressionsTrackerFactory(
   observer?: IImpressionObserver,
   // if countsCache is provided, it implies `isOptimized` flag (i.e., if impressions should be deduped or not)
   countsCache?: IImpressionCountsCacheSync,
-  telemetryCache?: TelemetryCacheSync | TelemetryCacheAsync
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IImpressionsTracker {
 
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
@@ -70,8 +70,8 @@ export function impressionsTrackerFactory(
         // Record when impressionsCache is sync only (standalone mode)
         // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
         if (telemetryCache) {
-          (telemetryCache as TelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
-          (telemetryCache as TelemetryCacheSync).recordImpressionStats(DEDUPED, impressions.length - impressionsToStore.length);
+          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
+          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, impressions.length - impressionsToStore.length);
         }
       }
 

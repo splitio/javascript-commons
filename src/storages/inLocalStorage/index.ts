@@ -12,8 +12,8 @@ import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
-import { TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
+import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -30,7 +30,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
-      params.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+      params.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 
@@ -44,7 +44,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
-      telemetry: new TelemetryCacheInMemory(),
+      telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
 
       destroy() {
         this.splits = new SplitsCacheInMemory();

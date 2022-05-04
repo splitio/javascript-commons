@@ -1,5 +1,5 @@
-import { IStorageSync, TelemetryCacheSync } from '../../storages/types';
-import { submitterFactory } from './submitter';
+import { ISegmentsCacheSync, ISplitsCacheSync, ITelemetryCacheSync } from '../../storages/types';
+import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
 import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
@@ -12,7 +12,7 @@ import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 /**
  * Converts data from telemetry cache into /metrics/usage request payload.
  */
-export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: IStorageSync) {
+export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, splits: ISplitsCacheSync, segments: ISegmentsCacheSync) {
   return {
     isEmpty() { return false; }, // There is always data in telemetry cache
     clear() { }, //  No-op
@@ -43,20 +43,16 @@ export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: ISto
   };
 }
 
-function mapOperationMode(mode: ISettings['mode']) {
-  switch (mode) {
-    case STANDALONE_MODE: return STANDALONE_ENUM;
-    case CONSUMER_MODE: return CONSUMER_ENUM;
-    case CONSUMER_PARTIAL_MODE: return CONSUMER_PARTIAL_ENUM;
-  }
-}
+const OPERATION_MODE_MAP = {
+  [STANDALONE_MODE]: STANDALONE_ENUM,
+  [CONSUMER_MODE]: CONSUMER_ENUM,
+  [CONSUMER_PARTIAL_MODE]: CONSUMER_PARTIAL_ENUM
+} as Record<ISettings['mode'], (0 | 1 | 2)>;
 
-function mapImpressionsMode(mode: ISettings['sync']['impressionsMode']) {
-  switch (mode) {
-    case OPTIMIZED: return OPTIMIZED_ENUM;
-    case DEBUG: return DEBUG_ENUM;
-  }
-}
+const IMPRESSIONS_MODE_MAP = {
+  [OPTIMIZED]: OPTIMIZED_ENUM,
+  [DEBUG]: DEBUG_ENUM
+} as Record<ISettings['sync']['impressionsMode'], (0 | 1)>;
 
 function getActiveFactories() {
   return Object.keys(usedKeysMap).length;
@@ -71,7 +67,7 @@ function getRedundantActiveFactories() {
 /**
  * Converts data from telemetry cache and settings into /metrics/config request payload.
  */
-export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache: TelemetryCacheSync) {
+export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, settings: ISettings) {
   return {
     isEmpty() { return false; },
     clear() { },
@@ -80,8 +76,8 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
       const { urls, scheduler } = settings;
 
       return {
-        oM: mapOperationMode(settings.mode), // @ts-ignore lower case of storage type
-        st: settings.storagetype.toLowerCase(),
+        oM: OPERATION_MODE_MAP[settings.mode], // @ts-ignore lower case of storage type
+        st: settings.storage.type.toLowerCase(),
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate,
@@ -99,15 +95,15 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
         }, // urlOverrides
         iQ: scheduler.impressionsQueueSize,
         eQ: scheduler.eventsQueueSize,
-        iM: mapImpressionsMode(settings.sync.impressionsMode),
+        iM: IMPRESSIONS_MODE_MAP[settings.sync.impressionsMode],
         iL: settings.impressionListener ? true : false,
         hP: false, // @TODO proxy not supported
         aF: getActiveFactories(),
         rF: getRedundantActiveFactories(),
-        tR: telemetryCache.getTimeUntilReady() as number,
-        tC: telemetryCache.getTimeUntilReadyFromCache(),
-        nR: telemetryCache.getNonReadyUsage(),
-        t: telemetryCache.popTags(),
+        tR: telemetry.getTimeUntilReady() as number,
+        tC: telemetry.getTimeUntilReadyFromCache(),
+        nR: telemetry.getNonReadyUsage(),
+        t: telemetry.popTags(),
         i: settings.integrations && settings.integrations.map(int => int.type),
       };
     }
@@ -118,20 +114,30 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
  * Submitter that periodically posts telemetry data
  */
 export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
-  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, storage, splitApi, platform: { now }, readiness } = params;
+  const { storage: { splits, segments, telemetry } } = params;
+  if (!telemetry) return; // No submitter created if telemetry cache is not defined
+
+  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, platform: { now }, readiness } = params;
   const startTime = timer(now || Date.now);
 
+  const submitter = firstPushWindowDecorator(
+    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(telemetry, splits, segments), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    telemetryRefreshRate
+  );
+
   readiness.gate.once(SDK_READY_FROM_CACHE, () => {
-    storage.telemetry.recordTimeUntilReadyFromCache(startTime());
+    telemetry.recordTimeUntilReadyFromCache(startTime());
   });
 
   readiness.gate.once(SDK_READY, () => {
-    storage.telemetry.recordTimeUntilReady(startTime());
+    telemetry.recordTimeUntilReady(startTime());
 
-    // Post telemetry config data once the SDK is ready
-    const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(settings, storage.telemetry), 0, 'telemetry config', undefined, 0, true);
-    postMetricsConfigTask.execute();
+    // Post config data when the SDK is ready and if the telemetry submitter was started
+    if (submitter.isRunning()) {
+      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, 'telemetry config', undefined, 0, true);
+      postMetricsConfigTask.execute();
+    }
   });
 
-  return submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(storage), telemetryRefreshRate, 'telemetry stats', undefined, 0, true);
+  return submitter;
 }

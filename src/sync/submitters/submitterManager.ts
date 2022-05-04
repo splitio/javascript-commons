@@ -9,12 +9,13 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync) {
 
   const submitters = [
     impressionsSubmitterFactory(params),
-    eventsSubmitterFactory(params),
-    telemetrySubmitterFactory(params)
+    eventsSubmitterFactory(params)
   ];
 
   const impressionCountsSubmitter = impressionCountsSubmitterFactory(params);
   if (impressionCountsSubmitter) submitters.push(impressionCountsSubmitter);
+  const telemetrySubmitter = telemetrySubmitterFactory(params);
+  if (telemetrySubmitter) submitters.push(telemetrySubmitter);
 
   return syncTaskComposite(submitters);
 }
