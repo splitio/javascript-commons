@@ -45,20 +45,16 @@ export function telemetryCacheStatsAdapter({ splits, segments, telemetry }: ISyn
   };
 }
 
-function mapOperationMode(mode: ISettings['mode']) {
-  switch (mode) {
-    case STANDALONE_MODE: return STANDALONE_ENUM;
-    case CONSUMER_MODE: return CONSUMER_ENUM;
-    case CONSUMER_PARTIAL_MODE: return CONSUMER_PARTIAL_ENUM;
-  }
-}
+const OPERATION_MODE_MAP = {
+  [STANDALONE_MODE]: STANDALONE_ENUM,
+  [CONSUMER_MODE]: CONSUMER_ENUM,
+  [CONSUMER_PARTIAL_MODE]: CONSUMER_PARTIAL_ENUM
+} as Record<ISettings['mode'], (0 | 1 | 2)>;
 
-function mapImpressionsMode(mode: ISettings['sync']['impressionsMode']) {
-  switch (mode) {
-    case OPTIMIZED: return OPTIMIZED_ENUM;
-    case DEBUG: return DEBUG_ENUM;
-  }
-}
+const IMPRESSIONS_MODE_MAP = {
+  [OPTIMIZED]: OPTIMIZED_ENUM,
+  [DEBUG]: DEBUG_ENUM
+} as Record<ISettings['sync']['impressionsMode'], (0 | 1)>;
 
 function getActiveFactories() {
   return Object.keys(usedKeysMap).length;
@@ -82,7 +78,7 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
       const { urls, scheduler } = settings;
 
       return {
-        oM: mapOperationMode(settings.mode), // @ts-ignore lower case of storage type
+        oM: OPERATION_MODE_MAP[settings.mode], // @ts-ignore lower case of storage type
         st: settings.storage.type.toLowerCase(),
         sE: settings.streamingEnabled,
         rR: {
@@ -101,7 +97,7 @@ export function telemetryCacheConfigAdapter(settings: ISettings, telemetryCache:
         }, // urlOverrides
         iQ: scheduler.impressionsQueueSize,
         eQ: scheduler.eventsQueueSize,
-        iM: mapImpressionsMode(settings.sync.impressionsMode),
+        iM: IMPRESSIONS_MODE_MAP[settings.sync.impressionsMode],
         iL: settings.impressionListener ? true : false,
         hP: false, // @TODO proxy not supported
         aF: getActiveFactories(),
