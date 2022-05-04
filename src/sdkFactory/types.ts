@@ -64,7 +64,7 @@ export interface ISdkFactoryParams {
 
   // Factory of Split Api (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
+  splitApiFactory?: (settings: ISettings, platform: IPlatform, telemetryTracker: ITelemetryTracker) => ISplitApi,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
