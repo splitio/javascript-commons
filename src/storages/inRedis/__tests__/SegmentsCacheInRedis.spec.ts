@@ -36,6 +36,7 @@ describe('SEGMENTS CACHE IN REDIS', () => {
     expect(await cache.isInSegment('mocked-segment', 'd')).toBe(true);
     expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
 
+    await cache.clear();
     await connection.quit();
   });
 
@@ -53,6 +54,7 @@ describe('SEGMENTS CACHE IN REDIS', () => {
 
     ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
 
+    await cache.clear();
     await connection.quit();
   });
 
