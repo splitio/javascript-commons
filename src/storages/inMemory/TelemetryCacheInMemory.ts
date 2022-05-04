@@ -1,6 +1,6 @@
 import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies } from '../../sync/submitters/types';
 import { findLatencyIndex } from '../findLatencyIndex';
-import { TelemetryCacheSync } from '../types';
+import { ITelemetryCacheSync } from '../types';
 
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
@@ -19,7 +19,7 @@ export function shouldRecordTelemetry() {
   return Math.random() <= ACCEPTANCE_RANGE;
 }
 
-export class TelemetryCacheInMemory implements TelemetryCacheSync {
+export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   private timeUntilReady?: number;
 

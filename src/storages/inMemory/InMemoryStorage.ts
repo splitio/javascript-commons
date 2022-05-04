@@ -20,7 +20,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
-    telemetry: params.mode !== LOCALHOST_MODE ? new TelemetryCacheInMemory() : undefined, // Always track telemetry in server-side
+    telemetry: params.mode !== LOCALHOST_MODE ? new TelemetryCacheInMemory() : undefined, // Always track telemetry in standalone mode on server-side
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
