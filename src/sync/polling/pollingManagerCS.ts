@@ -20,7 +20,7 @@ export function pollingManagerCSFactory(
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);
+  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
 
   // Map of matching keys to their corresponding MySegmentsSyncTask.
   const mySegmentsSyncTasks: Record<string, ISegmentsSyncTask> = {};
