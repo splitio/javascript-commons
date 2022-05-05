@@ -18,8 +18,8 @@ import { isInBitmap, parseBitmap, parseKeyList } from './mySegmentsV2utils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
-import { ISyncManagerFactoryParams } from '../types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * PushManager factory:
@@ -27,7 +27,7 @@ import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
  * - for client-side, with support for multiple clients, if key is provided in settings
  */
 export function pushManagerFactory(
-  params: ISyncManagerFactoryParams,
+  params: ISdkFactoryContextSync,
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 

@@ -1,11 +1,9 @@
 import { groupBy, forOwn } from '../../utils/lang';
-import { IPostTestImpressionsBulk } from '../../services/types';
-import { IImpressionsCacheSync } from '../../storages/types';
 import { ImpressionDTO } from '../../types';
 import { submitterFactory } from './submitter';
 import { ImpressionsPayload } from './types';
-import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 const DATA_NAME = 'impressions';
 
@@ -42,19 +40,19 @@ export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDT
 /**
  * Submitter that periodically posts impressions data
  */
-export function impressionsSubmitterFactory(
-  log: ILogger,
-  postTestImpressionsBulk: IPostTestImpressionsBulk,
-  impressionsCache: IImpressionsCacheSync,
-  impressionsRefreshRate: number,
-  sendLabels = false,
-) {
+export function impressionsSubmitterFactory(params: ISdkFactoryContextSync) {
+
+  const {
+    settings: { log, scheduler: { impressionsRefreshRate }, core: { labelsEnabled } },
+    splitApi: { postTestImpressionsBulk },
+    storage: { impressions }
+  } = params;
 
   // retry impressions only once.
-  const syncTask = submitterFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, DATA_NAME, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+  const syncTask = submitterFactory(log, postTestImpressionsBulk, impressions, impressionsRefreshRate, DATA_NAME, fromImpressionsCollector.bind(undefined, labelsEnabled), 1);
 
   // register impressions submitter to be executed when impressions cache is full
-  impressionsCache.setOnFullQueueCb(() => {
+  impressions.setOnFullQueueCb(() => {
     if (syncTask.isRunning()) {
       log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
       syncTask.execute();

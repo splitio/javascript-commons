@@ -1,9 +1,5 @@
 import { IReadinessManager } from '../readiness/types';
-import { IPlatform } from '../sdkFactory/types';
-import { ISplitApi } from '../services/types';
 import { IStorageSync } from '../storages/types';
-import { ITelemetryTracker } from '../trackers/types';
-import { ISettings } from '../types';
 import { IPollingManager } from './polling/types';
 import { IPushManager } from './streaming/types';
 
@@ -48,13 +44,4 @@ export interface ISyncManager extends ITask {
 
 export interface ISyncManagerCS extends ISyncManager {
   shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager | undefined
-}
-
-export interface ISyncManagerFactoryParams {
-  settings: ISettings,
-  readiness: IReadinessManager,
-  storage: IStorageSync,
-  splitApi: ISplitApi,
-  platform: IPlatform,
-  telemetryTracker: ITelemetryTracker
 }
