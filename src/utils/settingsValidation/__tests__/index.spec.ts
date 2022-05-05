@@ -53,6 +53,7 @@ describe('settingsValidation', () => {
     }, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(300000);
   });
 
   test('impressionsMode should be configurable', () => {
@@ -66,6 +67,7 @@ describe('settingsValidation', () => {
     }, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toEqual(DEBUG);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(60000); // Different default for DEBUG impressionsMode
   });
 
   test('urls should be configurable', () => {
@@ -247,11 +249,13 @@ describe('settingsValidation', () => {
   test('validate min values', () => {
     const settings = settingsValidation({
       scheduler: {
-        telemetryRefreshRate: 0
+        telemetryRefreshRate: 0,
+        impressionsRefreshRate: 'invalid',
       }
     }, minimalSettingsParams);
 
     expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(60000);
   });
 
 });
