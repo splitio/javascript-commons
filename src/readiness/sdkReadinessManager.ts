@@ -15,18 +15,16 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
  * It also updates logs related warnings and errors.
  *
  * @param readyTimeout time in millis to emit SDK_READY_TIME_OUT event
- * @param internalReadyCbCount offset value of SDK_READY listeners that are added/removed internally
- * by the SDK. It is required to properly log the warning 'No listeners for SDK Readiness detected'
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export function sdkReadinessManagerFactory(
   log: ILogger,
   EventEmitter: new () => IEventEmitter,
   readyTimeout = 0,
-  internalReadyCbCount = 0,
   readinessManager = readinessManagerFactory(EventEmitter, readyTimeout)): ISdkReadinessManager {
 
   /** Ready callback warning */
+  let internalReadyCbCount = 0;
   let readyCbCount = 0;
   readinessManager.gate.on(REMOVE_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY) readyCbCount--;
@@ -74,8 +72,12 @@ export function sdkReadinessManagerFactory(
   return {
     readinessManager,
 
-    shared(readyTimeout = 0, internalReadyCbCount = 0) {
-      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, internalReadyCbCount, readinessManager.shared(readyTimeout));
+    shared(readyTimeout = 0) {
+      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, readinessManager.shared(readyTimeout));
+    },
+
+    incInternalReadyCbCount() {
+      internalReadyCbCount++;
     },
 
     sdkStatus: objectAssign(
