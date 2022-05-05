@@ -684,7 +684,7 @@ export namespace SplitIO {
     /**
      * String property to override the base URL where the SDK will post telemetry data.
      * @property {string} telemetry
-     * @default 'https://telemetry.split.io'
+     * @default 'https://telemetry.split.io/api'
      */
     telemetry?: string
   };

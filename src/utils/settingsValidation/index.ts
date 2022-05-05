@@ -58,7 +58,7 @@ export const base = {
     // Streaming Server
     streaming: 'https://streaming.split.io',
     // Telemetry Server
-    telemetry: 'https://telemetry.split.io',
+    telemetry: 'https://telemetry.split.io/api',
   },
 
   // Defines which kind of storage we should instanciate.

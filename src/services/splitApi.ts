@@ -108,12 +108,12 @@ export function splitApiFactory(
     },
 
     postMetricsConfig(body: string) {
-      const url = `${urls.telemetry}/metrics/config`;
+      const url = `${urls.telemetry}/v1/metrics/config`;
       return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
     },
 
     postMetricsUsage(body: string) {
-      const url = `${urls.telemetry}/metrics/usage`;
+      const url = `${urls.telemetry}/v1/metrics/usage`;
       return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
     }
   };
