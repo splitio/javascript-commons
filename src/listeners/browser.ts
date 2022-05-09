@@ -12,6 +12,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
+import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitter';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
@@ -77,7 +78,11 @@ export class BrowserSignalListener implements ISignalListener {
       this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
       this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
       if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
-      // No beacon endpoint for `/metrics/usage`
+      if (this.storage.telemetry) {
+        const telemetryUrl = this.settings.urls.telemetry;
+        const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
+        this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
+      }
     }
 
     // Close streaming connection
