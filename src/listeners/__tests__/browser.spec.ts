@@ -3,6 +3,18 @@ import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IS
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
+jest.mock('../../sync/submitters/telemetrySubmitter', () => {
+  return {
+    telemetryCacheStatsAdapter: () => {
+      return {
+        isEmpty: () => false,
+        clear: () => { },
+        state: () => ({}),
+      };
+    }
+  };
+});
+
 /* Mocks start */
 
 const fakeImpression = {
@@ -26,6 +38,7 @@ const fakeImpressionCounts = {
   'someFeature::0': 1
 };
 
+// Storage with impressionsCount and telemetry cache
 const fakeStorageOptimized = { // @ts-expect-error
   impressions: {
     isEmpty: jest.fn(),
@@ -48,6 +61,7 @@ const fakeStorageOptimized = { // @ts-expect-error
       return fakeImpressionCounts;
     }
   } as IImpressionCountsCacheSync,
+  telemetry: {}
 };
 
 const fakeStorageDebug = {
@@ -59,7 +73,8 @@ const fakeStorageDebug = {
 const fakeSplitApi = {
   postTestImpressionsBulk: jest.fn(() => Promise.resolve()),
   postEventsBulk: jest.fn(() => Promise.resolve()),
-  postTestImpressionsCount: jest.fn(() => Promise.resolve())
+  postTestImpressionsCount: jest.fn(() => Promise.resolve()),
+  postMetricsUsage: jest.fn(() => Promise.resolve()),
 } as ISplitApi;
 
 const UNLOAD_DOM_EVENT = 'unload';
@@ -131,7 +146,7 @@ test('Browser JS listener / consumer mode', () => {
   expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
 });
 
-test('Browser JS listener / standalone mode / Impressions optimized mode', () => {
+test('Browser JS listener / standalone mode / Impressions optimized mode with telemetry', () => {
   const syncManagerMock = {};
 
   // @ts-expect-error
@@ -144,8 +159,8 @@ test('Browser JS listener / standalone mode / Impressions optimized mode', () =>
 
   triggerUnloadEvent();
 
-  // Unload event was triggered. Thus sendBeacon method should have been called three times.
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(3);
+  // Unload event was triggered. Thus sendBeacon method should have been called four times.
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(4);
 
   // Http post services should have not been called
   expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
@@ -195,7 +210,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
 });
 
 test('Browser JS listener / standalone mode / Impressions debug mode without sendBeacon API', () => {
-  // remove sendBeacon API
+  // remove sendBeacon API temporally
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
   const syncManagerMockWithoutPushManager = {};
@@ -254,8 +269,8 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   settings.userConsent = undefined;
   triggerUnloadEvent();
 
-  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 6 times (3 times per event in optimized mode).
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(6);
+  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 8 times (4 times per event in optimized mode with telemetry).
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(8);
 
   listener.stop();
 });
