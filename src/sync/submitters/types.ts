@@ -184,4 +184,5 @@ export type TelemetryConfigStatsPayload = {
   nR: number, // SDKNotReadyUsage
   t?: Array<string>, // tags
   i?: Array<string>, // integrations
+  uC: number, // userConsent
 }

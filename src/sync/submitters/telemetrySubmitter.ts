@@ -1,9 +1,9 @@
 import { ISegmentsCacheSync, ISplitsCacheSync, ITelemetryCacheSync } from '../../storages/types';
 import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
-import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM } from '../../utils/constants';
+import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
-import { ISettings } from '../../types';
+import { ConsentStatus, ISettings } from '../../types';
 import { base } from '../../utils/settingsValidation';
 import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
@@ -53,6 +53,12 @@ const IMPRESSIONS_MODE_MAP = {
   [OPTIMIZED]: OPTIMIZED_ENUM,
   [DEBUG]: DEBUG_ENUM
 } as Record<ISettings['sync']['impressionsMode'], (0 | 1)>;
+
+const USER_CONSENT_MAP = {
+  [CONSENT_UNKNOWN]: 1,
+  [CONSENT_GRANTED]: 2,
+  [CONSENT_DECLINED]: 3
+} as Record<ConsentStatus, (0 | 1 | 2 | 3)>;
 
 function getActiveFactories() {
   return Object.keys(usedKeysMap).length;
@@ -105,6 +111,7 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
         nR: telemetry.getNonReadyUsage(),
         t: telemetry.popTags(),
         i: settings.integrations && settings.integrations.map(int => int.type),
+        uC: settings.userConsent ? USER_CONSENT_MAP[settings.userConsent] : 0
       };
     }
   };
