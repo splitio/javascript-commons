@@ -39,6 +39,7 @@ function validatePluggableStorageOptions(options: any) {
 function wrapperConnect(wrapper: IPluggableStorageWrapper, onReadyCb: (error?: any) => void) {
   wrapper.connect().then(() => {
     onReadyCb();
+    // At the moment, we don't synchronize config with pluggable storage
   }).catch((e) => {
     onReadyCb(e || new Error('Error connecting wrapper'));
   });
@@ -77,7 +78,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
-      // @TODO Not using TelemetryCachePluggable yet, because it is not supported by the Split Synchronizer
+      // @TODO Not using TelemetryCachePluggable yet, because it's not supported by the Split Synchronizer. It also needs to drop/squeue operations until the wrapper is ready
       // telemetry: isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper),
 
       // Disconnect the underlying storage

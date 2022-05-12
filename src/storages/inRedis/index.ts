@@ -8,6 +8,7 @@ import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
 import { STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
+import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -22,7 +23,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
   const prefix = validatePrefix(options.prefix);
 
-  function InRedisStorageFactory({ log, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory({ log, metadata, onReadyCb, mode }: IStorageFactoryParams): IStorageAsync {
 
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
@@ -30,6 +31,11 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
       onReadyCb();
+
+      // Synchronize config
+      const [key, field] = keys.buildInitKey().split('::');
+      const value = JSON.stringify({ t: getTelemetryConfigStats(mode, STORAGE_REDIS) });
+      redisClient.hset(key, field, value).catch(() => { /* Handle rejections for telemetry */ });
     });
 
     return {

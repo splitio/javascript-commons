@@ -61,7 +61,7 @@ describe('Telemetry submitter', () => {
     expect(recordTimeUntilReadySpy).toBeCalledTimes(1);
 
     expect(postMetricsConfig).toBeCalledWith(JSON.stringify({
-      oM: 0, st: 'memory', sE: true, rR: { sp: 1, se: 1, im: 1, ev: 1, te: 100 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, aF: 0, rF: 0, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration'], uC: 0
+      oM: 0, st: 'memory', aF: 0, rF: 0, sE: true, rR: { sp: 1, se: 1, im: 1, ev: 1, te: 100 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration'], uC: 0
     }));
 
     // Stop submitter, to not execute the 1st periodic metrics/usage POST

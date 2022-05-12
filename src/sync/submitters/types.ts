@@ -165,10 +165,17 @@ export type UrlOverrides = {
   t: boolean, // telemetry
 }
 
-// 'metrics/config' JSON request body
-export type TelemetryConfigStatsPayload = {
+// 'telemetry.init' Redis/Pluggable key
+export type TelemetryConfigStats = {
   oM?: OperationMode, // operationMode
   st: 'memory' | 'redis' | 'pluggable' | 'localstorage', // storage
+  aF: number, // activeFactories
+  rF: number, // redundantActiveFactories
+  t?: Array<string>, // tags
+}
+
+// 'metrics/config' JSON request body
+export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   sE: boolean, // streamingEnabled
   rR: RefreshRates, // refreshRates
   uO: UrlOverrides, // urlOverrides
@@ -177,12 +184,9 @@ export type TelemetryConfigStatsPayload = {
   iM: ImpressionsMode, // impressionsMode
   iL: boolean, // impressionsListenerEnabled
   hP: boolean, // httpProxyDetected
-  aF: number, // activeFactories
-  rF: number, // redundantActiveFactories
   tR: number, // timeUntilSDKReady
   tC?: number, // timeUntilSDKReadyFromCache
   nR: number, // SDKNotReadyUsage
-  t?: Array<string>, // tags
   i?: Array<string>, // integrations
   uC: number, // userConsent
 }

@@ -1,13 +1,14 @@
 import { ISegmentsCacheSync, ISplitsCacheSync, ITelemetryCacheSync } from '../../storages/types';
 import { submitterFactory, firstPushWindowDecorator } from './submitter';
-import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload } from './types';
+import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
 import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
-import { ConsentStatus, ISettings } from '../../types';
+import { ConsentStatus, ISettings, SDKMode } from '../../types';
 import { base } from '../../utils/settingsValidation';
 import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { objectAssign } from '../../utils/lang/objectAssign';
 
 /**
  * Converts data from telemetry cache into /metrics/usage request payload.
@@ -70,6 +71,15 @@ function getRedundantActiveFactories() {
   }, 0);
 }
 
+export function getTelemetryConfigStats(mode: SDKMode, storageType: string): TelemetryConfigStats {
+  return {
+    oM: OPERATION_MODE_MAP[mode], // @ts-ignore lower case of storage type
+    st: storageType.toLowerCase(),
+    aF: getActiveFactories(),
+    rF: getRedundantActiveFactories(),
+  };
+}
+
 /**
  * Converts data from telemetry cache and settings into /metrics/config request payload.
  */
@@ -81,9 +91,7 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
     state(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
 
-      return {
-        oM: OPERATION_MODE_MAP[settings.mode], // @ts-ignore lower case of storage type
-        st: settings.storage.type.toLowerCase(),
+      return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate,
@@ -104,15 +112,13 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
         iM: IMPRESSIONS_MODE_MAP[settings.sync.impressionsMode],
         iL: settings.impressionListener ? true : false,
         hP: false, // @TODO proxy not supported
-        aF: getActiveFactories(),
-        rF: getRedundantActiveFactories(),
         tR: telemetry.getTimeUntilReady() as number,
         tC: telemetry.getTimeUntilReadyFromCache(),
         nR: telemetry.getNonReadyUsage(),
         t: telemetry.popTags(),
         i: settings.integrations && settings.integrations.map(int => int.type),
         uC: settings.userConsent ? USER_CONSENT_MAP[settings.userConsent] : 0
-      };
+      });
     }
   };
 }
