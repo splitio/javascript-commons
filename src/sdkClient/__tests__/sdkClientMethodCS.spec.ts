@@ -91,7 +91,7 @@ describe('sdkClientMethodCSFactory', () => {
 
     // multiple calls should return the same instance
     expect(sdkClientMethod()).toBe(client);
-
+    
     // `client.destroy` method should stop internal components (other client methods where validated in `client.spec.ts`)
     client.destroy().then(() => {
       expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
@@ -101,7 +101,25 @@ describe('sdkClientMethodCSFactory', () => {
       expect(params.signalListener.stop).toBeCalledTimes(1);
     });
 
+
+
   });
+
+  test.each(testTargets)('client flush', (sdkClientMethodCSFactory) => {
+    // @ts-expect-error
+    const sdkClientMethod = sdkClientMethodCSFactory(params);
+
+    
+    // calling the function should return a client instance
+    const client = sdkClientMethod();
+    
+    // `client.flush` method should call syncManager flush
+    client.flush().then(() => {
+      expect(params.syncManager.flush).toBeCalledTimes(1);
+    });
+  });
+
+
 
   test.each(testTargets)('multiple clients', async (sdkClientMethodCSFactory, ignoresTT) => {
 

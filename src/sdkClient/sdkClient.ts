@@ -41,6 +41,13 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           return storage.destroy();
         });
       }
+    },
+    {// Non-destructive Sdk Flush 
+      flush() {
+        // flush cache if syncManager
+        return  syncManager ? syncManager.flush() : Promise.resolve(); // either resolved or return the sync manager flush promise
+      }
     }
+    
   );
 }

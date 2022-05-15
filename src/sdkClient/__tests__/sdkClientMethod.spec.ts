@@ -58,3 +58,23 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   expect(() => { sdkClientMethod('some_key', 'some_tt'); }).toThrow(errorMessage);
 
 });
+
+
+test.each(paramMocks)('server side client flush', (params, done: any) => {
+  // @ts-expect-error
+  const sdkClientMethod = sdkClientMethodFactory(params);
+
+  // should return a function
+  expect(typeof sdkClientMethod).toBe('function');
+
+  // calling the function should return a client instance
+  const client = sdkClientMethod();
+
+  // `client.flush` method should call the syncManager flush method
+  client.flush().then(() => {
+    if (params.syncManager) {
+      expect(params.syncManager.flush).toBeCalledTimes(1);
+    }
+    done();
+  });
+});
