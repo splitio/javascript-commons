@@ -400,7 +400,6 @@ interface IBasicClient extends IStatusInterface {
   * @returns {Promise<void>}
   */
   flush(): Promise<void>,
-
   // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
   // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
   isClientSide: boolean
@@ -1029,7 +1028,6 @@ export namespace SplitIO {
      * @returns {boolean} Whether the event was added to the queue succesfully or not.
      */
     track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
-
     }
   /**
    * This represents the interface for the Client instance with asynchronous storage for server-side SDK, where we don't have only one key.
@@ -1090,7 +1088,6 @@ export namespace SplitIO {
      * @returns {Promise<boolean>} A promise that resolves to a boolean indicating if the event was added to the queue succesfully or not.
      */
     track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>
-
   }
   /**
    * This represents the interface for the Client instance with synchronous storage for client-side SDK, where each client has associated a key and optionally a traffic type.

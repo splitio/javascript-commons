@@ -100,9 +100,6 @@ describe('sdkClientMethodCSFactory', () => {
       expect(params.syncManager.flush).toBeCalledTimes(1);
       expect(params.signalListener.stop).toBeCalledTimes(1);
     });
-
-
-
   });
 
   test.each(testTargets)('client flush', (sdkClientMethodCSFactory) => {
@@ -118,7 +115,6 @@ describe('sdkClientMethodCSFactory', () => {
       expect(params.syncManager.flush).toBeCalledTimes(1);
     });
   });
-
 
 
   test.each(testTargets)('multiple clients', async (sdkClientMethodCSFactory, ignoresTT) => {
