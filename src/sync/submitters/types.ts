@@ -167,7 +167,7 @@ export type UrlOverrides = {
 
 // 'telemetry.init' Redis/Pluggable key
 export type TelemetryConfigStats = {
-  oM?: OperationMode, // operationMode
+  oM: OperationMode, // operationMode
   st: 'memory' | 'redis' | 'pluggable' | 'localstorage', // storage
   aF: number, // activeFactories
   rF: number, // redundantActiveFactories

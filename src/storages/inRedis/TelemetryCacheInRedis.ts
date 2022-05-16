@@ -4,6 +4,8 @@ import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ITelemetryCacheAsync } from '../types';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { Redis } from 'ioredis';
+import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
+import { CONSUMER_MODE, STORAGE_REDIS } from '../../utils/constants';
 
 export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
 
@@ -26,4 +28,9 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
       .catch(() => { /* Handle rejections for telemetry */ });
   }
 
+  recordConfig() {
+    const [key, field] = this.keys.buildInitKey().split('::');
+    const value = JSON.stringify({ t: getTelemetryConfigStats(CONSUMER_MODE, STORAGE_REDIS) });
+    return this.redis.hset(key, field, value).catch(() => { /* Handle rejections for telemetry */ });
+  }
 }
