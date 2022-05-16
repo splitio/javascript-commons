@@ -1028,7 +1028,7 @@ export namespace SplitIO {
      * @returns {boolean} Whether the event was added to the queue succesfully or not.
      */
     track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
-    }
+  }
   /**
    * This represents the interface for the Client instance with asynchronous storage for server-side SDK, where we don't have only one key.
    * @interface IAsyncClient
