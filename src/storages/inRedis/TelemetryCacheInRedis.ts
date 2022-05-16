@@ -30,7 +30,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
 
   recordConfig() {
     const [key, field] = this.keys.buildInitKey().split('::');
-    const value = JSON.stringify({ t: getTelemetryConfigStats(CONSUMER_MODE, STORAGE_REDIS) });
+    const value = JSON.stringify(getTelemetryConfigStats(CONSUMER_MODE, STORAGE_REDIS));
     return this.redis.hset(key, field, value).catch(() => { /* Handle rejections for telemetry */ });
   }
 }

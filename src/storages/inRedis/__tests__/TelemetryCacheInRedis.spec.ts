@@ -33,12 +33,10 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // recordConfig
   expect(await cache.recordConfig()).toBe(1);
   expect(JSON.parse(await connection.hget(initKey, fieldVersionablePrefix) as string)).toEqual({
-    t: {
-      oM: 1,
-      st: 'redis',
-      aF: 0,
-      rF: 0
-    }
+    oM: 1,
+    st: 'redis',
+    aF: 0,
+    rF: 0
   });
 
   // Clean up then end.
