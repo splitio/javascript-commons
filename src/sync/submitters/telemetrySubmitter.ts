@@ -59,7 +59,7 @@ const USER_CONSENT_MAP = {
   [CONSENT_UNKNOWN]: 1,
   [CONSENT_GRANTED]: 2,
   [CONSENT_DECLINED]: 3
-} as Record<ConsentStatus, (0 | 1 | 2 | 3)>;
+} as Record<ConsentStatus, number>;
 
 function getActiveFactories() {
   return Object.keys(usedKeysMap).length;
@@ -94,11 +94,11 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
       return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
         rR: {
-          sp: scheduler.featuresRefreshRate,
-          se: scheduler.segmentsRefreshRate,
-          im: scheduler.impressionsRefreshRate,
-          ev: scheduler.eventsPushRate,
-          te: scheduler.telemetryRefreshRate,
+          sp: scheduler.featuresRefreshRate / 1000,
+          se: scheduler.segmentsRefreshRate / 1000,
+          im: scheduler.impressionsRefreshRate / 1000,
+          ev: scheduler.eventsPushRate / 1000,
+          te: scheduler.telemetryRefreshRate / 1000,
         }, // refreshRates
         uO: {
           s: urls.sdk !== base.urls.sdk,
