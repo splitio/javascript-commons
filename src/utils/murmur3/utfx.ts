@@ -8,8 +8,7 @@
 */
 
 export interface utfx {
-  encodeUTF16toUTF8(src: () => number | null, dst: (...args: number[]) => string | undefined): void,
-
+  encodeUTF16toUTF8(src: () => number | null, dst: (...args: number[]) => string | undefined): void
 }
 
 

@@ -37,7 +37,7 @@ describe('settingsValidation', () => {
       events: 'https://events.split.io/api',
       auth: 'https://auth.split.io/api',
       streaming: 'https://streaming.split.io',
-      telemetry: 'https://telemetry.split.io',
+      telemetry: 'https://telemetry.split.io/api',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
   });

@@ -14,9 +14,8 @@ describe('Telemetry submitter', () => {
     settings: { ...fullSettings, scheduler: { ...fullSettings.scheduler, telemetryRefreshRate } },
     splitApi: { postMetricsUsage, postMetricsConfig }, // @ts-ignore
     storage: InMemoryStorageFactory({}),
-    platform: {
-      now: () => 123 // by returning a fixed timestamp, all latencies are equal to 0
-    },
+    platform: { now: () => 123 }, // by returning a fixed timestamp, all latencies are equal to 0
+    sdkReadinessManager: { incInternalReadyCbCount: jest.fn(), },
     readiness: {
       gate: {
         once: jest.fn((e: string, cb: () => void) => {

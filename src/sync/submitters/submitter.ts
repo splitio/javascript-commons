@@ -16,7 +16,7 @@ export function submitterFactory<TState>(
   dataName: string,
   fromCacheToPayload?: (cacheData: TState) => any,
   maxRetries: number = 0,
-  debugLogs?: boolean
+  debugLogs?: boolean // true for telemetry submitters
 ): ISyncTask<[], void> {
 
   let retries = 0;
@@ -37,14 +37,14 @@ export function submitterFactory<TState>(
       sourceCache.clear(); // we clear the queue if request successes.
     }).catch(err => {
       if (!maxRetries) {
-        log.warn(SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
+        log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else if (retries === maxRetries) {
         retries = 0;
         sourceCache.clear(); // we clear the queue if request fails after retries.
-        log.warn(SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
+        log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else {
         retries++;
-        log.warn(SUBMITTERS_PUSH_RETRY, [dataCountMessage, err]);
+        log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_RETRY, [dataCountMessage, err]);
       }
     });
   }
