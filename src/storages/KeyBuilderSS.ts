@@ -23,10 +23,6 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.segments.registered`;
   }
 
-  private buildVersionablePrefix() {
-    return `${this.metadata.s}/${this.metadata.n}/${this.metadata.i}`;
-  }
-
   buildImpressionsKey() {
     return `${this.prefix}.impressions`;
   }
@@ -34,6 +30,12 @@ export class KeyBuilderSS extends KeyBuilder {
   buildEventsKey() {
     return `${this.prefix}.events`;
   }
+
+  searchPatternForSplitKeys() {
+    return `${this.buildSplitKeyPrefix()}*`;
+  }
+
+  /* Telemetry keys */
 
   buildLatencyKey(method: Method, bucket: number) {
     return `${this.prefix}.telemetry.latencies::${this.buildVersionablePrefix()}/${methodNames[method]}/${bucket}`;
@@ -43,8 +45,12 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.telemetry.exceptions::${this.buildVersionablePrefix()}/${methodNames[method]}`;
   }
 
-  searchPatternForSplitKeys() {
-    return `${this.buildSplitKeyPrefix()}*`;
+  buildInitKey() {
+    return `${this.prefix}.telemetry.init::${this.buildVersionablePrefix()}`;
+  }
+
+  private buildVersionablePrefix() {
+    return `${this.metadata.s}/${this.metadata.n}/${this.metadata.i}`;
   }
 
 }

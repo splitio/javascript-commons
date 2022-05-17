@@ -33,7 +33,7 @@ export function telemetryTrackerFactory(
         return (error) => {
           (telemetryCache as ITelemetryCacheSync).recordHttpLatency(operation, httpTime());
           if (error && error.statusCode) (telemetryCache as ITelemetryCacheSync).recordHttpError(operation, error.statusCode);
-          else (telemetryCache as ITelemetryCacheSync).recordSuccessfulSync(operation, now());
+          else (telemetryCache as ITelemetryCacheSync).recordSuccessfulSync(operation, Date.now());
         };
       },
       sessionLength() { // @ts-ignore ITelemetryCacheAsync doesn't implement the method
@@ -44,7 +44,7 @@ export function telemetryTrackerFactory(
           (telemetryCache as ITelemetryCacheSync).recordAuthRejections();
         } else {
           (telemetryCache as ITelemetryCacheSync).recordStreamingEvents({
-            e, d, t: now()
+            e, d, t: Date.now()
           });
           if (e === TOKEN_REFRESH) (telemetryCache as ITelemetryCacheSync).recordTokenRefreshes();
         }
