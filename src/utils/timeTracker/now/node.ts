@@ -1,4 +1,3 @@
-// @TODO migrate to Node SDK package eventually
 export function now() {
   // eslint-disable-next-line no-undef
   let time = process.hrtime();

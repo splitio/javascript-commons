@@ -127,11 +127,11 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
  * Submitter that periodically posts telemetry data
  */
 export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
-  const { storage: { splits, segments, telemetry } } = params;
-  if (!telemetry) return; // No submitter created if telemetry cache is not defined
+  const { storage: { splits, segments, telemetry }, platform: { now } } = params;
+  if (!telemetry || !now) return; // No submitter created if telemetry cache is not defined
 
-  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, platform: { now }, readiness, sdkReadinessManager } = params;
-  const startTime = timer(now || Date.now);
+  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness, sdkReadinessManager } = params;
+  const startTime = timer(now);
 
   const submitter = firstPushWindowDecorator(
     submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(telemetry, splits, segments), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),

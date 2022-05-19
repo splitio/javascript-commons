@@ -11,13 +11,27 @@ import { SplitIO, ISettings, IEventEmitter } from '../types';
 
 /**
  * Environment related dependencies.
- * These getters are called a fixed number of times per factory instantiation.
  */
 export interface IPlatform {
-  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
+   */
   getFetch?: () => (IFetch | undefined)
+  /**
+   * If provided, it is used to pass additional options to fetch calls.
+   */
+  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the EventSource constructor for streaming support.
+   */
   getEventSource?: () => (IEventSourceConstructor | undefined)
+  /**
+   * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
+   */
   EventEmitter: new () => IEventEmitter,
+  /**
+   * Function used to track latencies for telemetry.
+   */
   now?: () => number
 }
 
