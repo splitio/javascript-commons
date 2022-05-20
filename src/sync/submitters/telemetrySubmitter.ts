@@ -90,12 +90,14 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
 
     state(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
+      const isClientSide = settings.core.key !== undefined;
 
       return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate / 1000,
-          se: scheduler.segmentsRefreshRate / 1000,
+          se: isClientSide ? undefined : scheduler.segmentsRefreshRate / 1000,
+          ms: isClientSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
           im: scheduler.impressionsRefreshRate / 1000,
           ev: scheduler.eventsPushRate / 1000,
           te: scheduler.telemetryRefreshRate / 1000,
