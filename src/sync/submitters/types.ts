@@ -151,7 +151,8 @@ export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM;
 
 export type RefreshRates = {
   sp: number, // splits
-  se: number, // mySegments
+  se?: number, // segments
+  ms?: number, // mySegments
   im: number, // impressions
   ev: number, // events
   te: number, // telemetry
