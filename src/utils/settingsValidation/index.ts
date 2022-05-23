@@ -1,4 +1,4 @@
-import { merge } from '../lang';
+import { merge, get } from '../lang';
 import { mode } from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
@@ -131,15 +131,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
-  if (scheduler.impressionsRefreshRate !== base.scheduler.impressionsRefreshRate) {
-    // Validate impressionsRefreshRate defined by user
-    scheduler.impressionsRefreshRate = validateMinValue('impressionsRefreshRate', scheduler.impressionsRefreshRate,
-      withDefaults.sync.impressionsMode === DEBUG ? 1 : 60 // Min is 1 sec for DEBUG and 60 secs for OPTIMIZED
-    );
-  } else {
-    // Default impressionsRefreshRate for DEBUG mode is 60 secs
-    if (withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
-  }
+  // Default impressionsRefreshRate for DEBUG mode is 60 secs
+  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
 
   // Log deprecation for old telemetry param
