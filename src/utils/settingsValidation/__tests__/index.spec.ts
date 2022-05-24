@@ -70,7 +70,7 @@ describe('settingsValidation', () => {
 
     settings = settingsValidation({ ...config, scheduler: { impressionsRefreshRate: 10 } }, minimalSettingsParams);
 
-    expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.sync.impressionsMode).toBe(DEBUG);
     expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
