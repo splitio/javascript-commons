@@ -1,9 +1,6 @@
-import { ISyncTask, ITimeTracker } from '../types';
-import { IPostTestImpressionsCount } from '../../services/types';
-import { IImpressionCountsCacheSync } from '../../storages/types';
-import { submitterSyncTaskFactory } from './submitterSyncTask';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { submitterFactory } from './submitter';
 import { ImpressionCountsPayload } from './types';
-import { ILogger } from '../../logger/types';
 
 /**
  * Converts `impressionCounts` data from cache into request payload.
@@ -32,15 +29,18 @@ export function fromImpressionCountsCollector(impressionsCount: Record<string, n
 const IMPRESSIONS_COUNT_RATE = 1800000; // 30 minutes
 
 /**
- * Sync task that periodically posts impression counts
+ * Submitter that periodically posts impression counts
  */
-export function impressionCountsSyncTaskFactory(
-  log: ILogger,
-  postTestImpressionsCount: IPostTestImpressionsCount,
-  impressionCountsCache: IImpressionCountsCacheSync,
-  latencyTracker?: ITimeTracker
-): ISyncTask {
+export function impressionCountsSubmitterFactory(params: ISdkFactoryContextSync) {
 
-  // retry impressions counts only once.
-  return submitterSyncTaskFactory(log, postTestImpressionsCount, impressionCountsCache, IMPRESSIONS_COUNT_RATE, 'impression counts', latencyTracker, fromImpressionCountsCollector, 1);
+  const {
+    settings: { log },
+    splitApi: { postTestImpressionsCount },
+    storage: { impressionCounts }
+  } = params;
+
+  if (impressionCounts) {
+    // retry impressions counts only once.
+    return submitterFactory(log, postTestImpressionsCount, impressionCounts, IMPRESSIONS_COUNT_RATE, 'impression counts', fromImpressionCountsCollector, 1);
+  }
 }

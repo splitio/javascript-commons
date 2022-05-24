@@ -14,8 +14,8 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.NEW_FACTORY, 'New Split SDK instance created.'],
   [c.EVENTS_TRACKER_SUCCESS, c.LOG_PREFIX_EVENTS_TRACKER + 'Successfully queued %s'],
   [c.IMPRESSIONS_TRACKER_SUCCESS, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Successfully stored %s impression(s).'],
-  [c.USER_CONSENT_UPDATED, 'setUserConsent: consent status changed from %s to %s.'],
-  [c.USER_CONSENT_NOT_UPDATED, 'setUserConsent: call had no effect because it was the current consent status (%s).'],
+  [c.USER_CONSENT_UPDATED, 'UserConsent: consent status changed from %s to %s.'],
+  [c.USER_CONSENT_NOT_UPDATED, 'UserConsent: call had no effect because it was the current consent status (%s).'],
   [c.USER_CONSENT_INITIAL, 'Starting the SDK with %s user consent. No data will be sent.'],
 
   // synchronizer
@@ -24,7 +24,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.POLLING_STOP, c.LOG_PREFIX_SYNC_POLLING + 'Stopping polling'],
   [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying download of splits #%s. Reason: %s'],
   [c.SUBMITTERS_PUSH_FULL_QUEUE, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing full %s queue and reseting timer.'],
-  [c.SUBMITTERS_PUSH, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Pushing %s %s.'],
+  [c.SUBMITTERS_PUSH, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Pushing %s.'],
   [c.STREAMING_REFRESH_TOKEN, c.LOG_PREFIX_SYNC_STREAMING + 'Refreshing streaming token in %s seconds, and connecting streaming in %s seconds.'],
   [c.STREAMING_RECONNECT, c.LOG_PREFIX_SYNC_STREAMING + 'Attempting to reconnect streaming in %s seconds.'],
   [c.STREAMING_CONNECTING, c.LOG_PREFIX_SYNC_STREAMING + 'Connecting streaming.'],

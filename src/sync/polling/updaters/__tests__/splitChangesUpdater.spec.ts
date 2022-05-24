@@ -10,6 +10,7 @@ import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 
 const activeSplitWithSegments = {
   name: 'Split1',
@@ -57,7 +58,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 test('splitChangesUpdater / factory', (done) => {
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
-  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter });
+  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter }, telemetryTrackerFactory());
   const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
 
   const splitsCache = new SplitsCacheInMemory();

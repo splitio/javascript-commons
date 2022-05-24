@@ -37,10 +37,15 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
   registerSegments(names: string[]): boolean { return false; }
 
   /**
-   * For server-side synchronizer: get the list of segments in the cache.
-   * For client-side synchronizer: the method is not used.
+   * For server-side synchronizer: get the list of segments to fetch changes.
+   * Also used for the `seC` (segment count) telemetry stat.
    */
-  getRegisteredSegments(): string[] { return []; }
+  abstract getRegisteredSegments(): string[]
+
+  /**
+   * Only used for the `skC`(segment keys count) telemetry stat: 1 for client-side, and total count of keys in server-side.
+   */
+  abstract getKeysCount(): number
 
   /**
    * For server-side synchronizer: set the change number of `name` segment.

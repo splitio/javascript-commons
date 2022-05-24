@@ -72,4 +72,12 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     return isDiff;
   }
 
+  getRegisteredSegments() {
+    return Object.keys(this.segmentCache);
+  }
+
+  getKeysCount() {
+    return 1;
+  }
+
 }

@@ -1,10 +1,11 @@
 import { ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
+import { ISdkFactoryContext } from './sdkFactory/types';
 /* eslint-disable no-use-before-define */
 
 import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory } from './storages/types';
-import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
+import { ISyncManagerCS } from './sync/types';
 
 /**
  * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
@@ -79,7 +80,11 @@ export interface ISettings {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
     impressionsQueueSize: number,
-    metricsRefreshRate: number,
+    /**
+     * @deprecated
+     */
+    metricsRefreshRate?: number,
+    telemetryRefreshRate: number,
     segmentsRefreshRate: number,
     offlineRefreshRate: number,
     eventsPushRate: number,
@@ -93,12 +98,16 @@ export interface ISettings {
     eventsFirstPushWindow: number
   },
   readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
-  readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
+  readonly integrations: Array<{
+    readonly type: string,
+    (params: IIntegrationFactoryParams): IIntegration | void
+  }>,
   readonly urls: {
     events: string,
     sdk: string,
     auth: string,
-    streaming: string
+    streaming: string,
+    telemetry: string
   },
   readonly debug: boolean | LogLevel | ILogger,
   readonly version: string,
@@ -273,8 +282,15 @@ interface INodeBasicSettings extends ISharedSettings {
      * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
      * @property {number} metricsRefreshRate
      * @default 120
+     * @deprecated This parameter is ignored now.
      */
     metricsRefreshRate?: number,
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     * @property {number} telemetryRefreshRate
+     * @default 3600
+     */
+    telemetryRefreshRate?: number,
     /**
      * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
      * @property {number} segmentsRefreshRate
@@ -607,7 +623,7 @@ export namespace SplitIO {
    */
   export type LocalhostFactory = {
     type: 'LocalhostFromObject' | 'LocalhostFromFile'
-    (params: ISyncManagerFactoryParams): ISyncManagerCS
+    (params: ISdkFactoryContext): ISyncManagerCS
   }
   /**
    * Impression listener interface. This is the interface that needs to be implemented
@@ -664,7 +680,13 @@ export namespace SplitIO {
      * @property {string} streaming
      * @default 'https://streaming.split.io'
      */
-    streaming?: string
+    streaming?: string,
+    /**
+     * String property to override the base URL where the SDK will post telemetry data.
+     * @property {string} telemetry
+     * @default 'https://telemetry.split.io/api'
+     */
+    telemetry?: string
   };
   /**
    * SplitFilter type.
@@ -794,8 +816,15 @@ export namespace SplitIO {
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
+       * @deprecated This parameter is ignored now.
        */
       metricsRefreshRate?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       * @property {number} telemetryRefreshRate
+       * @default 3600
+       */
+      telemetryRefreshRate?: number,
       /**
        * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
        * @property {number} segmentsRefreshRate

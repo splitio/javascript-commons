@@ -71,7 +71,7 @@ export function forOwn<T>(obj: { [key: string]: T }, iteratee: (value: T, key: s
  * Safely retrieve the specified prop from obj. If we can't retrieve
  * that property value, we return the default value.
  */
-export function get(obj: any, prop: any, val: any): any {
+export function get(obj: any, prop: any, val?: any): any {
   let res = val;
 
   try { // No risks nor lots of checks.

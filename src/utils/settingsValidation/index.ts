@@ -1,14 +1,16 @@
-import { merge } from '../lang';
+import { merge, get } from '../lang';
 import { mode } from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE } from '../constants';
+import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { validateTrafficType } from '../inputValidation/trafficType';
+import { ERROR_MIN_CONFIG_PARAM } from '../../logger/constants';
 
-const base = {
+// Exported for telemetry
+export const base = {
   // Define which kind of object you want to retrieve from SplitFactory
   mode: STANDALONE_MODE,
 
@@ -30,10 +32,10 @@ const base = {
     featuresRefreshRate: 30,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
-    // publish metrics each 120 sec
-    metricsRefreshRate: 120,
-    // publish evaluations each 60 sec
-    impressionsRefreshRate: 60,
+    // publish telemetry stats each 3600 secs (1 hour)
+    telemetryRefreshRate: 3600,
+    // publish evaluations each 300 sec (default value for OPTIMIZED impressions mode)
+    impressionsRefreshRate: 300,
     // fetch offline changes each 15 sec
     offlineRefreshRate: 15,
     // publish events every 60 seconds after the first flush
@@ -55,6 +57,8 @@ const base = {
     auth: 'https://auth.split.io/api',
     // Streaming Server
     streaming: 'https://streaming.split.io',
+    // Telemetry Server
+    telemetry: 'https://telemetry.split.io/api',
   },
 
   // Defines which kind of storage we should instanciate.
@@ -109,14 +113,30 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const log = logger(withDefaults); // @ts-ignore, modify readonly prop
   withDefaults.log = log;
 
+  // ensure a valid impressionsMode
+  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
+
+  function validateMinValue(paramName: string, actualValue: number, minValue: number) {
+    if (actualValue >= minValue) return actualValue;
+    // actualValue is not a number or is lower than minValue
+    log.error(ERROR_MIN_CONFIG_PARAM, [paramName, minValue]);
+    return minValue;
+  }
+
   // Scheduler periods
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
-  scheduler.metricsRefreshRate = fromSecondsToMillis(scheduler.metricsRefreshRate);
-  scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
+  scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
+
+  // Default impressionsRefreshRate for DEBUG mode is 60 secs
+  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
+  scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
+
+  // Log deprecation for old telemetry param
+  if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');
 
   // Startup periods
   startup.requestTimeoutBeforeReady = fromSecondsToMillis(startup.requestTimeoutBeforeReady);
@@ -175,9 +195,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
-
-  // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
 
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
