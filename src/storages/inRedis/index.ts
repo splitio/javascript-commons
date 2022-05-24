@@ -6,9 +6,8 @@ import { SplitsCacheInRedis } from './SplitsCacheInRedis';
 import { SegmentsCacheInRedis } from './SegmentsCacheInRedis';
 import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
-import { LatenciesCacheInRedis } from './LatenciesCacheInRedis';
-import { CountsCacheInRedis } from './CountsCacheInRedis';
 import { STORAGE_REDIS } from '../../utils/constants';
+import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -27,10 +26,14 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
+    const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
       onReadyCb();
+
+      // Synchronize config
+      telemetry.recordConfig();
     });
 
     return {
@@ -38,8 +41,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
       impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
       events: new EventsCacheInRedis(log, keys.buildEventsKey(), redisClient, metadata),
-      latencies: new LatenciesCacheInRedis(keys, redisClient),
-      counts: new CountsCacheInRedis(keys, redisClient),
+      telemetry,
 
       // When using REDIS we should:
       // 1- Disconnect from the storage

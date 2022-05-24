@@ -1,18 +1,21 @@
 import { syncTaskComposite } from '../syncTaskComposite';
-import { eventsSyncTaskFactory } from './eventsSyncTask';
-import { impressionsSyncTaskFactory } from './impressionsSyncTask';
-import { impressionCountsSyncTaskFactory } from './impressionCountsSyncTask';
-import { ISyncManagerFactoryParams } from '../types';
+import { eventsSubmitterFactory } from './eventsSubmitter';
+import { impressionsSubmitterFactory } from './impressionsSubmitter';
+import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
+import { telemetrySubmitterFactory } from './telemetrySubmitter';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
-export function submitterManagerFactory(params: ISyncManagerFactoryParams) {
+export function submitterManagerFactory(params: ISdkFactoryContextSync) {
 
-  const { settings, storage, splitApi } = params;
-  const log = settings.log;
   const submitters = [
-    impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
-    eventsSyncTaskFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
-    // @TODO add telemetry submitter
+    impressionsSubmitterFactory(params),
+    eventsSubmitterFactory(params)
   ];
-  if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
+
+  const impressionCountsSubmitter = impressionCountsSubmitterFactory(params);
+  if (impressionCountsSubmitter) submitters.push(impressionCountsSubmitter);
+  const telemetrySubmitter = telemetrySubmitterFactory(params);
+  if (telemetrySubmitter) submitters.push(telemetrySubmitter);
+
   return syncTaskComposite(submitters);
 }

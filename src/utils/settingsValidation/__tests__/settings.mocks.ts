@@ -37,6 +37,9 @@ export const settingsWithKeyObject = {
   log: loggerMock
 };
 
+function NoopIntegration() {}
+NoopIntegration.type = 'NoopIntegration';
+
 export const fullSettings: ISettings = {
   core: {
     authorizationKey: 'aaaabbbbcccc1234',
@@ -47,7 +50,7 @@ export const fullSettings: ISettings = {
   scheduler: {
     featuresRefreshRate: 1,
     impressionsRefreshRate: 1,
-    metricsRefreshRate: 1,
+    telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,
     offlineRefreshRate: 1,
     eventsPushRate: 1,
@@ -63,7 +66,7 @@ export const fullSettings: ISettings = {
   },
   features: 'path/to/file',
   storage: InMemoryStorageCSFactory,
-  integrations: [() => { }], //  A no-op integration
+  integrations: [NoopIntegration],
   mode: 'standalone',
   debug: false,
   streamingEnabled: true,
@@ -86,7 +89,8 @@ export const fullSettings: ISettings = {
     events: 'events',
     sdk: 'sdk',
     auth: 'auth',
-    streaming: 'streaming'
+    streaming: 'streaming',
+    telemetry: 'telemetry'
   },
   log: loggerMock,
   userConsent: undefined
@@ -110,7 +114,8 @@ export const settingsSplitApi = {
     events: 'events',
     sdk: 'sdk',
     auth: 'auth',
-    streaming: 'streaming'
+    streaming: 'streaming',
+    telemetry: 'telemetry'
   },
   sync: {
     impressionsMode: 'DEBUG'

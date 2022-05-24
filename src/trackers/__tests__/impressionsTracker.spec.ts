@@ -4,11 +4,15 @@ import { impressionObserverSSFactory } from '../impressionObserver/impressionObs
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { ImpressionDTO } from '../../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { DEDUPED, QUEUED } from '../../utils/constants';
 
 /* Mocks */
 
 const fakeImpressionsCache = {
   track: jest.fn()
+};
+const fakeTelemetryCache = {
+  recordImpressionStats: jest.fn()
 };
 const fakeListener = {
   logImpression: jest.fn()
@@ -168,8 +172,8 @@ describe('Impressions Tracker', () => {
     impression2.time = Date.now();
     impression3.time = Date.now();
 
-    const impressionCountsCache = new ImpressionCountsCacheInMemory();
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory(), impressionCountsCache);
+    const impressionCountsCache = new ImpressionCountsCacheInMemory(); // @ts-ignore
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory(), impressionCountsCache, fakeTelemetryCache);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
@@ -185,6 +189,8 @@ describe('Impressions Tracker', () => {
     expect(lastArgs[0][1].feature).toBe('qc_team_2');
 
     expect(Object.keys(impressionCountsCache.state()).length).toBe(2);
+    expect(fakeTelemetryCache.recordImpressionStats.mock.calls).toEqual([[QUEUED, 2], [DEDUPED, 1]]);
+
   });
 
   test('Should track or not impressions depending on user consent status', () => {

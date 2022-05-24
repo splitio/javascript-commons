@@ -1,12 +1,12 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
-import { IImpressionCountsCacheSync, IImpressionsCacheBase } from '../storages/types';
+import { IImpressionCountsCacheSync, IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
-import { CONSENT_DECLINED } from '../utils/constants';
+import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
@@ -25,7 +25,8 @@ export function impressionsTrackerFactory(
   // if observer is provided, it implies `shouldAddPreviousTime` flag (i.e., if impressions previous time should be added or not)
   observer?: IImpressionObserver,
   // if countsCache is provided, it implies `isOptimized` flag (i.e., if impressions should be deduped or not)
-  countsCache?: IImpressionCountsCacheSync
+  countsCache?: IImpressionCountsCacheSync,
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IImpressionsTracker {
 
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
@@ -65,6 +66,13 @@ export function impressionsTrackerFactory(
         }).catch(err => {
           log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, err]);
         });
+      } else {
+        // Record when impressionsCache is sync only (standalone mode)
+        // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
+        if (telemetryCache) {
+          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
+          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, impressions.length - impressionsToStore.length);
+        }
       }
 
       // @TODO next block might be handled by the integration manager. In that case, the metadata object doesn't need to be passed in the constructor

@@ -3,13 +3,13 @@ import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import { thenable } from '../../utils/promise/thenable';
 import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
-import { ISyncManagerFactoryParams } from '../types';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
 export function pollingManagerSSFactory(
-  params: ISyncManagerFactoryParams
+  params: ISdkFactoryContextSync
 ): IPollingManager {
 
   const { splitApi, storage, readiness, settings } = params;

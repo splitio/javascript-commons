@@ -23,7 +23,7 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
     setStatus(consent: unknown) {
       // validate input param
       if (!isBoolean(consent)) {
-        log.warn(ERROR_NOT_BOOLEAN, ['setUserConsent']);
+        log.warn(ERROR_NOT_BOOLEAN, ['UserConsent.setStatus']);
         return false;
       }
 

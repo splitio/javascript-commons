@@ -1,33 +1,64 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
-import { ISdkReadinessManager } from '../readiness/types';
+import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
-import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
+import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
-import { IImpressionsTracker, IEventTracker } from '../trackers/types';
+import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
-
-export interface ISdkFactoryContext {
-  storage: IStorageSync | IStorageAsync,
-  sdkReadinessManager: ISdkReadinessManager,
-  settings: ISettings
-  impressionsTracker: IImpressionsTracker,
-  eventTracker: IEventTracker,
-  signalListener?: ISignalListener
-  syncManager?: ISyncManager,
-}
 
 /**
  * Environment related dependencies.
- * These getters are called a fixed number of times per factory instantiation.
  */
 export interface IPlatform {
-  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
+   */
   getFetch?: () => (IFetch | undefined)
+  /**
+   * If provided, it is used to pass additional options to fetch calls.
+   */
+  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the EventSource constructor for streaming support.
+   */
   getEventSource?: () => (IEventSourceConstructor | undefined)
-  EventEmitter: new () => IEventEmitter
+  /**
+   * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
+   */
+  EventEmitter: new () => IEventEmitter,
+  /**
+   * Function used to track latencies for telemetry.
+   */
+  now?: () => number
+}
+
+export interface ISdkFactoryContext {
+  platform: IPlatform,
+  sdkReadinessManager: ISdkReadinessManager,
+  readiness: IReadinessManager,
+  settings: ISettings
+  impressionsTracker: IImpressionsTracker,
+  eventTracker: IEventTracker,
+  telemetryTracker: ITelemetryTracker,
+  storage: IStorageSync | IStorageAsync,
+  signalListener?: ISignalListener
+  splitApi?: ISplitApi
+  syncManager?: ISyncManager,
+}
+
+export interface ISdkFactoryContextSync extends ISdkFactoryContext {
+  storage: IStorageSync,
+  splitApi: ISplitApi
+  syncManager: ISyncManager,
+}
+
+export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
+  storage: IStorageAsync,
+  splitApi: undefined,
+  syncManager: undefined
 }
 
 /**
@@ -47,12 +78,12 @@ export interface ISdkFactoryParams {
 
   // Factory of Split Api (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
+  splitApiFactory?: (settings: ISettings, platform: IPlatform, telemetryTracker: ITelemetryTracker) => ISplitApi,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
   // It can create an offline or online sync manager, with or without streaming support.
-  syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
+  syncManagerFactory?: (params: ISdkFactoryContextSync) => ISyncManager,
 
   // Sdk manager factory
   sdkManagerFactory: (

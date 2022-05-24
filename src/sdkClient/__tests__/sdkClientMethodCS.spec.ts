@@ -1,7 +1,7 @@
 import { sdkClientMethodCSFactory as sdkClientMethodCSWithTTFactory } from '../sdkClientMethodCSWithTT';
 import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
 import { assertClientApi } from './testUtils';
-
+import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
 import { settingsWithKey, settingsWithKeyAndTT, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const partialStorages: { destroy: jest.Mock }[] = [];
@@ -44,7 +44,8 @@ const params = {
   sdkReadinessManager: sdkReadinessManagerMock,
   syncManager: syncManagerMock,
   signalListener: { stop: jest.fn() },
-  settings: settingsWithKey
+  settings: settingsWithKey,
+  telemetryTracker: telemetryTrackerFactory()
 };
 
 const invalidAttributes = [

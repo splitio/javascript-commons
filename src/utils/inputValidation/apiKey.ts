@@ -21,7 +21,8 @@ export function validateApiKey(log: ILogger, maybeApiKey: any): string | false {
   return apiKey;
 }
 
-const usedKeysMap: Record<string, number> = {};
+// Exported for telemetry
+export const usedKeysMap: Record<string, number> = {};
 
 /** validates the given api key and also warns if it is in use */
 export function validateAndTrackApiKey(log: ILogger, maybeApiKey: any): string | false {

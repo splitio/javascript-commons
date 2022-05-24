@@ -172,7 +172,8 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
   test('The event callbacks should work as expected - SDK_READY emits with expected internal callbacks', () => {
     // the sdkReadinessManager expects more than one SDK_READY callback to not log the "No listeners" warning
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock, undefined /* default readyTimeout */, 1 /* internalReadyCbCount */);
+    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    sdkReadinessManager.incInternalReadyCbCount();
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
     // Get the callbacks

@@ -1,7 +1,7 @@
-export function timer(now?: () => number) {
-  const st = now ? now() : Date.now();
+export function timer(now: () => number) {
+  const st = now();
 
   return function stop() {
-    return Math.round(now ? now() : Date.now() - st);
+    return Math.round(now() - st);
   };
 }

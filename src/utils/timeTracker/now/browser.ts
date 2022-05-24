@@ -1,4 +1,4 @@
-// @TODO migrate to Browser SDK package eventually
+// Can be used on any runtime, since it fallbacks to `Date.now` if `performance.now` is not available
 function nowFactory() {
   // eslint-disable-next-line
   if (typeof performance === 'object' && typeof performance.now === 'function') {

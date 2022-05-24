@@ -15,6 +15,7 @@ export function splitsSyncTaskFactory(
   storage: IStorageSync,
   readiness: IReadinessManager,
   settings: ISettings,
+  isClientSide?: boolean
 ): ISplitsSyncTask {
   return syncTaskFactory(
     settings.log,
@@ -26,6 +27,7 @@ export function splitsSyncTaskFactory(
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
+      isClientSide
     ),
     settings.scheduler.featuresRefreshRate,
     'splitChangesUpdater',

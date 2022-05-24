@@ -1,3 +1,8 @@
+1.4.0 (May 24, 2022)
+ - Added `scheduler.telemetryRefreshRate` property to SDK configuration, and deprecated `scheduler.metricsRefreshRate` property.
+ - Updated SDK telemetry storage, metrics and updater to be more effective and send less often.
+ - Bugfixing - Updated default values for `scheduler.impressionsRefreshRate` config parameter: 300s for OPTIMIZED impression mode and 60s for DEBUG impression mode.
+
 1.3.1 (April 19, 2022)
  - Bugfixing - Added peer dependencies to avoid issues when requiring some third-party dependencies used by modules of the package (Related to issue https://github.com/splitio/javascript-client/issues/662).
  - Bugfixing - Updated `ready` method to rejects the promise with an Error object instead of a string value (Related to issue https://github.com/splitio/javascript-client/issues/654).

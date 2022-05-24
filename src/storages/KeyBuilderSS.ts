@@ -1,9 +1,14 @@
 import { KeyBuilder } from './KeyBuilder';
 import { IMetadata } from '../dtos/types';
+import { Method } from '../sync/submitters/types';
 
-// NOT USED
-// const everythingAfterCount = /count\.([^/]+)$/;
-// const latencyMetricNameAndBucket = /latency\.([^/]+)\.bucket\.([0-9]+)$/;
+const methodNames: Record<Method, string> = {
+  t: 'treatment',
+  ts: 'treatments',
+  tc: 'treatmentWithConfig',
+  tcs: 'treatmentsWithConfig',
+  tr: 'track'
+};
 
 export class KeyBuilderSS extends KeyBuilder {
 
@@ -18,10 +23,6 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.segments.registered`;
   }
 
-  private buildVersionablePrefix() {
-    return `${this.prefix}/${this.metadata.s}/${this.metadata.i}`;
-  }
-
   buildImpressionsKey() {
     return `${this.prefix}.impressions`;
   }
@@ -30,58 +31,26 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.events`;
   }
 
-  private buildLatencyKeyPrefix() {
-    return `${this.buildVersionablePrefix()}/latency`;
-  }
-
-  buildLatencyKey(metricName: string, bucketNumber: number | string) {
-    return `${this.buildLatencyKeyPrefix()}.${metricName}.bucket.${bucketNumber}`;
-  }
-
-  buildCountKey(metricName: string) {
-    return `${this.buildVersionablePrefix()}/count.${metricName}`;
-  }
-
-  // NOT USED
-  // buildGaugeKey(metricName: string) {
-  //   return `${this.buildVersionablePrefix()}/gauge.${metricName}`;
-  // }
-
-  // NOT USED
-  // searchPatternForCountKeys() {
-  //   return `${this.buildVersionablePrefix()}/count.*`;
-  // }
-
   searchPatternForSplitKeys() {
     return `${this.buildSplitKeyPrefix()}*`;
   }
 
-  // NOT USED
-  // searchPatternForLatency() {
-  //   return `${this.buildLatencyKeyPrefix()}.*`;
-  // }
+  /* Telemetry keys */
 
-  // NOT USED
-  // extractCounterName(counterKey: string) {
-  //   const m = counterKey.match(everythingAfterCount);
-  //   if (m && m.length) {
-  //     return m[1]; // everything after count
-  //   } else {
-  //     throw new Error('Invalid counter key provided');
-  //   }
-  // }
+  buildLatencyKey(method: Method, bucket: number) {
+    return `${this.prefix}.telemetry.latencies::${this.buildVersionablePrefix()}/${methodNames[method]}/${bucket}`;
+  }
 
-  // NOT USED
-  // extractLatencyMetricNameAndBucket(latencyKey: string) {
-  //   const parts = latencyKey.match(latencyMetricNameAndBucket);
+  buildExceptionKey(method: Method) {
+    return `${this.prefix}.telemetry.exceptions::${this.buildVersionablePrefix()}/${methodNames[method]}`;
+  }
 
-  //   if (parts && parts.length > 2) {
-  //     return {
-  //       metricName: parts[1],
-  //       bucketNumber: parts[2]
-  //     };
-  //   } else {
-  //     throw new Error('Invalid counter key provided');
-  //   }
-  // }
+  buildInitKey() {
+    return `${this.prefix}.telemetry.init::${this.buildVersionablePrefix()}`;
+  }
+
+  private buildVersionablePrefix() {
+    return `${this.metadata.s}/${this.metadata.n}/${this.metadata.i}`;
+  }
+
 }

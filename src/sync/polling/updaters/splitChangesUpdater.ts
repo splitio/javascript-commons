@@ -93,18 +93,15 @@ export function splitChangesUpdaterFactory(
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
+  isClientSide?: boolean
 ): ISplitChangesUpdater {
 
   let startingUp = true;
 
-  /** timeout and telemetry decorator for `splitChangesFetcher` promise  */
+  /** timeout decorator for `splitChangesFetcher` promise  */
   function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp && requestTimeoutBeforeReady) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
-
-    // @TODO telemetry
-    // const collectMetrics = startingUp || isNode; // If we are on the browser, only collect this metric for first fetch. On node do it always.
-    // splitsPromise = tracker.start(tracker.TaskNames.SPLITS_FETCH, collectMetrics ? metricCollectors : false, splitsPromise);
   }
 
   /**
@@ -144,7 +141,7 @@ export function splitChangesUpdaterFactory(
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segments)))
+              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events

@@ -1,10 +1,10 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
-import { IEventsCacheBase } from '../storages/types';
+import { IEventsCacheBase, ITelemetryCacheAsync, ITelemetryCacheSync } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
 import { ISettings, SplitIO } from '../types';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
-import { CONSENT_DECLINED } from '../utils/constants';
+import { CONSENT_DECLINED, DROPPED, QUEUED } from '../utils/constants';
 import { isStorageSync } from './impressionObserver/utils';
 
 /**
@@ -16,7 +16,8 @@ import { isStorageSync } from './impressionObserver/utils';
 export function eventTrackerFactory(
   settings: ISettings,
   eventsCache: IEventsCacheBase,
-  integrationsManager?: IEventsHandler
+  integrationsManager?: IEventsHandler,
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IEventTracker {
 
   const log = settings.log;
@@ -57,6 +58,9 @@ export function eventTrackerFactory(
       if (thenable(tracked)) {
         return tracked.then(queueEventsCallback.bind(null, eventData));
       } else {
+        // Record when eventsCache is sync only (standalone mode)
+        // @TODO we are not dropping events on full queue yet, so `tracked` is always true ATM
+        if (telemetryCache) (telemetryCache as ITelemetryCacheSync).recordEventStats(tracked ? QUEUED : DROPPED, 1);
         return queueEventsCallback(eventData, tracked);
       }
     }

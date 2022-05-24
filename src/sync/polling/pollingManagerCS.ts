@@ -7,20 +7,20 @@ import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
-import { ISyncManagerFactoryParams } from '../types';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Expose start / stop mechanism for polling data from services.
  * For client-side API with multiple clients.
  */
 export function pollingManagerCSFactory(
-  params: ISyncManagerFactoryParams
+  params: ISdkFactoryContextSync
 ): IPollingManagerCS {
 
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);
+  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
 
   // Map of matching keys to their corresponding MySegmentsSyncTask.
   const mySegmentsSyncTasks: Record<string, ISegmentsSyncTask> = {};

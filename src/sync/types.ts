@@ -1,8 +1,5 @@
 import { IReadinessManager } from '../readiness/types';
-import { IPlatform } from '../sdkFactory/types';
-import { ISplitApi } from '../services/types';
 import { IStorageSync } from '../storages/types';
-import { ISettings } from '../types';
 import { IPollingManager } from './polling/types';
 import { IPushManager } from './streaming/types';
 
@@ -36,10 +33,6 @@ export interface ISyncTask<Input extends any[] = [], Output = any> extends ITask
   isExecuting(): boolean
 }
 
-export interface ITimeTracker {
-  start(): () => void // start tracking time and return a function to call for stopping the tracking
-}
-
 /** SyncManager */
 
 export interface ISyncManager extends ITask {
@@ -51,12 +44,4 @@ export interface ISyncManager extends ITask {
 
 export interface ISyncManagerCS extends ISyncManager {
   shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager | undefined
-}
-
-export interface ISyncManagerFactoryParams {
-  settings: ISettings,
-  readiness: IReadinessManager,
-  storage: IStorageSync,
-  splitApi: ISplitApi,
-  platform: IPlatform
 }

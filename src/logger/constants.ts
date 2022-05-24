@@ -123,6 +123,7 @@ export const ERROR_HTTP = 322;
 export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
 export const ERROR_STORAGE_INVALID = 324;
 export const ERROR_NOT_BOOLEAN = 325;
+export const ERROR_MIN_CONFIG_PARAM = 326;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';
