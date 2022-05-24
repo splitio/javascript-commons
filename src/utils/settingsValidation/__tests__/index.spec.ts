@@ -42,32 +42,36 @@ describe('settingsValidation', () => {
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
   });
 
-  test('override with defaults', () => {
-    const settings = settingsValidation({
-      core: {
-        authorizationKey: 'dummy token'
-      },
-      sync: {
-        impressionsMode: 'some',
-      }
-    }, minimalSettingsParams);
+  test('override with default impressionMode if provided one is invalid', () => {
+    const config = {
+      core: { authorizationKey: 'dummy token' },
+      sync: { impressionsMode: 'some' }
+    };
+    let settings = settingsValidation(config, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
-    expect(settings.scheduler.impressionsRefreshRate).toBe(300000);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(300000); // Default
+
+    settings = settingsValidation({ ...config, scheduler: { impressionsRefreshRate: 10 } }, minimalSettingsParams);
+
+    expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
   test('impressionsMode should be configurable', () => {
-    const settings = settingsValidation({
-      core: {
-        authorizationKey: 'dummy token'
-      },
-      sync: {
-        impressionsMode: DEBUG
-      }
-    }, minimalSettingsParams);
+    const config = {
+      core: { authorizationKey: 'dummy token' },
+      sync: { impressionsMode: DEBUG }
+    };
+    let settings = settingsValidation(config, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toEqual(DEBUG);
     expect(settings.scheduler.impressionsRefreshRate).toBe(60000); // Different default for DEBUG impressionsMode
+
+    settings = settingsValidation({ ...config, scheduler: { impressionsRefreshRate: 10 } }, minimalSettingsParams);
+
+    expect(settings.sync.impressionsMode).toBe(DEBUG);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
   test('urls should be configurable', () => {
@@ -246,17 +250,18 @@ describe('settingsValidation', () => {
     expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
 
-  test('validate min values', () => {
-    const settings = settingsValidation({
-      scheduler: {
-        telemetryRefreshRate: 0,
-        impressionsRefreshRate: 'invalid',
-      }
-    }, minimalSettingsParams);
+  // Not implemented yet
+  // test('validate min values', () => {
+  //   const settings = settingsValidation({
+  //     scheduler: {
+  //       telemetryRefreshRate: 0,
+  //       impressionsRefreshRate: 'invalid',
+  //     }
+  //   }, minimalSettingsParams);
 
-    expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
-    expect(settings.scheduler.impressionsRefreshRate).toBe(60000);
-  });
+  //   expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
+  //   expect(settings.scheduler.impressionsRefreshRate).toBe(60000);
+  // });
 
 });
 
