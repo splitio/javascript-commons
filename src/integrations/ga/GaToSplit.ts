@@ -21,8 +21,9 @@ const logNameMapper = 'ga-to-split:mapper';
  * that the global command queue has been renamed or not yet defined.
  * @param {string} pluginName The plugin name identifier.
  * @param {Function} pluginConstructor The plugin constructor function.
+ * @param {boolean} autoRequire Whether the integration should automatically queue a 'require' command for each 'create' command.
  */
-function providePlugin(pluginName: string, pluginConstructor: Function) {
+function providePlugin(pluginName: string, pluginConstructor: Function, autoRequire?: boolean) {
   // get reference to global command queue. Init it if not defined yet.
   // @ts-expect-error
   const gaAlias = window.GoogleAnalyticsObject || 'ga';
@@ -33,6 +34,8 @@ function providePlugin(pluginName: string, pluginConstructor: Function) {
   // provides the plugin for use with analytics.js.
   // @ts-expect-error
   window[gaAlias]('provide', pluginName, pluginConstructor);
+
+  if (autoRequire) autoRequireScript();
 }
 
 // Default mapping: object used for building the default mapper from hits to Split events
@@ -284,5 +287,38 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
-  providePlugin('splitTracker', SplitTracker);
+  providePlugin('splitTracker', SplitTracker, sdkOptions.autoRequire);
+}
+
+export function autoRequireScript() {
+  (function (i: any, r: any) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function () { i[r].q.push(arguments); };
+    i[r].q = i[r].q || [];
+
+    var ts: any = {}; // Tracker names
+    var o = i[r].q.push; // Reference to Array.prototype.push
+    i[r].q.push = function () {
+      var result = o.apply(this, arguments);
+
+      var v = arguments[0];
+      if (v && v[0] === 'create') {
+        var t = typeof v[2] === 'object' && typeof v[2].name === 'string' ?
+          v[2].name : // `ga('create', 'UA-ID', { name: 'trackerName', ... })`
+          typeof v[3] === 'object' && typeof v[3].name === 'string' ?
+            v[3].name : // `ga('create', 'UA-ID', 'auto', { name: 'trackerName', ... })`
+            typeof v[3] === 'string' ?
+              v[3] : // `ga('create', 'UA-ID', 'auto', 'trackerName')`
+              undefined; // No name tracker, `ga('create', 'UA-ID', 'auto')`
+
+        if (!ts[t]) {
+          ts[t] = true;
+          i[r](t ? t + '.require' : 'require', 'splitTracker'); // Auto-require
+        }
+      }
+
+      return result;
+    };
+
+  })(window, 'ga');
 }

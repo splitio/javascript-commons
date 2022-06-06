@@ -53,6 +53,13 @@ export interface GoogleAnalyticsToSplitOptions {
    * If not provided, events are sent using the key and traffic type provided at SDK config
    */
   identities?: Identity[],
+  /**
+   * Optional flag to automatically require the `splitTracker` plugin for all created trackers.
+   * If true, it will spy on the ga command queue, and run `ga('[trackerName].require', 'splitTracker');` for each 'create' command.
+   * @property {boolean} autoRequire
+   * @default false
+   */
+  autoRequire?: boolean,
 }
 
 /**
