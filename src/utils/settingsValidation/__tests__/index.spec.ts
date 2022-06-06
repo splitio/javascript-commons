@@ -165,7 +165,7 @@ describe('settingsValidation', () => {
   });
 
   test('singleSync should be overwritable and false by default', () => {
-  const settingsWithSingleSyncDisabled = settingsValidation({
+    const settingsWithSingleSyncDisabled = settingsValidation({
       core: {
         authorizationKey: 'dummy token',
       }
