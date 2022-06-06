@@ -83,7 +83,8 @@ export const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined
+    localhostMode: undefined,
+    singleSync: false
   },
 
   // Logger

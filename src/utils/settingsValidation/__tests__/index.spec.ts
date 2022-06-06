@@ -40,6 +40,7 @@ describe('settingsValidation', () => {
       telemetry: 'https://telemetry.split.io/api',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.sync.singleSync).toBe(false);
   });
 
   test('override with default impressionMode if provided one is invalid', () => {
