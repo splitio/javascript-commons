@@ -83,7 +83,8 @@ export const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined
+    localhostMode: undefined,
+    singleSync: false
   },
 
   // Logger
@@ -189,6 +190,11 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     // Backoff bases.
     // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
     scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
+  }
+
+  // validate singleSync
+  if (withDefaults.sync.singleSync !== true) { // @ts-ignore, modify readonly prop
+    withDefaults.sync.singleSync = false;
   }
 
   // validate the `splitFilters` settings and parse splits query

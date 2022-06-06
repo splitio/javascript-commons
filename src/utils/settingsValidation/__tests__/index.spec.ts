@@ -40,6 +40,7 @@ describe('settingsValidation', () => {
       telemetry: 'https://telemetry.split.io/api',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.sync.singleSync).toBe(false);
   });
 
   test('override with default impressionMode if provided one is invalid', () => {
@@ -161,6 +162,26 @@ describe('settingsValidation', () => {
 
     expect(settingsWithStreamingDisabled.streamingEnabled).toBe(false); // When creating a setting instance, it will have the provided value for streamingEnabled
     expect(settingsWithStreamingEnabled.streamingEnabled).toBe(true); // If streamingEnabled is not provided, it will be true.
+  });
+
+  test('singleSync should be overwritable and false by default', () => {
+    const settingsWithSingleSyncDisabled = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+      }
+    }, minimalSettingsParams);
+    const settingsWithSingleSyncEnabled = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token'
+      },
+      sync: {
+        singleSync: true
+      }
+    }, minimalSettingsParams);
+
+    expect(settingsWithSingleSyncDisabled.sync.singleSync).toBe(false); // If singleSync is not provided, it will be true.
+    expect(settingsWithSingleSyncEnabled.sync.singleSync).toBe(true); // When creating a setting instance, it will have the provided value for singleSync
+
   });
 
   const storageMock = () => { };
