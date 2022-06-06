@@ -192,6 +192,11 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
+  // validate singleSync
+  if (withDefaults.sync.singleSync !== true) { // @ts-ignore, modify readonly prop
+    withDefaults.sync.singleSync = false;
+  }
+
   // validate the `splitFilters` settings and parse splits query
   const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
