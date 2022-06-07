@@ -258,11 +258,12 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   settings.userConsent = 'DECLINED';
   triggerUnloadEvent();
 
-  // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should not be called
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
+  // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should be called only for telemetry
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
   expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
   expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
   expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  (global.window.navigator.sendBeacon as jest.Mock).mockClear();
 
   settings.userConsent = 'GRANTED';
   triggerUnloadEvent();

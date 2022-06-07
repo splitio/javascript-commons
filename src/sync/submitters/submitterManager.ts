@@ -3,8 +3,9 @@ import { impressionsSubmitterFactory } from './impressionsSubmitter';
 import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
 import { telemetrySubmitterFactory } from './telemetrySubmitter';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { ISubmitterManager } from './types';
 
-export function submitterManagerFactory(params: ISdkFactoryContextSync) {
+export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmitterManager {
 
   const submitters = [
     impressionsSubmitterFactory(params),
@@ -14,21 +15,23 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync) {
   const impressionCountsSubmitter = impressionCountsSubmitterFactory(params);
   if (impressionCountsSubmitter) submitters.push(impressionCountsSubmitter);
   const telemetrySubmitter = telemetrySubmitterFactory(params);
-  if (telemetrySubmitter) submitters.push(telemetrySubmitter);
-
 
   return {
-    start() {
-      submitters.forEach(submitter => submitter.start());
+    start(onlyTelemetry?: boolean) {
+      if (!onlyTelemetry) submitters.forEach(submitter => submitter.start());
+      if (telemetrySubmitter) telemetrySubmitter.start();
     },
-    stop() {
+    stop(allExceptTelemetry?: boolean) {
       submitters.forEach(submitter => submitter.stop());
+      if (!allExceptTelemetry && telemetrySubmitter) telemetrySubmitter.stop();
     },
     isRunning() {
       return submitters.some(submitter => submitter.isRunning());
     },
-    execute() {
-      return Promise.all(submitters.map(submitter => submitter.execute()));
+    execute(onlyTelemetry?: boolean) {
+      const promises = onlyTelemetry ? [] : submitters.map(submitter => submitter.execute());
+      if (telemetrySubmitter) promises.push(telemetrySubmitter.execute());
+      return Promise.all(promises);
     },
     isExecuting() {
       return submitters.some(submitter => submitter.isExecuting());

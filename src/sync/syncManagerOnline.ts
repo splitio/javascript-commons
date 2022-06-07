@@ -40,7 +40,7 @@ export function syncManagerOnlineFactory(
 
     /** Submitter Manager */
     // It is not inyected as push and polling managers, because at the moment it is required
-    const submitter = submitterManagerFactory(params);
+    const submitterManager = submitterManagerFactory(params);
 
     /** Sync Manager logic */
 
@@ -79,7 +79,7 @@ export function syncManagerOnlineFactory(
       // E.g.: user consent, app state changes (Page hide, Foreground/Background, Online/Offline).
       pollingManager,
       pushManager,
-      submitter,
+      submitterManager,
 
       /**
        * Method used to start the syncManager for the first time, or resume it after being stopped.
@@ -102,7 +102,7 @@ export function syncManagerOnlineFactory(
         }
 
         // start periodic data recording (events, impressions, telemetry).
-        if (isConsentGranted(settings)) submitter.start();
+        submitterManager.start(!isConsentGranted(settings));
       },
 
       /**
@@ -116,7 +116,7 @@ export function syncManagerOnlineFactory(
         if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
-        submitter.stop();
+        submitterManager.stop();
       },
 
       isRunning() {
@@ -124,8 +124,7 @@ export function syncManagerOnlineFactory(
       },
 
       flush() {
-        if (isConsentGranted(settings)) return submitter.execute();
-        else return Promise.resolve();
+        return submitterManager.execute(!isConsentGranted(settings));
       },
 
       // [Only used for client-side]

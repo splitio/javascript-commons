@@ -67,7 +67,7 @@ export class BrowserSignalListener implements ISignalListener {
   flushData() {
     if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
 
-    // Flush data if there is user consent
+    // Flush impressions & events data if there is user consent
     if (isConsentGranted(this.settings)) {
       const eventsUrl = this.settings.urls.events;
       const extraMetadata = {
@@ -78,11 +78,13 @@ export class BrowserSignalListener implements ISignalListener {
       this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
       this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
       if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
-      if (this.storage.telemetry) {
-        const telemetryUrl = this.settings.urls.telemetry;
-        const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
-        this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
-      }
+    }
+
+    // Flush telemetry data
+    if (this.storage.telemetry) {
+      const telemetryUrl = this.settings.urls.telemetry;
+      const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
+      this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
     }
 
     // Close streaming connection
