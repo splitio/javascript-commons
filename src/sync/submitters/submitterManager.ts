@@ -1,4 +1,3 @@
-import { syncTaskComposite } from '../syncTaskComposite';
 import { eventsSubmitterFactory } from './eventsSubmitter';
 import { impressionsSubmitterFactory } from './impressionsSubmitter';
 import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
@@ -17,5 +16,22 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync) {
   const telemetrySubmitter = telemetrySubmitterFactory(params);
   if (telemetrySubmitter) submitters.push(telemetrySubmitter);
 
-  return syncTaskComposite(submitters);
+
+  return {
+    start() {
+      submitters.forEach(submitter => submitter.start());
+    },
+    stop() {
+      submitters.forEach(submitter => submitter.stop());
+    },
+    isRunning() {
+      return submitters.some(submitter => submitter.isRunning());
+    },
+    execute() {
+      return Promise.all(submitters.map(submitter => submitter.execute()));
+    },
+    isExecuting() {
+      return submitters.some(submitter => submitter.isExecuting());
+    }
+  };
 }
