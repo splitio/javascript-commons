@@ -292,7 +292,7 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
 
 export function autoRequireScript() {
   (function (i: any, r: any) {
-    i['GoogleAnalyticsObject'] = r;
+    i['GoogleAnalyticsObject'] = i['GoogleAnalyticsObject'] || r;
     i[r] = i[r] || function () { i[r].q.push(arguments); };
     i[r].q = i[r].q || [];
 
