@@ -188,7 +188,7 @@ describe('Impressions Tracker', () => {
     expect(lastArgs[0][1].pt).toBe(undefined);
     expect(lastArgs[0][1].feature).toBe('qc_team_2');
 
-    expect(Object.keys(impressionCountsCache.state()).length).toBe(2);
+    expect(Object.keys(impressionCountsCache.pop()).length).toBe(2);
     expect(fakeTelemetryCache.recordImpressionStats.mock.calls).toEqual([[QUEUED, 2], [DEDUPED, 1]]);
 
   });

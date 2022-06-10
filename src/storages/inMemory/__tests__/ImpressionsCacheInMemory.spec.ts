@@ -5,7 +5,7 @@ test('IMPRESSIONS CACHE IN MEMORY / should incrementally store values, clear the
   const c = new ImpressionsCacheInMemory();
 
   // queue is initially empty
-  expect(c.state()).toEqual([]);
+  expect(c.pop()).toEqual([]);
   expect(c.isEmpty()).toBe(true);
 
 
@@ -13,12 +13,14 @@ test('IMPRESSIONS CACHE IN MEMORY / should incrementally store values, clear the
   c.track([1, 2]);
   c.track([3]);
 
-  expect(c.state()).toEqual([0, 1, 2, 3]); // all the items should be stored in sequential order
   expect(c.isEmpty()).toBe(false);
+  expect(c.pop()).toEqual([0, 1, 2, 3]); // all the items should be stored in sequential order
+  expect(c.isEmpty()).toBe(true);
 
   // should empty the queue
+  c.track([0]);
   c.clear();
-  expect(c.state()).toEqual([]);
+  expect(c.pop()).toEqual([]);
   expect(c.isEmpty()).toBe(true);
 });
 

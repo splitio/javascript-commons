@@ -41,10 +41,12 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
   }
 
   /**
-   * Get the collected data, used as payload for posting.
+   * Pop the collected data, used as payload for posting.
    */
-  state() {
-    return this.queue;
+  pop() {
+    const data = this.queue;
+    this.clear();
+    return data;
   }
 
   /**

@@ -20,17 +20,27 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
     this.cache[key] = currentAmount ? currentAmount + amount : amount;
   }
 
+
+
   /**
-  * Returns all the elements stored in the cache and resets the cache.
-  */
-  state() {
-    return this.cache;
+   * Pop the collected data, used as payload for posting.
+   */
+  pop() {
+    const data = this.cache;
+    this.clear();
+    return data;
   }
 
+  /**
+   * Clear the data stored on the cache.
+   */
   clear() {
     this.cache = {};
   }
 
+  /**
+   * Check if the cache is empty.
+   */
   isEmpty() {
     return Object.keys(this.cache).length === 0;
   }

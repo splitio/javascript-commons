@@ -20,27 +20,30 @@ export function submitterFactory<TState>(
 ): ISyncTask<[], void> {
 
   let retries = 0;
+  let data: TState | undefined;
 
   function postData(): Promise<any> {
-    if (sourceCache.isEmpty()) return Promise.resolve();
+    if (!data) {
+      if (sourceCache.isEmpty()) return Promise.resolve();
+      // we clear the cache to track new items, while `data` is used for retries
+      data = sourceCache.pop();
+    }
 
-    const data = sourceCache.state();
     // @ts-ignore
     const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
     log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
-    if (!maxRetries) sourceCache.clear();
 
     return postClient(jsonPayload).then(() => {
       retries = 0;
-      sourceCache.clear(); // we clear the queue if request successes.
+      data = undefined;
     }).catch(err => {
       if (!maxRetries) {
         log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else if (retries === maxRetries) {
         retries = 0;
-        sourceCache.clear(); // we clear the queue if request fails after retries.
+        data = undefined;
         log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else {
         retries++;
