@@ -34,6 +34,7 @@ export function submitterFactory<TState>(
     log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
+    if (!maxRetries) data = undefined;
 
     return postClient(jsonPayload).then(() => {
       retries = 0;
