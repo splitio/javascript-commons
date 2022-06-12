@@ -8,28 +8,29 @@ import { IResponse } from '../../services/types';
 /**
  * Base function to create submitters, such as ImpressionsSubmitter and EventsSubmitter
  */
-export function submitterFactory<TState>(
+export function submitterFactory<T>(
   log: ILogger,
   postClient: (body: string) => Promise<IResponse>,
-  sourceCache: IRecorderCacheProducerSync<TState>,
+  sourceCache: IRecorderCacheProducerSync<T>,
   postRate: number,
   dataName: string,
-  fromCacheToPayload?: (cacheData: TState) => any,
+  fromCacheToPayload?: (cacheData: T) => any,
   maxRetries: number = 0,
   debugLogs?: boolean // true for telemetry submitters
 ): ISyncTask<[], void> {
 
   let retries = 0;
-  let data: TState | undefined;
+  let data: any;
 
   function postData(): Promise<any> {
-    if (!data) {
+    if (data) {
+      if (Array.isArray(data) && !sourceCache.isEmpty()) data = data.concat(sourceCache.pop());
+    } else {
       if (sourceCache.isEmpty()) return Promise.resolve();
       // we clear the cache to track new items, while `data` is used for retries
       data = sourceCache.pop();
     }
 
-    // @ts-ignore
     const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
     log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
 

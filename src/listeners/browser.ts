@@ -89,7 +89,7 @@ export class BrowserSignalListener implements ISignalListener {
     if (this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
-  private _flushData<TState>(url: string, cache: IRecorderCacheProducerSync<TState>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {
+  private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
     // if there is data in cache, send it to backend
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.pop()) : cache.pop();
