@@ -24,6 +24,16 @@ test('IMPRESSION COUNTS CACHE / Impression Counter Test BasicUsage', () => {
   expect(Object.keys(counted).length).toBe(2);
   expect(counted[counter._makeKey('feature1', timestamp)]).toBe(3);
   expect(counted[counter._makeKey('feature2', timestamp)]).toBe(4);
+
+  // pop with merge
+  counter.track('feature1', timestamp, 1);
+  counter.track('feature3', timestamp, 10);
+  const countedWithMerge = counter.pop(counted);
+  expect(Object.keys(countedWithMerge).length).toBe(3);
+  expect(countedWithMerge[counter._makeKey('feature1', timestamp)]).toBe(4);
+  expect(countedWithMerge[counter._makeKey('feature2', timestamp)]).toBe(4);
+  expect(countedWithMerge[counter._makeKey('feature3', timestamp)]).toBe(10);
+
   counter.clear();
   expect(Object.keys(counter.pop()).length).toBe(0);
 

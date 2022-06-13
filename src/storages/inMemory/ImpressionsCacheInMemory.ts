@@ -43,10 +43,10 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
   /**
    * Pop the collected data, used as payload for posting.
    */
-  pop() {
+  pop(toMerge?: ImpressionDTO[]) {
     const data = this.queue;
     this.clear();
-    return data;
+    return toMerge ? toMerge.concat(data) : data;
   }
 
   /**

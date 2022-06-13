@@ -302,7 +302,7 @@ export interface IRecorderCacheProducerSync<T> {
   /* Clears cache data */
   clear(): void
   /* Pops cache data */
-  pop(): T
+  pop(toMerge?: T): T
 }
 
 
@@ -352,7 +352,7 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
 
   // Used by impressions count submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(): Record<string, number> // pop cache data
+  pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
 }
 
 

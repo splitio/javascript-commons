@@ -23,14 +23,9 @@ export function submitterFactory<T>(
   let data: any;
 
   function postData(): Promise<any> {
-    if (data) {
-      // if data is an array, append new items from cache
-      if (Array.isArray(data) && !sourceCache.isEmpty()) data = data.concat(sourceCache.pop());
-    } else {
-      if (sourceCache.isEmpty()) return Promise.resolve();
-      // we clear the cache to track new items, while `data` is used for retries
-      data = sourceCache.pop();
-    }
+    if (sourceCache.isEmpty() && !data) return Promise.resolve();
+    // we clear the cache to track new items, while `data` is used for retries
+    data = sourceCache.pop(data);
 
     const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
     log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
