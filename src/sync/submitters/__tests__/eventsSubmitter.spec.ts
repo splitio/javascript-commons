@@ -48,7 +48,7 @@ describe('Events submitter', () => {
     expect(eventsSubmitter.isRunning()).toEqual(false);
   });
 
-  test('without eventsFirstPushWindow', async () => {
+  test('without eventsFirstPushWindow', (done) => {
     const eventsFirstPushWindow = 0;
     params.settings.startup.eventsFirstPushWindow = eventsFirstPushWindow; // @ts-ignore
     const eventsSubmitter = eventsSubmitterFactory(params);
@@ -58,14 +58,19 @@ describe('Events submitter', () => {
     expect(eventsSubmitter.isExecuting()).toEqual(true); // and executes immediatelly if there isn't a push window
     expect(eventsCacheMock.isEmpty).toBeCalledTimes(1);
 
-    // If queue is full, submitter should be executed
+    // If queue is full, submitter is executed again after current execution is resolved
     __onFullQueueCb();
-    expect(eventsSubmitter.isExecuting()).toEqual(true);
-    expect(eventsCacheMock.isEmpty).toBeCalledTimes(2);
+    expect(eventsCacheMock.isEmpty).toBeCalledTimes(1);
 
-    expect(eventsSubmitter.isRunning()).toEqual(true);
-    eventsSubmitter.stop();
-    expect(eventsSubmitter.isRunning()).toEqual(false);
+    setTimeout(()=> {
+      expect(eventsSubmitter.isExecuting()).toEqual(false);
+      expect(eventsCacheMock.isEmpty).toBeCalledTimes(2); // 2 executions: 1st due to start and 2nd due to full queue
+
+      expect(eventsSubmitter.isRunning()).toEqual(true);
+      eventsSubmitter.stop();
+      expect(eventsSubmitter.isRunning()).toEqual(false);
+      done();
+    });
   });
 
   test('doesn\'t drop items from cache when POST is resolved', (done) => {
