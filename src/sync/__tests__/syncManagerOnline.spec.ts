@@ -40,3 +40,21 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   expect(submitter.stop).toBeCalledTimes(4);
 
 });
+
+test('syncManagerOnline should syncAll a single time in singleSync mode', () => {
+  const settings = { ...fullSettings };
+
+  settings.sync.singleSync = true;
+
+  const pollingManager = {
+    syncAll: jest.fn(),
+    start: jest.fn()
+  };
+  // @ts-ignore
+  const syncManager = syncManagerOnlineFactory(() => pollingManager)({ settings });
+
+  syncManager.start();
+
+  expect(pollingManager.start).not.toBeCalled();
+  expect(pollingManager.syncAll).toBeCalledTimes(1);
+});
