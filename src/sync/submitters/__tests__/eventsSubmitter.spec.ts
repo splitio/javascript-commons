@@ -1,6 +1,6 @@
 import { eventsSubmitterFactory } from '../eventsSubmitter';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-
+import { EventsCacheInMemory } from '../../../storages/inMemory/EventsCacheInMemory';
 
 
 describe('Events submitter', () => {
@@ -16,7 +16,7 @@ describe('Events submitter', () => {
       scheduler: { eventsPushRate: 30000 },
       startup: { eventsFirstPushWindow: 0 }
     },
-    splitApi: { postEventsBulkMock: jest.fn() },
+    splitApi: {},
     storage: { events: eventsCacheMock }
   };
 
@@ -66,6 +66,38 @@ describe('Events submitter', () => {
     expect(eventsSubmitter.isRunning()).toEqual(true);
     eventsSubmitter.stop();
     expect(eventsSubmitter.isRunning()).toEqual(false);
+  });
+
+  test('doesn\'t drop items from cache when POST is resolved', (done) => {
+    const eventsCacheInMemory = new EventsCacheInMemory();
+    const params = {
+      settings: { log: loggerMock, scheduler: { eventsPushRate: 100 }, startup: { eventsFirstPushWindow: 0 } },
+      storage: { events: eventsCacheInMemory },
+      splitApi: { postEventsBulk: jest.fn(() => Promise.resolve()) },
+    }; // @ts-ignore
+    const eventsSubmitter = eventsSubmitterFactory(params);
+
+    eventsCacheInMemory.track({ eventTypeId: 'event1', timestamp: 1 });
+
+    eventsSubmitter.start();
+    expect(params.splitApi.postEventsBulk.mock.calls).toEqual([['[{"eventTypeId":"event1","timestamp":1}]']]);
+
+    // Tracking event when POST is pending
+    eventsCacheInMemory.track({ eventTypeId: 'event2', timestamp: 1 });
+    // Tracking event when POST is resolved
+    setTimeout(() => { eventsCacheInMemory.track({ eventTypeId: 'event3', timestamp: 1 }); });
+
+    setTimeout(() => {
+      expect(params.splitApi.postEventsBulk.mock.calls).toEqual([
+        // POST with event1
+        ['[{"eventTypeId":"event1","timestamp":1}]'],
+        // POST with event2 and event3
+        ['[{"eventTypeId":"event2","timestamp":1},{"eventTypeId":"event3","timestamp":1}]']
+      ]);
+      eventsSubmitter.stop();
+
+      done();
+    }, params.settings.scheduler.eventsPushRate + 10);
   });
 
 });

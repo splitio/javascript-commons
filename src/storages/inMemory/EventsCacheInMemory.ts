@@ -46,10 +46,12 @@ export class EventsCacheInMemory implements IEventsCacheSync {
   }
 
   /**
-   * Get the collected data, used as payload for posting.
+   * Pop the collected data, used as payload for posting.
    */
-  state() {
-    return this.queue;
+  pop(toMerge?: SplitIO.EventData[]) {
+    const data = this.queue;
+    this.clear();
+    return toMerge ? toMerge.concat(data) : data;
   }
 
   /**
