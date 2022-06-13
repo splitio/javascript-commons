@@ -8,39 +8,39 @@ import { IResponse } from '../../services/types';
 /**
  * Base function to create submitters, such as ImpressionsSubmitter and EventsSubmitter
  */
-export function submitterFactory<TState>(
+export function submitterFactory<T>(
   log: ILogger,
   postClient: (body: string) => Promise<IResponse>,
-  sourceCache: IRecorderCacheProducerSync<TState>,
+  sourceCache: IRecorderCacheProducerSync<T>,
   postRate: number,
   dataName: string,
-  fromCacheToPayload?: (cacheData: TState) => any,
+  fromCacheToPayload?: (cacheData: T) => any,
   maxRetries: number = 0,
   debugLogs?: boolean // true for telemetry submitters
 ): ISyncTask<[], void> {
 
   let retries = 0;
+  let data: any;
 
   function postData(): Promise<any> {
-    if (sourceCache.isEmpty()) return Promise.resolve();
+    if (sourceCache.isEmpty() && !data) return Promise.resolve();
+    data = sourceCache.pop(data);
 
-    const data = sourceCache.state();
-    // @ts-ignore
     const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
     log[debugLogs ? 'debug' : 'info'](SUBMITTERS_PUSH, [dataCountMessage]);
 
     const jsonPayload = JSON.stringify(fromCacheToPayload ? fromCacheToPayload(data) : data);
-    if (!maxRetries) sourceCache.clear();
+    if (!maxRetries) data = undefined;
 
     return postClient(jsonPayload).then(() => {
       retries = 0;
-      sourceCache.clear(); // we clear the queue if request successes.
+      data = undefined;
     }).catch(err => {
       if (!maxRetries) {
         log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else if (retries === maxRetries) {
         retries = 0;
-        sourceCache.clear(); // we clear the queue if request fails after retries.
+        data = undefined;
         log[debugLogs ? 'debug' : 'warn'](SUBMITTERS_PUSH_FAILS, [dataCountMessage, err]);
       } else {
         retries++;

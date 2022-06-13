@@ -47,7 +47,7 @@ describe('PLUGGABLE EVENTS CACHE', () => {
     await Promise.all([cache.track(fakeEvent1), cache.track(fakeEvent2), cache.track(fakeEvent3)]);
     expect(await cache.count()).toBe(3);
     await cache.drop();
-    expect(await cache.count()).toBe(0); // storage should be empty after droping it
+    expect(await cache.count()).toBe(0); // storage should be empty after dropping it
 
     wrapperMock.mockClear();
   });
