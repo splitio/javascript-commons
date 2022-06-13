@@ -85,14 +85,20 @@ describe('Events submitter', () => {
     eventsCacheInMemory.track({ eventTypeId: 'event1', timestamp: 1 });
 
     eventsSubmitter.start();
+    expect(params.splitApi.postEventsBulk.mock.calls).toEqual([['[{"eventTypeId":"event1","timestamp":1}]']]);
+
     // Tracking event when POST is pending
     eventsCacheInMemory.track({ eventTypeId: 'event2', timestamp: 1 });
     // Tracking event when POST is resolved
     setTimeout(() => { eventsCacheInMemory.track({ eventTypeId: 'event3', timestamp: 1 }); });
 
     setTimeout(() => {
-      expect(params.splitApi.postEventsBulk).toBeCalledTimes(2);
-      expect(params.splitApi.postEventsBulk.mock.calls).toEqual([['[{"eventTypeId":"event1","timestamp":1}]'], ['[{"eventTypeId":"event2","timestamp":1},{"eventTypeId":"event3","timestamp":1}]']]);
+      expect(params.splitApi.postEventsBulk.mock.calls).toEqual([
+        // POST with event1
+        ['[{"eventTypeId":"event1","timestamp":1}]'],
+        // POST with event2 and event3
+        ['[{"eventTypeId":"event2","timestamp":1},{"eventTypeId":"event3","timestamp":1}]']
+      ]);
       eventsSubmitter.stop();
 
       done();

@@ -3,9 +3,9 @@ import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 
 /**
- * Creates a syncTask that handles the periodic execution of a given task (`start` and `stop` methods).
- * The task can be also executed calling the `execute` method. Multiple calls to `execute` are chained, so the task runs secuentially to avoid race conditions.
- * For example, submitters executed due to SDK destroy or full queues, while periodic execution is pending.
+ * Creates a syncTask that handles the periodic execution of a given task ("start" and "stop" methods).
+ * The task can be also executed by calling the "execute" method. Multiple execute calls are chained to run secuentially and avoid race conditions.
+ * For example, submitters executed on SDK destroy or full queue, while periodic execution is pending.
  *
  * @param log  Logger instance.
  * @param task  Task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
