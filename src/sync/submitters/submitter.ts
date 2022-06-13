@@ -24,7 +24,6 @@ export function submitterFactory<T>(
 
   function postData(): Promise<any> {
     if (sourceCache.isEmpty() && !data) return Promise.resolve();
-    // we clear the cache to track new items, while `data` is used for retries
     data = sourceCache.pop(data);
 
     const dataCountMessage = typeof data.length === 'number' ? `${data.length} ${dataName}` : dataName;
