@@ -24,6 +24,7 @@ export function submitterFactory<T>(
 
   function postData(): Promise<any> {
     if (data) {
+      // if data is an array, append new items from cache
       if (Array.isArray(data) && !sourceCache.isEmpty()) data = data.concat(sourceCache.pop());
     } else {
       if (sourceCache.isEmpty()) return Promise.resolve();
