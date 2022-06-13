@@ -10,6 +10,8 @@ const imp1 = {
   treatment: 'someTreatment',
   time: 0
 };
+const imp2 = { ...imp1, keyName: 'k2' };
+const imp3 = { ...imp1, keyName: 'k3' };
 
 describe('Impressions submitter', () => {
 
@@ -32,15 +34,15 @@ describe('Impressions submitter', () => {
     impressionsSubmitter.start();
 
     // Tracking impression when POST is pending
-    impressionsCacheInMemory.track([{ ...imp1, keyName: 'k2' }]);
+    impressionsCacheInMemory.track([imp2]);
     // Tracking impression after POST is resolved
-    setTimeout(() => { impressionsCacheInMemory.track([{ ...imp1, keyName: 'k3', }]); });
+    setTimeout(() => { impressionsCacheInMemory.track([imp3]); });
 
     setTimeout(() => {
       expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
-        // impression for k1
+        // POST with imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
-        // impressions for k2 and k3
+        // POST with imp2 and imp3
         ['[{"f":"someFeature","i":[{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123}]}]']]);
       impressionsSubmitter.stop();
 
@@ -56,15 +58,15 @@ describe('Impressions submitter', () => {
     impressionsSubmitter.start();
 
     // Tracking impression when POST is pending
-    impressionsCacheInMemory.track([{ ...imp1, keyName: 'k2' }]);
+    impressionsCacheInMemory.track([imp2]);
     // Tracking impression after POST is rejected
-    setTimeout(() => { impressionsCacheInMemory.track([{ ...imp1, keyName: 'k3', }]); });
+    setTimeout(() => { impressionsCacheInMemory.track([imp3]); });
 
     setTimeout(() => {
       expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
-        // impression for k1
+        // impression for imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
-        // impressions for k1, k2 and k3
+        // impressions for imp1, imp2 and imp3
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123},{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123}]}]']]);
       impressionsSubmitter.stop();
 
