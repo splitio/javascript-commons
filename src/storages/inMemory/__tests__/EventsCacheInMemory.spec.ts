@@ -39,13 +39,13 @@ test('EVENTS CACHE / Should be able to clear the queue and accumulated byte size
 test('EVENTS CACHE / Should be able to tell if the queue is empty', () => {
   const cache = new EventsCacheInMemory(500);
 
-  expect(cache.pop().length === 0).toBe(true); // The queue is empty,
+  expect(cache.pop().length).toBe(0); // The queue is empty,
   expect(cache.isEmpty()).toBe(true); // so if it is empty, it returns true.
 
   cache.track('test');
   expect(cache.isEmpty()).toBe(false); // it will return false.
 
-  expect(cache.pop().length > 0).toBe(true); // If we add something to the queue,
+  expect(cache.pop().length).toBe(1); // If we add something to the queue,
   expect(cache.isEmpty()).toBe(true); // it will return true.
 });
 
@@ -60,6 +60,10 @@ test('EVENTS CACHE / Should be able to return the DTO we will send to BE', () =>
 
   const json = cache.pop();
   expect(json).toEqual(queueValues); // For now the DTO is just an array of the saved events.
+
+  // pop with merge
+  cache.track(0); cache.track(1);
+  expect(cache.pop([2, 3, 4])).toEqual([2, 3, 4, 0, 1]);
 });
 
 test('EVENTS CACHE / Should call "onFullQueueCb" when the queue is full (count wise).', () => {

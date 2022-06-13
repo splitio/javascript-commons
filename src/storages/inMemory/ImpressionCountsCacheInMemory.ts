@@ -25,9 +25,16 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
   /**
    * Pop the collected data, used as payload for posting.
    */
-  pop() {
+  pop(toMerge?: Record<string, number>) {
     const data = this.cache;
     this.clear();
+    if (toMerge) {
+      Object.keys(data).forEach((key) => {
+        if (toMerge[key]) toMerge[key] += data[key];
+        else toMerge[key] = data[key];
+      });
+      return toMerge;
+    }
     return data;
   }
 
