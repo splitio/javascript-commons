@@ -41,7 +41,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     await c.track([o1, o2, o3]);
     expect(await c.count()).toBe(3);
     await c.drop();
-    expect(await c.count()).toBe(0); // storage should be empty after droping it
+    expect(await c.count()).toBe(0); // storage should be empty after dropping it
 
     await connection.del(impressionsKey);
     await connection.quit();
