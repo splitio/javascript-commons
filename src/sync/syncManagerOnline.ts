@@ -89,15 +89,24 @@ export function syncManagerOnlineFactory(
 
         // start syncing splits and segments
         if (pollingManager) {
-          if (pushManager) {
-            // Doesn't call `syncAll` when the syncManager is resuming
+
+          // If singleSync is enabled pushManager and pollingManager should not start
+          if (settings.sync.singleSync === true) {
             if (startFirstTime) {
               pollingManager.syncAll();
               startFirstTime = false;
             }
-            pushManager.start();
           } else {
-            pollingManager.start();
+            if (pushManager) {
+              // Doesn't call `syncAll` when the syncManager is resuming
+              if (startFirstTime) {
+                pollingManager.syncAll();
+                startFirstTime = false;
+              }
+              pushManager.start();
+            } else {
+              pollingManager.start();
+            }
           }
         }
 
@@ -138,18 +147,22 @@ export function syncManagerOnlineFactory(
         return {
           isRunning: mySegmentsSyncTask.isRunning,
           start() {
-            if (pushManager) {
-              if (pollingManager!.isRunning()) {
-                // if doing polling, we must start the periodic fetch of data
-                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
-              } else {
-                // if not polling, we must execute the sync task for the initial fetch
-                // of segments since `syncAll` was already executed when starting the main client
-                mySegmentsSyncTask.execute();
-              }
-              pushManager.add(matchingKey, mySegmentsSyncTask);
+            if (settings.sync.singleSync === true) {
+              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
             } else {
-              if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              if (pushManager) {
+                if (pollingManager!.isRunning()) {
+                  // if doing polling, we must start the periodic fetch of data
+                  if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+                } else {
+                  // if not polling, we must execute the sync task for the initial fetch
+                  // of segments since `syncAll` was already executed when starting the main client
+                  mySegmentsSyncTask.execute();
+                }
+                pushManager.add(matchingKey, mySegmentsSyncTask);
+              } else {
+                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              }
             }
           },
           stop() {
