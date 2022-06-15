@@ -2,6 +2,7 @@ import { IReadinessManager } from '../readiness/types';
 import { IStorageSync } from '../storages/types';
 import { IPollingManager } from './polling/types';
 import { IPushManager } from './streaming/types';
+import { ISubmitterManager } from './submitters/types';
 
 export interface ITask<Input extends any[] = []> {
   /**
@@ -39,7 +40,7 @@ export interface ISyncManager extends ITask {
   flush(): Promise<any>,
   pushManager?: IPushManager,
   pollingManager?: IPollingManager,
-  submitter?: ISyncTask
+  submitterManager?: ISubmitterManager
 }
 
 export interface ISyncManagerCS extends ISyncManager {
