@@ -1,3 +1,6 @@
+1.4.1 (June 13, 2022)
+ - Bugfixing - Updated submitters logic, to avoid dropping impressions and events that are being tracked while POST request is pending.
+
 1.4.0 (May 24, 2022)
  - Added `scheduler.telemetryRefreshRate` property to SDK configuration, and deprecated `scheduler.metricsRefreshRate` property.
  - Updated SDK telemetry storage, metrics and updater to be more effective and send less often.

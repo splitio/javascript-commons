@@ -14,7 +14,7 @@ export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
 export function assertSyncRecorderCacheInterface(cache: IEventsCacheSync | IImpressionsCacheSync) {
   expect(typeof cache.isEmpty).toBe('function');
   expect(typeof cache.clear).toBe('function');
-  expect(typeof cache.state).toBe('function');
+  expect(typeof cache.pop).toBe('function');
   expect(typeof cache.track).toBe('function');
 }
 

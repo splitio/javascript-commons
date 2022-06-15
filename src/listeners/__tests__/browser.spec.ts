@@ -9,7 +9,7 @@ jest.mock('../../sync/submitters/telemetrySubmitter', () => {
       return {
         isEmpty: () => false,
         clear: () => { },
-        state: () => ({}),
+        pop: () => ({}),
       };
     }
   };
@@ -43,21 +43,21 @@ const fakeStorageOptimized = { // @ts-expect-error
   impressions: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return [fakeImpression];
     }
   } as IImpressionsCacheSync, // @ts-expect-error
   events: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return [fakeEvent];
     }
   } as IEventsCacheSync, // @ts-expect-error
   impressionCounts: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return fakeImpressionCounts;
     }
   } as IImpressionCountsCacheSync,
