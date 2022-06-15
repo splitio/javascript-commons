@@ -17,22 +17,29 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmit
   const telemetrySubmitter = telemetrySubmitterFactory(params);
 
   return {
+    // `onlyTelemetry` true if SDK is created with userConsent not GRANTED
     start(onlyTelemetry?: boolean) {
       if (!onlyTelemetry) submitters.forEach(submitter => submitter.start());
       if (telemetrySubmitter) telemetrySubmitter.start();
     },
+
+    // `allExceptTelemetry` true if userConsent is changed to DECLINED
     stop(allExceptTelemetry?: boolean) {
       submitters.forEach(submitter => submitter.stop());
       if (!allExceptTelemetry && telemetrySubmitter) telemetrySubmitter.stop();
     },
+
     isRunning() {
       return submitters.some(submitter => submitter.isRunning());
     },
+
+    // Flush data. Called with `onlyTelemetry` true if SDK is destroyed with userConsent not GRANTED
     execute(onlyTelemetry?: boolean) {
       const promises = onlyTelemetry ? [] : submitters.map(submitter => submitter.execute());
       if (telemetrySubmitter) promises.push(telemetrySubmitter.execute());
       return Promise.all(promises);
     },
+
     isExecuting() {
       return submitters.some(submitter => submitter.isExecuting());
     }
