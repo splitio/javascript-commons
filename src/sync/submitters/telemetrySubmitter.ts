@@ -19,7 +19,7 @@ export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, split
     clear() { }, //  No-op
 
     // @TODO consider moving inside telemetry cache for code size reduction
-    state(): TelemetryUsageStatsPayload {
+    pop(): TelemetryUsageStatsPayload {
       return {
         lS: telemetry.getLastSynchronization(),
         mL: telemetry.popLatencies(),
@@ -88,7 +88,7 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
     isEmpty() { return false; },
     clear() { },
 
-    state(): TelemetryConfigStatsPayload {
+    pop(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
       const isClientSide = settings.core.key !== undefined;
 

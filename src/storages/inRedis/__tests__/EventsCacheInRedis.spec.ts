@@ -50,7 +50,7 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
   await Promise.all([cache.track(fakeEvent1), cache.track(fakeEvent2), cache.track(fakeEvent3)]);
   expect(await cache.count()).toBe(3);
   await cache.drop();
-  expect(await cache.count()).toBe(0); // storage should be empty after droping it
+  expect(await cache.count()).toBe(0); // storage should be empty after dropping it
 
   // Clean up then end.
   await connection.del(eventsKey, nonListKey);

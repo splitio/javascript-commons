@@ -86,7 +86,7 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
     await cache.track([o1, o2, o3]);
     expect(await cache.count()).toBe(3);
     await cache.drop();
-    expect(await cache.count()).toBe(0); // storage should be empty after droping it
+    expect(await cache.count()).toBe(0); // storage should be empty after dropping it
 
   });
 
