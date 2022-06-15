@@ -23,17 +23,9 @@ const paramsMock = {
   start: jest.fn()
 };
 
-const ALWAYS_ON_SPLIT = '{"trafficTypeName":"user","name":"always-on","trafficAllocation":100,"trafficAllocationSeed":1012950810,"seed":-725161385,"status":"ACTIVE","killed":false,"defaultTreatment":"off","changeNumber":1494364996459,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":100},{"treatment":"off","size":0}],"label":"in segment all"}]}';
-const ALWAYS_OFF_SPLIT = '{"trafficTypeName":"user","name":"always-off","trafficAllocation":100,"trafficAllocationSeed":-331690370,"seed":403891040,"status":"ACTIVE","killed":false,"defaultTreatment":"on","changeNumber":1494365020316,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":0},{"treatment":"off","size":100}],"label":"in segment all"}]}';
-
-const STORED_SPLITS: Record<string, string> = {};
-STORED_SPLITS['always-on'] = ALWAYS_ON_SPLIT;
-STORED_SPLITS['always-off'] = ALWAYS_OFF_SPLIT;
-
 // Mocked storageManager
 const storageManagerMock = {
   splits: {
-    getSplit: (name: string) => STORED_SPLITS[name],
     usesSegments: () => false
   }
 };
@@ -101,33 +93,34 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
   settings.sync.singleSync = true;
 
   // @ts-ignore
-  const pollingSyncManager = syncManagerOnlineFactory(() => pollingManagerMock)({ settings });
+  // Test pushManager for main client
+  const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, () => pushManagerMock)({ settings });
 
-  expect(pollingSyncManager.pushManager).toBeUndefined();
+  expect(syncManager.pushManager).toBeUndefined();
 
   // Test pollingManager for Main client
-  pollingSyncManager.start();
+  syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
 
-  pollingSyncManager.stop();
-  pollingSyncManager.start();
+  syncManager.stop();
+  syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
 
-  pollingSyncManager.stop();
-  pollingSyncManager.start();
+  syncManager.stop();
+  syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
 
-  pollingSyncManager.stop();
+  syncManager.stop();
 
   // @ts-ignore
   // Test pollingManager for shared client
-  const pollingSyncManagerShared = pollingSyncManager.shared('sharedKey', readinessManagerMock, storageManagerMock);
+  const pollingSyncManagerShared = syncManager.shared('sharedKey', readinessManagerMock, storageManagerMock);
 
   if (!pollingSyncManagerShared) throw new Error('pollingSyncManagerShared should exist');
 
@@ -142,26 +135,22 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
 
   pollingSyncManagerShared.stop();
 
-  // @ts-ignore
-  // Test pushManager for main client
-  const pushingSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, () => pushManagerMock)({ settings });
-
-  pushingSyncManager.start();
+  syncManager.start();
 
   expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
-  pushingSyncManager.stop();
-  pushingSyncManager.start();
+  syncManager.stop();
+  syncManager.start();
 
   expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
-  pushingSyncManager.stop();
+  syncManager.stop();
 
   // @ts-ignore
   // Test pollingManager for shared client
-  const pushingSyncManagerShared = pushingSyncManager.shared('pushingSharedKey', readinessManagerMock, storageManagerMock);
+  const pushingSyncManagerShared = syncManager.shared('pushingSharedKey', readinessManagerMock, storageManagerMock);
 
   if (!pushingSyncManagerShared) throw new Error('pushingSyncManagerShared should exist');
 
