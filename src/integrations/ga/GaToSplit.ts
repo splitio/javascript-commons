@@ -292,37 +292,3 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
   providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire);
 }
-
-
-// @TODO if it will be used outside the SplitFactory, move to a file for code size reduction
-export function autoRequireScript() {
-  (function (i: any, r: string, s: string) {
-    i[s] = i[s] || r;
-    i[r] = i[r] || function () { i[r].q.push(arguments); };
-    i[r].q = i[r].q || [];
-
-    var ts: any = {}; // Tracker names
-    var o = i[r].q.push; // Reference to Array.prototype.push
-    i[r].q.push = function (v: any) {
-      var result = o.apply(this, arguments);
-
-      if (v && v[0] === 'create') {
-        var t = typeof v[2] === 'object' && typeof v[2].name === 'string' ?
-          v[2].name : // `ga('create', 'UA-ID', { name: 'trackerName', ... })`
-          typeof v[3] === 'object' && typeof v[3].name === 'string' ?
-            v[3].name : // `ga('create', 'UA-ID', 'auto', { name: 'trackerName', ... })`
-            typeof v[3] === 'string' ?
-              v[3] : // `ga('create', 'UA-ID', 'auto', 'trackerName')`
-              undefined; // No name tracker, e.g.: `ga('create', 'UA-ID', 'auto')`
-
-        if (!ts[t]) {
-          ts[t] = true;
-          i[r](t ? t + '.require' : 'require', 'splitTracker'); // Auto-require
-        }
-      }
-
-      return result;
-    };
-
-  })(window, 'ga', 'GoogleAnalyticsObject');
-}

@@ -1,7 +1,8 @@
 /* eslint-disable no-undef */
 import { IEventsCacheSync } from '../../../storages/types';
 import { SplitIO, ISettings } from '../../../types';
-import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId, autoRequireScript } from '../GaToSplit';
+import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
+import { autoRequire } from '../autoRequire';
 import { gaMock, gaRemove, modelMock } from './gaMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -256,11 +257,12 @@ test('GaToSplit: `hits` flag param', () => {
 test('GaToSplit: `autoRequire` flag param', () => {
   // test setup
   gaMock();
+  loggerMock.error.mockClear();
 
   GaToSplit({ autoRequire: true }, fakeParams as any);
   expect(loggerMock.error).toBeCalledTimes(1);
 
-  autoRequireScript();
+  autoRequire();
 
   GaToSplit({ autoRequire: true }, fakeParams as any);
   expect(loggerMock.error).toBeCalledTimes(1);
