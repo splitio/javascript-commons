@@ -291,17 +291,16 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
 }
 
 export function autoRequireScript() {
-  (function (i: any, r: any) {
-    i['GoogleAnalyticsObject'] = i['GoogleAnalyticsObject'] || r;
+  (function (i: any, r: string, s: string) {
+    i[s] = i[s] || r;
     i[r] = i[r] || function () { i[r].q.push(arguments); };
     i[r].q = i[r].q || [];
 
     var ts: any = {}; // Tracker names
     var o = i[r].q.push; // Reference to Array.prototype.push
-    i[r].q.push = function () {
+    i[r].q.push = function (v: any) {
       var result = o.apply(this, arguments);
 
-      var v = arguments[0];
       if (v && v[0] === 'create') {
         var t = typeof v[2] === 'object' && typeof v[2].name === 'string' ?
           v[2].name : // `ga('create', 'UA-ID', { name: 'trackerName', ... })`
@@ -309,7 +308,7 @@ export function autoRequireScript() {
             v[3].name : // `ga('create', 'UA-ID', 'auto', { name: 'trackerName', ... })`
             typeof v[3] === 'string' ?
               v[3] : // `ga('create', 'UA-ID', 'auto', 'trackerName')`
-              undefined; // No name tracker, `ga('create', 'UA-ID', 'auto')`
+              undefined; // No name tracker, e.g.: `ga('create', 'UA-ID', 'auto')`
 
         if (!ts[t]) {
           ts[t] = true;
@@ -320,5 +319,5 @@ export function autoRequireScript() {
       return result;
     };
 
-  })(window, 'ga');
+  })(window, 'ga', 'GoogleAnalyticsObject');
 }
