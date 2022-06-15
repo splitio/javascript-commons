@@ -1,9 +1,6 @@
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { syncTaskFactory } from './syncTask.mock';
 import { syncManagerOnlineFactory } from '../syncManagerOnline';
-import { pushManagerFactory } from '../streaming/pushManager';
-import { IPushManager } from '../streaming/types';
-import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../../readiness/types';
 
 jest.mock('../submitters/submitterManager', () => {
@@ -11,17 +8,6 @@ jest.mock('../submitters/submitterManager', () => {
     submitterManagerFactory: syncTaskFactory
   };
 });
-
-const paramsMock = {
-  platform: {
-    getEventSource: jest.fn(() => { return () => { }; }),
-    EventEmitter
-  },
-  settings: fullSettings,
-  storage: {},
-  readiness: {},
-  start: jest.fn()
-};
 
 // Mocked storageManager
 const storageManagerMock = {
@@ -47,12 +33,14 @@ const pollingManagerMock = {
   get: jest.fn()
 };
 
-// Mocked pushManager
-const pushManagerMock = pushManagerFactory({ // @ts-ignore
-  ...paramsMock, splitApi: { fetchAuth: jest.fn() }
-}, {}) as IPushManager;
+const pushManagerMock = {
+  start: jest.fn(),
+  on: jest.fn(),
+  stop: jest.fn()
+};
 
-pushManagerMock.start = jest.fn();
+// Mocked pushManager
+const pushManagerFactoryMock = jest.fn(() => pushManagerMock);
 
 test('syncManagerOnline should start or not the submitter depending on user consent status', () => {
   const settings = { ...fullSettings };
@@ -94,9 +82,9 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
 
   // @ts-ignore
   // Test pushManager for main client
-  const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, () => pushManagerMock)({ settings });
+  const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({ settings });
 
-  expect(syncManager.pushManager).toBeUndefined();
+  expect(pushManagerFactoryMock).not.toBeCalled();
 
   // Test pollingManager for Main client
   syncManager.start();
@@ -137,13 +125,11 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
 
   syncManager.start();
 
-  expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
   syncManager.stop();
   syncManager.start();
 
-  expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
   syncManager.stop();
@@ -156,13 +142,11 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
 
   pushingSyncManagerShared.start();
 
-  expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
   pushingSyncManagerShared.stop();
   pushingSyncManagerShared.start();
 
-  expect(pushManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.start).not.toBeCalled();
 
   pushingSyncManagerShared.stop();
@@ -170,9 +154,9 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
   settings.sync.singleSync = false;
   // @ts-ignore
   // pushManager instantiation control test
-  const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, () => pushManagerMock)({ settings });
+  const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({ settings });
 
-  expect(testSyncManager.pushManager).not.toBeUndefined();
+  expect(pushManagerFactoryMock).toBeCalled();
 
   // Test pollingManager for Main client
   testSyncManager.start();
