@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { IEventsCacheSync } from '../../../storages/types';
 import { SplitIO, ISettings } from '../../../types';
-import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
+import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId, autoRequireScript } from '../GaToSplit';
 import { gaMock, gaRemove, modelMock } from './gaMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -248,6 +248,22 @@ test('GaToSplit: `hits` flag param', () => {
   (fakeStorage.events.track as jest.Mock).mockClear();
   window.ga('send', hitSample);
   expect(fakeStorage.events.track).toBeCalledTimes(0);
+
+  // test teardown
+  gaRemove();
+});
+
+test('GaToSplit: `autoRequire` flag param', () => {
+  // test setup
+  gaMock();
+
+  GaToSplit({ autoRequire: true }, fakeParams as any);
+  expect(loggerMock.error).toBeCalledTimes(1);
+
+  autoRequireScript();
+
+  GaToSplit({ autoRequire: true }, fakeParams as any);
+  expect(loggerMock.error).toBeCalledTimes(1);
 
   // test teardown
   gaRemove();

@@ -19,23 +19,26 @@ const logNameMapper = 'ga-to-split:mapper';
 /**
  * Provides a plugin to use with analytics.js, accounting for the possibility
  * that the global command queue has been renamed or not yet defined.
- * @param {string} pluginName The plugin name identifier.
- * @param {Function} pluginConstructor The plugin constructor function.
- * @param {boolean} autoRequire Whether the integration should automatically queue a 'require' command for each 'create' command.
+ * @param window Reference to global object.
+ * @param pluginName The plugin name identifier.
+ * @param pluginConstructor The plugin constructor function.
+ * @param log Logger instance.
+ * @param autoRequire If true, log error when auto-require script is not detected
  */
-function providePlugin(pluginName: string, pluginConstructor: Function, autoRequire?: boolean) {
+function providePlugin(window: any, pluginName: string, pluginConstructor: Function, log: ILogger, autoRequire?: boolean) {
   // get reference to global command queue. Init it if not defined yet.
-  // @ts-expect-error
   const gaAlias = window.GoogleAnalyticsObject || 'ga';
-  window[gaAlias] = window[gaAlias] || function (...args: any[]) { // @ts-expect-error
-    (window[gaAlias].q = window[gaAlias].q || []).push(args);
+  window[gaAlias] = window[gaAlias] || function () {
+    (window[gaAlias].q = window[gaAlias].q || []).push(arguments);
   };
 
   // provides the plugin for use with analytics.js.
-  // @ts-expect-error
   window[gaAlias]('provide', pluginName, pluginConstructor);
 
-  if (autoRequire) autoRequireScript();
+  if (autoRequire && (!window[gaAlias].q || window[gaAlias].q.push === [].push)) {
+    // Expecting spy on ga.q push method but not found
+    log.error('Auto-require script was expected but not provided.');
+  }
 }
 
 // Default mapping: object used for building the default mapper from hits to Split events
@@ -287,9 +290,11 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
-  providePlugin('splitTracker', SplitTracker, sdkOptions.autoRequire);
+  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire);
 }
 
+
+// @TODO if it will be used outside the SplitFactory, move to a file for code size reduction
 export function autoRequireScript() {
   (function (i: any, r: string, s: string) {
     i[s] = i[s] || r;
