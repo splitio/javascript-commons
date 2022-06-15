@@ -28,13 +28,13 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISdkFactoryContextSync): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled }, telemetryTracker } = params;
+    const { settings, settings: { log, streamingEnabled, sync: { singleSync } },  telemetryTracker } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
 
     /** Push Manager */
-    const pushManager = streamingEnabled && pollingManager && pushManagerFactory ?
+    const pushManager = !singleSync && streamingEnabled && pollingManager && pushManagerFactory ?
       pushManagerFactory(params, pollingManager) :
       undefined;
 
@@ -91,7 +91,7 @@ export function syncManagerOnlineFactory(
         if (pollingManager) {
 
           // If singleSync is enabled pushManager and pollingManager should not start
-          if (settings.sync.singleSync === true) {
+          if (singleSync === true) {
             if (startFirstTime) {
               pollingManager.syncAll();
               startFirstTime = false;
@@ -147,7 +147,7 @@ export function syncManagerOnlineFactory(
         return {
           isRunning: mySegmentsSyncTask.isRunning,
           start() {
-            if (settings.sync.singleSync === true) {
+            if (singleSync === true) {
               if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
             } else {
               if (pushManager) {
