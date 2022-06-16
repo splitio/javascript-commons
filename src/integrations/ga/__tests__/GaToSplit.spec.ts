@@ -254,7 +254,7 @@ test('GaToSplit: `hits` flag param', () => {
   gaRemove();
 });
 
-test('GaToSplit: `autoRequire` flag param', () => {
+test('GaToSplit: `autoRequire` script and flag param', () => {
   // test setup
   gaMock();
   loggerMock.error.mockClear();
@@ -266,6 +266,20 @@ test('GaToSplit: `autoRequire` flag param', () => {
 
   GaToSplit({ autoRequire: true }, fakeParams as any);
   expect(loggerMock.error).toBeCalledTimes(1);
+
+  // Assert auto-require script
+  window.ga('create', 'UA-ID-0');
+  window.ga('create', 'UA-ID-1', 'auto', 't1');
+  window.ga('create', 'UA-ID-2', { name: 't2' });
+  window.ga('create', 'UA-ID-3', 'auto', { name: 't3' });
+
+  expect(window.ga.q.map(args => args[0])).toEqual([
+    'provide', 'provide',
+    'create', 'require',
+    'create', 't1.require',
+    'create', 't2.require',
+    'create', 't3.require',
+  ]);
 
   // test teardown
   gaRemove();
