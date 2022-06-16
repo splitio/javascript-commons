@@ -2,7 +2,6 @@
 import { IEventsCacheSync } from '../../../storages/types';
 import { SplitIO, ISettings } from '../../../types';
 import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
-import { autoRequire } from '../autoRequire';
 import { gaMock, gaRemove, modelMock } from './gaMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -262,7 +261,8 @@ test('GaToSplit: `autoRequire` script and flag param', () => {
   GaToSplit({ autoRequire: true }, fakeParams as any);
   expect(loggerMock.error).toBeCalledTimes(1);
 
-  autoRequire();
+  // Run autoRequire iife
+  require('../autoRequire.js');
 
   GaToSplit({ autoRequire: true }, fakeParams as any);
   expect(loggerMock.error).toBeCalledTimes(1);
