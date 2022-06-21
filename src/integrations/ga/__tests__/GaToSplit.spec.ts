@@ -272,6 +272,7 @@ test('GaToSplit: `autoRequire` script and flag param', () => {
   window.ga('create', 'UA-ID-1', 'auto', 't1');
   window.ga('create', 'UA-ID-2', { name: 't2' });
   window.ga('create', 'UA-ID-3', 'auto', { name: 't3' });
+  window.ga('create', { trackingId: 'UA-ID-4', name: 't4' });
 
   expect(window.ga.q.map(args => args[0])).toEqual([
     'provide', 'provide',
@@ -279,6 +280,7 @@ test('GaToSplit: `autoRequire` script and flag param', () => {
     'create', 't1.require',
     'create', 't2.require',
     'create', 't3.require',
+    'create', 't4.require',
   ]);
 
   // test teardown
