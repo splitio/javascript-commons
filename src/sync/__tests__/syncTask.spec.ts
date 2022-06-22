@@ -5,7 +5,7 @@ const period = 30;
 const taskResult = 'taskResult';
 const asyncTask = jest.fn(() => Promise.resolve(taskResult));
 
-test('syncTaskFactory', (done) => {
+test('syncTaskFactory / start & stop methods for periodic execution', async () => {
 
   const syncTask = syncTaskFactory<number[], string>(loggerMock, asyncTask, period);
 
@@ -40,45 +40,75 @@ test('syncTaskFactory', (done) => {
 
   expect(syncTask.isExecuting()).toBe(true); // Executing
 
-  setTimeout(() => {
-    expect(asyncTask).toHaveBeenLastCalledWith(...startArgs); // Periodic call should be done with the initial `start` arguments
-    expect(asyncTask).toBeCalledTimes(4); // The task was executed 4 times: twice due to periodic execution and twice due to execute call
+  await new Promise(res => setTimeout(res, period + 10));
+  expect(asyncTask).toHaveBeenLastCalledWith(...startArgs); // Periodic call should be done with the initial `start` arguments
+  expect(asyncTask).toBeCalledTimes(4); // The task was executed 4 times: twice due to periodic execution and twice due to execute call
 
-    setTimeout(() => {
-      expect(asyncTask).toHaveBeenLastCalledWith(...startArgs); // Periodic call should be done with the initial `start` arguments
-      expect(asyncTask).toBeCalledTimes(5); // The task was executed 5 times: 3 due to periodic execution and twice due to execute call
+  await new Promise(res => setTimeout(res, period + 10));
+  expect(asyncTask).toHaveBeenLastCalledWith(...startArgs); // Periodic call should be done with the initial `start` arguments
+  expect(asyncTask).toBeCalledTimes(5); // The task was executed 5 times: 3 due to periodic execution and twice due to execute call
 
-      // Calling `stop` stops the periodic execution of the given task
-      expect(syncTask.isRunning()).toBe(true); // Running periodically
-      syncTask.stop();
-      expect(syncTask.isRunning()).toBe(false); // Stop running periodically
+  // Calling `stop` stops the periodic execution of the given task
+  expect(syncTask.isRunning()).toBe(true); // Running periodically
+  syncTask.stop();
+  expect(syncTask.isRunning()).toBe(false); // Stop running periodically
 
-      setTimeout(() => {
-        expect(asyncTask).toBeCalledTimes(5); // Stopped task should not be called again
+  await new Promise(res => setTimeout(res, period + 10));
+  expect(asyncTask).toBeCalledTimes(5); // Stopped task should not be called again
 
-        // Stopping and starting
-        syncTask.stop();
-        syncTask.start(); // Inmediatelly call task
-        syncTask.stop();
-        syncTask.start(); // Inmediatelly call task
-        syncTask.stop();
-        expect(asyncTask).toBeCalledTimes(7);
+  // Stopping and starting
+  syncTask.stop();
+  syncTask.start(); // Inmediatelly call task
+  syncTask.stop();
+  syncTask.start(); // Doesn't call task since previous one has not been resolved
+  syncTask.stop();
+  expect(asyncTask).toBeCalledTimes(6);
 
-        // Resume periodic execution
-        syncTask.start(); // Inmediatelly call task
-        syncTask.start(); // No effect
-        expect(asyncTask).toBeCalledTimes(8);
+  // Resume periodic execution
+  syncTask.start(); // Doesn't call task since previous one has not been resolved
+  syncTask.start(); // No effect
+  expect(asyncTask).toBeCalledTimes(6);
 
-        setTimeout(() => {
-          expect(asyncTask).toBeCalledTimes(9); // Stopped task should not be called again
-          expect(syncTask.isRunning()).toBe(true); // Running periodically
-          syncTask.stop(); // Finally stop to finish the test
-          expect(syncTask.isRunning()).toBe(false); // Stop running periodically
+  await new Promise(res => setTimeout(res, period + 10));
+  expect(asyncTask).toBeCalledTimes(9); // Stopped task should not be called again
+  expect(syncTask.isRunning()).toBe(true); // Running periodically
+  syncTask.stop(); // Finally stop to finish the test
+  expect(syncTask.isRunning()).toBe(false); // Stop running periodically
 
-          done();
-        }, period + 10);
-      }, period + 10);
-    }, period + 10);
-  }, period + 10);
+});
+
+test('syncTaskFactory / execute method', (done) => {
+  let executeCount = 0;
+  let resolveOrder = 0;
+  const asyncTask = jest.fn((toReturn) => {
+    executeCount++;
+    return new Promise(res => setTimeout(() => res(toReturn)));
+  });
+
+  const syncTask = syncTaskFactory(loggerMock, asyncTask, period);
+
+  syncTask.execute(1).then(result=> {
+    // console.log('1');
+    resolveOrder++;
+    expect(resolveOrder).toBe(1); // @TODO should be 1 ?
+    expect(executeCount).toBe(1);
+    expect(result).toBe(1); // @TODO should be 1
+  });
+  syncTask.execute(2).then(result=> {
+    // console.log('2');
+    resolveOrder++;
+    expect(resolveOrder).toBe(2);
+    expect(executeCount).toBe(3); // @TODO borrar
+    expect(result).toBe(2); // @TODO should be 2
+  });
+  syncTask.execute(3).then(result=> {
+    // console.log('3');
+    resolveOrder++;
+    expect(resolveOrder).toBe(3); // @TODO should be 3 ?
+    expect(executeCount).toBe(3);
+    expect(result).toBe(3);
+
+    done();
+  });
 
 });

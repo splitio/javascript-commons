@@ -34,9 +34,10 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
         settings.userConsent = newConsentStatus;
 
         if (consent) { // resumes submitters if transitioning to GRANTED
-          syncManager?.submitter?.start();
-        } else { // pauses submitters and drops tracked data if transitioning to DECLINED
-          syncManager?.submitter?.stop();
+          syncManager?.submitterManager?.start();
+        } else { // pauses submitters (except telemetry), and drops tracked data if transitioning to DECLINED
+          syncManager?.submitterManager?.stop(true);
+
           // @ts-ignore, clear method is present in storage for standalone and partial consumer mode
           if (events.clear) events.clear(); // @ts-ignore
           if (impressions.clear) impressions.clear();
