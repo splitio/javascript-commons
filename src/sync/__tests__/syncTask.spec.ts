@@ -5,7 +5,7 @@ const period = 30;
 const taskResult = 'taskResult';
 const asyncTask = jest.fn(() => Promise.resolve(taskResult));
 
-test('syncTaskFactory / periodic execution', async () => {
+test('syncTaskFactory / start & stop methods for periodic execution', async () => {
 
   const syncTask = syncTaskFactory<number[], string>(loggerMock, asyncTask, period);
 
@@ -77,7 +77,7 @@ test('syncTaskFactory / periodic execution', async () => {
 
 });
 
-test('syncTaskFactory / chaining executions', (done) => {
+test('syncTaskFactory / execute method', (done) => {
   let executeCount = 0;
   let resolveOrder = 0;
   const asyncTask = jest.fn((toReturn) => {
