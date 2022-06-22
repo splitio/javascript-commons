@@ -40,7 +40,7 @@ describe('settingsValidation', () => {
       telemetry: 'https://telemetry.split.io/api',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
-    expect(settings.sync.singleSync).toBe(false);
+    expect(settings.sync.enabled).toBe(true);
   });
 
   test('override with default impressionMode if provided one is invalid', () => {
@@ -164,23 +164,24 @@ describe('settingsValidation', () => {
     expect(settingsWithStreamingEnabled.streamingEnabled).toBe(true); // If streamingEnabled is not provided, it will be true.
   });
 
-  test('singleSync should be overwritable and false by default', () => {
-    const settingsWithSingleSyncDisabled = settingsValidation({
+  test('sync.enabled should be overwritable and true by default', () => {
+    const settingsWithSyncEnabled = settingsValidation({
       core: {
         authorizationKey: 'dummy token',
       }
     }, minimalSettingsParams);
-    const settingsWithSingleSyncEnabled = settingsValidation({
+
+    const settingsWithSyncDisabled = settingsValidation({
       core: {
         authorizationKey: 'dummy token'
       },
       sync: {
-        singleSync: true
+        enabled: false
       }
     }, minimalSettingsParams);
 
-    expect(settingsWithSingleSyncDisabled.sync.singleSync).toBe(false); // If singleSync is not provided, it will be true.
-    expect(settingsWithSingleSyncEnabled.sync.singleSync).toBe(true); // When creating a setting instance, it will have the provided value for singleSync
+    expect(settingsWithSyncDisabled.sync.enabled).toBe(false); // If sync.enabled is not provided, it will be true.
+    expect(settingsWithSyncEnabled.sync.enabled).toBe(true); // When creating a setting instance, it will have the provided value for sync.enabled
 
   });
 

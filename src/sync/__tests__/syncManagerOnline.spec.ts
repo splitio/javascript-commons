@@ -74,11 +74,11 @@ test('syncManagerOnline should start or not the submitter depending on user cons
 
 });
 
-test('syncManagerOnline should syncAll a single time in singleSync mode', () => {
+test('syncManagerOnline should syncAll a single time when sync is disabled', () => {
   const settings = { ...fullSettings };
 
-  // Enable single sync
-  settings.sync.singleSync = true;
+  // disable sync
+  settings.sync.enabled = false;
 
   // @ts-ignore
   // Test pushManager for main client
@@ -151,7 +151,7 @@ test('syncManagerOnline should syncAll a single time in singleSync mode', () => 
 
   pushingSyncManagerShared.stop();
 
-  settings.sync.singleSync = false;
+  settings.sync.enabled = true;
   // @ts-ignore
   // pushManager instantiation control test
   const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({ settings });

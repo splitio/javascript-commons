@@ -1,3 +1,6 @@
+1.4.2 (June XX, 2022)
+ - Added `sync.enabled` property to SDK configuration to allow synchronize splits and segments once
+
 1.4.1 (June 13, 2022)
  - Bugfixing - Updated submitters logic, to avoid dropping impressions and events that are being tracked while POST request is pending.
 

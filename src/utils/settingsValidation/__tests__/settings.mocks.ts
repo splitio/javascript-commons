@@ -79,7 +79,7 @@ export const fullSettings: ISettings = {
       queryString: null,
       groupedFilters: { byName: [], byPrefix: [] }
     },
-    singleSync: false
+    enabled: true
   },
   version: 'jest',
   runtime: {
