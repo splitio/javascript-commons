@@ -91,12 +91,7 @@ export function syncManagerOnlineFactory(
         if (pollingManager) {
 
           // If synchronization is disabled pushManager and pollingManager should not start
-          if (syncEnabled === false) {
-            if (startFirstTime) {
-              pollingManager.syncAll();
-              startFirstTime = false;
-            }
-          } else {
+          if (syncEnabled) {
             if (pushManager) {
               // Doesn't call `syncAll` when the syncManager is resuming
               if (startFirstTime) {
@@ -106,6 +101,11 @@ export function syncManagerOnlineFactory(
               pushManager.start();
             } else {
               pollingManager.start();
+            }
+          } else {
+            if (startFirstTime) {
+              pollingManager.syncAll();
+              startFirstTime = false;
             }
           }
         }
@@ -147,9 +147,7 @@ export function syncManagerOnlineFactory(
         return {
           isRunning: mySegmentsSyncTask.isRunning,
           start() {
-            if (syncEnabled === false) {
-              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
-            } else {
+            if (syncEnabled) {
               if (pushManager) {
                 if (pollingManager!.isRunning()) {
                   // if doing polling, we must start the periodic fetch of data
@@ -163,6 +161,8 @@ export function syncManagerOnlineFactory(
               } else {
                 if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
               }
+            } else {
+              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
             }
           },
           stop() {
