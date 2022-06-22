@@ -705,6 +705,7 @@ export namespace SplitIO {
     /**
      * Optional map of segments to their serialized definitions.
      * This property is ignored if `mySegmentsData` was provided.
+     * @TODO replace to `[segmentName: string]: string[]` for simplicity and efficiency
      */
     segmentsData?: {
       [segmentName: string]: string

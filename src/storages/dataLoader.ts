@@ -18,11 +18,11 @@ export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
    * @param storage object containing `splits` and `segments` cache (client-side variant)
    * @param userKey user key (matching key) of the provided MySegmentsCache
    *
-   * @TODO extend to support SegmentsCache (server-side variant) by making `userId` optional and adding the corresponding logic.
    * @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
    * @TODO add logs, and input validation in this module, in favor of size reduction.
+   * @TODO unit tests
    */
-  return function loadData(storage: { splits: ISplitsCacheSync, segments: ISegmentsCacheSync }, userKey: string) {
+  return function loadData(storage: { splits: ISplitsCacheSync, segments: ISegmentsCacheSync }, userKey?: string) {
     // Do not load data if current preloadedData is empty
     if (Object.keys(preloadedData).length === 0) return;
 
@@ -42,15 +42,21 @@ export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
     storage.splits.addSplits(Object.keys(splitsData).map(splitName => [splitName, splitsData[splitName]]));
 
-    // add mySegments data
-    let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userKey];
-    if (!mySegmentsData) {
-      // segmentsData in an object where the property is the segment name and the pertaining value is a stringified object that contains the `added` array of userIds
-      mySegmentsData = Object.keys(segmentsData).filter(segmentName => {
+    if (userKey) { // add mySegments data (client-side)
+      let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userKey];
+      if (!mySegmentsData) {
+        // segmentsData in an object where the property is the segment name and the pertaining value is a stringified object that contains the `added` array of userIds
+        mySegmentsData = Object.keys(segmentsData).filter(segmentName => {
+          const userKeys = JSON.parse(segmentsData[segmentName]).added;
+          return Array.isArray(userKeys) && userKeys.indexOf(userKey) > -1;
+        });
+      }
+      storage.segments.resetSegments(mySegmentsData);
+    } else { // add segments data (server-side)
+      Object.keys(segmentsData).filter(segmentName => {
         const userKeys = JSON.parse(segmentsData[segmentName]).added;
-        return Array.isArray(userKeys) && userKeys.indexOf(userKey) > -1;
+        if (Array.isArray(userKeys)) storage.segments.addToSegment(segmentName, userKeys);
       });
     }
-    storage.segments.resetSegments(mySegmentsData);
   };
 }
