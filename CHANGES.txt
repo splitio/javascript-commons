@@ -1,3 +1,7 @@
+1.4.2 (June XX, 2022)
+ - Updated telemetry to submit data even if user consent is not granted.
+ - Updated submitters logic, to avoid duplicating the post of impressions to Split cloud when the SDK is destroyed while performing its periodic post of impressions.
+
 1.4.1 (June 13, 2022)
  - Bugfixing - Updated submitters logic, to avoid dropping impressions and events that are being tracked while POST request is pending.
 
