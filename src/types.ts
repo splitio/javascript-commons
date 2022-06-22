@@ -118,7 +118,7 @@ export interface ISettings {
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
-    singleSync: boolean
+    enabled: boolean
   },
   readonly runtime: {
     ip: string | false
@@ -216,10 +216,10 @@ interface ISharedSettings {
      */
     impressionsMode?: SplitIO.ImpressionsMode,
     /**
-     * single Sync enables.
-     * @property {boolean} singleSync
+     * Enables synchronization.
+     * @property {boolean} enabled
      */
-    singleSync: boolean
+    enabled: boolean
   }
 }
 /**

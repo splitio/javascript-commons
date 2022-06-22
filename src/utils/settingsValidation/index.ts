@@ -84,7 +84,7 @@ export const base = {
     // impressions collection mode
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
-    singleSync: false
+    enabled: true
   },
 
   // Logger
@@ -192,9 +192,9 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
-  // validate singleSync
-  if (withDefaults.sync.singleSync !== true) { // @ts-ignore, modify readonly prop
-    withDefaults.sync.singleSync = false;
+  // validate sync enabled
+  if (withDefaults.sync.enabled !== false) { // @ts-ignore, modify readonly prop
+    withDefaults.sync.enabled = true;
   }
 
   // validate the `splitFilters` settings and parse splits query
