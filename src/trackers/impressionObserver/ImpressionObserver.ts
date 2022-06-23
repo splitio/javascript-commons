@@ -1,12 +1,12 @@
 import { ImpressionDTO } from '../../types';
-import LRUCache from '../../utils/LRUCache';
+import { LRUCache } from '../../utils/LRUCache';
 import { IImpressionObserver } from './types';
 
-export default class ImpressionObserver implements IImpressionObserver {
-  private cache: LRUCache<string, number>;
-  private hasher: (impression: ImpressionDTO) => string;
+export class ImpressionObserver<K extends string | number = string> implements IImpressionObserver {
+  private cache: LRUCache<K, number>;
+  private hasher: (impression: ImpressionDTO) => K;
 
-  constructor(size: number, hasher: (impression: ImpressionDTO) => string) {
+  constructor(size: number, hasher: (impression: ImpressionDTO) => K) {
     this.cache = new LRUCache(size);
     this.hasher = hasher;
   }

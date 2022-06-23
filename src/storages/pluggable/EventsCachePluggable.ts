@@ -1,4 +1,4 @@
-import { ICustomStorageWrapper, IEventsCacheAsync } from '../types';
+import { IPluggableStorageWrapper, IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
@@ -8,11 +8,11 @@ import { StoredEventWithMetadata } from '../../sync/submitters/types';
 export class EventsCachePluggable implements IEventsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly wrapper: ICustomStorageWrapper;
+  private readonly wrapper: IPluggableStorageWrapper;
   private readonly key: string;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, key: string, wrapper: ICustomStorageWrapper, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, wrapper: IPluggableStorageWrapper, metadata: IMetadata) {
     this.log = log;
     this.key = key;
     this.wrapper = wrapper;

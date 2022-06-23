@@ -2,7 +2,7 @@ import { ISdkFactoryParams } from '../types';
 import { sdkFactory } from '../index';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { SplitIO } from '../../types';
-import EventEmitter from '../../utils/MinEvents';
+import { EventEmitter } from '../../utils/MinEvents';
 
 /** Mocks */
 
@@ -17,6 +17,12 @@ const loggerApiMock = 'loggerApi';
 jest.mock('../../logger/sdkLogger', () => {
   return {
     createLoggerAPI: () => loggerApiMock
+  };
+});
+const telemetryTrackerMock = 'telemetryTracker';
+jest.mock('../../trackers/telemetryTracker', () => {
+  return {
+    telemetryTrackerFactory: () => telemetryTrackerMock
   };
 });
 
@@ -74,7 +80,7 @@ function assertModulesCalled(params: any) {
     expect(SignalListenerInstanceMock.start).toBeCalledTimes(1);
   }
   if (params.splitApiFactory) {
-    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform]]);
+    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform, telemetryTrackerMock]]);
   }
   if (params.integrationsManagerFactory) {
     expect(params.integrationsManagerFactory.mock.calls).toEqual([[{ settings: params.settings, storage: mockStorage }]]);

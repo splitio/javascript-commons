@@ -1,4 +1,4 @@
-import AbstractSegmentsCacheSync from '../AbstractSegmentsCacheSync';
+import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { isIntegerNumber } from '../../utils/lang';
 
@@ -6,7 +6,7 @@ import { isIntegerNumber } from '../../utils/lang';
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
  * Supported by all JS runtimes.
  */
-export default class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
+export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   private segmentCache: Record<string, ISet<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
@@ -66,6 +66,12 @@ export default class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   getRegisteredSegments() {
     return Object.keys(this.segmentCache);
+  }
+
+  getKeysCount() {
+    return Object.keys(this.segmentCache).reduce((acum, segmentName) => {
+      return acum + this.segmentCache[segmentName].size;
+    }, 0);
   }
 
   setChangeNumber(name: string, changeNumber: number) {

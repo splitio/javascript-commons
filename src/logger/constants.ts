@@ -61,13 +61,16 @@ export const STREAMING_RECONNECT = 111;
 export const STREAMING_CONNECTING = 112;
 export const STREAMING_DISABLED = 113;
 export const STREAMING_DISCONNECTING = 114;
-export const SUBMITTERS_PUSH_FULL_EVENTS_QUEUE = 115;
+export const SUBMITTERS_PUSH_FULL_QUEUE = 115;
 export const SUBMITTERS_PUSH = 116;
 export const SYNC_START_POLLING = 117;
 export const SYNC_CONTINUE_POLLING = 118;
 export const SYNC_STOP_POLLING = 119;
 export const EVENTS_TRACKER_SUCCESS = 120;
 export const IMPRESSIONS_TRACKER_SUCCESS = 121;
+export const USER_CONSENT_UPDATED = 122;
+export const USER_CONSENT_NOT_UPDATED = 123;
+export const USER_CONSENT_INITIAL = 124;
 
 export const ENGINE_VALUE_INVALID = 200;
 export const ENGINE_VALUE_NO_ATTRIBUTES = 201;
@@ -91,9 +94,8 @@ export const WARN_INTEGRATION_INVALID = 218;
 export const WARN_SPLITS_FILTER_IGNORED = 219;
 export const WARN_SPLITS_FILTER_INVALID = 220;
 export const WARN_SPLITS_FILTER_EMPTY = 221;
-export const WARN_STORAGE_INVALID = 222;
-export const WARN_API_KEY = 223;
-export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 224;
+export const WARN_API_KEY = 222;
+export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 223;
 
 export const ERROR_ENGINE_COMBINER_IFELSEIF = 300;
 export const ERROR_LOGLEVEL_INVALID = 301;
@@ -116,9 +118,12 @@ export const ERROR_INVALID_KEY_OBJECT = 317;
 export const ERROR_INVALID = 318;
 export const ERROR_EMPTY = 319;
 export const ERROR_EMPTY_ARRAY = 320;
-export const ERROR_INVALID_IMPRESSIONS_MODE = 321;
+export const ERROR_INVALID_CONFIG_PARAM = 321;
 export const ERROR_HTTP = 322;
 export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
+export const ERROR_STORAGE_INVALID = 324;
+export const ERROR_NOT_BOOLEAN = 325;
+export const ERROR_MIN_CONFIG_PARAM = 326;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';

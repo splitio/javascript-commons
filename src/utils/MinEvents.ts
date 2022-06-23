@@ -39,14 +39,9 @@ var ReflectApply = R && typeof R.apply === 'function'
     return Function.prototype.apply.call(target, receiver, args);
   };
 
-function EventEmitter() {
+export const EventEmitter: { new(): IEventEmitter } = function EventEmitter() {
   EventEmitter.init.call(this);
-}
-
-export default EventEmitter as new () => IEventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
+};
 
 EventEmitter.prototype._events = undefined;
 EventEmitter.prototype._eventsCount = 0;

@@ -1,4 +1,4 @@
-import thenable from '../promise/thenable';
+import { thenable } from '../promise/thenable';
 import { LOCALHOST_MODE } from '../constants';
 import { ISplitsCacheBase } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';

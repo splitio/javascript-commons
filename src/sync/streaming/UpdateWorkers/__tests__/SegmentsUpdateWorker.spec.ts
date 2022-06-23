@@ -1,6 +1,6 @@
 // @ts-nocheck
-import SegmentsCacheInMemory from '../../../../storages/inMemory/SegmentsCacheInMemory';
-import SegmentsUpdateWorker from '../SegmentsUpdateWorker';
+import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
+import { SegmentsUpdateWorker } from '../SegmentsUpdateWorker';
 
 function segmentsSyncTaskMock(segmentsStorage) {
 
@@ -47,7 +47,7 @@ describe('SegmentsUpdateWorker ', () => {
     cache.addToSegment('mocked_segment_3', ['e']);
     const segmentsSyncTask = segmentsSyncTaskMock(cache);
 
-    const segmentsUpdateWorker = new SegmentsUpdateWorker(cache, segmentsSyncTask);
+    const segmentsUpdateWorker = new SegmentsUpdateWorker(segmentsSyncTask, cache);
     segmentsUpdateWorker.backoff.baseMillis = 0; // retry immediately
 
     expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({}); // inits with not queued events;

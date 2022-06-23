@@ -1,5 +1,5 @@
 // @ts-nocheck
-import SSEHandlerFactory from '..';
+import { SSEHandlerFactory } from '..';
 import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, ControlType } from '../../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
@@ -34,12 +34,14 @@ const controlStreamingDisabledSec = { ...controlStreamingDisabled, data: control
 
 // streaming reset message, from `{orgHash}_{envHash}_control` channel
 import streamingReset from '../../../../__tests__/mocks/message.STREAMING_RESET.json';
+import { ABLY_ERROR, NON_REQUESTED, SSE_CONNECTION_ERROR } from '../../../../utils/constants';
 
 const pushEmitter = { emit: jest.fn() };
+const telemetryTracker = { streamingEvent: jest.fn() };
 
 test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
 
   // handleOpen
 
@@ -86,7 +88,7 @@ test('`handleOpen` and `handlerMessage` for OCCUPANCY notifications (Notificatio
 
 test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   pushEmitter.emit.mockClear();
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
   sseHandler.handleOpen();
 
   // CONTROL messages
@@ -119,7 +121,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
   sseHandler.handleMessage(controlStreamingDisabledSec); // testing STREAMING_DISABLED with second region
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // must emit PUSH_NONRETRYABLE_ERROR if received a STREAMING_DISABLED control message
 
-  const sseHandler2 = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler2 = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
   sseHandler2.handleOpen();
 
   sseHandler2.handleMessage(controlStreamingPausedSec); // testing STREAMING_PAUSED with second region
@@ -131,7 +133,7 @@ test('`handlerMessage` for CONTROL notifications (NotificationKeeper)', () => {
 });
 
 test('`handlerMessage` for update notifications (NotificationProcessor) and streaming reset', () => {
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
@@ -173,38 +175,44 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
 });
 
 test('handleError', () => {
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 
   const error = 'some error';
   sseHandler.handleError(error);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // A network error must emit PUSH_RETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(SSE_CONNECTION_ERROR, NON_REQUESTED);
 
   const errorWithData = { data: '{ "message": "error message"}' };
   sseHandler.handleError(errorWithData);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An error without Ably code must emit PUSH_RETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(SSE_CONNECTION_ERROR, NON_REQUESTED);
 
   const errorWithBadData = { data: '{"message"error"' };
   sseHandler.handleError(errorWithBadData);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An error that cannot be parsed must emit PUSH_RETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(SSE_CONNECTION_ERROR, NON_REQUESTED);
 
   const ably4XXRecoverableError = { data: '{"message":"Token expired","code":40142,"statusCode":401}' };
   sseHandler.handleError(ably4XXRecoverableError);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An Ably recoverable error must emit PUSH_RETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(ABLY_ERROR, 40142);
 
   const ably4XXNonRecoverableError = { data: '{"message":"Token expired","code":42910,"statusCode":429}' };
   sseHandler.handleError(ably4XXNonRecoverableError);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_NONRETRYABLE_ERROR); // An Ably non-recoverable error must emit PUSH_NONRETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(ABLY_ERROR, 42910);
 
   const ably5XXError = { data: '{"message":"...","code":50000,"statusCode":500}' };
   sseHandler.handleError(ably5XXError);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(PUSH_RETRYABLE_ERROR); // An Ably recoverable error must emit PUSH_RETRYABLE_ERROR
+  expect(telemetryTracker.streamingEvent).toHaveBeenLastCalledWith(ABLY_ERROR, 50000);
 
 });
 
 test('handlerMessage: ignore invalid events', () => {
-  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter);
+  const sseHandler = SSEHandlerFactory(loggerMock, pushEmitter, telemetryTracker);
   sseHandler.handleOpen();
   pushEmitter.emit.mockClear();
 

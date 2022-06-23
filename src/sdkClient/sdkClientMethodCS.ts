@@ -1,13 +1,13 @@
-import clientCSDecorator from './clientCS';
-import { ISdkClientFactoryParams } from './types';
+import { clientCSDecorator } from './clientCS';
 import { SplitIO } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
-import { IStorageSync } from '../storages/types';
 import { ISyncManagerCS } from '../sync/types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
+import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 function buildInstanceId(key: SplitIO.SplitKey) {
   // @ts-ignore
@@ -20,17 +20,13 @@ const method = 'Client instantiation';
  * Factory of client method for the client-side API variant where TT is ignored and thus
  * clients don't have a binded TT for the track method.
  */
-export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
 
-  // Keeping similar behaviour as in the isomorphic JS SDK: if settings key is invalid,
-  // `false` value is used as binded key of the default client, but trafficType is ignored
-  // @TODO handle as a non-recoverable error
-  const validKey = validateKey(log, key, method);
-
   const mainClientInstance = clientCSDecorator(
-    sdkClientFactory(params) as SplitIO.IClient, // @ts-ignore
-    validKey
+    log,
+    sdkClientFactory(params) as SplitIO.IClient,
+    key
   );
 
   const parsedDefaultKey = keyParser(key);
@@ -58,25 +54,29 @@ export function sdkClientMethodCSFactory(params: ISdkClientFactoryParams): (key?
       const matchingKey = getMatching(validKey);
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
-      // @TODO remove shared method to unify storage interfaces
-      const sharedStorage = storage.shared ? storage.shared(matchingKey) : undefined;
+      const sharedStorage = storage.shared && storage.shared(matchingKey, (err) => {
+        if (err) return;
+        // Emit SDK_READY in consumer mode for shared clients
+        sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+      });
 
-      // Following type assertions are safe: if syncManager and sharedStorage are defined (standalone mode), they implement ISyncManagerCS and IStorageSync respectively
-      // Other options are:
-      // - Consumer mode: both syncManager and sharedStorage are defined
-      // - Consumer mode with submitters: only syncManager is defined
-      const sharedSyncManager = syncManager && sharedStorage ? (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage as IStorageSync) : undefined;
+      // 3 possibilities:
+      // - Standalone mode: both syncManager and sharedSyncManager are defined
+      // - Consumer mode: both syncManager and sharedSyncManager are undefined
+      // - Consumer partial mode: syncManager is defined (only for submitters) but sharedSyncManager is undefined
+      // @ts-ignore
+      const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
       clientInstances[instanceId] = clientCSDecorator(
+        log,
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
-          storage: sharedStorage,
+          storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
-          sharedClient: true
-        })) as SplitIO.IClient,
+        }), true) as SplitIO.IClient,
         validKey
       );
 

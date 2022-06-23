@@ -1,4 +1,4 @@
-import ImpressionObserver from './ImpressionObserver';
+import { ImpressionObserver } from './ImpressionObserver';
 import { hash } from '../../utils/murmur3/murmur3';
 import { buildKey } from './buildKey';
 import { ImpressionDTO } from '../../types';

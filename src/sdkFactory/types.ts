@@ -1,23 +1,64 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
 import { ILogger } from '../logger/types';
-import { ISdkReadinessManager } from '../readiness/types';
-import { ISdkClientFactoryParams } from '../sdkClient/types';
-import { IFetch, ISplitApi } from '../services/types';
+import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
+import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
-import { ISyncManager, ISyncManagerFactoryParams } from '../sync/types';
+import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
+import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
 
 /**
  * Environment related dependencies.
- * These getters are called a fixed number of times per factory instantiation.
  */
 export interface IPlatform {
-  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
+   */
   getFetch?: () => (IFetch | undefined)
-  getEventSource?: () => (typeof EventSource | undefined)
-  EventEmitter: new () => IEventEmitter
+  /**
+   * If provided, it is used to pass additional options to fetch calls.
+   */
+  getOptions?: () => object
+  /**
+   * If provided, it is used to retrieve the EventSource constructor for streaming support.
+   */
+  getEventSource?: () => (IEventSourceConstructor | undefined)
+  /**
+   * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
+   */
+  EventEmitter: new () => IEventEmitter,
+  /**
+   * Function used to track latencies for telemetry.
+   */
+  now?: () => number
+}
+
+export interface ISdkFactoryContext {
+  platform: IPlatform,
+  sdkReadinessManager: ISdkReadinessManager,
+  readiness: IReadinessManager,
+  settings: ISettings
+  impressionsTracker: IImpressionsTracker,
+  eventTracker: IEventTracker,
+  telemetryTracker: ITelemetryTracker,
+  storage: IStorageSync | IStorageAsync,
+  signalListener?: ISignalListener
+  splitApi?: ISplitApi
+  syncManager?: ISyncManager,
+}
+
+export interface ISdkFactoryContextSync extends ISdkFactoryContext {
+  storage: IStorageSync,
+  splitApi: ISplitApi
+  syncManager: ISyncManager,
+}
+
+export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
+  storage: IStorageAsync,
+  splitApi: undefined,
+  syncManager: undefined
 }
 
 /**
@@ -37,12 +78,12 @@ export interface ISdkFactoryParams {
 
   // Factory of Split Api (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: (settings: ISettings, platform: IPlatform) => ISplitApi,
+  splitApiFactory?: (settings: ISettings, platform: IPlatform, telemetryTracker: ITelemetryTracker) => ISplitApi,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
   // It can create an offline or online sync manager, with or without streaming support.
-  syncManagerFactory?: (params: ISyncManagerFactoryParams) => ISyncManager,
+  syncManagerFactory?: (params: ISdkFactoryContextSync) => ISyncManager,
 
   // Sdk manager factory
   sdkManagerFactory: (
@@ -53,7 +94,7 @@ export interface ISdkFactoryParams {
 
   // Sdk client method factory (ISDK::client method).
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkClientFactoryParams) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
@@ -64,10 +105,11 @@ export interface ISdkFactoryParams {
     serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener
 
   // @TODO review impressionListener and integrations interfaces. What about handling impressionListener as an integration ?
-  impressionListener?: SplitIO.IImpressionListener,
   integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,
 
   // Impression observer factory. If provided, will be used for impressions dedupe
   impressionsObserverFactory?: () => IImpressionObserver
 
+  // Optional function to assign additional properties to the factory instance
+  extraProps?: (params: ISdkFactoryContext) => object
 }

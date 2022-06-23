@@ -2,13 +2,13 @@ import ioredis from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
-import thenable from '../../utils/promise/thenable';
-import timeout from '../../utils/promise/timeout';
+import { thenable } from '../../utils/promise/thenable';
+import { timeout } from '../../utils/promise/timeout';
 
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
-const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'pipeline', 'expire', 'mget', 'lrange', 'ltrim'];
+const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'pipeline', 'expire', 'mget', 'lrange', 'ltrim', 'hset'];
 
 // Not part of the settings since it'll vary on each storage. We should be removing storage specific logic from elsewhere.
 const DEFAULT_OPTIONS = {
@@ -32,7 +32,7 @@ interface IRedisCommand {
 /**
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
  */
-export default class RedisAdapter extends ioredis {
+export class RedisAdapter extends ioredis {
   private readonly log: ILogger
   private _options: object;
   private _notReadyCommandsQueue?: IRedisCommand[];
@@ -164,6 +164,12 @@ export default class RedisAdapter extends ioredis {
     } else { // If it IS the string URL, that'll be the first param for ioredis.
       result.unshift(options.url);
     }
+    if (options.connectionTimeout) {
+      merge(opts, { connectTimeout: options.connectionTimeout });
+    }
+    if (options.tls) {
+      merge(opts, { tls: options.tls });
+    }
 
     return result;
   }
@@ -171,9 +177,9 @@ export default class RedisAdapter extends ioredis {
   /**
    * Parses the options into what we care about.
    */
-  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass }: Record<string, any>) {
+  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any>) {
     const parsedOptions = {
-      connectionTimeout, operationTimeout, url, host, port, db, pass
+      connectionTimeout, operationTimeout, url, host, port, db, pass, tls
     };
 
     return merge({}, DEFAULT_OPTIONS, parsedOptions);

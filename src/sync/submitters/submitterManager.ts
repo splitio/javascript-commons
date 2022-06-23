@@ -1,22 +1,47 @@
-import { syncTaskComposite } from '../syncTaskComposite';
-import { eventsSyncTaskFactory } from './eventsSyncTask';
-import { impressionsSyncTaskFactory } from './impressionsSyncTask';
-import { impressionCountsSyncTaskFactory } from './impressionCountsSyncTask';
-import { ISplitApi } from '../../services/types';
-import { IStorageSync } from '../../storages/types';
-import { ISettings } from '../../types';
+import { eventsSubmitterFactory } from './eventsSubmitter';
+import { impressionsSubmitterFactory } from './impressionsSubmitter';
+import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
+import { telemetrySubmitterFactory } from './telemetrySubmitter';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { ISubmitterManager } from './types';
 
-export function submitterManagerFactory(
-  settings: ISettings,
-  storage: IStorageSync,
-  splitApi: ISplitApi,
-) {
-  const log = settings.log;
+export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmitterManager {
+
   const submitters = [
-    impressionsSyncTaskFactory(log, splitApi.postTestImpressionsBulk, storage.impressions, settings.scheduler.impressionsRefreshRate, settings.core.labelsEnabled),
-    eventsSyncTaskFactory(log, splitApi.postEventsBulk, storage.events, settings.scheduler.eventsPushRate, settings.startup.eventsFirstPushWindow)
-    // @TODO add telemetry submitter
+    impressionsSubmitterFactory(params),
+    eventsSubmitterFactory(params)
   ];
-  if (storage.impressionCounts) submitters.push(impressionCountsSyncTaskFactory(log, splitApi.postTestImpressionsCount, storage.impressionCounts));
-  return syncTaskComposite(submitters);
+
+  const impressionCountsSubmitter = impressionCountsSubmitterFactory(params);
+  if (impressionCountsSubmitter) submitters.push(impressionCountsSubmitter);
+  const telemetrySubmitter = telemetrySubmitterFactory(params);
+
+  return {
+    // `onlyTelemetry` true if SDK is created with userConsent not GRANTED
+    start(onlyTelemetry?: boolean) {
+      if (!onlyTelemetry) submitters.forEach(submitter => submitter.start());
+      if (telemetrySubmitter) telemetrySubmitter.start();
+    },
+
+    // `allExceptTelemetry` true if userConsent is changed to DECLINED
+    stop(allExceptTelemetry?: boolean) {
+      submitters.forEach(submitter => submitter.stop());
+      if (!allExceptTelemetry && telemetrySubmitter) telemetrySubmitter.stop();
+    },
+
+    isRunning() {
+      return submitters.some(submitter => submitter.isRunning());
+    },
+
+    // Flush data. Called with `onlyTelemetry` true if SDK is destroyed with userConsent not GRANTED
+    execute(onlyTelemetry?: boolean) {
+      const promises = onlyTelemetry ? [] : submitters.map(submitter => submitter.execute());
+      if (telemetrySubmitter) promises.push(telemetrySubmitter.execute());
+      return Promise.all(promises);
+    },
+
+    isExecuting() {
+      return submitters.some(submitter => submitter.isExecuting());
+    }
+  };
 }

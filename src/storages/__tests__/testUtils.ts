@@ -1,4 +1,4 @@
-import { IStorageSync, IStorageAsync } from '../types';
+import { IStorageSync, IStorageAsync, IImpressionsCacheSync, IEventsCacheSync } from '../types';
 
 // Assert that instances created by storage factories have the expected interface
 export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
@@ -7,9 +7,15 @@ export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
   expect(typeof storage.segments).toBe('object');
   expect(typeof storage.impressions).toBe('object');
   expect(typeof storage.events).toBe('object');
-  expect(!storage.latencies || typeof storage.latencies === 'object').toBeTruthy;
-  expect(!storage.counts || typeof storage.counts === 'object').toBeTruthy;
+  expect(!storage.telemetry || typeof storage.telemetry === 'object').toBeTruthy;
   expect(!storage.impressionCounts || typeof storage.impressionCounts === 'object').toBeTruthy;
+}
+
+export function assertSyncRecorderCacheInterface(cache: IEventsCacheSync | IImpressionsCacheSync) {
+  expect(typeof cache.isEmpty).toBe('function');
+  expect(typeof cache.clear).toBe('function');
+  expect(typeof cache.pop).toBe('function');
+  expect(typeof cache.track).toBe('function');
 }
 
 // Split mocks

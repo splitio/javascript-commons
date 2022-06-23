@@ -1,7 +1,7 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
 import { ISegmentsCacheSync, ISplitsCacheSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
-import timeout from '../../../utils/promise/timeout';
+import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
@@ -23,6 +23,7 @@ export function mySegmentsUpdaterFactory(
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
+  matchingKey: string
 ): IMySegmentsUpdater {
 
   let readyOnAlreadyExistentState = true;
@@ -32,13 +33,9 @@ export function mySegmentsUpdaterFactory(
   function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
-
-    // @TODO telemetry
-    // NOTE: We only collect metrics on startup.
-    // mySegmentsPromise = tracker.start(tracker.TaskNames.MY_SEGMENTS_FETCH, startingUp ? metricCollectors : false, mySegmentsPromise);
   }
 
-  // @TODO if allowing custom storages, handle async execution
+  // @TODO if allowing pluggable storages, handle async execution
   function updateSegments(segmentsData: SegmentsData) {
 
     let shouldNotifyUpdate;
@@ -69,7 +66,7 @@ export function mySegmentsUpdaterFactory(
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
-      mySegmentsFetcher(noCache, _promiseDecorator).then(segments => {
+      mySegmentsFetcher(matchingKey, noCache, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
         startingUp = false;
 

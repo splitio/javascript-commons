@@ -1,4 +1,4 @@
-export default class Backoff {
+export class Backoff {
 
   static DEFAULT_BASE_MILLIS = 1000; // 1 second
   static DEFAULT_MAX_MILLIS = 1800000; // 30 minutes

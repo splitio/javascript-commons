@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import EventsCacheInRedis from '../EventsCacheInRedis';
+import { EventsCacheInRedis } from '../EventsCacheInRedis';
 import { fakeMetadata, fakeEvent1, fakeEvent1stored, fakeEvent2, fakeEvent2stored, fakeEvent3, fakeEvent3stored } from '../../pluggable/__tests__/EventsCachePluggable.spec';
 
 const prefix = 'events_cache_ut';
@@ -50,7 +50,7 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
   await Promise.all([cache.track(fakeEvent1), cache.track(fakeEvent2), cache.track(fakeEvent3)]);
   expect(await cache.count()).toBe(3);
   await cache.drop();
-  expect(await cache.count()).toBe(0); // storage should be empty after droping it
+  expect(await cache.count()).toBe(0); // storage should be empty after dropping it
 
   // Clean up then end.
   await connection.del(eventsKey, nonListKey);

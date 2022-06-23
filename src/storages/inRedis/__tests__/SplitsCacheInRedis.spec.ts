@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
-import SplitsCacheInRedis from '../SplitsCacheInRedis';
-import KeyBuilderSS from '../../KeyBuilderSS';
+import { SplitsCacheInRedis } from '../SplitsCacheInRedis';
+import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
 

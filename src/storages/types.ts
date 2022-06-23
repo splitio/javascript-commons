@@ -1,11 +1,12 @@
-import { MaybeThenable, IMetadata } from '../dtos/types';
-import { StoredEventWithMetadata, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
+import { ILogger } from '../logger/types';
+import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
+import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
- * Interface of a custom wrapper storage.
+ * Interface of a pluggable storage wrapper.
  */
-export interface ICustomStorageWrapper {
+export interface IPluggableStorageWrapper {
 
   /** Key-Value operations */
 
@@ -69,7 +70,7 @@ export interface ICustomStorageWrapper {
   /** Integer operations */
 
   /**
-   * Increments in 1 the given `key` value or set it in 1 if the value doesn't exist.
+   * Increments in 1 the given `key` value or set it to 1 if the value doesn't exist.
    *
    * @function incr
    * @param {string} key Key to increment
@@ -78,7 +79,7 @@ export interface ICustomStorageWrapper {
    */
   incr: (key: string) => Promise<number>
   /**
-   * Decrements in 1 the given `key` value or set it in -1 if the value doesn't exist.
+   * Decrements in 1 the given `key` value or set it to -1 if the value doesn't exist.
    *
    * @function decr
    * @param {string} key Key to decrement
@@ -168,7 +169,7 @@ export interface ICustomStorageWrapper {
   /**
    * Connects to the underlying storage.
    * It is meant for storages that requires to be connected to some database or server. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory instantiation.
+   * Note: will be called once on SplitFactory instantiation and once per each shared client instantiation.
    *
    * @function connect
    * @returns {Promise<void>} A promise that resolves when the wrapper successfully connect to the underlying storage.
@@ -176,15 +177,15 @@ export interface ICustomStorageWrapper {
    */
   connect: () => Promise<void>
   /**
-   * Disconnects the underlying storage.
+   * Disconnects from the underlying storage.
    * It is meant for storages that requires to be closed, in order to release resources. Otherwise it can just return a resolved promise.
-   * Note: will be called once on SplitFactory client destroy.
+   * Note: will be called once on SplitFactory main client destroy.
    *
-   * @function close
+   * @function disconnect
    * @returns {Promise<void>} A promise that resolves when the operation ends.
    * The promise never rejects.
    */
-  close: () => Promise<void>
+  disconnect: () => Promise<void>
 }
 
 /** Splits cache */
@@ -261,6 +262,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   isInSegment(name: string, key?: string): boolean
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
+  getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean
   getChangeNumber(name: string): number
   resetSegments(names: string[]): boolean // only for Sync Client-Side
@@ -297,19 +299,22 @@ export interface IRecorderCacheProducerSync<T> {
   // @TODO names are inconsistent with spec
   /* Checks if cache is empty. Returns true if the cache was just created or cleared */
   isEmpty(): boolean
-  /* clears cache data */
+  /* Clears cache data */
   clear(): void
-  /* Gets cache data */
-  state(): T
+  /* Pops cache data */
+  pop(toMerge?: T): T
 }
 
 
 export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheProducerSync<ImpressionDTO[]> {
   track(data: ImpressionDTO[]): void
+  /* Registers callback for full queue */
+  setOnFullQueueCb(cb: () => void): void
 }
 
 export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
   track(data: SplitIO.EventData, size?: number): boolean
+  /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
 
@@ -327,11 +332,13 @@ export interface IRecorderCacheProducerAsync<T> {
 
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
+  // The result promise can reject.
   track(data: ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
   // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
+  // The result promise cannot reject.
   track(data: SplitIO.EventData, size?: number): Promise<boolean>
 }
 
@@ -345,35 +352,89 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
 
   // Used by impressions count submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  clear(): void // clear cache data
-  state(): Record<string, number> // get cache data
+  pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
 }
 
 
-/** Latencies and metric counts cache */
-// @TODO remove. They are deprecated.
+/**
+ * Telemetry storage interface for standalone and partial consumer modes.
+ * Methods are sync because data is stored in memory.
+ */
 
-export interface ILatenciesCacheSync extends IRecorderCacheProducerSync<Record<string, number[]>> {
-  track(metricName: string, latency: number): boolean
-  isEmpty(): boolean
-  clear(): void
-  state(): Record<string, number[]>
+export interface ITelemetryInitConsumerSync {
+  getTimeUntilReady(): number | undefined;
+  getTimeUntilReadyFromCache(): number | undefined;
+  getNonReadyUsage(): number;
+  // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
 }
 
-export interface ILatenciesCacheAsync {
-  track(metricName: string, latency: number): Promise<boolean>
+export interface ITelemetryRuntimeConsumerSync {
+  getImpressionStats(type: ImpressionDataType): number;
+  getEventStats(type: EventDataType): number;
+  getLastSynchronization(): LastSync;
+  popHttpErrors(): HttpErrors;
+  popHttpLatencies(): HttpLatencies;
+  popAuthRejections(): number;
+  popTokenRefreshes(): number;
+  popStreamingEvents(): Array<StreamingEvent>;
+  popTags(): Array<string> | undefined;
+  getSessionLength(): number | undefined;
 }
 
-export interface ICountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
-  track(metricName: string): boolean
-  isEmpty(): boolean
-  clear(): void
-  state(): Record<string, number>
+export interface ITelemetryEvaluationConsumerSync {
+  popExceptions(): MethodExceptions;
+  popLatencies(): MethodLatencies;
 }
 
-export interface ICountsCacheAsync {
-  track(metricName: string): Promise<boolean>
+export interface ITelemetryStorageConsumerSync extends ITelemetryInitConsumerSync, ITelemetryRuntimeConsumerSync, ITelemetryEvaluationConsumerSync { }
+
+export interface ITelemetryInitProducerSync {
+  recordTimeUntilReady(ms: number): void;
+  recordTimeUntilReadyFromCache(ms: number): void;
+  recordNonReadyUsage(): void;
+  // 'active factories' and 'redundant factories' are not tracked in the storage. They are derived from `usedKeysMap`
 }
+
+export interface ITelemetryRuntimeProducerSync {
+  addTag(tag: string): void;
+  recordImpressionStats(type: ImpressionDataType, count: number): void;
+  recordEventStats(type: EventDataType, count: number): void;
+  recordSuccessfulSync(resource: OperationType, timeMs: number): void;
+  recordHttpError(resource: OperationType, status: number): void;
+  recordHttpLatency(resource: OperationType, latencyMs: number): void;
+  recordAuthRejections(): void;
+  recordTokenRefreshes(): void;
+  recordStreamingEvents(streamingEvent: StreamingEvent): void;
+  recordSessionLength(ms: number): void;
+}
+
+export interface ITelemetryEvaluationProducerSync {
+  recordLatency(method: Method, latencyMs: number): void;
+  recordException(method: Method): void;
+}
+
+export interface ITelemetryStorageProducerSync extends ITelemetryInitProducerSync, ITelemetryRuntimeProducerSync, ITelemetryEvaluationProducerSync { }
+
+export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync { }
+
+/**
+ * Telemetry storage interface for consumer mode.
+ * Methods are async because data is stored in Redis or a pluggable storage.
+ */
+
+export interface ITelemetryEvaluationConsumerAsync {
+  popExceptions(): Promise<MethodExceptions>;
+  popLatencies(): Promise<MethodLatencies>;
+}
+
+export interface ITelemetryEvaluationProducerAsync {
+  recordLatency(method: Method, latencyMs: number): Promise<any>;
+  recordException(method: Method): Promise<any>;
+}
+
+// ATM it only implements the producer API, used by the SDK in consumer mode.
+// @TODO implement consumer API for JS Synchronizer.
+export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync { }
 
 /**
  * Storages
@@ -384,60 +445,60 @@ export interface IStorageBase<
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
   TEventsCache extends IEventsCacheBase,
-  TLatenciesCache extends ILatenciesCacheSync | ILatenciesCacheAsync,
-  TCountsCache extends ICountsCacheSync | ICountsCacheAsync,
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
-  latencies?: TLatenciesCache,
-  counts?: TCountsCache,
-  destroy(): void,
-  shared?(matchingKey: string): this
+  telemetry?: TTelemetryCache
+  destroy(): void | Promise<void>,
+  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
 
-export type IStorageSync = IStorageBase<
+export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
   IEventsCacheSync,
-  ILatenciesCacheSync,
-  ICountsCacheSync
->
+  ITelemetryCacheSync
+  > { }
 
-export type IStorageAsync = IStorageBase<
+export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
-  ILatenciesCacheAsync,
-  ICountsCacheAsync
->
+  ITelemetryCacheAsync
+  > { }
 
 /** StorageFactory */
 
 export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
-  settings: ISettings,
-
-  // Properties derived from settings
+  log: ILogger,
+  impressionsQueueSize?: number,
+  eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
-  matchingKey?: string, /* undefined on server-side SDKs. ATM, only used by InLocalStorage */
-  metadata: IMetadata,
+  mode: SDKMode,
+
+  // ATM, only used by InLocalStorage
+  matchingKey?: string, /* undefined on server-side SDKs */
+  splitFiltersValidation?: ISplitFiltersValidation,
 
   // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
   // it means that the storge fail to connect and shouldn't be used.
   // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
-  onReadyCb?: (error?: any) => void,
+  onReadyCb: (error?: any) => void,
+  metadata: IMetadata,
 }
 
-export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'CUSTOM';
+export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
 export type IStorageSyncFactory = {
-  type: StorageType,
+  readonly type: StorageType,
   (params: IStorageFactoryParams): IStorageSync
 }
 

@@ -1,18 +1,18 @@
-import matchersTransform from '../matchersTransform';
-import Treatments from '../treatments';
-import matcherFactory from '../matchers';
-import sanitizeValue from '../value';
-import conditionFactory from '../condition';
-import ifElseIfCombiner from '../combiners/ifelseif';
-import andCombiner from '../combiners/and';
-import thenable from '../../utils/promise/thenable';
+import { matchersTransform } from '../matchersTransform';
+import { Treatments } from '../treatments';
+import { matcherFactory } from '../matchers';
+import { sanitizeValue } from '../value';
+import { conditionContext } from '../condition';
+import { ifElseIfCombinerContext } from '../combiners/ifelseif';
+import { andCombinerContext } from '../combiners/and';
+import { thenable } from '../../utils/promise/thenable';
 import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
 import { ISplitCondition } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 
-export default function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
+export function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
 
   for (let i = 0; i < conditions.length; i++) {
@@ -31,7 +31,7 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
       const matcher = matcherFactory(log, matcherDto, storage);
 
       // Evaluator function.
-      return (key: string, attributes: SplitIO.Attributes, splitEvaluator: ISplitEvaluator) => {
+      return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
         const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
 
@@ -53,9 +53,9 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
       break;
     }
 
-    predicates.push(conditionFactory(
+    predicates.push(conditionContext(
       log,
-      andCombiner(log, expressions),
+      andCombinerContext(log, expressions),
       Treatments.parse(partitions),
       label,
       conditionType
@@ -63,5 +63,5 @@ export default function parser(log: ILogger, conditions: ISplitCondition[], stor
   }
 
   // Instanciate evaluator given the set of conditions using if else if logic
-  return ifElseIfCombiner(log, predicates);
+  return ifElseIfCombinerContext(log, predicates);
 }

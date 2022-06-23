@@ -2,7 +2,7 @@
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { IEventEmitter } from '../../types';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
-import sdkReadinessManagerFactory from '../sdkReadinessManager';
+import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
 
@@ -172,7 +172,8 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
   test('The event callbacks should work as expected - SDK_READY emits with expected internal callbacks', () => {
     // the sdkReadinessManager expects more than one SDK_READY callback to not log the "No listeners" warning
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock, undefined /* default readyTimeout */, 1 /* internalReadyCbCount */);
+    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    sdkReadinessManager.incInternalReadyCbCount();
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
     // Get the callbacks
@@ -309,7 +310,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
           .then(() => { throw new Error(); })
           .then(() => { throw new Error(); })
           .catch((error) => {
-            expect(error).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
+            expect(error instanceof Error).toBe(true);
+            expect(error.message).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
             expect(loggerMock.error).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
             done();
           });

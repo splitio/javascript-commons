@@ -1,4 +1,4 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import {
   validateAttributes,
   validateEvent,
@@ -15,14 +15,17 @@ import { startsWith } from '../utils/lang';
 import { CONTROL, CONTROL_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { ISettings, SplitIO } from '../types';
+import { isStorageSync } from '../trackers/impressionObserver/utils';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export default function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient, readinessManager: IReadinessManager, isStorageSync = false): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
+
+  const log = settings.log;
+  const isSync = isStorageSync(settings);
 
   /**
    * Avoid repeating this validations code
@@ -47,8 +50,7 @@ export default function clientInputValidationDecorator<TClient extends SplitIO.I
   }
 
   function wrapResult<T>(value: T): MaybeThenable<T> {
-    if (isStorageSync) return value;
-    return Promise.resolve(value);
+    return isSync ? value : Promise.resolve(value);
   }
 
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
@@ -108,8 +110,7 @@ export default function clientInputValidationDecorator<TClient extends SplitIO.I
     if (isOperational && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
       return client.track(key, tt, event, eventValue, properties, size);
     } else {
-      if (isStorageSync) return false;
-      return Promise.resolve(false);
+      return isSync ? false : Promise.resolve(false);
     }
   }
 

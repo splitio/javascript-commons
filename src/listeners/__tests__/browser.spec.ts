@@ -1,7 +1,19 @@
-import BrowserSignalListener from '../browser';
+import { BrowserSignalListener } from '../browser';
 import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
+
+jest.mock('../../sync/submitters/telemetrySubmitter', () => {
+  return {
+    telemetryCacheStatsAdapter: () => {
+      return {
+        isEmpty: () => false,
+        clear: () => { },
+        pop: () => ({}),
+      };
+    }
+  };
+});
 
 /* Mocks start */
 
@@ -26,28 +38,30 @@ const fakeImpressionCounts = {
   'someFeature::0': 1
 };
 
+// Storage with impressionsCount and telemetry cache
 const fakeStorageOptimized = { // @ts-expect-error
   impressions: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return [fakeImpression];
     }
   } as IImpressionsCacheSync, // @ts-expect-error
   events: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return [fakeEvent];
     }
   } as IEventsCacheSync, // @ts-expect-error
   impressionCounts: {
     isEmpty: jest.fn(),
     clear: jest.fn(),
-    state() {
+    pop() {
       return fakeImpressionCounts;
     }
   } as IImpressionCountsCacheSync,
+  telemetry: {}
 };
 
 const fakeStorageDebug = {
@@ -59,7 +73,8 @@ const fakeStorageDebug = {
 const fakeSplitApi = {
   postTestImpressionsBulk: jest.fn(() => Promise.resolve()),
   postEventsBulk: jest.fn(() => Promise.resolve()),
-  postTestImpressionsCount: jest.fn(() => Promise.resolve())
+  postTestImpressionsCount: jest.fn(() => Promise.resolve()),
+  postMetricsUsage: jest.fn(() => Promise.resolve()),
 } as ISplitApi;
 
 const UNLOAD_DOM_EVENT = 'unload';
@@ -85,11 +100,12 @@ beforeAll(() => {
   });
 });
 
-// clean mocks
-afterEach(() => {
+// clear mocks
+beforeEach(() => {
   (global.window.addEventListener as jest.Mock).mockClear();
   (global.window.removeEventListener as jest.Mock).mockClear();
   if (global.window.navigator.sendBeacon) (global.window.navigator.sendBeacon as jest.Mock).mockClear();
+  Object.values(fakeSplitApi).forEach(method => method.mockClear());
 });
 
 // delete mocks from global
@@ -105,8 +121,8 @@ function triggerUnloadEvent() {
 
 /* Mocks end */
 
-test('Browser JS listener / Impressions optimized mode', () => {
-
+test('Browser JS listener / consumer mode', () => {
+  // No SyncManager ==> consumer mode
   const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
@@ -116,8 +132,35 @@ test('Browser JS listener / Impressions optimized mode', () => {
 
   triggerUnloadEvent();
 
-  // Unload event was triggered. Thus sendBeacon method should have been called three times.
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(3);
+  // Unload event was triggered, but sendBeacon and post services should not be called
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
+  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+
+  // pre-check and call stop
+  expect(global.window.removeEventListener).not.toBeCalled();
+  listener.stop();
+
+  // removed correct listener from correct signal on stop.
+  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
+});
+
+test('Browser JS listener / standalone mode / Impressions optimized mode with telemetry', () => {
+  const syncManagerMock = {};
+
+  // @ts-expect-error
+  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+
+  listener.start();
+
+  // Assigned right function to right signal.
+  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
+
+  triggerUnloadEvent();
+
+  // Unload event was triggered. Thus sendBeacon method should have been called four times.
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(4);
 
   // Http post services should have not been called
   expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
@@ -132,7 +175,7 @@ test('Browser JS listener / Impressions optimized mode', () => {
   expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
 });
 
-test('Browser JS listener / Impressions debug mode', () => {
+test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const syncManagerMockWithPushManager = { pushManager: { stop: jest.fn() } };
 
   // @ts-expect-error
@@ -166,8 +209,8 @@ test('Browser JS listener / Impressions debug mode', () => {
   expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[UNLOAD_DOM_EVENT, listener.flushData]]);
 });
 
-test('Browser JS listener / Impressions debug mode without sendBeacon API', () => {
-  // remove sendBeacon API
+test('Browser JS listener / standalone mode / Impressions debug mode without sendBeacon API', () => {
+  // remove sendBeacon API temporally
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
   const syncManagerMockWithoutPushManager = {};
@@ -199,4 +242,36 @@ test('Browser JS listener / Impressions debug mode without sendBeacon API', () =
 
   // restore sendBeacon API
   global.navigator.sendBeacon = sendBeacon;
+});
+
+test('Browser JS listener / standalone mode / user consent status', () => {
+  const syncManagerMock = {};
+  const settings = { ...fullSettings };
+
+  // @ts-expect-error
+  const listener = new BrowserSignalListener(syncManagerMock, settings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+
+  listener.start();
+
+  settings.userConsent = 'UNKNOWN';
+  triggerUnloadEvent();
+  settings.userConsent = 'DECLINED';
+  triggerUnloadEvent();
+
+  // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should be called only for telemetry
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
+  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
+  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  (global.window.navigator.sendBeacon as jest.Mock).mockClear();
+
+  settings.userConsent = 'GRANTED';
+  triggerUnloadEvent();
+  settings.userConsent = undefined;
+  triggerUnloadEvent();
+
+  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 8 times (4 times per event in optimized mode with telemetry).
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(8);
+
+  listener.stop();
 });

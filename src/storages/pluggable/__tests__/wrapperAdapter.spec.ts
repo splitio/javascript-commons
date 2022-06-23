@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import thenable from '../../../utils/promise/thenable';
+import { thenable } from '../../../utils/promise/thenable';
 import { LOG_PREFIX } from '../constants';
 
 /** Mocks */
@@ -28,7 +28,7 @@ export const wrapperWithIssues = {
   decr: 'invalid value',
   getMany: throwsException,
   connect: rejectedPromise,
-  close: invalidThenable,
+  disconnect: invalidThenable,
   getAndSet: 'invalid value',
   pushItems: rejectedPromise,
   popItems: invalidThenable,
@@ -48,7 +48,7 @@ const VALID_METHOD_CALLS = {
   'decr': ['some_key'],
   'getMany': [['some_key_1', 'some_key_2']],
   'connect': [],
-  'close': [],
+  'disconnect': [],
   'getAndSet': ['some_key', 'some_value'],
   'pushItems': ['some_key_list', ['item1', 'item2']],
   'popItems': ['some_key_list'],

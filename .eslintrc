@@ -4,7 +4,8 @@
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "import"
   ],
 
   "env": {
@@ -15,10 +16,8 @@
 
   "globals": {
     // global TS types
-    "EventSource": "readonly", // @TODO remove. Configure as a type declaration
     "MessageEvent": "readonly", // @TODO remove. Configure as a type declaration
     "Event": "readonly", // @TODO remove. Configure as a type declaration
-    "NodeJS": "readonly",
     "UniversalAnalytics": "readonly" // @TODO remove when moving GA integrations to Browser-SDK
   },
 
@@ -81,7 +80,9 @@
           }
         ],
         "compat/compat": ["error", "defaults, not ie < 10, not node < 6"],
-        "no-throw-literal": "error"
+        "no-throw-literal": "error",
+        "import/no-default-export": "error",
+        "import/no-self-import": "error"
       },
       "parserOptions": {
         "ecmaVersion": 2015,

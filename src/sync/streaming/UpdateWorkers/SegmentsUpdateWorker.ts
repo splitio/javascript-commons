@@ -1,5 +1,5 @@
 import { ISegmentsCacheSync } from '../../../storages/types';
-import Backoff from '../../../utils/Backoff';
+import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask } from '../../polling/types';
 import { ISegmentUpdateData } from '../SSEHandler/types';
 import { IUpdateWorker } from './types';
@@ -7,7 +7,7 @@ import { IUpdateWorker } from './types';
 /**
  * SegmentUpdateWorker class
  */
-export default class SegmentsUpdateWorker implements IUpdateWorker {
+export class SegmentsUpdateWorker implements IUpdateWorker {
 
   private readonly segmentsCache: ISegmentsCacheSync;
   private readonly segmentsSyncTask: ISegmentsSyncTask;
@@ -19,7 +19,7 @@ export default class SegmentsUpdateWorker implements IUpdateWorker {
    * @param {Object} segmentsCache segments data cache
    * @param {Object} segmentsSyncTask task for syncing segments data
    */
-  constructor(segmentsCache: ISegmentsCacheSync, segmentsSyncTask: ISegmentsSyncTask) {
+  constructor(segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync) {
     this.segmentsCache = segmentsCache;
     this.segmentsSyncTask = segmentsSyncTask;
     this.maxChangeNumbers = {};

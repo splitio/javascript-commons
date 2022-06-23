@@ -1,5 +1,5 @@
 import * as engineUtils from '../engineUtils';
-import Treatments from '../../treatments';
+import { Treatments } from '../../treatments';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 const treatmentsMock = Treatments.parse([{
@@ -17,7 +17,6 @@ test('ENGINE / should always evaluate to "off"', () => {
   let startTime = Date.now();
 
   expect(engineUtils.getTreatment(loggerMock, bucketingKey, seed, treatmentsMock) === 'off').toBe(true); // treatment should be 'off'
-
 
   let endTime = Date.now();
 
@@ -38,28 +37,24 @@ test('ENGINE / should always evaluate to "on"', () => {
 });
 
 test('ENGINE / shouldApplyRollout - trafficAllocation 100', () => {
-
   const shouldApplyRollout = engineUtils.shouldApplyRollout(100, 'asd', 14);
 
   expect(shouldApplyRollout).toBe(true); // Should return true as traffic allocation is 100.
 });
 
 test('ENGINE / shouldApplyRollout - algo murmur | trafficAllocation 53 | bucket 51', () => {
-
   const shouldApplyRollout = engineUtils.shouldApplyRollout(53, 'a', 29);
 
   expect(shouldApplyRollout).toBe(true); // Should return true as traffic allocation is 100.
 });
 
 test('ENGINE / shouldApplyRollout - algo murmur | trafficAllocation 53 | bucket 56', () => {
-
   const shouldApplyRollout = engineUtils.shouldApplyRollout(53, 'a', 31);
 
   expect(shouldApplyRollout).toBe(false); // Should return false as bucket is higher than trafficAllocation.
 });
 
 test('ENGINE / shouldApplyRollout - algo murmur | trafficAllocation 1 | bucket 1', () => {
-
   const shouldApplyRollout = engineUtils.shouldApplyRollout(1, 'aaaaaaklmnbv', -1667452163);
 
   expect(shouldApplyRollout).toBe(true); // Should return true as bucket is higher or equal than trafficAllocation.

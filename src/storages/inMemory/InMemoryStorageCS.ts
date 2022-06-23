@@ -1,10 +1,11 @@
-import SplitsCacheInMemory from './SplitsCacheInMemory';
-import MySegmentsCacheInMemory from './MySegmentsCacheInMemory';
-import ImpressionsCacheInMemory from './ImpressionsCacheInMemory';
-import EventsCacheInMemory from './EventsCacheInMemory';
+import { SplitsCacheInMemory } from './SplitsCacheInMemory';
+import { MySegmentsCacheInMemory } from './MySegmentsCacheInMemory';
+import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
+import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
-import ImpressionCountsCacheInMemory from './ImpressionCountsCacheInMemory';
-import { STORAGE_MEMORY } from '../../utils/constants';
+import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
+import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
+import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { SplitIO } from '../../types';
 
 /**
@@ -17,9 +18,10 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   return {
     splits: new SplitsCacheInMemory(),
     segments: new MySegmentsCacheInMemory(),
-    impressions: new ImpressionsCacheInMemory(),
+    impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.settings.scheduler.eventsQueueSize),
+    events: new EventsCacheInMemory(params.eventsQueueSize),
+    telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
@@ -50,6 +52,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         impressions: this.impressions,
         impressionCounts: this.impressionCounts,
         events: this.events,
+        telemetry: this.telemetry,
 
         // Set a new splits cache to clean it for the client without affecting other clients
         destroy() {

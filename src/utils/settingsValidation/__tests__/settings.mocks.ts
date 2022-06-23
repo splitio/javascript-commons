@@ -37,6 +37,9 @@ export const settingsWithKeyObject = {
   log: loggerMock
 };
 
+function NoopIntegration() {}
+NoopIntegration.type = 'NoopIntegration';
+
 export const fullSettings: ISettings = {
   core: {
     authorizationKey: 'aaaabbbbcccc1234',
@@ -47,11 +50,12 @@ export const fullSettings: ISettings = {
   scheduler: {
     featuresRefreshRate: 1,
     impressionsRefreshRate: 1,
-    metricsRefreshRate: 1,
+    telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,
     offlineRefreshRate: 1,
     eventsPushRate: 1,
     eventsQueueSize: 1,
+    impressionsQueueSize: 1,
     pushRetryBackoffBase: 1
   },
   startup: {
@@ -62,10 +66,10 @@ export const fullSettings: ISettings = {
   },
   features: 'path/to/file',
   storage: InMemoryStorageCSFactory,
-  integrations: [() => { }], //  A no-op integration
+  integrations: [NoopIntegration],
   mode: 'standalone',
   debug: false,
-  streamingEnabled: false,
+  streamingEnabled: true,
   sync: {
     splitFilters: [],
     impressionsMode: 'OPTIMIZED',
@@ -74,7 +78,8 @@ export const fullSettings: ISettings = {
       validFilters: [],
       queryString: null,
       groupedFilters: { byName: [], byPrefix: [] }
-    }
+    },
+    enabled: true
   },
   version: 'jest',
   runtime: {
@@ -85,9 +90,20 @@ export const fullSettings: ISettings = {
     events: 'events',
     sdk: 'sdk',
     auth: 'auth',
-    streaming: 'streaming'
+    streaming: 'streaming',
+    telemetry: 'telemetry'
   },
-  log: loggerMock
+  log: loggerMock,
+  userConsent: undefined
+};
+
+export const fullSettingsServerSide = {
+  ...fullSettings,
+  core: {
+    ...fullSettings.core,
+    key: undefined,
+  },
+  features: '.split'
 };
 
 export const settingsSplitApi = {
@@ -99,7 +115,8 @@ export const settingsSplitApi = {
     events: 'events',
     sdk: 'sdk',
     auth: 'auth',
-    streaming: 'streaming'
+    streaming: 'streaming',
+    telemetry: 'telemetry'
   },
   sync: {
     impressionsMode: 'DEBUG'

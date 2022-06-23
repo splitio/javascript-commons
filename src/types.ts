@@ -1,21 +1,23 @@
 import { ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
+import { ISdkFactoryContext } from './sdkFactory/types';
 /* eslint-disable no-use-before-define */
 
-import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, DataLoader } from './storages/types';
-import { ISyncManagerFactoryParams, ISyncManagerCS } from './sync/types';
+import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory, DataLoader } from './storages/types';
+import { ISyncManagerCS } from './sync/types';
 
 /**
- * EventEmitter interface with the minimal methods used by the SDK
+ * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
+ * @see {@link https://nodejs.org/api/events.html}
  */
-export interface IEventEmitter extends Pick<NodeJS.EventEmitter, 'addListener' | 'on' | 'once' | 'removeListener' | 'off' | 'removeAllListeners' | 'emit'> {
-  addListener(event: string, listener: (...args: any[]) => void): any;
-  on(event: string, listener: (...args: any[]) => void): any
-  once(event: string, listener: (...args: any[]) => void): any
-  removeListener(event: string, listener: (...args: any[]) => void): any;
-  off(event: string, listener: (...args: any[]) => void): any;
-  removeAllListeners(event?: string): any
+export interface IEventEmitter {
+  addListener(event: string, listener: (...args: any[]) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this
+  once(event: string, listener: (...args: any[]) => void): this
+  removeListener(event: string, listener: (...args: any[]) => void): this;
+  off(event: string, listener: (...args: any[]) => void): this;
+  removeAllListeners(event?: string): this
   emit(event: string, ...args: any[]): boolean
 }
 
@@ -52,7 +54,12 @@ type EventConsts = {
  * SDK Modes.
  * @typedef {string} SDKMode
  */
-export type SDKMode = 'standalone' | 'consumer' | 'localhost';
+export type SDKMode = 'standalone' | 'consumer' | 'localhost' | 'consumer_partial';
+/**
+ * User consent status.
+ * @typedef {string} ConsentStatus
+ */
+export type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
 /**
  * Settings interface. This is a representation of the settings the SDK expose, that's why
  * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
@@ -72,7 +79,12 @@ export interface ISettings {
   readonly scheduler: {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
-    metricsRefreshRate: number,
+    impressionsQueueSize: number,
+    /**
+     * @deprecated
+     */
+    metricsRefreshRate?: number,
+    telemetryRefreshRate: number,
     segmentsRefreshRate: number,
     offlineRefreshRate: number,
     eventsPushRate: number,
@@ -85,16 +97,20 @@ export interface ISettings {
     retriesOnFailureBeforeReady: number,
     eventsFirstPushWindow: number
   },
-  readonly storage: IStorageSyncFactory,
+  readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
   readonly dataLoader?: DataLoader,
-  readonly integrations?: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
+  readonly integrations: Array<{
+    readonly type: string,
+    (params: IIntegrationFactoryParams): IIntegration | void
+  }>,
   readonly urls: {
     events: string,
     sdk: string,
     auth: string,
-    streaming: string
+    streaming: string,
+    telemetry: string
   },
-  readonly debug: boolean | LogLevel,
+  readonly debug: boolean | LogLevel | ILogger,
   readonly version: string,
   features: SplitIO.MockedFeaturesFilePath | SplitIO.MockedFeaturesMap,
   readonly streamingEnabled: boolean,
@@ -103,7 +119,7 @@ export interface ISettings {
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
-    onlyImpressionsAndEvents?: boolean
+    enabled: boolean
   },
   readonly runtime: {
     ip: string | false
@@ -111,6 +127,7 @@ export interface ISettings {
   },
   readonly log: ILogger
   readonly impressionListener?: unknown
+  readonly userConsent?: ConsentStatus
 }
 /**
  * Log levels.
@@ -199,6 +216,11 @@ interface ISharedSettings {
      * @default 'OPTIMIZED'
      */
     impressionsMode?: SplitIO.ImpressionsMode,
+    /**
+     * Enables synchronization.
+     * @property {boolean} enabled
+     */
+    enabled: boolean
   }
 }
 /**
@@ -257,11 +279,25 @@ interface INodeBasicSettings extends ISharedSettings {
      */
     impressionsRefreshRate?: number,
     /**
+     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     * @property {number} impressionsQueueSize
+     * @default 30000
+     */
+    impressionsQueueSize?: number,
+    /**
      * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
      * @property {number} metricsRefreshRate
      * @default 120
+     * @deprecated This parameter is ignored now.
      */
     metricsRefreshRate?: number,
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     * @property {number} telemetryRefreshRate
+     * @default 3600
+     */
+    telemetryRefreshRate?: number,
     /**
      * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
      * @property {number} segmentsRefreshRate
@@ -382,6 +418,10 @@ interface IBasicClient extends IStatusInterface {
    * @returns {Promise<void>}
    */
   destroy(): Promise<void>
+
+  // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false).
+  // Exposed for internal purposes only. Not considered part of the public API, and might be renamed eventually.
+  isClientSide: boolean
 }
 /**
  * Common definitions between SDK instances for different environments interface.
@@ -518,8 +558,8 @@ export namespace SplitIO {
   export type ImpressionData = {
     impression: ImpressionDTO,
     attributes?: SplitIO.Attributes,
-    ip: string,
-    hostname: string,
+    ip: string| false,
+    hostname: string | false,
     sdkLanguageVersion: string
   };
   /**
@@ -590,7 +630,7 @@ export namespace SplitIO {
    */
   export type LocalhostFactory = {
     type: 'LocalhostFromObject' | 'LocalhostFromFile'
-    (params: ISyncManagerFactoryParams): ISyncManagerCS
+    (params: ISdkFactoryContext): ISyncManagerCS
   }
   /**
    * Impression listener interface. This is the interface that needs to be implemented
@@ -647,7 +687,13 @@ export namespace SplitIO {
      * @property {string} streaming
      * @default 'https://streaming.split.io'
      */
-    streaming?: string
+    streaming?: string,
+    /**
+     * String property to override the base URL where the SDK will post telemetry data.
+     * @property {string} telemetry
+     * @default 'https://telemetry.split.io/api'
+     */
+    telemetry?: string
   };
   /**
    * SplitFilter type.
@@ -768,11 +814,25 @@ export namespace SplitIO {
        */
       impressionsRefreshRate?: number,
       /**
+       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       * @property {number} impressionsQueueSize
+       * @default 30000
+       */
+      impressionsQueueSize?: number,
+      /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
+       * @deprecated This parameter is ignored now.
        */
       metricsRefreshRate?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       * @property {number} telemetryRefreshRate
+       * @default 3600
+       */
+      telemetryRefreshRate?: number,
       /**
        * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
        * @property {number} segmentsRefreshRate
@@ -1110,6 +1170,45 @@ export namespace SplitIO {
      * @returns {boolean} Whether the event was added to the queue succesfully or not.
      */
     track(...args: [trafficType: string, eventType: string, value?: number, properties?: Properties] | [eventType: string, value?: number, properties?: Properties]): boolean,
+    /**
+     * Add an attribute to client's in memory attributes storage
+     * @function setAttribute
+     * @param {string} attributeName Attrinute name
+     * @param {string, number, boolean, list} attributeValue Attribute value
+     * @returns {boolean} true if the attribute was stored and false otherways
+     */
+    setAttribute(attributeName: string, attributeValue: Object): boolean,
+    /**
+     * Returns the attribute with the given key
+     * @function getAttribute
+     * @param {string} attributeName Attribute name
+     * @returns {Object} Attribute with the given key
+     */
+    getAttribute(attributeName: string): Object,
+    /**
+     * Add to client's in memory attributes storage the attributes in 'attributes'
+     * @function setAttributes
+     * @param {Object} attributes Object with attributes to store
+     * @returns true if attributes were stored an false otherways
+     */
+    setAttributes(attributes: Record<string, Object>): boolean,
+    /**
+     * Return all the attributes stored in client's in memory attributes storage
+     * @function getAttributes
+     * @returns {Object} returns all the stored attributes
+     */
+    getAttributes(): Record<string, Object>,
+    /**
+     * Removes from client's in memory attributes storage the attribute with the given key
+     * @function removeAttribute
+     * @param {string} attributeName
+     * @returns {boolean} true if attribute was removed and false otherways
+     */
+    removeAttribute(attributeName: string): boolean,
+    /**
+     * Remove all the stored attributes in the client's in memory attribute storage
+     */
+    clearAttributes(): boolean
   }
   /**
    * Representation of a manager instance with synchronous storage of the SDK.

@@ -1,12 +1,12 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
 import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { ISegmentChangesResponse, MaybeThenable } from '../../../dtos/types';
+import { MaybeThenable } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
-import thenable from '../../../utils/promise/thenable';
+import { thenable } from '../../../utils/promise/thenable';
 
 type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
 
@@ -29,14 +29,6 @@ export function segmentChangesUpdaterFactory(
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
-
-  /** telemetry decorator for `segmentChangesFetcher` promise  */
-  function _promiseDecorator(promise: Promise<ISegmentChangesResponse[]>) {
-    return promise;
-    // @TODO handle telemetry?
-    // const collectMetrics = startingUp || isNode; // If we are on the browser, only collect this metric for first fetch. On node do it always.
-    // splitsPromise = tracker.start(tracker.TaskNames.SPLITS_FETCH, collectMetrics ? metricCollectors : false, splitsPromise);
-  }
 
   /**
    * Segments updater returns a promise that resolves with a `false` boolean value if it fails at least to fetch a segment or synchronize it with the storage.
@@ -67,7 +59,7 @@ export function segmentChangesUpdaterFactory(
           // if fetchOnlyNew flag, avoid processing already fetched segments
           if (fetchOnlyNew && since !== -1) return -1;
 
-          return segmentChangesFetcher(since, segmentName, noCache, _promiseDecorator).then(function (changes) {
+          return segmentChangesFetcher(since, segmentName, noCache).then(function (changes) {
             let changeNumber = -1;
             const results: MaybeThenable<boolean | void>[] = [];
             changes.forEach(x => {

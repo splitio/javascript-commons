@@ -19,7 +19,8 @@ const minimalSettingsParams = {
     version: 'javascript-test',
   },
   runtime: () => ({ ip: false, hostname: false } as ISettings['runtime']),
-  logger: () => (loggerMock as ISettings['log'])
+  logger: () => (loggerMock as ISettings['log']),
+  consent: () => undefined
 };
 
 describe('settingsValidation', () => {
@@ -36,34 +37,42 @@ describe('settingsValidation', () => {
       events: 'https://events.split.io/api',
       auth: 'https://auth.split.io/api',
       streaming: 'https://streaming.split.io',
+      telemetry: 'https://telemetry.split.io/api',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.sync.enabled).toBe(true);
   });
 
-  test('override with defaults', () => {
-    const settings = settingsValidation({
-      core: {
-        authorizationKey: 'dummy token'
-      },
-      sync: {
-        impressionsMode: 'some',
-      }
-    }, minimalSettingsParams);
+  test('override with default impressionMode if provided one is invalid', () => {
+    const config = {
+      core: { authorizationKey: 'dummy token' },
+      sync: { impressionsMode: 'some' }
+    };
+    let settings = settingsValidation(config, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(300000); // Default
+
+    settings = settingsValidation({ ...config, scheduler: { impressionsRefreshRate: 10 } }, minimalSettingsParams);
+
+    expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
   test('impressionsMode should be configurable', () => {
-    const settings = settingsValidation({
-      core: {
-        authorizationKey: 'dummy token'
-      },
-      sync: {
-        impressionsMode: DEBUG
-      }
-    }, minimalSettingsParams);
+    const config = {
+      core: { authorizationKey: 'dummy token' },
+      sync: { impressionsMode: DEBUG }
+    };
+    let settings = settingsValidation(config, minimalSettingsParams);
 
     expect(settings.sync.impressionsMode).toEqual(DEBUG);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(60000); // Different default for DEBUG impressionsMode
+
+    settings = settingsValidation({ ...config, scheduler: { impressionsRefreshRate: 10 } }, minimalSettingsParams);
+
+    expect(settings.sync.impressionsMode).toBe(DEBUG);
+    expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
   test('urls should be configurable', () => {
@@ -72,6 +81,7 @@ describe('settingsValidation', () => {
       events: 'events-url',
       auth: 'auth-url',
       streaming: 'streaming-url',
+      telemetry: 'telemetry-url',
     };
 
     const settings = settingsValidation({
@@ -89,8 +99,9 @@ describe('settingsValidation', () => {
 
     const locatorSchedulerFeaturesRefreshRate = _.property('scheduler.featuresRefreshRate');
     const locatorSchedulerSegmentsRefreshRate = _.property('scheduler.segmentsRefreshRate');
-    const locatorSchedulerMetricsRefreshRate = _.property('scheduler.metricsRefreshRate');
+    const locatorSchedulerTelemetryRefreshRate = _.property('scheduler.telemetryRefreshRate');
     const locatorSchedulerImpressionsRefreshRate = _.property('scheduler.impressionsRefreshRate');
+    const locatorSchedulerEventsPushRate = _.property('scheduler.eventsPushRate');
 
     const locatorUrlsSDK = _.property('urls.sdk');
     const locatorUrlsEvents = _.property('urls.events');
@@ -124,8 +135,9 @@ describe('settingsValidation', () => {
 
     expect(locatorSchedulerFeaturesRefreshRate(settings) !== undefined).toBe(true); // scheduler.featuresRefreshRate should be present
     expect(locatorSchedulerSegmentsRefreshRate(settings) !== undefined).toBe(true); // scheduler.segmentsRefreshRate should be present
-    expect(locatorSchedulerMetricsRefreshRate(settings)).toBe(120 * 1000); // scheduler.metricsRefreshRate should be present
+    expect(locatorSchedulerTelemetryRefreshRate(settings)).toBe(3600 * 1000); // scheduler.telemetryRefreshRate should be present
     expect(locatorSchedulerImpressionsRefreshRate(settings) !== undefined).toBe(true); // scheduler.impressionsRefreshRate should be present
+    expect(locatorSchedulerEventsPushRate(settings) !== undefined).toBe(true); // scheduler.eventsPushRate should be present
 
     expect(locatorUrlsSDK(settings) !== undefined).toBe(true); // urls.sdk should be present
     expect(locatorUrlsEvents(settings) !== undefined).toBe(true); // urls.events should be present
@@ -150,6 +162,27 @@ describe('settingsValidation', () => {
 
     expect(settingsWithStreamingDisabled.streamingEnabled).toBe(false); // When creating a setting instance, it will have the provided value for streamingEnabled
     expect(settingsWithStreamingEnabled.streamingEnabled).toBe(true); // If streamingEnabled is not provided, it will be true.
+  });
+
+  test('sync.enabled should be overwritable and true by default', () => {
+    const settingsWithSyncEnabled = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+      }
+    }, minimalSettingsParams);
+
+    const settingsWithSyncDisabled = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token'
+      },
+      sync: {
+        enabled: false
+      }
+    }, minimalSettingsParams);
+
+    expect(settingsWithSyncDisabled.sync.enabled).toBe(false); // If sync.enabled is not provided, it will be true.
+    expect(settingsWithSyncEnabled.sync.enabled).toBe(true); // When creating a setting instance, it will have the provided value for sync.enabled
+
   });
 
   const storageMock = () => { };
@@ -188,6 +221,70 @@ describe('settingsValidation', () => {
     expect(settings.integrations).toBe(integrationsValidatorResult);
     expect(integrationsValidatorMock).toBeCalledWith(settings);
   });
+
+  test('validates and sanitizes key and traffic type in client-side', () => {
+    const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
+
+    const samples = [{
+      key: '  valid-key  ', settingsKey: 'valid-key', // key string is trimmed
+      trafficType: 'VALID-TT', settingsTrafficType: 'valid-tt', // TT is converted to lowercase
+    }, {
+      key: undefined, settingsKey: false, // undefined key is not valid in client-side
+      trafficType: undefined, settingsTrafficType: undefined,
+    }, {
+      key: null, settingsKey: false,
+      trafficType: null, settingsTrafficType: false,
+    }, {
+      key: true, settingsKey: false,
+      trafficType: true, settingsTrafficType: false,
+    }, {
+      key: 1.5, settingsKey: '1.5', // finite number as key is parsed
+      trafficType: 100, settingsTrafficType: false,
+    }, {
+      key: { matchingKey: 100, bucketingKey: ' BUCK ' }, settingsKey: { matchingKey: '100', bucketingKey: 'BUCK' },
+      trafficType: {}, settingsTrafficType: false,
+    }];
+
+    samples.forEach(({ key, trafficType, settingsKey, settingsTrafficType }) => {
+      const settings = settingsValidation({
+        core: {
+          authorizationKey: 'dummy token',
+          key,
+          trafficType
+        }
+      }, clientSideValidationParams);
+
+      expect(settings.core.key).toEqual(settingsKey);
+      expect(settings.core.trafficType).toEqual(settingsTrafficType);
+    });
+  });
+
+  test('validates and sanitizes key, while traffic type is ignored', () => {
+    const settings = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+        key: true,
+        trafficType: true
+      }
+    }, { ...minimalSettingsParams, acceptKey: true });
+
+    expect(settings.core.key).toEqual(false); // key is validated
+    expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
+  });
+
+  // Not implemented yet
+  // test('validate min values', () => {
+  //   const settings = settingsValidation({
+  //     scheduler: {
+  //       telemetryRefreshRate: 0,
+  //       impressionsRefreshRate: 'invalid',
+  //     }
+  //   }, minimalSettingsParams);
+
+  //   expect(settings.scheduler.telemetryRefreshRate).toBe(60000);
+  //   expect(settings.scheduler.impressionsRefreshRate).toBe(60000);
+  // });
+
 });
 
 test('SETTINGS / urls should be correctly assigned', () => {

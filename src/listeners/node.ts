@@ -1,6 +1,6 @@
 // @TODO eventually migrate to JS-Node-SDK package.
 import { ISignalListener } from './types';
-import thenable from '../utils/promise/thenable';
+import { thenable } from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import { LOG_PREFIX_CLEANUP, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
@@ -16,7 +16,7 @@ const EVENT_NAME = 'for SIGTERM signal.';
  * you should call the cleanup logic yourself, since we cannot ensure the data is sent after
  * the process is already exiting.
  */
-export default class NodeSignalListener implements ISignalListener {
+export class NodeSignalListener implements ISignalListener {
 
   private handler: () => MaybeThenable<any>;
   private settings: ISettings;

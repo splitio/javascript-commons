@@ -1,8 +1,8 @@
 import { IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import syncTaskFactory from '../../syncTask';
+import { syncTaskFactory } from '../../syncTask';
 import { ISegmentsSyncTask } from '../types';
-import segmentChangesFetcherFactory from '../fetchers/segmentChangesFetcher';
+import { segmentChangesFetcherFactory } from '../fetchers/segmentChangesFetcher';
 import { IFetchSegmentChanges } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { segmentChangesUpdaterFactory } from '../updaters/segmentChangesUpdater';
@@ -10,7 +10,7 @@ import { segmentChangesUpdaterFactory } from '../updaters/segmentChangesUpdater'
 /**
  * Creates a sync task that periodically executes a `segmentChangesUpdater` task
  */
-export default function segmentsSyncTaskFactory(
+export function segmentsSyncTaskFactory(
   fetchSegmentChanges: IFetchSegmentChanges,
   storage: IStorageSync,
   readiness: IReadinessManager,

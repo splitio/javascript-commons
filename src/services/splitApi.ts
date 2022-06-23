@@ -2,7 +2,9 @@ import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { ITelemetryTracker } from '../trackers/types';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -16,7 +18,11 @@ function userKeyToQueryParam(userKey: string) {
  * @param settings validated settings object
  * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
-export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, 'getFetch' | 'getOptions'>): ISplitApi {
+export function splitApiFactory(
+  settings: Pick<ISettings, 'urls' | 'sync' | 'log' | 'version' | 'runtime' | 'core'>,
+  platform: Pick<IPlatform, 'getFetch' | 'getOptions'>,
+  telemetryTracker: ITelemetryTracker
+): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
@@ -41,17 +47,17 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
         if (queryParams) // accounting the possibility that `userKeys` and thus `queryParams` are empty
           url += '?' + queryParams;
       }
-      return splitHttpClient(url);
+      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
 
     fetchSplitChanges(since: number, noCache?: boolean) {
       const url = `${urls.sdk}/splitChanges?since=${since}${filterQueryString || ''}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS));
     },
 
     fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean) {
       const url = `${urls.sdk}/segmentChanges/${segmentName}?since=${since}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
     },
 
     fetchMySegments(userMatchingKey: string, noCache?: boolean) {
@@ -62,7 +68,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
       const url = `${urls.sdk}/mySegments/${encodeURIComponent(userMatchingKey)}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MY_SEGMENT));
     },
 
     /**
@@ -73,7 +79,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
      */
     postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body, headers });
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS));
     },
 
     /**
@@ -87,7 +93,7 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
-      });
+      }, telemetryTracker.trackHttp(IMPRESSIONS));
     },
 
     /**
@@ -98,17 +104,17 @@ export function splitApiFactory(settings: ISettings, platform: Pick<IPlatform, '
      */
     postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body, headers });
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
     },
 
-    postMetricsCounters(body: string) {
-      const url = `${urls.events}/metrics/counters`;
-      return splitHttpClient(url, { method: 'POST', body }, true);
+    postMetricsConfig(body: string) {
+      const url = `${urls.telemetry}/v1/metrics/config`;
+      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
     },
 
-    postMetricsTimes(body: string) {
-      const url = `${urls.events}/metrics/times`;
-      return splitHttpClient(url, { method: 'POST', body }, true);
+    postMetricsUsage(body: string) {
+      const url = `${urls.telemetry}/v1/metrics/usage`;
+      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
     }
   };
 }

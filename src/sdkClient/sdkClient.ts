@@ -1,16 +1,15 @@
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { IStatusInterface, SplitIO } from '../types';
-import { CONSUMER_MODE } from '../utils/constants';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
-import clientFactory from './client';
-import clientInputValidationDecorator from './clientInputValidation';
-import { ISdkClientFactoryParams } from './types';
+import { clientFactory } from './client';
+import { clientInputValidationDecorator } from './clientInputValidation';
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings, sharedClient } = params;
+export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
+  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker } = params;
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
@@ -18,16 +17,17 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
 
     // Client API (getTreatment* & track methods)
     clientInputValidationDecorator(
-      settings.log,
+      settings,
       clientFactory(params),
-      sdkReadinessManager.readinessManager,
-      // @TODO isStorageSync could be extracted from the storage itself (e.g. `storage.isSync`) to simplify interfaces
-      settings.mode === CONSUMER_MODE ? false : true,
+      sdkReadinessManager.readinessManager
     ),
 
     // Sdk destroy
     {
       destroy() {
+        // record stat before flushing data
+        if (!isSharedClient) telemetryTracker.sessionLength();
+
         // Stop background jobs
         syncManager && syncManager.stop();
         const flush = syncManager ? syncManager.flush() : Promise.resolve();
@@ -37,11 +37,11 @@ export function sdkClientFactory(params: ISdkClientFactoryParams): SplitIO.IClie
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
 
-          // Cleanup storage
-          storage.destroy();
-
           // Release the API Key if it is the main client
-          if (!sharedClient) releaseApiKey(settings.core.authorizationKey);
+          if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
+
+          // Cleanup storage
+          return storage.destroy();
         });
       }
     }

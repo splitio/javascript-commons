@@ -1,12 +1,12 @@
 import { ISplit } from '../../dtos/types';
-import AbstractSplitsCacheSync, { usesSegments } from '../AbstractSplitsCacheSync';
+import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
  * Supported by all JS runtimes.
  */
-export default class SplitsCacheInMemory extends AbstractSplitsCacheSync {
+export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
   private splitsCache: Record<string, string> = {};
   private ttCache: Record<string, number> = {};

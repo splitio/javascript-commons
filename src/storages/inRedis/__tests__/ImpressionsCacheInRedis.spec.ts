@@ -1,5 +1,5 @@
-import Redis from '../RedisAdapter';
-import ImpressionsCacheInRedis from '../ImpressionsCacheInRedis';
+import { RedisAdapter } from '../RedisAdapter';
+import { ImpressionsCacheInRedis } from '../ImpressionsCacheInRedis';
 import IORedis, { BooleanResponse } from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { fakeMetadata, o1, o2, o3, o1stored, o2stored, o3stored } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
@@ -7,7 +7,7 @@ import { fakeMetadata, o1, o2, o3, o1stored, o2stored, o3stored } from '../../pl
 describe('IMPRESSIONS CACHE IN REDIS', () => {
 
   test('`track`, `count`, `popNWithMetadata` and `drop` methods', async () => {
-    const connection = new Redis(loggerMock, {});
+    const connection = new RedisAdapter(loggerMock, {});
     const impressionsKey = 'impr_cache_ut.impressions';
 
     const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
@@ -41,7 +41,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     await c.track([o1, o2, o3]);
     expect(await c.count()).toBe(3);
     await c.drop();
-    expect(await c.count()).toBe(0); // storage should be empty after droping it
+    expect(await c.count()).toBe(0); // storage should be empty after dropping it
 
     await connection.del(impressionsKey);
     await connection.quit();
@@ -49,7 +49,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
 
   test('`track` should not resolve before calling expire', async () => {
     const impressionsKey = 'impr_cache_ut_2.impressions';
-    const connection = new Redis(loggerMock, {});
+    const connection = new RedisAdapter(loggerMock, {});
 
     const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
 

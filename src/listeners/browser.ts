@@ -2,15 +2,17 @@
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
 import { IRecorderCacheProducerSync, IStorageSync } from '../storages/types';
-import { fromImpressionsCollector } from '../sync/submitters/impressionsSyncTask';
-import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSyncTask';
+import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
+import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { OPTIMIZED, DEBUG } from '../utils/constants';
-import objectAssign from 'object-assign';
+import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
+import { isConsentGranted } from '../consent';
+import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitter';
 
 // 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
 const UNLOAD_DOM_EVENT = 'unload';
@@ -19,7 +21,7 @@ const EVENT_NAME = 'for unload page event.';
 /**
  * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
  */
-export default class BrowserSignalListener implements ISignalListener {
+export class BrowserSignalListener implements ISignalListener {
 
   private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
 
@@ -63,26 +65,38 @@ export default class BrowserSignalListener implements ISignalListener {
    * using beacon API if possible, or falling back to regular post transport.
    */
   flushData() {
-    const eventsUrl = this.settings.urls.events;
-    const extraMetadata = {
-      // sim stands for Sync/Split Impressions Mode
-      sim: this.settings.sync.impressionsMode === OPTIMIZED ? OPTIMIZED : DEBUG
-    };
+    if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
 
-    this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
-    this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
-    if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+    // Flush impressions & events data if there is user consent
+    if (isConsentGranted(this.settings)) {
+      const eventsUrl = this.settings.urls.events;
+      const extraMetadata = {
+        // sim stands for Sync/Split Impressions Mode
+        sim: this.settings.sync.impressionsMode === OPTIMIZED ? OPTIMIZED : DEBUG
+      };
+
+      this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
+      this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
+      if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+    }
+
+    // Flush telemetry data
+    if (this.storage.telemetry) {
+      const telemetryUrl = this.settings.urls.telemetry;
+      const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
+      this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
+    }
 
     // Close streaming connection
-    if (this.syncManager && this.syncManager.pushManager) this.syncManager.pushManager.stop();
+    if (this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
-  private _flushData<TState>(url: string, cache: IRecorderCacheProducerSync<TState>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: TState) => any, extraMetadata?: {}) {
+  private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
     // if there is data in cache, send it to backend
     if (!cache.isEmpty()) {
-      const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.state()) : cache.state();
+      const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.pop()) : cache.pop();
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
-        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exceptions
+        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exception
       }
       cache.clear();
     }

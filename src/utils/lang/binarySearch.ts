@@ -6,7 +6,7 @@
  * @returns integer number between 0 and `items.length`. This value is the index of the search value,
  * if it is contained in the array, or the index at which the value should be inserted to keep the array ordered.
  */
-export default function binarySearch(items: number[], value: number): number {
+export function binarySearch(items: number[], value: number): number {
   let startIndex = 0;
   let stopIndex = items.length - 1;
   let middle = Math.floor((stopIndex + startIndex) / 2);

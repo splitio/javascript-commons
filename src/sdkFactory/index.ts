@@ -1,10 +1,10 @@
-import { ISdkFactoryParams } from './types';
-import sdkReadinessManagerFactory from '../readiness/sdkReadinessManager';
-import impressionsTrackerFactory from '../trackers/impressionsTracker';
-import eventTrackerFactory from '../trackers/eventTracker';
+import { ISdkFactoryContext, ISdkFactoryContextSync, ISdkFactoryParams } from './types';
+import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
+import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
+import { eventTrackerFactory } from '../trackers/eventTracker';
+import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import { IStorageFactoryParams, IStorageSync } from '../storages/types';
 import { SplitIO } from '../types';
-import { ISplitApi } from '../services/types';
 import { getMatching } from '../utils/key';
 import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
@@ -12,39 +12,50 @@ import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * Modular SDK factory
  */
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
 
-  const { settings, platform, storageFactory, splitApiFactory,
-    syncManagerFactory, SignalListener, impressionsObserverFactory, impressionListener,
+  const { settings, platform, storageFactory, splitApiFactory, extraProps,
+    syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory } = params;
   const log = settings.log;
 
-  // @TODO handle non-recoverable errors: not start sync, mark the SDK as destroyed, etc.
+  // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
+  // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
+
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
   validateAndTrackApiKey(log, settings.core.authorizationKey);
 
-  // @TODO handle non-recoverable error, such as, `fetch` api not available, invalid API Key, etc.
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
-  const readinessManager = sdkReadinessManager.readinessManager;
-
+  const readiness = sdkReadinessManager.readinessManager;
   const matchingKey = getMatching(settings.core.key);
 
+  // @TODO consider passing the settings object, so that each storage access only what it needs
   const storageFactoryParams: IStorageFactoryParams = {
-    settings,
+    impressionsQueueSize: settings.scheduler.impressionsQueueSize,
+    eventsQueueSize: settings.scheduler.eventsQueueSize,
     optimize: shouldBeOptimized(settings),
-    matchingKey,
-    metadata: metadataBuilder(settings),
 
-    // Callback used in consumer mode (`syncManagerFactory` is undefined) to emit SDK_READY
-    onReadyCb: !syncManagerFactory ? (error) => {
-      if (error) return; // don't emit SDK_READY if storage failed to connect.
-      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-    } : undefined,
+    // ATM, only used by InLocalStorage
+    matchingKey,
+    splitFiltersValidation: settings.sync.__splitFiltersValidation,
+
+    // ATM, only used by PluggableStorage
+    mode: settings.mode,
+
+    // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined,
+    // or partial consumer mode, where it only has submitters, and therefore it doesn't emit readiness events.
+    onReadyCb: (error) => {
+      if (error) return; // Don't emit SDK_READY if storage failed to connect. Error message is logged by wrapperAdapter
+      readiness.splits.emit(SDK_SPLITS_ARRIVED);
+      readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+    },
+    metadata: metadataBuilder(settings),
+    log
   };
 
   const storage = storageFactory(storageFactoryParams);
@@ -52,34 +63,30 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // @TODO dataLoader requires validation and avoid emitting SDK_READY_TIMED_OUT if 'onlyImpressionsAndEvents' and SDK_READY_FROM_CACHE is emitted
   if (settings.dataLoader) {
     settings.dataLoader(storage as IStorageSync, matchingKey);
-    if (settings.sync.onlyImpressionsAndEvents) {
-      Promise.resolve(storage.splits.checkCache()).then(cacheReady => { if (cacheReady) readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED); });
-    }
+    Promise.resolve(storage.splits.checkCache()).then(cacheReady => { if (cacheReady) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
   }
-
-  // splitApi is used by SyncManager and Browser signal listener
-  const splitApi = splitApiFactory && splitApiFactory(settings, platform);
-
-  const syncManager = syncManagerFactory && syncManagerFactory({
-    settings,
-    splitApi: splitApi as ISplitApi,
-    storage: storage as IStorageSync,
-    readiness: sdkReadinessManager.readinessManager,
-    platform
-  });
 
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(log, storage.impressions, settings, impressionListener, integrationsManager, observer, storage.impressionCounts);
-  const eventTracker = eventTrackerFactory(log, storage.events, integrationsManager);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
+  const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
-  // signal listener
+  // splitApi is used by SyncManager and Browser signal listener
+  const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
+
+  const ctx: ISdkFactoryContext = { splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform };
+
+  const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
+  ctx.syncManager = syncManager;
+
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
+  ctx.signalListener = signalListener;
 
-  // Sdk client and manager
-  const clientMethod = sdkClientMethodFactory({ eventTracker, impressionsTracker, sdkReadinessManager, settings, storage, syncManager, signalListener });
+  // SDK client and manager
+  const clientMethod = sdkClientMethodFactory(ctx);
   const managerInstance = sdkManagerFactory(log, storage.splits, sdkReadinessManager);
 
   syncManager && syncManager.start();
@@ -87,12 +94,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   log.info(NEW_FACTORY);
 
-  return {
+  // @ts-ignore
+  return objectAssign({
     // Split evaluation and event tracking engine
     client: clientMethod,
 
     // Manager API to explore available information
-    // @ts-ignore
     manager() {
       log.debug(RETRIEVE_MANAGER);
       return managerInstance;
@@ -104,5 +111,5 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     settings,
 
     __storage: storage
-  };
+  }, extraProps && extraProps(ctx));
 }

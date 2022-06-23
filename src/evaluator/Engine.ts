@@ -1,7 +1,7 @@
 import { get } from '../utils/lang';
-import parser from './parser';
+import { parser } from './parser';
 import { keyParser } from '../utils/key';
-import thenable from '../utils/promise/thenable';
+import { thenable } from '../utils/promise/thenable';
 import * as LabelsConstants from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
@@ -17,7 +17,7 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
   };
 }
 
-export default class Engine {
+export class Engine {
 
   constructor(private baseInfo: ISplit, private evaluator: IEvaluator) {
 

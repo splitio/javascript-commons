@@ -1,10 +1,11 @@
-import objectAssign from 'object-assign';
-import thenable from '../utils/promise/thenable';
-import { IEventsCacheBase } from '../storages/types';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { thenable } from '../utils/promise/thenable';
+import { IEventsCacheBase, ITelemetryCacheAsync, ITelemetryCacheSync } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { ISettings, SplitIO } from '../types';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
+import { CONSENT_DECLINED, DROPPED, QUEUED } from '../utils/constants';
+import { isStorageSync } from './impressionObserver/utils';
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
@@ -12,11 +13,15 @@ import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constant
  * @param eventsCache cache to save events
  * @param integrationsManager optional event handler used for integrations
  */
-export default function eventTrackerFactory(
-  log: ILogger,
+export function eventTrackerFactory(
+  settings: ISettings,
   eventsCache: IEventsCacheBase,
-  integrationsManager?: IEventsHandler
+  integrationsManager?: IEventsHandler,
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IEventTracker {
+
+  const log = settings.log;
+  const isSync = isStorageSync(settings);
 
   function queueEventsCallback(eventData: SplitIO.EventData, tracked: boolean) {
     const { eventTypeId, trafficTypeName, key, value, timestamp, properties } = eventData;
@@ -44,11 +49,18 @@ export default function eventTrackerFactory(
 
   return {
     track(eventData: SplitIO.EventData, size?: number) {
+      if (settings.userConsent === CONSENT_DECLINED) {
+        return isSync ? false : Promise.resolve(false);
+      }
+
       const tracked = eventsCache.track(eventData, size);
 
       if (thenable(tracked)) {
         return tracked.then(queueEventsCallback.bind(null, eventData));
       } else {
+        // Record when eventsCache is sync only (standalone mode)
+        // @TODO we are not dropping events on full queue yet, so `tracked` is always true ATM
+        if (telemetryCache) (telemetryCache as ITelemetryCacheSync).recordEventStats(tracked ? QUEUED : DROPPED, 1);
         return queueEventsCallback(eventData, tracked);
       }
     }

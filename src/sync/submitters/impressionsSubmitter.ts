@@ -1,11 +1,11 @@
 import { groupBy, forOwn } from '../../utils/lang';
-import { ISyncTask, ITimeTracker } from '../types';
-import { IPostTestImpressionsBulk } from '../../services/types';
-import { IImpressionsCacheSync } from '../../storages/types';
 import { ImpressionDTO } from '../../types';
-import { submitterSyncTaskFactory } from './submitterSyncTask';
+import { submitterFactory } from './submitter';
 import { ImpressionsPayload } from './types';
-import { ILogger } from '../../logger/types';
+import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+
+const DATA_NAME = 'impressions';
 
 /**
  * Converts `impressions` data from cache into request payload.
@@ -38,17 +38,28 @@ export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDT
 }
 
 /**
- * Sync task that periodically posts impressions data
+ * Submitter that periodically posts impressions data
  */
-export function impressionsSyncTaskFactory(
-  log: ILogger,
-  postTestImpressionsBulk: IPostTestImpressionsBulk,
-  impressionsCache: IImpressionsCacheSync,
-  impressionsRefreshRate: number,
-  sendLabels = false,
-  latencyTracker?: ITimeTracker,
-): ISyncTask {
+export function impressionsSubmitterFactory(params: ISdkFactoryContextSync) {
+
+  const {
+    settings: { log, scheduler: { impressionsRefreshRate }, core: { labelsEnabled } },
+    splitApi: { postTestImpressionsBulk },
+    storage: { impressions }
+  } = params;
 
   // retry impressions only once.
-  return submitterSyncTaskFactory(log, postTestImpressionsBulk, impressionsCache, impressionsRefreshRate, 'impressions', latencyTracker, fromImpressionsCollector.bind(undefined, sendLabels), 1);
+  const syncTask = submitterFactory(log, postTestImpressionsBulk, impressions, impressionsRefreshRate, DATA_NAME, fromImpressionsCollector.bind(undefined, labelsEnabled), 1);
+
+  // register impressions submitter to be executed when impressions cache is full
+  impressions.setOnFullQueueCb(() => {
+    if (syncTask.isRunning()) {
+      log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
+      syncTask.execute();
+    }
+    // If submitter is stopped (e.g., user consent declined or unknown, or app state offline), we don't send the data.
+    // Data will be sent when submitter is resumed.
+  });
+
+  return syncTask;
 }

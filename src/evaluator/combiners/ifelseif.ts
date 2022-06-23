@@ -1,13 +1,13 @@
 import { findIndex } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
-import thenable from '../../utils/promise/thenable';
+import { thenable } from '../../utils/promise/thenable';
 import * as LabelsConstants from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import { SplitIO } from '../../types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 
-export default function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
+export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
 
   function unexpectedInputHandler() {
     log.error(ERROR_ENGINE_COMBINER_IFELSEIF);

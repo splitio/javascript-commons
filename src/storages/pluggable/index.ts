@@ -1,6 +1,6 @@
-import { ICustomStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
+import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 
-import KeyBuilderSS from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
 import { SegmentsCachePluggable } from './SegmentsCachePluggable';
 import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
@@ -8,16 +8,17 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { validatePrefix } from '../KeyBuilder';
-import { STORAGE_CUSTOM } from '../../utils/constants';
-import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
-import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
+import { CONSUMER_PARTIAL_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
+import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
+import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 
-const NO_VALID_WRAPPER = 'Expecting custom storage `wrapper` in options, but no valid wrapper instance was provided.';
+const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
 
 export interface PluggableStorageOptions {
   prefix?: string
-  wrapper: ICustomStorageWrapper
+  wrapper: IPluggableStorageWrapper
 }
 
 /**
@@ -34,6 +35,26 @@ function validatePluggableStorageOptions(options: any) {
   if (missingMethods.length) throw new Error(`${NO_VALID_WRAPPER_INTERFACE} The following methods are missing or invalid: ${missingMethods}`);
 }
 
+// subscription to wrapper connect event in order to emit SDK_READY event
+function wrapperConnect(wrapper: IPluggableStorageWrapper, onReadyCb: (error?: any) => void) {
+  wrapper.connect().then(() => {
+    onReadyCb();
+    // At the moment, we don't synchronize config with pluggable storage
+  }).catch((e) => {
+    onReadyCb(e || new Error('Error connecting wrapper'));
+  });
+}
+
+// Async return type in `client.track` method on consumer partial mode
+// No need to promisify impressions cache
+function promisifyEventsTrack(events: any) {
+  const origTrack = events.track;
+  events.track = function () {
+    return Promise.resolve(origTrack.apply(this, arguments));
+  };
+  return events;
+}
+
 /**
  * Pluggable storage factory for consumer server-side & client-side SplitFactory.
  */
@@ -43,33 +64,40 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ settings, metadata, onReadyCb }: IStorageFactoryParams): IStorageAsync {
-    const log = settings.log;
-    const onlyImpressionsAndEvents = settings.sync.onlyImpressionsAndEvents;
+  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, optimize }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
+    const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
 
-    // subscription to Wrapper connect event in order to emit SDK_READY event
-    wrapper.connect().then(() => {
-      if (onReadyCb) onReadyCb();
-    }).catch((e) => {
-      if (onReadyCb) onReadyCb(e || new Error('Error connecting wrapper'));
-    });
+    // Connects to wrapper and emits SDK_READY event on main client
+    wrapperConnect(wrapper, onReadyCb);
 
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
-      impressions: onlyImpressionsAndEvents ? new ImpressionsCacheInMemory() : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
-      events: onlyImpressionsAndEvents ? new EventsCacheInMemory() : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
-      // @TODO add telemetry cache when required
+      impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
+      impressionCounts: optimize ? new ImpressionCountsCacheInMemory() : undefined,
+      events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
+      // @TODO Not using TelemetryCachePluggable yet because it's not supported by the Split Synchronizer, and needs to drop or queue operations while the wrapper is not ready
+      // telemetry: isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper),
 
-      // Disconnect the underlying storage, to release its resources (such as open files, database connections, etc).
+      // Disconnect the underlying storage
       destroy() {
-        return wrapper.close();
+        return wrapper.disconnect();
+      },
+
+      // emits SDK_READY event on shared clients and returns a reference to the storage
+      shared(_, onReadyCb) {
+        wrapperConnect(wrapper, onReadyCb);
+        return {
+          ...this,
+          // no-op destroy, to disconnect the wrapper only when the main client is destroyed
+          destroy() { }
+        };
       }
     };
   }
 
-  PluggableStorageFactory.type = STORAGE_CUSTOM;
+  PluggableStorageFactory.type = STORAGE_PLUGGABLE;
   return PluggableStorageFactory;
 }

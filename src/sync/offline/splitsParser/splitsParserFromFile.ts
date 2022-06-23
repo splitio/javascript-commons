@@ -5,7 +5,7 @@ import path from 'path';
 // @ts-ignore
 import yaml from 'js-yaml';
 import { isString, endsWith, find, forOwn, uniq, } from '../../../utils/lang';
-import parseCondition, { IMockSplitEntry } from './parseCondition';
+import { parseCondition, IMockSplitEntry } from './parseCondition';
 import { ISplitPartial } from '../../../dtos/types';
 import { ISettings, SplitIO } from '../../../types';
 import { ILogger } from '../../../logger/types';
@@ -82,7 +82,7 @@ export function splitsParserFromFileFactory(): ISplitsParser {
     try {
       data = fs.readFileSync(filePath, 'utf-8');
     } catch (e) {
-      log.error(e.message);
+      log.error(e && (e as Error).message);
 
       return {};
     }

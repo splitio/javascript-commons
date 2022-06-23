@@ -4,8 +4,8 @@ import { ISyncTask } from './types';
 
 /**
  * Creates a syncTask that handles the periodic execution of a given task ("start" and "stop" methods).
- * The task can be executed once calling the "execute" method.
- * NOTE: Multiple calls to "execute" are not queued. Use "isExecuting" method to handle synchronization.
+ * The task can be also executed by calling the "execute" method. Multiple execute calls are chained to run secuentially and avoid race conditions.
+ * For example, submitters executed on SDK destroy or full queue, while periodic execution is pending.
  *
  * @param log  Logger instance.
  * @param task  Task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
@@ -13,10 +13,10 @@ import { ISyncTask } from './types';
  * @param taskName  Optional task name for logging.
  * @returns A sync task that wraps the given task.
  */
-export default function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
+export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
-  // Flag that indicates if the task is being executed
-  let executing = false;
+  // Task promise while it is pending. Undefined once the promise is resolved
+  let pendingTask: Promise<Output> | undefined;
   // flag that indicates if the task periodic execution has been started/stopped.
   let running = false;
   // Auxiliar counter used to avoid race condition when calling `start` & `stop` intermittently
@@ -26,14 +26,21 @@ export default function syncTaskFactory<Input extends any[], Output = any>(log: 
   // Id of the periodic call timeout
   let timeoutID: any;
 
-  function execute(...args: Input) {
-    executing = true;
+  function execute(...args: Input): Promise<Output> {
+    // If task is executing, chain the new execution
+    if (pendingTask) {
+      return pendingTask.then(() => {
+        return execute(...args);
+      });
+    }
+
+    // Execute task
     log.debug(SYNC_TASK_EXECUTE, [taskName]);
-    return task(...args).then(result => {
-      executing = false;
+    pendingTask = task(...args).then(result => {
+      pendingTask = undefined;
       return result;
     });
-    // No need to handle promise rejection because it is a pre-condition that provided task never rejects.
+    return pendingTask;
   }
 
   function periodicExecute(currentRunningId: number) {
@@ -46,11 +53,10 @@ export default function syncTaskFactory<Input extends any[], Output = any>(log: 
   }
 
   return {
-    // @TODO check if we need to queued `execute` calls, to avoid possible race conditions on submitters and updaters with streaming.
     execute,
 
     isExecuting() {
-      return executing;
+      return pendingTask !== undefined;
     },
 
     start(...args: Input) {

@@ -1,23 +1,18 @@
-import splitsSyncTaskFactory from './syncTasks/splitsSyncTask';
-import segmentsSyncTaskFactory from './syncTasks/segmentsSyncTask';
-import { IStorageSync } from '../../storages/types';
-import { IReadinessManager } from '../../readiness/types';
-import { ISplitApi } from '../../services/types';
-import { ISettings } from '../../types';
+import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
+import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
-import thenable from '../../utils/promise/thenable';
+import { thenable } from '../../utils/promise/thenable';
 import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
-export default function pollingManagerSSFactory(
-  splitApi: ISplitApi,
-  storage: IStorageSync,
-  readiness: IReadinessManager,
-  settings: ISettings
+export function pollingManagerSSFactory(
+  params: ISdkFactoryContextSync
 ): IPollingManager {
 
+  const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
   const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);

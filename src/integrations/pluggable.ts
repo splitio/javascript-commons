@@ -11,7 +11,7 @@ import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './
  *
  * @returns integration manager or undefined if `integrations` are not present in settings.
  */
-export default function integrationsManagerFactory(
+export function pluggableIntegrationsManagerFactory(
   integrations: Array<(params: IIntegrationFactoryParams) => IIntegration | void>,
   params: IIntegrationFactoryParams
 ): IIntegrationManager | undefined {
@@ -29,10 +29,10 @@ export default function integrationsManagerFactory(
 
   // Exception safe methods: each integration module is responsable for handling errors
   return {
-    handleImpression: function (impressionData: SplitIO.ImpressionData) {
+    handleImpression(impressionData: SplitIO.ImpressionData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_IMPRESSION, payload: impressionData }));
     },
-    handleEvent: function (eventData: SplitIO.EventData) {
+    handleEvent(eventData: SplitIO.EventData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_EVENT, payload: eventData }));
     }
   };

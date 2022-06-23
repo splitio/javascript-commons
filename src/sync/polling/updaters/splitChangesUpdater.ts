@@ -3,7 +3,7 @@ import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
-import timeout from '../../../utils/promise/timeout';
+import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
@@ -93,18 +93,15 @@ export function splitChangesUpdaterFactory(
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
+  isClientSide?: boolean
 ): ISplitChangesUpdater {
 
   let startingUp = true;
 
-  /** timeout and telemetry decorator for `splitChangesFetcher` promise  */
+  /** timeout decorator for `splitChangesFetcher` promise  */
   function _promiseDecorator<T>(promise: Promise<T>) {
     if (startingUp && requestTimeoutBeforeReady) promise = timeout(requestTimeoutBeforeReady, promise);
     return promise;
-
-    // @TODO telemetry
-    // const collectMetrics = startingUp || isNode; // If we are on the browser, only collect this metric for first fetch. On node do it always.
-    // splitsPromise = tracker.start(tracker.TaskNames.SPLITS_FETCH, collectMetrics ? metricCollectors : false, splitsPromise);
   }
 
   /**
@@ -144,7 +141,7 @@ export function splitChangesUpdaterFactory(
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && checkAllSegmentsExist(segments)))
+              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
@@ -168,9 +165,12 @@ export function splitChangesUpdaterFactory(
           return false;
         });
 
-      // After triggering the requests, if we have cached splits information let's notify that.
+      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
+      // Wrapping in a promise since checkCache can be async.
       if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splits.checkCache()).then(cacheReady => { if (cacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED); });
+        Promise.resolve(splits.checkCache()).then(isCacheReady => {
+          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
+        });
       }
       return fetcherPromise;
     }

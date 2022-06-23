@@ -1,18 +1,19 @@
-import ImpressionsCacheInMemory from '../inMemory/ImpressionsCacheInMemory';
-import ImpressionCountsCacheInMemory from '../inMemory/ImpressionCountsCacheInMemory';
-import EventsCacheInMemory from '../inMemory/EventsCacheInMemory';
+import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
+import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
+import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
-import KeyBuilderCS from '../KeyBuilderCS';
+import { KeyBuilderCS } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
-import SplitsCacheInLocal from './SplitsCacheInLocal';
-import MySegmentsCacheInLocal from './MySegmentsCacheInLocal';
-import MySegmentsCacheInMemory from '../inMemory/MySegmentsCacheInMemory';
-import SplitsCacheInMemory from '../inMemory/SplitsCacheInMemory';
+import { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
+import { MySegmentsCacheInMemory } from '../inMemory/MySegmentsCacheInMemory';
+import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -26,27 +27,24 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
   const prefix = validatePrefix(options.prefix);
 
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-    const {
-      log,
-      scheduler: { eventsQueueSize },
-      sync: { __splitFiltersValidation }
-    } = params.settings;
 
     // Fallback to InMemoryStorage if LocalStorage API is not available
     if (!isLocalStorageAvailable()) {
-      log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Fallbacking into default MEMORY storage');
+      params.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 
+    const log = params.log;
     const keys = new KeyBuilderCS(prefix, params.matchingKey as string);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     return {
-      splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, __splitFiltersValidation),
+      splits: new SplitsCacheInLocal(log, keys, expirationTimestamp, params.splitFiltersValidation),
       segments: new MySegmentsCacheInLocal(log, keys),
-      impressions: new ImpressionsCacheInMemory(),
+      impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-      events: new EventsCacheInMemory(eventsQueueSize),
+      events: new EventsCacheInMemory(params.eventsQueueSize),
+      telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
 
       destroy() {
         this.splits = new SplitsCacheInMemory();
@@ -66,6 +64,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,
+          telemetry: this.telemetry,
 
           destroy() {
             this.splits = new SplitsCacheInMemory();

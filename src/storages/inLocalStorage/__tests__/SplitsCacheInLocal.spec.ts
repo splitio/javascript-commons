@@ -1,5 +1,5 @@
-import SplitsCacheInLocal from '../SplitsCacheInLocal';
-import KeyBuilderCS from '../../KeyBuilderCS';
+import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
+import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments } from '../../__tests__/testUtils';
 

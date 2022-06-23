@@ -1,7 +1,7 @@
 import { truncateTimeFrame } from '../../utils/time';
 import { IImpressionCountsCacheSync } from '../types';
 
-export default class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
+export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
   private cache: Record<string, number> = {};
 
   /**
@@ -20,17 +20,34 @@ export default class ImpressionCountsCacheInMemory implements IImpressionCountsC
     this.cache[key] = currentAmount ? currentAmount + amount : amount;
   }
 
+
+
   /**
-  * Returns all the elements stored in the cache and resets the cache.
-  */
-  state() {
-    return this.cache;
+   * Pop the collected data, used as payload for posting.
+   */
+  pop(toMerge?: Record<string, number>) {
+    const data = this.cache;
+    this.clear();
+    if (toMerge) {
+      Object.keys(data).forEach((key) => {
+        if (toMerge[key]) toMerge[key] += data[key];
+        else toMerge[key] = data[key];
+      });
+      return toMerge;
+    }
+    return data;
   }
 
+  /**
+   * Clear the data stored on the cache.
+   */
   clear() {
     this.cache = {};
   }
 
+  /**
+   * Check if the cache is empty.
+   */
   isEmpty() {
     return Object.keys(this.cache).length === 0;
   }

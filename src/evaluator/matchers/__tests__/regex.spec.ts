@@ -1,5 +1,5 @@
 import { matcherTypes } from '../matcherTypes';
-import matcherFactory from '..';
+import { matcherFactory } from '..';
 import fs from 'fs';
 import rl from 'readline';
 import { IMatcher, IMatcherDto } from '../../types';

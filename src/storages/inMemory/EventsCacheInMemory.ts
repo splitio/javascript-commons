@@ -3,7 +3,7 @@ import { IEventsCacheSync } from '../types';
 
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M
 
-export default class EventsCacheInMemory implements IEventsCacheSync {
+export class EventsCacheInMemory implements IEventsCacheSync {
 
   private onFullQueue?: () => void;
   private readonly maxQueue: number;
@@ -46,10 +46,12 @@ export default class EventsCacheInMemory implements IEventsCacheSync {
   }
 
   /**
-   * Get the collected data, used as payload for posting.
+   * Pop the collected data, used as payload for posting.
    */
-  state() {
-    return this.queue;
+  pop(toMerge?: SplitIO.EventData[]) {
+    const data = this.queue;
+    this.clear();
+    return toMerge ? toMerge.concat(data) : data;
   }
 
   /**
