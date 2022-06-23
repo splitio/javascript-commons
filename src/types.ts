@@ -119,7 +119,8 @@ export interface ISettings {
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
-    enabled: boolean
+    enabled: boolean,
+    onlySubmitters: boolean
   },
   readonly runtime: {
     ip: string | false
@@ -751,10 +752,9 @@ export namespace SplitIO {
     /**
      * Optional map of segments to their serialized definitions.
      * This property is ignored if `mySegmentsData` was provided.
-     * @TODO replace to `[segmentName: string]: string[]` for simplicity and efficiency
      */
     segmentsData?: {
-      [segmentName: string]: string
+      [segmentName: string]: string[]
     },
   }
   /**

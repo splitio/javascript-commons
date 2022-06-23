@@ -47,15 +47,15 @@ export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
       if (!mySegmentsData) {
         // segmentsData in an object where the property is the segment name and the pertaining value is a stringified object that contains the `added` array of userIds
         mySegmentsData = Object.keys(segmentsData).filter(segmentName => {
-          const userKeys = JSON.parse(segmentsData[segmentName]).added;
-          return Array.isArray(userKeys) && userKeys.indexOf(userKey) > -1;
+          const userKeys = segmentsData[segmentName];
+          return userKeys.indexOf(userKey) > -1;
         });
       }
       storage.segments.resetSegments(mySegmentsData);
     } else { // add segments data (server-side)
       Object.keys(segmentsData).filter(segmentName => {
-        const userKeys = JSON.parse(segmentsData[segmentName]).added;
-        if (Array.isArray(userKeys)) storage.segments.addToSegment(segmentName, userKeys);
+        const userKeys = segmentsData[segmentName];
+        storage.segments.addToSegment(segmentName, userKeys);
       });
     }
   };

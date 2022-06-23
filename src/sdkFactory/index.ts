@@ -60,10 +60,19 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   const storage = storageFactory(storageFactoryParams);
 
-  // @TODO dataLoader requires validation and avoid emitting SDK_READY_TIMED_OUT if 'onlyImpressionsAndEvents' and SDK_READY_FROM_CACHE is emitted
+  // @TODO dataLoader requires validation
   if (settings.dataLoader) {
     settings.dataLoader(storage as IStorageSync, matchingKey);
-    Promise.resolve(storage.splits.checkCache()).then(cacheReady => { if (cacheReady) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
+    Promise.resolve(storage.splits.checkCache()).then(cacheReady => {
+      if (cacheReady) {
+        if (settings.sync.onlySubmitters) { // emit SDK_READY to not timeout when not synchronizing splits & segments
+          readiness.splits.emit(SDK_SPLITS_ARRIVED);
+          readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+        } else { // emit SDK_READY_FROM_CACHE
+          readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+        }
+      }
+    });
   }
 
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
@@ -110,6 +119,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
     settings,
 
-    __storage: storage
+    // @TODO remove
+    __storage: storage,
+    __ctx: ctx
   }, extraProps && extraProps(ctx));
 }

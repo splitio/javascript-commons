@@ -6,6 +6,8 @@ import { IStorageFactoryParams, IStorageSync } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { TelemetryCacheInMemory } from './TelemetryCacheInMemory';
+import { SplitIO } from '../../types';
+import { setToArray, ISet } from '../../utils/lang/sets';
 
 /**
  * InMemory storage factory for standalone server-side SplitFactory
@@ -29,7 +31,20 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
-    }
+    },
+
+    // @ts-ignore, private method, for POC
+    getSnapshot(): SplitIO.PreloadedData {
+      return {
+        lastUpdated: Date.now(), // @ts-ignore accessing private prop
+        since: this.splits.changeNumber, // @ts-ignore accessing private prop
+        splitsData: this.splits.splitsCache, // @ts-ignore accessing private prop
+        segmentsData: Object.keys(this.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop
+          prev[cur] = setToArray(this.segments.segmentCache[cur] as ISet<string>);
+          return prev;
+        }, {})
+      };
+    },
   };
 }
 

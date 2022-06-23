@@ -147,8 +147,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
   withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
-  if (withDefaults.sync.onlyImpressionsAndEvents && withDefaults.mode === STANDALONE_MODE && !withDefaults.dataLoader) {
-    throw new Error('To use `onlyImpressionsAndEvents` param in standalone mode, DataLoader is required to preload data into the storage');
+  if (withDefaults.sync.onlySubmitters && withDefaults.mode === STANDALONE_MODE && !withDefaults.dataLoader) {
+    throw new Error('To use `onlySubmitters` param in standalone mode, DataLoader is required to preload data into the storage');
   }
 
   // ensure a valid Storage based on mode defined.
@@ -196,8 +196,13 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate sync enabled
-  if (withDefaults.sync.enabled !== false) { // @ts-ignore, modify readonly prop
+  if (withDefaults.sync.enabled !== false) {
     withDefaults.sync.enabled = true;
+  }
+
+  // validate sync onlySubmitters
+  if (withDefaults.sync.onlySubmitters !== true) {
+    withDefaults.sync.onlySubmitters = false;
   }
 
   // validate the `splitFilters` settings and parse splits query

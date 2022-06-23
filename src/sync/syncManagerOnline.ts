@@ -28,10 +28,10 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISdkFactoryContextSync): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled } },  telemetryTracker } = params;
+    const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled, onlySubmitters } },  telemetryTracker } = params;
 
     /** Polling Manager */
-    const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
+    const pollingManager = onlySubmitters ? undefined : pollingManagerFactory && pollingManagerFactory(params);
 
     /** Push Manager */
     const pushManager = syncEnabled && streamingEnabled && pollingManager && pushManagerFactory ?
