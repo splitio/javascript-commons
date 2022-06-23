@@ -20,7 +20,7 @@ const UNLOAD_DOM_EVENT = 'unload';
 const EVENT_NAME = 'for unload page event.';
 
 /**
- * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
+ * We'll listen for events over the window object.
  */
 export class BrowserSignalListener implements ISignalListener {
 
@@ -40,8 +40,7 @@ export class BrowserSignalListener implements ISignalListener {
 
   /**
    * start method.
-   * Called when SplitFactory is initialized.
-   * We add a handler on unload events. The handler flushes remaining impressions and events to the backend.
+   * Called when SplitFactory is initialized, it adds event listeners to close streaming and flush impressions and events.
    */
   start() {
     if (typeof window !== 'undefined' && window.addEventListener) {
@@ -59,8 +58,7 @@ export class BrowserSignalListener implements ISignalListener {
 
   /**
    * stop method.
-   * Called when client is destroyed.
-   * We need to remove the handler for unload events, since it can break if called when Split context was destroyed.
+   * Called when client is destroyed, it removes event listeners.
    */
   stop() {
     if (typeof window !== 'undefined' && window.removeEventListener) {
