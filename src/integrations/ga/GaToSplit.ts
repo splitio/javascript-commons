@@ -37,7 +37,7 @@ function providePlugin(window: any, pluginName: string, pluginConstructor: Funct
 
   if (autoRequire && (!window[gaAlias].q || window[gaAlias].q.push === [].push)) {
     // Expecting spy on ga.q push method but not found
-    log.error('Auto-require script was expected but not provided.');
+    log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run.');
   }
 }
 
