@@ -8,11 +8,11 @@
   i[r].q = i[r].q || [];
 
   var ts = {}; // Tracker names
-  function n(arg) { return typeof arg === 'object' && typeof arg.name === 'string' && arg.name; }
+  function name(arg) { return typeof arg === 'object' && typeof arg.name === 'string' && arg.name; }
 
-  function p(v) { // Queue a `require` command if v is a `create` command
+  function processCommand(v) { // Queue a `require` command if v is a `create` command
     if (v && v[0] === 'create') {
-      var t = n(v[1]) || n(v[2]) || n(v[3]) || (typeof v[3] === 'string' ? v[3] : undefined); // Get tracker name
+      var t = name(v[1]) || name(v[2]) || name(v[3]) || (typeof v[3] === 'string' ? v[3] : undefined); // Get tracker name
 
       if (!ts[t]) {
         ts[t] = true;
@@ -21,12 +21,12 @@
     }
   }
 
-  i[r].q.forEach(function (v) { p(v); }); // Process already queued commands
+  i[r].q.forEach(processCommand); // Process already queued commands
 
   var o = i[r].q.push;
   i[r].q.push = function (v) { // Spy new queued commands
     var result = o.apply(this, arguments);
-    p(v);
+    processCommand(v);
     return result;
   };
 
