@@ -28,19 +28,19 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISdkFactoryContextSync): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled }, telemetryTracker } = params;
+    const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled } },  telemetryTracker } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
 
     /** Push Manager */
-    const pushManager = streamingEnabled && pollingManager && pushManagerFactory ?
+    const pushManager = syncEnabled && streamingEnabled && pollingManager && pushManagerFactory ?
       pushManagerFactory(params, pollingManager) :
       undefined;
 
     /** Submitter Manager */
     // It is not inyected as push and polling managers, because at the moment it is required
-    const submitter = submitterManagerFactory(params);
+    const submitterManager = submitterManagerFactory(params);
 
     /** Sync Manager logic */
 
@@ -79,7 +79,7 @@ export function syncManagerOnlineFactory(
       // E.g.: user consent, app state changes (Page hide, Foreground/Background, Online/Offline).
       pollingManager,
       pushManager,
-      submitter,
+      submitterManager,
 
       /**
        * Method used to start the syncManager for the first time, or resume it after being stopped.
@@ -89,20 +89,29 @@ export function syncManagerOnlineFactory(
 
         // start syncing splits and segments
         if (pollingManager) {
-          if (pushManager) {
-            // Doesn't call `syncAll` when the syncManager is resuming
+
+          // If synchronization is disabled pushManager and pollingManager should not start
+          if (syncEnabled) {
+            if (pushManager) {
+              // Doesn't call `syncAll` when the syncManager is resuming
+              if (startFirstTime) {
+                pollingManager.syncAll();
+                startFirstTime = false;
+              }
+              pushManager.start();
+            } else {
+              pollingManager.start();
+            }
+          } else {
             if (startFirstTime) {
               pollingManager.syncAll();
               startFirstTime = false;
             }
-            pushManager.start();
-          } else {
-            pollingManager.start();
           }
         }
 
         // start periodic data recording (events, impressions, telemetry).
-        if (isConsentGranted(settings)) submitter.start();
+        submitterManager.start(!isConsentGranted(settings));
       },
 
       /**
@@ -116,7 +125,7 @@ export function syncManagerOnlineFactory(
         if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
-        submitter.stop();
+        submitterManager.stop();
       },
 
       isRunning() {
@@ -124,8 +133,7 @@ export function syncManagerOnlineFactory(
       },
 
       flush() {
-        if (isConsentGranted(settings)) return submitter.execute();
-        else return Promise.resolve();
+        return submitterManager.execute(!isConsentGranted(settings));
       },
 
       // [Only used for client-side]
@@ -138,18 +146,22 @@ export function syncManagerOnlineFactory(
         return {
           isRunning: mySegmentsSyncTask.isRunning,
           start() {
-            if (pushManager) {
-              if (pollingManager!.isRunning()) {
-                // if doing polling, we must start the periodic fetch of data
-                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+            if (syncEnabled) {
+              if (pushManager) {
+                if (pollingManager!.isRunning()) {
+                  // if doing polling, we must start the periodic fetch of data
+                  if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+                } else {
+                  // if not polling, we must execute the sync task for the initial fetch
+                  // of segments since `syncAll` was already executed when starting the main client
+                  mySegmentsSyncTask.execute();
+                }
+                pushManager.add(matchingKey, mySegmentsSyncTask);
               } else {
-                // if not polling, we must execute the sync task for the initial fetch
-                // of segments since `syncAll` was already executed when starting the main client
-                mySegmentsSyncTask.execute();
+                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
               }
-              pushManager.add(matchingKey, mySegmentsSyncTask);
             } else {
-              if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
             }
           },
           stop() {

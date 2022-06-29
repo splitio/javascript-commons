@@ -74,4 +74,26 @@ describe('Impressions submitter', () => {
     }, params.settings.scheduler.impressionsPushRate + 10);
   });
 
+  test('if it is executed while POST is pending, execution is queued until POST is resolved and not same items are submitted', (done) => {
+    // Make the POST request fail
+    params.splitApi.postTestImpressionsBulk.mockImplementation(() => Promise.resolve());
+
+    impressionsCacheInMemory.track([imp1]);
+    impressionsSubmitter.start();
+
+    // Tracking impression and executing submitter while POST is pending
+    impressionsCacheInMemory.track([{ ...imp1, keyName: 'k2' }]);
+    impressionsSubmitter.execute().then(() => {
+      expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
+        // impression for k1
+        ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
+        // impression for k2
+        ['[{"f":"someFeature","i":[{"k":"k2","t":"someTreatment","m":0,"c":123}]}]']]);
+      impressionsSubmitter.stop();
+
+      done();
+    });
+
+  });
+
 });
