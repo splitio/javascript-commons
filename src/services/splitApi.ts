@@ -51,12 +51,12 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?since=${since}${till ? + '&till=' + till : ''}${filterQueryString || ''}`;
+      const url = `${urls.sdk}/splitChanges?since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS));
     },
 
     fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/segmentChanges/${segmentName}?since=${since}${till ? + '&till=' + till : ''}`;
+      const url = `${urls.sdk}/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
     },
 

@@ -24,17 +24,25 @@ describe('splitApi', () => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
     const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
-    splitApi.fetchAuth();
-    assertHeaders(settings, fetchMock.mock.calls[0][1].headers);
+    splitApi.fetchAuth(['key1', 'key2']);
+    let [url, { headers }] = fetchMock.mock.calls[0];
+    assertHeaders(settings, headers);
+    expect(url).toBe('auth/v2/auth?users=key1&users=key2');
 
     splitApi.fetchMySegments('userKey');
-    assertHeaders(settings, fetchMock.mock.calls[1][1].headers);
+    [url, { headers }] = fetchMock.mock.calls[1];
+    assertHeaders(settings, headers);
+    expect(url).toBe('sdk/mySegments/userKey');
 
-    splitApi.fetchSegmentChanges(-1, 'segmentName');
-    assertHeaders(settings, fetchMock.mock.calls[2][1].headers);
+    splitApi.fetchSegmentChanges(-1, 'segmentName', false, 90);
+    [url, { headers }] = fetchMock.mock.calls[2];
+    assertHeaders(settings, headers);
+    expect(url).toBe('sdk/segmentChanges/segmentName?since=-1&till=90');
 
-    splitApi.fetchSplitChanges(-1);
-    assertHeaders(settings, fetchMock.mock.calls[3][1].headers);
+    splitApi.fetchSplitChanges(-1, false, 100);
+    [url, { headers }] = fetchMock.mock.calls[3];
+    assertHeaders(settings, headers);
+    expect(url).toBe('sdk/splitChanges?since=-1&till=100');
 
     splitApi.postEventsBulk('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[4][1].headers);
