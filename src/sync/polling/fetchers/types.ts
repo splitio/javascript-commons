@@ -4,14 +4,16 @@ import { IResponse } from '../../../services/types';
 export type ISplitChangesFetcher = (
   since: number,
   noCache?: boolean,
-  decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
+  decorator?: (promise: Promise<IResponse>) => Promise<IResponse>,
+  till?: number
 ) => Promise<ISplitChangesResponse>
 
 export type ISegmentChangesFetcher = (
   since: number,
   segmentName: string,
   noCache?: boolean,
-  decorator?: (promise: Promise<ISegmentChangesResponse[]>) => Promise<ISegmentChangesResponse[]>
+  decorator?: (promise: Promise<ISegmentChangesResponse[]>) => Promise<ISegmentChangesResponse[]>,
+  till?: number
 ) => Promise<ISegmentChangesResponse[]>
 
 export type IMySegmentsFetcher = (
