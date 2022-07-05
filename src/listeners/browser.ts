@@ -14,12 +14,13 @@ import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
 import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitter';
 
-// 'unload' event is used instead of 'beforeunload', since 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
-const UNLOAD_DOM_EVENT = 'unload';
+const VISIBILITYCHANGE_EVENT = 'visibilitychange';
+const PAGEHIDE_EVENT = 'pagehide';
+const UNLOAD_EVENT = 'unload';
 const EVENT_NAME = 'for unload page event.';
 
 /**
- * We'll listen for 'unload' event over the window object, since it's the standard way to listen page reload and close.
+ * We'll listen for events over the window object.
  */
 export class BrowserSignalListener implements ISignalListener {
 
@@ -32,36 +33,53 @@ export class BrowserSignalListener implements ISignalListener {
     private serviceApi: ISplitApi,
   ) {
     this.flushData = this.flushData.bind(this);
+    this.flushDataIfHidden = this.flushDataIfHidden.bind(this);
+    this.stopSync = this.stopSync.bind(this);
     this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled);
   }
 
   /**
    * start method.
-   * Called when SplitFactory is initialized.
-   * We add a handler on unload events. The handler flushes remaining impressions and events to the backend.
+   * Called when SplitFactory is initialized, it adds event listeners to close streaming and flush impressions and events.
    */
   start() {
+    this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      // Flush data whenever the page is hidden or unloaded.
+      document.addEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
+    }
     if (typeof window !== 'undefined' && window.addEventListener) {
-      this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
-      window.addEventListener(UNLOAD_DOM_EVENT, this.flushData);
+      // Some browsers like Safari does not fire the `visibilitychange` event when the page is being unloaded. So we also flush data in the `pagehide` event.
+      // If both events are triggered, the last one will find the storage empty, so no duplicated data will be submitted.
+      window.addEventListener(PAGEHIDE_EVENT, this.flushData);
+      // Stop streaming on 'unload' event. Used instead of 'beforeunload', because 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
+      window.addEventListener(UNLOAD_EVENT, this.stopSync);
     }
   }
 
   /**
    * stop method.
-   * Called when client is destroyed.
-   * We need to remove the handler for unload events, since it can break if called when Split context was destroyed.
+   * Called when client is destroyed, it removes event listeners.
    */
   stop() {
-    if (typeof window !== 'undefined' && window.removeEventListener) {
-      this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
-      window.removeEventListener(UNLOAD_DOM_EVENT, this.flushData);
+    this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
+    if (typeof document !== 'undefined' && document.removeEventListener) {
+      document.removeEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
     }
+    if (typeof window !== 'undefined' && window.removeEventListener) {
+      window.removeEventListener(PAGEHIDE_EVENT, this.flushData);
+      window.removeEventListener(UNLOAD_EVENT, this.stopSync);
+    }
+  }
+
+  stopSync() {
+    // Close streaming connection
+    if (this.syncManager && this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
   /**
    * flushData method.
-   * Called when unload event is triggered. It flushed remaining impressions and events to the backend,
+   * Called when pagehide event is triggered. It flushed remaining impressions and events to the backend,
    * using beacon API if possible, or falling back to regular post transport.
    */
   flushData() {
@@ -86,9 +104,11 @@ export class BrowserSignalListener implements ISignalListener {
       const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
       this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
     }
+  }
 
-    // Close streaming connection
-    if (this.syncManager.pushManager) this.syncManager.pushManager.stop();
+  flushDataIfHidden() {
+    // Precondition: document defined
+    if (document.visibilityState === 'hidden') this.flushData(); // On a 'visibilitychange' event, flush data if state is hidden
   }
 
   private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
