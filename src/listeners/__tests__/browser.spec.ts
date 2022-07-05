@@ -79,12 +79,12 @@ const fakeSplitApi = {
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
-const UNLOAD_DOM_EVENT = 'unload';
+const UNLOAD_EVENT = 'unload';
 
 const eventListeners: any = {
   [VISIBILITYCHANGE_EVENT]: new Set<() => any>(),
   [PAGEHIDE_EVENT]: new Set<() => any>(),
-  [UNLOAD_DOM_EVENT]: new Set<() => any>()
+  [UNLOAD_EVENT]: new Set<() => any>()
 };
 
 // mock window and navigator objects
@@ -101,7 +101,13 @@ beforeAll(() => {
         sendBeacon: jest.fn(() => true)
       },
       document: {
-        visibilityState: 'visible'
+        visibilityState: 'visible',
+        addEventListener: jest.fn((event, cb) => {
+          if (eventListeners[event]) eventListeners[event].add(cb);
+        }),
+        removeEventListener: jest.fn((event, cb) => {
+          if (eventListeners[event]) eventListeners[event].delete(cb);
+        }),
       }
     }
   });
@@ -117,6 +123,8 @@ beforeAll(() => {
 beforeEach(() => {
   (global.window.addEventListener as jest.Mock).mockClear();
   (global.window.removeEventListener as jest.Mock).mockClear();
+  (global.document.addEventListener as jest.Mock).mockClear();
+  (global.document.removeEventListener as jest.Mock).mockClear();
   if (global.window.navigator.sendBeacon) (global.window.navigator.sendBeacon as jest.Mock).mockClear();
   Object.values(fakeSplitApi).forEach(method => method.mockClear()); // @ts-expect-error
   global.document.visibilityState = 'visible';
@@ -125,13 +133,24 @@ beforeEach(() => {
 // delete mocks from global
 afterAll(() => {
   // @ts-expect-error
-  delete global.window; // @ts-expect-error
-  delete global.navigator;
+  delete global.window; delete global.navigator; delete global.document;
 });
 
 function triggerEvent(event: string, visibilityState?: string) { // @ts-expect-error
   if (visibilityState) global.document.visibilityState = visibilityState;
   eventListeners[event].forEach((cb: () => any) => cb());
+}
+
+function assertStart(listener: BrowserSignalListener) {
+  // Assigned right function to right signal.
+  expect((global.document.addEventListener as jest.Mock).mock.calls).toEqual([[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden]]);
+  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData], [UNLOAD_EVENT, listener.stopSync]]);
+}
+
+function assertStop(listener: BrowserSignalListener) {
+  // removed correct listener from correct signal on stop.
+  expect((global.document.removeEventListener as jest.Mock).mock.calls).toEqual([[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden]]);
+  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData], [UNLOAD_EVENT, listener.stopSync]]);
 }
 
 /* Mocks end */
@@ -141,14 +160,11 @@ test('Browser JS listener / consumer mode', () => {
   const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
-
-  // Assigned right function to right signal.
-  const eventListeners = [[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden], [PAGEHIDE_EVENT, listener.flushData], [UNLOAD_DOM_EVENT, listener.stopSync]];
-  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStart(listener);
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
   triggerEvent(PAGEHIDE_EVENT);
-  triggerEvent(UNLOAD_DOM_EVENT);
+  triggerEvent(UNLOAD_EVENT);
 
   // Unload event was triggered, but sendBeacon and post services should not be called
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
@@ -160,8 +176,7 @@ test('Browser JS listener / consumer mode', () => {
   expect(global.window.removeEventListener).not.toBeCalled();
   listener.stop();
 
-  // removed correct listener from correct signal on stop.
-  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStop(listener);
 });
 
 test('Browser JS listener / standalone mode / Impressions optimized mode with telemetry', () => {
@@ -171,10 +186,7 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
 
   listener.start();
-
-  // Assigned right function to right signal.
-  const eventListeners = [[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden], [PAGEHIDE_EVENT, listener.flushData], [UNLOAD_DOM_EVENT, listener.stopSync]];
-  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStart(listener);
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
 
@@ -189,9 +201,7 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
   listener.stop();
-
-  // removed correct listener from correct signal on stop.
-  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStop(listener);
 });
 
 test('Browser JS listener / standalone mode / Impressions debug mode', () => {
@@ -201,10 +211,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const listener = new BrowserSignalListener(syncManagerMockWithPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
-
-  // Assigned right function to right signal.
-  const eventListeners = [[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden], [PAGEHIDE_EVENT, listener.flushData], [UNLOAD_DOM_EVENT, listener.stopSync]];
-  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStart(listener);
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'visible');
 
@@ -218,7 +225,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
   expect(syncManagerMockWithPushManager.pushManager.stop).not.toBeCalled();
 
-  triggerEvent(UNLOAD_DOM_EVENT);
+  triggerEvent(UNLOAD_EVENT);
 
   // Unload event was triggered and pushManager is defined, so it must be stopped.
   expect(syncManagerMockWithPushManager.pushManager.stop).toBeCalledTimes(1);
@@ -232,9 +239,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
   listener.stop();
-
-  // removed correct listener from correct signal on stop.
-  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStop(listener);
 });
 
 test('Browser JS listener / standalone mode / Impressions debug mode without sendBeacon API', () => {
@@ -247,10 +252,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode without sen
   const listener = new BrowserSignalListener(syncManagerMockWithoutPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
-
-  // Assigned right function to right signal.
-  const eventListeners = [[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden], [PAGEHIDE_EVENT, listener.flushData], [UNLOAD_DOM_EVENT, listener.stopSync]];
-  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStart(listener);
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
 
@@ -263,9 +265,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode without sen
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
   listener.stop();
-
-  // removed correct listener from correct signal on stop.
-  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual(eventListeners);
+  assertStop(listener);
 
   // restore sendBeacon API
   global.navigator.sendBeacon = sendBeacon;

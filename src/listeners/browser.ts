@@ -16,7 +16,7 @@ import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitte
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
-const UNLOAD_DOM_EVENT = 'unload';
+const UNLOAD_EVENT = 'unload';
 const EVENT_NAME = 'for unload page event.';
 
 /**
@@ -43,16 +43,17 @@ export class BrowserSignalListener implements ISignalListener {
    * Called when SplitFactory is initialized, it adds event listeners to close streaming and flush impressions and events.
    */
   start() {
-    if (typeof window !== 'undefined' && window.addEventListener) {
-      this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
-
+    this.settings.log.debug(CLEANUP_REGISTERING, [EVENT_NAME]);
+    if (typeof document !== 'undefined' && document.addEventListener) {
       // Flush data whenever the page is hidden or unloaded.
-      window.addEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
+      document.addEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
+    }
+    if (typeof window !== 'undefined' && window.addEventListener) {
       // Some browsers like Safari does not fire the `visibilitychange` event when the page is being unloaded. So we also flush data in the `pagehide` event.
       // If both events are triggered, the last one will find the storage empty, so no duplicated data will be submitted.
       window.addEventListener(PAGEHIDE_EVENT, this.flushData);
       // Stop streaming on 'unload' event. Used instead of 'beforeunload', because 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
-      window.addEventListener(UNLOAD_DOM_EVENT, this.stopSync);
+      window.addEventListener(UNLOAD_EVENT, this.stopSync);
     }
   }
 
@@ -61,11 +62,13 @@ export class BrowserSignalListener implements ISignalListener {
    * Called when client is destroyed, it removes event listeners.
    */
   stop() {
+    this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
+    if (typeof document !== 'undefined' && document.removeEventListener) {
+      document.removeEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
+    }
     if (typeof window !== 'undefined' && window.removeEventListener) {
-      this.settings.log.debug(CLEANUP_DEREGISTERING, [EVENT_NAME]);
-      window.removeEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
       window.removeEventListener(PAGEHIDE_EVENT, this.flushData);
-      window.removeEventListener(UNLOAD_DOM_EVENT, this.stopSync);
+      window.removeEventListener(UNLOAD_EVENT, this.stopSync);
     }
   }
 
@@ -76,7 +79,7 @@ export class BrowserSignalListener implements ISignalListener {
 
   /**
    * flushData method.
-   * Called when unload event is triggered. It flushed remaining impressions and events to the backend,
+   * Called when pagehide event is triggered. It flushed remaining impressions and events to the backend,
    * using beacon API if possible, or falling back to regular post transport.
    */
   flushData() {
@@ -104,7 +107,8 @@ export class BrowserSignalListener implements ISignalListener {
   }
 
   flushDataIfHidden() {
-    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') this.flushData(); // On a 'visibilitychange' event, flush data if state is hidden
+    // Precondition: document defined
+    if (document.visibilityState === 'hidden') this.flushData(); // On a 'visibilitychange' event, flush data if state is hidden
   }
 
   private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
