@@ -1,4 +1,4 @@
-import { IFilter } from "./types";
+import { IFilter } from './types';
 
 export class DictionaryFilter implements IFilter {
   

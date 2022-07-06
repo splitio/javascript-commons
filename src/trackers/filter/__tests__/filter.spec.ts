@@ -1,5 +1,5 @@
-import { BloomFilterImp } from '../bloomFilter'
-import { DictionaryFilter } from '../dictionaryFilter'
+import { BloomFilterImp } from '../bloomFilter';
+import { DictionaryFilter } from '../dictionaryFilter';
 import { IFilter } from '../types';
 
 function assertFilter(filter: IFilter) {

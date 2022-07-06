@@ -1,5 +1,5 @@
-import { BloomFilter } from "bloom-filters";
-import { IFilter } from "./types";
+import { BloomFilter } from 'bloom-filters';
+import { IFilter } from './types';
 
 export class BloomFilterImp implements IFilter {
   
@@ -10,7 +10,7 @@ export class BloomFilterImp implements IFilter {
   constructor(spectedInsertions: number, errorRate: number) {
     this.spectedInsertions = spectedInsertions;
     this.errorRate = errorRate;
-    this.filter = BloomFilter.create(spectedInsertions, errorRate)
+    this.filter = BloomFilter.create(spectedInsertions, errorRate);
   }
 
   add(data: string): boolean {
