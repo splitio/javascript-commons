@@ -1,4 +1,4 @@
-import { ISegmentsSyncTask } from '../../polling/types';
+import { IMySegmentsSyncTask } from '../../polling/types';
 import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
 import { SegmentsData } from '../SSEHandler/types';
@@ -8,7 +8,7 @@ import { SegmentsData } from '../SSEHandler/types';
  */
 export class MySegmentsUpdateWorker implements IUpdateWorker {
 
-  private readonly mySegmentsSyncTask: ISegmentsSyncTask;
+  private readonly mySegmentsSyncTask: IMySegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
   private segmentsData?: SegmentsData;
@@ -18,7 +18,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   /**
    * @param {Object} mySegmentsSyncTask task for syncing mySegments data
    */
-  constructor(mySegmentsSyncTask: ISegmentsSyncTask) {
+  constructor(mySegmentsSyncTask: IMySegmentsSyncTask) {
     this.mySegmentsSyncTask = mySegmentsSyncTask;
     this.maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
     this.handleNewEvent = false;

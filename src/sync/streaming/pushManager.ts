@@ -1,6 +1,6 @@
 import { IPushEventEmitter, IPushManager } from './types';
 import { ISSEClient } from './SSEClient/types';
-import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
+import { IMySegmentsSyncTask, IPollingManager } from '../polling/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
@@ -55,7 +55,7 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
+  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = new SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
 
@@ -325,7 +325,7 @@ export function pushManagerFactory(
       },
 
       // [Only for client-side]
-      add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
+      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
