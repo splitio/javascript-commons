@@ -5,7 +5,7 @@ import { ITask, ISyncTask } from '../types';
 
 export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number], boolean> { }
 
-export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: SegmentsData, noCache?: boolean, fetchOnlyNew?: boolean], boolean> { }
+export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: SegmentsData, noCache?: boolean, fetchOnlyNew?: boolean, tills?: number[]], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
