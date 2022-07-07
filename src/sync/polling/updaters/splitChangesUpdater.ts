@@ -109,8 +109,9 @@ export function splitChangesUpdaterFactory(
    * Returned promise will not be rejected.
    *
    * @param {boolean | undefined} noCache true to revalidate data to fetch
+   * @param {boolean | undefined} till query param to bypass CDN requests
    */
-  return function splitChangesUpdater(noCache?: boolean) {
+  return function splitChangesUpdater(noCache?: boolean, till?: number) {
 
     /**
      * @param {number} since current changeNumber at splitsCache
@@ -119,7 +120,7 @@ export function splitChangesUpdaterFactory(
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);
 
-      const fetcherPromise = splitChangesFetcher(since, noCache, undefined, _promiseDecorator)
+      const fetcherPromise = splitChangesFetcher(since, noCache, till, _promiseDecorator)
         .then((splitChanges: ISplitChangesResponse) => {
           startingUp = false;
 

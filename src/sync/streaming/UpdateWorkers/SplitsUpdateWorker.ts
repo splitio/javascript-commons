@@ -1,9 +1,11 @@
+import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
+import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT, FETCH_BACKOFF_MAX_RETRIES } from './constants';
 import { IUpdateWorker } from './types';
 
 /**
@@ -11,12 +13,14 @@ import { IUpdateWorker } from './types';
  */
 export class SplitsUpdateWorker implements IUpdateWorker {
 
+  private readonly log: ILogger;
   private readonly splitsCache: ISplitsCacheSync;
   private readonly splitsSyncTask: ISplitsSyncTask;
   private readonly splitsEventEmitter: ISplitsEventEmitter;
   private readonly segmentsSyncTask?: ISegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
+  private cdnBypass?: boolean;
   readonly backoff: Backoff;
 
   /**
@@ -24,7 +28,8 @@ export class SplitsUpdateWorker implements IUpdateWorker {
    * @param {Object} splitsSyncTask task for syncing splits data
    * @param {Object} splitsEventEmitter emitter for splits data events
    */
-  constructor(splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask) {
+  constructor(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask) {
+    this.log = log;
     this.splitsCache = splitsCache;
     this.splitsSyncTask = splitsSyncTask;
     this.splitsEventEmitter = splitsEventEmitter;
@@ -34,7 +39,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.put = this.put.bind(this);
     this.killSplit = this.killSplit.bind(this);
     this.__handleSplitUpdateCall = this.__handleSplitUpdateCall.bind(this);
-    this.backoff = new Backoff(this.__handleSplitUpdateCall);
+    this.backoff = new Backoff(this.__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
   }
 
   // Private method
@@ -44,13 +49,32 @@ export class SplitsUpdateWorker implements IUpdateWorker {
       this.handleNewEvent = false;
 
       // fetch splits revalidating data if cached
-      this.splitsSyncTask.execute(true).then(() => {
+      this.splitsSyncTask.execute(true, this.cdnBypass ? this.maxChangeNumber : undefined).then(() => {
         if (this.handleNewEvent) {
           this.__handleSplitUpdateCall();
         } else {
           // fetch new registered segments for server-side API. Not retrying on error
           if (this.segmentsSyncTask) this.segmentsSyncTask.execute(undefined, false, true);
-          this.backoff.scheduleCall();
+
+          const attemps = this.backoff.attempts + 1;
+
+          if (this.maxChangeNumber <= this.splitsCache.getChangeNumber()) {
+            this.log.debug(`Refresh completed${this.cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+            return;
+          }
+
+          if (attemps < FETCH_BACKOFF_MAX_RETRIES) {
+            this.backoff.scheduleCall();
+            return;
+          }
+
+          if (this.cdnBypass) {
+            this.log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+          } else {
+            this.backoff.reset();
+            this.cdnBypass = true;
+            this.__handleSplitUpdateCall();
+          }
         }
       });
     }
@@ -69,6 +93,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.maxChangeNumber = changeNumber;
     this.handleNewEvent = true;
     this.backoff.reset();
+    this.cdnBypass = false;
 
     if (this.splitsSyncTask.isExecuting()) return;
 
