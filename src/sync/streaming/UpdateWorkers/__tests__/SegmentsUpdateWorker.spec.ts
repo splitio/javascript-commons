@@ -39,7 +39,7 @@ function segmentsSyncTaskMock(segmentsStorage) {
 
 describe('SegmentsUpdateWorker ', () => {
 
-  test('put', (done) => {
+  test('put', async () => {
 
     // setup
     const cache = new SegmentsCacheInMemory();
@@ -73,36 +73,30 @@ describe('SegmentsUpdateWorker ', () => {
 
     // assert dequeueing and recalling to `segmentsSyncTask.execute`
     segmentsSyncTask.__resolveSegmentsUpdaterCall(0, { 'mocked_segment_1': 100 }); // resolve first call to `segmentsSyncTask.execute`
-    setTimeout(() => {
-      expect(cache.getChangeNumber('mocked_segment_1')).toBe(100); // 100
-      expect(segmentsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes segment if `isExecuting` is false and queue is not empty
-      expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(['mocked_segment_1', 'mocked_segment_2', 'mocked_segment_3'], true, false, undefined); // synchronizes segments with given names
-      expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // no retry scheduled if synchronization success (changeNumbers are the expected)
+    await new Promise(res => setTimeout(res));
+    expect(cache.getChangeNumber('mocked_segment_1')).toBe(100); // 100
+    expect(segmentsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes segment if `isExecuting` is false and queue is not empty
+    expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(['mocked_segment_1', 'mocked_segment_2', 'mocked_segment_3'], true, false, undefined); // synchronizes segments with given names
+    expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // no retry scheduled if synchronization success (changeNumbers are the expected)
 
-      // assert not rescheduling synchronization if some changeNumber is not updated as expected,
-      // but rescheduling if a new item was queued with a greater changeNumber while the fetch was pending.
-      segmentsUpdateWorker.put({ changeNumber: 110, segmentName: 'mocked_segment_1' });
-      segmentsSyncTask.__resolveSegmentsUpdaterCall(1, { 'mocked_segment_1': 100, 'mocked_segment_2': 100, 'mocked_segment_3': 94 });
-      setTimeout(() => {
-        expect(segmentsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
-        expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(['mocked_segment_1'], true, false, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending
-        expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // doesn't retry backoff schedule since a new item was queued
+    // assert not rescheduling synchronization if some changeNumber is not updated as expected,
+    // but rescheduling if a new item was queued with a greater changeNumber while the fetch was pending.
+    segmentsUpdateWorker.put({ changeNumber: 110, segmentName: 'mocked_segment_1' });
+    segmentsSyncTask.__resolveSegmentsUpdaterCall(1, { 'mocked_segment_1': 100, 'mocked_segment_2': 100, 'mocked_segment_3': 94 });
+    await new Promise(res => setTimeout(res));
+    expect(segmentsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
+    expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(['mocked_segment_1'], true, false, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending
+    expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // doesn't retry backoff schedule since a new item was queued
 
-        // assert dequeueing remaining events
-        segmentsSyncTask.__resolveSegmentsUpdaterCall(2, { 'mocked_segment_1': 105 }); // resolve third call to `segmentsSyncTask.execute`
-        setTimeout(() => {
-          expect(segmentsSyncTask.execute).toBeCalledTimes(3); // doesn't re-synchronize segment if fetched changeNumbers are not the expected (i.e., are different from the queued items)
-          expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({ 'mocked_segment_1': 110, 'mocked_segment_2': 100, 'mocked_segment_3': 94 }); // maxChangeNumbers were cleaned
+    // assert dequeueing remaining events
+    segmentsSyncTask.__resolveSegmentsUpdaterCall(2, { 'mocked_segment_1': 105 }); // resolve third call to `segmentsSyncTask.execute`
+    await new Promise(res => setTimeout(res));
+    expect(segmentsSyncTask.execute).toBeCalledTimes(3); // doesn't re-synchronize segment if fetched changeNumbers are not the expected (i.e., are different from the queued items)
+    expect(segmentsUpdateWorker.maxChangeNumbers).toEqual({ 'mocked_segment_1': 110, 'mocked_segment_2': 100, 'mocked_segment_3': 94 }); // maxChangeNumbers were cleaned
 
-          // assert restarting retries, when a newer event is queued
-          segmentsUpdateWorker.put({ changeNumber: 115, segmentName: 'mocked_segment_1' }); // queued
-          expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
-
-          done();
-        });
-
-      }); // wait until `segmentsSyncTask.execute` is called in next event-loop cycle
-    });
+    // assert restarting retries, when a newer event is queued
+    segmentsUpdateWorker.put({ changeNumber: 115, segmentName: 'mocked_segment_1' }); // queued
+    expect(segmentsUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
   });
 
 });
