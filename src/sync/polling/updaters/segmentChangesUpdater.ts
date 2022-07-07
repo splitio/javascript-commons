@@ -8,7 +8,7 @@ import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { thenable } from '../../../utils/promise/thenable';
 
-type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) => Promise<boolean>
+type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills?: number[]) => Promise<boolean>
 
 /**
  * Factory of SegmentChanges updater, a task that:
@@ -40,7 +40,7 @@ export function segmentChangesUpdaterFactory(
    * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
    * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
    */
-  return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean) {
+  return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills = []) {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
@@ -59,7 +59,7 @@ export function segmentChangesUpdaterFactory(
           // if fetchOnlyNew flag, avoid processing already fetched segments
           if (fetchOnlyNew && since !== -1) return -1;
 
-          return segmentChangesFetcher(since, segmentName, noCache).then(function (changes) {
+          return segmentChangesFetcher(since, segmentName, noCache, tills[index]).then(function (changes) {
             let changeNumber = -1;
             const results: MaybeThenable<boolean | void>[] = [];
             changes.forEach(x => {

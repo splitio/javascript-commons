@@ -1,7 +1,6 @@
-import { IMySegmentsSyncTask } from '../../polling/types';
+import { IMySegmentsSyncTask, MySegmentsData } from '../../polling/types';
 import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
-import { SegmentsData } from '../SSEHandler/types';
 
 /**
  * MySegmentsUpdateWorker class
@@ -11,7 +10,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   private readonly mySegmentsSyncTask: IMySegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
-  private segmentsData?: SegmentsData;
+  private segmentsData?: MySegmentsData;
   private currentChangeNumber: number;
   readonly backoff: Backoff;
 
@@ -55,7 +54,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
    * @param {number} changeNumber change number of the MY_SEGMENTS_UPDATE notification
    * @param {SegmentsData | undefined} segmentsData might be undefined
    */
-  put(changeNumber: number, segmentsData?: SegmentsData) {
+  put(changeNumber: number, segmentsData?: MySegmentsData) {
     if (changeNumber <= this.currentChangeNumber || changeNumber <= this.maxChangeNumber) return;
 
     this.maxChangeNumber = changeNumber;
