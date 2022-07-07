@@ -39,6 +39,7 @@ export function segmentChangesUpdaterFactory(
    * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
    * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
    * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
+   * @param {number[] | undefined} tills list of segment till targets, for CDN bypass.
    */
   return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills = []) {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
