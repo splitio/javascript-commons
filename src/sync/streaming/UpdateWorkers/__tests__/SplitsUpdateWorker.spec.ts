@@ -9,7 +9,7 @@ function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
 
   const __splitsUpdaterCalls = [];
 
-  function __resolveSplitsUpdaterCall(changeNumber) {
+  function __resolveSplitsUpdaterCall(changeNumber: number) {
     splitStorage.setChangeNumber(changeNumber); // update changeNumber in storage
     __splitsUpdaterCalls.shift().res(); // resolve `execute` call
   }
@@ -26,7 +26,6 @@ function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
       __splitsUpdaterCalls.push({ res });
       if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
     }).then(function () {
-    }).finally(function () {
       __isSynchronizingSplits = false;
     });
   }
