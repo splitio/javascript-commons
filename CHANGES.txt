@@ -1,5 +1,5 @@
 1.6.0 (July 7, 2022)
-- Added `autoRequire` configuration option to the Google Analytics to Split integration (See https://help.split.io/hc/en-us/articles/360040838752#set-up-with-gtm-and-gtag.js).
+- Added `autoRequire` configuration option to the Google Analytics to Split integration, which takes care of requiring the splitTracker plugin on trackers dynamically created by Google tag managers (See https://help.split.io/hc/en-us/articles/360040838752#set-up-with-gtm-and-gtag.js).
 - Updated browser listener to push remaining impressions and events on 'visibilitychange' and 'pagehide' DOM events, instead of 'unload', which is not reliable in mobile and modern Web browsers (See https://developer.chrome.com/blog/page-lifecycle-api/#legacy-lifecycle-apis-to-avoid).
 
 1.5.0 (June 29, 2022)
