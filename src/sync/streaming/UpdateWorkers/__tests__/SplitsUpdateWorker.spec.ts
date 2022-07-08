@@ -2,16 +2,13 @@
 import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
 import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
 import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
-import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
-import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
-function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
+function splitsSyncTaskMock(splitStorage) {
 
   const __splitsUpdaterCalls = [];
 
-  function __resolveSplitsUpdaterCall(changeNumber) {
-    splitStorage.setChangeNumber(changeNumber); // update changeNumber in storage
-    __splitsUpdaterCalls.shift().res(); // resolve `execute` call
+  function __splitsUpdater() {
+    return new Promise((res, rej) => { __splitsUpdaterCalls.push({ res, rej }); });
   }
 
   let __isSynchronizingSplits = false;
@@ -22,10 +19,7 @@ function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
 
   function execute() {
     __isSynchronizingSplits = true;
-    return new Promise((res) => {
-      __splitsUpdaterCalls.push({ res });
-      if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
-    }).then(function () {
+    return __splitsUpdater().then(function () {
     }).finally(function () {
       __isSynchronizingSplits = false;
     });
@@ -35,7 +29,10 @@ function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
     isExecuting: jest.fn(isExecuting),
     execute: jest.fn(execute),
 
-    __resolveSplitsUpdaterCall
+    __resolveSplitsUpdaterCall(index, changeNumber) {
+      splitStorage.setChangeNumber(changeNumber); // update changeNumber in storage
+      __splitsUpdaterCalls[index].res(); // resolve previous call
+    },
   };
 }
 
@@ -52,13 +49,13 @@ function assertKilledSplit(cache, changeNumber, splitName, defaultTreatment) {
 
 describe('SplitsUpdateWorker', () => {
 
-  test('put', async () => {
+  test('put', (done) => {
 
     // setup
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache);
 
-    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = new SplitsUpdateWorker(cache, splitsSyncTask);
     splitUpdateWorker.backoff.baseMillis = 0; // retry immediately
 
     expect(splitUpdateWorker.maxChangeNumber).toBe(0); // inits with not queued changeNumber (maxChangeNumber equals to 0)
@@ -79,82 +76,44 @@ describe('SplitsUpdateWorker', () => {
     expect(splitUpdateWorker.maxChangeNumber).toBe(106); // queues changeNumber if it is mayor than currently maxChangeNumber and storage changeNumber
 
     // assert calling `splitsSyncTask.execute` if previous call is resolved and a new changeNumber in queue
-    splitsSyncTask.__resolveSplitsUpdaterCall(100);
+    splitsSyncTask.__resolveSplitsUpdaterCall(0, 100);
+    setTimeout(() => {
+      expect(splitsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes splits if `isExecuting` is false and queue is not empty
+      expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
+      expect(splitUpdateWorker.backoff.attempts).toBe(0); // no retry scheduled if synchronization success (changeNumber is the expected)
 
-    await new Promise(res => setTimeout(res));
-    expect(splitsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes splits if `isExecuting` is false and queue is not empty
-    expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
-    expect(splitUpdateWorker.backoff.attempts).toBe(0); // no retry scheduled if synchronization success (changeNumber is the expected)
+      // assert reschedule synchronization if changeNumber is not updated as expected
+      splitsSyncTask.__resolveSplitsUpdaterCall(1, 100);
+      setTimeout(() => {
+        expect(splitsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes splits if synchronization fail (changeNumber is not the expected)
+        expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
+        expect(splitUpdateWorker.backoff.attempts).toBe(1); // retry scheduled if synchronization fail (changeNumber is not the expected)
 
-    // assert reschedule synchronization if changeNumber is not updated as expected
-    splitsSyncTask.__resolveSplitsUpdaterCall(100);
-    await new Promise(res => setTimeout(res, 10)); // wait a little bit until `splitsSyncTask.execute` is called in next event-loop cycle
-    expect(splitsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes splits if synchronization fail (changeNumber is not the expected)
-    expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
-    expect(splitUpdateWorker.backoff.attempts).toBe(1); // retry scheduled if synchronization fail (changeNumber is not the expected)
+        // assert dequeueing changeNumber
+        splitsSyncTask.__resolveSplitsUpdaterCall(2, 106);
+        setTimeout(() => {
+          expect(splitsSyncTask.execute).toBeCalledTimes(3); // doesn't synchronize splits again
+          expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
 
-    // assert dequeueing changeNumber
-    splitsSyncTask.__resolveSplitsUpdaterCall(106);
-    await new Promise(res => setTimeout(res));
-    expect(splitsSyncTask.execute).toBeCalledTimes(3); // doesn't synchronize splits again
-    expect(splitUpdateWorker.maxChangeNumber).toBe(106); // maxChangeNumber
+          // assert restarting retries, when a newer event is queued
+          splitUpdateWorker.put({ changeNumber: 107 }); // queued
+          expect(splitUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
 
-    // assert restarting retries, when a newer event is queued
-    splitUpdateWorker.put({ changeNumber: 107 }); // queued
-    expect(splitUpdateWorker.backoff.attempts).toBe(0); // backoff scheduler for retries is reset if a new event is queued
+          done();
+        });
 
-    expect(loggerMock.debug).lastCalledWith('Refresh completed in 2 attempts.');
+      }, 10); // wait a little bit until `splitsSyncTask.execute` is called in next event-loop cycle
+    });
   });
 
-  test('put, completed with CDN bypass', async () => {
-
-    // setup
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
-    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
-    splitUpdateWorker.backoff.baseMillis /= 1000; // 10 millis instead of 10 sec
-    splitUpdateWorker.backoff.maxMillis /= 1000; // 60 millis instead of 1 min
-
-    splitUpdateWorker.put({ changeNumber: 100 }); // queued
-
-    await new Promise(res => setTimeout(res, 540)); // 440 + some delay
-
-    expect(loggerMock.debug).lastCalledWith('Refresh completed bypassing the CDN in 2 attempts.');
-    expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
-      [true, 100], [true, 100],
-    ]); // `execute` was called 12 times. Last 2 with CDN bypass
-  });
-
-
-  test('put, not completed with CDN bypass', async () => {
-
-    // setup
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
-    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
-    splitUpdateWorker.backoff.baseMillis /= 1000; // 10 millis instead of 10 sec
-    splitUpdateWorker.backoff.maxMillis /= 1000; // 60 millis instead of 1 min
-
-    splitUpdateWorker.put({ changeNumber: 100 }); // queued
-
-    await new Promise(res => setTimeout(res, 960)); // 860 + some delay
-
-    expect(loggerMock.debug).lastCalledWith('No changes fetched after 10 attempts with CDN bypassed.');
-    expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100]),
-    ]); // `execute` was called 20 times. Last 10 with CDN bypass
-  });
-
-  test('killSplit', async () => {
+  test('killSplit', (done) => {
     // setup
     const cache = new SplitsCacheInMemory();
     cache.addSplit('lol1', '{ "name": "something"}');
     cache.addSplit('lol2', '{ "name": "something else"}');
 
     const splitsSyncTask = splitsSyncTaskMock(cache);
-    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock);
+    const splitUpdateWorker = new SplitsUpdateWorker(cache, splitsSyncTask, splitsEventEmitterMock);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
     splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'lol1', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
@@ -164,18 +123,21 @@ describe('SplitsUpdateWorker', () => {
     assertKilledSplit(cache, 100, 'lol1', 'off');
 
     // assert not killing split locally, not emitting SDK_SPLITS_ARRIVED event, and not synchronizes splits, if changeNumber is old
-    splitsSyncTask.__resolveSplitsUpdaterCall(100);
-    await new Promise(res => setTimeout(res));
-    splitsSyncTask.execute.mockClear();
-    splitsEventEmitterMock.emit.mockClear();
-    splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'lol1', defaultTreatment: 'on' });
+    splitsSyncTask.__resolveSplitsUpdaterCall(0, 100);
+    setTimeout(() => {
+      splitsSyncTask.execute.mockClear();
+      splitsEventEmitterMock.emit.mockClear();
+      splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'lol1', defaultTreatment: 'on' });
 
-    await new Promise(res => setTimeout(res));
-    expect(splitUpdateWorker.maxChangeNumber).toBe(100); // doesn't queues changeNumber if killLocally resolved without update (its changeNumber was minor than the split changeNumber
-    expect(splitsSyncTask.execute).toBeCalledTimes(0); // doesn't synchronize splits if killLocally resolved without update
-    expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
+      setTimeout(() => {
+        expect(splitUpdateWorker.maxChangeNumber).toBe(100); // doesn't queues changeNumber if killLocally resolved without update (its changeNumber was minor than the split changeNumber
+        expect(splitsSyncTask.execute).toBeCalledTimes(0); // doesn't synchronize splits if killLocally resolved without update
+        expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
 
-    assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+        assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+        done();
+      });
+    });
   });
 
 });
