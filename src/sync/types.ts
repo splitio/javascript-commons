@@ -32,6 +32,10 @@ export interface ISyncTask<Input extends any[] = [], Output = any> extends ITask
    * Returns true if the task is being executed
    */
   isExecuting(): boolean
+  /**
+   * Returns a promise that resolves when task execution ends (i.e. isExecuting() === false)
+   */
+  whenDone(): Promise<void>
 }
 
 /** SyncManager */

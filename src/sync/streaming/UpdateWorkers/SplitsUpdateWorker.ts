@@ -21,7 +21,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
   private cdnBypass?: boolean;
-  readonly backoff: Backoff;
+  private readonly backoff: Backoff;
 
   /**
    * @param {Object} splitsCache splits data cache
@@ -95,9 +95,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.backoff.reset();
     this.cdnBypass = false;
 
-    if (this.splitsSyncTask.isExecuting()) return;
-
-    this.__handleSplitUpdateCall();
+    this.splitsSyncTask.whenDone().then(this.__handleSplitUpdateCall);
   }
 
   /**
@@ -114,6 +112,10 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     }
     // queues the SplitChanges fetch (only if changeNumber is newer)
     this.put({ changeNumber });
+  }
+
+  reset() {
+    this.backoff.reset();
   }
 
 }

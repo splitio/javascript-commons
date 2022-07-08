@@ -169,9 +169,9 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.backoff.reset();
-    if (userKey) forOwn(clients, ({ worker }) => worker.backoff.reset());
-    else (segmentsUpdateWorker as SegmentsUpdateWorker).backoff.reset();
+    splitsUpdateWorker.reset();
+    if (userKey) forOwn(clients, ({ worker }) => worker.reset());
+    else segmentsUpdateWorker!.reset();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
@@ -294,7 +294,7 @@ export function pushManagerFactory(
       });
     });
   } else {
-    pushEmitter.on(SEGMENT_UPDATE, (segmentsUpdateWorker as SegmentsUpdateWorker).put);
+    pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
 
   return objectAssign(

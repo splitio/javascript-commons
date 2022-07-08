@@ -13,7 +13,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   private handleNewEvent: boolean;
   private segmentsData?: SegmentsData;
   private currentChangeNumber: number;
-  readonly backoff: Backoff;
+  private backoff: Backoff;
 
   /**
    * @param {Object} mySegmentsSyncTask task for syncing mySegments data
@@ -66,6 +66,10 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
     if (this.mySegmentsSyncTask.isExecuting()) return;
 
     this.__handleMySegmentsUpdateCall();
+  }
+
+  reset() {
+    this.backoff.reset();
   }
 
 }

@@ -1,6 +1,4 @@
-import { Backoff } from '../../../utils/Backoff';
-
 export interface IUpdateWorker {
-  readonly backoff: Backoff,
-  put(...args: any[]): void
+  reset(): void // clear scheduled tasks (backoff)
+  put(...args: any[]): void // handle new update event
 }

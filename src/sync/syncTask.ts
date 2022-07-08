@@ -27,7 +27,7 @@ export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger,
   let timeoutID: any;
 
   function execute(...args: Input): Promise<Output> {
-    // If task is executing, chain the new execution
+    // If task is executing, chain the new execution to avoid race conditions (e.g. submitters and updater tasks)
     if (pendingTask) {
       return pendingTask.then(() => {
         return execute(...args);
@@ -57,6 +57,10 @@ export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger,
 
     isExecuting() {
       return pendingTask !== undefined;
+    },
+
+    whenDone() {
+      return pendingTask ? pendingTask.then() : Promise.resolve();
     },
 
     start(...args: Input) {
