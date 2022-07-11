@@ -20,8 +20,9 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   private readonly segmentsSyncTask?: ISegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
+  private isHandlingEvent?: boolean;
   private cdnBypass?: boolean;
-  private readonly backoff: Backoff;
+  readonly backoff: Backoff;
 
   /**
    * @param {Object} splitsCache splits data cache
@@ -45,6 +46,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   // Private method
   // Preconditions: this.splitsSyncTask.isSynchronizingSplits === false
   __handleSplitUpdateCall() {
+    this.isHandlingEvent = true;
     if (this.maxChangeNumber > this.splitsCache.getChangeNumber()) {
       this.handleNewEvent = false;
 
@@ -77,6 +79,8 @@ export class SplitsUpdateWorker implements IUpdateWorker {
           }
         }
       });
+    } else {
+      this.isHandlingEvent = false;
     }
   }
 
@@ -95,7 +99,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.backoff.reset();
     this.cdnBypass = false;
 
-    this.splitsSyncTask.whenDone().then(this.__handleSplitUpdateCall);
+    if (!this.isHandlingEvent) this.__handleSplitUpdateCall();
   }
 
   /**

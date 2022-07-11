@@ -1,5 +1,6 @@
 import { IMetadata } from '../../dtos/types';
 import { SplitIO } from '../../types';
+import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {
   /** Split name */
@@ -192,7 +193,7 @@ export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   uC: number, // userConsent
 }
 
-export interface ISubmitterManager {
+export interface ISubmitterManager extends ISyncTask {
   start(onlyTelemetry?: boolean): void,
   stop(allExceptTelemetry?: boolean): void,
   execute(onlyTelemetry?: boolean): Promise<any>

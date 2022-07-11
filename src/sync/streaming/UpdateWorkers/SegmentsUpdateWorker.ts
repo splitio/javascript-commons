@@ -15,6 +15,7 @@ class SegmentUpdateWorker {
   private readonly segment: string;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
+  private isHandlingEvent?: boolean;
   private cdnBypass?: boolean;
   readonly backoff: Backoff;
 
@@ -25,12 +26,12 @@ class SegmentUpdateWorker {
     this.segment = segment;
     this.maxChangeNumber = 0;
     this.handleNewEvent = false;
-    // this.put = this.put.bind(this);
     this.__handleSegmentUpdateCall = this.__handleSegmentUpdateCall.bind(this);
     this.backoff = new Backoff(this.__handleSegmentUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
   }
 
   __handleSegmentUpdateCall() {
+    this.isHandlingEvent = true;
     if (this.maxChangeNumber > this.segmentsCache.getChangeNumber(this.segment)) {
       this.handleNewEvent = false;
 
@@ -63,6 +64,8 @@ class SegmentUpdateWorker {
           }
         }
       });
+    } else {
+      this.isHandlingEvent = false;
     }
   }
 
@@ -76,7 +79,7 @@ class SegmentUpdateWorker {
     this.backoff.reset();
     this.cdnBypass = false;
 
-    this.segmentsSyncTask.whenDone().then(this.__handleSegmentUpdateCall);
+    if (!this.isHandlingEvent) this.__handleSegmentUpdateCall();
   }
 
 }
