@@ -36,8 +36,8 @@ class SegmentUpdateWorker {
 
       // fetch segments revalidating data if cached
       this.segmentsSyncTask.execute(
-        [this.segment], true, false,
-        this.cdnBypass ? [this.maxChangeNumber] : undefined // tills
+        this.segment, true, false,
+        this.cdnBypass ? this.maxChangeNumber : undefined // till
       ).then(() => {
         if (this.handleNewEvent) {
           this.__handleSegmentUpdateCall();

@@ -8,7 +8,7 @@ import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { thenable } from '../../../utils/promise/thenable';
 
-type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills?: number[]) => Promise<boolean>
+type ISegmentChangesUpdater = (segmentName?: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number) => Promise<boolean>
 
 /**
  * Factory of SegmentChanges updater, a task that:
@@ -35,17 +35,17 @@ export function segmentChangesUpdaterFactory(
    * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
    * Returned promise will not be rejected.
    *
-   * @param {string[] | undefined} segmentNames list of segment names to fetch. By passing `undefined` it fetches the list of segments registered at the storage
+   * @param {string | undefined} segmentName segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
    * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
    * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
    * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
-   * @param {number[] | undefined} tills list of segment till targets, for CDN bypass.
+   * @param {number | undefined} tills till target for the provided segmentName, for CDN bypass.
    */
-  return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills = []) {
+  return function segmentChangesUpdater(segmentName?: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number) {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
-    let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segments.getRegisteredSegments());
+    let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
 
     return segmentsPromise.then(segmentNames => {
       // Async fetchers are collected here.
@@ -60,7 +60,7 @@ export function segmentChangesUpdaterFactory(
           // if fetchOnlyNew flag, avoid processing already fetched segments
           if (fetchOnlyNew && since !== -1) return -1;
 
-          return segmentChangesFetcher(since, segmentName, noCache, tills[index]).then(function (changes) {
+          return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
             let changeNumber = -1;
             const results: MaybeThenable<boolean | void>[] = [];
             changes.forEach(x => {

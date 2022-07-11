@@ -4,7 +4,7 @@ import { ITask, ISyncTask } from '../types';
 
 export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number], boolean> { }
 
-export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills?: number[]], boolean> { }
+export interface ISegmentsSyncTask extends ISyncTask<[segmentName?: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number], boolean> { }
 
 export type MySegmentsData = string[] | {
   /* segment name */
