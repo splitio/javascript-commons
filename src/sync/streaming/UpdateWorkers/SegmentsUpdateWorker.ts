@@ -11,17 +11,17 @@ class SegmentUpdateWorker {
 
   private readonly log: ILogger;
   private readonly segmentsCache: ISegmentsCacheSync;
-  private readonly segmentsSyncTask: ISegmentsSyncTask;
+  private readonly segmentSyncTask: ReturnType<ISegmentsSyncTask['updateSegment']>;
   private readonly segment: string;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
   private cdnBypass?: boolean;
   readonly backoff: Backoff;
 
-  constructor(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync, segment: string) {
+  constructor(log: ILogger, segmentSyncTask: ReturnType<ISegmentsSyncTask['updateSegment']>, segmentsCache: ISegmentsCacheSync, segment: string) {
     this.log = log;
     this.segmentsCache = segmentsCache;
-    this.segmentsSyncTask = segmentsSyncTask;
+    this.segmentSyncTask = segmentSyncTask;
     this.segment = segment;
     this.maxChangeNumber = 0;
     this.handleNewEvent = false;
@@ -35,10 +35,7 @@ class SegmentUpdateWorker {
       this.handleNewEvent = false;
 
       // fetch segments revalidating data if cached
-      this.segmentsSyncTask.execute(
-        this.segment, true, false,
-        this.cdnBypass ? this.maxChangeNumber : undefined // till
-      ).then(() => {
+      this.segmentSyncTask.execute(true, false, this.cdnBypass ? this.maxChangeNumber : undefined).then(() => {
         if (this.handleNewEvent) {
           this.__handleSegmentUpdateCall();
         } else {
@@ -76,7 +73,7 @@ class SegmentUpdateWorker {
     this.backoff.reset();
     this.cdnBypass = false;
 
-    this.segmentsSyncTask.whenDone().then(this.__handleSegmentUpdateCall);
+    this.segmentSyncTask.whenDone().then(this.__handleSegmentUpdateCall);
   }
 
 }
@@ -110,7 +107,7 @@ export class SegmentsUpdateWorker implements IUpdateWorker {
    * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
    */
   put({ changeNumber, segmentName }: ISegmentUpdateData) {
-    if (!this.segments[segmentName]) this.segments[segmentName] = new SegmentUpdateWorker(this.log, this.segmentsSyncTask, this.segmentsCache, segmentName);
+    if (!this.segments[segmentName]) this.segments[segmentName] = new SegmentUpdateWorker(this.log, this.segmentsSyncTask.updateSegment(segmentName), this.segmentsCache, segmentName);
     this.segments[segmentName].put(changeNumber);
   }
 

@@ -13,7 +13,7 @@ import { ISyncTask } from './types';
  * @param taskName  Optional task name for logging.
  * @returns A sync task that wraps the given task.
  */
-export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
+export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period?: number, taskName = 'task'): ISyncTask<Input, Output> {
 
   // Task promise while it is pending. Undefined once the promise is resolved
   let pendingTask: Promise<Output> | undefined;
