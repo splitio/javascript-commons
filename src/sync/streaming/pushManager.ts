@@ -1,6 +1,6 @@
 import { IPushEventEmitter, IPushManager } from './types';
 import { ISSEClient } from './SSEClient/types';
-import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
+import { IMySegmentsSyncTask, IPollingManager } from '../polling/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
@@ -325,7 +325,7 @@ export function pushManagerFactory(
       },
 
       // [Only for client-side]
-      add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
+      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
