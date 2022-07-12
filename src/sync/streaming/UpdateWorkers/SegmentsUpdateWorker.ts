@@ -7,7 +7,7 @@ import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_RETRIES, FETCH_BACKOFF_MAX_WAIT }
 import { IUpdateWorker } from './types';
 
 /**
- * SegmentsUpdateWorker handles SEGMENT_UPDATE events
+ * SegmentsUpdateWorker
  */
 export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
@@ -69,7 +69,6 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
       },
       backoff
     };
-
   }
 
   const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
