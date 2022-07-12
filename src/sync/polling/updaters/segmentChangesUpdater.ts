@@ -7,11 +7,9 @@ import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { thenable } from '../../../utils/promise/thenable';
-import { ISyncTask } from '../../types';
-import { syncTaskFactory } from '../../syncTask';
 
 type ISegmentChangesUpdater = {
-  updateSegment(segmentName: string): ISyncTask<[noCache?: boolean, fetchOnlyIfNew?: boolean, till?: number], number>
+  updateSegment(segmentName: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number): Promise<number>
   updateSegments(fetchOnlyNew?: boolean): Promise<boolean>,
 }
 
@@ -35,13 +33,13 @@ export function segmentChangesUpdaterFactory(
 
   let readyOnAlreadyExistentState = true;
 
-  function segmentChangesUpdater(segmentName: string, noCache?: boolean, fetchOnlyIfNew?: boolean, till?: number): Promise<number> {
+  function updateSegment(segmentName: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number): Promise<number> {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
     let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      if (fetchOnlyIfNew && since !== -1) return -1;
+      if (fetchOnlyNew && since !== -1) return -1;
 
       return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
         let changeNumber = -1;
@@ -63,19 +61,13 @@ export function segmentChangesUpdaterFactory(
     });
   }
 
-  const segmentsTasks: Record<string, ISyncTask<[noCache?: boolean, fetchOnlyIfNew?: boolean, till?: number], number>> = {};
-
-  function updateSegment(segmentName: string) {
-    return (segmentsTasks[segmentName] = segmentsTasks[segmentName] || syncTaskFactory(log /* @TODO dummy log */, segmentChangesUpdater.bind(null, segmentName)));
-  }
-
   return {
     /**
      * Used by SegmentsUpdateWorker to update single segments (SEGMENT_UPDATE events).
      *
      * @param {string} segmentName segment to fetch.
      * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
-     * @param {boolean | undefined} fetchOnlyIfNew if true, only fetch the segment if it doesn't exists (changeNumber is -1).
+     * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segment if it doesn't exists (changeNumber is -1).
      * @param {number | undefined} till till target for the provided segmentName, for CDN bypass.
      */
     updateSegment,
@@ -100,7 +92,7 @@ export function segmentChangesUpdaterFactory(
         for (let index = 0; index < segmentNames.length; index++) {
           const segmentName = segmentNames[index];
           // if (!segmentsTasks[segmentName]) segmentsTasks[segmentName] = syncTaskFactory(log /* @TODO dummy log */, segmentChangesUpdater);
-          updaters.push(updateSegment(segmentName).execute(undefined, fetchOnlyNew, undefined));
+          updaters.push(updateSegment(segmentName, undefined, fetchOnlyNew, undefined));
         }
 
         return Promise.all(updaters).then(shouldUpdateFlags => {

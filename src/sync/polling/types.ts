@@ -5,7 +5,7 @@ import { ITask, ISyncTask } from '../types';
 export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean], boolean> {
-  updateSegment(segmentName: string): ISyncTask<[noCache?: boolean, fetchOnlyIfNew?: boolean, till?: number], number>
+  updateSegment(segmentName: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number): Promise<number>
 }
 
 export type MySegmentsData = string[] | {
