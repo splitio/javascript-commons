@@ -6,119 +6,87 @@ import { ISegmentUpdateData } from '../SSEHandler/types';
 import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_RETRIES, FETCH_BACKOFF_MAX_WAIT } from './constants';
 import { IUpdateWorker } from './types';
 
-// Handles retries and CDN bypass per segment name
-class SegmentUpdateWorker {
-
-  private readonly log: ILogger;
-  private readonly segmentsCache: ISegmentsCacheSync;
-  private readonly segmentsSyncTask: ISegmentsSyncTask;
-  private readonly segment: string;
-  private maxChangeNumber: number;
-  private handleNewEvent: boolean;
-  private isHandlingEvent?: boolean;
-  private cdnBypass?: boolean;
-  readonly backoff: Backoff;
-
-  constructor(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync, segment: string) {
-    this.log = log;
-    this.segmentsCache = segmentsCache;
-    this.segmentsSyncTask = segmentsSyncTask;
-    this.segment = segment;
-    this.maxChangeNumber = 0;
-    this.handleNewEvent = false;
-    this.__handleSegmentUpdateCall = this.__handleSegmentUpdateCall.bind(this);
-    this.backoff = new Backoff(this.__handleSegmentUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
-  }
-
-  __handleSegmentUpdateCall() {
-    this.isHandlingEvent = true;
-    if (this.maxChangeNumber > this.segmentsCache.getChangeNumber(this.segment)) {
-      this.handleNewEvent = false;
-
-      // fetch segments revalidating data if cached
-      this.segmentsSyncTask.execute(
-        this.segment, true, false,
-        this.cdnBypass ? this.maxChangeNumber : undefined // till
-      ).then(() => {
-        if (this.handleNewEvent) {
-          this.__handleSegmentUpdateCall();
-        } else {
-          const attemps = this.backoff.attempts + 1;
-
-          if (this.maxChangeNumber <= this.segmentsCache.getChangeNumber(this.segment)) {
-            this.log.debug(`Refresh completed${this.cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
-            return;
-          }
-
-          if (attemps < FETCH_BACKOFF_MAX_RETRIES) {
-            this.backoff.scheduleCall();
-            return;
-          }
-
-          if (this.cdnBypass) {
-            this.log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
-          } else {
-            this.backoff.reset();
-            this.cdnBypass = true;
-            this.__handleSegmentUpdateCall();
-          }
-        }
-      });
-    } else {
-      this.isHandlingEvent = false;
-    }
-  }
-
-  put(changeNumber: number) {
-    const currentChangeNumber = this.segmentsCache.getChangeNumber(this.segment);
-
-    if (changeNumber <= currentChangeNumber || changeNumber <= this.maxChangeNumber) return;
-
-    this.maxChangeNumber = changeNumber;
-    this.handleNewEvent = true;
-    this.backoff.reset();
-    this.cdnBypass = false;
-
-    if (!this.isHandlingEvent) this.__handleSegmentUpdateCall();
-  }
-
-}
-
 /**
- * SegmentUpdateWorker class
+ * SegmentsUpdateWorker
  */
-export class SegmentsUpdateWorker implements IUpdateWorker {
+export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
-  private readonly log: ILogger;
-  private readonly segmentsCache: ISegmentsCacheSync;
-  private readonly segmentsSyncTask: ISegmentsSyncTask;
-  private readonly segments: Record<string, SegmentUpdateWorker>;
+  // Handles retries with CDN bypass per segment name
+  function SegmentUpdateWorker(segment: string) {
+    let maxChangeNumber = 0;
+    let handleNewEvent = false;
+    let isHandlingEvent: boolean, cdnBypass: boolean;
+    const backoff = new Backoff(__handleSegmentUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
-  /**
-   * @param {Object} segmentsCache segments data cache
-   * @param {Object} segmentsSyncTask task for syncing segments data
-   */
-  constructor(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync) {
-    this.log = log;
-    this.segmentsSyncTask = segmentsSyncTask;
-    this.segmentsCache = segmentsCache;
-    this.segments = {};
-    this.put = this.put.bind(this);
+    function __handleSegmentUpdateCall() {
+      isHandlingEvent = true;
+      if (maxChangeNumber > segmentsCache.getChangeNumber(segment)) {
+        handleNewEvent = false;
+
+        // fetch segments revalidating data if cached
+        segmentsSyncTask.execute(segment, true, false, cdnBypass ? maxChangeNumber : undefined).then(() => {
+          if (handleNewEvent) {
+            __handleSegmentUpdateCall();
+          } else {
+            const attemps = backoff.attempts + 1;
+
+            if (maxChangeNumber <= segmentsCache.getChangeNumber(segment)) {
+              log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+              return;
+            }
+
+            if (attemps < FETCH_BACKOFF_MAX_RETRIES) {
+              backoff.scheduleCall();
+              return;
+            }
+
+            if (cdnBypass) {
+              log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+            } else {
+              backoff.reset();
+              cdnBypass = true;
+              __handleSegmentUpdateCall();
+            }
+          }
+        });
+      } else {
+        isHandlingEvent = false;
+      }
+    }
+
+    return {
+      put(changeNumber: number) {
+        const currentChangeNumber = segmentsCache.getChangeNumber(segment);
+
+        if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
+
+        maxChangeNumber = changeNumber;
+        handleNewEvent = true;
+        backoff.reset();
+        cdnBypass = false;
+
+        if (!isHandlingEvent) __handleSegmentUpdateCall();
+      },
+      backoff
+    };
   }
 
-  /**
-   * Invoked by NotificationProcessor on SEGMENT_UPDATE event
-   *
-   * @param {number} changeNumber change number of the SEGMENT_UPDATE notification
-   * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
-   */
-  put({ changeNumber, segmentName }: ISegmentUpdateData) {
-    if (!this.segments[segmentName]) this.segments[segmentName] = new SegmentUpdateWorker(this.log, this.segmentsSyncTask, this.segmentsCache, segmentName);
-    this.segments[segmentName].put(changeNumber);
-  }
+  const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
 
-  reset() {
-    Object.keys(this.segments).forEach(segmentName => this.segments[segmentName].backoff.reset());
-  }
+  return {
+    /**
+     * Invoked by NotificationProcessor on SEGMENT_UPDATE event
+     *
+     * @param {number} changeNumber change number of the SEGMENT_UPDATE notification
+     * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
+     */
+    put({ changeNumber, segmentName }: ISegmentUpdateData) {
+      if (!segments[segmentName]) segments[segmentName] = SegmentUpdateWorker(segmentName);
+      segments[segmentName].put(changeNumber);
+    },
 
+    reset() {
+      Object.keys(segments).forEach(segmentName => segments[segmentName].backoff.reset());
+    }
+  };
 }
