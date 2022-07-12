@@ -143,4 +143,5 @@ export const LOG_PREFIX_SYNC_POLLING = LOG_PREFIX_SYNC + ':polling-manager: ';
 export const LOG_PREFIX_SYNC_SUBMITTERS = LOG_PREFIX_SYNC + ':submitter: ';
 export const LOG_PREFIX_IMPRESSIONS_TRACKER = 'impressions-tracker: ';
 export const LOG_PREFIX_EVENTS_TRACKER = 'events-tracker: ';
+export const LOG_PREFIX_UNIQUE_KEYS_TRACKER = 'unique-keys-tracker: ';
 export const LOG_PREFIX_CLEANUP = 'cleanup: ';
