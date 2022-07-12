@@ -6,7 +6,7 @@ import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { syncTaskFactory } from '../../../syncTask';
 
-function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
+function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers?: number[]) {
 
   const __splitsUpdaterCalls = [];
 
