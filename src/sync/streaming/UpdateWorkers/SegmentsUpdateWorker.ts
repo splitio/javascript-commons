@@ -11,6 +11,9 @@ import { IUpdateWorker } from './types';
  */
 export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
+  const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
+  let stopped: boolean;
+
   // Handles retries with CDN bypass per segment name
   function SegmentUpdateWorker(segment: string) {
     let maxChangeNumber = 0;
@@ -25,6 +28,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
         // fetch segments revalidating data if cached
         segmentsSyncTask.updateSegment(segment, true, false, cdnBypass ? maxChangeNumber : undefined).then(() => {
+          if (stopped) return;
           if (handleNewEvent) {
             __handleSegmentUpdateCall();
           } else {
@@ -71,8 +75,6 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
     };
   }
 
-  const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
-
   return {
     /**
      * Invoked by NotificationProcessor on SEGMENT_UPDATE event
@@ -81,11 +83,13 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
      * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
      */
     put({ changeNumber, segmentName }: ISegmentUpdateData) {
+      stopped = false;
       if (!segments[segmentName]) segments[segmentName] = SegmentUpdateWorker(segmentName);
       segments[segmentName].put(changeNumber);
     },
 
     stop() {
+      stopped = true;
       Object.keys(segments).forEach(segmentName => segments[segmentName].backoff.reset());
     }
   };

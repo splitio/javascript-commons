@@ -123,4 +123,20 @@ describe('SegmentsUpdateWorker ', () => {
     ]); // `updateSegment` was called 20 times. Last 10 with CDN bypass
   });
 
+  test('stop', async () => {
+    // setup
+    const cache = new SegmentsCacheInMemory();
+    const segmentsSyncTask = segmentsSyncTaskMock(cache, [['mocked_segment_1', 95], ['mocked_segment_2', 95]]);
+    Backoff.__TEST__BASE_MILLIS = 1;
+    const segmentsUpdateWorker = SegmentsUpdateWorker(loggerMock, segmentsSyncTask, cache);
+
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_1' });
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_2' });
+
+    segmentsUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    expect(segmentsSyncTask.updateSegment).toBeCalledTimes(2);
+  });
+
 });
