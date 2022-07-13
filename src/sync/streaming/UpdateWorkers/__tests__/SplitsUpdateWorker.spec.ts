@@ -5,6 +5,7 @@ import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
 import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { syncTaskFactory } from '../../../syncTask';
+import { Backoff } from '../../../../utils/Backoff';
 
 function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers?: number[]) {
 
@@ -170,6 +171,21 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
 
     assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+  });
+
+  test('stop', async () => {
+    // setup
+    const cache = new SplitsCacheInMemory();
+    const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
+    Backoff.__TEST__BASE_MILLIS = 1;
+    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+
+    splitUpdateWorker.put({ changeNumber: 100 });
+
+    splitUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 
 });
