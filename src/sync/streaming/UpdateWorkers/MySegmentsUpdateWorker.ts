@@ -10,6 +10,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   private readonly mySegmentsSyncTask: IMySegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
+  private isHandlingEvent?: boolean;
   private segmentsData?: MySegmentsData;
   private currentChangeNumber: number;
   readonly backoff: Backoff;
@@ -31,12 +32,14 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   // Private method
   // Precondition: this.mySegmentsSyncTask.isSynchronizingMySegments === false
   __handleMySegmentsUpdateCall() {
+    this.isHandlingEvent = true;
     if (this.maxChangeNumber > this.currentChangeNumber) {
       this.handleNewEvent = false;
       const currentMaxChangeNumber = this.maxChangeNumber;
 
       // fetch mySegments revalidating data if cached
       this.mySegmentsSyncTask.execute(this.segmentsData, true).then((result) => {
+        if (!this.isHandlingEvent) return;
         if (result !== false) // Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
           this.currentChangeNumber = Math.max(this.currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `this.maxChangeNumber` was updated during fetch.
         if (this.handleNewEvent) {
@@ -45,6 +48,8 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
           this.backoff.scheduleCall();
         }
       });
+    } else {
+      this.isHandlingEvent = false;
     }
   }
 
@@ -62,9 +67,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
     this.backoff.reset();
     this.segmentsData = segmentsData;
 
-    if (this.mySegmentsSyncTask.isExecuting()) return;
-
-    this.__handleMySegmentsUpdateCall();
+    if (!this.isHandlingEvent) this.__handleMySegmentsUpdateCall();
   }
 
   stop() {
