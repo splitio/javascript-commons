@@ -71,6 +71,7 @@ export class MySegmentsUpdateWorker implements IUpdateWorker {
   }
 
   stop() {
+    this.isHandlingEvent = false;
     this.backoff.reset();
   }
 

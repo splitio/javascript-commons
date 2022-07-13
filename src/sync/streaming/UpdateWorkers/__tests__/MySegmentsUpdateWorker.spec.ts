@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { MySegmentsUpdateWorker } from '../MySegmentsUpdateWorker';
 import { syncTaskFactory } from '../../../syncTask';
+import { Backoff } from '../../../../utils/Backoff';
 
 function mySegmentsSyncTaskMock(values?: (boolean | undefined)[]) {
 
@@ -119,6 +120,20 @@ describe('MySegmentsUpdateWorker', () => {
 
       }, 10); // wait a little bit until `mySegmentsSyncTask.execute` is called in next event-loop cycle
     });
+  });
+
+  test('stop', async () => {
+    // setup
+    const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
+    Backoff.__TEST__BASE_MILLIS = 1;
+    const mySegmentUpdateWorker = new MySegmentsUpdateWorker(mySegmentsSyncTask);
+
+    mySegmentUpdateWorker.put(100);
+
+    mySegmentUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
 });
