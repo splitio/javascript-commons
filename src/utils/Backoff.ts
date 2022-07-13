@@ -1,5 +1,9 @@
 export class Backoff {
 
+  // For testing purposes, assign to overwrite the provided value by param
+  static __TEST__BASE_MILLIS?: number;
+  static __TEST__MAX_MILLIS?: number;
+
   static DEFAULT_BASE_MILLIS = 1000; // 1 second
   static DEFAULT_MAX_MILLIS = 1800000; // 30 minutes
 
@@ -17,8 +21,8 @@ export class Backoff {
    * @param {number} maxMillis
    */
   constructor(cb: (...args: any[]) => any, baseMillis?: number, maxMillis?: number) {
-    this.baseMillis = baseMillis || Backoff.DEFAULT_BASE_MILLIS;
-    this.maxMillis = maxMillis || Backoff.DEFAULT_MAX_MILLIS;
+    this.baseMillis = Backoff.__TEST__BASE_MILLIS || baseMillis || Backoff.DEFAULT_BASE_MILLIS;
+    this.maxMillis = Backoff.__TEST__MAX_MILLIS || maxMillis || Backoff.DEFAULT_MAX_MILLIS;
     this.attempts = 0;
     this.cb = cb;
   }
