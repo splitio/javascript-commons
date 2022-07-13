@@ -169,9 +169,9 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.reset();
-    if (userKey) forOwn(clients, ({ worker }) => worker.reset());
-    else segmentsUpdateWorker!.reset();
+    splitsUpdateWorker.stop();
+    if (userKey) forOwn(clients, ({ worker }) => worker.stop());
+    else segmentsUpdateWorker!.stop();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);

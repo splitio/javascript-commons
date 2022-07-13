@@ -36,7 +36,6 @@ describe('SegmentsUpdateWorker ', () => {
     // setup
     const cache = new SegmentsCacheInMemory();
     const segmentsSyncTask = segmentsSyncTaskMock(cache);
-
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
     const segmentsUpdateWorker = SegmentsUpdateWorker(loggerMock, segmentsSyncTask, cache);
 
@@ -63,8 +62,7 @@ describe('SegmentsUpdateWorker ', () => {
     expect(segmentsSyncTask.updateSegment).toBeCalledTimes(4);
     expect(segmentsSyncTask.updateSegment).toHaveBeenLastCalledWith('mocked_segment_1', true, false, undefined);
 
-    // assert not rescheduling synchronization if some changeNumber is not updated as expected,
-    // but rescheduling if a new item was queued with a greater changeNumber while the fetch was pending.
+    // queue a new event for mocked_segment_1
     segmentsUpdateWorker.put({ changeNumber: 110, segmentName: 'mocked_segment_1' });
 
     segmentsSyncTask.__resolveUpdateSegmentCall('mocked_segment_2', 100);
@@ -72,12 +70,12 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveUpdateSegmentCall('mocked_segment_1', 100);
 
     await new Promise(res => setTimeout(res));
-    // `updateSegment` for mocked_segment_1 was called a 3rd time
+    // `updateSegment` for mocked_segment_1 is called a 3rd time
     expect(segmentsSyncTask.updateSegment).toBeCalledTimes(5); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
     expect(segmentsSyncTask.updateSegment).toHaveBeenLastCalledWith('mocked_segment_1', true, false, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending
 
     segmentsSyncTask.__resolveUpdateSegmentCall('mocked_segment_1', 110); // resolve last call with target changeNumber
-    await new Promise(res => setTimeout(res, 20)); // Wait with a short delay to assert no more calls with backoff to `updateSegment`
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `updateSegment`
     expect(segmentsSyncTask.updateSegment).toBeCalledTimes(5); // doesn't re-synchronize segments if fetched changeNumbers are the expected (i.e., are equal to queued changeNumbers)
   });
 

@@ -118,7 +118,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.put({ changeNumber });
   }
 
-  reset() {
+  stop() {
     this.backoff.reset();
   }
 
