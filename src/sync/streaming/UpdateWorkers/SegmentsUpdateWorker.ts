@@ -11,14 +11,12 @@ import { IUpdateWorker } from './types';
  */
 export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
-  const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
-  let stopped: boolean;
-
   // Handles retries with CDN bypass per segment name
   function SegmentUpdateWorker(segment: string) {
     let maxChangeNumber = 0;
     let handleNewEvent = false;
-    let isHandlingEvent: boolean, cdnBypass: boolean;
+    let isHandlingEvent: boolean;
+    let cdnBypass: boolean;
     const backoff = new Backoff(__handleSegmentUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
     function __handleSegmentUpdateCall() {
@@ -28,7 +26,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
         // fetch segments revalidating data if cached
         segmentsSyncTask.updateSegment(segment, true, false, cdnBypass ? maxChangeNumber : undefined).then(() => {
-          if (stopped) return;
+          if (!isHandlingEvent) return; // halt handling event if `stop` has been called
           if (handleNewEvent) {
             __handleSegmentUpdateCall();
           } else {
@@ -71,9 +69,14 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
         if (!isHandlingEvent) __handleSegmentUpdateCall();
       },
-      backoff
+      stop() {
+        isHandlingEvent = false;
+        backoff.reset();
+      }
     };
   }
+
+  const segments: Record<string, ReturnType<typeof SegmentUpdateWorker>> = {};
 
   return {
     /**
@@ -83,14 +86,12 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
      * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
      */
     put({ changeNumber, segmentName }: ISegmentUpdateData) {
-      stopped = false;
       if (!segments[segmentName]) segments[segmentName] = SegmentUpdateWorker(segmentName);
       segments[segmentName].put(changeNumber);
     },
 
     stop() {
-      stopped = true;
-      Object.keys(segments).forEach(segmentName => segments[segmentName].backoff.reset());
+      Object.keys(segments).forEach(segmentName => segments[segmentName].stop());
     }
   };
 }

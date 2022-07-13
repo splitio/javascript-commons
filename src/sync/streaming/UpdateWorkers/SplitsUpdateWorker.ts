@@ -21,7 +21,6 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
   private isHandlingEvent?: boolean;
-  private stopped?: boolean;
   private cdnBypass?: boolean;
   readonly backoff: Backoff;
 
@@ -53,7 +52,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
 
       // fetch splits revalidating data if cached
       this.splitsSyncTask.execute(true, this.cdnBypass ? this.maxChangeNumber : undefined).then(() => {
-        if (this.stopped) return;
+        if (!this.isHandlingEvent) return; // halt handling event if `stop` has been called
         if (this.handleNewEvent) {
           this.__handleSplitUpdateCall();
         } else {
@@ -100,7 +99,6 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.handleNewEvent = true;
     this.backoff.reset();
     this.cdnBypass = false;
-    this.stopped = false;
 
     if (!this.isHandlingEvent) this.__handleSplitUpdateCall();
   }
@@ -122,7 +120,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   }
 
   stop() {
-    this.stopped = true;
+    this.isHandlingEvent = false;
     this.backoff.reset();
   }
 
