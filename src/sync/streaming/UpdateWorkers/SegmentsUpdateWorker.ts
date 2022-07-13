@@ -85,7 +85,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
       segments[segmentName].put(changeNumber);
     },
 
-    reset() {
+    stop() {
       Object.keys(segments).forEach(segmentName => segments[segmentName].backoff.reset());
     }
   };
