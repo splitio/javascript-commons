@@ -26,7 +26,6 @@ export function uniqueKeysTrackerFactory(
   // taskRefreshRate: number = 15,
 ): IUniqueKeysTracker {
   
-  // let uniqueKeysTracker: { [key: string]: string[] } = {};
   const uniqueKeysTracker: { [featureName: string]: ISet<string> } = {};
   let uniqueTrackerSize = 0;
   
