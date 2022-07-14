@@ -7,7 +7,7 @@ import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_RETRIES, FETCH_BACKOFF_MAX_WAIT }
 import { IUpdateWorker } from './types';
 
 /**
- * SegmentsUpdateWorker
+ * SegmentsUpdateWorker factory
  */
 export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
