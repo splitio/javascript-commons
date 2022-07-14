@@ -180,7 +180,6 @@ export function pushManagerFactory(
   // Otherwise it is unnecessary (e.g, STREAMING_RESUMED).
   pushEmitter.on(PUSH_SUBSYSTEM_UP, () => {
     connectPushRetryBackoff.reset();
-    stopWorkers();
   });
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
