@@ -4,8 +4,10 @@ import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheIn
 import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
 import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+import { syncTaskFactory } from '../../../syncTask';
+import { Backoff } from '../../../../utils/Backoff';
 
-function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
+function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers?: number[]) {
 
   const __splitsUpdaterCalls = [];
 
@@ -14,25 +16,19 @@ function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
     __splitsUpdaterCalls.shift().res(); // resolve `execute` call
   }
 
-  let __isSynchronizingSplits = false;
-
-  function isExecuting() {
-    return __isSynchronizingSplits;
-  }
-
-  function execute() {
-    __isSynchronizingSplits = true;
-    return new Promise((res) => {
-      __splitsUpdaterCalls.push({ res });
-      if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
-    }).then(function () {
-      __isSynchronizingSplits = false;
-    });
-  }
+  const syncTask = syncTaskFactory(
+    { debug() { } }, // no-op logger
+    () => {
+      return new Promise((res) => {
+        __splitsUpdaterCalls.push({ res });
+        if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
+      });
+    }
+  );
 
   return {
-    isExecuting: jest.fn(isExecuting),
-    execute: jest.fn(execute),
+    isExecuting: jest.fn(syncTask.isExecuting),
+    execute: jest.fn(syncTask.execute),
 
     __resolveSplitsUpdaterCall
   };
@@ -175,6 +171,21 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
 
     assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+  });
+
+  test('stop', async () => {
+    // setup
+    const cache = new SplitsCacheInMemory();
+    const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
+    Backoff.__TEST__BASE_MILLIS = 1;
+    const splitUpdateWorker = new SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+
+    splitUpdateWorker.put({ changeNumber: 100 });
+
+    splitUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 
 });

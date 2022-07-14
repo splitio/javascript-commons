@@ -8,7 +8,10 @@ import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { thenable } from '../../../utils/promise/thenable';
 
-type ISegmentChangesUpdater = (segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills?: number[]) => Promise<boolean>
+type ISegmentChangesUpdater = {
+  updateSegment(segmentName: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number): Promise<number>
+  updateSegments(fetchOnlyNew?: boolean): Promise<boolean>,
+}
 
 /**
  * Factory of SegmentChanges updater, a task that:
@@ -30,79 +33,90 @@ export function segmentChangesUpdaterFactory(
 
   let readyOnAlreadyExistentState = true;
 
-  /**
-   * Segments updater returns a promise that resolves with a `false` boolean value if it fails at least to fetch a segment or synchronize it with the storage.
-   * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
-   * Returned promise will not be rejected.
-   *
-   * @param {string[] | undefined} segmentNames list of segment names to fetch. By passing `undefined` it fetches the list of segments registered at the storage
-   * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
-   * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
-   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
-   * @param {number[] | undefined} tills list of segment till targets, for CDN bypass.
-   */
-  return function segmentChangesUpdater(segmentNames?: string[], noCache?: boolean, fetchOnlyNew?: boolean, tills = []) {
-    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
+  function updateSegment(segmentName: string, noCache?: boolean, fetchOnlyNew?: boolean, till?: number): Promise<number> {
+    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
+    let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
-    // If not a segment name provided, read list of available segments names to be updated.
-    let segmentsPromise = Promise.resolve(segmentNames ? segmentNames : segments.getRegisteredSegments());
+    return sincePromise.then(since => {
+      // if fetchOnlyNew flag, avoid processing already fetched segments
+      if (fetchOnlyNew && since !== -1) return -1;
 
-    return segmentsPromise.then(segmentNames => {
-      // Async fetchers are collected here.
-      const updaters: Promise<number>[] = [];
+      return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
+        let changeNumber = -1;
+        const results: MaybeThenable<boolean | void>[] = [];
+        changes.forEach(x => {
+          if (x.added.length > 0) results.push(segments.addToSegment(segmentName, x.added));
+          if (x.removed.length > 0) results.push(segments.removeFromSegment(segmentName, x.removed));
+          if (x.added.length > 0 || x.removed.length > 0) {
+            results.push(segments.setChangeNumber(segmentName, x.till));
+            changeNumber = x.till;
+          }
 
-      for (let index = 0; index < segmentNames.length; index++) {
-        const segmentName = segmentNames[index];
-        log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
-        let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
-
-        updaters.push(sincePromise.then(since => {
-          // if fetchOnlyNew flag, avoid processing already fetched segments
-          if (fetchOnlyNew && since !== -1) return -1;
-
-          return segmentChangesFetcher(since, segmentName, noCache, tills[index]).then(function (changes) {
-            let changeNumber = -1;
-            const results: MaybeThenable<boolean | void>[] = [];
-            changes.forEach(x => {
-              if (x.added.length > 0) results.push(segments.addToSegment(segmentName, x.added));
-              if (x.removed.length > 0) results.push(segments.removeFromSegment(segmentName, x.removed));
-              if (x.added.length > 0 || x.removed.length > 0) {
-                results.push(segments.setChangeNumber(segmentName, x.till));
-                changeNumber = x.till;
-              }
-
-              log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
-            });
-            // If at least one storage operation result is a promise, join all in a single promise.
-            if (results.some(result => thenable(result))) return Promise.all(results).then(() => changeNumber);
-            return changeNumber;
-          });
-        }));
-
-      }
-
-      return Promise.all(updaters).then(shouldUpdateFlags => {
-        // if at least one segment fetch succeeded, mark segments ready
-        if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
-          readyOnAlreadyExistentState = false;
-          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
-        }
-        return true;
+          log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+        });
+        // If at least one storage operation result is a promise, join all in a single promise.
+        if (results.some(result => thenable(result))) return Promise.all(results).then(() => changeNumber);
+        return changeNumber;
       });
-    })
-      // Handles rejected promises at `segmentChangesFetcher`, `segments.getRegisteredSegments` and other segment storage operations.
-      .catch(error => {
-        if (error && error.statusCode === 403) {
-          // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
-          // @TODO although factory status is destroyed, synchronization is not stopped
-          if (readiness) readiness.destroy();
-          log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
-        } else {
-          log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
+    });
+  }
+
+  return {
+    /**
+     * Used by SegmentsUpdateWorker to update single segments (SEGMENT_UPDATE events).
+     *
+     * @param {string} segmentName segment to fetch.
+     * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
+     * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segment if it doesn't exists (changeNumber is -1).
+     * @param {number | undefined} till till target for the provided segmentName, for CDN bypass.
+     */
+    updateSegment,
+
+    /**
+     * Used by pollingManager to update all segments on syncAll and periodic fetch, and by SplitsUpdateWorker to update new segments.
+     * Returns a promise that never rejects, and resolves with a `false` boolean value if it fails to fetch a segment or synchronize it with the storage.
+     *
+     * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists (changeNumber is -1).
+     * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
+     */
+    updateSegments(fetchOnlyNew?: boolean) {
+      log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
+
+      // read list of available segments names to be updated.
+      let segmentsPromise = Promise.resolve(segments.getRegisteredSegments());
+
+      return segmentsPromise.then(segmentNames => {
+        // Async fetchers are collected here.
+        const updaters: Promise<number>[] = [];
+
+        for (let index = 0; index < segmentNames.length; index++) {
+          const segmentName = segmentNames[index];
+          // if (!segmentsTasks[segmentName]) segmentsTasks[segmentName] = syncTaskFactory(log /* @TODO dummy log */, segmentChangesUpdater);
+          updaters.push(updateSegment(segmentName, undefined, fetchOnlyNew, undefined));
         }
 
-        return false;
-      });
+        return Promise.all(updaters).then(shouldUpdateFlags => {
+          // if at least one segment fetch succeeded, mark segments ready
+          if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
+            readyOnAlreadyExistentState = false;
+            if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+          }
+          return true;
+        });
+      })
+        // Handles rejected promises at `segmentChangesFetcher`, `segments.getRegisteredSegments` and other segment storage operations.
+        .catch(error => {
+          if (error && error.statusCode === 403) {
+            // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
+            // @TODO although factory status is destroyed, synchronization is not stopped
+            if (readiness) readiness.destroy();
+            log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an Api Key from the Split web console that is of type Server-side.`);
+          } else {
+            log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
+          }
+
+          return false;
+        });
+    }
   };
-
 }

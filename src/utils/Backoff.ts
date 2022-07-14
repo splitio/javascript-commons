@@ -1,8 +1,8 @@
 export class Backoff {
 
   // For testing purposes, assign to overwrite the provided value by param
-  static __TEST__BASE_MILLIS: number;
-  static __TEST__MAX_MILLIS: number;
+  static __TEST__BASE_MILLIS?: number;
+  static __TEST__MAX_MILLIS?: number;
 
   static DEFAULT_BASE_MILLIS = 1000; // 1 second
   static DEFAULT_MAX_MILLIS = 1800000; // 30 minutes

@@ -20,6 +20,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   private readonly segmentsSyncTask?: ISegmentsSyncTask;
   private maxChangeNumber: number;
   private handleNewEvent: boolean;
+  private isHandlingEvent?: boolean;
   private cdnBypass?: boolean;
   readonly backoff: Backoff;
 
@@ -45,16 +46,18 @@ export class SplitsUpdateWorker implements IUpdateWorker {
   // Private method
   // Preconditions: this.splitsSyncTask.isSynchronizingSplits === false
   __handleSplitUpdateCall() {
+    this.isHandlingEvent = true;
     if (this.maxChangeNumber > this.splitsCache.getChangeNumber()) {
       this.handleNewEvent = false;
 
       // fetch splits revalidating data if cached
       this.splitsSyncTask.execute(true, this.cdnBypass ? this.maxChangeNumber : undefined).then(() => {
+        if (!this.isHandlingEvent) return; // halt handling event if `stop` has been called
         if (this.handleNewEvent) {
           this.__handleSplitUpdateCall();
         } else {
           // fetch new registered segments for server-side API. Not retrying on error
-          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(undefined, false, true);
+          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(true);
 
           const attemps = this.backoff.attempts + 1;
 
@@ -77,6 +80,8 @@ export class SplitsUpdateWorker implements IUpdateWorker {
           }
         }
       });
+    } else {
+      this.isHandlingEvent = false;
     }
   }
 
@@ -95,9 +100,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     this.backoff.reset();
     this.cdnBypass = false;
 
-    if (this.splitsSyncTask.isExecuting()) return;
-
-    this.__handleSplitUpdateCall();
+    if (!this.isHandlingEvent) this.__handleSplitUpdateCall();
   }
 
   /**
@@ -114,6 +117,11 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     }
     // queues the SplitChanges fetch (only if changeNumber is newer)
     this.put({ changeNumber });
+  }
+
+  stop() {
+    this.isHandlingEvent = false;
+    this.backoff.reset();
   }
 
 }
