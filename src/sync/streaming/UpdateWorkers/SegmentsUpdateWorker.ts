@@ -24,7 +24,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
         handleNewEvent = false;
 
         // fetch segments revalidating data if cached
-        segmentsSyncTask.execute(segment, true, false, cdnBypass ? maxChangeNumber : undefined).then(() => {
+        segmentsSyncTask.updateSegment(segment, true, false, cdnBypass ? maxChangeNumber : undefined).then(() => {
           if (handleNewEvent) {
             __handleSegmentUpdateCall();
           } else {
