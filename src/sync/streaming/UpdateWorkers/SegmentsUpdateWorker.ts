@@ -7,7 +7,7 @@ import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_RETRIES, FETCH_BACKOFF_MAX_WAIT }
 import { IUpdateWorker } from './types';
 
 /**
- * SegmentsUpdateWorker
+ * SegmentsUpdateWorker factory
  */
 export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
 
@@ -15,7 +15,8 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
   function SegmentUpdateWorker(segment: string) {
     let maxChangeNumber = 0;
     let handleNewEvent = false;
-    let isHandlingEvent: boolean, cdnBypass: boolean;
+    let isHandlingEvent: boolean;
+    let cdnBypass: boolean;
     const backoff = new Backoff(__handleSegmentUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
     function __handleSegmentUpdateCall() {
@@ -25,6 +26,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
         // fetch segments revalidating data if cached
         segmentsSyncTask.execute(false, segment, true, cdnBypass ? maxChangeNumber : undefined).then(() => {
+          if (!isHandlingEvent) return; // halt if `stop` has been called
           if (handleNewEvent) {
             __handleSegmentUpdateCall();
           } else {
