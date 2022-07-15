@@ -109,8 +109,12 @@ describe('SplitsUpdateWorker', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
       [true, 100], [true, 100],
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
-  });
 
+    // Handle new event after previous is completed
+    splitsSyncTask.execute.mockClear();
+    splitUpdateWorker.put({ changeNumber: 105 });
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
+  });
 
   test('put, not completed with CDN bypass', async () => {
 
@@ -130,6 +134,11 @@ describe('SplitsUpdateWorker', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
+
+    // Handle new event after previous ends (not completed)
+    splitsSyncTask.execute.mockClear();
+    splitUpdateWorker.put({ changeNumber: 105 });
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 
   test('killSplit', async () => {

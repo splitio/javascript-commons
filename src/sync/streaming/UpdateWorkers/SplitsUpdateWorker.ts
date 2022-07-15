@@ -37,6 +37,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
 
           if (maxChangeNumber <= splitsCache.getChangeNumber()) {
             log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+            isHandlingEvent = false;
             return;
           }
 
@@ -47,6 +48,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
 
           if (cdnBypass) {
             log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+            isHandlingEvent = false;
           } else {
             backoff.reset();
             cdnBypass = true;
