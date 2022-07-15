@@ -81,12 +81,9 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes splits if synchronization fail (changeNumber is not the expected)
 
     // assert dequeueing changeNumber
-    splitsSyncTask.__resolveSplitsUpdaterCall(106);
-    await new Promise(res => setTimeout(res));
+    splitsSyncTask.__resolveSplitsUpdaterCall(106); // resolve with target changeNumber
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff
     expect(splitsSyncTask.execute).toBeCalledTimes(3); // doesn't synchronize splits again
-
-    // assert restarting retries, when a newer event is queued
-    splitUpdateWorker.put({ changeNumber: 107 }); // queued
 
     expect(loggerMock.debug).lastCalledWith('Refresh completed in 2 attempts.');
   });
@@ -181,7 +178,7 @@ describe('SplitsUpdateWorker', () => {
 
     splitUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after reseting
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 

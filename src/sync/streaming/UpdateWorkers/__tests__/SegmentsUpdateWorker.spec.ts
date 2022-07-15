@@ -6,7 +6,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { Backoff } from '../../../../utils/Backoff';
 import { syncTaskFactory } from '../../../syncTask';
 
-function segmentsSyncTaskMock(segmentsStorage, changeNumbers: Record<string, number>[] = []) {
+function segmentsSyncTaskMock(segmentsStorage: SegmentsCacheInMemory, changeNumbers: Record<string, number>[] = []) {
 
   const __segmentsUpdaterCalls = [];
 
@@ -86,6 +86,8 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 110 }); // resolve last call with target changeNumber
     await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `segmentsSyncTask.execute`
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // doesn't re-synchronize segments if fetched changeNumbers are the expected (i.e., are equal to queued changeNumbers)
+
+    expect(loggerMock.debug).lastCalledWith('Refresh completed in 1 attempts.');
   });
 
   test('put, completed with CDN bypass', async () => {

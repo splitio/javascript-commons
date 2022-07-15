@@ -3,12 +3,13 @@ import { MySegmentsUpdateWorker } from '../MySegmentsUpdateWorker';
 import { syncTaskFactory } from '../../../syncTask';
 import { Backoff } from '../../../../utils/Backoff';
 
-function mySegmentsSyncTaskMock(values?: (boolean | undefined)[]) {
+function mySegmentsSyncTaskMock(values = []) {
 
   const __mySegmentsUpdaterCalls = [];
 
   function __resolveMySegmentsUpdaterCall(value) {
-    __mySegmentsUpdaterCalls.shift().res(value); // resolve previous call
+    if (__mySegmentsUpdaterCalls.length)  __mySegmentsUpdaterCalls.shift().res(value); // resolve previous call
+    else values.push(value);
   }
 
   const syncTask = syncTaskFactory(
@@ -16,7 +17,7 @@ function mySegmentsSyncTaskMock(values?: (boolean | undefined)[]) {
     () => {
       return new Promise((res) => {
         __mySegmentsUpdaterCalls.push({ res });
-        if (values && values.length) __resolveMySegmentsUpdaterCall(values.shift());
+        if (values.length) __resolveMySegmentsUpdaterCall(values.shift());
       });
     }
   );
@@ -57,7 +58,7 @@ describe('MySegmentsUpdateWorker', () => {
 
     // assert reschedule synchronization if fetch fails
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(false); // fetch fail
-    await new Promise(res => setTimeout(res, 10)); // wait a little bit until `mySegmentsSyncTask.execute` is called in next event-loop cycle
+    await new Promise(res => setTimeout(res, 10)); // wait a little bit until `mySegmentsSyncTask.execute` is called again with backoff
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(3); // recalls `synchronizeSegment` if synchronization fail (one changeNumber is not the expected)
 
     // assert dequeueing changeNumber
@@ -83,8 +84,7 @@ describe('MySegmentsUpdateWorker', () => {
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res, 10));
 
-    // assert handling an event without segmentList after one with segmentList,
-    // to validate the special case than the event-loop of a handled event with payload is run after a second event arrives
+    // assert handling an event without segmentList after one with segmentList
     mySegmentsSyncTask.execute.mockClear();
     mySegmentUpdateWorker.put(130, ['other_segment']);
     mySegmentUpdateWorker.put(140);
@@ -95,9 +95,9 @@ describe('MySegmentsUpdateWorker', () => {
     await new Promise(res => setTimeout(res));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes MySegments once previous event was handled
     expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(undefined, true); // synchronizes MySegments without segmentList if the event doesn't have payload
-    mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `updateSegment`
+    mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `execute`
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(2);
   });
 
@@ -111,7 +111,7 @@ describe('MySegmentsUpdateWorker', () => {
 
     mySegmentUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after reseting
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
