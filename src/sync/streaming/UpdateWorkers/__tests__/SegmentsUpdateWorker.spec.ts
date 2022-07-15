@@ -79,12 +79,12 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 });
 
     await new Promise(res => setTimeout(res));
-    // `updateSegment` for mocked_segment_1 is called a 3rd time
+    // `segmentsSyncTask.execute` for mocked_segment_1 is called a 3rd time
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending
 
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 110 }); // resolve last call with target changeNumber
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `updateSegment`
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `segmentsSyncTask.execute`
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // doesn't re-synchronize segments if fetched changeNumbers are the expected (i.e., are equal to queued changeNumbers)
   });
 
@@ -109,6 +109,11 @@ describe('SegmentsUpdateWorker ', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, undefined]),
       ...Array(2).fill([false, 'mocked_segment_1', true, 100])
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
+
+    // Handle new event after previous is completed
+    segmentsSyncTask.execute.mockClear();
+    segmentsUpdateWorker.put({ changeNumber: 105, segmentName: 'mocked_segment_1' });
+    expect(segmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
 
@@ -130,6 +135,11 @@ describe('SegmentsUpdateWorker ', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, undefined]),
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, 100]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
+
+    // Handle new event after previous ends (not completed)
+    segmentsSyncTask.execute.mockClear();
+    segmentsUpdateWorker.put({ changeNumber: 105, segmentName: 'mocked_segment_1' });
+    expect(segmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
   test('stop', async () => {
@@ -144,8 +154,8 @@ describe('SegmentsUpdateWorker ', () => {
 
     segmentsUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `updateSegment` after reseting
-    expect(segmentsSyncTask.updateSegment).toBeCalledTimes(2);
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `segmentsSyncTask.execute`
+    expect(segmentsSyncTask.execute).toBeCalledTimes(2);
   });
 
 });

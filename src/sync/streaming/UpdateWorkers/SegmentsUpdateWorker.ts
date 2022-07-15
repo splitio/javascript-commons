@@ -34,6 +34,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
             if (maxChangeNumber <= segmentsCache.getChangeNumber(segment)) {
               log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+              isHandlingEvent = false;
               return;
             }
 
@@ -44,6 +45,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
             if (cdnBypass) {
               log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+              isHandlingEvent = false;
             } else {
               backoff.reset();
               cdnBypass = true;

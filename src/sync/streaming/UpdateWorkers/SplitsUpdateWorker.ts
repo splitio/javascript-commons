@@ -63,6 +63,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
 
           if (this.maxChangeNumber <= this.splitsCache.getChangeNumber()) {
             this.log.debug(`Refresh completed${this.cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+            this.isHandlingEvent = false;
             return;
           }
 
@@ -73,6 +74,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
 
           if (this.cdnBypass) {
             this.log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+            this.isHandlingEvent = false;
           } else {
             this.backoff.reset();
             this.cdnBypass = true;
