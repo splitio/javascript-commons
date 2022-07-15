@@ -115,7 +115,7 @@ export function splitChangesUpdaterFactory(
 
     /**
      * @param {number} since current changeNumber at splitsCache
-     * @param {number} retry current number of retry attemps
+     * @param {number} retry current number of retry attempts
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);

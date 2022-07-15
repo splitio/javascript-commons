@@ -48,8 +48,12 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask):
 
       maxChangeNumber = changeNumber;
       handleNewEvent = true;
-      backoff.reset();
       _segmentsData = segmentsData;
+
+      if (backoff.timeoutID) {
+        backoff.reset();
+        isHandlingEvent = false;
+      }
 
       if (!isHandlingEvent) __handleMySegmentsUpdateCall();
     },

@@ -78,7 +78,7 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_3': 94 });
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 });
 
-    await new Promise(res => setTimeout(res));
+    await new Promise(res => setTimeout(res, 20));
     // `segmentsSyncTask.execute` for mocked_segment_1 is called a 3rd time
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending

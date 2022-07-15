@@ -8,7 +8,7 @@ function mySegmentsSyncTaskMock(values = []) {
   const __mySegmentsUpdaterCalls = [];
 
   function __resolveMySegmentsUpdaterCall(value) {
-    if (__mySegmentsUpdaterCalls.length)  __mySegmentsUpdaterCalls.shift().res(value); // resolve previous call
+    if (__mySegmentsUpdaterCalls.length) __mySegmentsUpdaterCalls.shift().res(value); // resolve previous call
     else values.push(value);
   }
 
@@ -99,6 +99,22 @@ describe('MySegmentsUpdateWorker', () => {
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `execute`
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(2);
+  });
+
+  test('put, backoff', async () => {
+    // setup
+    Backoff.__TEST__BASE_MILLIS = 50;
+    const mySegmentsSyncTask = mySegmentsSyncTaskMock([false, false, false]); // fetch fail
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask);
+
+    // while fetch fails, should retry with backoff
+    mySegmentUpdateWorker.put(100);
+    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 20));
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
+
+    // if backoff is scheduled and a new event is queued, it must be handled immediately
+    mySegmentUpdateWorker.put(105);
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(4);
   });
 
   test('stop', async () => {
