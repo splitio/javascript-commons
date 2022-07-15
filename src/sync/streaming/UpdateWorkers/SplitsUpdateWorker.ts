@@ -52,7 +52,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
 
       // fetch splits revalidating data if cached
       this.splitsSyncTask.execute(true, this.cdnBypass ? this.maxChangeNumber : undefined).then(() => {
-        if (!this.isHandlingEvent) return; // halt handling event if `stop` has been called
+        if (!this.isHandlingEvent) return; // halt if `stop` has been called
         if (this.handleNewEvent) {
           this.__handleSplitUpdateCall();
         } else {
