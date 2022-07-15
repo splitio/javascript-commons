@@ -1,5 +1,4 @@
 import { uniqueKeysTrackerFactory } from '../uniqueKeysTracker';
-import { filterAdapterFactory } from '../adapters/filterAdapter';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { LOG_PREFIX_UNIQUE_KEYS_TRACKER } from '../../logger/constants';
 
@@ -18,7 +17,7 @@ describe('Unique keys tracker', () => {
 
   test('With filter', () => { 
     
-    const simpleTracker = uniqueKeysTrackerFactory(loggerMock, fakeSenderAdapter, filterAdapterFactory(fakeFilter), 4);
+    const simpleTracker = uniqueKeysTrackerFactory(loggerMock, fakeSenderAdapter, fakeFilter, 4);
     
     simpleTracker.track('feature1', 'key1');
     simpleTracker.track('feature1', 'key2');

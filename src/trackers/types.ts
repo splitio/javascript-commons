@@ -43,12 +43,6 @@ export interface ITelemetryTracker {
   streamingEvent(e: StreamingEventType | AUTH_REJECTION, d?: number): void
 }
 
-export interface IFilter {
-  add(data: string): boolean,
-  contains(data: string): boolean,
-  clear(): void
-}
-
 export interface IFilterAdapter {
   add(featureName: string, key: string): boolean;
   contains(featureName: string, key: string): boolean;

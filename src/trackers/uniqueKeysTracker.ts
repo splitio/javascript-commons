@@ -1,6 +1,6 @@
 import { LOG_PREFIX_UNIQUE_KEYS_TRACKER } from '../logger/constants';
 import { ILogger } from '../logger/types';
-import { ISet } from '../utils/lang/sets';
+import { ISet, _Set } from '../utils/lang/sets';
 import { IFilterAdapter, IImpressionSenderAdapter, IUniqueKeysTracker } from './types';
 
 const DEFAULT_CACHE_SIZE = 30000;
@@ -35,24 +35,21 @@ export function uniqueKeysTrackerFactory(
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The feature ${featureName} and key ${key} exist in the filter`);
         return;
       }
-      if (!uniqueKeysTracker[featureName]) {
-        uniqueKeysTracker[featureName] = new Set();
-        log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}Feature ${featureName} added to UniqueKeysTracker`);
+      let tracker = uniqueKeysTracker[featureName];
+      if (!tracker) {
+        tracker = new _Set();
       }
-      if (!uniqueKeysTracker[featureName].has(key)) {
-        uniqueKeysTracker[featureName].add(key);
+      if (!tracker.has(key)) {
+        tracker.add(key);
+        uniqueKeysTracker[featureName] = tracker;
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}Key ${key} added to feature ${featureName}`);
         uniqueTrackerSize++;
       }
       
-      if (uniqueTrackerSize === cacheSize) {
+      if (uniqueTrackerSize >= cacheSize) {
         log.warn(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The UniqueKeysTracker size reached the maximum limit`);
-        try {
-          sendUniqueKeys(uniqueKeysTracker);
-          uniqueTrackerSize = 0;
-        } catch (error) {
-          log.error(`Error sending unique keys. ${error}`);
-        }
+        senderAdapter.recordUniqueKeys(uniqueKeysTracker);
+        uniqueTrackerSize = 0;
       }
     },
     
@@ -65,9 +62,5 @@ export function uniqueKeysTrackerFactory(
     }
     
   };
-  
-  function sendUniqueKeys(uniqueKeysTracker: { [featureName: string]: ISet<string> }): void {
-    // @TODO
-    senderAdapter.recordUniqueKeys(uniqueKeysTracker);
-  }
+
 }
