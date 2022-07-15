@@ -74,11 +74,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
     maxChangeNumber = changeNumber;
     handleNewEvent = true;
     cdnBypass = false;
-
-    if (backoff.timeoutID) {
-      backoff.reset();
-      isHandlingEvent = false;
-    }
+    backoff.reset();
 
     if (!isHandlingEvent) __handleSplitUpdateCall();
   }
