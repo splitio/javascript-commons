@@ -22,7 +22,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask):
 
       // fetch mySegments revalidating data if cached
       mySegmentsSyncTask.execute(_segmentsData, true).then((result) => {
-        if (!isHandlingEvent) return;
+        if (!isHandlingEvent) return; // halt if `stop` has been called
         if (result !== false) // Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
           currentChangeNumber = Math.max(currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `maxChangeNumber` was updated during fetch.
         if (handleNewEvent) {

@@ -26,7 +26,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
 
       // fetch splits revalidating data if cached
       splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined).then(() => {
-        if (!isHandlingEvent) return; // halt handling event if `stop` has been called
+        if (!isHandlingEvent) return; // halt if `stop` has been called
         if (handleNewEvent) {
           __handleSplitUpdateCall();
         } else {
