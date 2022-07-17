@@ -14,7 +14,7 @@ import { ISyncTask } from './types';
  */
 export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
-  // Counter that indicates if the task is being executed
+  // Flag that indicates if the task is executing
   let executing = 0;
   // Promise chain to resolve tasks sequentially
   let promiseChain: Promise<Output> | undefined;

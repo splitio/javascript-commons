@@ -67,9 +67,9 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
         maxChangeNumber = changeNumber;
         handleNewEvent = true;
         cdnBypass = false;
-        backoff.reset();
 
-        if (!isHandlingEvent) __handleSegmentUpdateCall();
+        if (backoff.timeoutID || !isHandlingEvent) __handleSegmentUpdateCall();
+        backoff.reset();
       },
       stop() {
         isHandlingEvent = false;

@@ -94,6 +94,23 @@ describe('SplitsUpdateWorker', () => {
     expect(loggerMock.debug).lastCalledWith('Refresh completed in 2 attempts.');
   });
 
+  test('put, backoff', async () => {
+    // setup
+    Backoff.__TEST__BASE_MILLIS = 50;
+    const cache = new SplitsCacheInMemory();
+    const splitsSyncTask = splitsSyncTaskMock(cache, [90, 90, 90]);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+
+    // while fetch fails, should retry with backoff
+    splitUpdateWorker.put({ changeNumber: 100 });
+    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 50 /* some delay */));
+    expect(splitsSyncTask.execute).toBeCalledTimes(3);
+
+    // if backoff is scheduled and a new event is queued, it must be handled immediately
+    splitUpdateWorker.put({ changeNumber: 105 });
+    expect(splitsSyncTask.execute).toBeCalledTimes(4);
+  });
+
   test('put, completed with CDN bypass', async () => {
 
     // setup

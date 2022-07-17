@@ -50,12 +50,8 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask):
       handleNewEvent = true;
       _segmentsData = segmentsData;
 
-      if (backoff.timeoutID) {
-        backoff.reset();
-        isHandlingEvent = false;
-      }
-
-      if (!isHandlingEvent) __handleMySegmentsUpdateCall();
+      if (backoff.timeoutID || !isHandlingEvent) __handleMySegmentsUpdateCall();
+      backoff.reset();
     },
 
     stop() {
