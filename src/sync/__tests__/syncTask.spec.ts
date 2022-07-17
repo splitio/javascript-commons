@@ -58,55 +58,57 @@ test('syncTaskFactory / start & stop methods for periodic execution', async () =
 
   // Stopping and starting
   syncTask.stop();
-  syncTask.start(); // Inmediatelly call task
+  syncTask.start(); // Run task asynchronously
   syncTask.stop();
-  syncTask.start(); // Doesn't call task since previous one has not been resolved
+  syncTask.start(); // Run task asynchronously
   syncTask.stop();
-  expect(asyncTask).toBeCalledTimes(6);
+  expect(asyncTask).toBeCalledTimes(5);
 
   // Resume periodic execution
-  syncTask.start(); // Doesn't call task since previous one has not been resolved
-  syncTask.start(); // No effect
-  expect(asyncTask).toBeCalledTimes(6);
+  syncTask.start(); // Run task asynchronously
+  syncTask.start(); // No effect (syncTask already running)
+  expect(asyncTask).toBeCalledTimes(5);
+
+  await new Promise(res => setTimeout(res));
+  expect(asyncTask).toBeCalledTimes(8);
 
   await new Promise(res => setTimeout(res, period + 10));
-  expect(asyncTask).toBeCalledTimes(9); // Stopped task should not be called again
+  expect(asyncTask).toBeCalledTimes(9);
   expect(syncTask.isRunning()).toBe(true); // Running periodically
   syncTask.stop(); // Finally stop to finish the test
   expect(syncTask.isRunning()).toBe(false); // Stop running periodically
-
 });
 
 test('syncTaskFactory / execute method', (done) => {
   let executeCount = 0;
   let resolveOrder = 0;
-  const asyncTask = jest.fn((toReturn) => {
+  const asyncTask = jest.fn((toReturn, delay) => {
     executeCount++;
-    return new Promise(res => setTimeout(() => res(toReturn)));
+    return new Promise(res => setTimeout(() => res(toReturn), delay));
   });
 
   const syncTask = syncTaskFactory(loggerMock, asyncTask, period);
 
-  syncTask.execute(1).then(result=> {
-    // console.log('1');
+  syncTask.execute(1, 10).then(result => {
     resolveOrder++;
-    expect(resolveOrder).toBe(1); // @TODO should be 1 ?
+    expect(resolveOrder).toBe(1);
     expect(executeCount).toBe(1);
-    expect(result).toBe(1); // @TODO should be 1
+    expect(result).toBe(1);
+    expect(syncTask.isExecuting()).toBe(true); // 2nd task is executing next
   });
-  syncTask.execute(2).then(result=> {
-    // console.log('2');
+  syncTask.execute(2, 30).then(result => {
     resolveOrder++;
     expect(resolveOrder).toBe(2);
-    expect(executeCount).toBe(3); // @TODO borrar
-    expect(result).toBe(2); // @TODO should be 2
+    expect(executeCount).toBe(2);
+    expect(result).toBe(2);
+    expect(syncTask.isExecuting()).toBe(true); // 3rd task is executing next
   });
-  syncTask.execute(3).then(result=> {
-    // console.log('3');
+  syncTask.execute(3, 20).then(result => {
     resolveOrder++;
-    expect(resolveOrder).toBe(3); // @TODO should be 3 ?
+    expect(resolveOrder).toBe(3);
     expect(executeCount).toBe(3);
     expect(result).toBe(3);
+    expect(syncTask.isExecuting()).toBe(false); // No more tasks executing
 
     done();
   });
