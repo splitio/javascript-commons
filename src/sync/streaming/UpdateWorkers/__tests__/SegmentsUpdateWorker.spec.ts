@@ -38,6 +38,11 @@ function segmentsSyncTaskMock(segmentsStorage: SegmentsCacheInMemory, changeNumb
 
 describe('SegmentsUpdateWorker ', () => {
 
+  afterEach(() => { // restore
+    Backoff.__TEST__BASE_MILLIS = undefined;
+    Backoff.__TEST__MAX_MILLIS = undefined;
+  });
+
   test('put', async () => {
 
     // setup
@@ -66,7 +71,7 @@ describe('SegmentsUpdateWorker ', () => {
 
     // assert recalling `segmentsSyncTask.execute` for mocked_segment_1, if max changeNumber (105) is greater than stored one (100)
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 }); // resolve first call to `segmentsSyncTask.execute`
-    await new Promise(res => setTimeout(res));
+    await new Promise(res => setTimeout(res, 20));
     expect(cache.getChangeNumber('mocked_segment_1')).toBe(100);
     expect(segmentsSyncTask.execute).toBeCalledTimes(4);
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined);
@@ -78,7 +83,7 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_3': 94 });
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 });
 
-    await new Promise(res => setTimeout(res));
+    await new Promise(res => setTimeout(res, 20));
     // `segmentsSyncTask.execute` for mocked_segment_1 is called a 3rd time
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending

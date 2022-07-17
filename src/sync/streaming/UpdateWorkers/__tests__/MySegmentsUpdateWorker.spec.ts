@@ -32,6 +32,10 @@ function mySegmentsSyncTaskMock(values = []) {
 
 describe('MySegmentsUpdateWorker', () => {
 
+  afterEach(() => {
+    Backoff.__TEST__BASE_MILLIS = undefined; // restore
+  });
+
   test('put', async () => {
 
     // setup
@@ -109,7 +113,7 @@ describe('MySegmentsUpdateWorker', () => {
 
     // while fetch fails, should retry with backoff
     mySegmentUpdateWorker.put(100);
-    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 20));
+    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 50 /* some delay */));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
 
     // if backoff is scheduled and a new event is queued, it must be handled immediately

@@ -48,6 +48,11 @@ function assertKilledSplit(cache, changeNumber, splitName, defaultTreatment) {
 
 describe('SplitsUpdateWorker', () => {
 
+  afterEach(() => { // restore
+    Backoff.__TEST__BASE_MILLIS = undefined;
+    Backoff.__TEST__MAX_MILLIS = undefined;
+  });
+
   test('put', async () => {
 
     // setup
@@ -73,12 +78,12 @@ describe('SplitsUpdateWorker', () => {
     // assert calling `splitsSyncTask.execute` if previous call is resolved and a new changeNumber in queue
     splitsSyncTask.__resolveSplitsUpdaterCall(100);
 
-    await new Promise(res => setTimeout(res));
+    await new Promise(res => setTimeout(res, 20));
     expect(splitsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes splits if `isExecuting` is false and queue is not empty
 
     // assert reschedule synchronization if changeNumber is not updated as expected
     splitsSyncTask.__resolveSplitsUpdaterCall(100);
-    await new Promise(res => setTimeout(res, 10)); // wait a little bit until `splitsSyncTask.execute` is called in next event-loop cycle
+    await new Promise(res => setTimeout(res, 20));
     expect(splitsSyncTask.execute).toBeCalledTimes(3); // re-synchronizes splits if synchronization fail (changeNumber is not the expected)
 
     // assert dequeueing changeNumber
