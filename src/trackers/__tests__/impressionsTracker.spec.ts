@@ -4,8 +4,8 @@ import { impressionObserverSSFactory } from '../impressionObserver/impressionObs
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { ImpressionDTO } from '../../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
-import { strategyDebugFactory } from '../strategy/strategyDebug'
-import { strategyOptimizedFactory } from '../strategy/strategyOptimized'
+import { strategyDebugFactory } from '../strategy/strategyDebug';
+import { strategyOptimizedFactory } from '../strategy/strategyOptimized';
 import { DEDUPED, QUEUED } from '../../utils/constants';
 
 /* Mocks */
