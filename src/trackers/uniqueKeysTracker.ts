@@ -39,7 +39,6 @@ export function uniqueKeysTrackerFactory(
       const tracker = uniqueKeysTracker[featureName];
       if (!tracker.has(key)) {
         tracker.add(key);
-        uniqueKeysTracker[featureName] = tracker;
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}Key ${key} added to feature ${featureName}`);
         uniqueTrackerSize++;
       }
