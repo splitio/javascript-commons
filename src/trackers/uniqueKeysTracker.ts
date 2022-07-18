@@ -35,10 +35,8 @@ export function uniqueKeysTrackerFactory(
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The feature ${featureName} and key ${key} exist in the filter`);
         return;
       }
-      let tracker = uniqueKeysTracker[featureName];
-      if (!tracker) {
-        tracker = new _Set();
-      }
+      if (!uniqueKeysTracker[featureName]) uniqueKeysTracker[featureName] = new _Set();
+      const tracker = uniqueKeysTracker[featureName];
       if (!tracker.has(key)) {
         tracker.add(key);
         uniqueKeysTracker[featureName] = tracker;
