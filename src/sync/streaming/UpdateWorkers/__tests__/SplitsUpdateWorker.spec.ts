@@ -103,7 +103,7 @@ describe('SplitsUpdateWorker', () => {
 
     // while fetch fails, should retry with backoff
     splitUpdateWorker.put({ changeNumber: 100 });
-    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 50 /* some delay */));
+    await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 100 /* some delay */));
     expect(splitsSyncTask.execute).toBeCalledTimes(3);
 
     // if backoff is scheduled and a new event is queued, it must be handled immediately
