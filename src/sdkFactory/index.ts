@@ -60,13 +60,15 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   const storage = storageFactory(storageFactoryParams);
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
-  
+
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
-  
+
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
-  let strategy = observer && strategyDebugFactory(observer);
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts, storage.telemetry, strategy);
+  
+  // @TODO 
+  const strategy = strategyDebugFactory(observer);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry, );
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
