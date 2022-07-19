@@ -32,6 +32,7 @@ const paramsForAsyncSDK = {
   storageFactory: jest.fn(() => mockStorage),
   sdkClientMethodFactory: jest.fn(() => clientInstance),
   sdkManagerFactory: jest.fn(() => managerInstance),
+  impressionsObserverFactory: jest.fn(),
   platform: {
     EventEmitter
   },

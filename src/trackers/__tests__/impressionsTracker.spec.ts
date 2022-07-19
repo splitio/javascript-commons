@@ -45,7 +45,7 @@ describe('Impressions Tracker', () => {
     fakeIntegrationsManager.handleImpression.mockClear();
   });
   
-  const strategy = strategyDebugFactory();
+  const strategy = strategyDebugFactory(impressionObserverCSFactory());
 
   test('Tracker API', () => {
     expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
