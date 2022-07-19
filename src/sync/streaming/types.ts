@@ -1,6 +1,6 @@
 import { IMySegmentsUpdateData, IMySegmentsUpdateV2Data, ISegmentUpdateData, ISplitUpdateData, ISplitKillData } from './SSEHandler/types';
 import { ITask } from '../types';
-import { ISegmentsSyncTask } from '../polling/types';
+import { IMySegmentsSyncTask } from '../polling/types';
 import { IEventEmitter } from '../../types';
 import { ControlType } from './constants';
 
@@ -45,6 +45,6 @@ export interface IPushEventEmitter extends IEventEmitter {
  */
 export interface IPushManager extends ITask, IPushEventEmitter {
   // Methods used in client-side, to support multiple clients
-  add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask): void,
+  add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask): void,
   remove(userKey: string): void
 }

@@ -1,7 +1,7 @@
 import { IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { syncTaskFactory } from '../../syncTask';
-import { ISegmentsSyncTask } from '../types';
+import { IMySegmentsSyncTask } from '../types';
 import { IFetchMySegments } from '../../../services/types';
 import { mySegmentsFetcherFactory } from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
@@ -16,7 +16,7 @@ export function mySegmentsSyncTaskFactory(
   readiness: IReadinessManager,
   settings: ISettings,
   matchingKey: string
-): ISegmentsSyncTask {
+): IMySegmentsSyncTask {
   return syncTaskFactory(
     settings.log,
     mySegmentsUpdaterFactory(
