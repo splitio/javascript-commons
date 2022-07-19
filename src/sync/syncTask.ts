@@ -3,9 +3,8 @@ import { ILogger } from '../logger/types';
 import { ISyncTask } from './types';
 
 /**
- * Creates a syncTask that handles the periodic execution of a given task ("start" and "stop" methods).
- * The task can be also executed by calling the "execute" method. Multiple execute calls are chained to run secuentially and avoid race conditions.
- * For example, submitters executed on SDK destroy or full queue, while periodic execution is pending.
+ * Creates an object that handles the periodic execution of a given task via "start" and "stop" methods.
+ * The task can be also executed by calling the "execute" method. Multiple calls run sequentially to avoid race conditions (e.g., submitters executed on SDK destroy or full queue, while periodic execution is pending).
  *
  * @param log  Logger instance.
  * @param task  Task to execute that returns a promise that NEVER REJECTS. Otherwise, periodic execution can result in Unhandled Promise Rejections.
@@ -15,8 +14,10 @@ import { ISyncTask } from './types';
  */
 export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger, task: (...args: Input) => Promise<Output>, period: number, taskName = 'task'): ISyncTask<Input, Output> {
 
-  // Task promise while it is pending. Undefined once the promise is resolved
-  let pendingTask: Promise<Output> | undefined;
+  // Flag that indicates if the task is executing
+  let executing = 0;
+  // Promise chain to resolve tasks sequentially
+  let promiseChain: Promise<Output> | undefined;
   // flag that indicates if the task periodic execution has been started/stopped.
   let running = false;
   // Auxiliar counter used to avoid race condition when calling `start` & `stop` intermittently
@@ -27,20 +28,17 @@ export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger,
   let timeoutID: any;
 
   function execute(...args: Input): Promise<Output> {
-    // If task is executing, chain new execution to avoid race conditions
-    if (pendingTask) {
-      return pendingTask.then(() => {
-        return execute(...args);
-      });
-    }
-
-    // Execute task
+    executing++;
     log.debug(SYNC_TASK_EXECUTE, [taskName]);
-    pendingTask = task(...args).then(result => {
-      pendingTask = undefined;
-      return result;
-    });
-    return pendingTask;
+
+    // Update `promiseChain` with last promise, to run tasks serially
+    promiseChain = (promiseChain ? promiseChain.then(() => task(...args)) : task(...args))
+      .then(result => {
+        executing--;
+        return result;
+      });
+
+    return promiseChain;
   }
 
   function periodicExecute(currentRunningId: number) {
@@ -56,7 +54,7 @@ export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger,
     execute,
 
     isExecuting() {
-      return pendingTask !== undefined;
+      return executing > 0;
     },
 
     start(...args: Input) {

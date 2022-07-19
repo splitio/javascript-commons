@@ -36,6 +36,7 @@ export class Backoff {
 
     if (this.timeoutID) clearTimeout(this.timeoutID);
     this.timeoutID = setTimeout(() => {
+      this.timeoutID = undefined;
       this.cb();
     }, delayInMillis);
     this.attempts++;

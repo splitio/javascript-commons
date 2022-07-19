@@ -6,7 +6,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { Backoff } from '../../../../utils/Backoff';
 import { syncTaskFactory } from '../../../syncTask';
 
-function segmentsSyncTaskMock(segmentsStorage, changeNumbers: Record<string, number>[] = []) {
+function segmentsSyncTaskMock(segmentsStorage: SegmentsCacheInMemory, changeNumbers: Record<string, number>[] = []) {
 
   const __segmentsUpdaterCalls = [];
 
@@ -38,6 +38,11 @@ function segmentsSyncTaskMock(segmentsStorage, changeNumbers: Record<string, num
 
 describe('SegmentsUpdateWorker ', () => {
 
+  afterEach(() => { // restore
+    Backoff.__TEST__BASE_MILLIS = undefined;
+    Backoff.__TEST__MAX_MILLIS = undefined;
+  });
+
   test('put', async () => {
 
     // setup
@@ -66,7 +71,7 @@ describe('SegmentsUpdateWorker ', () => {
 
     // assert recalling `segmentsSyncTask.execute` for mocked_segment_1, if max changeNumber (105) is greater than stored one (100)
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 }); // resolve first call to `segmentsSyncTask.execute`
-    await new Promise(res => setTimeout(res));
+    await new Promise(res => setTimeout(res, 20));
     expect(cache.getChangeNumber('mocked_segment_1')).toBe(100);
     expect(segmentsSyncTask.execute).toBeCalledTimes(4);
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined);
@@ -78,14 +83,16 @@ describe('SegmentsUpdateWorker ', () => {
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_3': 94 });
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 100 });
 
-    await new Promise(res => setTimeout(res));
-    // `updateSegment` for mocked_segment_1 is called a 3rd time
+    await new Promise(res => setTimeout(res, 20));
+    // `segmentsSyncTask.execute` for mocked_segment_1 is called a 3rd time
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // re-synchronizes segment if a new item was queued with a greater changeNumber while the fetch was pending
     expect(segmentsSyncTask.execute).toHaveBeenLastCalledWith(false, 'mocked_segment_1', true, undefined); // synchronizes segment that was queued with a greater changeNumber while the fetch was pending
 
     segmentsSyncTask.__resolveSegmentsUpdaterCall({ 'mocked_segment_1': 110 }); // resolve last call with target changeNumber
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `updateSegment`
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls with backoff to `segmentsSyncTask.execute`
     expect(segmentsSyncTask.execute).toBeCalledTimes(5); // doesn't re-synchronize segments if fetched changeNumbers are the expected (i.e., are equal to queued changeNumbers)
+
+    expect(loggerMock.debug).lastCalledWith('Refresh completed in 1 attempts.');
   });
 
   test('put, completed with CDN bypass', async () => {
@@ -109,6 +116,11 @@ describe('SegmentsUpdateWorker ', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, undefined]),
       ...Array(2).fill([false, 'mocked_segment_1', true, 100])
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
+
+    // Handle new event after previous is completed
+    segmentsSyncTask.execute.mockClear();
+    segmentsUpdateWorker.put({ changeNumber: 105, segmentName: 'mocked_segment_1' });
+    expect(segmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
 
@@ -130,6 +142,27 @@ describe('SegmentsUpdateWorker ', () => {
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, undefined]),
       ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([false, 'mocked_segment_1', true, 100]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
+
+    // Handle new event after previous ends (not completed)
+    segmentsSyncTask.execute.mockClear();
+    segmentsUpdateWorker.put({ changeNumber: 105, segmentName: 'mocked_segment_1' });
+    expect(segmentsSyncTask.execute).toBeCalledTimes(1);
+  });
+
+  test('stop', async () => {
+    // setup
+    const cache = new SegmentsCacheInMemory();
+    const segmentsSyncTask = segmentsSyncTaskMock(cache, [['mocked_segment_1', 95], ['mocked_segment_2', 95]]);
+    Backoff.__TEST__BASE_MILLIS = 1;
+    const segmentsUpdateWorker = SegmentsUpdateWorker(loggerMock, segmentsSyncTask, cache);
+
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_1' });
+    segmentsUpdateWorker.put({ changeNumber: 100, segmentName: 'mocked_segment_2' });
+
+    segmentsUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `segmentsSyncTask.execute`
+    expect(segmentsSyncTask.execute).toBeCalledTimes(2);
   });
 
 });

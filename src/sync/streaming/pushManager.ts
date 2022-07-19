@@ -20,6 +20,7 @@ import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { IUpdateWorker } from './UpdateWorkers/types';
 
 /**
  * PushManager factory:
@@ -57,13 +58,13 @@ export function pushManagerFactory(
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
-  const clients: Record<string, { hash64: Hash64, worker: MySegmentsUpdateWorker }> = {};
+  const clients: Record<string, { hash64: Hash64, worker: IUpdateWorker }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -180,7 +181,6 @@ export function pushManagerFactory(
   // Otherwise it is unnecessary (e.g, STREAMING_RESUMED).
   pushEmitter.on(PUSH_SUBSYSTEM_UP, () => {
     connectPushRetryBackoff.reset();
-    stopWorkers();
   });
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
@@ -330,7 +330,7 @@ export function pushManagerFactory(
 
         if (!userKeyHashes[hash]) {
           userKeyHashes[hash] = userKey;
-          clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
+          clients[userKey] = { hash64: hash64(userKey), worker: MySegmentsUpdateWorker(mySegmentsSyncTask) };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 
           // Reconnects in case of a new client.

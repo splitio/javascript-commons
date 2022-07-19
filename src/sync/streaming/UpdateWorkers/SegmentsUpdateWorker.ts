@@ -30,20 +30,22 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
           if (handleNewEvent) {
             __handleSegmentUpdateCall();
           } else {
-            const attemps = backoff.attempts + 1;
+            const attempts = backoff.attempts + 1;
 
             if (maxChangeNumber <= segmentsCache.getChangeNumber(segment)) {
-              log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attemps} attempts.`);
+              log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
+              isHandlingEvent = false;
               return;
             }
 
-            if (attemps < FETCH_BACKOFF_MAX_RETRIES) {
+            if (attempts < FETCH_BACKOFF_MAX_RETRIES) {
               backoff.scheduleCall();
               return;
             }
 
             if (cdnBypass) {
-              log.debug(`No changes fetched after ${attemps} attempts with CDN bypassed.`);
+              log.debug(`No changes fetched after ${attempts} attempts with CDN bypassed.`);
+              isHandlingEvent = false;
             } else {
               backoff.reset();
               cdnBypass = true;
@@ -64,12 +66,15 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
         maxChangeNumber = changeNumber;
         handleNewEvent = true;
-        backoff.reset();
         cdnBypass = false;
 
-        if (!isHandlingEvent) __handleSegmentUpdateCall();
+        if (backoff.timeoutID || !isHandlingEvent) __handleSegmentUpdateCall();
+        backoff.reset();
       },
-      backoff
+      stop() {
+        isHandlingEvent = false;
+        backoff.reset();
+      }
     };
   }
 
@@ -88,7 +93,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
     },
 
     stop() {
-      Object.keys(segments).forEach(segmentName => segments[segmentName].backoff.reset());
+      Object.keys(segments).forEach(segmentName => segments[segmentName].stop());
     }
   };
 }
