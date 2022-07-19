@@ -4,36 +4,30 @@ import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheIn
 import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
 import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
+import { syncTaskFactory } from '../../../syncTask';
 
-function splitsSyncTaskMock(splitStorage, changeNumbers: number[]) {
+function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers?: number[]) {
 
   const __splitsUpdaterCalls = [];
 
-  function __resolveSplitsUpdaterCall(changeNumber) {
+  function __resolveSplitsUpdaterCall(changeNumber: number) {
     splitStorage.setChangeNumber(changeNumber); // update changeNumber in storage
     __splitsUpdaterCalls.shift().res(); // resolve `execute` call
   }
 
-  let __isSynchronizingSplits = false;
-
-  function isExecuting() {
-    return __isSynchronizingSplits;
-  }
-
-  function execute() {
-    __isSynchronizingSplits = true;
-    return new Promise((res) => {
-      __splitsUpdaterCalls.push({ res });
-      if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
-    }).then(function () {
-    }).finally(function () {
-      __isSynchronizingSplits = false;
-    });
-  }
+  const syncTask = syncTaskFactory(
+    { debug() { } }, // no-op logger
+    () => {
+      return new Promise((res) => {
+        __splitsUpdaterCalls.push({ res });
+        if (changeNumbers && changeNumbers.length) __resolveSplitsUpdaterCall(changeNumbers.shift());
+      });
+    }
+  );
 
   return {
-    isExecuting: jest.fn(isExecuting),
-    execute: jest.fn(execute),
+    isExecuting: jest.fn(syncTask.isExecuting),
+    execute: jest.fn(syncTask.execute),
 
     __resolveSplitsUpdaterCall
   };

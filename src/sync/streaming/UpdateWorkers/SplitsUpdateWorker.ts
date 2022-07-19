@@ -54,7 +54,7 @@ export class SplitsUpdateWorker implements IUpdateWorker {
           this.__handleSplitUpdateCall();
         } else {
           // fetch new registered segments for server-side API. Not retrying on error
-          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(undefined, false, true);
+          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(true);
 
           const attemps = this.backoff.attempts + 1;
 
@@ -114,6 +114,10 @@ export class SplitsUpdateWorker implements IUpdateWorker {
     }
     // queues the SplitChanges fetch (only if changeNumber is newer)
     this.put({ changeNumber });
+  }
+
+  stop() {
+    this.backoff.reset();
   }
 
 }
