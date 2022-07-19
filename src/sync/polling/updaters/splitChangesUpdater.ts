@@ -8,7 +8,7 @@ import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 
-type ISplitChangesUpdater = (noCache?: boolean) => Promise<boolean>
+type ISplitChangesUpdater = (noCache?: boolean, till?: number) => Promise<boolean>
 
 // Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
 // Returns a promise that could be rejected.
@@ -109,17 +109,18 @@ export function splitChangesUpdaterFactory(
    * Returned promise will not be rejected.
    *
    * @param {boolean | undefined} noCache true to revalidate data to fetch
+   * @param {boolean | undefined} till query param to bypass CDN requests
    */
-  return function splitChangesUpdater(noCache?: boolean) {
+  return function splitChangesUpdater(noCache?: boolean, till?: number) {
 
     /**
      * @param {number} since current changeNumber at splitsCache
-     * @param {number} retry current number of retry attemps
+     * @param {number} retry current number of retry attempts
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);
 
-      const fetcherPromise = splitChangesFetcher(since, noCache, _promiseDecorator)
+      const fetcherPromise = splitChangesFetcher(since, noCache, till, _promiseDecorator)
         .then((splitChanges: ISplitChangesResponse) => {
           startingUp = false;
 
