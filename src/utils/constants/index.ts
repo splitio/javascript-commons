@@ -19,7 +19,7 @@ export const SPLIT_EVENT = 'EVENT';
 // Impression collection modes
 export const DEBUG = 'DEBUG';
 export const OPTIMIZED = 'OPTIMIZED';
-export const NONE = 'NONE'
+export const NONE = 'NONE';
 
 // SDK Modes
 export const LOCALHOST_MODE: SDKMode = 'localhost';
