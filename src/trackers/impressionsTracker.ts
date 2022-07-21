@@ -33,6 +33,8 @@ export function impressionsTrackerFactory(
 
       const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
       
+      const impressionsToListenerCount = impressionsToListener.length;
+      
       const res = impressionsCache.track(impressionsToStore);
 
       // If we're on an async storage, handle error and log it.
@@ -53,7 +55,7 @@ export function impressionsTrackerFactory(
 
       // @TODO next block might be handled by the integration manager. In that case, the metadata object doesn't need to be passed in the constructor
       if (impressionListener || integrationsManager) {
-        for (let i = 0; i < impressionsCount; i++) {
+        for (let i = 0; i < impressionsToListenerCount; i++) {
           const impressionData: SplitIO.ImpressionData = {
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
             impression: objectAssign({}, impressionsToListener[i]),

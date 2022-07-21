@@ -14,7 +14,6 @@ import { metadataBuilder } from '../storages/metadataBuilder';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
-import { DEBUG } from '../utils/constants';
 import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
 
 /**
@@ -26,7 +25,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory } = params;
   const log = settings.log;
-  const impressionsMode = settings.sync.impressionsMode;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -66,10 +64,10 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
 
-  const observer = impressionsObserverFactory!();
-  const strategy = (impressionsMode === DEBUG) ? strategyDebugFactory(observer) : strategyOptimizedFactory(observer, storage.impressionCounts!);
+  const observer = impressionsObserverFactory();
+  const strategy = (storageFactoryParams.optimize) ? strategyOptimizedFactory(observer, storage.impressionCounts!) : strategyDebugFactory(observer);
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry, );
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 

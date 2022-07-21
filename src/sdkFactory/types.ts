@@ -108,7 +108,7 @@ export interface ISdkFactoryParams {
   integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,
 
   // Impression observer factory. If provided, will be used for impressions dedupe
-  impressionsObserverFactory?: () => IImpressionObserver
+  impressionsObserverFactory: () => IImpressionObserver
 
   // Optional function to assign additional properties to the factory instance
   extraProps?: (params: ISdkFactoryContext) => object
