@@ -1,6 +1,6 @@
 import { IPushEventEmitter, IPushManager } from './types';
 import { ISSEClient } from './SSEClient/types';
-import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
+import { IMySegmentsSyncTask, IPollingManager, ISegmentsSyncTask } from '../polling/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
@@ -20,6 +20,7 @@ import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { IUpdateWorker } from './UpdateWorkers/types';
 
 /**
  * PushManager factory:
@@ -55,15 +56,15 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
+  const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
+  const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
-  const clients: Record<string, { hash64: Hash64, worker: MySegmentsUpdateWorker }> = {};
+  const clients: Record<string, { hash64: Hash64, worker: IUpdateWorker }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -169,9 +170,9 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.backoff.reset();
-    if (userKey) forOwn(clients, ({ worker }) => worker.backoff.reset());
-    else (segmentsUpdateWorker as SegmentsUpdateWorker).backoff.reset();
+    splitsUpdateWorker.stop();
+    if (userKey) forOwn(clients, ({ worker }) => worker.stop());
+    else segmentsUpdateWorker!.stop();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
@@ -180,7 +181,6 @@ export function pushManagerFactory(
   // Otherwise it is unnecessary (e.g, STREAMING_RESUMED).
   pushEmitter.on(PUSH_SUBSYSTEM_UP, () => {
     connectPushRetryBackoff.reset();
-    stopWorkers();
   });
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
@@ -294,7 +294,7 @@ export function pushManagerFactory(
       });
     });
   } else {
-    pushEmitter.on(SEGMENT_UPDATE, (segmentsUpdateWorker as SegmentsUpdateWorker).put);
+    pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
 
   return objectAssign(
@@ -315,7 +315,7 @@ export function pushManagerFactory(
         if (disabled || disconnected === false) return;
         disconnected = false;
 
-        if (userKey) this.add(userKey, pollingManager.segmentsSyncTask); // client-side
+        if (userKey) this.add(userKey, pollingManager.segmentsSyncTask as IMySegmentsSyncTask); // client-side
         else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for consistency with client-side
       },
 
@@ -325,12 +325,12 @@ export function pushManagerFactory(
       },
 
       // [Only for client-side]
-      add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
+      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
           userKeyHashes[hash] = userKey;
-          clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
+          clients[userKey] = { hash64: hash64(userKey), worker: MySegmentsUpdateWorker(mySegmentsSyncTask) };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 
           // Reconnects in case of a new client.

@@ -252,3 +252,44 @@ test('GaToSplit: `hits` flag param', () => {
   // test teardown
   gaRemove();
 });
+
+test('GaToSplit: `autoRequire` script and flag param', () => {
+  // test setup
+  gaMock();
+  loggerMock.error.mockClear();
+
+  // Create commands before autoRequire script is executed
+  window.ga('create', 'UA-ID-X', 'auto', 'tX');
+
+  GaToSplit({ autoRequire: true }, fakeParams as any);
+  expect(loggerMock.error).toBeCalledTimes(1);
+
+  window.ga('create', 'UA-ID-Y', 'auto', 'tY');
+
+  // Run autoRequire iife
+  require('../autoRequire.js');
+
+  GaToSplit({ autoRequire: true }, fakeParams as any);
+  expect(loggerMock.error).toBeCalledTimes(1);
+
+  // Assert auto-require script
+  window.ga('create', 'UA-ID-0');
+  window.ga('create', 'UA-ID-1', 'auto', 't1');
+  window.ga('create', 'UA-ID-2', { name: 't2' });
+  window.ga('create', 'UA-ID-3', 'auto', { name: 't3' });
+  window.ga('create', { trackingId: 'UA-ID-4', name: 't4' });
+
+  expect(window.ga.q.map(args => args[0])).toEqual([
+    'create' /* tX */, 'provide',
+    'create' /* tY */, 'tX.require',
+    'tY.require', 'provide',
+    'create' /* default */, 'require',
+    'create' /* t1 */, 't1.require',
+    'create' /* t2 */, 't2.require',
+    'create' /* t3 */, 't3.require',
+    'create' /* t4 */, 't4.require',
+  ]);
+
+  // test teardown
+  gaRemove();
+});

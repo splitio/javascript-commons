@@ -5,7 +5,7 @@ import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
-import { SegmentsData } from '../../streaming/SSEHandler/types';
+import { MySegmentsData } from '../types';
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -36,7 +36,7 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing pluggable storages, handle async execution
-  function updateSegments(segmentsData: SegmentsData) {
+  function updateSegments(segmentsData: MySegmentsData) {
 
     let shouldNotifyUpdate;
     if (Array.isArray(segmentsData)) {
@@ -61,7 +61,7 @@ export function mySegmentsUpdaterFactory(
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentsData?: SegmentsData, noCache?: boolean): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentsData ?
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
@@ -97,7 +97,7 @@ export function mySegmentsUpdaterFactory(
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentsData?: SegmentsData, noCache?: boolean) {
+  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean) {
     return _mySegmentsUpdater(0, segmentsData, noCache);
   };
 

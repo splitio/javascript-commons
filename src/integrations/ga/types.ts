@@ -53,13 +53,24 @@ export interface GoogleAnalyticsToSplitOptions {
    * If not provided, events are sent using the key and traffic type provided at SDK config
    */
   identities?: Identity[],
+  /**
+   * Optional flag to log an error if the `auto-require` script is not detected.
+   * The auto-require script automatically requires the `splitTracker` plugin for created trackers,
+   * and should be placed right after your Google Analytics, Google Tag Manager or gtag.js script tag.
+   *
+   * @see {@link https://help.split.io/hc/en-us/articles/360040838752#set-up-with-gtm-and-gtag.js}
+   *
+   * @property {boolean} autoRequire
+   * @default false
+   */
+  autoRequire?: boolean,
 }
 
 /**
  * Enable 'Google Analytics to Split' integration, to track Google Analytics hits as Split events.
  * Used by the browser variant of the isomorphic JS SDK.
  *
- * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#google-analytics-to-split}
+ * @see {@link https://help.split.io/hc/en-us/articles/360040838752#google-analytics-to-split}
  */
 export interface IGoogleAnalyticsToSplitConfig extends GoogleAnalyticsToSplitOptions {
   type: 'GOOGLE_ANALYTICS_TO_SPLIT'
@@ -129,7 +140,7 @@ export interface SplitToGoogleAnalyticsOptions {
  * Enable 'Split to Google Analytics' integration, to track Split impressions and events as Google Analytics hits.
  * Used by the browser variant of the isomorphic JS SDK.
  *
- * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#split-to-google-analytics}
+ * @see {@link https://help.split.io/hc/en-us/articles/360040838752#split-to-google-analytics}
  */
 export interface ISplitToGoogleAnalyticsConfig extends SplitToGoogleAnalyticsOptions {
   type: 'SPLIT_TO_GOOGLE_ANALYTICS'

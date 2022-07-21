@@ -1,58 +1,63 @@
+import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
+import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT, FETCH_BACKOFF_MAX_RETRIES } from './constants';
 import { IUpdateWorker } from './types';
 
 /**
- * SplitsUpdateWorker class
+ * SplitsUpdateWorker factory
  */
-export class SplitsUpdateWorker implements IUpdateWorker {
+export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void } {
 
-  private readonly splitsCache: ISplitsCacheSync;
-  private readonly splitsSyncTask: ISplitsSyncTask;
-  private readonly splitsEventEmitter: ISplitsEventEmitter;
-  private readonly segmentsSyncTask?: ISegmentsSyncTask;
-  private maxChangeNumber: number;
-  private handleNewEvent: boolean;
-  readonly backoff: Backoff;
+  let maxChangeNumber = 0;
+  let handleNewEvent = false;
+  let isHandlingEvent: boolean;
+  let cdnBypass: boolean;
+  const backoff = new Backoff(__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
-  /**
-   * @param {Object} splitsCache splits data cache
-   * @param {Object} splitsSyncTask task for syncing splits data
-   * @param {Object} splitsEventEmitter emitter for splits data events
-   */
-  constructor(splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask) {
-    this.splitsCache = splitsCache;
-    this.splitsSyncTask = splitsSyncTask;
-    this.splitsEventEmitter = splitsEventEmitter;
-    this.segmentsSyncTask = segmentsSyncTask;
-    this.maxChangeNumber = 0;
-    this.handleNewEvent = false;
-    this.put = this.put.bind(this);
-    this.killSplit = this.killSplit.bind(this);
-    this.__handleSplitUpdateCall = this.__handleSplitUpdateCall.bind(this);
-    this.backoff = new Backoff(this.__handleSplitUpdateCall);
-  }
-
-  // Private method
-  // Preconditions: this.splitsSyncTask.isSynchronizingSplits === false
-  __handleSplitUpdateCall() {
-    if (this.maxChangeNumber > this.splitsCache.getChangeNumber()) {
-      this.handleNewEvent = false;
+  function __handleSplitUpdateCall() {
+    isHandlingEvent = true;
+    if (maxChangeNumber > splitsCache.getChangeNumber()) {
+      handleNewEvent = false;
 
       // fetch splits revalidating data if cached
-      this.splitsSyncTask.execute(true).then(() => {
-        if (this.handleNewEvent) {
-          this.__handleSplitUpdateCall();
+      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined).then(() => {
+        if (!isHandlingEvent) return; // halt if `stop` has been called
+        if (handleNewEvent) {
+          __handleSplitUpdateCall();
         } else {
           // fetch new registered segments for server-side API. Not retrying on error
-          if (this.segmentsSyncTask) this.segmentsSyncTask.execute(undefined, false, true);
-          this.backoff.scheduleCall();
+          if (segmentsSyncTask) segmentsSyncTask.execute(true);
+
+          const attempts = backoff.attempts + 1;
+
+          if (maxChangeNumber <= splitsCache.getChangeNumber()) {
+            log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
+            isHandlingEvent = false;
+            return;
+          }
+
+          if (attempts < FETCH_BACKOFF_MAX_RETRIES) {
+            backoff.scheduleCall();
+            return;
+          }
+
+          if (cdnBypass) {
+            log.debug(`No changes fetched after ${attempts} attempts with CDN bypassed.`);
+            isHandlingEvent = false;
+          } else {
+            backoff.reset();
+            cdnBypass = true;
+            __handleSplitUpdateCall();
+          }
         }
       });
+    } else {
+      isHandlingEvent = false;
     }
   }
 
@@ -61,34 +66,41 @@ export class SplitsUpdateWorker implements IUpdateWorker {
    *
    * @param {number} changeNumber change number of the SPLIT_UPDATE notification
    */
-  put({ changeNumber }: Pick<ISplitUpdateData, 'changeNumber'>) {
-    const currentChangeNumber = this.splitsCache.getChangeNumber();
+  function put({ changeNumber }: Pick<ISplitUpdateData, 'changeNumber'>) {
+    const currentChangeNumber = splitsCache.getChangeNumber();
 
-    if (changeNumber <= currentChangeNumber || changeNumber <= this.maxChangeNumber) return;
+    if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
 
-    this.maxChangeNumber = changeNumber;
-    this.handleNewEvent = true;
-    this.backoff.reset();
+    maxChangeNumber = changeNumber;
+    handleNewEvent = true;
+    cdnBypass = false;
 
-    if (this.splitsSyncTask.isExecuting()) return;
-
-    this.__handleSplitUpdateCall();
+    if (backoff.timeoutID || !isHandlingEvent) __handleSplitUpdateCall();
+    backoff.reset();
   }
 
-  /**
-   * Invoked by NotificationProcessor on SPLIT_KILL event
-   *
-   * @param {number} changeNumber change number of the SPLIT_UPDATE notification
-   * @param {string} splitName name of split to kill
-   * @param {string} defaultTreatment default treatment value
-   */
-  killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
-    if (this.splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
-      // trigger an SDK_UPDATE if Split was killed locally
-      this.splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
+  return {
+    put,
+
+    /**
+     * Invoked by NotificationProcessor on SPLIT_KILL event
+     *
+     * @param {number} changeNumber change number of the SPLIT_UPDATE notification
+     * @param {string} splitName name of split to kill
+     * @param {string} defaultTreatment default treatment value
+     */
+    killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
+      if (splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
+        // trigger an SDK_UPDATE if Split was killed locally
+        splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
+      }
+      // queues the SplitChanges fetch (only if changeNumber is newer)
+      put({ changeNumber });
+    },
+
+    stop() {
+      isHandlingEvent = false;
+      backoff.reset();
     }
-    // queues the SplitChanges fetch (only if changeNumber is newer)
-    this.put({ changeNumber });
-  }
-
+  };
 }
