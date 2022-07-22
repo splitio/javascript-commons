@@ -19,20 +19,26 @@ const logNameMapper = 'ga-to-split:mapper';
 /**
  * Provides a plugin to use with analytics.js, accounting for the possibility
  * that the global command queue has been renamed or not yet defined.
- * @param {string} pluginName The plugin name identifier.
- * @param {Function} pluginConstructor The plugin constructor function.
+ * @param window Reference to global object.
+ * @param pluginName The plugin name identifier.
+ * @param pluginConstructor The plugin constructor function.
+ * @param log Logger instance.
+ * @param autoRequire If true, log error when auto-require script is not detected
  */
-function providePlugin(pluginName: string, pluginConstructor: Function) {
+function providePlugin(window: any, pluginName: string, pluginConstructor: Function, log: ILogger, autoRequire?: boolean) {
   // get reference to global command queue. Init it if not defined yet.
-  // @ts-expect-error
   const gaAlias = window.GoogleAnalyticsObject || 'ga';
-  window[gaAlias] = window[gaAlias] || function (...args: any[]) { // @ts-expect-error
-    (window[gaAlias].q = window[gaAlias].q || []).push(args);
+  window[gaAlias] = window[gaAlias] || function () {
+    (window[gaAlias].q = window[gaAlias].q || []).push(arguments);
   };
 
   // provides the plugin for use with analytics.js.
-  // @ts-expect-error
   window[gaAlias]('provide', pluginName, pluginConstructor);
+
+  if (autoRequire && (!window[gaAlias].q || window[gaAlias].q.push === [].push)) {
+    // Expecting spy on ga.q push method but not found
+    log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run. Please check the docs.');
+  }
 }
 
 // Default mapping: object used for building the default mapper from hits to Split events
@@ -72,7 +78,8 @@ function mapperBuilder(mapping: typeof defaultMapping) {
     const fields: string[] = mapping.eventProperties[hitType];
     if (fields) {
       for (let i = 0; i < fields.length; i++) {
-        properties[fields[i]] = model.get(fields[i]);
+        const fieldValue = model.get(fields[i]);
+        if (fieldValue !== undefined) properties[fields[i]] = fieldValue;
       }
     }
 
@@ -284,5 +291,5 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
-  providePlugin('splitTracker', SplitTracker);
+  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire === true);
 }

@@ -1,4 +1,5 @@
 import { timeout } from '../timeout';
+import { nearlyEqual } from '../../../__tests__/testUtils';
 
 const baseTimeoutInMs = 20;
 const resolutionValue = 'random_Value';
@@ -25,7 +26,7 @@ test('Promise utils / timeout - What happens in the event of a timeout or no tim
     expect('Should not execute').toBeFalsy();
   } catch (error: any) {
     // The promise was rejected not resolved. Give it an error margin of 10ms since it's not predictable
-    expect((Date.now() - ts) < baseTimeoutInMs + 20).toBe(true); // The timeout should have rejected the promise.
+    expect(nearlyEqual(Date.now() - ts, baseTimeoutInMs)).toBe(true); // The timeout should have rejected the promise.
     expect(error.message).toMatch(/^Operation timed out because it exceeded the configured time limit of/); // The timeout should have rejected the promise with a Split Timeout Error.
   }
 });

@@ -16,20 +16,18 @@ const imp3 = { ...imp1, keyName: 'k3' };
 describe('Impressions submitter', () => {
 
   const impressionsCacheInMemory = new ImpressionsCacheInMemory();
-  const params = {
-    settings: { log: loggerMock, scheduler: { impressionsPushRate: 100 }, core: {} },
+  const params: any = {
+    settings: { log: loggerMock, scheduler: { impressionsRefreshRate: 100 }, core: {} },
     storage: { impressions: impressionsCacheInMemory },
     splitApi: { postTestImpressionsBulk: jest.fn(() => Promise.resolve()) },
-  }; // @ts-ignore
-  const impressionsSubmitter = impressionsSubmitterFactory(params);
+  };
 
   beforeEach(() => {
     params.splitApi.postTestImpressionsBulk.mockClear();
   });
 
   test('doesn\'t drop items from cache when POST is resolved', (done) => {
-
-
+    const impressionsSubmitter = impressionsSubmitterFactory(params);
     impressionsCacheInMemory.track([imp1]);
     impressionsSubmitter.start();
 
@@ -47,13 +45,14 @@ describe('Impressions submitter', () => {
       impressionsSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.impressionsPushRate + 10);
+    }, params.settings.scheduler.impressionsRefreshRate + 10);
   });
 
   test('in case of retry, pop new items from cache to include in the POST payload', (done) => {
     // Make the POST request fail
     params.splitApi.postTestImpressionsBulk.mockImplementation(() => Promise.reject());
 
+    const impressionsSubmitter = impressionsSubmitterFactory(params);
     impressionsCacheInMemory.track([imp1]);
     impressionsSubmitter.start();
 
@@ -71,13 +70,13 @@ describe('Impressions submitter', () => {
       impressionsSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.impressionsPushRate + 10);
+    }, params.settings.scheduler.impressionsRefreshRate + 10);
   });
 
   test('if it is executed while POST is pending, execution is queued until POST is resolved and not same items are submitted', (done) => {
-    // Make the POST request fail
     params.splitApi.postTestImpressionsBulk.mockImplementation(() => Promise.resolve());
 
+    const impressionsSubmitter = impressionsSubmitterFactory(params);
     impressionsCacheInMemory.track([imp1]);
     impressionsSubmitter.start();
 

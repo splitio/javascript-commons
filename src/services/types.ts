@@ -35,9 +35,9 @@ export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyT
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 
-export type IFetchSplitChanges = (since: number, noCache?: boolean) => Promise<IResponse>
+export type IFetchSplitChanges = (since: number, noCache?: boolean, till?: number) => Promise<IResponse>
 
-export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean) => Promise<IResponse>
+export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
 export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => Promise<IResponse>
 
