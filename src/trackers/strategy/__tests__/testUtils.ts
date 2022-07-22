@@ -17,22 +17,6 @@ export const impression2 = {
   bucketingKey: 'impr_bucketing_2',
   label: 'default rule'
 } as ImpressionDTO;
-export const impression12 = {
-  feature: 'qc_team',
-  keyName: 'emma@split.io',
-  treatment: 'no',
-  time: Date.now(),
-  bucketingKey: 'impr_bucketing_2',
-  label: 'default rule'
-} as ImpressionDTO;
-export const impression13 = {
-  feature: 'qc_team',
-  keyName: 'emma@split.io',
-  treatment: 'no',
-  time: Date.now(),
-  bucketingKey: 'impr_bucketing_2',
-  label: 'default rule'
-} as ImpressionDTO;
 
 export function processStrategy(strategy: IStrategy, impressions: ImpressionDTO[]) {  
   return strategy.process(impressions);

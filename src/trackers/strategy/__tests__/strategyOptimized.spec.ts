@@ -2,18 +2,18 @@ import { impressionObserverSSFactory } from '../../impressionObserver/impression
 import { impressionObserverCSFactory } from '../../impressionObserver/impressionObserverCS';
 import { strategyOptimizedFactory } from '../strategyOptimized';
 import { ImpressionCountsCacheInMemory } from '../../../storages/inMemory/ImpressionCountsCacheInMemory';
-import { impression1, impression12, impression13, impression2, processStrategy } from './testUtils';
+import { impression1, impression2, processStrategy } from './testUtils';
 
 test('strategyOptimized', () => {
   
   let augmentedImp1 = { ...impression1, pt: undefined };
-  let augmentedImp12 = { ...impression12, pt: impression1.time };
-  let augmentedImp13 = { ...impression13, pt: impression1.time };
+  let augmentedImp12 = { ...impression1, pt: impression1.time };
+  let augmentedImp13 = { ...impression1, pt: impression1.time };
   let augmentedImp2 = { ...impression2, pt: undefined };
     
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
-  let impressions = [{...impression1}, {...impression2}, {...impression12}, {...impression13}];
-  let augmentedImpressions = [augmentedImp1, augmentedImp2, augmentedImp12, augmentedImp13];
+  const impressions = [impression1, impression2, {...impression1}, {...impression1}];
+  const augmentedImpressions = [augmentedImp1, augmentedImp2, augmentedImp12, augmentedImp13];
   
   const strategyOptimizedSS = strategyOptimizedFactory(impressionObserverSSFactory(), impressionCountsCache);
   
