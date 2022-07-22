@@ -2,7 +2,7 @@ import { IIntegrationFactoryParams, IntegrationFactory } from '../types';
 import { GaToSplit } from './GaToSplit';
 import { GoogleAnalyticsToSplitOptions } from './types';
 
-export function GoogleAnalyticsToSplit(options: GoogleAnalyticsToSplitOptions): IntegrationFactory {
+export function GoogleAnalyticsToSplit(options: GoogleAnalyticsToSplitOptions = {}): IntegrationFactory {
 
   // GaToSplit integration factory
   function GoogleAnalyticsToSplitFactory(params: IIntegrationFactoryParams) {
