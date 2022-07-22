@@ -55,9 +55,18 @@ export interface IImpressionSenderAdapter {
 }
 
 /** Unique keys tracker */
-export interface IUniqueKeysTracker 
-{
+export interface IUniqueKeysTracker {
   track(key: string, featureName: string): void;
   start(): void;
   stop(): void;
+}
+
+export interface IStrategyResult {
+  impressionsToStore: ImpressionDTO[],
+  impressionsToListener: ImpressionDTO[],
+  deduped: number
+}
+
+export interface IStrategy {
+  process(impressions:  ImpressionDTO[]): IStrategyResult
 }

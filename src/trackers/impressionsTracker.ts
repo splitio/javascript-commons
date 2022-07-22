@@ -1,10 +1,8 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
-import { truncateTimeFrame } from '../utils/time';
-import { IImpressionCountsCacheSync, IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
-import { IImpressionsHandler, IImpressionsTracker } from './types';
+import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
+import { IImpressionsHandler, IImpressionsTracker, IStrategy } from './types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
-import { IImpressionObserver } from './impressionObserver/types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
 
@@ -15,18 +13,14 @@ import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
  * @param metadata runtime metadata (ip, hostname and version)
  * @param impressionListener optional impression listener
  * @param integrationsManager optional integrations manager
- * @param observer optional impression observer. If provided, previous time (pt property) is included in impression instances
- * @param countsCache optional cache to save impressions count. If provided, impressions will be deduped (OPTIMIZED mode)
+ * @param strategy strategy for impressions tracking.
  */
 export function impressionsTrackerFactory(
   settings: ISettings,
   impressionsCache: IImpressionsCacheBase,
+  strategy: IStrategy,
   integrationsManager?: IImpressionsHandler,
-  // if observer is provided, it implies `shouldAddPreviousTime` flag (i.e., if impressions previous time should be added or not)
-  observer?: IImpressionObserver,
-  // if countsCache is provided, it implies `isOptimized` flag (i.e., if impressions should be deduped or not)
-  countsCache?: IImpressionCountsCacheSync,
-  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
+  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
 ): IImpressionsTracker {
 
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
@@ -37,26 +31,10 @@ export function impressionsTrackerFactory(
 
       const impressionsCount = impressions.length;
 
-      const impressionsToStore: ImpressionDTO[] = []; // Track only the impressions that are going to be stored
-      // Wraps impressions to store and adds previousTime if it corresponds
-      impressions.forEach((impression) => {
-        if (observer) {
-          // Adds previous time if it is enabled
-          impression.pt = observer.testAndSet(impression);
-        }
-
-        const now = Date.now();
-        if (countsCache) {
-          // Increments impression counter per featureName
-          countsCache.track(impression.feature, now, 1);
-        }
-
-        // Checks if the impression should be added in queue to be sent
-        if (!countsCache || !impression.pt || impression.pt < truncateTimeFrame(now)) {
-          impressionsToStore.push(impression);
-        }
-      });
-
+      const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
+      
+      const impressionsToListenerCount = impressionsToListener.length;
+      
       const res = impressionsCache.track(impressionsToStore);
 
       // If we're on an async storage, handle error and log it.
@@ -71,16 +49,16 @@ export function impressionsTrackerFactory(
         // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
         if (telemetryCache) {
           (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
-          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, impressions.length - impressionsToStore.length);
+          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, deduped);
         }
       }
 
       // @TODO next block might be handled by the integration manager. In that case, the metadata object doesn't need to be passed in the constructor
       if (impressionListener || integrationsManager) {
-        for (let i = 0; i < impressionsCount; i++) {
+        for (let i = 0; i < impressionsToListenerCount; i++) {
           const impressionData: SplitIO.ImpressionData = {
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
-            impression: objectAssign({}, impressions[i]),
+            impression: objectAssign({}, impressionsToListener[i]),
             attributes,
             ip,
             hostname,

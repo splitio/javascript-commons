@@ -13,6 +13,8 @@ import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { metadataBuilder } from '../storages/metadataBuilder';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
+import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
+import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
 
 /**
  * Modular SDK factory
@@ -62,9 +64,10 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
 
-  // trackers
-  const observer = impressionsObserverFactory && impressionsObserverFactory();
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts, storage.telemetry);
+  const observer = impressionsObserverFactory();
+  const strategy = (storageFactoryParams.optimize) ? strategyOptimizedFactory(observer, storage.impressionCounts!) : strategyDebugFactory(observer);
+
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
