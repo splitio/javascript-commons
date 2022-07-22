@@ -7,7 +7,7 @@ import { fromImpressionCountsCollector } from '../sync/submitters/impressionCoun
 import { IResponse, ISplitApi } from '../services/types';
 import { ImpressionDTO, ISettings } from '../types';
 import { ImpressionsPayload } from '../sync/submitters/types';
-import { OPTIMIZED, DEBUG } from '../utils/constants';
+import { OPTIMIZED, DEBUG, NONE } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
@@ -88,9 +88,10 @@ export class BrowserSignalListener implements ISignalListener {
     // Flush impressions & events data if there is user consent
     if (isConsentGranted(this.settings)) {
       const eventsUrl = this.settings.urls.events;
+      const sim = this.settings.sync.impressionsMode;
       const extraMetadata = {
         // sim stands for Sync/Split Impressions Mode
-        sim: this.settings.sync.impressionsMode === OPTIMIZED ? OPTIMIZED : DEBUG
+        sim: sim === OPTIMIZED ? OPTIMIZED : sim === DEBUG ? DEBUG : NONE
       };
 
       this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);

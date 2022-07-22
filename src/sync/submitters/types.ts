@@ -148,7 +148,8 @@ export type OperationMode = STANDALONE_ENUM | CONSUMER_ENUM | CONSUMER_PARTIAL_E
 
 export type OPTIMIZED_ENUM = 0;
 export type DEBUG_ENUM = 1;
-export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM;
+export type NONE_ENUM = 2;
+export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM | NONE_ENUM;
 
 export type RefreshRates = {
   sp: number, // splits
