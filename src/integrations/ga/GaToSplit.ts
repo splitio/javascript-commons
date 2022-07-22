@@ -78,7 +78,8 @@ function mapperBuilder(mapping: typeof defaultMapping) {
     const fields: string[] = mapping.eventProperties[hitType];
     if (fields) {
       for (let i = 0; i < fields.length; i++) {
-        properties[fields[i]] = model.get(fields[i]);
+        const fieldValue = model.get(fields[i]);
+        if (fieldValue !== undefined) properties[fields[i]] = fieldValue;
       }
     }
 
@@ -290,5 +291,5 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
-  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire);
+  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire === true);
 }
