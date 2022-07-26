@@ -18,7 +18,7 @@ const fakeFilter = {
 
 test('strategyNone', () => {
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
-  const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeSenderAdapter, fakeFilter, 4);
+  const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeFilter, 4, fakeSenderAdapter);
   
   let impressions = [
     impression1, 

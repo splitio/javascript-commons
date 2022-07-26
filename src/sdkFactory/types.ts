@@ -6,7 +6,7 @@ import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
-import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
+import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter } from '../types';
 
 /**
@@ -96,6 +96,11 @@ export interface ISdkFactoryParams {
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
   sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
+  // Impression observer factory. If provided, will be used for impressions dedupe
+  impressionsObserverFactory: () => IImpressionObserver
+  
+  filterAdapterFactory: () => IFilterAdapter
+
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
@@ -106,9 +111,6 @@ export interface ISdkFactoryParams {
 
   // @TODO review impressionListener and integrations interfaces. What about handling impressionListener as an integration ?
   integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,
-
-  // Impression observer factory. If provided, will be used for impressions dedupe
-  impressionsObserverFactory: () => IImpressionObserver
 
   // Optional function to assign additional properties to the factory instance
   extraProps?: (params: ISdkFactoryContext) => object
