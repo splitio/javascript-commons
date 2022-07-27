@@ -99,7 +99,7 @@ export interface ISdkFactoryParams {
   // Impression observer factory. If provided, will be used for impressions dedupe
   impressionsObserverFactory: () => IImpressionObserver
   
-  filterAdapterFactory: () => IFilterAdapter
+  filterAdapterFactory?: () => IFilterAdapter
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
