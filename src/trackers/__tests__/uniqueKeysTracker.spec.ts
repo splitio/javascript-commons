@@ -17,7 +17,7 @@ describe('Unique keys tracker', () => {
 
   test('With filter', () => { 
     
-    const simpleTracker = uniqueKeysTrackerFactory(loggerMock, fakeSenderAdapter, fakeFilter, 4);
+    const simpleTracker = uniqueKeysTrackerFactory(loggerMock, fakeFilter, 4, fakeSenderAdapter);
     
     simpleTracker.track('feature1', 'key1');
     simpleTracker.track('feature1', 'key2');

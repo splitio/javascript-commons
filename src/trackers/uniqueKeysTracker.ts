@@ -3,6 +3,12 @@ import { ILogger } from '../logger/types';
 import { ISet, _Set } from '../utils/lang/sets';
 import { IFilterAdapter, IImpressionSenderAdapter, IUniqueKeysTracker } from './types';
 
+const noopFilterAdapter = {
+  add() {return true;},
+  contains() {return true;},
+  clear() {}
+};
+
 const DEFAULT_CACHE_SIZE = 30000;
 /**
  * Trackes uniques keys
@@ -18,9 +24,9 @@ const DEFAULT_CACHE_SIZE = 30000;
  */
 export function uniqueKeysTrackerFactory(
   log: ILogger,
-  senderAdapter: IImpressionSenderAdapter,
-  filterAdapter: IFilterAdapter,
-  cacheSize: number = DEFAULT_CACHE_SIZE,
+  filterAdapter: IFilterAdapter = noopFilterAdapter,
+  cacheSize = DEFAULT_CACHE_SIZE,
+  senderAdapter?: IImpressionSenderAdapter,
   // @TODO
   // maxBulkSize: number = 5000,
   // taskRefreshRate: number = 15,
@@ -45,7 +51,7 @@ export function uniqueKeysTrackerFactory(
       
       if (uniqueTrackerSize >= cacheSize) {
         log.warn(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The UniqueKeysTracker size reached the maximum limit`);
-        senderAdapter.recordUniqueKeys(uniqueKeysTracker);
+        senderAdapter && senderAdapter.recordUniqueKeys(uniqueKeysTracker);
         uniqueTrackerSize = 0;
       }
     },
