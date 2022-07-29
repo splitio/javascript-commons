@@ -36,6 +36,8 @@ export const base = {
     telemetryRefreshRate: 3600,
     // publish evaluations each 300 sec (default value for OPTIMIZED impressions mode)
     impressionsRefreshRate: 300,
+    // publish unique Keys each 900 sec (15 min) 
+    uniqueKeysRefreshRate: 900,
     // fetch offline changes each 15 sec
     offlineRefreshRate: 15,
     // publish events every 60 seconds after the first flush

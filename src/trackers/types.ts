@@ -2,6 +2,7 @@ import { SplitIO, ImpressionDTO } from '../types';
 import { StreamingEventType, Method, OperationType } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
+import { ISet } from '../utils/lang/sets';
 
 /** Events tracker */
 
@@ -56,9 +57,10 @@ export interface IImpressionSenderAdapter {
 
 /** Unique keys tracker */
 export interface IUniqueKeysTracker {
-  track(key: string, featureName: string): void;
-  start(): void;
-  stop(): void;
+  track(featureName: string, key: string): void;
+  pop(toMerge?: { [featureName: string]: ISet<string> }): { [featureName: string]: ISet<string>; };
+  clear(): void;
+  isEmpty(): boolean;
 }
 
 export interface IStrategyResult {

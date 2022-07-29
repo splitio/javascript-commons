@@ -4,6 +4,7 @@ import { impressionCountsSubmitterFactory } from './impressionCountsSubmitter';
 import { telemetrySubmitterFactory } from './telemetrySubmitter';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { ISubmitterManager } from './types';
+import { uniqueKeysSubmitterFactory } from './uniqueKeysSubmitter';
 
 export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmitterManager {
 
@@ -15,6 +16,7 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmit
   const impressionCountsSubmitter = impressionCountsSubmitterFactory(params);
   if (impressionCountsSubmitter) submitters.push(impressionCountsSubmitter);
   const telemetrySubmitter = telemetrySubmitterFactory(params);
+  if (params.uniqueKeysTracker) submitters.push(uniqueKeysSubmitterFactory(params));
 
   return {
     // `onlyTelemetry` true if SDK is created with userConsent not GRANTED

@@ -35,6 +35,13 @@ export type ImpressionCountsPayload = {
   }[]
 }
 
+export type UniqueKeysPayload = {
+  /** Split name */
+  f: string
+  /** keyNames */
+  k: string[]
+}[]
+
 export type StoredImpressionWithMetadata = {
   /** Metadata */
   m: IMetadata,
