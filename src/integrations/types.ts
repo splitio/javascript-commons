@@ -1,5 +1,5 @@
 import { IEventsCacheBase } from '../storages/types';
-import { IEventsHandler, IImpressionsHandler } from '../trackers/types';
+import { IEventsHandler, IImpressionsHandler, ITelemetryTracker } from '../trackers/types';
 import { ISettings, SplitIO } from '../types';
 
 export interface IIntegration {
@@ -8,9 +8,11 @@ export interface IIntegration {
 
 export type IIntegrationManager = IEventsHandler & IImpressionsHandler;
 
+// @TODO replace with ISdkFactoryContext
 export interface IIntegrationFactoryParams {
   storage: { events: IEventsCacheBase }
   settings: ISettings
+  telemetryTracker: ITelemetryTracker
 }
 
 export type IntegrationFactory = {
