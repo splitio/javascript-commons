@@ -36,12 +36,12 @@ function providePlugin(window: any, pluginName: string, pluginConstructor: Funct
   // provides the plugin for use with analytics.js.
   window[gaAlias]('provide', pluginName, pluginConstructor);
 
-  if (!window[gaAlias].q || window[gaAlias].q.push === [].push) {
-    telemetryTracker && telemetryTracker.addTag('autorequire');
-    if (autoRequire) {
-      // Expecting spy on ga.q push method but not found
-      log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run. Please check the docs.');
-    }
+  const hasAutoRequire = window[gaAlias].q && window[gaAlias].q.push !== [].push;
+  if (autoRequire && !hasAutoRequire) { // Expecting spy on ga.q push method but not found
+    log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run. Please check the docs.');
+  }
+  if (telemetryTracker && hasAutoRequire) {
+    telemetryTracker.addTag('ga-to-split-autorequire');
   }
 }
 

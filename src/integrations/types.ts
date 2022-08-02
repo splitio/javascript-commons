@@ -8,7 +8,6 @@ export interface IIntegration {
 
 export type IIntegrationManager = IEventsHandler & IImpressionsHandler;
 
-// @TODO replace with ISdkFactoryContext
 export interface IIntegrationFactoryParams {
   storage: { events: IEventsCacheBase }
   settings: ISettings

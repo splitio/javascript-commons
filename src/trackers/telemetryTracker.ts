@@ -51,7 +51,7 @@ export function telemetryTrackerFactory(
       },
       addTag(tag: string) {
         // @ts-ignore
-        telemetryCache.addTag && telemetryCache.addTag(tag);
+        if (telemetryCache.addTag) telemetryCache.addTag(tag);
       }
     };
 
@@ -60,9 +60,9 @@ export function telemetryTrackerFactory(
     return {
       trackEval: noopTrack,
       trackHttp: noopTrack,
-      sessionLength: () => { },
-      streamingEvent: () => { },
-      addTag: () => {}
+      sessionLength() { },
+      streamingEvent() { },
+      addTag() { }
     };
   }
 }

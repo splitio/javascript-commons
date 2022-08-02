@@ -42,7 +42,7 @@ export interface ITelemetryTracker {
    */
   streamingEvent(e: StreamingEventType | AUTH_REJECTION, d?: number): void
   /**
-   * Records streaming event
+   * Records tag
    */
   addTag(tag: string): void
 }
