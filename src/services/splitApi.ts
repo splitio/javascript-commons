@@ -108,14 +108,25 @@ export function splitApiFactory(
     },
     
     /**
-     * Post unique keys.
+     * Post unique keys for client side.
      *
      * @param body  unique keys payload
      * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
-    postUniqueKeysBulk(body: string, headers?: Record<string, string>) {
-      const url = `${urls.events}/uniqueKeys/bulk`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS));
+    postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
+      const url = `${urls.telemetry}/api/v1/keys/cs`;
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+    },
+    
+    /**
+     * Post unique keys for server side.
+     *
+     * @param body  unique keys payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
+      const url = `${urls.telemetry}/api/v1/keys/ss`;
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
 
     postMetricsConfig(body: string) {

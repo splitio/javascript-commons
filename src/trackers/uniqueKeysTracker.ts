@@ -55,16 +55,9 @@ export function uniqueKeysTrackerFactory(
     /**
      * Pop the collected data, used as payload for posting.
      */
-    pop(toMerge?: { [featureName: string]: ISet<string> }) {
+    pop() {
       const data = uniqueKeysTracker;
       uniqueKeysTracker = {};
-      if (toMerge) {
-        Object.keys(data).forEach((key) => {
-          if (toMerge[key]) toMerge[key] = {...toMerge[key],...data[key]};
-          else toMerge[key] = data[key];
-        });
-        return toMerge;
-      }
       return data;
     },
 

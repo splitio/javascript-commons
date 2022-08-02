@@ -43,8 +43,8 @@ export interface ISdkFactoryContext {
   impressionsTracker: IImpressionsTracker,
   eventTracker: IEventTracker,
   telemetryTracker: ITelemetryTracker,
-  uniqueKeysTracker: IUniqueKeysTracker,
   storage: IStorageSync | IStorageAsync,
+  uniqueKeysTracker?: IUniqueKeysTracker,
   signalListener?: ISignalListener
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
