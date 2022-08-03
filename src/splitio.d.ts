@@ -1,9 +1,10 @@
-// Type definitions for Javascript and NodeJS Split Software SDK
+/* eslint-disable no-use-before-define */
+// Common type definitions for Split Software SDKs based on Javascript
 // Project: http://www.split.io/
 // Definitions by: Nico Zelaya <https://github.com/NicoZelaya/>
 
 /// <reference types="google.analytics" />
-import { RedisOptions } from "ioredis";
+import { RedisOptions } from 'ioredis';
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -218,6 +219,7 @@ interface ISharedSettings {
      * This configuration is only meaningful when the SDK is working in "standalone" mode.
      *
      * At the moment, two types of split filters are supported: by name and by prefix.
+     *
      * Example:
      *  `splitFilter: [
      *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
@@ -239,7 +241,7 @@ interface ISharedSettings {
      * Controls the SDK continuous synchronization flags.
      *
      * When `true` a running SDK will process rollout plan updates performed on the UI (default).
-     * When false it'll just fetch all data upon init
+     * When false it'll just fetch all data upon init.
      *
      * @property {boolean} enabled
      * @default true
@@ -655,10 +657,10 @@ declare namespace SplitIO {
     }
   };
   /**
-   * A promise that will be resolved with that SplitView.
-   * @typedef {Promise<SplitView>} SplitView
+   * A promise that will be resolved with that SplitView or null if the split is not found.
+   * @typedef {Promise<SplitView | null>} SplitView
    */
-  type SplitViewAsync = Promise<SplitView>;
+  type SplitViewAsync = Promise<SplitView | null>;
   /**
    * An array containing the SplitIO.SplitView elements.
    */
@@ -1593,7 +1595,7 @@ declare namespace SplitIO {
      * Get the data of a split in SplitView format.
      * @function split
      * @param {string} splitName The name of the split we wan't to get info of.
-     * @returns {SplitViewAsync} A promise that will resolve to the SplitIO.SplitView value.
+     * @returns {SplitViewAsync} A promise that will resolve to the SplitIO.SplitView value or null if the split is not found.
      */
     split(splitName: string): SplitViewAsync;
   }
