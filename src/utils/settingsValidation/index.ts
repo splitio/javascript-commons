@@ -1,7 +1,7 @@
 import { merge, get } from '../lang';
 import { mode } from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG, NONE } from '../constants';
+import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
@@ -132,15 +132,13 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
+  scheduler.uniqueKeysRefreshRate = fromSecondsToMillis(scheduler.uniqueKeysRefreshRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Default impressionsRefreshRate for DEBUG mode is 60 secs
   if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
   
-  // Default uniqueKeysRefreshRate for NONE mode is 15 mins
-  if (get(config, 'scheduler.uniqueKeysRefreshRate') === undefined && withDefaults.sync.impressionsMode === NONE) scheduler.uniqueKeysRefreshRate = 900;
-  scheduler.uniqueKeysRefreshRate = fromSecondsToMillis(scheduler.uniqueKeysRefreshRate);
 
   // Log deprecation for old telemetry param
   if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');
