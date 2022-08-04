@@ -83,7 +83,7 @@ function assertModulesCalled(params: any) {
     expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform, telemetryTrackerMock]]);
   }
   if (params.integrationsManagerFactory) {
-    expect(params.integrationsManagerFactory.mock.calls).toEqual([[{ settings: params.settings, storage: mockStorage }]]);
+    expect(params.integrationsManagerFactory.mock.calls).toEqual([[{ settings: params.settings, storage: mockStorage, telemetryTracker: telemetryTrackerMock }]]);
   }
 }
 

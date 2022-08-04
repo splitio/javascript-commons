@@ -60,13 +60,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const storage = storageFactory(storageFactoryParams);
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
 
-  const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
+  const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
+  const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
   // trackers
   const observer = impressionsObserverFactory && impressionsObserverFactory();
   const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, integrationsManager, observer, storage.impressionCounts, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
-  const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);

@@ -48,6 +48,10 @@ export function telemetryTrackerFactory(
           });
           if (e === TOKEN_REFRESH) (telemetryCache as ITelemetryCacheSync).recordTokenRefreshes();
         }
+      },
+      addTag(tag: string) {
+        // @ts-ignore
+        if (telemetryCache.addTag) telemetryCache.addTag(tag);
       }
     };
 
@@ -56,8 +60,9 @@ export function telemetryTrackerFactory(
     return {
       trackEval: noopTrack,
       trackHttp: noopTrack,
-      sessionLength: () => { },
-      streamingEvent: () => { },
+      sessionLength() { },
+      streamingEvent() { },
+      addTag() { }
     };
   }
 }
