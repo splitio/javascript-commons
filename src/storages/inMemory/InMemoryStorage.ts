@@ -22,7 +22,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     impressionCounts: params.optimize || params.impressionsMode === NONE ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
     telemetry: params.mode !== LOCALHOST_MODE ? new TelemetryCacheInMemory() : undefined, // Always track telemetry in standalone mode on server-side
-    uniqueKeys: new UniqueKeysCacheInMemory(),
+    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
