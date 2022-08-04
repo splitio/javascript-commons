@@ -41,7 +41,7 @@ function providePlugin(window: any, pluginName: string, pluginConstructor: Funct
     log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run. Please check the docs.');
   }
   if (telemetryTracker && hasAutoRequire) {
-    telemetryTracker.addTag('ga-to-split-autorequire');
+    telemetryTracker.addTag('integration:ga-autorequire');
   }
 }
 
