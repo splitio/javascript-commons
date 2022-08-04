@@ -29,6 +29,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
     filterAdapterFactory } = params;
   const log = settings.log;
+  const impressionsMode = settings.sync.impressionsMode;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -69,10 +70,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
 
   const observer = impressionsObserverFactory();
-  const filterAdapter = filterAdapterFactory && filterAdapterFactory();
-  const uniqueKeysTracker = uniqueKeysTrackerFactory(log, filterAdapter);
+  const uniqueKeysTracker = impressionsMode === NONE ? uniqueKeysTrackerFactory(log, filterAdapterFactory && filterAdapterFactory()) : undefined;
   const strategy = (storageFactoryParams.optimize) ? strategyOptimizedFactory(observer, storage.impressionCounts!) :
-    (settings.sync.impressionsMode === NONE) ? strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker) : strategyDebugFactory(observer);
+    (impressionsMode === NONE) ? strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!) : strategyDebugFactory(observer);
 
   const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
@@ -81,7 +81,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform };
+  const ctx: ISdkFactoryContext = { splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;

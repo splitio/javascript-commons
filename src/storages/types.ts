@@ -2,6 +2,7 @@ import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types
 import { ILogger } from '../logger/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, SDKMode } from '../types';
+import { ISet } from '../utils/lang/sets';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -355,6 +356,14 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
   pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
 }
 
+export interface IUniqueKeysCacheBase extends IRecorderCacheProducerSync<{ [featureName: string]: ISet<string> }>{
+  // Used by unique Keys tracker
+  track(featureName: string, timeFrame: number, amount: number): void
+
+  // Used by unique keys submitter in standalone and producer mode
+  isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
+  pop(toMerge?: { [featureName: string]: ISet<string> } ): { [featureName: string]: ISet<string> } // pop cache data
+}
 
 /**
  * Telemetry storage interface for standalone and partial consumer modes.
@@ -445,14 +454,16 @@ export interface IStorageBase<
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
   TEventsCache extends IEventsCacheBase,
-  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
+  TUniqueKeysCache extends IUniqueKeysCacheBase
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts?: IImpressionCountsCacheSync,
   events: TEventsCache,
-  telemetry?: TTelemetryCache
+  telemetry?: TTelemetryCache,
+  uniqueKeys?: TUniqueKeysCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
@@ -462,7 +473,8 @@ export interface IStorageSync extends IStorageBase<
   ISegmentsCacheSync,
   IImpressionsCacheSync,
   IEventsCacheSync,
-  ITelemetryCacheSync
+  ITelemetryCacheSync,
+  IUniqueKeysCacheBase
   > { }
 
 export interface IStorageAsync extends IStorageBase<
@@ -470,7 +482,8 @@ export interface IStorageAsync extends IStorageBase<
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
-  ITelemetryCacheAsync
+  ITelemetryCacheAsync,
+  IUniqueKeysCacheBase
   > { }
 
 /** StorageFactory */

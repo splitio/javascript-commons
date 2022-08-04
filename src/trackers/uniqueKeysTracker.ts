@@ -1,7 +1,7 @@
 import { LOG_PREFIX_UNIQUE_KEYS_TRACKER } from '../logger/constants';
 import { ILogger } from '../logger/types';
 import { ISet, _Set } from '../utils/lang/sets';
-import { IFilterAdapter, IImpressionSenderAdapter, IUniqueKeysTracker } from './types';
+import { IFilterAdapter, IUniqueKeysTracker } from './types';
 
 const noopFilterAdapter = {
   add() {return true;},
@@ -16,23 +16,19 @@ const DEFAULT_CACHE_SIZE = 30000;
  *  or schedule to be sent; if not it will be added in an internal cache and sent in the next post. 
  * 
  * @param log Logger instance
- * @param senderAdapter Impressions sender adapter
  * @param filterAdapter filter adapter
  * @param cacheSize optional internal cache size
  * @param maxBulkSize optional max MTKs bulk size
- * @param taskRefreshRate optional task refresh rate
  */
 export function uniqueKeysTrackerFactory(
   log: ILogger,
   filterAdapter: IFilterAdapter = noopFilterAdapter,
   cacheSize = DEFAULT_CACHE_SIZE,
-  senderAdapter?: IImpressionSenderAdapter,
   // @TODO
   // maxBulkSize: number = 5000,
-  // taskRefreshRate: number = 15,
 ): IUniqueKeysTracker {
   
-  const uniqueKeysTracker: { [featureName: string]: ISet<string> } = {};
+  let uniqueKeysTracker: { [featureName: string]: ISet<string> } = {};
   let uniqueTrackerSize = 0;
   
   return {
@@ -51,17 +47,32 @@ export function uniqueKeysTrackerFactory(
       
       if (uniqueTrackerSize >= cacheSize) {
         log.warn(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The UniqueKeysTracker size reached the maximum limit`);
-        senderAdapter && senderAdapter.recordUniqueKeys(uniqueKeysTracker);
+        // @TODO trigger event to submitter to send mtk
         uniqueTrackerSize = 0;
       }
     },
     
-    start(): void {
-      // @TODO
+    /**
+     * Pop the collected data, used as payload for posting.
+     */
+    pop() {
+      const data = uniqueKeysTracker;
+      uniqueKeysTracker = {};
+      return data;
     },
-    
-    stop(): void {
-      // @TODO
+
+    /**
+     * Clear the data stored on the cache.
+     */
+    clear() {
+      uniqueKeysTracker = {};
+    },
+
+    /**
+     * Check if the cache is empty.
+     */
+    isEmpty() {
+      return Object.keys(uniqueKeysTracker).length === 0;
     }
     
   };
