@@ -356,13 +356,13 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
   pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
 }
 
-export interface IUniqueKeysCacheBase extends IRecorderCacheProducerSync<{ [featureName: string]: ISet<string> }>{
+export interface IUniqueKeysCacheBase extends IRecorderCacheProducerSync<{ [key: string]: ISet<string> }>{
   // Used by unique Keys tracker
-  track(featureName: string, timeFrame: number, amount: number): void
+  track(key: string, value: string): void
 
   // Used by unique keys submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(toMerge?: { [featureName: string]: ISet<string> } ): { [featureName: string]: ISet<string> } // pop cache data
+  pop(): { [key: string]: ISet<string> } // pop cache data
 }
 
 /**
@@ -496,7 +496,7 @@ export interface IStorageFactoryParams {
   eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
   mode: SDKMode,
-
+  impressionsMode?: string,
   // ATM, only used by InLocalStorage
   matchingKey?: string, /* undefined on server-side SDKs */
   splitFiltersValidation?: ISplitFiltersValidation,

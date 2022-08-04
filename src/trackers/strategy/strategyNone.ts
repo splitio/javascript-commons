@@ -15,13 +15,15 @@ export function strategyNoneFactory(
 ): IStrategy {
   
   return {
-    process(impressions: ImpressionDTO[]) {
+    process(impressions: ImpressionDTO[], isClientSide: boolean) {
       impressions.forEach((impression) => {        
         const now = Date.now();
         // Increments impression counter per featureName
         impressionsCounter.track(impression.feature, now, 1);
         // Keep track by unique key
-        uniqueKeysTracker.track(impression.feature, impression.keyName);
+        const key = isClientSide ? impression.keyName : impression.feature;
+        const value = isClientSide ? impression.feature : impression.keyName;
+        uniqueKeysTracker.track(key, value);
       });
       
       return {

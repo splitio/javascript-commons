@@ -1,9 +1,9 @@
 import { ImpressionCountsCacheInMemory } from '../../../storages/inMemory/ImpressionCountsCacheInMemory';
+import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/uniqueKeysCacheInMemory';
 import { strategyNoneFactory } from '../strategyNone';
 import { uniqueKeysTrackerFactory } from '../../uniqueKeysTracker';
-import { impression1, impression2, processStrategy } from './testUtils';
+import { getExpected, impression1, impression2, processStrategy } from './testUtils';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { LOG_PREFIX_UNIQUE_KEYS_TRACKER } from '../../../logger/constants';
 
 const fakeFilter = {
   add: jest.fn(() => { return true; }),
@@ -13,7 +13,8 @@ const fakeFilter = {
 
 test('strategyNone', () => {
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
-  const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeFilter, 4);
+  const uniqueKeysCache = new UniqueKeysCacheInMemory(6);
+  const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, uniqueKeysCache, fakeFilter);
   
   let impressions = [
     impression1, 
@@ -25,14 +26,33 @@ test('strategyNone', () => {
   ];
   
   const strategyNone = strategyNoneFactory(impressionCountsCache, uniqueKeysTracker);
+  let clientSide = true;
+  const { 
+    impressionsToStore: impressionsToStoreCs, 
+    impressionsToListener: impressionsToListenerCs, 
+    deduped: dedupedCs 
+  } = processStrategy(strategyNone, impressions, clientSide);
   
-  const { impressionsToStore, impressionsToListener, deduped } = processStrategy(strategyNone, impressions);
+  expect(uniqueKeysCache.pop()).toStrictEqual(getExpected(impressions, clientSide));
+  expect(uniqueKeysCache.pop()).toStrictEqual({});
   
-  expect(impressionsToStore).toStrictEqual([]);
-  expect(impressionsToListener).toStrictEqual(impressions);
-  expect(deduped).toStrictEqual(0);
+  expect(impressionsToStoreCs).toStrictEqual([]);
+  expect(impressionsToListenerCs).toStrictEqual(impressions);
+  expect(dedupedCs).toStrictEqual(0);
   
-  expect(loggerMock.warn).toBeCalledWith(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The UniqueKeysTracker size reached the maximum limit`);
-    
+  clientSide = false;
+  
+  const { 
+    impressionsToStore: impressionsToStoreSs, 
+    impressionsToListener: impressionsToListenerSs, 
+    deduped: dedupedSs 
+  } = processStrategy(strategyNone, impressions, clientSide);
+  
+  expect(uniqueKeysCache.pop()).toStrictEqual(getExpected(impressions, clientSide));
+  expect(uniqueKeysCache.pop()).toStrictEqual({});
+  
+  expect(impressionsToStoreSs).toStrictEqual([]);
+  expect(impressionsToListenerSs).toStrictEqual(impressions);
+  expect(dedupedSs).toStrictEqual(0);
   
 });

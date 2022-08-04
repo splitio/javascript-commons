@@ -1,30 +1,40 @@
 import { uniqueKeysTrackerFactory } from '../uniqueKeysTracker';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { LOG_PREFIX_UNIQUE_KEYS_TRACKER } from '../../logger/constants';
 
 describe('Unique keys tracker', () => {
 
+  const fakeUniqueKeysCache = {
+    track: jest.fn(),
+    pop: jest.fn(),
+    isEmpty: jest.fn(),
+    clear: jest.fn(),
+  };
   const fakeFilter = {
     add: jest.fn(() => { return true; }),
     contains: jest.fn(() => { return true; }),
     clear: jest.fn(),
   };
 
-  test('With filter', () => { 
+  test('Should be able to track impressions', () => { 
     
-    const simpleTracker = uniqueKeysTrackerFactory(loggerMock, fakeFilter, 4);
+    const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
     
-    simpleTracker.track('feature1', 'key1');
-    simpleTracker.track('feature1', 'key2');
-    simpleTracker.track('feature2', 'key3');
+    uniqueKeysTracker.track('key1', 'value1');
+    expect(fakeFilter.add).toBeCalledWith('key1','value1');
+    expect(fakeUniqueKeysCache.track).toBeCalledWith('key1','value1');
+    uniqueKeysTracker.track('key1', 'value2');
+    uniqueKeysTracker.track('key2', 'value3');
     fakeFilter.add = jest.fn(() => { return false; });
-    simpleTracker.track('feature1', 'key1');
-    simpleTracker.track('feature2', 'key3');
+    uniqueKeysTracker.track('key1', 'value1');
+    expect(fakeFilter.add).toBeCalledWith('key1','value1');
+    uniqueKeysTracker.track('key2', 'value3');
+    expect(fakeFilter.add).toBeCalledWith('key2','value3');
+    expect(fakeUniqueKeysCache.track).toBeCalledTimes(3);
     
     fakeFilter.add = jest.fn(() => { return true; });
-    simpleTracker.track('feature2', 'key4');
-    
-    expect(loggerMock.warn).toBeCalledWith(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The UniqueKeysTracker size reached the maximum limit`);
+    uniqueKeysTracker.track('key2', 'value4');
+    expect(fakeFilter.add).toBeCalledWith('key2','value4');
+    expect(fakeUniqueKeysCache.track).toBeCalledWith('key2','value4');
     
   });
 });

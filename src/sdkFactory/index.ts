@@ -29,7 +29,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
     filterAdapterFactory } = params;
   const log = settings.log;
-  const impressionsMode = settings.sync.impressionsMode;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -52,6 +51,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
     // ATM, only used by PluggableStorage
     mode: settings.mode,
+    impressionsMode: settings.sync.impressionsMode,
 
     // Callback used to emit SDK_READY in consumer mode, where `syncManagerFactory` is undefined,
     // or partial consumer mode, where it only has submitters, and therefore it doesn't emit readiness events.
@@ -70,9 +70,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage });
 
   const observer = impressionsObserverFactory();
-  const uniqueKeysTracker = impressionsMode === NONE ? uniqueKeysTrackerFactory(log, filterAdapterFactory && filterAdapterFactory()) : undefined;
+  const uniqueKeysTracker = storageFactoryParams.impressionsMode === NONE ? uniqueKeysTrackerFactory(log, storage.uniqueKeys!, filterAdapterFactory && filterAdapterFactory()) : undefined;
   const strategy = (storageFactoryParams.optimize) ? strategyOptimizedFactory(observer, storage.impressionCounts!) :
-    (impressionsMode === NONE) ? strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!) : strategyDebugFactory(observer);
+    (storageFactoryParams.impressionsMode === NONE) ? strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!) : strategyDebugFactory(observer);
 
   const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
