@@ -1,17 +1,22 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { ISet, setToArray, _Set } from '../../utils/lang/sets';
-import { UniqueKeysPayloadSs } from '../../sync/submitters/types';
+import { UniqueKeysPayloadCs } from '../../sync/submitters/types';
 
 const DEFAULT_CACHE_SIZE = 30000;
 
-export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
+export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
 
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
   private uniqueKeysTracker: { [key: string]: ISet<string> };
 
-  constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {
+  /**
+   *
+   * @param impressionsQueueSize number of queued impressions to call onFullQueueCb.
+   * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
+   */
+  constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {   
     this.maxStorage = uniqueKeysQueueSize;
     this.uniqueKeysTracker = {};
   }
@@ -22,14 +27,15 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
   /**
    * Store unique keys in sequential order
-   * key: string = feature name.
-   * value: Set<string> = set of unique keys. 
+   * key: string = key.
+   * value: HashSet<string> = set of split names. 
    */
   track(key: string, featureName: string) {
-    if (!this.uniqueKeysTracker[featureName]) this.uniqueKeysTracker[featureName] = new _Set();
-    const tracker = this.uniqueKeysTracker[featureName];
-    if (!tracker.has(key)) {
-      tracker.add(key);
+    
+    if (!this.uniqueKeysTracker[key]) this.uniqueKeysTracker[key] = new _Set();
+    const tracker = this.uniqueKeysTracker[key];
+    if (!tracker.has(featureName)) {
+      tracker.add(featureName);
       this.uniqueTrackerSize++;
     }
     if (this.uniqueTrackerSize >= this.maxStorage && this.onFullQueue) {
@@ -62,17 +68,17 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
   }
   
   /**
-   * Converts `uniqueKeys` data from cache into request payload for SS.
+   * Converts `uniqueKeys` data from cache into request payload.
    */
-  private fromUniqueKeysCollector(uniqueKeys: { [featureName: string]: ISet<string> }): UniqueKeysPayloadSs {
+  private fromUniqueKeysCollector(uniqueKeys: { [featureName: string]: ISet<string> }): UniqueKeysPayloadCs {
     const payload = [];
-    const featureNames = Object.keys(uniqueKeys);
-    for (let i = 0; i < featureNames.length; i++) {
-      const featureName = featureNames[i];
-      const featureKeys = setToArray(uniqueKeys[featureName]);
+    const featureKeys = Object.keys(uniqueKeys);
+    for (let k = 0; k < featureKeys.length; k++) {
+      const featureKey = featureKeys[k];
+      const featureNames = setToArray(uniqueKeys[featureKey]);
       const uniqueKeysPayload = {
-        f: featureName,
-        ks: featureKeys
+        k: featureKey,
+        fs: featureNames
       };
 
       payload.push(uniqueKeysPayload);

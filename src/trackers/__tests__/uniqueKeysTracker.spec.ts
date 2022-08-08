@@ -8,6 +8,7 @@ describe('Unique keys tracker', () => {
     pop: jest.fn(),
     isEmpty: jest.fn(),
     clear: jest.fn(),
+    setOnFullQueueCb: jest.fn()
   };
   const fakeFilter = {
     add: jest.fn(() => { return true; }),

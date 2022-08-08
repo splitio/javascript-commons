@@ -66,5 +66,5 @@ export interface IStrategyResult {
 }
 
 export interface IStrategy {
-  process(impressions:  ImpressionDTO[], isClientSide?: boolean): IStrategyResult
+  process(impressions:  ImpressionDTO[]): IStrategyResult
 }

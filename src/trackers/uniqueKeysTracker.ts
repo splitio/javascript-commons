@@ -25,12 +25,12 @@ export function uniqueKeysTrackerFactory(
 ): IUniqueKeysTracker {
   
   return {
-    track(key: string, value: string): void {
-      if (!filterAdapter.add(key, value)) {
-        log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The value ${value} and key ${key} exist in the filter`);
+    track(key: string, featureName: string): void {
+      if (!filterAdapter.add(key, featureName)) {
+        log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The feature ${featureName} and key ${key} exist in the filter`);
         return;
       }
-      uniqueKeysCache.track(key, value);
+      uniqueKeysCache.track(key, featureName);
     }
   };
 

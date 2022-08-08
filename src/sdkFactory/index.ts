@@ -43,6 +43,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const storageFactoryParams: IStorageFactoryParams = {
     impressionsQueueSize: settings.scheduler.impressionsQueueSize,
     eventsQueueSize: settings.scheduler.eventsQueueSize,
+    uniqueKeysCacheSize: settings.scheduler.uniqueKeysCacheSize,
     optimize: shouldBeOptimized(settings),
 
     // ATM, only used by InLocalStorage

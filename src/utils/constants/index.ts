@@ -50,6 +50,7 @@ export const CONSUMER_PARTIAL_ENUM = 2;
 
 export const OPTIMIZED_ENUM = 0;
 export const DEBUG_ENUM = 1;
+export const NONE_ENUM = 2;
 
 export const SPLITS = 'sp';
 export const IMPRESSIONS = 'im';

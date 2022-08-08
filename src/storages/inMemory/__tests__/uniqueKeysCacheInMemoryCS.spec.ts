@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { UniqueKeysCacheInMemory } from '../uniqueKeysCacheInMemory';
+import { UniqueKeysCacheInMemoryCS } from '../uniqueKeysCacheInMemoryCS';
 
-test('UNIQUE KEYS CACHE IN MEMORY / should incrementally store values, clear the queue, and tell if it is empty', () => {
-  const c = new UniqueKeysCacheInMemory();
+test('UNIQUE KEYS CACHE IN MEMORY CS / should incrementally store values, clear the queue, and tell if it is empty', () => {
+  const c = new UniqueKeysCacheInMemoryCS();
   
   // queue is initially empty
   expect(c.pop()).toEqual({keys:[]});
@@ -16,19 +16,15 @@ test('UNIQUE KEYS CACHE IN MEMORY / should incrementally store values, clear the
   expect(c.pop()).toEqual({
     keys: [
       {
-        f: 'value1',
-        ks: ['key1']
+        'fs': ['value1','value3'],
+        'k': 'key1',
       },
       {
-        f: 'value2',
-        ks: ['key2']
-      },
-      {
-        f: 'value3',
-        ks: ['key1']
+        'fs': ['value2'],
+        'k': 'key2',
       }
     ]
-  }); // all the items should be stored in sequential order
+  });
   expect(c.isEmpty()).toBe(true);
 
   // should empty the queue
@@ -40,7 +36,7 @@ test('UNIQUE KEYS CACHE IN MEMORY / should incrementally store values, clear the
 
 test('UNIQUE KEYS CACHE IN MEMORY / Should call "onFullQueueCb" when the queue is full.', () => {
   let cbCalled = 0;
-  const cache = new UniqueKeysCacheInMemory(3); // small uniqueKeysCache size to be reached
+  const cache = new UniqueKeysCacheInMemoryCS(3); // small uniqueKeysCache size to be reached
   cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
 
   cache.track('key1', 'value1');
@@ -63,7 +59,7 @@ test('UNIQUE KEYS CACHE IN MEMORY / Should call "onFullQueueCb" when the queue i
 });
 
 test('UNIQUE KEYS CACHE IN MEMORY / Should not throw if the "onFullQueueCb" callback was not provided.', () => {
-  const cache = new UniqueKeysCacheInMemory(3); // small eventsQueueSize to be reached
+  const cache = new UniqueKeysCacheInMemoryCS(3); // small eventsQueueSize to be reached
 
   cache.track('key1', 'value1');
   cache.track('key1', 'value2'); // Cache still not full,
