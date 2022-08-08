@@ -4,7 +4,6 @@
 // Definitions by: Nico Zelaya <https://github.com/NicoZelaya/>
 
 /// <reference types="google.analytics" />
-import { RedisOptions } from 'ioredis';
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -292,362 +291,6 @@ interface ISharedSettings {
    */
   urls?: SplitIO.UrlSettings,
 }
-/**
- * Common settings interface with non-pluggable API (JS SDK).
- * @interface IStaticSettings
- * @extends ISharedSettings
- */
-interface IStaticSettings {
-  /**
-   * Whether the logger should be enabled or disabled by default.
-   * @property {Boolean} debug
-   * @default false
-   */
-  debug?: boolean | LogLevel,
-}
-/**
- * Common settings interface with pluggable API (JS Browser and React Native SDKs).
- * @interface IPluggableSettings
- * @extends ISharedSettings
- */
-interface IPluggableSettings {
-  /**
-   * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
-   * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}
-   *
-   * Examples:
-   * ```typescript
-   * config.debug = true
-   * config.debug = 'WARN'
-   * config.debug = ErrorLogger()
-   * ```
-   * @property {boolean | LogLevel | ILogger} debug
-   * @default false
-   */
-  debug?: boolean | LogLevel | SplitIO.ILogger,
-  /**
-   * Defines an optional list of factory functions used to instantiate SDK integrations.
-   *
-   * Example:
-   * ```typescript
-   * SplitFactory({
-   *   ...
-   *   integrations: [SplitToGoogleAnalytics(), GoogleAnalyticsToSplit()]
-   * })
-   * ```
-   * @property {Object} integrations
-   */
-  integrations?: SplitIO.IntegrationFactory[],
-}
-/**
- * Common settings interface for SDK instances on NodeJS.
- * @interface IServerSideSharedSettings
- * @extends ISharedSettings
- */
-interface IServerSideSharedSettings extends ISharedSettings {
-  /**
-   * SDK Core settings for NodeJS.
-   * @property {Object} core
-   */
-  core: ISharedSettings['core'] & {
-    /**
-     * Disable machine IP and Name from being sent to Split backend.
-     * @property {boolean} IPAddressesEnabled
-     * @default true
-     */
-    IPAddressesEnabled?: boolean
-  },
-  /**
-   * Mocked features file path. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
-   * @property {MockedFeaturesFilePath} features
-   * @default $HOME/.split
-   */
-  features?: SplitIO.MockedFeaturesFilePath,
-  /**
-   * SDK Startup settings for NodeJS.
-   * @property {Object} startup
-   */
-  startup?: {
-    /**
-     * Maximum amount of time used before notify a timeout.
-     * @property {number} readyTimeout
-     * @default 15
-     */
-    readyTimeout?: number,
-    /**
-     * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} requestTimeoutBeforeReady
-     * @default 15
-     */
-    requestTimeoutBeforeReady?: number,
-    /**
-     * How many quick retries we will do while starting up the SDK.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} retriesOnFailureBeforeReady
-     * @default 1
-     */
-    retriesOnFailureBeforeReady?: number,
-    /**
-     * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-     * to better control on browsers. This number defines that window before the first events push.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsFirstPushWindow
-     * @default 0
-     */
-    eventsFirstPushWindow?: number,
-  },
-  /**
-   * SDK scheduler settings.
-   * @property {Object} scheduler
-   */
-  scheduler?: {
-    /**
-     * The SDK polls Split servers for changes to feature roll-out plans. This parameter controls this polling period in seconds.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} featuresRefreshRate
-     * @default 5
-     */
-    featuresRefreshRate?: number,
-    /**
-     * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} segmentsRefreshRate
-     * @default 60
-     */
-    segmentsRefreshRate?: number,
-    /**
-     * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} impressionsRefreshRate
-     * @default 300
-     */
-    impressionsRefreshRate?: number,
-    /**
-     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-     * If you use a 0 here, the queue will have no maximum size.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} impressionsQueueSize
-     * @default 30000
-     */
-    impressionsQueueSize?: number,
-    /**
-     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-     * @property {number} metricsRefreshRate
-     * @default 120
-     * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
-     */
-    metricsRefreshRate?: number,
-    /**
-     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} telemetryRefreshRate
-     * @default 3600
-     */
-    telemetryRefreshRate?: number,
-    /**
-     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsPushRate
-     * @default 60
-     */
-    eventsPushRate?: number,
-    /**
-     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-     * If you use a 0 here, the queue will have no maximum size.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsQueueSize
-     * @default 500
-     */
-    eventsQueueSize?: number,
-    /**
-     * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-     * For more information @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
-     * @property {number} offlineRefreshRate
-     * @default 15
-     */
-    offlineRefreshRate?: number
-    /**
-     * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
-     * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} pushRetryBackoffBase
-     * @default 1
-     */
-    pushRetryBackoffBase?: number,
-  },
-}
-/**
- * Common settings interface for SDK instances created on client-side (Browser & React Native).
- * @interface IClientSideSharedSettings
- * @extends ISharedSettings
- */
-interface IClientSideSharedSettings extends ISharedSettings {
-  /**
-   * SDK Core settings for client-side.
-   * @property {Object} core
-   */
-  core: ISharedSettings['core'] & {
-    /**
-     * Customer identifier. Whatever this means to you. @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
-     * @property {SplitKey} key
-     */
-    key: SplitIO.SplitKey,
-  },
-  /**
-   * Mocked features map. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
-   */
-  features?: SplitIO.MockedFeaturesMap,
-  /**
-   * SDK Startup settings for client-side.
-   * @property {Object} startup
-   */
-  startup?: {
-    /**
-     * Maximum amount of time used before notify a timeout.
-     * @property {number} readyTimeout
-     * @default 1.5
-     */
-    readyTimeout?: number,
-    /**
-     * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} requestTimeoutBeforeReady
-     * @default 1.5
-     */
-    requestTimeoutBeforeReady?: number,
-    /**
-     * How many quick retries we will do while starting up the SDK.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} retriesOnFailureBeforeReady
-     * @default 1
-     */
-    retriesOnFailureBeforeReady?: number,
-    /**
-     * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-     * to better control on browsers. This number defines that window before the first events push.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsFirstPushWindow
-     * @default 10
-     */
-    eventsFirstPushWindow?: number,
-  },
-  /**
-   * SDK scheduler settings.
-   * @property {Object} scheduler
-   */
-  scheduler?: {
-    /**
-     * The SDK polls Split servers for changes to feature roll-out plans. This parameter controls this polling period in seconds.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} featuresRefreshRate
-     * @default 30
-     */
-    featuresRefreshRate?: number,
-    /**
-     * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} segmentsRefreshRate
-     * @default 60
-     */
-    segmentsRefreshRate?: number,
-    /**
-     * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} impressionsRefreshRate
-     * @default 60
-     */
-    impressionsRefreshRate?: number,
-    /**
-     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-     * If you use a 0 here, the queue will have no maximum size.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} impressionsQueueSize
-     * @default 30000
-     */
-    impressionsQueueSize?: number,
-    /**
-     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-     * @property {number} metricsRefreshRate
-     * @default 120
-     * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
-     */
-    metricsRefreshRate?: number,
-    /**
-     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} telemetryRefreshRate
-     * @default 3600
-     */
-    telemetryRefreshRate?: number,
-    /**
-     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsPushRate
-     * @default 60
-     */
-    eventsPushRate?: number,
-    /**
-     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-     * If you use a 0 here, the queue will have no maximum size.
-     *
-     * NOTE: this param is ignored in "consumer" mode.
-     * @property {number} eventsQueueSize
-     * @default 500
-     */
-    eventsQueueSize?: number,
-    /**
-     * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-     * For more information @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
-     * @property {number} offlineRefreshRate
-     * @default 15
-     */
-    offlineRefreshRate?: number,
-    /**
-     * When using streaming, seconds to wait before re attempting to connect for push notifications.
-     * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-     *
-     * NOTE: this param is applicable in "standalone" mode.
-     * @property {number} pushRetryBackoffBase
-     * @default 1
-     */
-    pushRetryBackoffBase?: number,
-  }
-  /**
-   * User consent status. Possible values are `'GRANTED'`, which is the default, `'DECLINED'` or `'UNKNOWN'`.
-   * - `'GRANTED'`: the user grants consent for tracking events and impressions. The SDK sends them to Split cloud.
-   * - `'DECLINED'`: the user declines consent for tracking events and impressions. The SDK does not send them to Split cloud.
-   * - `'UNKNOWN'`: the user neither grants nor declines consent for tracking events and impressions. The SDK tracks them in its internal storage, and eventually either sends
-   * them or not if the consent status is updated to 'GRANTED' or 'DECLINED' respectively. The status can be updated at any time with the `UserConsent.setStatus` factory method.
-   *
-   * @typedef {string} userConsent
-   * @default 'GRANTED'
-   */
-  userConsent?: SplitIO.ConsentStatus
-}
 // @TODO Should extends IEventEmitter for React Native and JS Browser SDK
 /**
  * Common API for entities that expose status handlers.
@@ -693,45 +336,6 @@ interface IBasicClient extends IStatusInterface {
    * @returns {Promise<void>}
    */
   destroy(): Promise<void>
-}
-/**
- * Common definitions between SDK instances for different environments interface.
- * @interface IBasicSDK
- */
-interface IBasicSDK<TClient, TManager> {
-  /**
-   * Returns the default client instance of the SDK.
-   * @function client
-   * @returns {IClient} The client instance.
-   */
-  client(): TClient,
-  /**
-   * Returns a manager instance of the SDK to explore available information.
-   * @function manager
-   * @returns {IManager} The manager instance.
-   */
-  manager(): TManager
-  /**
-   * Current settings of the SDK instance.
-   * @property settings
-   */
-  settings: ISettings,
-  /**
-   * Logger API.
-   * @property Logger
-   */
-  Logger: ILoggerAPI
-}
-/**
- * Common interface between client-side SDK instances.
- * @interface ISDKCs
- */
-interface ISDKWithUserConsent<TClient, TManager> extends IBasicSDK<TClient, TManager> {
-  /**
-   * User consent API.
-   * @property UserConsent
-   */
-  UserConsent: IUserConsentAPI
 }
 /****** Exposed namespace ******/
 /**
@@ -1278,349 +882,407 @@ declare namespace SplitIO {
   interface ILogger {
     setLogLevel(logLevel: LogLevel): void
   }
-  // @TODO IBrowserSettings (among others) should be defined in JS SDK to avoid type collision with JS Browser SDK
   /**
-   * Settings interface for SDK instances created on the browser
-   * @interface IBrowserSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#configuration}
+   * Common settings interface with non-pluggable API (JS SDK).
+   * @interface IStaticSettings
+   * @extends ISharedSettings
    */
-  interface IBrowserSettings extends IClientSideSharedSettings, IStaticSettings {
+  interface IStaticSettings {
     /**
-     * SDK Core settings for the browser.
-     * @property {Object} core
+     * Whether the logger should be enabled or disabled by default.
+     * @property {Boolean} debug
+     * @default false
      */
-    core: IClientSideSharedSettings['core'] & {
-      /**
-       * Traffic type associated with the customer identifier. @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
-       * If no provided as a setting it will be required on the client.track() calls.
-       * @property {string} trafficType
-       */
-      trafficType?: string,
-    },
+    debug?: boolean | LogLevel,
+  }
+  /**
+   * Common settings interface with pluggable API (JS Browser and React Native SDKs).
+   * @interface IPluggableSettings
+   * @extends ISharedSettings
+   */
+  interface IPluggableSettings {
     /**
-     * The SDK mode. When using the default in memory storage or `LOCALSTORAGE` as storage, the only possible value is "standalone", which is the default.
-     * For "localhost" mode, use "localhost" as authorizationKey.
+     * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
+     * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
+     * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}
      *
-     * @property {'standalone'} mode
-     * @default standalone
+     * Examples:
+     * ```typescript
+     * config.debug = true
+     * config.debug = 'WARN'
+     * config.debug = ErrorLogger()
+     * ```
+     * @property {boolean | LogLevel | ILogger} debug
+     * @default false
      */
-    mode?: 'standalone',
+    debug?: boolean | LogLevel | SplitIO.ILogger,
     /**
-     * Defines which kind of storage we can instantiate on the browser.
-     * Possible storage types are 'MEMORY', which is the default, and 'LOCALSTORAGE'.
-     * @property {Object} storage
-     */
-    storage?: {
-      /**
-       * Storage type to be instantiated by the SDK.
-       * @property {BrowserStorage} type
-       * @default MEMORY
-       */
-      type?: BrowserStorage,
-      /**
-       * Optional prefix to prevent any kind of data collision between SDK versions.
-       * @property {string} prefix
-       * @default SPLITIO
-       */
-      prefix?: string
-    },
-    /**
-     * SDK integration settings for the browser.
+     * Defines an optional list of factory functions used to instantiate SDK integrations.
+     *
+     * Example:
+     * ```typescript
+     * SplitFactory({
+     *   ...
+     *   integrations: [SplitToGoogleAnalytics(), GoogleAnalyticsToSplit()]
+     * })
+     * ```
      * @property {Object} integrations
      */
-    integrations?: BrowserIntegration[],
+    integrations?: SplitIO.IntegrationFactory[],
   }
   /**
-   * Settings interface for SDK instances created on the browser in standalone or localhost mode, where client method calls are synchronous.
-   * @interface IClientSideSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
+   * Common settings interface for SDK instances on NodeJS.
+   * @interface IServerSideSharedSettings
+   * @extends ISharedSettings
    */
-  interface IClientSideSettings extends IClientSideSharedSettings, IPluggableSettings {
+  interface IServerSideSharedSettings extends ISharedSettings {
     /**
-     * The SDK mode. When using the default in memory storage or `InLocalStorage` as storage, the only possible value is "standalone", which is the default.
-     * For "localhost" mode, use "localhost" as authorizationKey.
-     *
-     * @property {'standalone'} mode
-     * @default standalone
+     * SDK Core settings for NodeJS.
+     * @property {Object} core
      */
-    mode?: 'standalone',
-    sync?: IClientSideSharedSettings['sync'] & {
+    core: ISharedSettings['core'] & {
       /**
-       * Defines the factory function to instantiate the SDK in localhost mode.
-       *
-       * NOTE: this is only required if using the slim entry point of the library to init the SDK in localhost mode.
-       *
-       * For more information @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#localhost-mode}
-       *
-       * Example:
-       * ```typescript
-       * SplitFactory({
-       *   ...
-       *   sync: {
-       *     localhostMode: LocalhostFromObject()
-       *   }
-       * })
-       * ```
-       * @property {Object} localhostMode
+       * Disable machine IP and Name from being sent to Split backend.
+       * @property {boolean} IPAddressesEnabled
+       * @default true
        */
-      localhostMode?: SplitIO.LocalhostFactory
+      IPAddressesEnabled?: boolean
     },
     /**
-     * Defines the factory function to instantiate the storage. If not provided, the default IN MEMORY storage is used.
-     *
-     * Example:
-     * ```typescript
-     * SplitFactory({
-     *   ...
-     *   storage: InLocalStorage()
-     * })
-     * ```
-     * @property {Object} storage
+     * Mocked features file path. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
+     * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+     * @property {MockedFeaturesFilePath} features
+     * @default $HOME/.split
      */
-    storage?: SplitIO.StorageSyncFactory,
-  }
-  /**
-   * Settings interface with async storage for SDK instances created on the browser.
-   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.IBrowserSettings instead.
-   * @interface IClientSideAsyncSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
-   */
-  interface IClientSideAsyncSettings extends IClientSideSharedSettings, IPluggableSettings {
+    features?: SplitIO.MockedFeaturesFilePath,
     /**
-     * The SDK mode. When using `PluggableStorage` as storage, the possible values are "consumer" and "consumer_partial".
-     *
-     * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#sharing-state-with-a-pluggable-storage}
-     *
-     * @property {'consumer' | 'consumer_partial'} mode
+     * SDK Startup settings for NodeJS.
+     * @property {Object} startup
      */
-    mode: 'consumer' | 'consumer_partial',
-    /**
-     * Defines the factory function to instantiate the storage.
-     *
-     * Example:
-     * ```typescript
-     * SplitFactory({
-     *   ...
-     *   storage: PluggableStorage({ wrapper: SomeWrapper })
-     * })
-     * ```
-     * @property {Object} storage
-     */
-    storage: StorageAsyncFactory,
-  }
-  /**
-   * Settings interface for SDK instances created on NodeJS.
-   * If your storage is asynchronous (Redis for example) use SplitIO.INodeAsyncSettings instead.
-   * @interface INodeSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
-   */
-  interface INodeSettings extends IServerSideSharedSettings, IStaticSettings {
-    /**
-     * The SDK mode. When using the default 'MEMORY' storage, the only possible value is "standalone", which is the default.
-     * For "localhost" mode, use "localhost" as authorizationKey.
-     *
-     * @property {'standalone'} mode
-     * @default standalone
-     */
-    mode?: 'standalone',
-    /**
-     * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
-     * The only possible storage type is 'MEMORY', which is the default.
-     * @property {Object} storage
-     */
-    storage?: {
+    startup?: {
       /**
-       * Synchronous storage type to be instantiated by the SDK.
-       * @property {NodeSyncStorage} type
-       * @default MEMORY
+       * Maximum amount of time used before notify a timeout.
+       * @property {number} readyTimeout
+       * @default 15
        */
-      type?: NodeSyncStorage,
+      readyTimeout?: number,
       /**
-       * Optional prefix to prevent any kind of data collision between SDK versions.
-       * @property {string} prefix
-       * @default SPLITIO
+       * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} requestTimeoutBeforeReady
+       * @default 15
        */
-      prefix?: string
+      requestTimeoutBeforeReady?: number,
+      /**
+       * How many quick retries we will do while starting up the SDK.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} retriesOnFailureBeforeReady
+       * @default 1
+       */
+      retriesOnFailureBeforeReady?: number,
+      /**
+       * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
+       * to better control on browsers. This number defines that window before the first events push.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsFirstPushWindow
+       * @default 0
+       */
+      eventsFirstPushWindow?: number,
     },
-  }
-  // @TODO INodeAsyncSettings should be defined in JS SDK to remove "@types/ioredis" from required dependencies in JS-commons
-  /**
-   * Settings interface with async storage for SDK instances created on NodeJS.
-   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.INodeSettings instead.
-   * @interface INodeAsyncSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
-   */
-  interface INodeAsyncSettings extends IServerSideSharedSettings, IStaticSettings {
     /**
-     * The SDK mode. When using 'REDIS' storage type, the only possible value is "consumer", which is required.
-     *
-     * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#state-sharing-redis-integration}
-     *
-     * @property {'consumer'} mode
+     * SDK scheduler settings.
+     * @property {Object} scheduler
      */
-    mode: 'consumer'
-    /**
-     * Defines which kind of async storage we can instantiate on NodeJS for 'consumer' mode.
-     * The only possible storage type is 'REDIS'.
-     * @property {Object} storage
-     */
-    storage: {
+    scheduler?: {
       /**
-       * 'REDIS' storage type to be instantiated by the SDK.
-       * @property {NodeAsyncStorage} type
+       * The SDK polls Split servers for changes to feature roll-out plans. This parameter controls this polling period in seconds.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} featuresRefreshRate
+       * @default 5
        */
-      type: NodeAsyncStorage,
+      featuresRefreshRate?: number,
       /**
-       * Options to be passed to the Redis storage. Use it with storage type: 'REDIS'.
-       * @property {Object} options
+       * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} segmentsRefreshRate
+       * @default 60
        */
-      options?: {
-        /**
-         * Redis URL. If set, `host`, `port`, `db` and `pass` params will be ignored.
-         *
-         * Examples:
-         * ```
-         *   url: 'localhost'
-         *   url: '127.0.0.1:6379'
-         *   url: 'redis://:authpassword@127.0.0.1:6379/0'
-         * ```
-         * @property {string=} url
-         */
-        url?: string,
-        /**
-         * Redis host.
-         * @property {string=} host
-         * @default 'localhost'
-         */
-        host?: string,
-        /**
-         * Redis port.
-         * @property {number=} port
-         * @default 6379
-         */
-        port?: number,
-        /**
-         * Redis database to be used.
-         * @property {number=} db
-         * @default 0
-         */
-        db?: number,
-        /**
-         * Redis password. Don't define if no password is used.
-         * @property {string=} pass
-         * @default undefined
-         */
-        pass?: string,
-        /**
-         * The milliseconds before a timeout occurs during the initial connection to the Redis server.
-         * @property {number=} connectionTimeout
-         * @default 10000
-         */
-        connectionTimeout?: number,
-        /**
-         * The milliseconds before Redis commands are timeout by the SDK.
-         * Method calls that involve Redis commands, like `client.getTreatment` or `client.track` calls, are resolved when the commands success or timeout.
-         * @property {number=} operationTimeout
-         * @default 5000
-         */
-        operationTimeout?: number,
-        /**
-         * TLS configuration for Redis connection.
-         * @see {@link https://www.npmjs.com/package/ioredis#tls-options }
-         *
-         * @property {Object=} tls
-         * @default undefined
-         */
-        tls?: RedisOptions['tls'],
-      },
+      segmentsRefreshRate?: number,
       /**
-       * Optional prefix to prevent any kind of data collision between SDK versions.
-       * @property {string} prefix
-       * @default SPLITIO
+       * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} impressionsRefreshRate
+       * @default 300
        */
-      prefix?: string
+      impressionsRefreshRate?: number,
+      /**
+       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} impressionsQueueSize
+       * @default 30000
+       */
+      impressionsQueueSize?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       * @property {number} metricsRefreshRate
+       * @default 120
+       * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
+       */
+      metricsRefreshRate?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} telemetryRefreshRate
+       * @default 3600
+       */
+      telemetryRefreshRate?: number,
+      /**
+       * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsPushRate
+       * @default 60
+       */
+      eventsPushRate?: number,
+      /**
+       * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsQueueSize
+       * @default 500
+       */
+      eventsQueueSize?: number,
+      /**
+       * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
+       * For more information @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+       * @property {number} offlineRefreshRate
+       * @default 15
+       */
+      offlineRefreshRate?: number
+      /**
+       * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
+       * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} pushRetryBackoffBase
+       * @default 1
+       */
+      pushRetryBackoffBase?: number,
     },
   }
   /**
-   * This represents the interface for the SDK instance with synchronous method calls and server-side API, where we don't have only one key.
-   * @interface ISDK
-   * @extends IBasicSDK
+   * Common settings interface for SDK instances created on client-side (Browser & React Native).
+   * @interface IClientSideSharedSettings
+   * @extends ISharedSettings
    */
-  interface ISDK extends IBasicSDK<IClient, IManager> { }
-  /**
-   * This represents the interface for the SDK instance with asynchronous method calls and server-side API, where we don't have only one key.
-   * @interface IAsyncSDK
-   * @extends IBasicSDK
-   */
-  interface IAsyncSDK extends IBasicSDK<IAsyncClient, IAsyncManager> { }
-  /**
-   * This represents the interface for the SDK instance with synchronous method calls and client-side API, where client instances have a bound user key.
-   * @interface IClientSideSDK
-   * @extends ISDKWithUserConsent
-   */
-  interface IClientSideSDK extends ISDKWithUserConsent<IClientWithKey, IManager> {
+  interface IClientSideSharedSettings extends ISharedSettings {
     /**
-     * Returns the default client instance of the SDK, associated with the key provided on settings.
-     * @function client
-     * @returns {IClient} The client instance.
+     * SDK Core settings for client-side.
+     * @property {Object} core
      */
-    client(): IClientWithKey,
+    core: ISharedSettings['core'] & {
+      /**
+       * Customer identifier. Whatever this means to you. @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+       * @property {SplitKey} key
+       */
+      key: SplitIO.SplitKey,
+    },
     /**
-     * Returns a shared client of the SDK, associated with the given key.
-     * @function client
-     * @param {SplitKey} key The key for the new client instance.
-     * @returns {IClient} The client instance.
+     * Mocked features map. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
+     * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
      */
-    client(key: SplitKey): IClientWithKey,
+    features?: SplitIO.MockedFeaturesMap,
+    /**
+     * SDK Startup settings for client-side.
+     * @property {Object} startup
+     */
+    startup?: {
+      /**
+       * Maximum amount of time used before notify a timeout.
+       * @property {number} readyTimeout
+       * @default 1.5
+       */
+      readyTimeout?: number,
+      /**
+       * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} requestTimeoutBeforeReady
+       * @default 1.5
+       */
+      requestTimeoutBeforeReady?: number,
+      /**
+       * How many quick retries we will do while starting up the SDK.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} retriesOnFailureBeforeReady
+       * @default 1
+       */
+      retriesOnFailureBeforeReady?: number,
+      /**
+       * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
+       * to better control on browsers. This number defines that window before the first events push.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsFirstPushWindow
+       * @default 10
+       */
+      eventsFirstPushWindow?: number,
+    },
+    /**
+     * SDK scheduler settings.
+     * @property {Object} scheduler
+     */
+    scheduler?: {
+      /**
+       * The SDK polls Split servers for changes to feature roll-out plans. This parameter controls this polling period in seconds.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} featuresRefreshRate
+       * @default 30
+       */
+      featuresRefreshRate?: number,
+      /**
+       * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} segmentsRefreshRate
+       * @default 60
+       */
+      segmentsRefreshRate?: number,
+      /**
+       * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} impressionsRefreshRate
+       * @default 60
+       */
+      impressionsRefreshRate?: number,
+      /**
+       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} impressionsQueueSize
+       * @default 30000
+       */
+      impressionsQueueSize?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       * @property {number} metricsRefreshRate
+       * @default 120
+       * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
+       */
+      metricsRefreshRate?: number,
+      /**
+       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} telemetryRefreshRate
+       * @default 3600
+       */
+      telemetryRefreshRate?: number,
+      /**
+       * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsPushRate
+       * @default 60
+       */
+      eventsPushRate?: number,
+      /**
+       * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+       * If you use a 0 here, the queue will have no maximum size.
+       *
+       * NOTE: this param is ignored in "consumer" mode.
+       * @property {number} eventsQueueSize
+       * @default 500
+       */
+      eventsQueueSize?: number,
+      /**
+       * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
+       * For more information @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
+       * @property {number} offlineRefreshRate
+       * @default 15
+       */
+      offlineRefreshRate?: number,
+      /**
+       * When using streaming, seconds to wait before re attempting to connect for push notifications.
+       * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
+       *
+       * NOTE: this param is applicable in "standalone" mode.
+       * @property {number} pushRetryBackoffBase
+       * @default 1
+       */
+      pushRetryBackoffBase?: number,
+    }
+    /**
+     * User consent status. Possible values are `'GRANTED'`, which is the default, `'DECLINED'` or `'UNKNOWN'`.
+     * - `'GRANTED'`: the user grants consent for tracking events and impressions. The SDK sends them to Split cloud.
+     * - `'DECLINED'`: the user declines consent for tracking events and impressions. The SDK does not send them to Split cloud.
+     * - `'UNKNOWN'`: the user neither grants nor declines consent for tracking events and impressions. The SDK tracks them in its internal storage, and eventually either sends
+     * them or not if the consent status is updated to 'GRANTED' or 'DECLINED' respectively. The status can be updated at any time with the `UserConsent.setStatus` factory method.
+     *
+     * @typedef {string} userConsent
+     * @default 'GRANTED'
+     */
+    userConsent?: SplitIO.ConsentStatus
   }
-  // @TODO rename to IBrowserSDKLegacy
   /**
-   * This represents the interface for the SDK instance with synchronous method calls and client-side API, where client instances have a key associated and optionally a traffic type.
-   * @interface IBrowserSDK
-   * @extends ISDKWithUserConsent
+   * Common definitions between SDK instances for different environments interface.
+   * @interface IBasicSDK
    */
-  interface IBrowserSDK extends ISDKWithUserConsent<IBrowserClient, IManager> {
+  interface IBasicSDK<TClient, TManager> {
     /**
-     * Returns the default client instance of the SDK, associated with the key and optional traffic type provided on settings.
+     * Returns the default client instance of the SDK.
      * @function client
      * @returns {IClient} The client instance.
      */
-    client(): IBrowserClient,
+    client(): TClient,
     /**
-     * Returns a shared client of the SDK, associated with the given key and optional traffic type.
-     * @function client
-     * @param {SplitKey} key The key for the new client instance.
-     * @param {string=} trafficType The traffic type of the provided key.
-     * @returns {IClientWithKeyLegacy} The client instance.
+     * Returns a manager instance of the SDK to explore available information.
+     * @function manager
+     * @returns {IManager} The manager instance.
      */
-    client(key: SplitKey, trafficType?: string): IBrowserClient,
+    manager(): TManager
+    /**
+     * Current settings of the SDK instance.
+     * @property settings
+     */
+    settings: ISettings,
+    /**
+     * Logger API.
+     * @property Logger
+     */
+    Logger: ILoggerAPI
   }
   /**
-   * This represents the interface for the SDK instance with asynchronous method calls and client-side API, where client instances have a bound user key.
-   * @interface IClientSideAsyncSDK
-   * @extends ISDKWithUserConsent
+   * Common interface between client-side SDK instances.
+   * @interface ISDKCs
    */
-  interface IClientSideAsyncSDK extends ISDKWithUserConsent<IAsyncClientWithKey, IAsyncManager> {
+  interface ISDKWithUserConsent<TClient, TManager> extends IBasicSDK<TClient, TManager> {
     /**
-     * Returns the default client instance of the SDK, associated with the key provided on settings.
-     * @function client
-     * @returns {IAsyncClientWithKey} The asynchronous client instance.
+     * User consent API.
+     * @property UserConsent
      */
-    client(): IAsyncClientWithKey,
-    /**
-     * Returns a shared client of the SDK, associated with the given key.
-     * @function client
-     * @param {SplitKey} key The key for the new client instance.
-     * @returns {IAsyncClientWithKey} The asynchronous client instance.
-     */
-    client(key: SplitKey): IAsyncClientWithKey,
+    UserConsent: IUserConsentAPI
   }
   /**
    * This represents the interface for the Client instance with synchronous method calls and server-side API, where we don't have only one key.
    * @interface IClient
    * @extends IBasicClient
    */
-  interface IClient extends IBasicClient {
+  interface IClientSS extends IBasicClient {
     /**
      * Returns a Treatment value, which is the treatment string for the given feature.
      * @function getTreatment
@@ -1675,7 +1337,7 @@ declare namespace SplitIO {
    * @interface IAsyncClient
    * @extends IBasicClient
    */
-  interface IAsyncClient extends IBasicClient {
+  interface IAsyncClienSS extends IBasicClient {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      * For usage on NodeJS as we don't have only one key.
@@ -1827,13 +1489,12 @@ declare namespace SplitIO {
      */
     track(trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
   }
-  // @TODO rename to IClientWithKeyLegacy
   /**
    * This represents the interface for the Client instance with attributes binding, synchronous method calls, and client-side API, where each client has a key associated and optionally a traffic type.
-   * @interface IBrowserClient
+   * @interface IClientWithKeyLegacy
    * @extends IClientWithKey
    */
-  interface IBrowserClient extends IClientWithKey {
+  interface IClientWithKeyLegacy extends IClientWithKey {
     /**
      * Tracks an event to be fed to the results product on Split Webconsole.
      * @function track
