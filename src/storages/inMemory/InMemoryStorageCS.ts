@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './uniqueKeysCacheInMemoryCS';
 
@@ -19,7 +19,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     splits: new SplitsCacheInMemory(),
     segments: new MySegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
-    impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
+    impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
     telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
     uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS(params.uniqueKeysCacheSize) : undefined,

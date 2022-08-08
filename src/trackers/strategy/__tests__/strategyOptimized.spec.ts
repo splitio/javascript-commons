@@ -2,7 +2,7 @@ import { impressionObserverSSFactory } from '../../impressionObserver/impression
 import { impressionObserverCSFactory } from '../../impressionObserver/impressionObserverCS';
 import { strategyOptimizedFactory } from '../strategyOptimized';
 import { ImpressionCountsCacheInMemory } from '../../../storages/inMemory/ImpressionCountsCacheInMemory';
-import { impression1, impression2, processStrategy } from './testUtils';
+import { impression1, impression2 } from './testUtils';
 
 test('strategyOptimized', () => {
   
@@ -17,7 +17,7 @@ test('strategyOptimized', () => {
   
   const strategyOptimizedSS = strategyOptimizedFactory(impressionObserverSSFactory(), impressionCountsCache);
   
-  let { impressionsToStore, impressionsToListener, deduped } = processStrategy(strategyOptimizedSS, impressions);
+  let { impressionsToStore, impressionsToListener, deduped } = strategyOptimizedSS.process(impressions);
 
   expect(impressionsToStore).toStrictEqual([augmentedImp1, augmentedImp2]);
   expect(impressionsToListener).toStrictEqual(augmentedImpressions);
@@ -25,7 +25,7 @@ test('strategyOptimized', () => {
   
   const strategyOptimizedCS = strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache);
   
-  ({ impressionsToStore, impressionsToListener, deduped } = processStrategy(strategyOptimizedCS, impressions));
+  ({ impressionsToStore, impressionsToListener, deduped } = strategyOptimizedCS.process(impressions));
   
   expect(impressionsToStore).toStrictEqual([augmentedImp1, augmentedImp2]);
   expect(impressionsToListener).toStrictEqual(augmentedImpressions);

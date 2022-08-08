@@ -1,5 +1,4 @@
 import { ImpressionDTO } from '../../../types';
-import { IStrategy } from '../../types';
 
 export const impression1 = {
   feature: 'qc_team',
@@ -17,7 +16,3 @@ export const impression2 = {
   bucketingKey: 'impr_bucketing_2',
   label: 'default rule'
 } as ImpressionDTO;
-
-export function processStrategy(strategy: IStrategy, impressions: ImpressionDTO[]) {  
-  return strategy.process(impressions);
-}

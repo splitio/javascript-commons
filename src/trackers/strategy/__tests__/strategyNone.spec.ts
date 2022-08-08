@@ -2,7 +2,7 @@ import { ImpressionCountsCacheInMemory } from '../../../storages/inMemory/Impres
 import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/uniqueKeysCacheInMemory';
 import { strategyNoneFactory } from '../strategyNone';
 import { uniqueKeysTrackerFactory } from '../../uniqueKeysTracker';
-import { impression1, impression2, processStrategy } from './testUtils';
+import { impression1, impression2 } from './testUtils';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/uniqueKeysCacheInMemoryCS';
 
@@ -32,7 +32,7 @@ test('strategyNone - Client side', () => {
     impressionsToStore: impressionsToStoreCs, 
     impressionsToListener: impressionsToListenerCs, 
     deduped: dedupedCs 
-  } = processStrategy(strategyNone, impressions);
+  } = strategyNone.process(impressions);
   
   expect(uniqueKeysCacheCS.pop()).toStrictEqual({
     keys: [
@@ -71,7 +71,7 @@ test('strategyNone - Server side', () => {
     impressionsToStore: impressionsToStoreSs, 
     impressionsToListener: impressionsToListenerSs, 
     deduped: dedupedSs 
-  } = processStrategy(strategyNone, impressions);
+  } = strategyNone.process(impressions);
   
   expect(uniqueKeysCache.pop()).toStrictEqual({
     keys: [

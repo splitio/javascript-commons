@@ -9,7 +9,7 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
-  private uniqueKeysTracker: { [key: string]: ISet<string> };
+  private uniqueKeysTracker: { [featureName: string]: ISet<string> };
 
   constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
