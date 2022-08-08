@@ -1,7 +1,7 @@
 import { impressionObserverSSFactory } from '../../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../../impressionObserver/impressionObserverCS';
 import { strategyDebugFactory } from '../strategyDebug';
-import { impression1, impression2, processStrategy } from './testUtils';
+import { impression1, impression2 } from './testUtils';
 
 test('strategyDebug', () => {
   
@@ -14,7 +14,7 @@ test('strategyDebug', () => {
   
   const strategyDebugSS = strategyDebugFactory(impressionObserverSSFactory());
   
-  let { impressionsToStore, impressionsToListener, deduped } = processStrategy(strategyDebugSS, impressions);
+  let { impressionsToStore, impressionsToListener, deduped } = strategyDebugSS.process(impressions);
   
   expect(impressionsToStore).toStrictEqual(augmentedImpressions);
   expect(impressionsToListener).toStrictEqual(augmentedImpressions);
@@ -22,7 +22,7 @@ test('strategyDebug', () => {
   
   const strategyDebugCS = strategyDebugFactory(impressionObserverCSFactory());
   
-  ({ impressionsToStore, impressionsToListener, deduped } = processStrategy(strategyDebugCS, impressions));
+  ({ impressionsToStore, impressionsToListener, deduped } = strategyDebugCS.process(impressions));
   
   expect(impressionsToStore).toStrictEqual(augmentedImpressions);
   expect(impressionsToListener).toStrictEqual(augmentedImpressions);

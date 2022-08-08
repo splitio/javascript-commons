@@ -4,8 +4,9 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
+import { UniqueKeysCacheInMemoryCS } from './uniqueKeysCacheInMemoryCS';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -18,9 +19,11 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     splits: new SplitsCacheInMemory(),
     segments: new MySegmentsCacheInMemory(),
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
-    impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
+    impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
     telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
+    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS(params.uniqueKeysCacheSize) : undefined,
+    
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
@@ -29,6 +32,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
+      this.uniqueKeys?.clear();
     },
 
     // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)

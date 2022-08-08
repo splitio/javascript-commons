@@ -1,7 +1,7 @@
 import { ISegmentsCacheSync, ISplitsCacheSync, ITelemetryCacheSync } from '../../storages/types';
 import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
-import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
+import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, NONE, DEBUG_ENUM, OPTIMIZED_ENUM, NONE_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
 import { ConsentStatus, ISettings, SDKMode } from '../../types';
 import { base } from '../../utils/settingsValidation';
@@ -52,8 +52,9 @@ const OPERATION_MODE_MAP = {
 
 const IMPRESSIONS_MODE_MAP = {
   [OPTIMIZED]: OPTIMIZED_ENUM,
-  [DEBUG]: DEBUG_ENUM
-} as Record<ISettings['sync']['impressionsMode'], (0 | 1)>;
+  [DEBUG]: DEBUG_ENUM,
+  [NONE]: NONE_ENUM
+} as Record<ISettings['sync']['impressionsMode'], (0 | 1 | 2)>;
 
 const USER_CONSENT_MAP = {
   [CONSENT_UNKNOWN]: 1,

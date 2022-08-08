@@ -21,7 +21,7 @@ export function strategyNoneFactory(
         // Increments impression counter per featureName
         impressionsCounter.track(impression.feature, now, 1);
         // Keep track by unique key
-        uniqueKeysTracker.track(impression.feature, impression.keyName);
+        uniqueKeysTracker.track(impression.keyName, impression.feature);
       });
       
       return {

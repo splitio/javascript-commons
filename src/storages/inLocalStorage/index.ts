@@ -12,8 +12,9 @@ import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { LOCALHOST_MODE, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
+import { UniqueKeysCacheInMemoryCS } from '../inMemory/uniqueKeysCacheInMemoryCS';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -45,6 +46,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(params.eventsQueueSize),
       telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
+      uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
       destroy() {
         this.splits = new SplitsCacheInMemory();
@@ -52,6 +54,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
         this.impressions.clear();
         this.impressionCounts && this.impressionCounts.clear();
         this.events.clear();
+        this.uniqueKeys?.clear();
       },
 
       // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).

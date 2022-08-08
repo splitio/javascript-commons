@@ -30,7 +30,6 @@ export function impressionsTrackerFactory(
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsCount = impressions.length;
-
       const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
       
       const impressionsToListenerCount = impressionsToListener.length;
