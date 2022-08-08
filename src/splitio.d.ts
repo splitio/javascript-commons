@@ -698,7 +698,19 @@ interface IBasicClient extends IStatusInterface {
  * Common definitions between SDK instances for different environments interface.
  * @interface IBasicSDK
  */
-interface IBasicSDK {
+interface IBasicSDK<TClient, TManager> {
+  /**
+   * Returns the default client instance of the SDK.
+   * @function client
+   * @returns {IClient} The client instance.
+   */
+  client(): TClient,
+  /**
+   * Returns a manager instance of the SDK to explore available information.
+   * @function manager
+   * @returns {IManager} The manager instance.
+   */
+  manager(): TManager
   /**
    * Current settings of the SDK instance.
    * @property settings
@@ -714,7 +726,7 @@ interface IBasicSDK {
  * Common interface between client-side SDK instances.
  * @interface ISDKCs
  */
-interface ISDKWithUserConsent extends IBasicSDK {
+interface ISDKWithUserConsent<TClient, TManager> extends IBasicSDK<TClient, TManager> {
   /**
    * User consent API.
    * @property UserConsent
@@ -1530,49 +1542,23 @@ declare namespace SplitIO {
     },
   }
   /**
-   * This represents the interface for the SDK instance with synchronous method calls and for server-sid API, where we don't have only one key.
+   * This represents the interface for the SDK instance with synchronous method calls and server-side API, where we don't have only one key.
    * @interface ISDK
    * @extends IBasicSDK
    */
-  interface ISDK extends IBasicSDK {
-    /**
-     * Returns the default client instance of the SDK.
-     * @function client
-     * @returns {IClient} The client instance.
-     */
-    client(): IClient,
-    /**
-     * Returns a manager instance of the SDK to explore available information.
-     * @function manager
-     * @returns {IManager} The manager instance.
-     */
-    manager(): IManager
-  }
+  interface ISDK extends IBasicSDK<IClient, IManager> { }
   /**
    * This represents the interface for the SDK instance with asynchronous method calls and server-side API, where we don't have only one key.
    * @interface IAsyncSDK
    * @extends IBasicSDK
    */
-  interface IAsyncSDK extends IBasicSDK {
-    /**
-     * Returns the default client instance of the SDK.
-     * @function client
-     * @returns {IAsyncClient} The asynchronous client instance.
-     */
-    client(): IAsyncClient,
-    /**
-     * Returns a manager instance of the SDK to explore available information.
-     * @function manager
-     * @returns {IManager} The manager instance.
-     */
-    manager(): IAsyncManager
-  }
+  interface IAsyncSDK extends IBasicSDK<IAsyncClient, IAsyncManager> { }
   /**
    * This represents the interface for the SDK instance with synchronous method calls and client-side API, where client instances have a bound user key.
    * @interface IClientSideSDK
    * @extends ISDKWithUserConsent
    */
-  interface IClientSideSDK extends ISDKWithUserConsent {
+  interface IClientSideSDK extends ISDKWithUserConsent<IClientWithKey, IManager> {
     /**
      * Returns the default client instance of the SDK, associated with the key provided on settings.
      * @function client
@@ -1586,12 +1572,6 @@ declare namespace SplitIO {
      * @returns {IClient} The client instance.
      */
     client(key: SplitKey): IClientWithKey,
-    /**
-     * Returns a manager instance of the SDK to explore available information.
-     * @function manager
-     * @returns {IManager} The manager instance.
-     */
-    manager(): IManager
   }
   // @TODO rename to IBrowserSDKLegacy
   /**
@@ -1599,7 +1579,7 @@ declare namespace SplitIO {
    * @interface IBrowserSDK
    * @extends ISDKWithUserConsent
    */
-  interface IBrowserSDK extends ISDKWithUserConsent {
+  interface IBrowserSDK extends ISDKWithUserConsent<IBrowserClient, IManager> {
     /**
      * Returns the default client instance of the SDK, associated with the key and optional traffic type provided on settings.
      * @function client
@@ -1614,19 +1594,13 @@ declare namespace SplitIO {
      * @returns {IClientWithKeyLegacy} The client instance.
      */
     client(key: SplitKey, trafficType?: string): IBrowserClient,
-    /**
-     * Returns a manager instance of the SDK to explore available information.
-     * @function manager
-     * @returns {IManager} The manager instance.
-     */
-    manager(): IManager
   }
   /**
    * This represents the interface for the SDK instance with asynchronous method calls and client-side API, where client instances have a bound user key.
    * @interface IClientSideAsyncSDK
    * @extends ISDKWithUserConsent
    */
-  interface IClientSideAsyncSDK extends ISDKWithUserConsent {
+  interface IClientSideAsyncSDK extends ISDKWithUserConsent<IAsyncClientWithKey, IAsyncManager> {
     /**
      * Returns the default client instance of the SDK, associated with the key provided on settings.
      * @function client
@@ -1640,12 +1614,6 @@ declare namespace SplitIO {
      * @returns {IAsyncClientWithKey} The asynchronous client instance.
      */
     client(key: SplitKey): IAsyncClientWithKey,
-    /**
-     * Returns a manager instance of the SDK to explore available information.
-     * @function manager
-     * @returns {IManager} The manager instance.
-     */
-    manager(): IAsyncManager
   }
   /**
    * This represents the interface for the Client instance with synchronous method calls and server-side API, where we don't have only one key.
