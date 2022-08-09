@@ -1279,7 +1279,7 @@ declare namespace SplitIO {
   }
   /**
    * This represents the interface for the Client instance with synchronous method calls and server-side API, where we don't have only one key.
-   * @interface IClient
+   * @interface IClientSS
    * @extends IBasicClient
    */
   interface IClientSS extends IBasicClient {
@@ -1334,10 +1334,10 @@ declare namespace SplitIO {
   }
   /**
    * This represents the interface for the Client instance with asynchronous method calls and server-side SDK, where we don't have only one key.
-   * @interface IAsyncClient
+   * @interface IAsyncClientSS
    * @extends IBasicClient
    */
-  interface IAsyncClienSS extends IBasicClient {
+  interface IAsyncClientSS extends IBasicClient {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      * For usage on NodeJS as we don't have only one key.
