@@ -21,28 +21,6 @@ interface IEventEmitter {
   emit(event: string, ...args: any[]): boolean
 }
 /**
- * NodeJS.EventEmitter interface
- * @see {@link https://nodejs.org/api/events.html}
- */
-interface EventEmitter extends IEventEmitter {
-  addListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  on(event: string | symbol, listener: (...args: any[]) => void): this;
-  once(event: string | symbol, listener: (...args: any[]) => void): this;
-  removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  off(event: string | symbol, listener: (...args: any[]) => void): this;
-  removeAllListeners(event?: string | symbol): this;
-  setMaxListeners(n: number): this;
-  getMaxListeners(): number;
-  listeners(event: string | symbol): Function[];
-  rawListeners(event: string | symbol): Function[];
-  emit(event: string | symbol, ...args: any[]): boolean;
-  listenerCount(type: string | symbol): number;
-  // Added in Node 6...
-  prependListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  eventNames(): Array<string | symbol>;
-}
-/**
  * @typedef {Object} EventConsts
  * @property {string} SDK_READY The ready event.
  * @property {string} SDK_READY_FROM_CACHE The ready event when fired with cached data.
@@ -295,9 +273,9 @@ interface ISharedSettings {
 /**
  * Common API for entities that expose status handlers.
  * @interface IStatusInterface
- * @extends EventEmitter
+ * @extends IEventEmitter
  */
-interface IStatusInterface extends EventEmitter {
+interface IStatusInterface extends IEventEmitter {
   /**
    * Constant object containing the SDK events for you to use.
    * @property {EventConsts} Event
@@ -344,6 +322,28 @@ interface IBasicClient extends IStatusInterface {
  * @see {@link https://www.npmjs.com/package/@splitsoftware/splitio}
  */
 declare namespace SplitIO {
+  /**
+   * NodeJS.EventEmitter interface
+   * @see {@link https://nodejs.org/api/events.html}
+   */
+  interface EventEmitter extends IEventEmitter {
+    addListener(event: string, listener: (...args: any[]) => void): this;
+    on(event: string, listener: (...args: any[]) => void): this;
+    once(event: string, listener: (...args: any[]) => void): this;
+    removeListener(event: string, listener: (...args: any[]) => void): this;
+    off(event: string, listener: (...args: any[]) => void): this;
+    removeAllListeners(event?: string): this;
+    setMaxListeners(n: number): this;
+    getMaxListeners(): number;
+    listeners(event: string): Function[];
+    rawListeners(event: string): Function[];
+    emit(event: string, ...args: any[]): boolean;
+    listenerCount(type: string): number;
+    // Added in Node 6...
+    prependListener(event: string, listener: (...args: any[]) => void): this;
+    prependOnceListener(event: string, listener: (...args: any[]) => void): this;
+    eventNames(): Array<string | symbol>;
+  }
   /**
    * Split treatment value, returned by getTreatment.
    * @typedef {string} Treatment
