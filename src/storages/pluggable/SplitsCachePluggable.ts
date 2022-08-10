@@ -1,7 +1,7 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilder } from '../KeyBuilder';
 import { IPluggableStorageWrapper } from '../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';

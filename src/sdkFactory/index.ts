@@ -4,7 +4,7 @@ import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import { IStorageFactoryParams } from '../storages/types';
-import { SplitIO } from '../types';
+import { IBasicSDK } from '../types';
 import { getMatching } from '../utils/key';
 import { shouldBeOptimized } from '../trackers/impressionObserver/utils';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
@@ -17,7 +17,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 /**
  * Modular SDK factory
  */
-export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
+export function sdkFactory(params: ISdkFactoryParams): IBasicSDK<any, any> {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
@@ -41,6 +41,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
     // ATM, only used by InLocalStorage
     matchingKey: getMatching(settings.core.key),
+    // @ts-ignore
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
     // ATM, only used by PluggableStorage

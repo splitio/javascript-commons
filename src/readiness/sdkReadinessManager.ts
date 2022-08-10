@@ -4,7 +4,7 @@ import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { IEventEmitter } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
-import { ILogger } from '../logger/types';
+import { ILogger } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';

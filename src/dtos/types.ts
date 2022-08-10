@@ -1,5 +1,3 @@
-import { SplitIO } from '../types';
-
 export type MaybeThenable<T> = T | Promise<T>
 
 /** Split Matchers */
@@ -204,9 +202,3 @@ export interface IMetadata {
   /** host name */
   n: string
 }
-
-export type ISplitFiltersValidation = {
-  queryString: string | null,
-  groupedFilters: Record<SplitIO.SplitFilterType, string[]>,
-  validFilters: SplitIO.SplitFilter[]
-};

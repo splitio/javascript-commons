@@ -1,5 +1,5 @@
 import { clientCSDecorator } from './clientCS';
-import { SplitIO } from '../types';
+import { IClientSS, IClientWithKeyLegacy, SplitKey } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
 import { getMatching, keyParser } from '../utils/key';
@@ -10,7 +10,7 @@ import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } 
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
-function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
+function buildInstanceId(key: SplitKey, trafficType?: string) {
   // @ts-ignore
   return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-${trafficType !== undefined ? trafficType : ''}`;
 }
@@ -22,24 +22,24 @@ const method = 'Client instantiation';
  * where clients can have a binded TT for the track method, which is provided via the settings
  * (default client) or the client method (shared clients).
  */
-export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitKey, trafficType?: string) => IClientWithKeyLegacy {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
-    sdkClientFactory(params) as SplitIO.IClient,
-    key,
+    sdkClientFactory(params) as IClientSS,
+    key!,
     trafficType
   );
 
-  const parsedDefaultKey = keyParser(key);
+  const parsedDefaultKey = keyParser(key!);
   const defaultInstanceId = buildInstanceId(parsedDefaultKey, trafficType);
 
   // Cache instances created per factory.
-  const clientInstances: Record<string, SplitIO.ICsClient> = {};
+  const clientInstances: Record<string, IClientWithKeyLegacy> = {};
   clientInstances[defaultInstanceId] = mainClientInstance;
 
-  return function client(key?: SplitIO.SplitKey, trafficType?: string) {
+  return function client(key?: SplitKey, trafficType?: string) {
     if (key === undefined) {
       log.debug(RETRIEVE_CLIENT_DEFAULT);
       return mainClientInstance;
@@ -86,7 +86,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
           storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
-        }), true) as SplitIO.IClient,
+        }), true) as IClientSS,
         validKey,
         validTrafficType
       );

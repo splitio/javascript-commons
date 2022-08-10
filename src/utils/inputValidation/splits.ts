@@ -1,5 +1,5 @@
 import { ERROR_EMPTY_ARRAY } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';
 

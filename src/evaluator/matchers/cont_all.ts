@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_CONTAINS_ALL } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { findIndex } from '../../utils/lang';
 
 export function containsAllSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

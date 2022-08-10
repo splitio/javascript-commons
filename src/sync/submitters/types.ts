@@ -1,5 +1,5 @@
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import { EventData } from '../../types';
 import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {
@@ -61,7 +61,7 @@ export type StoredEventWithMetadata = {
   /** Metadata */
   m: IMetadata,
   /** Stored event */
-  e: SplitIO.EventData
+  e: EventData
 }
 
 /**

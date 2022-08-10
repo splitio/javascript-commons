@@ -1,10 +1,10 @@
 import { isObject } from '../lang';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { Attributes } from '../../types';
+import { ILogger } from '../../types';
 import { validateAttribute } from './attribute';
 import { ERROR_NOT_PLAIN_OBJECT } from '../../logger/constants';
 
-export function validateAttributes(log: ILogger, maybeAttrs: any, method: string): SplitIO.Attributes | undefined | false {
+export function validateAttributes(log: ILogger, maybeAttrs: any, method: string): Attributes | undefined | false {
   // Attributes are optional
   if (maybeAttrs == undefined || isObject(maybeAttrs)) // eslint-disable-line eqeqeq
     return maybeAttrs;

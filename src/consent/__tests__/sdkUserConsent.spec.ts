@@ -33,10 +33,10 @@ test('createUserConsentAPI', () => {
   expect(storage.events.clear).toBeCalledTimes(1); // storage tracked data dropped
   expect(storage.impressions.clear).toBeCalledTimes(1);
 
-  // Invalid values have no effect
-  expect(props.setStatus('DECLINED')).toBe(false); // strings are not valid
-  expect(props.setStatus('GRANTED')).toBe(false);
-  expect(props.setStatus(undefined)).toBe(false);
+  // @ts-ignore Invalid values have no effect
+  expect(props.setStatus('DECLINED')).toBe(false); // @ts-ignore strings are not valid
+  expect(props.setStatus('GRANTED')).toBe(false); // @ts-ignore
+  expect(props.setStatus(undefined)).toBe(false); // @ts-ignore
   expect(props.setStatus({})).toBe(false);
 
   expect(syncManager.submitterManager.start).toBeCalledTimes(1);

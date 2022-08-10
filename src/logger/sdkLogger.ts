@@ -1,6 +1,5 @@
 import { LogLevels, isLogLevelString } from './index';
-import { ILoggerAPI } from '../types';
-import { ILogger } from './types';
+import { ILoggerAPI, ILogger } from '../types';
 import { ERROR_LOGLEVEL_INVALID } from './constants';
 
 /**

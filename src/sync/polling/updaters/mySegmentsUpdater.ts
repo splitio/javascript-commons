@@ -3,7 +3,7 @@ import { ISegmentsCacheSync, ISplitsCacheSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 

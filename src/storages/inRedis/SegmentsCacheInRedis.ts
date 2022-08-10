@@ -1,5 +1,5 @@
 import { Redis } from 'ioredis';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isNaNNumber } from '../../utils/lang';
 import { LOG_PREFIX } from '../inLocalStorage/constants';
 import { KeyBuilderSS } from '../KeyBuilderSS';

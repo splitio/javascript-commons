@@ -8,313 +8,6 @@
 export as namespace SplitIO;
 export = SplitIO;
 
-/**
- * EventEmitter interface based on a subset of the NodeJS.EventEmitter methods.
- */
-interface IEventEmitter {
-  addListener(event: string, listener: (...args: any[]) => void): this
-  on(event: string, listener: (...args: any[]) => void): this
-  once(event: string, listener: (...args: any[]) => void): this
-  removeListener(event: string, listener: (...args: any[]) => void): this
-  off(event: string, listener: (...args: any[]) => void): this
-  removeAllListeners(event?: string): this
-  emit(event: string, ...args: any[]): boolean
-}
-/**
- * @typedef {Object} EventConsts
- * @property {string} SDK_READY The ready event.
- * @property {string} SDK_READY_FROM_CACHE The ready event when fired with cached data.
- * @property {string} SDK_READY_TIMED_OUT The timeout event.
- * @property {string} SDK_UPDATE The update event.
- */
-type EventConsts = {
-  SDK_READY: 'init::ready',
-  SDK_READY_FROM_CACHE: 'init::cache-ready',
-  SDK_READY_TIMED_OUT: 'init::timeout',
-  SDK_UPDATE: 'state::update'
-};
-/**
- * SDK Modes.
- * @typedef {string} SDKMode
- */
-type SDKMode = 'standalone' | 'localhost' | 'consumer' | 'consumer_partial';
-/**
- * Storage types.
- * @typedef {string} StorageType
- */
-type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS';
-// @TODO? specialize ISettings for ISDK, IBrowserSDK, etc?
-/**
- * Settings interface. This is a representation of the settings the SDK expose, that's why
- * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
- * @interface ISettings
- */
-interface ISettings {
-  readonly core: {
-    authorizationKey: string,
-    key?: SplitIO.SplitKey,
-    trafficType?: string,
-    labelsEnabled: boolean,
-    IPAddressesEnabled?: boolean
-  },
-  readonly mode: SDKMode,
-  readonly scheduler: {
-    featuresRefreshRate: number,
-    impressionsRefreshRate: number,
-    impressionsQueueSize: number,
-    /**
-     * @deprecated
-     */
-    metricsRefreshRate?: number,
-    telemetryRefreshRate: number,
-    segmentsRefreshRate: number,
-    offlineRefreshRate: number,
-    eventsPushRate: number,
-    eventsQueueSize: number,
-    pushRetryBackoffBase: number
-  },
-  readonly startup: {
-    readyTimeout: number,
-    requestTimeoutBeforeReady: number,
-    retriesOnFailureBeforeReady: number,
-    eventsFirstPushWindow: number
-  },
-  readonly storage: {
-    prefix: string,
-    options: Object,
-    type: StorageType
-  } | SplitIO.StorageSyncFactory | SplitIO.StorageAsyncFactory,
-  readonly urls: {
-    events: string,
-    sdk: string,
-    auth: string,
-    streaming: string,
-    telemetry: string
-  },
-  readonly integrations?: SplitIO.BrowserIntegration[] | SplitIO.IntegrationFactory[],
-  readonly debug: boolean | LogLevel | SplitIO.ILogger,
-  readonly version: string,
-  /**
-   * Mocked features map.
-   */
-  features?: SplitIO.MockedFeaturesMap | SplitIO.MockedFeaturesFilePath,
-  readonly streamingEnabled: boolean,
-  readonly sync: {
-    splitFilters: SplitIO.SplitFilter[],
-    impressionsMode: SplitIO.ImpressionsMode,
-    enabled: boolean,
-    localhostMode?: SplitIO.LocalhostFactory
-  },
-  /**
-   * User consent status if using in browser. Undefined if using in NodeJS.
-   */
-  readonly userConsent?: SplitIO.ConsentStatus
-}
-/**
- * Log levels.
- * @typedef {string} LogLevel
- */
-type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
-/**
- * Logger API
- * @interface ILoggerAPI
- */
-interface ILoggerAPI {
-  /**
-   * Enables SDK logging to the console.
-   * @function enable
-   * @returns {void}
-   */
-  enable(): void,
-  /**
-   * Disables SDK logging.
-   * @function disable
-   * @returns {void}
-   */
-  disable(): void,
-  /**
-   * Sets a log level for the SDK logs.
-   * @function setLogLevel
-   * @returns {void}
-   */
-  setLogLevel(logLevel: LogLevel): void,
-  /**
-   * Log level constants. Use this to pass them to setLogLevel function.
-   */
-  LogLevel: {
-    [level in LogLevel]: LogLevel
-  }
-}
-/**
- * User consent API
- * @interface IUserConsentAPI
- */
-interface IUserConsentAPI {
-  /**
-   * Set or update the user consent status. Possible values are `true` and `false`, which represent user consent `'GRANTED'` and `'DECLINED'` respectively.
-   * - `true ('GRANTED')`: the user has granted consent for tracking events and impressions. The SDK will send them to Split cloud.
-   * - `false ('DECLINED')`: the user has declined consent for tracking events and impressions. The SDK will not send them to Split cloud.
-   *
-   * NOTE: calling this method updates the user consent at a factory level, affecting all clients of the same factory.
-   *
-   * @function setStatus
-   * @param {boolean} userConsent The user consent status, true for 'GRANTED' and false for 'DECLINED'.
-   * @returns {boolean} Whether the provided param is a valid value (i.e., a boolean value) or not.
-   */
-  setStatus(userConsent: boolean): boolean;
-  /**
-   * Get the user consent status.
-   *
-   * @function getStatus
-   * @returns {ConsentStatus} The user consent status.
-   */
-  getStatus(): SplitIO.ConsentStatus;
-  /**
-   * Consent status constants. Use this to compare with the getStatus function result.
-   */
-  Status: {
-    [status in SplitIO.ConsentStatus]: SplitIO.ConsentStatus
-  }
-}
-/**
- * Common settings between Browser and NodeJS settings interface.
- * @interface ISharedSettings
- */
-interface ISharedSettings {
-  /**
-   * SDK Core settings.
-   * @property {Object} core
-   */
-  core: {
-    /**
-     * Your API key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
-     * @property {string} authorizationKey
-     */
-    authorizationKey: string,
-    /**
-     * Disable labels from being sent to Split backend. Labels may contain sensitive information.
-     * This configuration is applicable if the SDK is running in "standalone" or "partial consumer" mode.
-     * @property {boolean} labelsEnabled
-     * @default true
-     */
-    labelsEnabled?: boolean
-  },
-  /**
-   * The SDK mode. Possible values are "standalone", which is the default when using a synchronous storage, like 'MEMORY' and 'LOCALSTORAGE',
-   * and "consumer", which must be set when using an asynchronous storage, like 'REDIS'. For "localhost" mode, use "localhost" as authorizationKey.
-   * @property {SDKMode} mode
-   * @default standalone
-   */
-  mode?: SDKMode,
-  /**
-   * The impression listener, which is optional. Whatever you provide here needs to comply with the SplitIO.IImpressionListener interface,
-   * which will check for the logImpression method.
-   * @property {IImpressionListener} impressionListener
-   * @default undefined
-   */
-  impressionListener?: SplitIO.IImpressionListener,
-  /**
-   * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
-   * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
-   * This configuration is applicable if the SDK is running in "standalone" mode.
-   * @property {boolean} streamingEnabled
-   * @default true
-   */
-  streamingEnabled?: boolean,
-  /**
-   * SDK synchronization settings.
-   * @property {Object} sync
-   */
-  sync?: {
-    /**
-     * List of Split filters. These filters are used to fetch a subset of the Splits definitions in your environment, in order to reduce the delay of the SDK to be ready.
-     * This configuration is applicable if the SDK is running in "standalone" mode.
-     *
-     * At the moment, two types of split filters are supported: by name and by prefix.
-     *
-     * Example:
-     *  `splitFilter: [
-     *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
-     *    { type: 'byPrefix', values: ['testing'] } // will fetch splits whose names start with 'testing__' prefix
-     *  ]`
-     * @property {SplitIO.SplitFilter[]} splitFilters
-     */
-    splitFilters?: SplitIO.SplitFilter[]
-    /**
-     * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split Servers.
-     * Possible values are 'DEBUG' and 'OPTIMIZED'.
-     * - DEBUG: will send all the impressions generated (recommended only for debugging purposes).
-     * - OPTIMIZED: will send unique impressions to Split Servers avoiding a considerable amount of traffic that duplicated impressions could generate.
-     * @property {string} impressionsMode
-     * @default 'OPTIMIZED'
-     */
-    impressionsMode?: SplitIO.ImpressionsMode,
-    /**
-     * Controls the SDK continuous synchronization flags.
-     *
-     * When `true` a running SDK will process rollout plan updates performed on the UI (default).
-     * When false it'll just fetch all data upon init.
-     * This configuration is applicable if the SDK is running in "standalone" mode.
-     *
-     * @property {boolean} enabled
-     * @default true
-     */
-    enabled?: boolean
-  },
-  /**
-   * List of URLs that the SDK will use as base for it's synchronization functionalities.
-   * This configuration is applicable if the SDK is running in "standalone" or "partial consumer" mode.
-   * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
-   * @property {Object} urls
-   */
-  urls?: SplitIO.UrlSettings,
-}
-// @TODO Should extends IEventEmitter for React Native and JS Browser SDK
-/**
- * Common API for entities that expose status handlers.
- * @interface IStatusInterface
- * @extends IEventEmitter
- */
-interface IStatusInterface extends IEventEmitter {
-  /**
-   * Constant object containing the SDK events for you to use.
-   * @property {EventConsts} Event
-   */
-  Event: EventConsts,
-  /**
-   * Returns a promise that will be resolved once the SDK has finished loading (SDK_READY event emitted) or rejected if the SDK has timedout (SDK_READY_TIMED_OUT event emitted).
-   * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, calling the `ready` method after the
-   * SDK had timed out will return a new promise that should eventually resolve if the SDK gets ready.
-   *
-   * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
-   * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
-   * ```
-   * try {
-   *   await client.ready().catch((e) => { throw e; });
-   *   // SDK is ready
-   * } catch(e) {
-   *   // SDK has timedout
-   * }
-   * ```
-   *
-   * @function ready
-   * @returns {Promise<void>}
-   */
-  ready(): Promise<void>
-}
-/**
- * Common definitions between clients for different environments interface.
- * @interface IBasicClient
- * @extends IStatusInterface
- */
-interface IBasicClient extends IStatusInterface {
-  /**
-   * Destroy the client instance.
-   * @function destroy
-   * @returns {Promise<void>}
-   */
-  destroy(): Promise<void>
-}
 /****** Exposed namespace ******/
 /**
  * Types and interfaces for @splitsoftware/splitio package for usage when integrating javascript sdk on typescript apps.
@@ -322,6 +15,19 @@ interface IBasicClient extends IStatusInterface {
  * @see {@link https://www.npmjs.com/package/@splitsoftware/splitio}
  */
 declare namespace SplitIO {
+  /**
+   * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
+   * @see {@link https://nodejs.org/api/events.html}
+   */
+  interface IEventEmitter {
+    addListener(event: string, listener: (...args: any[]) => void): this
+    on(event: string, listener: (...args: any[]) => void): this
+    once(event: string, listener: (...args: any[]) => void): this
+    removeListener(event: string, listener: (...args: any[]) => void): this
+    off(event: string, listener: (...args: any[]) => void): this
+    removeAllListeners(event?: string): this
+    emit(event: string, ...args: any[]): boolean
+  }
   /**
    * NodeJS.EventEmitter interface
    * @see {@link https://nodejs.org/api/events.html}
@@ -344,6 +50,322 @@ declare namespace SplitIO {
     prependOnceListener(event: string, listener: (...args: any[]) => void): this;
     eventNames(): Array<string | symbol>;
   }
+
+  /**
+   * impression DTO generated by the Sdk client when processing evaluations
+   */
+  type ImpressionDTO = {
+    feature: string,
+    keyName: string,
+    treatment: string,
+    time: number,
+    bucketingKey?: string,
+    label: string,
+    changeNumber: number,
+    pt?: number,
+  }
+  /**
+   * @typedef {Object} EventConsts
+   * @property {string} SDK_READY The ready event.
+   * @property {string} SDK_READY_FROM_CACHE The ready event when fired with cached data.
+   * @property {string} SDK_READY_TIMED_OUT The timeout event.
+   * @property {string} SDK_UPDATE The update event.
+   */
+  type EventConsts = {
+    SDK_READY: 'init::ready',
+    SDK_READY_FROM_CACHE: 'init::cache-ready',
+    SDK_READY_TIMED_OUT: 'init::timeout',
+    SDK_UPDATE: 'state::update'
+  };
+  /**
+   * SDK Modes.
+   * @typedef {string} SDKMode
+   */
+  type SDKMode = 'standalone' | 'localhost' | 'consumer' | 'consumer_partial';
+  /**
+   * Storage types.
+   * @typedef {string} StorageType
+   */
+  type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
+  /**
+   * Settings interface. This is a representation of the settings the SDK expose, that's why
+   * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
+   * @interface ISettings
+   */
+  interface ISettings {
+    readonly core: {
+      authorizationKey: string,
+      key?: SplitKey,
+      trafficType?: string,
+      labelsEnabled: boolean,
+      IPAddressesEnabled?: boolean
+    },
+    readonly mode: SDKMode,
+    readonly scheduler: {
+      featuresRefreshRate: number,
+      impressionsRefreshRate: number,
+      impressionsQueueSize: number,
+      /**
+       * @deprecated
+       */
+      metricsRefreshRate?: number,
+      telemetryRefreshRate: number,
+      segmentsRefreshRate: number,
+      offlineRefreshRate: number,
+      eventsPushRate: number,
+      eventsQueueSize: number,
+      pushRetryBackoffBase: number
+    },
+    readonly startup: {
+      readyTimeout: number,
+      requestTimeoutBeforeReady: number,
+      retriesOnFailureBeforeReady: number,
+      eventsFirstPushWindow: number
+    },
+    readonly storage: {
+      prefix: string,
+      options: Object,
+      type: StorageType
+    } | StorageSyncFactory | StorageAsyncFactory,
+    readonly urls: {
+      events: string,
+      sdk: string,
+      auth: string,
+      streaming: string,
+      telemetry: string
+    },
+    readonly integrations?: BrowserIntegration[] | IntegrationFactory[],
+    readonly debug: boolean | LogLevel | ILogger,
+    readonly version: string,
+    /**
+     * Mocked features map.
+     */
+    features?: MockedFeaturesMap | MockedFeaturesFilePath,
+    readonly streamingEnabled: boolean,
+    readonly sync: {
+      splitFilters: SplitFilter[],
+      impressionsMode: ImpressionsMode,
+      enabled: boolean,
+      localhostMode?: LocalhostFactory,
+      __splitFiltersValidation: ISplitFiltersValidation,
+    },
+    readonly runtime: {
+      ip: string | false
+      hostname: string | false
+    },
+    readonly log: ILogger
+    readonly impressionListener?: unknown
+    /**
+     * User consent status if using in browser. Undefined if using in NodeJS.
+     */
+    readonly userConsent?: ConsentStatus
+  }
+  /**
+   * Log levels.
+   * @typedef {string} LogLevel
+   */
+  type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
+  /**
+   * Logger API
+   * @interface ILoggerAPI
+   */
+  interface ILoggerAPI {
+    /**
+     * Enables SDK logging to the console.
+     * @function enable
+     * @returns {void}
+     */
+    enable(): void,
+    /**
+     * Disables SDK logging.
+     * @function disable
+     * @returns {void}
+     */
+    disable(): void,
+    /**
+     * Sets a log level for the SDK logs.
+     * @function setLogLevel
+     * @returns {void}
+     */
+    setLogLevel(logLevel: LogLevel): void,
+    /**
+     * Log level constants. Use this to pass them to setLogLevel function.
+     */
+    LogLevel: {
+      [level in LogLevel]: LogLevel
+    }
+  }
+  /**
+   * User consent API
+   * @interface IUserConsentAPI
+   */
+  interface IUserConsentAPI {
+    /**
+     * Set or update the user consent status. Possible values are `true` and `false`, which represent user consent `'GRANTED'` and `'DECLINED'` respectively.
+     * - `true ('GRANTED')`: the user has granted consent for tracking events and impressions. The SDK will send them to Split cloud.
+     * - `false ('DECLINED')`: the user has declined consent for tracking events and impressions. The SDK will not send them to Split cloud.
+     *
+     * NOTE: calling this method updates the user consent at a factory level, affecting all clients of the same factory.
+     *
+     * @function setStatus
+     * @param {boolean} userConsent The user consent status, true for 'GRANTED' and false for 'DECLINED'.
+     * @returns {boolean} Whether the provided param is a valid value (i.e., a boolean value) or not.
+     */
+    setStatus(userConsent: boolean): boolean;
+    /**
+     * Get the user consent status.
+     *
+     * @function getStatus
+     * @returns {ConsentStatus} The user consent status.
+     */
+    getStatus(): ConsentStatus;
+    /**
+     * Consent status constants. Use this to compare with the getStatus function result.
+     */
+    Status: {
+      [status in ConsentStatus]: ConsentStatus
+    }
+  }
+  /**
+   * Common settings between Browser and NodeJS settings interface.
+   * @interface ISharedSettings
+   */
+  interface ISharedSettings {
+    /**
+     * SDK Core settings.
+     * @property {Object} core
+     */
+    core: {
+      /**
+       * Your API key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+       * @property {string} authorizationKey
+       */
+      authorizationKey: string,
+      /**
+       * Disable labels from being sent to Split backend. Labels may contain sensitive information.
+       * This configuration is applicable if the SDK is running in "standalone" or "partial consumer" mode.
+       * @property {boolean} labelsEnabled
+       * @default true
+       */
+      labelsEnabled?: boolean
+    },
+    /**
+     * The SDK mode. Possible values are "standalone", which is the default when using a synchronous storage, like 'MEMORY' and 'LOCALSTORAGE',
+     * and "consumer", which must be set when using an asynchronous storage, like 'REDIS'. For "localhost" mode, use "localhost" as authorizationKey.
+     * @property {SDKMode} mode
+     * @default standalone
+     */
+    mode?: SDKMode,
+    /**
+     * The impression listener, which is optional. Whatever you provide here needs to comply with the IImpressionListener interface,
+     * which will check for the logImpression method.
+     * @property {IImpressionListener} impressionListener
+     * @default undefined
+     */
+    impressionListener?: IImpressionListener,
+    /**
+     * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
+     * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
+     * This configuration is applicable if the SDK is running in "standalone" mode.
+     * @property {boolean} streamingEnabled
+     * @default true
+     */
+    streamingEnabled?: boolean,
+    /**
+     * SDK synchronization settings.
+     * @property {Object} sync
+     */
+    sync?: {
+      /**
+       * List of Split filters. These filters are used to fetch a subset of the Splits definitions in your environment, in order to reduce the delay of the SDK to be ready.
+       * This configuration is applicable if the SDK is running in "standalone" mode.
+       *
+       * At the moment, two types of split filters are supported: by name and by prefix.
+       *
+       * Example:
+       *  `splitFilter: [
+       *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
+       *    { type: 'byPrefix', values: ['testing'] } // will fetch splits whose names start with 'testing__' prefix
+       *  ]`
+       * @property {SplitFilter[]} splitFilters
+       */
+      splitFilters?: SplitFilter[]
+      /**
+       * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split Servers.
+       * Possible values are 'DEBUG' and 'OPTIMIZED'.
+       * - DEBUG: will send all the impressions generated (recommended only for debugging purposes).
+       * - OPTIMIZED: will send unique impressions to Split Servers avoiding a considerable amount of traffic that duplicated impressions could generate.
+       * @property {string} impressionsMode
+       * @default 'OPTIMIZED'
+       */
+      impressionsMode?: ImpressionsMode,
+      /**
+       * Controls the SDK continuous synchronization flags.
+       *
+       * When `true` a running SDK will process rollout plan updates performed on the UI (default).
+       * When false it'll just fetch all data upon init.
+       * This configuration is applicable if the SDK is running in "standalone" mode.
+       *
+       * @property {boolean} enabled
+       * @default true
+       */
+      enabled?: boolean
+    },
+    /**
+     * List of URLs that the SDK will use as base for it's synchronization functionalities.
+     * This configuration is applicable if the SDK is running in "standalone" or "partial consumer" mode.
+     * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
+     * @property {Object} urls
+     */
+    urls?: UrlSettings,
+  }
+  // @TODO Should extends IEventEmitter for React Native and JS Browser SDK
+  /**
+   * Common API for entities that expose status handlers.
+   * @interface IStatusInterface
+   * @extends IEventEmitter
+   */
+  interface IStatusInterface extends IEventEmitter {
+    /**
+     * Constant object containing the SDK events for you to use.
+     * @property {EventConsts} Event
+     */
+    Event: EventConsts,
+    /**
+     * Returns a promise that will be resolved once the SDK has finished loading (SDK_READY event emitted) or rejected if the SDK has timedout (SDK_READY_TIMED_OUT event emitted).
+     * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, calling the `ready` method after the
+     * SDK had timed out will return a new promise that should eventually resolve if the SDK gets ready.
+     *
+     * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
+     * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
+     * ```
+     * try {
+     *   await client.ready().catch((e) => { throw e; });
+     *   // SDK is ready
+     * } catch(e) {
+     *   // SDK has timedout
+     * }
+     * ```
+     *
+     * @function ready
+     * @returns {Promise<void>}
+     */
+    ready(): Promise<void>
+  }
+  /**
+   * Common definitions between clients for different environments interface.
+   * @interface IBasicClient
+   * @extends IStatusInterface
+   */
+  interface IBasicClient extends IStatusInterface {
+    /**
+     * Destroy the client instance.
+     * @function destroy
+     * @returns {Promise<void>}
+     */
+    destroy(): Promise<void>
+  }
+
   /**
    * Split treatment value, returned by getTreatment.
    * @typedef {string} Treatment
@@ -366,7 +388,7 @@ declare namespace SplitIO {
     [featureName: string]: Treatment
   };
   /**
-   * Split treatments promise that will resolve to the actual SplitIO.Treatments object.
+   * Split treatments promise that will resolve to the actual Treatments object.
    * @typedef {Promise<Treatments>} AsyncTreatments
    */
   type AsyncTreatments = Promise<Treatments>;
@@ -398,7 +420,7 @@ declare namespace SplitIO {
     [featureName: string]: TreatmentWithConfig
   };
   /**
-   * Split treatments promise that will resolve to the actual SplitIO.TreatmentsWithConfig object.
+   * Split treatments promise that will resolve to the actual TreatmentsWithConfig object.
    * @typedef {Promise<TreatmentsWithConfig>} AsyncTreatmentsWithConfig
    */
   type AsyncTreatmentsWithConfig = Promise<TreatmentsWithConfig>;
@@ -464,19 +486,10 @@ declare namespace SplitIO {
    * @typedef {Object} ImpressionData
    */
   type ImpressionData = {
-    impression: {
-      feature: string,
-      keyName: string,
-      treatment: string,
-      time: number,
-      bucketingKey?: string,
-      label: string,
-      changeNumber: number,
-      pt?: number,
-    },
-    attributes?: SplitIO.Attributes,
-    ip: string,
-    hostname: string,
+    impression: ImpressionDTO,
+    attributes?: Attributes,
+    ip: string | false,
+    hostname: string | false,
     sdkLanguageVersion: string
   };
   /**
@@ -524,11 +537,11 @@ declare namespace SplitIO {
    */
   type SplitViewAsync = Promise<SplitView | null>;
   /**
-   * An array containing the SplitIO.SplitView elements.
+   * An array containing the SplitView elements.
    */
   type SplitViews = Array<SplitView>;
   /**
-   * A promise that will be resolved with an SplitIO.SplitViews array.
+   * A promise that will be resolved with an SplitViews array.
    * @typedef {Promise<SplitViews>} SplitViewsAsync
    */
   type SplitViewsAsync = Promise<SplitViews>;
@@ -561,7 +574,7 @@ declare namespace SplitIO {
    * Storage for synchronous (standalone) SDK.
    * Its interface details are not part of the public API.
    */
-  type StorageSync = {};
+  type StorageSync = any;
   /**
    * Storage builder for synchronous (standalone) SDK.
    * By returning undefined, the SDK will use the default IN MEMORY storage.
@@ -569,7 +582,7 @@ declare namespace SplitIO {
    */
   type StorageSyncFactory = {
     readonly type: StorageType
-    (params: {}): (StorageSync | undefined)
+    (params: any): (StorageSync | undefined)
   }
   /**
    * Configuration params for `InLocalStorage`
@@ -586,14 +599,14 @@ declare namespace SplitIO {
    * Storage for asynchronous (consumer) SDK.
    * Its interface details are not part of the public API.
    */
-  type StorageAsync = {}
+  type StorageAsync = any
   /**
    * Storage builder for asynchronous (consumer) SDK.
    * Input parameter details are not part of the public API.
    */
   type StorageAsyncFactory = {
-    readonly type: 'PLUGGABLE'
-    (params: {}): StorageAsync
+    readonly type: StorageType
+    (params: any): StorageAsync
   }
   /**
    * Configuration params for `PluggableStorage`
@@ -617,7 +630,7 @@ declare namespace SplitIO {
    */
   type LocalhostFactory = {
     readonly type: LocalhostType
-    (params: {}): {}
+    (params: any): any
   }
   /**
    * Impression listener interface. This is the interface that needs to be implemented
@@ -626,13 +639,13 @@ declare namespace SplitIO {
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#listener}
    */
   interface IImpressionListener {
-    logImpression(data: SplitIO.ImpressionData): void
+    logImpression(data: ImpressionData): void
   }
   /**
    * SDK integration instance.
    * Its interface details are not part of the public API.
    */
-  type Integration = {};
+  type Integration = any;
   /**
    * SDK integration factory.
    * By returning an integration, the SDK will queue events and impressions into it.
@@ -640,7 +653,7 @@ declare namespace SplitIO {
    */
   type IntegrationFactory = {
     readonly type: string
-    (params: {}): (Integration | void)
+    (params: any): (Integration | void)
   }
   /**
    * A pair of user key and it's trafficType, required for tracking valid Split events.
@@ -704,7 +717,7 @@ declare namespace SplitIO {
      *      return defaultMapping;
      *  }`
      */
-    mapper?: (model: UniversalAnalytics.Model, defaultMapping: SplitIO.EventData) => SplitIO.EventData,
+    mapper?: (model: UniversalAnalytics.Model, defaultMapping: EventData) => EventData,
     /**
      * Optional prefix for EventTypeId, to prevent any kind of data collision between events.
      * @property {string} prefix
@@ -734,7 +747,7 @@ declare namespace SplitIO {
    * @property {string} type The type of Split data, either 'IMPRESSION' or 'EVENT'.
    * @property {ImpressionData | EventData} payload The data instance itself.
    */
-  type IntegrationData = { type: 'IMPRESSION', payload: SplitIO.ImpressionData } | { type: 'EVENT', payload: SplitIO.EventData };
+  type IntegrationData = { type: 'IMPRESSION', payload: ImpressionData } | { type: 'EVENT', payload: EventData };
   /**
    * Enable 'Split to Google Analytics' integration, to track Split impressions and events as Google Analytics hits.
    *
@@ -766,7 +779,7 @@ declare namespace SplitIO {
      * For example, the following filter allows to track only impressions, equivalent to setting events to false:
      *  `(data) => data.type === 'IMPRESSION'`
      */
-    filter?: (data: SplitIO.IntegrationData) => boolean,
+    filter?: (data: IntegrationData) => boolean,
     /**
      * Optional function useful when you need to modify the GA hit before sending it.
      * This function is invoked with two arguments:
@@ -797,7 +810,7 @@ declare namespace SplitIO {
      *    nonInteraction: true,
      *  }`
      */
-    mapper?: (data: SplitIO.IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject,
+    mapper?: (data: IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject,
     /**
      * List of tracker names to send the hit. An empty string represents the default tracker.
      * If not provided, hits are only sent to default tracker.
@@ -864,6 +877,11 @@ declare namespace SplitIO {
      */
     values: string[],
   }
+  type ISplitFiltersValidation = {
+    queryString: string | null,
+    groupedFilters: Record<SplitFilterType, string[]>,
+    validFilters: SplitFilter[]
+  };
   /**
   * ImpressionsMode type
   * @typedef {string} ImpressionsMode
@@ -881,6 +899,14 @@ declare namespace SplitIO {
    */
   interface ILogger {
     setLogLevel(logLevel: LogLevel): void
+    debug(msg: any): void
+    debug(msg: string | number, args?: any[]): void
+    info(msg: any): void
+    info(msg: string | number, args?: any[]): void
+    warn(msg: any): void
+    warn(msg: string | number, args?: any[]): void
+    error(msg: any): void
+    error(msg: string | number, args?: any[]): void
   }
   /**
    * Common settings interface with non-pluggable API (JS SDK).
@@ -915,7 +941,7 @@ declare namespace SplitIO {
      * @property {boolean | LogLevel | ILogger} debug
      * @default false
      */
-    debug?: boolean | LogLevel | SplitIO.ILogger,
+    debug?: boolean | LogLevel | ILogger,
     /**
      * Defines an optional list of factory functions used to instantiate SDK integrations.
      *
@@ -928,7 +954,7 @@ declare namespace SplitIO {
      * ```
      * @property {Object} integrations
      */
-    integrations?: SplitIO.IntegrationFactory[],
+    integrations?: IntegrationFactory[],
   }
   /**
    * Common settings interface for SDK instances on NodeJS.
@@ -954,7 +980,7 @@ declare namespace SplitIO {
      * @property {MockedFeaturesFilePath} features
      * @default $HOME/.split
      */
-    features?: SplitIO.MockedFeaturesFilePath,
+    features?: MockedFeaturesFilePath,
     /**
      * SDK Startup settings for NodeJS.
      * @property {Object} startup
@@ -1095,13 +1121,13 @@ declare namespace SplitIO {
        * Customer identifier. Whatever this means to you. @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
        * @property {SplitKey} key
        */
-      key: SplitIO.SplitKey,
+      key: SplitKey,
     },
     /**
      * Mocked features map. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
      * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
      */
-    features?: SplitIO.MockedFeaturesMap,
+    features?: MockedFeaturesMap,
     /**
      * SDK Startup settings for client-side.
      * @property {Object} startup
@@ -1236,7 +1262,7 @@ declare namespace SplitIO {
      * @typedef {string} userConsent
      * @default 'GRANTED'
      */
-    userConsent?: SplitIO.ConsentStatus
+    userConsent?: ConsentStatus
   }
   /**
    * Common definitions between SDK instances for different environments interface.
@@ -1330,14 +1356,14 @@ declare namespace SplitIO {
      * @param {Properties=} properties - The properties of this event. Values can be string, number, boolean or null.
      * @returns {boolean} Whether the event was added to the queue successfully or not.
      */
-    track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
   }
   /**
    * This represents the interface for the Client instance with asynchronous method calls and server-side SDK, where we don't have only one key.
    * @interface IAsyncClient
    * @extends IBasicClient
    */
-  interface IAsyncClienSS extends IBasicClient {
+  interface IAsyncClientSS extends IBasicClient {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      * For usage on NodeJS as we don't have only one key.
@@ -1390,7 +1416,7 @@ declare namespace SplitIO {
      * @param {Properties=} properties - The properties of this event. Values can be string, number, boolean or null.
      * @returns {Promise<boolean>} A promise that resolves to a boolean indicating if the event was added to the queue successfully or not.
      */
-    track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>
   }
   /**
    * This represents the interface for the Client instance with attributes binding
@@ -1580,14 +1606,14 @@ declare namespace SplitIO {
     /**
      * Get the array of splits data in SplitView format.
      * @function splits
-     * @returns {SplitViews} The list of SplitIO.SplitView.
+     * @returns {SplitViews} The list of SplitView.
      */
     splits(): SplitViews;
     /**
      * Get the data of a split in SplitView format.
      * @function split
      * @param {string} splitName The name of the split we wan't to get info of.
-     * @returns {SplitView | null} The SplitIO.SplitView of the given split or null if the split is not found.
+     * @returns {SplitView | null} The SplitView of the given split or null if the split is not found.
      */
     split(splitName: string): SplitView | null;
   }
@@ -1606,14 +1632,14 @@ declare namespace SplitIO {
     /**
      * Get the array of splits data in SplitView format.
      * @function splits
-     * @returns {SplitViewsAsync} A promise that will resolve to the SplitIO.SplitView list.
+     * @returns {SplitViewsAsync} A promise that will resolve to the SplitView list.
      */
     splits(): SplitViewsAsync;
     /**
      * Get the data of a split in SplitView format.
      * @function split
      * @param {string} splitName The name of the split we wan't to get info of.
-     * @returns {SplitViewAsync} A promise that will resolve to the SplitIO.SplitView value or null if the split is not found.
+     * @returns {SplitViewAsync} A promise that will resolve to the SplitView value or null if the split is not found.
      */
     split(splitName: string): SplitViewAsync;
   }

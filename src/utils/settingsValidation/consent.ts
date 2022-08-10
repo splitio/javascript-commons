@@ -1,6 +1,5 @@
 import { ERROR_INVALID_CONFIG_PARAM } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
-import { ConsentStatus } from '../../types';
+import { ConsentStatus, ILogger } from '../../types';
 import { CONSENT_DECLINED, CONSENT_GRANTED, CONSENT_UNKNOWN } from '../constants';
 import { stringToUpperCase } from '../lang';
 

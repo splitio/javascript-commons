@@ -1,5 +1,5 @@
 import { isString, isFiniteNumber, isBoolean } from '../../utils/lang';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function validateAttribute(log: ILogger, attributeKey: string, attributeValue: Object, method: string): boolean {
   if (!isString(attributeKey) || attributeKey.length === 0) {

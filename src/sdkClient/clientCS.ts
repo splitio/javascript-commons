@@ -1,6 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ILogger } from '../logger/types';
-import { SplitIO } from '../types';
+import { IClientSS, IClientWithKeyLegacy, ILogger, SplitKey } from '../types';
 import { clientAttributesDecoration } from './clientAttributesDecoration';
 
 
@@ -11,7 +10,7 @@ import { clientAttributesDecoration } from './clientAttributesDecoration';
  * @param key validated split key
  * @param trafficType validated traffic type
  */
-export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: SplitIO.SplitKey, trafficType?: string): SplitIO.ICsClient {
+export function clientCSDecorator(log: ILogger, client: IClientSS, key: SplitKey, trafficType?: string): IClientWithKeyLegacy {
 
   let clientCS = clientAttributesDecoration(log, client);
 
@@ -26,5 +25,5 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: Sp
     track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key),
 
     isClientSide: true
-  }) as SplitIO.ICsClient;
+  }) as any;
 }

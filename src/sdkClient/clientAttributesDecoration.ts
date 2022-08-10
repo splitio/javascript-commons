@@ -1,13 +1,13 @@
 import { AttributesCacheInMemory } from '../storages/inMemory/AttributesCacheInMemory';
 import { validateAttributesDeep } from '../utils/inputValidation/attributes';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { Attributes, IAsyncClientSS, IClientSS, Properties, SplitKey } from '../types';
+import { ILogger } from '../types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * Add in memory attributes storage methods and combine them with any attribute received from the getTreatment/s call
  */
-export function clientAttributesDecoration<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient) {
+export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAsyncClientSS) {
 
   const attributeStorage = new AttributesCacheInMemory();
 
@@ -18,27 +18,27 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   const clientGetTreatmentsWithConfig = client.getTreatmentsWithConfig;
   const clientTrack = client.track;
 
-  function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
+  function getTreatment(maybeKey: SplitKey, maybeSplit: string, maybeAttributes?: Attributes) {
     return clientGetTreatment(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
+  function getTreatmentWithConfig(maybeKey: SplitKey, maybeSplit: string, maybeAttributes?: Attributes) {
     return clientGetTreatmentWithConfig(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
   }
 
-  function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
+  function getTreatments(maybeKey: SplitKey, maybeSplits: string[], maybeAttributes?: Attributes) {
     return clientGetTreatments(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
+  function getTreatmentsWithConfig(maybeKey: SplitKey, maybeSplits: string[], maybeAttributes?: Attributes) {
     return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
   }
 
-  function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
+  function track(maybeKey: SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: Properties) {
     return clientTrack(maybeKey, maybeTT, maybeEvent, maybeEventValue, maybeProperties);
   }
 
-  function combineAttributes(maybeAttributes: SplitIO.Attributes | undefined): SplitIO.Attributes | undefined{
+  function combineAttributes(maybeAttributes: Attributes | undefined): Attributes | undefined{
     const storedAttributes = attributeStorage.getAll();
     if (Object.keys(storedAttributes).length > 0) {
       return objectAssign({}, storedAttributes, maybeAttributes);

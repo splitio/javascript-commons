@@ -1,10 +1,10 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ILoggerOptions, ILogger } from './types';
+import { ILoggerOptions } from './types';
 import { find } from '../utils/lang';
-import { LogLevel } from '../types';
+import { LogLevel, ILogger, ILoggerAPI } from '../types';
 import { IMap, _Map } from '../utils/lang/maps';
 
-export const LogLevels: { [level: string]: LogLevel } = {
+export const LogLevels: ILoggerAPI['LogLevel'] = {
   DEBUG: 'DEBUG',
   INFO: 'INFO',
   WARN: 'WARN',

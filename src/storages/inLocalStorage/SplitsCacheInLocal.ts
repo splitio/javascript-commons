@@ -1,8 +1,8 @@
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
-import { ILogger } from '../../logger/types';
+import { ILogger, ISplitFiltersValidation } from '../../types';
 import { LOG_PREFIX } from './constants';
 
 /**

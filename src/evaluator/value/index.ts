@@ -1,10 +1,10 @@
-import { SplitIO } from '../../types';
+import { Attributes } from '../../types';
 import { IMatcherDto } from '../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { sanitize } from './sanitize';
 import { ENGINE_VALUE, ENGINE_VALUE_NO_ATTRIBUTES, ENGINE_VALUE_INVALID } from '../../logger/constants';
 
-function parseValue(log: ILogger, key: string, attributeName: string | null, attributes?: SplitIO.Attributes) {
+function parseValue(log: ILogger, key: string, attributeName: string | null, attributes?: Attributes) {
   let value = undefined;
   if (attributeName) {
     if (attributes) {
@@ -23,7 +23,7 @@ function parseValue(log: ILogger, key: string, attributeName: string | null, att
 /**
  * Defines value to be matched (key / attribute).
  */
-export function sanitizeValue(log: ILogger, key: string, matcherDto: IMatcherDto, attributes?: SplitIO.Attributes) {
+export function sanitizeValue(log: ILogger, key: string, matcherDto: IMatcherDto, attributes?: Attributes) {
   const attributeName = matcherDto.attribute;
   const valueToMatch = parseValue(log, key, attributeName, attributes);
   const sanitizedValue = sanitize(log, matcherDto.type, valueToMatch, matcherDto.dataType, attributes);

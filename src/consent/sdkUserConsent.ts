@@ -3,9 +3,10 @@ import { isConsentGranted } from './index';
 import { CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../utils/constants';
 import { isBoolean } from '../utils/lang';
 import { ISdkFactoryContext } from '../sdkFactory/types';
+import { IUserConsentAPI } from '../types';
 
 // User consent enum
-const ConsentStatus = {
+const ConsentStatus: IUserConsentAPI['Status'] = {
   GRANTED: CONSENT_GRANTED,
   DECLINED: CONSENT_DECLINED,
   UNKNOWN: CONSENT_UNKNOWN,
@@ -14,7 +15,7 @@ const ConsentStatus = {
 /**
  * The public user consent API exposed via SplitFactory, used to control if the SDK tracks and sends impressions and events or not.
  */
-export function createUserConsentAPI(params: ISdkFactoryContext) {
+export function createUserConsentAPI(params: ISdkFactoryContext): IUserConsentAPI {
   const { settings, settings: { log }, syncManager, storage: { events, impressions, impressionCounts } } = params;
 
   if (!isConsentGranted(settings)) log.info(USER_CONSENT_INITIAL, [settings.userConsent]);
@@ -51,7 +52,7 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
     },
 
     getStatus() {
-      return settings.userConsent;
+      return settings.userConsent!;
     },
 
     Status: ConsentStatus

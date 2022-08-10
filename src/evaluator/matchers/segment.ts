@@ -1,6 +1,6 @@
 import { MaybeThenable } from '../../dtos/types';
 import { ISegmentsCacheBase } from '../../storages/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { thenable } from '../../utils/promise/thenable';
 import { ENGINE_MATCHER_SEGMENT } from '../../logger/constants';
 

@@ -1,5 +1,4 @@
-import { ILogger } from '../../../logger/types';
-import { SDKMode, } from '../../../types';
+import { SDKMode, ILogger } from '../../../types';
 import { LocalhostFromObject } from '../../../sync/offline/LocalhostFromObject';
 import { validateLocalhost } from './pluggable';
 

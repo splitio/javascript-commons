@@ -1,7 +1,7 @@
 import { IPluggableStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 
 export class ImpressionsCachePluggable implements IImpressionsCacheAsync {

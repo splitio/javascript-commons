@@ -1,4 +1,4 @@
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';

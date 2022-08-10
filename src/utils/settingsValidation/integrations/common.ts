@@ -1,5 +1,5 @@
 import { WARN_INTEGRATION_INVALID } from '../../../logger/constants';
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 
 /**
  * This function validates `settings.integrations` object

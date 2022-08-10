@@ -1,5 +1,5 @@
 import { ERROR_NULL, ERROR_INVALID, ERROR_EMPTY, WARN_LOWERCASE_TRAFFIC_TYPE } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isString } from '../lang';
 
 const CAPITAL_LETTERS_REGEX = /[A-Z]/;

@@ -1,6 +1,5 @@
 import { Logger, LogLevels } from '../../../logger';
-import { ILogger } from '../../../logger/types';
-import { LogLevel } from '../../../types';
+import { LogLevel, ILogger } from '../../../types';
 import { getLogLevel } from './commons';
 
 function isLogger(log: any): log is ILogger {

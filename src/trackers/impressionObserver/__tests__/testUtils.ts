@@ -1,7 +1,7 @@
 import { ImpressionDTO } from '../../../types';
 
 export function generateImpressions(count: number): ImpressionDTO[] {
-  const impressions = [];
+  const impressions: ImpressionDTO[] = [];
   for (let i = 0; i < count; i++) {
     impressions.push({
       keyName: `key_${i}`,

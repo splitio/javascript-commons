@@ -1,4 +1,4 @@
-import { SplitIO } from '../../../types';
+import { IntegrationData, ImpressionData, EventData } from '../../../types';
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../../../utils/constants';
 
 // Mocks
@@ -8,7 +8,7 @@ import { gaMock, gaRemove } from './gaMock';
 // Test target
 import { SplitToGa } from '../SplitToGa';
 
-const fakeImpressionPayload: SplitIO.ImpressionData = {
+const fakeImpressionPayload: ImpressionData = {
   impression: {
     feature: 'hierarchical_splits_test',
     keyName: 'nicolas@split.io',
@@ -23,7 +23,7 @@ const fakeImpressionPayload: SplitIO.ImpressionData = {
   hostname: 'hostname',
   sdkLanguageVersion: 'version',
 };
-const fakeImpression: SplitIO.IntegrationData = {
+const fakeImpression: IntegrationData = {
   type: SPLIT_IMPRESSION,
   payload: fakeImpressionPayload,
 };
@@ -35,7 +35,7 @@ const defaultImpressionFieldsObject: UniversalAnalytics.FieldsObject = {
   nonInteraction: true
 };
 
-const fakeEventPayload: SplitIO.EventData = {
+const fakeEventPayload: EventData = {
   eventTypeId: 'eventTypeId',
   trafficTypeName: 'trafficTypeName',
   value: 0,
@@ -43,7 +43,7 @@ const fakeEventPayload: SplitIO.EventData = {
   key: 'key',
   properties: {},
 };
-const fakeEvent: SplitIO.IntegrationData = {
+const fakeEvent: IntegrationData = {
   type: SPLIT_EVENT,
   payload: fakeEventPayload,
 };
@@ -120,7 +120,7 @@ describe('SplitToGa', () => {
 
     /** Custom behaviour **/
     // Custom filter
-    function customFilter(data: SplitIO.IntegrationData) {
+    function customFilter(data: IntegrationData) {
       return data.type === SPLIT_EVENT;
     }
     // Custom mapper that returns a new FieldsObject instance
@@ -149,7 +149,7 @@ describe('SplitToGa', () => {
     expect(ga).toBeCalledTimes(2);
 
     // Custom mapper that returns the default FieldsObject
-    function customMapper2(data: SplitIO.IntegrationData, defaultFieldsObject: UniversalAnalytics.FieldsObject) {
+    function customMapper2(data: IntegrationData, defaultFieldsObject: UniversalAnalytics.FieldsObject) {
       return defaultFieldsObject;
     }
     const instance3 = new SplitToGa(loggerMock, {

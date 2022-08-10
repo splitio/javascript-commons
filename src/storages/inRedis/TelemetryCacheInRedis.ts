@@ -1,4 +1,4 @@
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { Method } from '../../sync/submitters/types';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ITelemetryCacheAsync } from '../types';

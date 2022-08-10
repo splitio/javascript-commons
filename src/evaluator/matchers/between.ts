@@ -1,6 +1,6 @@
 import { IBetweenMatcherData } from '../../dtos/types';
 import { ENGINE_MATCHER_BETWEEN } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function betweenMatcherContext(log: ILogger, ruleVO: IBetweenMatcherData) /*: Function */ {
   return function betweenMatcher(runtimeAttr: number): boolean {

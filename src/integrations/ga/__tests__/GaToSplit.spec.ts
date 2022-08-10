@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import { IEventsCacheSync } from '../../../storages/types';
-import { SplitIO, ISettings } from '../../../types';
+import { ISettings, EventData } from '../../../types';
 import { GaToSplit, validateIdentities, defaultPrefix, defaultMapper, validateEventData, fixEventTypeId } from '../GaToSplit';
 import { gaMock, gaRemove, modelMock } from './gaMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
@@ -96,7 +96,7 @@ test('defaultMapper', () => {
 
   expect(defaultEvent.eventTypeId).toBe(expectedDefaultEvent.eventTypeId); // should return the corresponding default event instance for a given pageview hit
   expect(defaultEvent.value).toBe(expectedDefaultEvent.value);
-  expect(defaultEvent.properties).toEqual(expectedDefaultEvent.properties);
+  expect(defaultEvent.properties).toEqual(expectedDefaultEvent.properties); // @ts-ignore
   expect(initTimestamp <= defaultEvent.timestamp && defaultEvent.timestamp <= Date.now()).toBe(true);
 });
 
@@ -117,17 +117,17 @@ const fakeParams = {
 };
 
 // Returns a new event by copying defaultEvent
-function customMapper(model: UniversalAnalytics.Model, defaultEvent: SplitIO.EventData) {
+function customMapper(model: UniversalAnalytics.Model, defaultEvent: EventData) {
   return { ...defaultEvent, properties: { ...defaultEvent.properties, someProp: 'someProp' } };
 }
 // Updates defaultEvent
-function customMapper2(model: UniversalAnalytics.Model, defaultEvent: SplitIO.EventData) {
+function customMapper2(model: UniversalAnalytics.Model, defaultEvent: EventData) {
   // @ts-ignore. The defaultEvent has a property value, that might be empty depending on the hitType
   defaultEvent.properties['someProp2'] = 'someProp2';
   return defaultEvent;
 }
 // Updates defaultEvent adding a `key` and `TT`, to assert that `identities` plugin param is ignored.
-function customMapper3(model: UniversalAnalytics.Model, defaultEvent: SplitIO.EventData) {
+function customMapper3(model: UniversalAnalytics.Model, defaultEvent: EventData) {
   defaultEvent.key = 'someKey';
   defaultEvent.trafficTypeName = 'someTT';
   return defaultEvent;

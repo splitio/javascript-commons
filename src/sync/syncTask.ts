@@ -1,5 +1,5 @@
 import { SYNC_TASK_EXECUTE, SYNC_TASK_START, SYNC_TASK_STOP } from '../logger/constants';
-import { ILogger } from '../logger/types';
+import { ILogger } from '../types';
 import { ISyncTask } from './types';
 
 /**

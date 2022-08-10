@@ -1,6 +1,6 @@
 import { SPLIT_NOT_FOUND } from '../labels';
 import { IReadinessManager } from '../../readiness/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { WARN_NOT_EXISTENT_SPLIT } from '../../logger/constants';
 
 /**

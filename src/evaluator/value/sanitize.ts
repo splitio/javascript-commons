@@ -1,6 +1,6 @@
-import { SplitIO } from '../../types';
+import { Attributes } from '../../types';
 import { IDependencyMatcherValue } from '../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { matcherTypes, matcherDataTypes } from '../matchers/matcherTypes';
@@ -41,7 +41,7 @@ function sanitizeBoolean(val: any): boolean | undefined {
   return undefined;
 }
 
-function dependencyProcessor(sanitizedValue: string, attributes?: SplitIO.Attributes): IDependencyMatcherValue {
+function dependencyProcessor(sanitizedValue: string, attributes?: Attributes): IDependencyMatcherValue {
   return {
     key: sanitizedValue,
     attributes
@@ -69,7 +69,7 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
 /**
  * Sanitize matcher value
  */
-export function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes?: SplitIO.Attributes) {
+export function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes?: Attributes) {
   const processor = getProcessingFunction(matcherTypeID, dataType);
   let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
 

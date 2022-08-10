@@ -5,8 +5,8 @@ import { validateSplit, validateSplitExistance, validateIfNotDestroyed, validate
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { IAsyncManager, IManager, SplitView } from '../types';
+import { ILogger } from '../types';
 
 function collectTreatments(splitObject: ISplit) {
   const conditions = splitObject.conditions;
@@ -18,7 +18,7 @@ function collectTreatments(splitObject: ISplit) {
   return allTreatmentsCondition ? allTreatmentsCondition.partitions.map(v => v.treatment) : [];
 }
 
-function objectToView(json: string | null): SplitIO.SplitView | null {
+function objectToView(json: string | null): SplitView | null {
   let splitObject: ISplit | null;
 
   try {
@@ -41,7 +41,7 @@ function objectToView(json: string | null): SplitIO.SplitView | null {
 }
 
 function objectsToViews(jsons: string[]) {
-  let views: SplitIO.SplitView[] = [];
+  let views: SplitView[] = [];
 
   jsons.forEach(split => {
     const view = objectToView(split);
@@ -55,7 +55,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
   log: ILogger,
   splits: TSplitCache,
   { readinessManager, sdkStatus }: ISdkReadinessManager
-): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
+): TSplitCache extends ISplitsCacheAsync ? IAsyncManager : IManager {
   const SPLIT_FN_LABEL = 'split';
 
   return objectAssign(

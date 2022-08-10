@@ -3,7 +3,7 @@
 import { isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ISegmentsCacheAsync } from '../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { LOG_PREFIX } from './constants';
 import { _Set } from '../../utils/lang/sets';
 

@@ -1,4 +1,4 @@
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { sdkClientMethodCSFactory as sdkClientMethodCSWithTTFactory } from '../sdkClientMethodCSWithTT';
 import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
 import { assertClientApi } from './testUtils';
@@ -80,7 +81,6 @@ describe('sdkClientMethodCSFactory', () => {
   ];
 
   test.each(testTargets)('main client', (sdkClientMethodCSFactory) => {
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     // should return a function
@@ -106,7 +106,6 @@ describe('sdkClientMethodCSFactory', () => {
 
   test.each(testTargets)('multiple clients', async (sdkClientMethodCSFactory, ignoresTT) => {
 
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     // calling the function with a diferent key than settings, should return a new client instance
@@ -151,7 +150,6 @@ describe('sdkClientMethodCSFactory', () => {
   test.each(testTargets)('return main client instance if called with same key', (sdkClientMethodCSFactory) => {
 
     params.settings = settingsWithKey;
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     expect(sdkClientMethod()).toBe(sdkClientMethod(settingsWithKey.core.key));
@@ -164,7 +162,6 @@ describe('sdkClientMethodCSFactory', () => {
   test.each(testTargets)('return main client instance if called with same key and TT', (sdkClientMethodCSFactory) => {
 
     params.settings = settingsWithKeyAndTT;
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     expect(sdkClientMethod()).toBe(sdkClientMethod(settingsWithKeyAndTT.core.key, settingsWithKeyAndTT.core.trafficType));
@@ -175,9 +172,7 @@ describe('sdkClientMethodCSFactory', () => {
   });
 
   test.each(testTargets)('return main client instance if called with same key object', (sdkClientMethodCSFactory) => {
-    // @ts-expect-error
     params.settings = settingsWithKeyObject;
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     expect(sdkClientMethod()).toBe(sdkClientMethod({ matchingKey: settingsWithKeyObject.core.key.matchingKey, bucketingKey: settingsWithKeyObject.core.key.bucketingKey }));
@@ -188,7 +183,6 @@ describe('sdkClientMethodCSFactory', () => {
   });
 
   test.each(testTargets)('return same client instance if called with same key or traffic type (input validation)', (sdkClientMethodCSFactory, ignoresTT) => {
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     const clientInstance = sdkClientMethod('key', 'tt');
@@ -211,14 +205,12 @@ describe('sdkClientMethodCSFactory', () => {
   });
 
   test.each(testTargets)('invalid calls throw an error', (sdkClientMethodCSFactory, ignoresTT) => {
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
     expect(() => sdkClientMethod({ matchingKey: settingsWithKey.core.key, bucketingKey: undefined })).toThrow('Shared Client needs a valid key.');
     if (!ignoresTT) expect(() => sdkClientMethod('valid-key', ['invalid-TT'])).toThrow('Shared Client needs a valid traffic type or no traffic type at all.');
   });
 
   test.each(testTargets)('attributes binding - main client', (sdkClientMethodCSFactory) => {
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     // should return a function
@@ -272,7 +264,6 @@ describe('sdkClientMethodCSFactory', () => {
 
 
   test.each(testTargets)('attributes binding - shared clients', (sdkClientMethodCSFactory) => {
-    // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
     // should return a function

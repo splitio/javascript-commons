@@ -3,8 +3,8 @@ import { thenable } from '../../utils/promise/thenable';
 import * as LabelsConstants from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { SplitKey, SplitKeyObject, Attributes } from '../../types';
+import { ILogger } from '../../types';
 
 // Build Evaluation object if and only if matchingResult is true
 function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed: number, treatments: { getTreatmentFor: (x: number) => string }, label: string): IEvaluation | undefined {
@@ -24,10 +24,10 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 // Condition factory
 export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
-  return function conditionEvaluator(key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  return function conditionEvaluator(key: SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: Attributes, splitEvaluator?: ISplitEvaluator) {
 
     // Whitelisting has more priority than traffic allocation, so we don't apply this filtering to those conditions.
-    if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation as number, (key as SplitIO.SplitKeyObject).bucketingKey as string, trafficAllocationSeed as number)) {
+    if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation as number, (key as SplitKeyObject).bucketingKey as string, trafficAllocationSeed as number)) {
       return {
         treatment: undefined, // treatment value is assigned later
         label: LabelsConstants.NOT_IN_SPLIT
@@ -41,10 +41,10 @@ export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) 
     const matches = matcherEvaluator(key, attributes, splitEvaluator);
 
     if (thenable(matches)) {
-      return matches.then(result => match(log, result, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label));
+      return matches.then(result => match(log, result, (key as SplitKeyObject).bucketingKey, seed, treatments, label));
     }
 
-    return match(log, matches, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label);
+    return match(log, matches, (key as SplitKeyObject).bucketingKey, seed, treatments, label);
   };
 
 }

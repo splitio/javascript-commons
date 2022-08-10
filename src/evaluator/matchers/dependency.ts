@@ -1,6 +1,6 @@
 import { IDependencyMatcherData, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { thenable } from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';
 import { ENGINE_MATCHER_DEPENDENCY, ENGINE_MATCHER_DEPENDENCY_PRE } from '../../logger/constants';

@@ -1,6 +1,6 @@
 import { validateIntegrations } from './common';
 import { isString } from '../../lang';
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 
 /**
  * This function validates `settings.integrations` object that consists of a list of configuration items, used by the isomorphic JS SDK.

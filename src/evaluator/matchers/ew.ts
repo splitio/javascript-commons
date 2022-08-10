@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_ENDS_WITH } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { endsWith } from '../../utils/lang';
 
 export function endsWithMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

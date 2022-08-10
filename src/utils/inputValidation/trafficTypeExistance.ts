@@ -4,7 +4,7 @@ import { ISplitsCacheBase } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';
 import { SDKMode } from '../../types';
 import { MaybeThenable } from '../../dtos/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { WARN_NOT_EXISTENT_TT } from '../../logger/constants';
 
 function logTTExistanceWarning(log: ILogger, maybeTT: string, method: string) {

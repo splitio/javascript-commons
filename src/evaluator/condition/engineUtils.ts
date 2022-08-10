@@ -1,5 +1,5 @@
 import { ENGINE_BUCKET } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { bucket } from '../../utils/murmur3/murmur3';
 
 /**

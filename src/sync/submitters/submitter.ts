@@ -1,7 +1,7 @@
 import { syncTaskFactory } from '../syncTask';
 import { ISyncTask } from '../types';
 import { IRecorderCacheProducerSync } from '../../storages/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
 import { IResponse } from '../../services/types';
 

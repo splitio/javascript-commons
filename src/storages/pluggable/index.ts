@@ -1,5 +1,5 @@
-import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
-
+import { IPluggableStorageWrapper, IStorageAsync, IStorageFactoryParams } from '../types';
+import { StorageAsyncFactory } from '../../types';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
 import { SegmentsCachePluggable } from './SegmentsCachePluggable';
@@ -58,7 +58,7 @@ function promisifyEventsTrack(events: any) {
 /**
  * Pluggable storage factory for consumer server-side & client-side SplitFactory.
  */
-export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyncFactory {
+export function PluggableStorage(options: PluggableStorageOptions): StorageAsyncFactory {
 
   validatePluggableStorageOptions(options);
 

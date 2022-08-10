@@ -1,7 +1,7 @@
 import { isObject, isString, isFiniteNumber, isBoolean } from '../lang';
 import { objectAssign } from '../lang/objectAssign';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { Properties } from '../../types';
+import { ILogger } from '../../types';
 import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
 
 const ECMA_SIZES = {
@@ -14,7 +14,7 @@ const MAX_PROPERTIES_AMOUNT = 300;
 const MAX_EVENT_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
 
-export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
+export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: Properties | null | false, size: number } {
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
   if (!isObject(maybeProperties)) {

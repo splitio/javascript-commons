@@ -1,7 +1,8 @@
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { IStorageFactoryParams, IStorageSync } from '../types';
+import { StorageSyncFactory } from '../../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
@@ -22,7 +23,7 @@ export interface InLocalStorageOptions {
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
+export function InLocalStorage(options: InLocalStorageOptions = {}): StorageSyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 

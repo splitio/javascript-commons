@@ -15,14 +15,14 @@ import { startsWith } from '../utils/lang';
 import { CONTROL, CONTROL_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings, SplitKey, Treatments, TreatmentsWithConfig, Properties, Attributes, IClientSS, IAsyncClientSS } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
+export function clientInputValidationDecorator(settings: ISettings, client: IClientSS | IAsyncClientSS, readinessManager: IReadinessManager): IClientSS | IAsyncClientSS {
 
   const log = settings.log;
   const isSync = isStorageSync(settings);
@@ -30,7 +30,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   /**
    * Avoid repeating this validations code
    */
-  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeSplitOrSplits: string | string[], maybeAttributes: SplitIO.Attributes | undefined, methodName: string) {
+  function validateEvaluationParams(maybeKey: SplitKey, maybeSplitOrSplits: string | string[], maybeAttributes: Attributes | undefined, methodName: string) {
     const multi = startsWith(methodName, 'getTreatments');
     const key = validateKey(log, maybeKey, methodName);
     const splitOrSplits = multi ? validateSplits(log, maybeSplitOrSplits, methodName) : validateSplit(log, maybeSplitOrSplits, methodName);
@@ -53,53 +53,53 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     return isSync ? value : Promise.resolve(value);
   }
 
-  function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
+  function getTreatment(maybeKey: SplitKey, maybeSplit: string, maybeAttributes?: Attributes) {
     const params = validateEvaluationParams(maybeKey, maybeSplit, maybeAttributes, 'getTreatment');
 
     if (params.valid) {
-      return client.getTreatment(params.key as SplitIO.SplitKey, params.splitOrSplits as string, params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatment(params.key as SplitKey, params.splitOrSplits as string, params.attributes as Attributes | undefined);
     } else {
       return wrapResult(CONTROL);
     }
   }
 
-  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
+  function getTreatmentWithConfig(maybeKey: SplitKey, maybeSplit: string, maybeAttributes?: Attributes) {
     const params = validateEvaluationParams(maybeKey, maybeSplit, maybeAttributes, 'getTreatmentWithConfig');
 
     if (params.valid) {
-      return client.getTreatmentWithConfig(params.key as SplitIO.SplitKey, params.splitOrSplits as string, params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatmentWithConfig(params.key as SplitKey, params.splitOrSplits as string, params.attributes as Attributes | undefined);
     } else {
       return wrapResult(objectAssign({}, CONTROL_WITH_CONFIG));
     }
   }
 
-  function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
+  function getTreatments(maybeKey: SplitKey, maybeSplits: string[], maybeAttributes?: Attributes) {
     const params = validateEvaluationParams(maybeKey, maybeSplits, maybeAttributes, 'getTreatments');
 
     if (params.valid) {
-      return client.getTreatments(params.key as SplitIO.SplitKey, params.splitOrSplits as string[], params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatments(params.key as SplitKey, params.splitOrSplits as string[], params.attributes as Attributes | undefined);
     } else {
-      const res: SplitIO.Treatments = {};
+      const res: Treatments = {};
       if (params.splitOrSplits) (params.splitOrSplits as string[]).forEach((split: string) => res[split] = CONTROL);
 
       return wrapResult(res);
     }
   }
 
-  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
+  function getTreatmentsWithConfig(maybeKey: SplitKey, maybeSplits: string[], maybeAttributes?: Attributes) {
     const params = validateEvaluationParams(maybeKey, maybeSplits, maybeAttributes, 'getTreatmentsWithConfig');
 
     if (params.valid) {
-      return client.getTreatmentsWithConfig(params.key as SplitIO.SplitKey, params.splitOrSplits as string[], params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatmentsWithConfig(params.key as SplitKey, params.splitOrSplits as string[], params.attributes as Attributes | undefined);
     } else {
-      const res: SplitIO.TreatmentsWithConfig = {};
+      const res: TreatmentsWithConfig = {};
       if (params.splitOrSplits) (params.splitOrSplits as string[]).forEach(split => res[split] = objectAssign({}, CONTROL_WITH_CONFIG));
 
       return wrapResult(res);
     }
   }
 
-  function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
+  function track(maybeKey: SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: Properties) {
     const key = validateKey(log, maybeKey, 'track');
     const tt = validateTrafficType(log, maybeTT, 'track');
     const event = validateEvent(log, maybeEvent, 'track');
@@ -120,5 +120,5 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     getTreatments,
     getTreatmentsWithConfig,
     track
-  } as TClient;
+  } as IClientSS | IAsyncClientSS;
 }

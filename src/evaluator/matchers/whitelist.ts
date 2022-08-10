@@ -1,5 +1,5 @@
 import { setToArray, ISet } from '../../utils/lang/sets';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { ENGINE_MATCHER_WHITELIST } from '../../logger/constants';
 
 export function whitelistMatcherContext(log: ILogger, ruleAttr: ISet<string>) /*: Function */ {
