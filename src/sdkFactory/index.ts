@@ -17,7 +17,7 @@ import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
-import { NONE } from '../utils/constants';
+import { NONE, OPTIMIZED } from '../utils/constants';
 
 /**
  * Modular SDK factory
@@ -72,8 +72,18 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   const observer = impressionsObserverFactory();
   const uniqueKeysTracker = storageFactoryParams.impressionsMode === NONE ? uniqueKeysTrackerFactory(log, storage.uniqueKeys!, filterAdapterFactory && filterAdapterFactory()) : undefined;
-  const strategy = (storageFactoryParams.optimize) ? strategyOptimizedFactory(observer, storage.impressionCounts!) :
-    (storageFactoryParams.impressionsMode === NONE) ? strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!) : strategyDebugFactory(observer);
+
+  let strategy: any = undefined;
+  switch (storageFactoryParams.impressionsMode) {
+    case OPTIMIZED: 
+      strategy = strategyOptimizedFactory(observer, storage.impressionCounts!);
+      break;
+    case NONE: 
+      strategy = strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!);
+      break;
+    default: 
+      strategy = strategyDebugFactory(observer);
+  }
 
   const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
