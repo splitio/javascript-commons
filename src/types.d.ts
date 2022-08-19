@@ -1249,13 +1249,13 @@ declare namespace SplitIO {
     /**
      * Returns the default client instance of the SDK.
      * @function client
-     * @returns {IClient} The client instance.
+     * @returns {TClient} The client instance.
      */
     client(): TClient,
     /**
      * Returns a manager instance of the SDK to explore available information.
      * @function manager
-     * @returns {IManager} The manager instance.
+     * @returns {TManager} The manager instance.
      */
     manager(): TManager
     /**
@@ -1427,7 +1427,7 @@ declare namespace SplitIO {
      * Add to client's in memory attributes storage the attributes in 'attributes'.
      *
      * @param {Attributes} attributes Object with attributes to store
-     * @returns true if attributes were stored an false otherwise
+     * @returns {boolean} true if attributes were stored an false otherwise
      */
     setAttributes(attributes: Attributes): boolean,
     /**
@@ -1493,33 +1493,6 @@ declare namespace SplitIO {
     track(trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
   }
   /**
-   * This represents the interface for the Client instance with attributes binding, synchronous method calls, and client-side API, where each client has a key associated and optionally a traffic type.
-   * @interface IClientWithKeyLegacy
-   * @extends IClientWithKey
-   */
-  interface IClientWithKeyLegacy extends IClientWithKey {
-    /**
-     * Tracks an event to be fed to the results product on Split Webconsole.
-     * @function track
-     * @param {string} trafficType - The traffic type of the entity related to this event.
-     * @param {string} eventType - The event type corresponding to this event.
-     * @param {number=} value - The value of this event.
-     * @param {Properties=} properties - The properties of this event. Values can be string, number, boolean or null.
-     * @returns {boolean} Whether the event was added to the queue successfully or not.
-     */
-    track(trafficType: string, eventType: string, value?: number, properties?: Properties): boolean,
-    /**
-     * Tracks an event to be fed to the results product on Split Webconsole.
-     * For usage on the Browser if we defined the key and also the trafficType on the settings.
-     * @function track
-     * @param {string} eventType - The event type corresponding to this event.
-     * @param {number=} value - The value of this event.
-     * @param {Properties=} properties - The properties of this event. Values can be string, number, boolean or null.
-     * @returns {boolean} Whether the event was added to the queue successfully or not.
-     */
-    track(eventType: string, value?: number, properties?: Properties): boolean
-  }
-  /**
    * This represents the interface for the Client instance with attributes binding, asynchronous method calls, and client-side API, where each client has a key associated.
    * @interface IAsyncClientWithKey
    * @extends IClientWithAttributeBinding
@@ -1564,7 +1537,7 @@ declare namespace SplitIO {
      * @param {string} eventType - The event type corresponding to this event.
      * @param {number=} value - The value of this event.
      * @param {Properties=} properties - The properties of this event. Values can be string, number, boolean or null.
-     * @returns {boolean} A promise that resolves to a boolean indicating if the event was added to the queue successfully or not.
+     * @returns {Promise<boolean>} A promise that resolves to a boolean indicating if the event was added to the queue successfully or not.
      */
     track(trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>,
   }

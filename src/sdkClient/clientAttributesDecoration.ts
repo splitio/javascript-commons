@@ -1,6 +1,6 @@
 import { AttributesCacheInMemory } from '../storages/inMemory/AttributesCacheInMemory';
 import { validateAttributesDeep } from '../utils/inputValidation/attributes';
-import { Attributes, IAsyncClientSS, IClientSS, Properties, SplitKey } from '../types';
+import { Attributes, AttributeType, IAsyncClientSS, IClientSS, Properties, SplitKey } from '../types';
 import { ILogger } from '../types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
@@ -38,7 +38,7 @@ export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAs
     return clientTrack(maybeKey, maybeTT, maybeEvent, maybeEventValue, maybeProperties);
   }
 
-  function combineAttributes(maybeAttributes: Attributes | undefined): Attributes | undefined{
+  function combineAttributes(maybeAttributes: Attributes | undefined): Attributes | undefined {
     const storedAttributes = attributeStorage.getAll();
     if (Object.keys(storedAttributes).length > 0) {
       return objectAssign({}, storedAttributes, maybeAttributes);
@@ -57,10 +57,10 @@ export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAs
      * Add an attribute to client's in memory attributes storage
      *
      * @param {string} attributeName Attrinute name
-     * @param {string, number, boolean, list} attributeValue Attribute value
+     * @param {AttributeType} attributeValue Attribute value
      * @returns {boolean} true if the attribute was stored and false otherways
      */
-    setAttribute(attributeName: string, attributeValue: Object) {
+    setAttribute(attributeName: string, attributeValue: AttributeType) {
       const attribute: Record<string, Object> = {};
       attribute[attributeName] = attributeValue;
       if (!validateAttributesDeep(log, attribute, 'setAttribute')) return false;
@@ -85,7 +85,7 @@ export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAs
      * @param {Object} attributes Object with attributes to store
      * @returns true if attributes were stored an false otherways
      */
-    setAttributes(attributes: Record<string, Object>) {
+    setAttributes(attributes: Record<string, AttributeType>) {
       if (!validateAttributesDeep(log, attributes, 'setAttributes')) return false;
       return attributeStorage.setAttributes(attributes);
     },
@@ -95,7 +95,7 @@ export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAs
      *
      * @returns {Object} returns all the stored attributes
      */
-    getAttributes(): Record<string, Object> {
+    getAttributes(): Record<string, AttributeType> {
       return attributeStorage.getAll();
     },
 

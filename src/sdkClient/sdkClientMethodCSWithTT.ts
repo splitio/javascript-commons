@@ -1,5 +1,5 @@
 import { clientCSDecorator } from './clientCS';
-import { IClientSS, IClientWithKeyLegacy, SplitKey } from '../types';
+import { IClientSS, IClientWithKey, SplitKey } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
 import { getMatching, keyParser } from '../utils/key';
@@ -22,7 +22,7 @@ const method = 'Client instantiation';
  * where clients can have a binded TT for the track method, which is provided via the settings
  * (default client) or the client method (shared clients).
  */
-export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitKey, trafficType?: string) => IClientWithKeyLegacy {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitKey, trafficType?: string) => IClientWithKey {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
@@ -36,7 +36,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
   const defaultInstanceId = buildInstanceId(parsedDefaultKey, trafficType);
 
   // Cache instances created per factory.
-  const clientInstances: Record<string, IClientWithKeyLegacy> = {};
+  const clientInstances: Record<string, IClientWithKey> = {};
   clientInstances[defaultInstanceId] = mainClientInstance;
 
   return function client(key?: SplitKey, trafficType?: string) {
