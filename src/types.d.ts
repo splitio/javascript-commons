@@ -296,7 +296,6 @@ declare namespace SplitIO {
      */
     urls?: UrlSettings,
   }
-  // @TODO Should extends IEventEmitter for React Native and JS Browser SDK
   /**
    * Common API for entities that expose status handlers.
    * @interface IStatusInterface
@@ -888,7 +887,6 @@ declare namespace SplitIO {
   /**
    * Common settings interface with non-pluggable API (JS SDK).
    * @interface IStaticSettings
-   * @extends ISharedSettings
    */
   interface IStaticSettings {
     /**
@@ -901,13 +899,13 @@ declare namespace SplitIO {
   /**
    * Common settings interface with pluggable API (JS Browser and React Native SDKs).
    * @interface IPluggableSettings
-   * @extends ISharedSettings
    */
   interface IPluggableSettings {
     /**
      * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
      * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
      * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}
+     * @see {@link https://help.split.io/hc/en-us/articles/4406066357901-React-Native-SDK#logging}
      *
      * Examples:
      * ```typescript
@@ -919,19 +917,6 @@ declare namespace SplitIO {
      * @default false
      */
     debug?: boolean | LogLevel | ILogger,
-    /**
-     * Defines an optional list of factory functions used to instantiate SDK integrations.
-     *
-     * Example:
-     * ```typescript
-     * SplitFactory({
-     *   ...
-     *   integrations: [SplitToGoogleAnalytics(), GoogleAnalyticsToSplit()]
-     * })
-     * ```
-     * @property {Object} integrations
-     */
-    integrations?: IntegrationFactory[],
   }
   /**
    * Common settings interface for SDK instances on NodeJS.
