@@ -13,6 +13,11 @@
 
 ///<reference types="../src/types" />
 
+namespace SplitIO {
+  export interface ISDK extends SplitIO.IBasicSDK<SplitIO.IClientSS, SplitIO.IManager> { }
+  export interface IBrowserSDK extends SplitIO.ISDKWithUserConsent<SplitIO.IClientWithKey, SplitIO.IManager> { }
+}
+
 let stringPromise: Promise<string>;
 let splitNamesPromise: Promise<SplitIO.SplitNames>;
 let splitViewPromise: Promise<SplitIO.SplitView>;
@@ -26,20 +31,17 @@ let trackPromise: Promise<boolean>;
 
 // Facade return interface
 let SDK: SplitIO.ISDK;
-let AsyncSDK: SplitIO.IAsyncSDK;
+// let AsyncSDK: SplitIO.IAsyncSDK;
 let BrowserSDK: SplitIO.IBrowserSDK;
-// Settings interfaces
-let nodeSettings: SplitIO.INodeSettings;
-let asyncSettings: SplitIO.INodeAsyncSettings;
-let browserSettings: SplitIO.IBrowserSettings;
+// let AsyncBrowserSDK: SplitIO.IAsyncSDKWithKey;
+
 // Client & Manager APIs
-let client: SplitIO.IClient;
+let client: SplitIO.IClientSS;
+let browserClient: SplitIO.IClientWithKey;
 let manager: SplitIO.IManager;
-let asyncClient: SplitIO.IAsyncClient;
+let asyncClient: SplitIO.IAsyncClientSS;
+let asyncBrowserClient: SplitIO.IAsyncClientWithKey;
 let asyncManager: SplitIO.IAsyncManager;
-let browserClient: SplitIO.IBrowserClient;
-// Utility interfaces
-let impressionListener: SplitIO.IImpressionListener;
 
 /**** Custom Types ****/
 
@@ -92,10 +94,6 @@ let splitViewAsync: SplitIO.SplitViewAsync;
 let splitViewsAsync: SplitIO.SplitViewsAsync;
 // Impression data
 let impressionData: SplitIO.ImpressionData;
-// Storages
-let nodeStorage: SplitIO.NodeSyncStorage;
-let nodeAsyncStorage: SplitIO.NodeAsyncStorage;
-let browserStorage: SplitIO.BrowserStorage;
 
 mockedFeaturesPath = 'path/to/file';
 mockedFeaturesMap = {
@@ -137,34 +135,6 @@ splitKey = splitKeyObj;
 
 /**** Tests for ISDK interface ****/
 
-// For node with sync storage
-nodeSettings = {
-  core: {
-    authorizationKey: 'key'
-  }
-};
-// For node with async storage
-asyncSettings = {
-  core: {
-    authorizationKey: 'key'
-  },
-  mode: 'consumer',
-  storage: {
-    type: 'REDIS'
-  }
-};
-// For browser
-browserSettings = {
-  core: {
-    authorizationKey: 'another-key',
-    key: 'customer-key'
-  }
-};
-// With sync settings should return ISDK, if settings have async storage it should return IAsyncSDK
-SDK = SplitFactory(nodeSettings);
-AsyncSDK = SplitFactory(asyncSettings);
-BrowserSDK = SplitFactory(browserSettings);
-
 // The settings values the SDK expose.
 const instantiatedSettingsCore: {
   authorizationKey: string,
@@ -190,17 +160,6 @@ instantiatedSettingsFeatures.something = 'something';
 SDK.settings.features = 'new_file_path'; // Node
 SDK.settings.features = { 'split_x': 'on' }; // Browser
 
-// Client and Manager in Node
-client = SDK.client();
-manager = SDK.manager();
-// Today async clients are only possible on Node. Shared client creation not available here.
-asyncClient = AsyncSDK.client();
-asyncManager = AsyncSDK.manager();
-// Browser client for attributes binding
-browserClient = BrowserSDK.client();
-browserClient = BrowserSDK.client('a customer key');
-browserClient = BrowserSDK.client('a customer key', 'a traffic type');
-
 // Logger
 SDK.Logger.enable();
 SDK.Logger.setLogLevel(SDK.Logger.LogLevel.DEBUG);
@@ -210,13 +169,13 @@ SDK.Logger.setLogLevel(SDK.Logger.LogLevel.ERROR);
 SDK.Logger.setLogLevel(SDK.Logger.LogLevel.NONE);
 SDK.Logger.disable();
 
-AsyncSDK.Logger.enable();
-AsyncSDK.Logger.setLogLevel(AsyncSDK.Logger.LogLevel.DEBUG);
-AsyncSDK.Logger.setLogLevel(AsyncSDK.Logger.LogLevel.INFO);
-AsyncSDK.Logger.setLogLevel(AsyncSDK.Logger.LogLevel.WARN);
-AsyncSDK.Logger.setLogLevel(AsyncSDK.Logger.LogLevel.ERROR);
-AsyncSDK.Logger.setLogLevel(AsyncSDK.Logger.LogLevel.NONE);
-AsyncSDK.Logger.disable();
+BrowserSDK.Logger.enable();
+BrowserSDK.Logger.setLogLevel(BrowserSDK.Logger.LogLevel.DEBUG);
+BrowserSDK.Logger.setLogLevel(BrowserSDK.Logger.LogLevel.INFO);
+BrowserSDK.Logger.setLogLevel(BrowserSDK.Logger.LogLevel.WARN);
+BrowserSDK.Logger.setLogLevel(BrowserSDK.Logger.LogLevel.ERROR);
+BrowserSDK.Logger.setLogLevel(BrowserSDK.Logger.LogLevel.NONE);
+BrowserSDK.Logger.disable();
 
 /**** Tests for IClient interface ****/
 
@@ -227,60 +186,58 @@ splitEvent = client.Event.SDK_READY_FROM_CACHE;
 splitEvent = client.Event.SDK_READY_TIMED_OUT;
 splitEvent = client.Event.SDK_UPDATE;
 
-// Client implements methods from NodeJS.Events. Testing a few.
-client = client.on(splitEvent, () => { });
-const a: boolean = client.emit(splitEvent);
-client = client.removeAllListeners(splitEvent);
-client = client.removeAllListeners();
-const b: number = client.listenerCount(splitEvent);
-let nodeEventEmitter: NodeJS.EventEmitter = client;
-
 // Ready and destroy
 const readyPromise: Promise<void> = client.ready();
 const destroyPromise: Promise<void> = client.destroy();
 
-// We can call getTreatment with or without a key.
+// We can call getTreatment
 treatment = client.getTreatment(splitKey, 'mySplit');
 treatment = browserClient.getTreatment('mySplit');
-// Attributes parameter is optional on both signatures.
+
+// Attributes parameter is optional on both signatures
 treatment = client.getTreatment(splitKey, 'mySplit', attributes);
 treatment = browserClient.getTreatment('mySplit', attributes);
 
-// We can call getTreatments with or without a key.
+// We can call getTreatments
 treatments = client.getTreatments(splitKey, ['mySplit']);
 treatments = browserClient.getTreatments(['mySplit']);
-// Attributes parameter is optional on both signatures.
+
+// Attributes parameter is optional on both signatures
 treatments = client.getTreatments(splitKey, ['mySplit'], attributes);
 treatments = browserClient.getTreatments(['mySplit'], attributes);
 
-// We can call getTreatmentWithConfig with or without a key.
+// We can call getTreatmentWithConfig
 treatmentWithConfig = client.getTreatmentWithConfig(splitKey, 'mySplit');
 treatmentWithConfig = browserClient.getTreatmentWithConfig('mySplit');
-// Attributes parameter is optional on both signatures.
+
+// Attributes parameter is optional on both signatures
 treatmentWithConfig = client.getTreatmentWithConfig(splitKey, 'mySplit', attributes);
 treatmentWithConfig = browserClient.getTreatmentWithConfig('mySplit', attributes);
 
-// We can call getTreatmentsWithConfig with or without a key.
+// We can call getTreatmentsWithConfig
 treatmentsWithConfig = client.getTreatmentsWithConfig(splitKey, ['mySplit']);
 treatmentsWithConfig = browserClient.getTreatmentsWithConfig(['mySplit']);
-// Attributes parameter is optional on both signatures.
+
+// Attributes parameter is optional on both signatures
 treatmentsWithConfig = client.getTreatmentsWithConfig(splitKey, ['mySplit'], attributes);
 treatmentsWithConfig = browserClient.getTreatmentsWithConfig(['mySplit'], attributes);
 
-// We can call track with or without a key. Traffic type can also be binded to the client.
+// We can call track
 tracked = client.track(splitKey, 'myTrafficType', 'myEventType'); // all params
-tracked = browserClient.track('myTrafficType', 'myEventType'); // key binded, tt provided.
-tracked = browserClient.track('myEventType'); // key and tt binded.
-// Value parameter is optional on all signatures.
+tracked = browserClient.track('myTrafficType', 'myEventType'); // key binded, tt provided
+// tracked = browserClient.track('myEventType'); // key and tt binded only in JS SDK
+
+// Value parameter is optional on all signatures
 tracked = client.track(splitKey, 'myTrafficType', 'myEventType', 10);
 tracked = browserClient.track('myTrafficType', 'myEventType', 10);
-tracked = browserClient.track('myEventType', 10);
+// tracked = browserClient.track('myEventType', 10); // key and tt binded only in JS SDK
+
 // Properties parameter is optional on all signatures.
 tracked = client.track(splitKey, 'myTrafficType', 'myEventType', 10, { prop1: 1, prop2: '2', prop3: false, prop4: null });
 tracked = browserClient.track('myTrafficType', 'myEventType', null, { prop1: 1, prop2: '2', prop3: false, prop4: null });
-tracked = browserClient.track('myEventType', undefined, { prop1: 1, prop2: '2', prop3: false, prop4: null });
+// tracked = browserClient.track('myEventType', undefined, { prop1: 1, prop2: '2', prop3: false, prop4: null }); // key and tt binded only in JS SDK.
 
-/*** Repeating tests for Async Client ***/
+/*** Repeating tests for Async Clients ***/
 
 // Events constants we get (same as for sync client, just for interface checking)
 const eventConstsAsync: { [key: string]: SplitIO.Event } = asyncClient.Event;
@@ -289,44 +246,53 @@ splitEvent = asyncClient.Event.SDK_READY_FROM_CACHE;
 splitEvent = asyncClient.Event.SDK_READY_TIMED_OUT;
 splitEvent = asyncClient.Event.SDK_UPDATE;
 
-// Client implements methods from NodeJS.Events. (same as for sync client, just for interface checking)
-asyncClient = asyncClient.on(splitEvent, () => { });
-const a1: boolean = asyncClient.emit(splitEvent);
-asyncClient = asyncClient.removeAllListeners(splitEvent);
-asyncClient = asyncClient.removeAllListeners();
-const b1: number = asyncClient.listenerCount(splitEvent);
-nodeEventEmitter = asyncClient;
-
 // Ready and destroy (same as for sync client, just for interface checking)
 const readyPromise1: Promise<void> = asyncClient.ready();
 asyncClient.destroy();
 
-// We can call getTreatment but always with a key.
+// We can call getTreatment
 asyncTreatment = asyncClient.getTreatment(splitKey, 'mySplit');
+asyncTreatment = asyncBrowserClient.getTreatment('mySplit');
+
 // Attributes parameter is optional
 asyncTreatment = asyncClient.getTreatment(splitKey, 'mySplit', attributes);
+asyncTreatment = asyncBrowserClient.getTreatment('mySplit', attributes);
 
-// We can call getTreatments but always with a key.
+// We can call getTreatments
 asyncTreatments = asyncClient.getTreatments(splitKey, ['mySplit']);
+asyncTreatments = asyncBrowserClient.getTreatments(['mySplit']);
+
 // Attributes parameter is optional
 asyncTreatments = asyncClient.getTreatments(splitKey, ['mySplit'], attributes);
+asyncTreatments = asyncBrowserClient.getTreatments(['mySplit'], attributes);
 
-// We can call getTreatmentWithConfig but always with a key.
+// We can call getTreatmentWithConfig
 asyncTreatmentWithConfig = asyncClient.getTreatmentWithConfig(splitKey, 'mySplit');
+asyncTreatmentWithConfig = asyncBrowserClient.getTreatmentWithConfig('mySplit');
+
 // Attributes parameter is optional
 asyncTreatmentWithConfig = asyncClient.getTreatmentWithConfig(splitKey, 'mySplit', attributes);
+asyncTreatmentWithConfig = asyncBrowserClient.getTreatmentWithConfig('mySplit', attributes);
 
-// We can call getTreatments but always with a key.
+// We can call getTreatmentsWithConfig
 asyncTreatmentsWithConfig = asyncClient.getTreatmentsWithConfig(splitKey, ['mySplit']);
+asyncTreatmentsWithConfig = asyncBrowserClient.getTreatmentsWithConfig(['mySplit']);
+
 // Attributes parameter is optional
 asyncTreatmentsWithConfig = asyncClient.getTreatmentsWithConfig(splitKey, ['mySplit'], attributes);
+asyncTreatmentsWithConfig = asyncBrowserClient.getTreatmentsWithConfig(['mySplit'], attributes);
 
-// We can call track only with a key.
+// We can call track
 trackPromise = asyncClient.track(splitKey, 'myTrafficType', 'myEventType'); // all required params
-// Value parameter is optional.
+trackPromise = asyncBrowserClient.track('myTrafficType', 'myEventType'); // all required params
+
+// Value parameter is optional
 trackPromise = asyncClient.track(splitKey, 'myTrafficType', 'myEventType', 10);
+trackPromise = asyncBrowserClient.track('myTrafficType', 'myEventType', 10);
+
 // Properties parameter is optional
 trackPromise = asyncClient.track(splitKey, 'myTrafficType', 'myEventType', 10, { prop1: 1, prop2: '2', prop3: true, prop4: null });
+trackPromise = asyncBrowserClient.track('myTrafficType', 'myEventType', 10, { prop1: 1, prop2: '2', prop3: true, prop4: null });
 
 /**** Tests for IManager interface ****/
 
@@ -336,14 +302,6 @@ splitViews = manager.splits();
 
 // Manager implements ready promise.
 const managerReadyPromise: Promise<void> = manager.ready();
-
-// Manager implements methods from NodeJS.Events. Testing a few.
-manager = manager.on(splitEvent, () => { });
-const aa: boolean = manager.emit(splitEvent);
-manager = manager.removeAllListeners(splitEvent);
-manager = manager.removeAllListeners();
-const bb: number = manager.listenerCount(splitEvent);
-nodeEventEmitter = manager;
 
 // manager exposes Event constants too
 const managerEventConsts: { [key: string]: SplitIO.Event } = manager.Event;
@@ -360,14 +318,6 @@ splitViewsAsync = asyncManager.splits();
 
 // asyncManager implements ready promise.
 const asyncManagerReadyPromise: Promise<void> = asyncManager.ready();
-
-// asyncManager implements methods from NodeJS.Events. Testing a few.
-asyncManager = asyncManager.on(splitEvent, () => { });
-const aaa: boolean = asyncManager.emit(splitEvent);
-asyncManager = asyncManager.removeAllListeners(splitEvent);
-asyncManager = asyncManager.removeAllListeners();
-const bbb: number = asyncManager.listenerCount(splitEvent);
-nodeEventEmitter = asyncManager;
 
 // asyncManager exposes Event constants too
 const asyncManagerEventConsts: { [key: string]: SplitIO.Event } = asyncManager.Event;
@@ -389,6 +339,7 @@ const MyImprListenerMap: SplitIO.IImpressionListener = {
   }
 };
 
+let impressionListener: SplitIO.IImpressionListener;
 impressionListener = MyImprListenerMap;
 impressionListener = new MyImprListener();
 impressionListener.logImpression(impressionData);
@@ -415,7 +366,7 @@ let attr: SplitIO.Attributes = {
   booleanAttribute: true,
   stringArrayAttribute: ['value1', 'value2'],
   numberArrayAttribute: [1, 2]
-}
+};
 
 stored = browserClient.setAttributes(attr);
 let storedAttr: SplitIO.Attributes = browserClient.getAttributes();
@@ -430,188 +381,3 @@ BrowserSDK.UserConsent.setStatus(false);
 userConsent = BrowserSDK.UserConsent.Status.DECLINED;
 userConsent = BrowserSDK.UserConsent.Status.GRANTED;
 userConsent = BrowserSDK.UserConsent.Status.UNKNOWN;
-
-/**** Tests for fully crowded settings interfaces ****/
-
-// Split filters
-let splitFilters: SplitIO.SplitFilter[] = [{ type: 'byName', values: ['my_split_1', 'my_split_1'] }, { type: 'byPrefix', values: ['my_split', 'test_split_'] }]
-
-// Browser integrations
-let fieldsObjectSample: UniversalAnalytics.FieldsObject = { hitType: 'event', eventAction: 'action' };
-let eventDataSample: SplitIO.EventData = { eventTypeId: 'someEventTypeId', value: 10, properties: {} }
-
-let googleAnalyticsToSplitConfig: SplitIO.IGoogleAnalyticsToSplitConfig = {
-  type: 'GOOGLE_ANALYTICS_TO_SPLIT',
-};
-let splitToGoogleAnalyticsConfig: SplitIO.ISplitToGoogleAnalyticsConfig = {
-  type: 'SPLIT_TO_GOOGLE_ANALYTICS',
-};
-
-let customGoogleAnalyticsToSplitConfig: SplitIO.IGoogleAnalyticsToSplitConfig = {
-  type: 'GOOGLE_ANALYTICS_TO_SPLIT',
-  hits: false,
-  filter: function (model: UniversalAnalytics.Model): boolean { return true; },
-  mapper: function (model: UniversalAnalytics.Model, defaultMapping: SplitIO.EventData): SplitIO.EventData { return eventDataSample; },
-  prefix: 'PREFIX',
-  identities: [{ key: 'key1', trafficType: 'tt1' }, { key: 'key2', trafficType: 'tt2' }],
-  autoRequire: true
-};
-let customSplitToGoogleAnalyticsConfig: SplitIO.ISplitToGoogleAnalyticsConfig = {
-  type: 'SPLIT_TO_GOOGLE_ANALYTICS',
-  events: false,
-  impressions: true,
-  filter: function (model: SplitIO.IntegrationData): boolean { return true; },
-  mapper: function (model: SplitIO.IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject): UniversalAnalytics.FieldsObject { return fieldsObjectSample; },
-  trackerNames: ['t0', 'myTracker'],
-}
-
-let fullBrowserSettings: SplitIO.IBrowserSettings = {
-  core: {
-    authorizationKey: 'asd',
-    key: 'asd',
-    trafficType: 'myTT',
-    labelsEnabled: false
-  },
-  scheduler: {
-    featuresRefreshRate: 1,
-    impressionsRefreshRate: 1,
-    impressionsQueueSize: 1,
-    metricsRefreshRate: 1,
-    telemetryRefreshRate: 1,
-    segmentsRefreshRate: 1,
-    offlineRefreshRate: 1,
-    eventsPushRate: 1,
-    eventsQueueSize: 1,
-    pushRetryBackoffBase: 1
-  },
-  startup: {
-    readyTimeout: 1,
-    requestTimeoutBeforeReady: 1,
-    retriesOnFailureBeforeReady: 1,
-    eventsFirstPushWindow: 1
-  },
-  urls: {
-    sdk: 'https://asd.com/sdk',
-    events: 'https://asd.com/events',
-    auth: 'https://asd.com/auth',
-    streaming: 'https://asd.com/streaming',
-    telemetry: 'https://asd.com/telemetry'
-  },
-  features: mockedFeaturesMap,
-  storage: {
-    type: 'LOCALSTORAGE',
-    prefix: 'PREFIX'
-  },
-  impressionListener: impressionListener,
-  debug: true,
-  integrations: [googleAnalyticsToSplitConfig, splitToGoogleAnalyticsConfig, customGoogleAnalyticsToSplitConfig, customSplitToGoogleAnalyticsConfig],
-  streamingEnabled: true,
-  sync: {
-    splitFilters: splitFilters,
-    impressionsMode: 'DEBUG',
-    enabled: true
-  },
-  userConsent: 'GRANTED'
-};
-fullBrowserSettings.storage.type = 'MEMORY';
-fullBrowserSettings.integrations[0].type = 'GOOGLE_ANALYTICS_TO_SPLIT';
-fullBrowserSettings.userConsent = 'DECLINED';
-fullBrowserSettings.userConsent = 'UNKNOWN';
-
-let fullNodeSettings: SplitIO.INodeSettings = {
-  core: {
-    authorizationKey: 'asd',
-    labelsEnabled: false,
-    IPAddressesEnabled: false
-  },
-  scheduler: {
-    featuresRefreshRate: 1,
-    impressionsRefreshRate: 1,
-    impressionsQueueSize: 1,
-    metricsRefreshRate: 1,
-    telemetryRefreshRate: 1,
-    segmentsRefreshRate: 1,
-    offlineRefreshRate: 1,
-    eventsPushRate: 1,
-    eventsQueueSize: 1,
-    pushRetryBackoffBase: 1
-  },
-  startup: {
-    readyTimeout: 1,
-    requestTimeoutBeforeReady: 1,
-    retriesOnFailureBeforeReady: 1,
-    eventsFirstPushWindow: 1
-  },
-  urls: {
-    sdk: 'https://asd.com/sdk',
-    events: 'https://asd.com/events',
-    auth: 'https://asd.com/auth',
-    streaming: 'https://asd.com/streaming',
-    telemetry: 'https://asd.com/telemetry'
-  },
-  features: mockedFeaturesPath,
-  storage: {
-    type: 'MEMORY'
-  },
-  impressionListener: impressionListener,
-  mode: 'standalone',
-  debug: false,
-  streamingEnabled: false,
-  sync: {
-    splitFilters: splitFilters,
-    impressionsMode: 'OPTIMIZED',
-    enabled: true
-  }
-};
-fullNodeSettings.storage.type = 'MEMORY';
-fullNodeSettings.mode = undefined;
-
-let fullAsyncSettings: SplitIO.INodeAsyncSettings = {
-  core: {
-    authorizationKey: 'asd',
-    labelsEnabled: false,
-    IPAddressesEnabled: false
-  },
-  scheduler: {
-    featuresRefreshRate: 1,
-    impressionsRefreshRate: 1,
-    impressionsQueueSize: 1,
-    metricsRefreshRate: 1,
-    telemetryRefreshRate: 1,
-    segmentsRefreshRate: 1,
-    offlineRefreshRate: 1,
-    eventsPushRate: 1,
-    eventsQueueSize: 1
-  },
-  startup: {
-    readyTimeout: 1,
-    requestTimeoutBeforeReady: 1,
-    retriesOnFailureBeforeReady: 1
-  },
-  features: mockedFeaturesPath,
-  storage: {
-    type: 'REDIS',
-    options: {
-      url: 'url',
-      host: 'host',
-      port: 1234,
-      db: 0,
-      pass: 'pass',
-      connectionTimeout: 100,
-      operationTimeout: 100,
-      tls: { ca: ['ca'] }
-    },
-    prefix: 'PREFIX'
-  },
-  impressionListener: impressionListener,
-  mode: 'consumer',
-  debug: true,
-  sync: {
-    splitFilters: splitFilters
-  }
-};
-
-// debug property can be a log level
-fullBrowserSettings.debug = 'ERROR';
-fullNodeSettings.debug = 'WARN';
-fullAsyncSettings.debug = 'INFO';
