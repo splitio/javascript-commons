@@ -1,4 +1,4 @@
-import { IImpressionCountsCacheSync } from '../../storages/types';
+import { IImpressionCountsCacheAsync, IImpressionCountsCacheSync } from '../../storages/types';
 import { ImpressionDTO } from '../../types';
 import { IStrategy, IUniqueKeysTracker } from '../types';
 
@@ -10,7 +10,7 @@ import { IStrategy, IUniqueKeysTracker } from '../types';
  * @returns IStrategyResult
  */
 export function strategyNoneFactory(
-  impressionsCounter: IImpressionCountsCacheSync,
+  impressionsCounter: IImpressionCountsCacheSync | IImpressionCountsCacheAsync,
   uniqueKeysTracker: IUniqueKeysTracker
 ): IStrategy {
   

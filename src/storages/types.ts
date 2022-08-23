@@ -292,6 +292,11 @@ export interface IEventsCacheBase {
   track(data: SplitIO.EventData, size?: number): MaybeThenable<boolean>
 }
 
+export interface IImpressionCountsCacheBase {
+  // Consumer API method, used by impressions count tracker, in standalone and consumer modes, to push impressions into the storage.
+  track(featureName: string, timeFrame: number, amount: number): void
+}
+
 /** Impressions and events cache for standalone mode (sync) */
 
 // Producer API methods for sync recorder storages, used by submitters in standalone mode to pop data and post it to Split BE.
@@ -346,13 +351,22 @@ export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProdu
  * Impression counts cache for impressions dedup in standalone and producer mode.
  * Only in memory. Named `ImpressionsCounter` in spec.
  */
-export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
+export interface IImpressionCountsCacheSync extends IImpressionCountsCacheBase, IRecorderCacheProducerSync<Record<string, number>> {
   // Used by impressions tracker
   track(featureName: string, timeFrame: number, amount: number): void
 
   // Used by impressions count submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
   pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
+}
+
+export interface IImpressionCountsCacheInRedis extends IImpressionCountsCacheSync {
+  postImpressionCountsInRedis(body: string): Promise<[Error | null, any][]>
+}
+
+export interface IImpressionCountsCacheAsync extends IImpressionCountsCacheBase, IRecorderCacheProducerAsync<Record<string, number>> {
+  // Used by impressions tracker
+  track(featureName: string, timeFrame: number, amount: number): Promise<number>
 }
 
 export interface IUniqueKeysCacheBase {
@@ -365,6 +379,10 @@ export interface IUniqueKeysCacheBase {
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void,
   clear(): void
+}
+
+export interface IUniqueKeysCacheInRedis extends IUniqueKeysCacheBase {
+  postUniqueKeysInRedis(body: string): Promise<[Error | null, any][]> 
 }
 
 /**
@@ -455,14 +473,15 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
+  TImpressionsCountCache extends IImpressionCountsCacheBase,
   TEventsCache extends IEventsCacheBase,
   TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
-  TUniqueKeysCache extends IUniqueKeysCacheBase
+  TUniqueKeysCache extends IUniqueKeysCacheInRedis | IUniqueKeysCacheBase
   > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
-  impressionCounts?: IImpressionCountsCacheSync,
+  impressionCounts?: TImpressionsCountCache,
   events: TEventsCache,
   telemetry?: TTelemetryCache,
   uniqueKeys?: TUniqueKeysCache,
@@ -474,15 +493,17 @@ export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
+  IImpressionCountsCacheSync | IImpressionCountsCacheInRedis,
   IEventsCacheSync,
   ITelemetryCacheSync,
-  IUniqueKeysCacheBase
+  IUniqueKeysCacheBase | IUniqueKeysCacheInRedis
   > { }
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
+  IImpressionCountsCacheAsync | IImpressionCountsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
   ITelemetryCacheAsync,
   IUniqueKeysCacheBase

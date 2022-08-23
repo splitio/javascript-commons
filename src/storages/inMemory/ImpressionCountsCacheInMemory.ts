@@ -1,8 +1,15 @@
 import { truncateTimeFrame } from '../../utils/time';
 import { IImpressionCountsCacheSync } from '../types';
+const DEFAULT_CACHE_SIZE = 30000;
 
 export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
-  private cache: Record<string, number> = {};
+  protected cache: Record<string, number> = {};
+  private readonly maxStorage: number;
+  protected onFullQueue?: () => void;
+  
+  constructor(impressionCountsCacheSize: number = DEFAULT_CACHE_SIZE) {
+    this.maxStorage = impressionCountsCacheSize;
+  }
 
   /**
   * Builds key to be stored in the cache with the featureName and the timeFrame truncated.
@@ -18,6 +25,9 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
     const key = this._makeKey(featureName, timeFrame);
     const currentAmount = this.cache[key];
     this.cache[key] = currentAmount ? currentAmount + amount : amount;
+    if (Object.keys(this.cache).length >= this.maxStorage && this.onFullQueue) {
+      this.onFullQueue();
+    }
   }
 
 

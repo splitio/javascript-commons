@@ -73,7 +73,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const observer = impressionsObserverFactory();
   const uniqueKeysTracker = storageFactoryParams.impressionsMode === NONE ? uniqueKeysTrackerFactory(log, storage.uniqueKeys!, filterAdapterFactory && filterAdapterFactory()) : undefined;
 
-  let strategy: any = undefined;
+  let strategy;
   switch (storageFactoryParams.impressionsMode) {
     case OPTIMIZED: 
       strategy = strategyOptimizedFactory(observer, storage.impressionCounts!);
