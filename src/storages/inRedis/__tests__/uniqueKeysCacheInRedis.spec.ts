@@ -4,7 +4,7 @@ import Redis from 'ioredis';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   
-  test('UNIQUE KEYS CACHE IN REDIS / should incrementally store values, clear the queue, and tell if it is empty', () => {
+  test('UNIQUE KEYS CACHE IN REDIS / should incrementally store values, clear the queue, and tell if it is empty', async () => {
     const connection = new Redis();
     const key = 'unique_key_post';
     
@@ -43,10 +43,10 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(cache.pop()).toEqual({ keys: [] });
     expect(cache.isEmpty()).toBe(true);
     
-    connection.quit();
+    await connection.quit();
   });
 
-  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', () => {
+  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {
     let cbCalled = 0;
     const connection = new Redis();
     const key = 'unique_key_post';
@@ -71,9 +71,9 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(cbCalled).toBe(1); // And it should not flush again,
     cache.track('key2', 'feature6');
     expect(cbCalled).toBe(2); // Until the queue is filled with events again.
-    
-    connection.del(key);
-    connection.quit();
+
+    await connection.del(key);
+    await connection.quit();
   });
 
   test('UNIQUE KEYS CACHE IN REDIS / post unique keys in redis method', async () => {
@@ -88,7 +88,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     
     await cache.postUniqueKeysInRedis();
     
-    connection.lrange(key, 0, 10, (err, data) => {
+    connection.lrange(key, 0, 10, async (err, data) => {
       const expected = [
         JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
         JSON.stringify({'f': 'feature2', 'ks': ['key2']}),
@@ -97,8 +97,8 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       
       expect(data).toStrictEqual(expected);
       
-      connection.del(key);
-      connection.quit();
+      await connection.del(key);
+      await connection.quit();
     });
     
     
@@ -150,7 +150,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     }, refreshRate+200);
   });
   
-  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', () => {
+  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {
     const connection = new Redis();
     const key = 'unique_key_post';
     
@@ -187,10 +187,10 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     cache.track('key3', 'feature5');
     cache.track('key2', 'feature6');
     
-    connection.lrange(key, 0, 10, (err, data) => {
+    connection.lrange(key, 0, 10, async (err, data) => {
       expect(data).toStrictEqual(expected2);
-      connection.del(key);
-      connection.quit();
+      await connection.del(key);
+      await connection.quit();
     });
     
   });

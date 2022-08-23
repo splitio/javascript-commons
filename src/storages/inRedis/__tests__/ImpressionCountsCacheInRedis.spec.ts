@@ -13,7 +13,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     'feature2::1601647200000': '4'
   };
   
-  test('IMPRESSION COUNTS CACHE IN REDIS / Impression Counter Test makeKey', () => {
+  test('IMPRESSION COUNTS CACHE IN REDIS / Impression Counter Test makeKey', async () => {
     const connection = new Redis();
     const counter = new ImpressionCountsCacheInRedis(key, connection);
     const timestamp1 = new Date(2020, 9, 2, 10, 0, 0).getTime();
@@ -23,10 +23,10 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(counter._makeKey(null, new Date(2020, 9, 2, 10, 53, 12).getTime())).toBe(`null::${timestamp1}`);
     expect(counter._makeKey(null, 0)).toBe('null::0');
     
-    connection.quit();
+    await connection.quit();
   });
 
-  test('IMPRESSION COUNTS CACHE IN REDIS/ Impression Counter Test BasicUsage', () => {
+  test('IMPRESSION COUNTS CACHE IN REDIS/ Impression Counter Test BasicUsage', async () => {
     const connection = new Redis();
     const counter = new ImpressionCountsCacheInRedis(key, connection);
     
@@ -73,8 +73,8 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(counted2[counter._makeKey('feature2', nextHourTimestamp)]).toBe(4);
     expect(Object.keys(counter.pop()).length).toBe(0);
     
-    connection.del(key);
-    connection.quit();
+    await connection.del(key);
+    await connection.quit();
   });
 
   test('POST IMPRESSION COUNTS IN REDIS FUNCTION', (done) => {
@@ -94,10 +94,10 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
    
     counter.postImpressionCountsInRedis().then(() => {
 
-      connection.hgetall(key).then(data => {
+      connection.hgetall(key).then( async data => {
         expect(data).toStrictEqual(expected);
-        connection.del(key);
-        connection.quit();
+        await connection.del(key);
+        await connection.quit();
         done();
       });
     });
@@ -126,7 +126,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     const refreshRate = 500; 
     counter.start(refreshRate);
     setTimeout(() => {
-      connection.hgetall(key, (err, data) => {
+      connection.hgetall(key, async (err, data) => {
         
         expect(data).toStrictEqual(expected);
         
@@ -135,11 +135,11 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
         setTimeout(() => {
           
           counter.track('feature3', nextHourTimestamp + 4, 2);
-          connection.hgetall(key, (err, data) => {
+          connection.hgetall(key, async (err, data) => {
             expect(data).toStrictEqual(expected);
             
-            connection.del(key);
-            connection.quit();
+            await connection.del(key);
+            await connection.quit();
             done();
           });
         }, refreshRate+200);
@@ -181,10 +181,10 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     shortCounter.track('feature2', timestamp + 3, 2); 
     shortCounter.track('feature1', nextHourTimestamp + 2, 1);
     
-    connection.hgetall(key, (err, data) => {
+    connection.hgetall(key, async (err, data) => {
       expect(data).toStrictEqual(expected2);
-      connection.del(key);
-      connection.quit();
+      await connection.del(key);
+      await connection.quit();
       done();
     });
     
