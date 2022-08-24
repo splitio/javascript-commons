@@ -8,7 +8,7 @@ import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
 import { DEBUG, NONE, STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
-import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
+import { UniqueKeysCacheInRedis } from './uniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
 
 export interface InRedisStorageOptions {
