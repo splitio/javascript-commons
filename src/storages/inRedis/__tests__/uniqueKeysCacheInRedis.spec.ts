@@ -1,4 +1,4 @@
-import { UniqueKeysCacheInRedis } from '../UniqueKeysCacheInRedis';
+import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import Redis from 'ioredis';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
