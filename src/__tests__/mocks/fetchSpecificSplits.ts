@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import { SplitFilter } from '../../types';
 
 const valuesExamples = [
   ['\u0223abc', 'abc\u0223asd', 'abc\u0223', 'abcȣ'],
@@ -12,7 +12,7 @@ const valuesExamples = [
   ['%', '%25', '__a', '__ш'], // [7] ordered and deduplicated
 ];
 
-export const splitFilters: SplitIO.SplitFilter[][] = [
+export const splitFilters: SplitFilter[][] = [
   [
     { type: 'byName', values: valuesExamples[0] },
     { type: 'byName', values: valuesExamples[1] },

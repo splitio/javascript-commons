@@ -1,4 +1,4 @@
-import { StorageType } from '../../storages/types';
+import { StorageType } from '../../types';
 import { SDKMode } from '../../types';
 
 // Special treatments

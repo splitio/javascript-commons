@@ -3,7 +3,7 @@ import { thenable } from '../utils/promise/thenable';
 import { truncateTimeFrame } from '../utils/time';
 import { IImpressionCountsCacheSync, IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker } from './types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ImpressionDTO, ISettings, Attributes, ImpressionData } from '../types';
 import { IImpressionObserver } from './impressionObserver/types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
@@ -32,7 +32,7 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(impressions: ImpressionDTO[], attributes?: Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsCount = impressions.length;
@@ -78,7 +78,7 @@ export function impressionsTrackerFactory(
       // @TODO next block might be handled by the integration manager. In that case, the metadata object doesn't need to be passed in the constructor
       if (impressionListener || integrationsManager) {
         for (let i = 0; i < impressionsCount; i++) {
-          const impressionData: SplitIO.ImpressionData = {
+          const impressionData: ImpressionData = {
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
             impression: objectAssign({}, impressions[i]),
             attributes,

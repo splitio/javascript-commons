@@ -9,8 +9,8 @@ import { thenable } from '../../utils/promise/thenable';
 import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
 import { ISplitCondition } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { Attributes } from '../../types';
+import { ILogger } from '../../types';
 
 export function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
@@ -31,7 +31,7 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
       const matcher = matcherFactory(log, matcherDto, storage);
 
       // Evaluator function.
-      return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
+      return (key: string, attributes: Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
         const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
 

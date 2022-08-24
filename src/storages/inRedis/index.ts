@@ -1,5 +1,6 @@
 import { RedisAdapter } from './RedisAdapter';
-import { IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
+import { IStorageAsync, IStorageFactoryParams } from '../types';
+import { StorageAsyncFactory } from '../../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCacheInRedis } from './SplitsCacheInRedis';
@@ -18,7 +19,7 @@ export interface InRedisStorageOptions {
  * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.
  * @see {@link https://www.npmjs.com/package/ioredis}
  */
-export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
+export function InRedisStorage(options: InRedisStorageOptions = {}): StorageAsyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 

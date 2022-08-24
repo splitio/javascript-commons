@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_EQUAL_TO_SET } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { findIndex } from '../../utils/lang';
 
 export function equalToSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

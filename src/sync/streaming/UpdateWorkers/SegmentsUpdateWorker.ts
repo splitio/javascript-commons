@@ -1,4 +1,4 @@
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 import { ISegmentsCacheSync } from '../../../storages/types';
 import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask } from '../../polling/types';

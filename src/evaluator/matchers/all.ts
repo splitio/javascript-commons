@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_ALL } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function allMatcherContext(log: ILogger) {
   return function allMatcher(runtimeAttr: string): boolean {

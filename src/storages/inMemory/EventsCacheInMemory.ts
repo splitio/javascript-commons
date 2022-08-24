@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import { EventData } from '../../types';
 import { IEventsCacheSync } from '../types';
 
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M
@@ -7,7 +7,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
 
   private onFullQueue?: () => void;
   private readonly maxQueue: number;
-  private queue: SplitIO.EventData[];
+  private queue: EventData[];
   private queueByteSize: number;
 
   /**
@@ -28,7 +28,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
   /**
    * Add a new event object at the end of the queue.
    */
-  track(data: SplitIO.EventData, size = 0) {
+  track(data: EventData, size = 0) {
     this.queueByteSize += size;
     this.queue.push(data);
 
@@ -48,7 +48,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
   /**
    * Pop the collected data, used as payload for posting.
    */
-  pop(toMerge?: SplitIO.EventData[]) {
+  pop(toMerge?: EventData[]) {
     const data = this.queue;
     this.clear();
     return toMerge ? toMerge.concat(data) : data;

@@ -1,4 +1,4 @@
-import { SplitIO, ImpressionDTO } from '../types';
+import { ImpressionDTO, EventData, ImpressionData, Attributes } from '../types';
 import { StreamingEventType, Method, OperationType } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
@@ -6,7 +6,7 @@ import { NetworkError } from '../services/types';
 /** Events tracker */
 
 export interface IEventsHandler {
-  handleEvent(eventData: SplitIO.EventData): any
+  handleEvent(eventData: EventData): any
 }
 
 export type IEventTracker = IEventsCacheBase
@@ -14,11 +14,11 @@ export type IEventTracker = IEventsCacheBase
 /** Impressions tracker */
 
 export interface IImpressionsHandler {
-  handleImpression(impressionData: SplitIO.ImpressionData): any
+  handleImpression(impressionData: ImpressionData): any
 }
 
 export interface IImpressionsTracker {
-  track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes): void
+  track(impressions: ImpressionDTO[], attributes?: Attributes): void
 }
 
 /** Telemetry tracker */

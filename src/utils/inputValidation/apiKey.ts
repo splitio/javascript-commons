@@ -1,5 +1,5 @@
 import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, LOG_PREFIX_INSTANTIATION } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isString } from '../lang';
 
 const item = 'api_key';

@@ -1,6 +1,5 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
-import { ISettings, SDKMode } from '../../../types';
-import { ILogger } from '../../../logger/types';
+import { ISettings, SDKMode, ILogger } from '../../../types';
 import { ERROR_STORAGE_INVALID } from '../../../logger/constants';
 import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_PLUGGABLE, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
 import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';

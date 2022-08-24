@@ -1,5 +1,5 @@
 import { isString } from '../../utils/lang';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { ENGINE_MATCHER_CONTAINS_STRING } from '../../logger/constants';
 
 export function containsStringMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

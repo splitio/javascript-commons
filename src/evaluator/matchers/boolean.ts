@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_BOOLEAN } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function booleanMatcherContext(log: ILogger, ruleAttr: boolean) /*: Function */ {
   return function booleanMatcher(runtimeAttr: boolean): boolean {

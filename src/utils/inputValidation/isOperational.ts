@@ -1,5 +1,5 @@
 import { ERROR_CLIENT_DESTROYED, CLIENT_NOT_READY } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { IReadinessManager } from '../../readiness/types';
 
 export function validateIfNotDestroyed(log: ILogger, readinessManager: IReadinessManager, method: string): boolean {

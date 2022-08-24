@@ -5,10 +5,10 @@ import { thenable } from '../utils/promise/thenable';
 import * as LabelsConstants from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
-import { SplitIO } from '../types';
+import { SplitKey, Attributes } from '../types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluation, IEvaluationResult, IEvaluator, ISplitEvaluator } from './types';
-import { ILogger } from '../logger/types';
+import { ILogger } from '../types';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -38,7 +38,7 @@ export class Engine {
     return this.baseInfo.name;
   }
 
-  getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
+  getTreatment(key: SplitKey, attributes: Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
     const {
       killed,
       seed,

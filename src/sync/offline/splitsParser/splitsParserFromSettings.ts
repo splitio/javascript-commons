@@ -1,23 +1,23 @@
 import { ISplitPartial } from '../../../dtos/types';
-import { ISettings, SplitIO } from '../../../types';
+import { ISettings, MockedFeaturesMap, TreatmentWithConfig } from '../../../types';
 import { isObject, forOwn } from '../../../utils/lang';
 import { parseCondition } from './parseCondition';
 
-function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: string | SplitIO.TreatmentWithConfig) {
+function hasTreatmentChanged(prev: string | TreatmentWithConfig, curr: string | TreatmentWithConfig) {
   if (typeof prev !== typeof curr) return true;
 
   if (typeof prev === 'string') { // strings treatments, just compare
     return prev !== curr;
   } else { // has treatment and config, compare both
-    return prev.treatment !== (curr as SplitIO.TreatmentWithConfig).treatment || prev.config !== (curr as SplitIO.TreatmentWithConfig).config;
+    return prev.treatment !== (curr as TreatmentWithConfig).treatment || prev.config !== (curr as TreatmentWithConfig).config;
   }
 }
 
 export function splitsParserFromSettingsFactory() {
 
-  let previousMock: SplitIO.MockedFeaturesMap = { 'emptyMock': '1' };
+  let previousMock: MockedFeaturesMap = { 'emptyMock': '1' };
 
-  function mockUpdated(currentData: SplitIO.MockedFeaturesMap) {
+  function mockUpdated(currentData: MockedFeaturesMap) {
     const names = Object.keys(currentData);
 
     // Different amount of items
@@ -42,7 +42,7 @@ export function splitsParserFromSettingsFactory() {
    * @param settings validated object with mocked features mapping.
    */
   return function splitsParserFromSettings(settings: ISettings): false | Record<string, ISplitPartial> {
-    const features = settings.features as SplitIO.MockedFeaturesMap || {};
+    const features = settings.features as MockedFeaturesMap || {};
 
     if (!mockUpdated(features)) return false;
 
@@ -53,8 +53,8 @@ export function splitsParserFromSettingsFactory() {
       let config = null;
 
       if (isObject(data)) {
-        treatment = (data as SplitIO.TreatmentWithConfig).treatment;
-        config = (data as SplitIO.TreatmentWithConfig).config || config;
+        treatment = (data as TreatmentWithConfig).treatment;
+        config = (data as TreatmentWithConfig).config || config;
       }
       const configurations: Record<string, string> = {};
       if (config !== null) configurations[treatment as string] = config;

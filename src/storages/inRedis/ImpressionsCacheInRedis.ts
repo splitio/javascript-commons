@@ -3,7 +3,7 @@ import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
 import { Redis } from 'ioredis';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 const IMPRESSIONS_TTL_REFRESH = 3600; // 1 hr
 

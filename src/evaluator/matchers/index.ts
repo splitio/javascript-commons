@@ -17,7 +17,7 @@ import { booleanMatcherContext } from './boolean';
 import { stringMatcherContext } from './string';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { IMatcher, IMatcherDto } from '../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 const matchers = [
   undefined, // UNDEFINED: 0,

@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_STARTS_WITH } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { startsWith } from '../../utils/lang';
 
 export function startsWithMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import { IntegrationData, EventData } from '../../types';
 
 /**
  * A pair of user key and it's trafficType, required for tracking valid Split events.
@@ -41,7 +41,7 @@ export interface GoogleAnalyticsToSplitOptions {
    *      return defaultMapping;
    *  }`
    */
-  mapper?: (model: UniversalAnalytics.Model, defaultMapping: SplitIO.EventData) => SplitIO.EventData,
+  mapper?: (model: UniversalAnalytics.Model, defaultMapping: EventData) => EventData,
   /**
    * Optional prefix for EventTypeId, to prevent any kind of data collision between events.
    * @property {string} prefix
@@ -97,7 +97,7 @@ export interface SplitToGoogleAnalyticsOptions {
    * For example, the following filter allows to track only impressions, equivalent to setting events to false:
    *  `(data) => data.type === 'IMPRESSION'`
    */
-  filter?: (data: SplitIO.IntegrationData) => boolean,
+  filter?: (data: IntegrationData) => boolean,
   /**
    * Optional function useful when you need to modify the GA hit before sending it.
    * This function is invoked with two arguments:
@@ -128,7 +128,7 @@ export interface SplitToGoogleAnalyticsOptions {
    *    nonInteraction: true,
    *  }`
    */
-  mapper?: (data: SplitIO.IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject,
+  mapper?: (data: IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject,
   /**
    * List of tracker names to send the hit. An empty string represents the default tracker.
    * If not provided, hits are only sent to default tracker.

@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_STRING_INVALID, ENGINE_MATCHER_STRING } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function stringMatcherContext(log: ILogger, ruleAttr: string) /*: Function */ {
   return function stringMatcher(runtimeAttr: string): boolean {

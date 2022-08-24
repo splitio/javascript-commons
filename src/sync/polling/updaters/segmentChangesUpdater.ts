@@ -4,7 +4,7 @@ import { IReadinessManager } from '../../../readiness/types';
 import { MaybeThenable } from '../../../dtos/types';
 import { findIndex } from '../../../utils/lang';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { thenable } from '../../../utils/promise/thenable';
 

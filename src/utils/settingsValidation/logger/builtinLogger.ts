@@ -1,11 +1,10 @@
 import { isLogLevelString, Logger, LogLevels } from '../../../logger';
-import { ILogger } from '../../../logger/types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
 import { codesDebug } from '../../../logger/messages/debug';
 import { _Map } from '../../lang/maps';
 import { getLogLevel } from './commons';
-import { LogLevel } from '../../../types';
+import { LogLevel, ILogger } from '../../../types';
 
 const allCodes = new _Map(codesDebug);
 

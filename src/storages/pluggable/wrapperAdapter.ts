@@ -1,4 +1,4 @@
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { IPluggableStorageWrapper } from '../types';
 import { LOG_PREFIX } from './constants';
 

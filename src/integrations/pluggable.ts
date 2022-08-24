@@ -1,5 +1,5 @@
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../utils/constants';
-import { SplitIO } from '../types';
+import { ImpressionData, EventData } from '../types';
 import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './types';
 
 /**
@@ -29,10 +29,10 @@ export function pluggableIntegrationsManagerFactory(
 
   // Exception safe methods: each integration module is responsable for handling errors
   return {
-    handleImpression(impressionData: SplitIO.ImpressionData) {
+    handleImpression(impressionData: ImpressionData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_IMPRESSION, payload: impressionData }));
     },
-    handleEvent(eventData: SplitIO.EventData) {
+    handleEvent(eventData: EventData) {
       listeners.forEach(listener => listener.queue({ type: SPLIT_EVENT, payload: eventData }));
     }
   };

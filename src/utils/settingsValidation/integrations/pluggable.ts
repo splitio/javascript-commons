@@ -1,6 +1,5 @@
-import { ISettings } from '../../../types';
+import { ISettings, ILogger } from '../../../types';
 import { validateIntegrations } from './common';
-import { ILogger } from '../../../logger/types';
 
 /**
  * This function validates `settings.integrations` object that consists of a list of pluggable integration factories.

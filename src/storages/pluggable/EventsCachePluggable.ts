@@ -1,7 +1,7 @@
 import { IPluggableStorageWrapper, IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { EventData } from '../../types';
+import { ILogger } from '../../types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';
 
@@ -25,7 +25,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
    * @returns  A promise that is resolved with a boolean value indicating if the push operation succeeded or failed.
    * Unlike `impressions::track`, The promise will never be rejected.
    */
-  track(eventData: SplitIO.EventData): Promise<boolean> {
+  track(eventData: EventData): Promise<boolean> {
     return this.wrapper.pushItems(
       this.key,
       [this._toJSON(eventData)]
@@ -38,7 +38,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
       });
   }
 
-  private _toJSON(eventData: SplitIO.EventData): string {
+  private _toJSON(eventData: EventData): string {
     return JSON.stringify({
       m: this.metadata,
       e: eventData

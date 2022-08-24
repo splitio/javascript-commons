@@ -2,7 +2,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IEventsCacheBase, ITelemetryCacheAsync, ITelemetryCacheSync } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings, EventData } from '../types';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
 import { CONSENT_DECLINED, DROPPED, QUEUED } from '../utils/constants';
 import { isStorageSync } from './impressionObserver/utils';
@@ -23,7 +23,7 @@ export function eventTrackerFactory(
   const log = settings.log;
   const isSync = isStorageSync(settings);
 
-  function queueEventsCallback(eventData: SplitIO.EventData, tracked: boolean) {
+  function queueEventsCallback(eventData: EventData, tracked: boolean) {
     const { eventTypeId, trafficTypeName, key, value, timestamp, properties } = eventData;
     // Logging every prop would be too much.
     const msg = `event of type "${eventTypeId}" for traffic type "${trafficTypeName}". Key: ${key}. Value: ${value}. Timestamp: ${timestamp}. ${properties ? 'With properties.' : 'With no properties.'}`;
@@ -48,7 +48,7 @@ export function eventTrackerFactory(
   }
 
   return {
-    track(eventData: SplitIO.EventData, size?: number) {
+    track(eventData: EventData, size?: number) {
       if (settings.userConsent === CONSENT_DECLINED) {
         return isSync ? false : Promise.resolve(false);
       }

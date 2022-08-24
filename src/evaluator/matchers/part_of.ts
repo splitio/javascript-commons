@@ -1,5 +1,5 @@
 import { findIndex } from '../../utils/lang';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { ENGINE_MATCHER_PART_OF } from '../../logger/constants';
 
 export function partOfSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {

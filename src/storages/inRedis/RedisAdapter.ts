@@ -1,5 +1,5 @@
 import ioredis from 'ioredis';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
 import { thenable } from '../../utils/promise/thenable';

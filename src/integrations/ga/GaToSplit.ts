@@ -8,9 +8,9 @@ import {
   validateKey,
   validateTrafficType,
 } from '../../utils/inputValidation';
-import { SplitIO } from '../../types';
+import { EventData } from '../../types';
 import { Identity, GoogleAnalyticsToSplitOptions } from './types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { IIntegrationFactoryParams } from '../types';
 
 const logPrefix = 'ga-to-split: ';
@@ -67,7 +67,7 @@ const defaultMapping = {
  * @param {object} mapping
  */
 function mapperBuilder(mapping: typeof defaultMapping) {
-  return function (model: UniversalAnalytics.Model): SplitIO.EventData {
+  return function (model: UniversalAnalytics.Model): EventData {
     const hitType: string = model.get('hitType');
     // @ts-expect-error
     const eventTypeId = model.get(mapping.eventTypeId[hitType] || 'hitType');
@@ -133,7 +133,7 @@ export function validateIdentities(identities?: Identity[]) {
  * @param {EventData} data event data instance to validate. Precondition: data != undefined
  * @returns {boolean} Whether the data instance is a valid EventData or not.
  */
-export function validateEventData(log: ILogger, eventData: any): eventData is SplitIO.EventData {
+export function validateEventData(log: ILogger, eventData: any): eventData is EventData {
   if (!validateEvent(log, eventData.eventTypeId, logNameMapper))
     return false;
 
@@ -251,10 +251,10 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
         }
 
         // map hit into an EventData instance
-        let eventData: SplitIO.EventData = defaultMapper(model);
+        let eventData: EventData = defaultMapper(model);
         if (opts.mapper) {
           try {
-            eventData = opts.mapper(model, eventData as SplitIO.EventData);
+            eventData = opts.mapper(model, eventData as EventData);
           } catch (err) {
             log.warn(logPrefix + `custom mapper threw: ${err}`);
             return;

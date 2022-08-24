@@ -1,5 +1,5 @@
 import { ERROR_NULL, ERROR_INVALID, WARN_TRIMMING, ERROR_EMPTY } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isString } from '../lang';
 
 // include BOM and nbsp

@@ -1,13 +1,13 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
-import { ILogger } from '../logger/types';
+import { IAsyncClientSS, IAsyncManager, IClientSS, IClientWithKey, ILogger, IManager, SplitKey } from '../types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker } from '../trackers/types';
-import { SplitIO, ISettings, IEventEmitter } from '../types';
+import { ISettings, IEventEmitter } from '../types';
 
 /**
  * Environment related dependencies.
@@ -90,11 +90,11 @@ export interface ISdkFactoryParams {
     log: ILogger,
     splits: ISplitsCacheSync | ISplitsCacheAsync,
     sdkReadinessManager: ISdkReadinessManager
-  ) => SplitIO.IManager | SplitIO.IAsyncManager,
+  ) => IManager | IAsyncManager,
 
   // Sdk client method factory (ISDK::client method).
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): IClientWithKey; (key: SplitKey, trafficType?: string | undefined): IClientWithKey; } | (() => IClientSS) | (() => IAsyncClientSS))
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.

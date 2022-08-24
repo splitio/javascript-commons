@@ -1,5 +1,5 @@
 import { ENGINE_MATCHER_EQUAL } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 export function equalToMatcherContext(log: ILogger, ruleAttr: number) /*: Function */ {
   return function equalToMatcher(runtimeAttr: number): boolean {

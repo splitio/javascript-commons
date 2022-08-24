@@ -1,5 +1,5 @@
 import { findIndex } from '../../utils/lang';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { thenable } from '../../utils/promise/thenable';
 import { MaybeThenable } from '../../dtos/types';
 import { IMatcher } from '../types';

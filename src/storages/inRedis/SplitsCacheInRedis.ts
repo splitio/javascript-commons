@@ -1,7 +1,7 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { Redis } from 'ioredis';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { LOG_PREFIX } from './constants';
 import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';

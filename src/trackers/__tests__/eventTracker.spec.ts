@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import { EventData } from '../../types';
 import { QUEUED } from '../../utils/constants';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { eventTrackerFactory } from '../eventTracker';
@@ -41,7 +41,7 @@ describe('Event Tracker', () => {
   });
 
   test('Propagate the event into the event cache and integrations manager, and return its result (a boolean or a promise that resolves to boolean)', async () => {
-    fakeEventsCache.track.mockImplementation((eventData: SplitIO.EventData, size: number) => {
+    fakeEventsCache.track.mockImplementation((eventData: EventData, size: number) => {
       if (eventData === fakeEvent) {
         switch (size) {
           case 1: return true;

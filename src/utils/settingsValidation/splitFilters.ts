@@ -1,20 +1,18 @@
 import { STANDALONE_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
-import { ISplitFiltersValidation } from '../../dtos/types';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { ISplitFiltersValidation, SplitFilterType, ILogger } from '../../types';
 import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS } from '../../logger/constants';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
 const FILTERS_METADATA = [
   {
-    type: 'byName' as SplitIO.SplitFilterType,
+    type: 'byName' as SplitFilterType,
     maxLength: 400,
     queryParam: 'names='
   },
   {
-    type: 'byPrefix' as SplitIO.SplitFilterType,
+    type: 'byPrefix' as SplitFilterType,
     maxLength: 50,
     queryParam: 'prefixes='
   }
@@ -23,7 +21,7 @@ const FILTERS_METADATA = [
 /**
  * Validates that the given value is a valid filter type
  */
-function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.SplitFilterType {
+function validateFilterType(maybeFilterType: any): maybeFilterType is SplitFilterType {
   return FILTERS_METADATA.some(filterMetadata => filterMetadata.type === maybeFilterType);
 }
 
@@ -37,7 +35,7 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  *
  * @throws Error if the sanitized list exceeds the length indicated by `maxLength`
  */
-function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
+function validateSplitFilter(log: ILogger, type: SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
   let result = validateSplits(log, values, LOG_PREFIX_SETTINGS, `${type} filter`, `${type} filter value`);
 
@@ -63,7 +61,7 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
  * @param {Object} groupedFilters object of filters. Each filter must be a list of valid, unique and ordered string values.
  * @returns null or string with the `split filter query` component of the URL.
  */
-function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, string[]>) {
+function queryStringBuilder(groupedFilters: Record<SplitFilterType, string[]>) {
   const queryParams: string[] = [];
   FILTERS_METADATA.forEach(({ type, queryParam }) => {
     const filter = groupedFilters[type];
@@ -109,7 +107,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   // Validate filters and group their values by filter type inside `groupedFilters` object
   res.validFilters = maybeSplitFilters.filter((filter, index) => {
     if (filter && validateFilterType(filter.type) && Array.isArray(filter.values)) {
-      res.groupedFilters[filter.type as SplitIO.SplitFilterType] = res.groupedFilters[filter.type as SplitIO.SplitFilterType].concat(filter.values);
+      res.groupedFilters[filter.type as SplitFilterType] = res.groupedFilters[filter.type as SplitFilterType].concat(filter.values);
       return true;
     } else {
       log.warn(WARN_SPLITS_FILTER_INVALID, [index]);

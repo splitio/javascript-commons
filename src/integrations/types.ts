@@ -1,9 +1,9 @@
 import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IImpressionsHandler } from '../trackers/types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings, IntegrationData } from '../types';
 
 export interface IIntegration {
-  queue(data: SplitIO.IntegrationData): void
+  queue(data: IntegrationData): void
 }
 
 export type IIntegrationManager = IEventsHandler & IImpressionsHandler;

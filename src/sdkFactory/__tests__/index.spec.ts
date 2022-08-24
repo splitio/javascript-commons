@@ -1,7 +1,7 @@
 import { ISdkFactoryParams } from '../types';
 import { sdkFactory } from '../index';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
-import { SplitIO } from '../../types';
+import { IBasicSDK } from '../../types';
 import { EventEmitter } from '../../utils/MinEvents';
 
 /** Mocks */
@@ -58,7 +58,7 @@ const fullParamsForSyncSDK = {
 
 /** End Mocks */
 
-function assertSdkApi(sdk: SplitIO.IAsyncSDK | SplitIO.ISDK | SplitIO.ICsSDK, params: any) {
+function assertSdkApi(sdk: IBasicSDK<any, any>, params: any) {
   expect(sdk.Logger).toBe(loggerApiMock);
   expect(sdk.settings).toBe(params.settings);
   expect(sdk.client).toBe(params.sdkClientMethodFactory.mock.results[0].value);

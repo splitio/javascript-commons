@@ -1,7 +1,7 @@
 import { isObject, isString, isFiniteNumber } from '../lang';
 import { validateSplit } from './split';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
+import { PreloadedData } from '../../storages/types';
 
 function validateTimestampData(log: ILogger, maybeTimestamp: any, method: string, item: string) {
   if (isFiniteNumber(maybeTimestamp) && maybeTimestamp > -1) return true;
@@ -42,7 +42,7 @@ function validateSegmentsData(log: ILogger, maybeSegmentsData: any, method: stri
   return false;
 }
 
-export function validatePreloadedData(log: ILogger, maybePreloadedData: any, method: string): maybePreloadedData is SplitIO.PreloadedData {
+export function validatePreloadedData(log: ILogger, maybePreloadedData: any, method: string): maybePreloadedData is PreloadedData {
   if (!isObject(maybePreloadedData)) {
     log.error(`${method}: preloadedData must be an object.`);
   } else if (

@@ -1,4 +1,4 @@
-import { IEventEmitter, IStatusInterface } from '../types';
+import { IEventEmitter, IStatusInterface, Event } from '../types';
 
 /** Splits data emitter */
 
@@ -28,15 +28,8 @@ export interface ISegmentsEventEmitter extends IEventEmitter {
 
 /** Readiness emitter */
 
-export type SDK_READY_TIMED_OUT = 'init::timeout'
-export type SDK_READY = 'init::ready'
-export type SDK_READY_FROM_CACHE = 'init::cache-ready'
-export type SDK_UPDATE = 'state::update'
-export type SDK_DESTROY = 'state::destroy'
-export type IReadinessEvent = SDK_READY_TIMED_OUT | SDK_READY | SDK_READY_FROM_CACHE | SDK_UPDATE | SDK_DESTROY
-
 export interface IReadinessEventEmitter extends IEventEmitter {
-  emit(event: IReadinessEvent, ...args: any[]): boolean
+  emit(event: Event, ...args: any[]): boolean
 }
 
 /** Readiness manager */

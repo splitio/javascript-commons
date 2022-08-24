@@ -4,7 +4,7 @@ import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_S
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError, INotificationMessage } from './types';
-import { ILogger } from '../../../logger/types';
+import { ILogger } from '../../../types';
 import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 import { ABLY_ERROR, NON_REQUESTED, SSE_CONNECTION_ERROR } from '../../../utils/constants';
 import { ITelemetryTracker } from '../../../trackers/types';

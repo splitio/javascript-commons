@@ -1,7 +1,6 @@
-import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
-import { ILogger } from '../logger/types';
+import { MaybeThenable, IMetadata } from '../dtos/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, SDKMode } from '../types';
+import { ImpressionDTO, SDKMode, ILogger, EventData, ISplitFiltersValidation } from '../types';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -289,7 +288,7 @@ export interface IImpressionsCacheBase {
 
 export interface IEventsCacheBase {
   // Consumer API method, used by events tracker, in standalone and consumer modes, to push events into the storage.
-  track(data: SplitIO.EventData, size?: number): MaybeThenable<boolean>
+  track(data: EventData, size?: number): MaybeThenable<boolean>
 }
 
 /** Impressions and events cache for standalone mode (sync) */
@@ -312,8 +311,8 @@ export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderC
   setOnFullQueueCb(cb: () => void): void
 }
 
-export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
-  track(data: SplitIO.EventData, size?: number): boolean
+export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<EventData[]> {
+  track(data: EventData, size?: number): boolean
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
@@ -339,7 +338,7 @@ export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorder
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
   // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
   // The result promise cannot reject.
-  track(data: SplitIO.EventData, size?: number): Promise<boolean>
+  track(data: EventData, size?: number): Promise<boolean>
 }
 
 /**
@@ -352,7 +351,7 @@ export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<R
 
   // Used by impressions count submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
+  pop(toMerge?: Record<string, number>): Record<string, number> // pop cache data
 }
 
 
@@ -495,14 +494,39 @@ export interface IStorageFactoryParams {
   metadata: IMetadata,
 }
 
-export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
-
-export type IStorageSyncFactory = {
-  readonly type: StorageType,
-  (params: IStorageFactoryParams): IStorageSync
-}
-
-export type IStorageAsyncFactory = {
-  type: StorageType,
-  (params: IStorageFactoryParams): IStorageAsync
+/**
+ * Defines the format of Split data to preload on the factory storage (cache).
+ */
+export interface PreloadedData {
+  /**
+   * Timestamp of the last moment the data was synchronized with Split servers.
+   * If this value is older than 10 days ago (expiration time policy), the data is not used to update the storage content.
+   * @TODO configurable expiration time policy?
+   */
+  lastUpdated: number,
+  /**
+   * Change number of the preloaded data.
+   * If this value is older than the current changeNumber at the storage, the data is not used to update the storage content.
+   */
+  since: number,
+  /**
+   * Map of splits to their serialized definitions.
+   */
+  splitsData: {
+    [splitName: string]: string
+  },
+  /**
+   * Optional map of user keys to their list of segments.
+   * @TODO remove when releasing first version
+   */
+  mySegmentsData?: {
+    [key: string]: string[]
+  },
+  /**
+   * Optional map of segments to their serialized definitions.
+   * This property is ignored if `mySegmentsData` was provided.
+   */
+  segmentsData?: {
+    [segmentName: string]: string
+  },
 }

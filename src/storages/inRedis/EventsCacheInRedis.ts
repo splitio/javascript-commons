@@ -1,8 +1,8 @@
 import { IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { Redis } from 'ioredis';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { EventData } from '../../types';
+import { ILogger } from '../../types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';
 
@@ -24,7 +24,7 @@ export class EventsCacheInRedis implements IEventsCacheAsync {
    * Add a new event object into the queue.
    * Unlike `impressions::track`, result promise is never rejected.
    */
-  track(eventData: SplitIO.EventData): Promise<boolean> {
+  track(eventData: EventData): Promise<boolean> {
     return this.redis.rpush(
       this.key,
       this._toJSON(eventData)
@@ -40,7 +40,7 @@ export class EventsCacheInRedis implements IEventsCacheAsync {
   /**
    * Generates the JSON as we'll store it on Redis.
    */
-  private _toJSON(eventData: SplitIO.EventData): string {
+  private _toJSON(eventData: EventData): string {
     return JSON.stringify({
       m: this.metadata,
       e: eventData

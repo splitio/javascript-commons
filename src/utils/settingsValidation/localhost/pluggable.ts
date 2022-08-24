@@ -1,6 +1,5 @@
 import { ERROR_LOCALHOST_MODULE_REQUIRED } from '../../../logger/constants';
-import { ILogger } from '../../../logger/types';
-import { SDKMode, } from '../../../types';
+import { SDKMode, ILogger } from '../../../types';
 import { LOCALHOST_MODE } from '../../constants';
 
 /**

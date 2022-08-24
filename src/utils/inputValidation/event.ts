@@ -1,5 +1,5 @@
 import { ERROR_EVENT_TYPE_FORMAT, ERROR_NULL, ERROR_INVALID, ERROR_EMPTY } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 import { isString } from '../lang';
 
 const EVENT_TYPE_REGEX = /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/;

@@ -1,6 +1,6 @@
 import { isObject, isString, isFiniteNumber, toString } from '../lang';
-import { SplitIO } from '../../types';
-import { ILogger } from '../../logger/types';
+import { SplitKey } from '../../types';
+import { ILogger } from '../../types';
 import { ERROR_NULL, WARN_CONVERTING, ERROR_EMPTY, ERROR_TOO_LONG, ERROR_INVALID, ERROR_INVALID_KEY_OBJECT } from '../../logger/constants';
 
 const KEY_MAX_LENGTH = 250;
@@ -33,7 +33,7 @@ function validateKeyValue(log: ILogger, maybeKey: any, method: string, type: str
   return false;
 }
 
-export function validateKey(log: ILogger, maybeKey: any, method: string): SplitIO.SplitKey | false {
+export function validateKey(log: ILogger, maybeKey: any, method: string): SplitKey | false {
   if (isObject(maybeKey)) {
     // Validate key object
     const matchingKey = validateKeyValue(log, maybeKey.matchingKey, method, 'matchingKey');

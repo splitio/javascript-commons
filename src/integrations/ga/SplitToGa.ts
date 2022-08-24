@@ -1,10 +1,10 @@
 /* eslint-disable no-undef */
 import { uniq } from '../../utils/lang';
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../../utils/constants';
-import { SplitIO } from '../../types';
+import { IntegrationData, ImpressionData, EventData } from '../../types';
 import { IIntegration } from '../types';
 import { SplitToGoogleAnalyticsOptions } from './types';
-import { ILogger } from '../../logger/types';
+import { ILogger } from '../../types';
 
 const logPrefix = 'split-to-ga: ';
 const noGaWarning = '`ga` command queue not found.';
@@ -16,29 +16,29 @@ export class SplitToGa implements IIntegration {
   static defaultTrackerNames = [''];
 
   private trackerNames: string[];
-  private filter?: (data: SplitIO.IntegrationData) => boolean;
-  private mapper?: (data: SplitIO.IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject;
+  private filter?: (data: IntegrationData) => boolean;
+  private mapper?: (data: IntegrationData, defaultMapping: UniversalAnalytics.FieldsObject) => UniversalAnalytics.FieldsObject;
   private impressions: boolean | undefined;
   private events: boolean | undefined;
   private log: ILogger;
 
   // Default mapper function.
-  static defaultMapper({ type, payload }: SplitIO.IntegrationData): UniversalAnalytics.FieldsObject {
+  static defaultMapper({ type, payload }: IntegrationData): UniversalAnalytics.FieldsObject {
     switch (type) {
       case SPLIT_IMPRESSION:
         return {
           hitType: 'event',
           eventCategory: 'split-impression',
-          eventAction: 'Evaluate ' + (payload as SplitIO.ImpressionData).impression.feature,
-          eventLabel: 'Treatment: ' + (payload as SplitIO.ImpressionData).impression.treatment + '. Targeting rule: ' + (payload as SplitIO.ImpressionData).impression.label + '.',
+          eventAction: 'Evaluate ' + (payload as ImpressionData).impression.feature,
+          eventLabel: 'Treatment: ' + (payload as ImpressionData).impression.treatment + '. Targeting rule: ' + (payload as ImpressionData).impression.label + '.',
           nonInteraction: true,
         };
       case SPLIT_EVENT:
         return {
           hitType: 'event',
           eventCategory: 'split-event',
-          eventAction: (payload as SplitIO.EventData).eventTypeId,
-          eventValue: (payload as SplitIO.EventData).value,
+          eventAction: (payload as EventData).eventTypeId,
+          eventValue: (payload as EventData).value,
           nonInteraction: true,
         };
     }
@@ -93,7 +93,7 @@ export class SplitToGa implements IIntegration {
     if (typeof SplitToGa.getGa() !== 'function') log.warn(logPrefix + `${noGaWarning} No hits will be sent until it is available.`);
   }
 
-  queue(data: SplitIO.IntegrationData) {
+  queue(data: IntegrationData) {
     // access ga command queue via `getGa` method, accounting for the possibility that
     // the global `ga` reference was not yet mutated by analytics.js.
     const ga = SplitToGa.getGa();

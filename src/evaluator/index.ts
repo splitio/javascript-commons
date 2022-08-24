@@ -5,8 +5,8 @@ import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
+import { SplitKey, Attributes } from '../types';
+import { ILogger } from '../types';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -24,9 +24,9 @@ function treatmentsException(splitNames: string[]) {
 
 export function evaluateFeature(
   log: ILogger,
-  key: SplitIO.SplitKey,
+  key: SplitKey,
   splitName: string,
-  attributes: SplitIO.Attributes | undefined,
+  attributes: Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
   let stringifiedSplit;
@@ -63,9 +63,9 @@ export function evaluateFeature(
 
 export function evaluateFeatures(
   log: ILogger,
-  key: SplitIO.SplitKey,
+  key: SplitKey,
   splitNames: string[],
-  attributes: SplitIO.Attributes | undefined,
+  attributes: Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let stringifiedSplits;
@@ -90,8 +90,8 @@ export function evaluateFeatures(
 function getEvaluation(
   log: ILogger,
   stringifiedSplit: string | null,
-  key: SplitIO.SplitKey,
-  attributes: SplitIO.Attributes | undefined,
+  key: SplitKey,
+  attributes: Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
@@ -126,8 +126,8 @@ function getEvaluations(
   log: ILogger,
   splitNames: string[],
   splits: Record<string, string | null>,
-  key: SplitIO.SplitKey,
-  attributes: SplitIO.Attributes | undefined,
+  key: SplitKey,
+  attributes: Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   const result: Record<string, IEvaluationResult> = {};
