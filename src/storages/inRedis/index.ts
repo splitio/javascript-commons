@@ -28,8 +28,8 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
-    const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(keys.buildImpressionsCountKey(), redisClient) : undefined;
-    const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(keys.buildUniqueKeysKey(), redisClient) : undefined;
+    const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient) : undefined;
+    const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient) : undefined;
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {

@@ -3,6 +3,7 @@ import { ImpressionCountsCacheInRedis} from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
 
 import Redis from 'ioredis';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
@@ -16,7 +17,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   
   test('IMPRESSION COUNTS CACHE IN REDIS / Impression Counter Test makeKey', async () => {
     const connection = new Redis();
-    const counter = new ImpressionCountsCacheInRedis(key, connection);
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     const timestamp1 = new Date(2020, 9, 2, 10, 0, 0).getTime();
 
     expect(counter._makeKey('someFeature', new Date(2020, 9, 2, 10, 53, 12).getTime())).toBe(`someFeature::${timestamp1}`);
@@ -29,7 +30,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
   test('IMPRESSION COUNTS CACHE IN REDIS/ Impression Counter Test BasicUsage', async () => {
     const connection = new Redis();
-    const counter = new ImpressionCountsCacheInRedis(key, connection);
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     
     counter.track('feature1', timestamp, 1);
     counter.track('feature1', timestamp + 1, 1);
@@ -80,7 +81,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
   test('POST IMPRESSION COUNTS IN REDIS FUNCTION', (done) => {
     const connection = new Redis();
-    const counter = new ImpressionCountsCacheInRedis(key, connection);
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.
     connection.del(key);
     counter.track('feature1', timestamp, 1);
@@ -108,7 +109,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   test('IMPRESSION COUNTS CACHE IN REDIS / start and stop task', (done) => {
     
     const connection = new Redis();
-    const counter = new ImpressionCountsCacheInRedis(key, connection);
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.
     connection.del(key);
     counter.track('feature1', timestamp, 1);
@@ -151,7 +152,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   
   test('IMPRESSION COUNTS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', (done) => {
     const connection = new Redis();
-    const shortCounter = new ImpressionCountsCacheInRedis(key, connection, 5);
+    const shortCounter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, 5);
     // Clean up in case there are still keys there.
     connection.del(key);
     shortCounter.track('feature1', timestamp + 1, 1);

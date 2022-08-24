@@ -1,5 +1,6 @@
-import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import Redis from 'ioredis';
+import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   
@@ -7,7 +8,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     const connection = new Redis();
     const key = 'unique_key_post';
     
-    const cache = new UniqueKeysCacheInRedis(key, connection);
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection);
     
     // queue is initially empty
     expect(cache.pop()).toEqual({keys:[]});
@@ -50,7 +51,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     const connection = new Redis();
     const key = 'unique_key_post';
     
-    const cache = new UniqueKeysCacheInRedis(key, connection, 3); // small uniqueKeysCache size to be reached
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3); // small uniqueKeysCache size to be reached
     cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
 
     cache.track('key1', 'feature1');
@@ -81,7 +82,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     // Clean up in case there are still keys there.
     await connection.del(key);
     
-    const cache = new UniqueKeysCacheInRedis(key, connection, 20);  
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 20);  
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
     cache.track('key1', 'feature3');
@@ -111,7 +112,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     // Clean up in case there are still keys there.
     connection.del(key);
     
-    const cache = new UniqueKeysCacheInRedis(key, connection);  
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection);  
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
     cache.track('key1', 'feature3');
@@ -159,7 +160,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     // Clean up in case there are still keys there.
     await connection.del(key);
     
-    const cache = new UniqueKeysCacheInRedis(key, connection, 3);  
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3);  
     
     cache.track('key1', 'feature1');
     cache.track('key1', 'feature1');
