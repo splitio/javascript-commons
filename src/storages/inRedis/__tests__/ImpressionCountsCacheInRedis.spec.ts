@@ -1,17 +1,18 @@
 // @ts-nocheck
 import { ImpressionCountsCacheInRedis} from '../ImpressionCountsCacheInRedis';
+import { truncateTimeFrame } from '../../../utils/time';
+
 import Redis from 'ioredis';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
   const timestamp = new Date(2020, 9, 2, 10, 10, 12).getTime();
   const nextHourTimestamp = new Date(2020, 9, 2, 11, 10, 12).getTime();
-  const expected = {
-    'feature1::1601643600000': '3',
-    'feature1::1601647200000': '3',
-    'feature2::1601643600000': '4',
-    'feature2::1601647200000': '4'
-  };
+  const expected = {};
+  expected[`feature1::${truncateTimeFrame(timestamp)}`] = '3';
+  expected[`feature1::${truncateTimeFrame(nextHourTimestamp)}`] = '3';
+  expected[`feature2::${truncateTimeFrame(timestamp)}`] = '4';
+  expected[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '4';
   
   test('IMPRESSION COUNTS CACHE IN REDIS / Impression Counter Test makeKey', async () => {
     const connection = new Redis();
@@ -162,25 +163,25 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     
     shortCounter.track('feature2', nextHourTimestamp, 1);
     
-    const expected1 = {
-      'feature1::1601643600000': '2', 
-      'feature2::1601643600000': '2', 
-      'feature2::1601647200000': '1'};
+    const expected1 = {};
+    expected1[`feature1::${truncateTimeFrame(timestamp)}`] = '2';
+    expected1[`feature2::${truncateTimeFrame(timestamp)}`] = '2';
+    expected1[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '1';
     
     connection.hgetall(key, (err, data) => {
       expect(data).toStrictEqual(expected1);
     });
     
-    const expected2 = {
-      'feature1::1601643600000': '4', 
-      'feature1::1601647200000': '1', 
-      'feature2::1601643600000': '4', 
-      'feature2::1601647200000': '1'};
+    const expected2 = {};
+    expected2[`feature1::${truncateTimeFrame(timestamp)}`] = '4';
+    expected2[`feature1::${truncateTimeFrame(nextHourTimestamp)}`] = '3';
+    expected2[`feature2::${truncateTimeFrame(timestamp)}`] = '4';
+    expected2[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '1';
     
     shortCounter.track('feature1', timestamp + 1, 1);
     shortCounter.track('feature1', timestamp + 2, 1);
     shortCounter.track('feature2', timestamp + 3, 2); 
-    shortCounter.track('feature1', nextHourTimestamp + 2, 1);
+    shortCounter.track('feature1', nextHourTimestamp + 2, 3);
     
     connection.hgetall(key, async (err, data) => {
       expect(data).toStrictEqual(expected2);
