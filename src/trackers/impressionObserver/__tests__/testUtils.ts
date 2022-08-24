@@ -1,6 +1,6 @@
 import { ImpressionDTO } from '../../../types';
 
-export function generateImpressions(count: number): ImpressionDTO[] {
+export function generateImpressions(count: number) {
   const impressions: ImpressionDTO[] = [];
   for (let i = 0; i < count; i++) {
     impressions.push({

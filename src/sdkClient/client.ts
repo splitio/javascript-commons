@@ -6,14 +6,14 @@ import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTy
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
-import { SplitKey, Attributes,ImpressionDTO, Treatment, TreatmentWithConfig, Properties, EventData, IClientSS, IAsyncClientSS } from '../types';
+import { SplitKey, Attributes,ImpressionDTO, Treatment, TreatmentWithConfig, Properties, EventData } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
 /**
  * Creator of base client with getTreatments and track methods.
  */
-export function clientFactory(params: ISdkFactoryContext): IClientSS | IAsyncClientSS {
+export function clientFactory(params: ISdkFactoryContext) {
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
 
@@ -144,5 +144,5 @@ export function clientFactory(params: ISdkFactoryContext): IClientSS | IAsyncCli
     getTreatmentsWithConfig,
     track,
     isClientSide: false
-  } as any;
+  };
 }

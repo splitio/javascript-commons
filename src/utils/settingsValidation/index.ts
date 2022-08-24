@@ -200,7 +200,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // validate the `splitFilters` settings and parse splits query
   const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
-  // @ts-ignore
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
   // ensure a valid user consent value

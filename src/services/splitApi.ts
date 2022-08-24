@@ -25,7 +25,6 @@ export function splitApiFactory(
 ): ISplitApi {
 
   const urls = settings.urls;
-  // @ts-ignore
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);

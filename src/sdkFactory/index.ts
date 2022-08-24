@@ -41,7 +41,6 @@ export function sdkFactory(params: ISdkFactoryParams): IBasicSDK<any, any> {
 
     // ATM, only used by InLocalStorage
     matchingKey: getMatching(settings.core.key),
-    // @ts-ignore
     splitFiltersValidation: settings.sync.__splitFiltersValidation,
 
     // ATM, only used by PluggableStorage
