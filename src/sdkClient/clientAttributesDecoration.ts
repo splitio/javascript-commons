@@ -1,13 +1,13 @@
 import { AttributesCacheInMemory } from '../storages/inMemory/AttributesCacheInMemory';
 import { validateAttributesDeep } from '../utils/inputValidation/attributes';
-import { Attributes, AttributeType, IAsyncClient, IClient, Properties, SplitKey } from '../types';
+import { Attributes, AttributeType, IAsyncClientSS, IClientSS, Properties, SplitKey } from '../types';
 import { ILogger } from '../types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * Add in memory attributes storage methods and combine them with any attribute received from the getTreatment/s call
  */
-export function clientAttributesDecoration(log: ILogger, client: IClient | IAsyncClient) {
+export function clientAttributesDecoration(log: ILogger, client: IClientSS | IAsyncClientSS) {
 
   const attributeStorage = new AttributesCacheInMemory();
 

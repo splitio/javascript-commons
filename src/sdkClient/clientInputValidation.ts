@@ -15,7 +15,7 @@ import { startsWith } from '../utils/lang';
 import { CONTROL, CONTROL_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
-import { ISettings, SplitKey, Treatments, TreatmentsWithConfig, Properties, Attributes, IClient, IAsyncClient } from '../types';
+import { ISettings, SplitKey, Treatments, TreatmentsWithConfig, Properties, Attributes, IClientSS, IAsyncClientSS } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
 import { clientFactory } from './client';
 
@@ -23,7 +23,7 @@ import { clientFactory } from './client';
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator(settings: ISettings, client: ReturnType<typeof clientFactory>, readinessManager: IReadinessManager): IClient | IAsyncClient {
+export function clientInputValidationDecorator(settings: ISettings, client: ReturnType<typeof clientFactory>, readinessManager: IReadinessManager): IClientSS | IAsyncClientSS {
 
   const log = settings.log;
   const isSync = isStorageSync(settings);
@@ -121,5 +121,5 @@ export function clientInputValidationDecorator(settings: ISettings, client: Retu
     getTreatments,
     getTreatmentsWithConfig,
     track
-  } as IClient | IAsyncClient;
+  } as IClientSS | IAsyncClientSS;
 }

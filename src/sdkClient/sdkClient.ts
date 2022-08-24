@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IAsyncClient, IClient, IStatusInterface } from '../types';
+import { IAsyncClientSS, IClientSS, IStatusInterface } from '../types';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
@@ -8,7 +8,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): IClient | IAsyncClient {
+export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): IClientSS | IAsyncClientSS {
   const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker } = params;
 
   return objectAssign(

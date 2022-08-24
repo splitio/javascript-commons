@@ -1270,7 +1270,7 @@ declare namespace SplitIO {
    * @interface IClient
    * @extends IBasicClient
    */
-  interface IClient extends IBasicClient {
+  interface IClientSS extends IBasicClient {
     /**
      * Returns a Treatment value, which is the treatment string for the given feature.
      * @function getTreatment
@@ -1325,7 +1325,7 @@ declare namespace SplitIO {
    * @interface IAsyncClient
    * @extends IBasicClient
    */
-  interface IAsyncClient extends IBasicClient {
+  interface IAsyncClientSS extends IBasicClient {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      * For usage on NodeJS as we don't have only one key.

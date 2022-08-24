@@ -1,5 +1,5 @@
 import { clientCSDecorator } from './clientCS';
-import { IClient, IClientWithKey, SplitKey } from '../types';
+import { IClientSS, IClientWithKey, SplitKey } from '../types';
 import { validateKey } from '../utils/inputValidation/key';
 import { validateTrafficType } from '../utils/inputValidation/trafficType';
 import { getMatching, keyParser } from '../utils/key';
@@ -27,7 +27,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
   const mainClientInstance = clientCSDecorator(
     log,
-    sdkClientFactory(params) as IClient,
+    sdkClientFactory(params) as IClientSS,
     key!,
     trafficType
   );
@@ -86,7 +86,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
           storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
           signalListener: undefined, // only the main client "destroy" method stops the signal listener
-        }), true) as IClient,
+        }), true) as IClientSS,
         validKey,
         validTrafficType
       );

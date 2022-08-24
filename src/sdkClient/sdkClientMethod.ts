@@ -1,4 +1,4 @@
-import { IAsyncClient, IClient } from '../types';
+import { IAsyncClientSS, IClientSS } from '../types';
 import { sdkClientFactory } from './sdkClient';
 import { RETRIEVE_CLIENT_DEFAULT } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -6,7 +6,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Factory of client method for server-side SDKs (ISDK and IAsyncSDK)
  */
-export function sdkClientMethodFactory(params: ISdkFactoryContext): () => IClient | IAsyncClient {
+export function sdkClientMethodFactory(params: ISdkFactoryContext): () => IClientSS | IAsyncClientSS {
   const log = params.settings.log;
   const clientInstance = sdkClientFactory(params);
 
