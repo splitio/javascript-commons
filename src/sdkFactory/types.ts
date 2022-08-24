@@ -1,6 +1,6 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
-import { IAsyncClientSS, IAsyncManager, IClientSS, IClientWithKey, ILogger, IManager, SplitKey } from '../types';
+import { IAsyncClient, IAsyncManager, IClient, IClientWithKey, ILogger, IManager, SplitKey } from '../types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
@@ -94,7 +94,7 @@ export interface ISdkFactoryParams {
 
   // Sdk client method factory (ISDK::client method).
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): IClientWithKey; (key: SplitKey, trafficType?: string | undefined): IClientWithKey; } | (() => IClientSS) | (() => IAsyncClientSS))
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): IClientWithKey; (key: SplitKey, trafficType?: string | undefined): IClientWithKey; } | (() => IClient) | (() => IAsyncClient))
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
   // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.

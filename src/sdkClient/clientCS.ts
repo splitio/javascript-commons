@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IClientSS, IClientWithKey, ILogger, SplitKey } from '../types';
+import { IClient, IClientWithKey, ILogger, SplitKey } from '../types';
 import { clientAttributesDecoration } from './clientAttributesDecoration';
 
 
@@ -10,7 +10,7 @@ import { clientAttributesDecoration } from './clientAttributesDecoration';
  * @param key validated split key
  * @param trafficType validated traffic type
  */
-export function clientCSDecorator(log: ILogger, client: IClientSS, key: SplitKey, trafficType?: string) {
+export function clientCSDecorator(log: ILogger, client: IClient, key: SplitKey, trafficType?: string) {
 
   let clientCS = clientAttributesDecoration(log, client);
 
