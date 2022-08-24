@@ -2,9 +2,7 @@ import { IUniqueKeysCacheBase } from '../types';
 import { Redis } from 'ioredis';
 import { UniqueKeysCacheInMemory } from '../inMemory/uniqueKeysCacheInMemory';
 import { setToArray } from '../../utils/lang/sets';
-
-const DEFAULT_CACHE_SIZE = 30000;
-const UNIQUE_KEYS_REFRESH_RATE = 300000; // 300.000 ms = start after 5 mins
+import { DEFAULT_CACHE_SIZE, UNIQUE_KEYS_REFRESH_RATE } from './constants';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -44,7 +42,6 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   
   stop() {
     clearInterval(this.handle);
-    this.handle = undefined;
   }
   
 }

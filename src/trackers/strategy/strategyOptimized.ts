@@ -1,4 +1,4 @@
-import { IImpressionCountsCacheAsync, IImpressionCountsCacheSync } from '../../storages/types';
+import { IImpressionCountsCacheSync } from '../../storages/types';
 import { ImpressionDTO } from '../../types';
 import { truncateTimeFrame } from '../../utils/time';
 import { IImpressionObserver } from '../impressionObserver/types';
@@ -13,7 +13,7 @@ import { IStrategy } from '../types';
  */
 export function strategyOptimizedFactory(
   impressionsObserver: IImpressionObserver,
-  impressionsCounter: IImpressionCountsCacheSync | IImpressionCountsCacheAsync,
+  impressionsCounter: IImpressionCountsCacheSync,
 ): IStrategy {
   
   return {

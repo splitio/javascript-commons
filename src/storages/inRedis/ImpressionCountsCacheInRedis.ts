@@ -1,10 +1,9 @@
 import { Redis } from 'ioredis';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
-import { IImpressionCountsCacheInRedis } from '../types';
 
 const IMPRESSION_COUNT_REFRESH_RATE = 300000; // 300.000 ms = start after 5 mins
 
-export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory implements IImpressionCountsCacheInRedis {
+export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory {
 
   private readonly key: string;
   private readonly redis: Redis;
@@ -33,6 +32,5 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   
   stop() {
     clearInterval(this.handle);
-    this.handle = undefined;
   }
 }

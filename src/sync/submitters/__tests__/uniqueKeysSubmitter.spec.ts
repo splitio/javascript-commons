@@ -2,7 +2,6 @@ import { uniqueKeysSubmitterFactory } from '../uniqueKeysSubmitter';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/uniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/uniqueKeysCacheInMemoryCS';
-import { STORAGE_MEMORY } from '../../../utils/constants';
 
 const imp1 = {
   feature: 'someFeature',
@@ -18,7 +17,7 @@ const imp4 = { ...imp1, keyName: 'k3', feature: 'anotherFeature' };
 
 function getParams(uniqueKeysCache: any) {
   const params = {
-    settings: { log: loggerMock, scheduler: { uniqueKeysRefreshRate: 200 }, core: { key: undefined }, storage: { type: STORAGE_MEMORY} },
+    settings: { log: loggerMock, scheduler: { uniqueKeysRefreshRate: 200 }, core: { key: undefined } },
     storage: { uniqueKeys: uniqueKeysCache },
     splitApi: { 
       postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),

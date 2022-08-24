@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { UniqueKeysCacheInRedis } from '../UniqueKeysCacheInRedis';
 import Redis from 'ioredis';
 
@@ -79,6 +78,8 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   test('UNIQUE KEYS CACHE IN REDIS / post unique keys in redis method', async () => {
     const connection = new Redis();
     const key = 'unique_key_post';
+    // Clean up in case there are still keys there.
+    await connection.del(key);
     
     const cache = new UniqueKeysCacheInRedis(key, connection, 20);  
     cache.track('key1', 'feature1');
@@ -107,6 +108,8 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   test('UNIQUE KEYS CACHE IN REDIS / start and stop task', (done) => {
     const connection = new Redis();
     const key = 'unique_key_post';
+    // Clean up in case there are still keys there.
+    connection.del(key);
     
     const cache = new UniqueKeysCacheInRedis(key, connection);  
     cache.track('key1', 'feature1');
@@ -118,41 +121,43 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       expect(data).toStrictEqual([]);
     });
     
-    const refreshRate = 500;
+    const refreshRate = 100;
     cache.start(refreshRate);
+
+    const expected = [
+      JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
+      JSON.stringify({'f': 'feature2', 'ks': ['key2']}),
+      JSON.stringify({'f': 'feature3', 'ks': ['key1', 'key2']})
+    ];
+    
     setTimeout(() => {
       connection.lrange(key, 0, 10, async (err, data) => {
 
-        const expected = [
-          JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
-          JSON.stringify({'f': 'feature2', 'ks': ['key2']}),
-          JSON.stringify({'f': 'feature3', 'ks': ['key1', 'key2']})
-        ];
-        
         expect(data).toStrictEqual(expected);
-        
         cache.stop();
-        
-        setTimeout(() => {
-          
-          cache.track('key3', 'feature4');
-          connection.lrange(key, 0, 10, async (err, data) => {
-            expect(data).toStrictEqual(expected);
-            cache.clear();
-            
-            await connection.del(key);
-            await connection.quit();
-            done();
-          });
-        }, refreshRate+200);
+        cache.track('key3', 'feature4');
         
       });
-    }, refreshRate+200);
+    }, 130);
+    
+    setTimeout(() => {
+      
+      connection.lrange(key, 0, 10, async (err, data) => {
+        expect(data).toStrictEqual(expected);
+        
+        await connection.del(key);
+        await connection.quit();
+        done();
+      });
+    }, 230);
   });
   
   test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {
     const connection = new Redis();
     const key = 'unique_key_post';
+    
+    // Clean up in case there are still keys there.
+    await connection.del(key);
     
     const cache = new UniqueKeysCacheInRedis(key, connection, 3);  
     

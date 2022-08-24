@@ -80,7 +80,8 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   test('POST IMPRESSION COUNTS IN REDIS FUNCTION', (done) => {
     const connection = new Redis();
     const counter = new ImpressionCountsCacheInRedis(key, connection);
-    
+    // Clean up in case there are still keys there.
+    connection.del(key);
     counter.track('feature1', timestamp, 1);
     counter.track('feature1', timestamp + 1, 1);
     counter.track('feature1', timestamp + 2, 1);
@@ -107,7 +108,8 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     
     const connection = new Redis();
     const counter = new ImpressionCountsCacheInRedis(key, connection);
-
+    // Clean up in case there are still keys there.
+    connection.del(key);
     counter.track('feature1', timestamp, 1);
     counter.track('feature1', timestamp + 1, 1);
     counter.track('feature1', timestamp + 2, 1);
@@ -123,35 +125,34 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
       expect(data).toStrictEqual({});
     });
     
-    const refreshRate = 500; 
+    const refreshRate = 100; 
     counter.start(refreshRate);
     setTimeout(() => {
+      connection.hgetall(key, async (err, data) => {     
+        expect(data).toStrictEqual(expected);
+        counter.stop();
+        counter.track('feature3', nextHourTimestamp + 4, 2);      
+      });
+    }, 130);
+    
+    setTimeout(() => {
+      
       connection.hgetall(key, async (err, data) => {
-        
         expect(data).toStrictEqual(expected);
         
-        counter.stop();
-        
-        setTimeout(() => {
-          
-          counter.track('feature3', nextHourTimestamp + 4, 2);
-          connection.hgetall(key, async (err, data) => {
-            expect(data).toStrictEqual(expected);
-            
-            await connection.del(key);
-            await connection.quit();
-            done();
-          });
-        }, refreshRate+200);
-        
+        await connection.del(key);
+        await connection.quit();
+        done();
       });
-    }, refreshRate+200);
+    }, 230);
+    
   });
   
   test('IMPRESSION COUNTS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', (done) => {
     const connection = new Redis();
-    const shortCounter = new ImpressionCountsCacheInRedis(key, connection, 3);
-    
+    const shortCounter = new ImpressionCountsCacheInRedis(key, connection, 5);
+    // Clean up in case there are still keys there.
+    connection.del(key);
     shortCounter.track('feature1', timestamp + 1, 1);
     shortCounter.track('feature1', timestamp + 2, 1);
     shortCounter.track('feature2', timestamp + 3, 2); 
