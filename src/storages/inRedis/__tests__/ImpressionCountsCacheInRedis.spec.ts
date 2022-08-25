@@ -109,7 +109,8 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   test('IMPRESSION COUNTS CACHE IN REDIS / start and stop task', (done) => {
     
     const connection = new Redis();
-    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
+    const refreshRate = 100;
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
     // Clean up in case there are still keys there.
     connection.del(key);
     counter.track('feature1', timestamp, 1);
@@ -127,15 +128,14 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
       expect(data).toStrictEqual({});
     });
     
-    const refreshRate = 100; 
-    counter.start(refreshRate);
+    counter.start();
     setTimeout(() => {
       connection.hgetall(key, async (err, data) => {     
         expect(data).toStrictEqual(expected);
         counter.stop();
         counter.track('feature3', nextHourTimestamp + 4, 2);      
       });
-    }, 130);
+    }, refreshRate + 50);
     
     setTimeout(() => {
       
@@ -146,7 +146,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
         await connection.quit();
         done();
       });
-    }, 230);
+    }, 2 * refreshRate + 50);
     
   });
   

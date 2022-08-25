@@ -11,13 +11,15 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   private readonly log: ILogger;
   private readonly key: string;
   private readonly redis: Redis;
+  private readonly refreshRate: number;
   private handle: any;
   
-  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {
+  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE, refreshRate: number = REFRESH_RATE) {
     super(uniqueKeysQueueSize);
     this.log = log;
     this.key = key;
     this.redis = redis;
+    this.refreshRate = refreshRate;
     this.onFullQueue = () => {this.postUniqueKeysInRedis();};
   }
   
@@ -50,8 +52,8 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   }
   
     
-  start(refreshRate: number = REFRESH_RATE) {
-    this.handle = setInterval(this.postUniqueKeysInRedis.bind(this), refreshRate);
+  start() {
+    this.handle = setInterval(this.postUniqueKeysInRedis.bind(this), this.refreshRate);
   }
   
   stop() {

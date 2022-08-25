@@ -111,8 +111,9 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     const key = 'unique_key_post';
     // Clean up in case there are still keys there.
     connection.del(key);
+    const refreshRate = 100;
     
-    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection);  
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, undefined, refreshRate);  
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
     cache.track('key1', 'feature3');
@@ -122,8 +123,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       expect(data).toStrictEqual([]);
     });
     
-    const refreshRate = 100;
-    cache.start(refreshRate);
+    cache.start();
 
     const expected = [
       JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
@@ -139,7 +139,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
         cache.track('key3', 'feature4');
         
       });
-    }, 130);
+    }, refreshRate + 50);
     
     setTimeout(() => {
       
@@ -150,7 +150,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
         await connection.quit();
         done();
       });
-    }, 230);
+    }, 2 * refreshRate + 50);
   });
   
   test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {

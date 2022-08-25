@@ -8,13 +8,15 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   private readonly log: ILogger;
   private readonly key: string;
   private readonly redis: Redis;
+  private readonly refreshRate: number;
   private handle: any;
   
-  constructor(log: ILogger, key: string, redis: Redis, impressionCountsCacheSize?: number) {
+  constructor(log: ILogger, key: string, redis: Redis, impressionCountsCacheSize?: number, refreshRate: number = REFRESH_RATE) {
     super(impressionCountsCacheSize);
     this.log = log;
     this.key = key;
     this.redis = redis;
+    this.refreshRate = refreshRate;
     this.onFullQueue = () => { this.postImpressionCountsInRedis(); };
   }
   
@@ -38,8 +40,8 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
       });
   }
   
-  start(refreshRate: number = REFRESH_RATE) {
-    this.handle = setInterval(this.postImpressionCountsInRedis.bind(this), refreshRate);
+  start() {
+    this.handle = setInterval(this.postImpressionCountsInRedis.bind(this), this.refreshRate);
   }
   
   stop() {
