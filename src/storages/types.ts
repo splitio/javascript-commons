@@ -347,7 +347,7 @@ export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProdu
  * Only in memory. Named `ImpressionsCounter` in spec.
  */
 export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
-  // Used by impressions tracker
+// Used by impressions tracker
   track(featureName: string, timeFrame: number, amount: number): void
 
   // Used by impressions count submitter in standalone and producer mode
@@ -455,6 +455,7 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
+  TImpressionsCountCache extends IImpressionCountsCacheSync,
   TEventsCache extends IEventsCacheBase,
   TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
   TUniqueKeysCache extends IUniqueKeysCacheBase
@@ -462,7 +463,7 @@ export interface IStorageBase<
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
-  impressionCounts?: IImpressionCountsCacheSync,
+  impressionCounts?: TImpressionsCountCache,
   events: TEventsCache,
   telemetry?: TTelemetryCache,
   uniqueKeys?: TUniqueKeysCache,
@@ -474,6 +475,7 @@ export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
+  IImpressionCountsCacheSync,
   IEventsCacheSync,
   ITelemetryCacheSync,
   IUniqueKeysCacheBase
@@ -483,6 +485,7 @@ export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
+  IImpressionCountsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
   ITelemetryCacheAsync,
   IUniqueKeysCacheBase

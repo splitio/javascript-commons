@@ -27,6 +27,14 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.impressions`;
   }
 
+  buildImpressionsCountKey() {
+    return `${this.prefix}.impressions.count`;
+  }
+  
+  buildUniqueKeysKey() {
+    return `${this.prefix}.uniquekeys`;
+  }
+
   buildEventsKey() {
     return `${this.prefix}.events`;
   }

@@ -34,21 +34,23 @@ export function impressionsTrackerFactory(
       
       const impressionsToListenerCount = impressionsToListener.length;
       
-      const res = impressionsCache.track(impressionsToStore);
+      if ( impressionsToStore.length>0 ){
+        const res = impressionsCache.track(impressionsToStore);
 
-      // If we're on an async storage, handle error and log it.
-      if (thenable(res)) {
-        res.then(() => {
-          log.info(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount]);
-        }).catch(err => {
-          log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, err]);
-        });
-      } else {
-        // Record when impressionsCache is sync only (standalone mode)
-        // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
-        if (telemetryCache) {
-          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
-          (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, deduped);
+        // If we're on an async storage, handle error and log it.
+        if (thenable(res)) {
+          res.then(() => {
+            log.info(IMPRESSIONS_TRACKER_SUCCESS, [impressionsCount]);
+          }).catch(err => {
+            log.error(ERROR_IMPRESSIONS_TRACKER, [impressionsCount, err]);
+          });
+        } else {
+          // Record when impressionsCache is sync only (standalone mode)
+          // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
+          if (telemetryCache) {
+            (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStore.length);
+            (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, deduped);
+          }
         }
       }
 

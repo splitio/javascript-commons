@@ -1,8 +1,7 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { ISet, setToArray, _Set } from '../../utils/lang/sets';
 import { UniqueKeysPayloadCs } from '../../sync/submitters/types';
-
-const DEFAULT_CACHE_SIZE = 30000;
+import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
 
 export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
 

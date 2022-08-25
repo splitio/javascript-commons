@@ -1,15 +1,14 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { ISet, setToArray, _Set } from '../../utils/lang/sets';
 import { UniqueKeysPayloadSs } from '../../sync/submitters/types';
-
-const DEFAULT_CACHE_SIZE = 30000;
+import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
 
 export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
-  private onFullQueue?: () => void;
+  protected onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
-  private uniqueKeysTracker: { [keys: string]: ISet<string> };
+  protected uniqueKeysTracker: { [keys: string]: ISet<string> };
 
   constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;

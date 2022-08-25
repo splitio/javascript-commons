@@ -40,8 +40,8 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
 
           // @ts-ignore, clear method is present in storage for standalone and partial consumer mode
           if (events.clear) events.clear(); // @ts-ignore
-          if (impressions.clear) impressions.clear();
-          if (impressionCounts) impressionCounts.clear();
+          if (impressions.clear) impressions.clear();// @ts-ignore
+          if (impressionCounts && impressionCounts.clear) impressionCounts.clear();
         }
       } else {
         log.info(USER_CONSENT_NOT_UPDATED, [newConsentStatus]);
