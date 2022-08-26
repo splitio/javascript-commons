@@ -15,16 +15,17 @@ const noopFilterAdapter = {
  *  or schedule to be sent; if not it will be added in an internal cache and sent in the next post. 
  * 
  * @param log Logger instance
- * @param filterAdapter filter adapter
  * @param uniqueKeysCache cache to save unique keys
+ * @param filterAdapter filter adapter
  */
 export function uniqueKeysTrackerFactory(
   log: ILogger,
   uniqueKeysCache: IUniqueKeysCacheBase,
   filterAdapter: IFilterAdapter = noopFilterAdapter,
 ): IUniqueKeysTracker {
+  let handle: any;
   
-  return {
+  const tracker:any = {
     track(key: string, featureName: string): void {
       if (!filterAdapter.add(key, featureName)) {
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The feature ${featureName} and key ${key} exist in the filter`);
@@ -33,5 +34,17 @@ export function uniqueKeysTrackerFactory(
       uniqueKeysCache.track(key, featureName);
     }
   };
+  
+  if (filterAdapter.refreshRate) {
+    tracker.startFilterCleaner = function() {
+      handle = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
+    };
+    
+    tracker.stopFilterCleaner = function() {
+      clearInterval(handle);
+    };
+  }
+  
+  return tracker;
 
 }

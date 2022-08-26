@@ -47,6 +47,7 @@ export interface IFilterAdapter {
   add(key: string, featureName: string): boolean;
   contains(key: string, featureName: string): boolean;
   clear(): void;
+  refreshRate?: number;
 }
 
 export interface IImpressionSenderAdapter {
@@ -56,6 +57,8 @@ export interface IImpressionSenderAdapter {
 
 /** Unique keys tracker */
 export interface IUniqueKeysTracker {
+  startFilterCleaner?(): void;
+  stopFilterCleaner?(): void;
   track(key: string, featureName: string): void;
 }
 
