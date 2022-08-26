@@ -231,7 +231,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   /**
    * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
-   * Clean operation (clear) also updates `lastUpdated` timestamp with current time.
    *
    * @param {number | undefined} expirationTimestamp if the value is not a number, data will not be cleaned
    */

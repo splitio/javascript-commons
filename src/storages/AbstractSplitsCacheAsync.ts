@@ -40,7 +40,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
    * @param {string} name
    * @param {string} defaultTreatment
    * @param {number} changeNumber
-   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the kill success updating the split or `false` if no split is updated,
+   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
    * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
    * The promise will never be rejected.
    */
