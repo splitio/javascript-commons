@@ -99,18 +99,16 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  addSplit(name: string, split: string) {
+  addSplit(name: string, split: ISplit) {
     try {
       const splitKey = this.keys.buildSplitKey(name);
       const splitFromLocalStorage = localStorage.getItem(splitKey);
       const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
       this._decrementCounts(previousSplit);
 
-      localStorage.setItem(splitKey, split);
+      localStorage.setItem(splitKey, JSON.stringify(split));
 
-      const parsedSplit = split ? JSON.parse(split) : null;
-
-      this._incrementCounts(parsedSplit);
+      this._incrementCounts(split);
 
       return true;
     } catch (e) {
@@ -135,7 +133,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   getSplit(name: string) {
-    return localStorage.getItem(this.keys.buildSplitKey(name));
+    const item = localStorage.getItem(this.keys.buildSplitKey(name));
+    return item && JSON.parse(item);
   }
 
   setChangeNumber(changeNumber: number): boolean {

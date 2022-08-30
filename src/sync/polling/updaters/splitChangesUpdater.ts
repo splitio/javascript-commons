@@ -40,7 +40,7 @@ export function parseSegments({ conditions }: ISplit): ISet<string> {
 }
 
 interface ISplitMutations {
-  added: [string, string][],
+  added: ISplit[],
   removed: string[],
   segments: string[]
 }
@@ -54,7 +54,7 @@ export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
   const segments = new _Set<string>();
   const computed = entries.reduce((accum, split) => {
     if (split.status === 'ACTIVE') {
-      accum.added.push([split.name, JSON.stringify(split)]);
+      accum.added.push(split);
 
       parseSegments(split).forEach((segmentName: string) => {
         segments.add(segmentName);

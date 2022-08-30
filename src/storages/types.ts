@@ -1,4 +1,4 @@
-import { MaybeThenable, IMetadata, ISplitFiltersValidation } from '../dtos/types';
+import { MaybeThenable, IMetadata, ISplitFiltersValidation, ISplit } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, SDKMode } from '../types';
@@ -191,14 +191,14 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplits(entries: [string, string][]): MaybeThenable<boolean[] | void>,
+  addSplits(entries: ISplit[]): MaybeThenable<boolean[] | void>,
   removeSplits(names: string[]): MaybeThenable<boolean[] | void>,
-  getSplit(name: string): MaybeThenable<string | null>,
-  getSplits(names: string[]): MaybeThenable<Record<string, string | null>>, // `fetchMany` in spec
+  getSplit(name: string): MaybeThenable<ISplit | null>,
+  getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
   setChangeNumber(changeNumber: number): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
   getChangeNumber(): MaybeThenable<number>,
-  getAll(): MaybeThenable<string[]>,
+  getAll(): MaybeThenable<ISplit[]>,
   getSplitNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
@@ -211,13 +211,13 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  addSplits(entries: [string, string][]): boolean[],
+  addSplits(entries: ISplit[]): boolean[],
   removeSplits(names: string[]): boolean[],
-  getSplit(name: string): string | null,
-  getSplits(names: string[]): Record<string, string | null>,
+  getSplit(name: string): ISplit | null,
+  getSplits(names: string[]): Record<string, ISplit | null>,
   setChangeNumber(changeNumber: number): boolean,
   getChangeNumber(): number,
-  getAll(): string[],
+  getAll(): ISplit[],
   getSplitNames(): string[],
   trafficTypeExists(trafficType: string): boolean,
   usesSegments(): boolean,
@@ -227,13 +227,13 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  addSplits(entries: [string, string][]): Promise<boolean[] | void>,
+  addSplits(entries: ISplit[]): Promise<boolean[] | void>,
   removeSplits(names: string[]): Promise<boolean[] | void>,
-  getSplit(name: string): Promise<string | null>,
-  getSplits(names: string[]): Promise<Record<string, string | null>>,
+  getSplit(name: string): Promise<ISplit | null>,
+  getSplits(names: string[]): Promise<Record<string, ISplit | null>>,
   setChangeNumber(changeNumber: number): Promise<boolean | void>,
   getChangeNumber(): Promise<number>,
-  getAll(): Promise<string[]>,
+  getAll(): Promise<ISplit[]>,
   getSplitNames(): Promise<string[]>,
   trafficTypeExists(trafficType: string): Promise<boolean>,
   usesSegments(): Promise<boolean>,

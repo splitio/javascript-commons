@@ -49,22 +49,22 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplit(name: string, split: string): Promise<boolean> {
+  addSplit(name: string, split: ISplit): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);
     return this.wrapper.get(splitKey).then(splitFromStorage => {
 
       // handling parsing error
-      let parsedPreviousSplit, parsedSplit;
+      let parsedPreviousSplit, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
-        parsedSplit = JSON.parse(split);
+        stringifiedNewSplit = JSON.stringify(split);
       } catch (e) {
         throw new Error('Error parsing split definition: ' + e);
       }
 
       return Promise.all([
-        this.wrapper.set(splitKey, split),
-        this._incrementCounts(parsedSplit),
+        this.wrapper.set(splitKey, stringifiedNewSplit),
+        this._incrementCounts(split),
         // If it's an update, we decrement the traffic type and segment count of the existing split,
         parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
       ]);
@@ -76,8 +76,8 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplits(entries: [string, string][]): Promise<boolean[]> {
-    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
+  addSplits(entries: ISplit[]): Promise<boolean[]> {
+    return Promise.all(entries.map(split => this.addSplit(split.name, split)));
   }
 
   /**
@@ -88,8 +88,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        const parsedSplit = JSON.parse(split);
-        this._decrementCounts(parsedSplit);
+        this._decrementCounts(split);
       }
       return this.wrapper.del(this.keys.buildSplitKey(name));
     });
@@ -109,8 +108,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplit(name: string): Promise<string | null> {
-    return this.wrapper.get(this.keys.buildSplitKey(name));
+  getSplit(name: string): Promise<ISplit | null> {
+    return this.wrapper.get(this.keys.buildSplitKey(name))
+      .then(maybeSplit => maybeSplit && JSON.parse(maybeSplit));
   }
 
   /**
@@ -118,13 +118,14 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with a map of split names to their split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplits(names: string[]): Promise<Record<string, string | null>> {
+  getSplits(names: string[]): Promise<Record<string, ISplit | null>> {
     const keys = names.map(name => this.keys.buildSplitKey(name));
 
     return this.wrapper.getMany(keys).then(splitDefinitions => {
-      const splits: Record<string, string | null> = {};
+      const splits: Record<string, ISplit | null> = {};
       names.forEach((name, idx) => {
-        splits[name] = splitDefinitions[idx];
+        const split = splitDefinitions[idx];
+        splits[name] = split && JSON.parse(split);
       });
       return Promise.resolve(splits);
     });
@@ -135,10 +136,12 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of split definitions,
    * or rejected if wrapper operation fails.
    */
-  getAll(): Promise<string[]> {
-    return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
-      (listOfKeys) => Promise.all(listOfKeys.map(this.wrapper.get) as Promise<string>[])
-    );
+  getAll(): Promise<ISplit[]> {
+    return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix())
+      .then((listOfKeys) => this.wrapper.getMany(listOfKeys))
+      .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
+        return JSON.parse(splitDefinition as string);
+      }));
   }
 
   /**

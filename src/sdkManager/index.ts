@@ -18,16 +18,7 @@ function collectTreatments(splitObject: ISplit) {
   return allTreatmentsCondition ? allTreatmentsCondition.partitions.map(v => v.treatment) : [];
 }
 
-function objectToView(json: string | null): SplitIO.SplitView | null {
-  let splitObject: ISplit | null;
-
-  try {
-    // @ts-expect-error
-    splitObject = JSON.parse(json);
-  } catch (e) {
-    return null;
-  }
-
+function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
   if (!splitObject) return null;
 
   return {
@@ -40,10 +31,10 @@ function objectToView(json: string | null): SplitIO.SplitView | null {
   };
 }
 
-function objectsToViews(jsons: string[]) {
+function objectsToViews(splitObjects: ISplit[]) {
   let views: SplitIO.SplitView[] = [];
 
-  jsons.forEach(split => {
+  splitObjects.forEach(split => {
     const view = objectToView(split);
     if (view) views.push(view);
   });

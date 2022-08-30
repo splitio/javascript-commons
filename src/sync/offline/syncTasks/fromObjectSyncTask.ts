@@ -2,7 +2,7 @@ import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
-import { ISplitPartial } from '../../../dtos/types';
+import { ISplit, ISplitPartial } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
@@ -24,7 +24,7 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: [string, string][] = [];
+    const splits: ISplit[] = [];
     let loadError = null;
     let splitsMock: false | Record<string, ISplitPartial> = {};
     try {
@@ -37,20 +37,17 @@ export function fromObjectUpdaterFactory(
     if (!loadError && splitsMock) {
       log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
-      forOwn(splitsMock, function (val, name) {
-        splits.push([
+      forOwn(splitsMock, function (val, name) { // @ts-ignore changeNumber and seed undefined in localhost mode
+        splits.push({
           name,
-          JSON.stringify({
-            name,
-            status: 'ACTIVE',
-            killed: false,
-            trafficAllocation: 100,
-            defaultTreatment: CONTROL,
-            conditions: val.conditions || [],
-            configurations: val.configurations,
-            trafficTypeName: val.trafficTypeName
-          })
-        ]);
+          status: 'ACTIVE',
+          killed: false,
+          trafficAllocation: 100,
+          defaultTreatment: CONTROL,
+          conditions: val.conditions || [],
+          configurations: val.configurations,
+          trafficTypeName: val.trafficTypeName
+        });
       });
 
       return Promise.all([

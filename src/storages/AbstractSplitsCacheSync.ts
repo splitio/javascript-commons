@@ -1,5 +1,6 @@
 import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -7,10 +8,10 @@ import { ISplit } from '../dtos/types';
  */
 export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
-  abstract addSplit(name: string, split: string): boolean;
+  abstract addSplit(name: string, split: ISplit): boolean
 
-  addSplits(entries: [string, string][]): boolean[] {
-    return entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1]));
+  addSplits(entries: ISplit[]): boolean[] {
+    return entries.map(split => this.addSplit(split.name, split));
   }
 
   abstract removeSplit(name: string): boolean
@@ -19,10 +20,10 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     return names.map(name => this.removeSplit(name));
   }
 
-  abstract getSplit(name: string): string | null
+  abstract getSplit(name: string): ISplit | null
 
-  getSplits(names: string[]): Record<string, string | null> {
-    const splits: Record<string, string | null> = {};
+  getSplits(names: string[]): Record<string, ISplit | null> {
+    const splits: Record<string, ISplit | null> = {};
     names.forEach(name => {
       splits[name] = this.getSplit(name);
     });
@@ -33,8 +34,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
   abstract getChangeNumber(): number
 
-  getAll(): string[] {
-    return this.getSplitNames().map(key => this.getSplit(key) as string);
+  getAll(): ISplit[] {
+    return this.getSplitNames().map(key => this.getSplit(key) as ISplit);
   }
 
   abstract getSplitNames(): string[]
@@ -66,16 +67,13 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean {
     const split = this.getSplit(name);
 
-    if (split) {
-      const parsedSplit: ISplit = JSON.parse(split);
-      if (!parsedSplit.changeNumber || parsedSplit.changeNumber < changeNumber) {
-        parsedSplit.killed = true;
-        parsedSplit.defaultTreatment = defaultTreatment;
-        parsedSplit.changeNumber = changeNumber;
-        const newSplit = JSON.stringify(parsedSplit);
+    if (split && (!split.changeNumber || split.changeNumber < changeNumber)) {
+      const newSplit = objectAssign({}, split);
+      newSplit.killed = true;
+      newSplit.defaultTreatment = defaultTreatment;
+      newSplit.changeNumber = changeNumber;
 
-        return this.addSplit(name, newSplit);
-      }
+      return this.addSplit(name, newSplit);
     }
     return false;
   }
