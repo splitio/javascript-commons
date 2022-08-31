@@ -10,13 +10,13 @@ describe('Unique keys tracker', () => {
     clear: jest.fn(),
     setOnFullQueueCb: jest.fn()
   };
-  const fakeFilter = {
+  let fakeFilter: any = {
     add: jest.fn(() => { return true; }),
     contains: jest.fn(() => { return true; }),
     clear: jest.fn(),
   };
 
-  test('Should be able to track impressions', () => { 
+  test('Should be able to track unique keys', () => { 
     
     const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
     
@@ -36,6 +36,31 @@ describe('Unique keys tracker', () => {
     uniqueKeysTracker.track('key2', 'value4');
     expect(fakeFilter.add).toBeCalledWith('key2','value4');
     expect(fakeUniqueKeysCache.track).toBeCalledWith('key2','value4');
+    
+  });
+  
+  test('Unique keys filter cleaner', () => { 
+    
+    const refreshRate = 200;
+    
+    fakeFilter.refreshRate = refreshRate;
+    
+    const uniqueKeysTrackerWithRefresh = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
+    
+    setTimeout(() => {
+      expect(fakeFilter.clear).toBeCalledTimes(1);
+    }, refreshRate + 100);
+    
+    
+    setTimeout(() => {
+      expect(fakeFilter.clear).toBeCalledTimes(2);
+      uniqueKeysTrackerWithRefresh.stop();
+    }, 2 * refreshRate + 100);
+    
+    setTimeout(() => {
+      expect(fakeFilter.clear).toBeCalledTimes(2);
+    }, 3 * refreshRate + 100);
+    
     
   });
 });

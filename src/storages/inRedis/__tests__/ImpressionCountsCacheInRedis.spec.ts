@@ -109,7 +109,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   test('IMPRESSION COUNTS CACHE IN REDIS / start and stop task', (done) => {
     
     const connection = new Redis();
-    const refreshRate = 100;
+    const refreshRate = 200;
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
     // Clean up in case there are still keys there.
     connection.del(key);
@@ -135,7 +135,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
         counter.stop();
         counter.track('feature3', nextHourTimestamp + 4, 2);      
       });
-    }, refreshRate + 50);
+    }, refreshRate + 30);
     
     setTimeout(() => {
       
@@ -146,7 +146,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
         await connection.quit();
         done();
       });
-    }, 2 * refreshRate + 50);
+    }, 2 * refreshRate + 30);
     
   });
   
