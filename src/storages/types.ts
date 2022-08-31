@@ -191,7 +191,7 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplits(entries: ISplit[]): MaybeThenable<boolean[] | void>,
+  addSplits(entries: [string, ISplit][]): MaybeThenable<boolean[] | void>,
   removeSplits(names: string[]): MaybeThenable<boolean[] | void>,
   getSplit(name: string): MaybeThenable<ISplit | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
@@ -211,7 +211,7 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  addSplits(entries: ISplit[]): boolean[],
+  addSplits(entries: [string, ISplit][]): boolean[],
   removeSplits(names: string[]): boolean[],
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
@@ -227,7 +227,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  addSplits(entries: ISplit[]): Promise<boolean[] | void>,
+  addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>,
   removeSplits(names: string[]): Promise<boolean[] | void>,
   getSplit(name: string): Promise<ISplit | null>,
   getSplits(names: string[]): Promise<Record<string, ISplit | null>>,

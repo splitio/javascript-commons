@@ -76,8 +76,8 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplits(entries: ISplit[]): Promise<boolean[]> {
-    return Promise.all(entries.map(split => this.addSplit(split.name, split)));
+  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
+    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
   }
 
   /**

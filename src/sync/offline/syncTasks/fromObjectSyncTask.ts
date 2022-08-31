@@ -24,7 +24,7 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: ISplit[] = [];
+    const splits: [string, ISplit][] = [];
     let loadError = null;
     let splitsMock: false | Record<string, ISplitPartial> = {};
     try {
@@ -37,17 +37,19 @@ export function fromObjectUpdaterFactory(
     if (!loadError && splitsMock) {
       log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
-      forOwn(splitsMock, function (val, name) { // @ts-ignore changeNumber and seed undefined in localhost mode
-        splits.push({
-          name,
-          status: 'ACTIVE',
-          killed: false,
-          trafficAllocation: 100,
-          defaultTreatment: CONTROL,
-          conditions: val.conditions || [],
-          configurations: val.configurations,
-          trafficTypeName: val.trafficTypeName
-        });
+      forOwn(splitsMock, function (val, name) {
+        splits.push([ // @ts-ignore Split changeNumber and seed is undefined in localhost mode
+          name, {
+            name,
+            status: 'ACTIVE',
+            killed: false,
+            trafficAllocation: 100,
+            defaultTreatment: CONTROL,
+            conditions: val.conditions || [],
+            configurations: val.configurations,
+            trafficTypeName: val.trafficTypeName
+          }
+        ]);
       });
 
       return Promise.all([

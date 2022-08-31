@@ -9,7 +9,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
   abstract addSplit(name: string, split: ISplit): Promise<boolean>
-  abstract addSplits(entries: ISplit[]): Promise<boolean[] | void>
+  abstract addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>
   abstract removeSplits(names: string[]): Promise<boolean[] | void>
   abstract getSplit(name: string): Promise<ISplit | null>
   abstract getSplits(names: string[]): Promise<Record<string, ISplit | null>>

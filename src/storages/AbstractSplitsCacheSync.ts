@@ -10,8 +10,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
   abstract addSplit(name: string, split: ISplit): boolean
 
-  addSplits(entries: ISplit[]): boolean[] {
-    return entries.map(split => this.addSplit(split.name, split));
+  addSplits(entries: [string, ISplit][]): boolean[] {
+    return entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1]));
   }
 
   abstract removeSplit(name: string): boolean
