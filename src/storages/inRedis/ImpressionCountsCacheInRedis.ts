@@ -9,7 +9,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   private readonly key: string;
   private readonly redis: Redis;
   private readonly refreshRate: number;
-  private handle: any;
+  private intervalId: any;
   
   constructor(log: ILogger, key: string, redis: Redis, impressionCountsCacheSize?: number, refreshRate: number = REFRESH_RATE) {
     super(impressionCountsCacheSize);
@@ -41,10 +41,10 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   }
   
   start() {
-    this.handle = setInterval(this.postImpressionCountsInRedis.bind(this), this.refreshRate);
+    this.intervalId = setInterval(this.postImpressionCountsInRedis.bind(this), this.refreshRate);
   }
   
   stop() {
-    clearInterval(this.handle);
+    clearInterval(this.intervalId);
   }
 }

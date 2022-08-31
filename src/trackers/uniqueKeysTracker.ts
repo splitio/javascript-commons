@@ -23,28 +23,26 @@ export function uniqueKeysTrackerFactory(
   uniqueKeysCache: IUniqueKeysCacheBase,
   filterAdapter: IFilterAdapter = noopFilterAdapter,
 ): IUniqueKeysTracker {
-  let handle: any;
-  
-  const tracker:any = {
+  let intervalId: any;
+
+  if (filterAdapter.refreshRate) {
+    intervalId = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
+  }
+
+  return {
+
     track(key: string, featureName: string): void {
       if (!filterAdapter.add(key, featureName)) {
         log.debug(`${LOG_PREFIX_UNIQUE_KEYS_TRACKER}The feature ${featureName} and key ${key} exist in the filter`);
         return;
       }
       uniqueKeysCache.track(key, featureName);
+    },
+
+    stop(): void {
+      clearInterval(intervalId);
     }
-  };
-  
-  if (filterAdapter.refreshRate) {
-    tracker.startFilterCleaner = function() {
-      handle = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
-    };
     
-    tracker.stopFilterCleaner = function() {
-      clearInterval(handle);
-    };
-  }
-  
-  return tracker;
+  };
 
 }

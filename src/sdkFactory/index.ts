@@ -80,7 +80,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       break;
     case NONE: 
       strategy = strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!);
-      if (uniqueKeysTracker!.startFilterCleaner) uniqueKeysTracker!.startFilterCleaner();
       break;
     default: 
       strategy = strategyDebugFactory(observer);
