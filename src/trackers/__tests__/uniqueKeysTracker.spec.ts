@@ -49,17 +49,17 @@ describe('Unique keys tracker', () => {
     
     setTimeout(() => {
       expect(fakeFilter.clear).toBeCalledTimes(1);
-    }, refreshRate + 50);
+    }, refreshRate + 100);
     
     
     setTimeout(() => {
       expect(fakeFilter.clear).toBeCalledTimes(2);
       uniqueKeysTrackerWithRefresh.stop();
-    }, 2 * refreshRate + 50);
+    }, 2 * refreshRate + 100);
     
     setTimeout(() => {
       expect(fakeFilter.clear).toBeCalledTimes(2);
-    }, 3 * refreshRate + 50);
+    }, 3 * refreshRate + 100);
     
     
   });
