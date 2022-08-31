@@ -3,6 +3,7 @@ import { SplitsCacheInRedis } from '../SplitsCacheInRedis';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
+import { ISplit } from '../../../dtos/types';
 
 const prefix = 'splits_cache_ut';
 
@@ -23,8 +24,7 @@ describe('SPLITS CACHE REDIS', () => {
 
     let values = await cache.getAll();
 
-    expect(values.indexOf(splitWithUserTT) !== -1).toBe(true);
-    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
+    expect(values).toEqual([splitWithAccountTT, splitWithUserTT]);
 
     let splitNames = await cache.getSplitNames();
 
@@ -35,11 +35,10 @@ describe('SPLITS CACHE REDIS', () => {
 
     values = await cache.getAll();
 
-    expect(values.indexOf(splitWithUserTT) === -1).toBe(true);
-    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
+    expect(values).toEqual([splitWithAccountTT]);
 
-    expect(await cache.getSplit('lol1') == null).toBe(true);
-    expect(await cache.getSplit('lol2') === splitWithAccountTT).toBe(true);
+    expect(await cache.getSplit('lol1')).toEqual(null);
+    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
     await cache.setChangeNumber(123);
     expect(await cache.getChangeNumber() === 123).toBe(true);
@@ -50,8 +49,8 @@ describe('SPLITS CACHE REDIS', () => {
     expect(splitNames.indexOf('lol2') !== -1).toBe(true);
 
     const splits = await cache.getSplits(['lol1', 'lol2']);
-    expect(splits['lol1'] === null).toBe(true);
-    expect(splits['lol2'] === splitWithAccountTT).toBe(true);
+    expect(splits['lol1']).toEqual(null);
+    expect(splits['lol2']).toEqual(splitWithAccountTT);
 
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('lol2'));
@@ -69,8 +68,8 @@ describe('SPLITS CACHE REDIS', () => {
     await cache.addSplits([
       ['split1', splitWithUserTT],
       ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT],
-      ['malformed', '{}']
+      ['split3', splitWithUserTT], // @ts-ignore
+      ['malformed', {}]
     ]);
     await cache.addSplit('split4', splitWithUserTT);
     await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
@@ -131,7 +130,7 @@ describe('SPLITS CACHE REDIS', () => {
 
     // kill an existent split
     updated = await cache.killLocally('lol1', 'some_treatment', 100);
-    let lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    let lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -141,7 +140,7 @@ describe('SPLITS CACHE REDIS', () => {
 
     // not update if changeNumber is old
     updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
-    lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older

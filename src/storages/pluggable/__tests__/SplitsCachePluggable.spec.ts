@@ -3,6 +3,7 @@ import { KeyBuilder } from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMockFactory } from './wrapper.mock';
 import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
+import { ISplit } from '../../../dtos/types';
 
 const keysBuilder = new KeyBuilder();
 
@@ -18,26 +19,17 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     ]);
     await cache.addSplit('lol3', splitWithAccountTT);
 
-    // adding malformed or existing splits with the same definitions will not have effects
-    await expect(cache.addSplits([
-      ['lol1', splitWithUserTT],
-      ['lol2', '{ /']
-    ])).rejects.toBeTruthy();
-    await expect(cache.addSplit('lol3', '{ /')).rejects.toBeTruthy();
-
     // Assert getAll
     let values = await cache.getAll();
 
-    expect(values.length).toBe(3);
-    expect(values.indexOf(splitWithUserTT) !== -1).toBe(true);
-    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
+    expect(values).toEqual([splitWithUserTT, splitWithAccountTT, splitWithAccountTT]);
 
     // Assert getSplits
     let valuesObj = await cache.getSplits(['lol2', 'lol3']);
 
     expect(Object.keys(valuesObj).length).toBe(2);
-    expect(valuesObj.lol2).toBe(splitWithAccountTT);
-    expect(valuesObj.lol3).toBe(splitWithAccountTT);
+    expect(valuesObj.lol2).toEqual(splitWithAccountTT);
+    expect(valuesObj.lol3).toEqual(splitWithAccountTT);
 
     // Assert getSplitNames
     let splitNames = await cache.getSplitNames();
@@ -52,8 +44,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     values = await cache.getAll();
     expect(values.length).toBe(2);
-    expect(await cache.getSplit('lol1')).toBe(null);
-    expect(await cache.getSplit('lol2')).toBe(splitWithAccountTT);
+    expect(await cache.getSplit('lol1')).toEqual(null);
+    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
     // Assert removeSplits
     await cache.addSplit('lol1', splitWithUserTT);
@@ -63,8 +55,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(values.length).toBe(1);
     splitNames = await cache.getSplitNames();
     expect(splitNames.length).toBe(1);
-    expect(await cache.getSplit('lol1')).toBe(null);
-    expect(await cache.getSplit('lol2')).toBe(splitWithAccountTT);
+    expect(await cache.getSplit('lol1')).toEqual(null);
+    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
   });
 
@@ -84,8 +76,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     await cache.addSplits([
       ['split1', splitWithUserTT],
       ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT],
-      ['malformed', '{}']
+      ['split3', splitWithUserTT], // @ts-ignore
+      ['malformed', {}]
     ]);
     await cache.addSplit('split4', splitWithUserTT);
     await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
@@ -138,7 +130,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // kill an existent split
     updated = await cache.killLocally('lol1', 'some_treatment', 100);
-    let lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    let lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -148,7 +140,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // not update if changeNumber is old
     updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
-    lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
@@ -156,4 +148,3 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
 });
-

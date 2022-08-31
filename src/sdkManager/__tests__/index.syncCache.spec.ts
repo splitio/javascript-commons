@@ -19,7 +19,7 @@ describe('MANAGER API / Sync cache (In Memory)', () => {
   /** Setup: create manager */
   const cache = new SplitsCacheInMemory();
   const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
-  cache.addSplit(splitObject.name, JSON.stringify(splitObject));
+  cache.addSplit(splitObject.name, splitObject as any);
 
   test('List all splits', () => {
 

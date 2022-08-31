@@ -38,7 +38,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     else localStorage.removeItem(key);
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: ISplit | null) {
     try {
       if (split) {
         if (split.trafficTypeName) {
@@ -122,8 +122,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const split = this.getSplit(name);
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
-      const parsedSplit = JSON.parse(split as string);
-      this._decrementCounts(parsedSplit);
+      this._decrementCounts(split);
 
       return true;
     } catch (e) {
@@ -183,7 +182,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     return n;
   }
 
-  getSplitNames() {
+  getSplitNames(): string[] {
     const len = localStorage.length;
     const accum = [];
 
