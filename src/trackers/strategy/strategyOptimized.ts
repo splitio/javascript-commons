@@ -25,7 +25,7 @@ export function strategyOptimizedFactory(
         const now = Date.now();
         
         // Increments impression counter per featureName
-        impressionsCounter.track(impression.feature, now, 1);
+        if (impression.pt) impressionsCounter.track(impression.feature, now, 1);
   
         // Checks if the impression should be added in queue to be sent
         if (!impression.pt || impression.pt < truncateTimeFrame(now)) {
