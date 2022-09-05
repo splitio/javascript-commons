@@ -4,6 +4,7 @@ import { truncateTimeFrame } from '../../../utils/time';
 
 import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { redisMock } from './testUtils';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
@@ -108,11 +109,9 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   
   test('IMPRESSION COUNTS CACHE IN REDIS / start and stop task', (done) => {
     
-    const connection = new Redis();
+    const connection = redisMock;
     const refreshRate = 200;
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
-    // Clean up in case there are still keys there.
-    connection.del(key);
     counter.track('feature1', timestamp, 1);
     counter.track('feature1', timestamp + 1, 1);
     counter.track('feature1', timestamp + 2, 1);
@@ -124,28 +123,23 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     counter.track('feature2', nextHourTimestamp + 3, 2);
     counter.track('feature2', nextHourTimestamp + 4, 2);
     
-    connection.hgetall(key).then(data => {
-      expect(data).toStrictEqual({});
-    });
+    expect(connection.pipeline).not.toBeCalled();
     
     counter.start();
     setTimeout(() => {
-      connection.hgetall(key, async (err, data) => {     
-        expect(data).toStrictEqual(expected);
-        counter.stop();
-        counter.track('feature3', nextHourTimestamp + 4, 2);      
-      });
+      expect(connection.pipeline).toBeCalledTimes(1);
+      counter.stop();
+      counter.track('feature3', nextHourTimestamp + 4, 2);
     }, refreshRate + 30);
     
     setTimeout(() => {
-      
-      connection.hgetall(key, async (err, data) => {
-        expect(data).toStrictEqual(expected);
-        
-        await connection.del(key);
-        await connection.quit();
+      expect(connection.pipeline).toBeCalledTimes(1);
+      counter.start();
+      setTimeout(() => {
+        expect(connection.pipeline).toBeCalledTimes(2);
+        counter.stop();
         done();
-      });
+      }, refreshRate + 30);
     }, 2 * refreshRate + 30);
     
   });
