@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import Redis from 'ioredis';
 import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
@@ -112,7 +114,6 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     const key = 'unique_key_post';
     const refreshRate = 200;
     
-    // @ts-ignore
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection , undefined, refreshRate);  
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
