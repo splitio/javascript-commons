@@ -3,8 +3,8 @@ import { ImpressionCountsCacheInRedis} from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
 
 import Redis from 'ioredis';
+import { RedisMock } from './RedisMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { redisMock } from './testUtils';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
@@ -109,7 +109,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   
   test('IMPRESSION COUNTS CACHE IN REDIS / start and stop task', (done) => {
     
-    const connection = redisMock;
+    const connection = new RedisMock();
     const refreshRate = 200;
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
     counter.track('feature1', timestamp, 1);

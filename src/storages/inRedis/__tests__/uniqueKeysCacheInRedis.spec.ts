@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { redisMock } from './testUtils';
+import { RedisMock } from './RedisMock';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   
@@ -108,7 +108,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   });
   
   test('UNIQUE KEYS CACHE IN REDIS / start and stop task', (done) => {
-    const connection = redisMock;
+    const connection = new RedisMock();
     const key = 'unique_key_post';
     const refreshRate = 200;
     
