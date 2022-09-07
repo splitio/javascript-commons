@@ -3,6 +3,8 @@ import { Method } from '../../sync/submitters/types';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ITelemetryCacheAsync } from '../types';
 import { findLatencyIndex } from '../findLatencyIndex';
+import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
+import { CONSUMER_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 
 export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
@@ -23,4 +25,8 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
       .catch(() => { /* Handle rejections for telemetry */ });
   }
 
+  recordConfig() {
+    const value = JSON.stringify(getTelemetryConfigStats(CONSUMER_MODE, STORAGE_PLUGGABLE));
+    return this.wrapper.set(this.keys.buildInitKey(), value).catch(() => { /* Handle rejections for telemetry */ });
+  }
 }

@@ -470,7 +470,7 @@ export interface IStorageAsync extends IStorageBase<
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IEventsCacheAsync | IEventsCacheSync,
-  ITelemetryCacheAsync
+  ITelemetryCacheAsync | ITelemetryCacheSync
   > { }
 
 /** StorageFactory */
