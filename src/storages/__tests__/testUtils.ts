@@ -1,3 +1,4 @@
+import { ISplit } from '../../dtos/types';
 import { IStorageSync, IStorageAsync, IImpressionsCacheSync, IEventsCacheSync } from '../types';
 
 // Assert that instances created by storage factories have the expected interface
@@ -20,8 +21,13 @@ export function assertSyncRecorderCacheInterface(cache: IEventsCacheSync | IImpr
 
 // Split mocks
 
-export const splitWithUserTT = '{ "trafficTypeName": "user_tt", "conditions": [] }';
-
-export const splitWithAccountTT = '{ "trafficTypeName": "account_tt", "conditions": [] }';
-
-export const splitWithAccountTTAndUsesSegments = '{ "trafficTypeName": "account_tt", "conditions": [{ "matcherGroup": { "matchers": [{ "matcherType": "IN_SEGMENT", "userDefinedSegmentMatcherData": { "segmentName": "employees" } }]}}] }';
+//@ts-ignore
+export const splitWithUserTT: ISplit = { trafficTypeName: 'user_tt', conditions: [] };
+//@ts-ignore
+export const splitWithAccountTT: ISplit = { trafficTypeName: 'account_tt', conditions: [] };
+//@ts-ignore
+export const splitWithAccountTTAndUsesSegments: ISplit = { trafficTypeName: 'account_tt', conditions: [{ matcherGroup: { matchers: [{ matcherType: 'IN_SEGMENT', userDefinedSegmentMatcherData: { segmentName: 'employees' } }] } }] };
+//@ts-ignore
+export const something: ISplit = { name: 'something' };
+//@ts-ignore
+export const somethingElse: ISplit = { name: 'something else' };

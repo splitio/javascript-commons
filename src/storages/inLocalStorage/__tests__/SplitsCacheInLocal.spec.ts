@@ -1,34 +1,33 @@
 import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
 import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments } from '../../__tests__/testUtils';
+import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse } from '../../__tests__/testUtils';
+import { ISplit } from '../../../dtos/types';
 
 test('SPLIT CACHE / LocalStorage', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.clear();
 
-  cache.addSplit('lol1', 'something');
-  cache.addSplit('lol2', 'something else');
+  cache.addSplit('lol1', something);
+  cache.addSplit('lol2', somethingElse);
 
   let values = cache.getAll();
 
-  expect(values.indexOf('something') !== -1).toBe(true);
-  expect(values.indexOf('something else') !== -1).toBe(true);
+  expect(values).toEqual([something, somethingElse]);
 
   cache.removeSplit('lol1');
 
   const splits = cache.getSplits(['lol1', 'lol2']);
-  expect(splits['lol1'] === null).toBe(true);
-  expect(splits['lol2'] === 'something else').toBe(true);
+  expect(splits['lol1']).toEqual(null);
+  expect(splits['lol2']).toEqual(somethingElse);
 
   values = cache.getAll();
 
-  expect(values.indexOf('something') === -1).toBe(true);
-  expect(values.indexOf('something else') !== -1).toBe(true);
+  expect(values).toEqual([somethingElse]);
 
-  expect(cache.getSplit('lol1') == null).toBe(true);
-  expect(cache.getSplit('lol2') === 'something else').toBe(true);
+  expect(cache.getSplit('lol1')).toEqual(null);
+  expect(cache.getSplit('lol2')).toEqual(somethingElse);
 
   expect(cache.checkCache()).toBe(false); // checkCache should return false until localstorage has data.
 
@@ -47,10 +46,10 @@ test('SPLIT CACHE / LocalStorage', () => {
 test('SPLIT CACHE / LocalStorage / Get Keys', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
 
-  cache.addSplit('lol1', 'something');
-  cache.addSplit('lol2', 'something else');
+  cache.addSplit('lol1', something);
+  cache.addSplit('lol2', somethingElse);
 
-  let keys = cache.getSplitNames();
+  const keys = cache.getSplitNames();
 
   expect(keys.indexOf('lol1') !== -1).toBe(true);
   expect(keys.indexOf('lol2') !== -1).toBe(true);
@@ -60,8 +59,8 @@ test('SPLIT CACHE / LocalStorage / Add Splits', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([
-    ['lol1', 'something'],
-    ['lol2', 'something else']
+    ['lol1', something],
+    ['lol2', somethingElse]
   ]);
 
   cache.removeSplits(['lol1', 'lol2']);
@@ -76,8 +75,8 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
   cache.addSplits([ // loop of addSplit
     ['split1', splitWithUserTT],
     ['split2', splitWithAccountTT],
-    ['split3', splitWithUserTT],
-    ['malformed', '{}']
+    ['split3', splitWithUserTT], // @ts-ignore
+    ['malformed', {}]
   ]);
   cache.addSplit('split4', splitWithUserTT);
 
@@ -111,8 +110,8 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
 
 test('SPLIT CACHE / LocalStorage / killLocally', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.addSplit('lol1', '{ "name": "something"}');
-  cache.addSplit('lol2', '{ "name": "something else"}');
+  cache.addSplit('lol1', something);
+  cache.addSplit('lol2', somethingElse);
   const initialChangeNumber = cache.getChangeNumber();
 
   // kill an non-existent split
@@ -124,7 +123,7 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
 
   // kill an existent split
   updated = cache.killLocally('lol1', 'some_treatment', 100);
-  let lol1Split = JSON.parse(cache.getSplit('lol1') as string);
+  let lol1Split = cache.getSplit('lol1') as ISplit;
 
   expect(updated).toBe(true); // killLocally resolves with update if split is changed
   expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -134,7 +133,7 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
 
   // not update if changeNumber is old
   updated = cache.killLocally('lol1', 'some_treatment_2', 90);
-  lol1Split = JSON.parse(cache.getSplit('lol1') as string);
+  lol1Split = cache.getSplit('lol1') as ISplit;
 
   expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
   expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older

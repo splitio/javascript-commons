@@ -39,7 +39,7 @@ export function dataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
     storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(Object.keys(splitsData).map(splitName => [splitName, splitsData[splitName]]));
+    storage.splits.addSplits(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])));
 
     // add mySegments data
     let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userId];
