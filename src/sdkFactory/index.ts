@@ -44,6 +44,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     impressionsQueueSize: settings.scheduler.impressionsQueueSize,
     eventsQueueSize: settings.scheduler.eventsQueueSize,
     uniqueKeysCacheSize: settings.scheduler.uniqueKeysCacheSize,
+    impressionCountsQueueSize: settings.scheduler.impressionCountsQueueSize,
+    impressionCountsRefreshRate: settings.scheduler.impressionCountsRefreshRate,
+    uniqueKeysRefreshRate: settings.scheduler.uniqueKeysRefreshRate,
     optimize: shouldBeOptimized(settings),
 
     // ATM, only used by InLocalStorage

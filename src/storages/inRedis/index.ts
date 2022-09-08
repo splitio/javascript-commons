@@ -24,12 +24,12 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
   const prefix = validatePrefix(options.prefix);
 
-  function InRedisStorageFactory({ log, metadata, onReadyCb, impressionsMode }: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory({ log, metadata, onReadyCb, impressionsMode, impressionCountsQueueSize, impressionCountsRefreshRate, uniqueKeysCacheSize, uniqueKeysRefreshRate }: IStorageFactoryParams): IStorageAsync {
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
-    const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient) : undefined;
-    const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient) : undefined;
+    const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient, impressionCountsQueueSize, impressionCountsRefreshRate) : undefined;
+    const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient, uniqueKeysCacheSize, uniqueKeysRefreshRate) : undefined;
 
     // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {

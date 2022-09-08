@@ -80,6 +80,8 @@ export interface ISettings {
     featuresRefreshRate: number,
     impressionsRefreshRate: number,
     impressionsQueueSize: number,
+    impressionCountsRefreshRate: number,
+    impressionCountsQueueSize: number,
     uniqueKeysRefreshRate: number,
     uniqueKeysCacheSize: number,
     /**

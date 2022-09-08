@@ -498,7 +498,10 @@ export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 export interface IStorageFactoryParams {
   log: ILogger,
   impressionsQueueSize?: number,
-  uniqueKeysCacheSize?: number;
+  impressionCountsQueueSize?: number,
+  impressionCountsRefreshRate?: number,
+  uniqueKeysRefreshRate?: number,
+  uniqueKeysCacheSize?: number,
   eventsQueueSize?: number,
   optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
   mode: SDKMode,

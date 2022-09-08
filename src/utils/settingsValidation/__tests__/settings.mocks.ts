@@ -52,6 +52,8 @@ export const fullSettings: ISettings = {
     impressionsRefreshRate: 1,
     telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,
+    impressionCountsQueueSize: 1,
+    impressionCountsRefreshRate: 1,
     uniqueKeysRefreshRate: 1,
     uniqueKeysCacheSize: 1,
     offlineRefreshRate: 1,

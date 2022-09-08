@@ -133,6 +133,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
   scheduler.uniqueKeysRefreshRate = fromSecondsToMillis(scheduler.uniqueKeysRefreshRate);
+  scheduler.impressionCountsRefreshRate = fromSecondsToMillis(scheduler.impressionCountsRefreshRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Default impressionsRefreshRate for DEBUG mode is 60 secs
