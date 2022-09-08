@@ -56,11 +56,12 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory({ log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, optimize, matchingKey }: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+    const { log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, optimize } = params;
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
-    const telemetry = !matchingKey || shouldRecordTelemetry() ?
+    const telemetry = shouldRecordTelemetry(params) ?
       isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper) :
       undefined;
 
