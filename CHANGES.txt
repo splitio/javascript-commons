@@ -1,3 +1,6 @@
+1.6.2 (September XXX, 2022)
+- Updated storage implementations to improve the performance of split evaluations (i.e., `getTreatment(s)` method calls) when using the default storage in memory.
+
 1.6.1 (July 22, 2022)
 - Updated GoogleAnalyticsToSplit integration to validate `autoRequire` config parameter and avoid some wrong warning logs when mapping GA hit fields to Split event properties.
 
