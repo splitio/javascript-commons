@@ -11,7 +11,7 @@ import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
 
-const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY }
+const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
 
 function treatmentsNotReady(splitNames: string[]) {
   const evaluations: Record<string, IEvaluationResult> = {};
