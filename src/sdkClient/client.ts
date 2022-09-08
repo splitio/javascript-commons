@@ -9,6 +9,17 @@ import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
+import { isStorageSync } from '../trackers/impressionObserver/utils';
+
+const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY }
+
+function treatmentsNotReady(splitNames: string[]) {
+  const evaluations: Record<string, IEvaluationResult> = {};
+  splitNames.forEach(splitName => {
+    evaluations[splitName] = treatmentNotReady;
+  });
+  return evaluations;
+}
 
 /**
  * Creator of base client with getTreatments and track methods.
@@ -29,7 +40,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatment;
     };
 
-    const evaluation = evaluateFeature(log, key, splitName, attributes, storage);
+    const evaluation = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+      evaluateFeature(log, key, splitName, attributes, storage) :
+      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
+        treatmentNotReady :
+        Promise.resolve(treatmentNotReady); // Promisify if async
 
     return thenable(evaluation) ? evaluation.then((res) => wrapUp(res)) : wrapUp(evaluation);
   }
@@ -53,7 +68,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatments;
     };
 
-    const evaluations = evaluateFeatures(log, key, splitNames, attributes, storage);
+    const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+      evaluateFeatures(log, key, splitNames, attributes, storage) :
+      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
+        treatmentsNotReady(splitNames) :
+        Promise.resolve(treatmentsNotReady(splitNames)); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
@@ -72,14 +91,8 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     invokingMethodName: string,
     queue: ImpressionDTO[]
   ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
-    const isSdkReady = readinessManager.isReady() || readinessManager.isReadyFromCache();
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
-
-    // If the SDK was not ready, treatment may be incorrect due to having Splits but not segments data.
-    if (!isSdkReady) {
-      evaluation = { treatment: CONTROL, label: SDK_NOT_READY };
-    }
 
     const { treatment, label, changeNumber, config = null } = evaluation;
     log.info(IMPRESSION, [splitName, matchingKey, treatment, label]);
