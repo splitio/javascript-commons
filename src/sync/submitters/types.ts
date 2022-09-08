@@ -127,9 +127,9 @@ export type TelemetryUsageStatsPayload = {
   iQ: number, // impressionsQueued
   iDe: number, // impressionsDeduped
   iDr: number, // impressionsDropped
-  spC: number, // splitCount
-  seC: number, // segmentCount
-  skC: number, // segmentKeyCount
+  spC?: number, // splitCount
+  seC?: number, // segmentCount
+  skC?: number, // segmentKeyCount
   sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
   eD: number, // eventsDropped
