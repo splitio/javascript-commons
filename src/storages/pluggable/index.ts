@@ -65,19 +65,15 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper) :
       undefined;
 
-    const onReadyCbs = [onReadyCb];
-    let wrapperConnected: boolean;
-    let wrapperConnectError: any;
-
     // Connects to wrapper and emits SDK_READY event on main client
-    wrapper.connect().then(() => {
-      wrapperConnected = true;
-      onReadyCbs.forEach(onReadyCb => onReadyCb());
+    const connectPromise = wrapper.connect().then(() => {
+      onReadyCb();
       // @ts-ignore
       if (telemetry && telemetry.recordConfig) telemetry.recordConfig();
     }).catch((e) => {
-      wrapperConnectError = e || new Error('Error connecting wrapper');
-      onReadyCbs.forEach(onReadyCb => onReadyCb(wrapperConnectError));
+      e = e || new Error('Error connecting wrapper');
+      onReadyCb(e);
+      return e;
     });
 
     return {
@@ -95,8 +91,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
       // emits SDK_READY event on shared clients and returns a reference to the storage
       shared(_, onReadyCb) {
-        if (wrapperConnectError || wrapperConnected) onReadyCb(wrapperConnectError);
-        else onReadyCbs.push(onReadyCb);
+        connectPromise.then(onReadyCb);
 
         return {
           ...this,
