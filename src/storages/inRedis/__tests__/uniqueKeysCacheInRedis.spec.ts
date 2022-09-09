@@ -1,6 +1,9 @@
+//@ts-nocheck
+
 import Redis from 'ioredis';
 import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { RedisMock } from '../../../utils/redis/RedisMock';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   
@@ -107,49 +110,37 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   });
   
   test('UNIQUE KEYS CACHE IN REDIS / start and stop task', (done) => {
-    const connection = new Redis();
+    const connection = new RedisMock();
     const key = 'unique_key_post';
-    // Clean up in case there are still keys there.
-    connection.del(key);
     const refreshRate = 200;
     
-    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, undefined, refreshRate);  
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection , undefined, refreshRate);  
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
     cache.track('key1', 'feature3');
     cache.track('key2', 'feature3');
     
-    connection.lrange(key, 0, 10, async (err, data) => {
-      expect(data).toStrictEqual([]);
-    });
+    expect(connection.pipeline).not.toBeCalled();
     
     cache.start();
-
-    const expected = [
-      JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
-      JSON.stringify({'f': 'feature2', 'ks': ['key2']}),
-      JSON.stringify({'f': 'feature3', 'ks': ['key1', 'key2']})
-    ];
     
     setTimeout(() => {
-      connection.lrange(key, 0, 10, async (err, data) => {
-
-        expect(data).toStrictEqual(expected);
-        cache.stop();
-        cache.track('key3', 'feature4');
-        
-      });
+      expect(connection.pipeline).toBeCalledTimes(1);
+      cache.stop();
+      expect(connection.pipeline).toBeCalledTimes(2);
+      cache.track('key3', 'feature4');
     }, refreshRate + 30);
     
     setTimeout(() => {
       
-      connection.lrange(key, 0, 10, async (err, data) => {
-        expect(data).toStrictEqual(expected);
-        
-        await connection.del(key);
-        await connection.quit();
+      expect(connection.pipeline).toBeCalledTimes(2);
+      cache.start();
+      
+      setTimeout(() => {
+        expect(connection.pipeline).toBeCalledTimes(3);
+        cache.stop();
         done();
-      });
+      }, refreshRate + 30);
     }, 2 * refreshRate + 30);
   });
   

@@ -41,26 +41,30 @@ describe('Unique keys tracker', () => {
   
   test('Unique keys filter cleaner', () => { 
     
-    const refreshRate = 200;
+    const refreshRate = 500;
     
     fakeFilter.refreshRate = refreshRate;
     
     const uniqueKeysTrackerWithRefresh = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
     
     setTimeout(() => {
+      
       expect(fakeFilter.clear).toBeCalledTimes(1);
-    }, refreshRate + 100);
     
+      setTimeout(() => {
+        
+        expect(fakeFilter.clear).toBeCalledTimes(2);
+        uniqueKeysTrackerWithRefresh.stop();
     
-    setTimeout(() => {
-      expect(fakeFilter.clear).toBeCalledTimes(2);
-      uniqueKeysTrackerWithRefresh.stop();
-    }, 2 * refreshRate + 100);
+        setTimeout(() => {
+          
+          expect(fakeFilter.clear).toBeCalledTimes(2);
+
+        }, refreshRate + 30);
+
+      }, refreshRate + 30);
     
-    setTimeout(() => {
-      expect(fakeFilter.clear).toBeCalledTimes(2);
-    }, 3 * refreshRate + 100);
-    
+    }, refreshRate + 30);
     
   });
 });
