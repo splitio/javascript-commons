@@ -40,7 +40,7 @@ const splitsEventEmitterMock = {
 };
 
 function assertKilledSplit(cache, changeNumber, splitName, defaultTreatment) {
-  const split = JSON.parse(cache.getSplit(splitName));
+  const split = cache.getSplit(splitName);
   expect(split.killed).toBe(true); // split must be killed
   expect(split.defaultTreatment).toBe(defaultTreatment); // split must have the given default treatment
   expect(split.changeNumber).toBe(changeNumber); // split must have the given change number

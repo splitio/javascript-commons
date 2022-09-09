@@ -4,13 +4,15 @@ import { evaluateFeature } from '../../index';
 import { IMatcher, IMatcherDto } from '../../types';
 import { IStorageSync } from '../../../storages/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { ISplit } from '../../../dtos/types';
 
-const ALWAYS_ON_SPLIT = '{"trafficTypeName":"user","name":"always-on","trafficAllocation":100,"trafficAllocationSeed":1012950810,"seed":-725161385,"status":"ACTIVE","killed":false,"defaultTreatment":"off","changeNumber":1494364996459,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":100},{"treatment":"off","size":0}],"label":"in segment all"}]}';
-const ALWAYS_OFF_SPLIT = '{"trafficTypeName":"user","name":"always-off","trafficAllocation":100,"trafficAllocationSeed":-331690370,"seed":403891040,"status":"ACTIVE","killed":false,"defaultTreatment":"on","changeNumber":1494365020316,"algo":2,"conditions":[{"conditionType":"ROLLOUT","matcherGroup":{"combiner":"AND","matchers":[{"keySelector":{"trafficType":"user","attribute":null},"matcherType":"ALL_KEYS","negate":false,"userDefinedSegmentMatcherData":null,"whitelistMatcherData":null,"unaryNumericMatcherData":null,"betweenMatcherData":null}]},"partitions":[{"treatment":"on","size":0},{"treatment":"off","size":100}],"label":"in segment all"}]}';
+const ALWAYS_ON_SPLIT = { 'trafficTypeName': 'user', 'name': 'always-on', 'trafficAllocation': 100, 'trafficAllocationSeed': 1012950810, 'seed': -725161385, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'changeNumber': 1494364996459, 'algo': 2, 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': null }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': null, 'whitelistMatcherData': null, 'unaryNumericMatcherData': null, 'betweenMatcherData': null }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] } as ISplit;
+const ALWAYS_OFF_SPLIT = { 'trafficTypeName': 'user', 'name': 'always-off', 'trafficAllocation': 100, 'trafficAllocationSeed': -331690370, 'seed': 403891040, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'on', 'changeNumber': 1494365020316, 'algo': 2, 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': null }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': null, 'whitelistMatcherData': null, 'unaryNumericMatcherData': null, 'betweenMatcherData': null }] }, 'partitions': [{ 'treatment': 'on', 'size': 0 }, { 'treatment': 'off', 'size': 100 }], 'label': 'in segment all' }] } as ISplit;
 
-const STORED_SPLITS: Record<string, string> = {};
-STORED_SPLITS['always-on'] = ALWAYS_ON_SPLIT;
-STORED_SPLITS['always-off'] = ALWAYS_OFF_SPLIT;
+const STORED_SPLITS: Record<string, ISplit> = {
+  'always-on': ALWAYS_ON_SPLIT,
+  'always-off': ALWAYS_OFF_SPLIT
+};
 
 const mockStorage = {
   splits: {

@@ -32,7 +32,7 @@ describe('MANAGER API', () => {
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
     const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
     await cache.clear();
-    await cache.addSplit(splitObject.name, JSON.stringify(splitObject));
+    await cache.addSplit(splitObject.name, splitObject as any);
 
     /** List all splits */
     const views = await manager.splits();
