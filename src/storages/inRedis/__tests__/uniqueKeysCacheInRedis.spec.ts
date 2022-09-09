@@ -3,7 +3,7 @@
 import Redis from 'ioredis';
 import { UniqueKeysCacheInRedis } from '../uniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { RedisMock } from './RedisMock';
+import { RedisMock } from '../../../utils/redis/RedisMock';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   
@@ -127,16 +127,17 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     setTimeout(() => {
       expect(connection.pipeline).toBeCalledTimes(1);
       cache.stop();
+      expect(connection.pipeline).toBeCalledTimes(2);
       cache.track('key3', 'feature4');
     }, refreshRate + 30);
     
     setTimeout(() => {
       
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.pipeline).toBeCalledTimes(2);
       cache.start();
       
       setTimeout(() => {
-        expect(connection.pipeline).toBeCalledTimes(2);
+        expect(connection.pipeline).toBeCalledTimes(3);
         cache.stop();
         done();
       }, refreshRate + 30);

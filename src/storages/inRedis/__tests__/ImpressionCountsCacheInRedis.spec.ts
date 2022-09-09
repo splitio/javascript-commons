@@ -1,9 +1,8 @@
 // @ts-nocheck
 import { ImpressionCountsCacheInRedis} from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
-
 import Redis from 'ioredis';
-import { RedisMock } from './RedisMock';
+import { RedisMock } from '../../../utils/redis/RedisMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
@@ -129,14 +128,15 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     setTimeout(() => {
       expect(connection.pipeline).toBeCalledTimes(1);
       counter.stop();
+      expect(connection.pipeline).toBeCalledTimes(2);
       counter.track('feature3', nextHourTimestamp + 4, 2);
     }, refreshRate + 30);
     
     setTimeout(() => {
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.pipeline).toBeCalledTimes(2);
       counter.start();
       setTimeout(() => {
-        expect(connection.pipeline).toBeCalledTimes(2);
+        expect(connection.pipeline).toBeCalledTimes(3);
         counter.stop();
         done();
       }, refreshRate + 30);
