@@ -41,7 +41,7 @@ describe('Unique keys tracker', () => {
   
   test('Unique keys filter cleaner', () => { 
     
-    const refreshRate = 200;
+    const refreshRate = 500;
     
     fakeFilter.refreshRate = refreshRate;
     
