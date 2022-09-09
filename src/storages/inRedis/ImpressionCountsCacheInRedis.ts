@@ -23,6 +23,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   postImpressionCountsInRedis(){
     const counts = this.pop();
     const keys = Object.keys(counts);
+    if (!keys) return Promise.resolve(false);
     const pipeline = this.redis.pipeline();
     keys.forEach(key => {
       pipeline.hincrby(this.key, key, counts[key]);
@@ -36,7 +37,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
       })
       .catch(err => {
         this.log.error(`${LOG_PREFIX}Error in impression counts pipeline: ${err}.`);
-        return false;
+        return Promise.resolve(false);
       });
   }
   
@@ -46,5 +47,6 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   
   stop() {
     clearInterval(this.intervalId);
+    return this.postImpressionCountsInRedis();
   }
 }

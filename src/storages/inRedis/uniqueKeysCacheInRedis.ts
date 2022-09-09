@@ -24,9 +24,9 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   }
   
   postUniqueKeysInRedis() {
-    const pipeline = this.redis.pipeline();
-    
     const featureNames = Object.keys(this.uniqueKeysTracker);
+    if (!featureNames) return Promise.resolve(false);
+    const pipeline = this.redis.pipeline();
     for (let i = 0; i < featureNames.length; i++) {
       const featureName = featureNames[i];
       const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
@@ -47,7 +47,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
       })
       .catch(err => {
         this.log.error(`${LOG_PREFIX}Error in uniqueKeys pipeline: ${err}.`);
-        return false;
+        return Promise.resolve(false);
       });
   }
   
@@ -58,6 +58,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   
   stop() {
     clearInterval(this.intervalId);
+    return this.postUniqueKeysInRedis();
   }
   
 }
