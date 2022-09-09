@@ -47,7 +47,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
       })
       .catch(err => {
         this.log.error(`${LOG_PREFIX}Error in uniqueKeys pipeline: ${err}.`);
-        return Promise.resolve(false);
+        return false;
       });
   }
   

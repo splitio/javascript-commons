@@ -37,7 +37,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
       })
       .catch(err => {
         this.log.error(`${LOG_PREFIX}Error in impression counts pipeline: ${err}.`);
-        return Promise.resolve(false);
+        return false;
       });
   }
   
