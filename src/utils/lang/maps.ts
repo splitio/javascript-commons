@@ -24,10 +24,11 @@ THE SOFTWARE.
 **/
 
 export interface IMap<K, V> {
-  set(key: K, value: V): this;
   clear(): void;
   delete(key: K): boolean;
   get(key: K): V | undefined;
+  has(key: K): boolean;
+  set(key: K, value: V): this;
   readonly size: number;
 }
 
@@ -46,13 +47,6 @@ export class MapPoly<K, V> implements IMap<K, V>{
     this.__mapValuesData__.length = 0;
   }
 
-  set(key: K, value: V) {
-    let index = this.__mapKeysData__.indexOf(key);
-    if (index === -1) index = this.__mapKeysData__.push(key) - 1;
-    this.__mapValuesData__[index] = value;
-    return this;
-  }
-
   delete(key: K) {
     const index = this.__mapKeysData__.indexOf(key);
     if (index === -1) return false;
@@ -65,6 +59,17 @@ export class MapPoly<K, V> implements IMap<K, V>{
     const index = this.__mapKeysData__.indexOf(key);
     if (index === -1) return;
     return this.__mapValuesData__[index];
+  }
+
+  has(key: K): boolean {
+    return this.__mapKeysData__.indexOf(key) !== -1;
+  }
+
+  set(key: K, value: V) {
+    let index = this.__mapKeysData__.indexOf(key);
+    if (index === -1) index = this.__mapKeysData__.push(key) - 1;
+    this.__mapValuesData__[index] = value;
+    return this;
   }
 
   get size() {
