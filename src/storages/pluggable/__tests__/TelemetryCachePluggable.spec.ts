@@ -38,4 +38,35 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
     aF: 0,
     rF: 0
   });
+
+  // popLatencies
+  const latencies = await cache.popLatencies();
+  latencies.forEach((latency, metadata) => {
+    expect(metadata).toEqual(fakeMetadata);
+    expect(latency.tr[2]).toBe(2);
+  });
+
+  // popExceptions
+  const exceptions = await cache.popExceptions();
+  exceptions.forEach((exception, metadata) => {
+    expect(metadata).toEqual(fakeMetadata);
+    expect(exception.tr).toBe(2);
+  });
+
+  // popConfigs
+  const configs = await cache.popConfigs();
+  configs.forEach((config, metadata) => {
+    expect(metadata).toEqual(fakeMetadata);
+    expect(config).toEqual({
+      oM: 1,
+      st: 'pluggable',
+      aF: 0,
+      rF: 0
+    });
+  });
+
+  // pops when there is no data
+  expect(await cache.popLatencies()).toEqual(new Map());
+  expect(await cache.popExceptions()).toEqual(new Map());
+  expect(await cache.popConfigs()).toEqual(new Map());
 });

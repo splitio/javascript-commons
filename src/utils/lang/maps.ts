@@ -26,6 +26,7 @@ THE SOFTWARE.
 export interface IMap<K, V> {
   clear(): void;
   delete(key: K): boolean;
+  forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
   get(key: K): V | undefined;
   has(key: K): boolean;
   set(key: K, value: V): this;
@@ -53,6 +54,12 @@ export class MapPoly<K, V> implements IMap<K, V>{
     this.__mapKeysData__.splice(index, 1);
     this.__mapValuesData__.splice(index, 1);
     return true;
+  }
+
+  forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any) {
+    for (let i = 0; i < this.__mapKeysData__.length; i++) {
+      callbackfn.call(thisArg, this.__mapValuesData__[i], this.__mapKeysData__[i], this as any);
+    }
   }
 
   get(key: K) {

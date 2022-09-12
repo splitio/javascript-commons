@@ -33,7 +33,11 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
     return this.wrapper.set(this.keys.buildInitKey(), value).catch(() => { /* Handle rejections for telemetry */ });
   }
 
-  popLatencies(): Promise<MultiMethodLatencies | void> {
+  /**
+   * Pop telemetry latencies.
+   * The returned promise rejects if wrapper operations fail.
+   */
+  popLatencies(): Promise<MultiMethodLatencies> {
     return this.wrapper.getKeysByPrefix(this.keys.latencyPrefix).then(latencyKeys => {
       return this.wrapper.getMany(latencyKeys).then(latencies => {
 
@@ -45,21 +49,21 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           const parsedField = parseLatencyField(field);
           if (isString(parsedField)) {
             this.log.error(`Ignoring invalid latency field: ${field}: ${parsedField}`);
-            return;
+            continue;
           }
 
           // @ts-ignore
           const count = parseInt(latencies[i]);
           if (isNaNNumber(count)) {
             this.log.error(`Ignoring latency with invalid count: ${latencies[i]}`);
-            return;
+            continue;
           }
 
           const [metadata, method, bucket] = parsedField;
 
           if (bucket >= MAX_LATENCY_BUCKET_COUNT) {
             this.log.error(`Ignoring latency with invalid bucket: ${bucket}`);
-            return;
+            continue;
           }
 
           if (!result.has(metadata)) result.set(metadata, {
@@ -75,12 +79,14 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
         return Promise.all(latencyKeys.map((latencyKey) => this.wrapper.del(latencyKey))).then(() => result);
       });
-    }).catch((e) => {
-      this.log.error(`Error fetching latencies for SDK Methods: ${e}`);
     });
   }
 
-  popExceptions(): Promise<MultiMethodExceptions | void> {
+  /**
+   * Pop telemetry exceptions.
+   * The returned promise rejects if wrapper operations fail.
+   */
+  popExceptions(): Promise<MultiMethodExceptions> {
     return this.wrapper.getKeysByPrefix(this.keys.exceptionPrefix).then(exceptionKeys => {
       return this.wrapper.getMany(exceptionKeys).then(exceptions => {
 
@@ -92,14 +98,14 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           const parsedField = parseExceptionField(field);
           if (isString(parsedField)) {
             this.log.error(`Ignoring invalid exception field: ${field}: ${parsedField}`);
-            return;
+            continue;
           }
 
           // @ts-ignore
           const count = parseInt(exceptions[i]);
           if (isNaNNumber(count)) {
             this.log.error(`Ignoring exception with invalid count: ${exceptions[i]}`);
-            return;
+            continue;
           }
 
           const [metadata, method] = parsedField;
@@ -117,12 +123,14 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
         return Promise.all(exceptionKeys.map((exceptionKey) => this.wrapper.del(exceptionKey))).then(() => result);
       });
-    }).catch((e) => {
-      this.log.error(`Error fetching exceptions for SDK Methods: ${e}`);
     });
   }
 
-  popConfigs(): Promise<MultiConfigs | void> {
+  /**
+   * Pop telemetry configs.
+   * The returned promise rejects if wrapper operations fail.
+   */
+  popConfigs(): Promise<MultiConfigs> {
     return this.wrapper.getKeysByPrefix(this.keys.initPrefix).then(configKeys => {
       return this.wrapper.getMany(configKeys).then(configs => {
 
@@ -134,7 +142,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           const parsedField = parseMetadata(field);
           if (isString(parsedField)) {
             this.log.error(`Ignoring invalid config field: ${field}: ${parsedField}`);
-            return;
+            continue;
           }
 
           const [metadata] = parsedField;
@@ -149,8 +157,6 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
         return Promise.all(configKeys.map((configKey) => this.wrapper.del(configKey))).then(() => result);
       });
-    }).catch((e) => {
-      this.log.error(`Error fetching SDK configs: ${e}`);
     });
   }
 }

@@ -38,7 +38,11 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
     return this.redis.hset(key, field, value).catch(() => { /* Handle rejections for telemetry */ });
   }
 
-  popLatencies(): Promise<MultiMethodLatencies | void> {
+  /**
+   * Pop telemetry latencies.
+   * The returned promise rejects if redis operations fail.
+   */
+  popLatencies(): Promise<MultiMethodLatencies> {
     return this.redis.hgetall(this.keys.latencyPrefix).then(latencies => {
 
       const result: MultiMethodLatencies = new _Map();
@@ -76,12 +80,14 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
       });
 
       return this.redis.del(this.keys.latencyPrefix).then(() => result);
-    }).catch((e) => {
-      this.log.error(`Error fetching latencies for SDK Methods: ${e}`);
     });
   }
 
-  popExceptions(): Promise<MultiMethodExceptions | void> {
+  /**
+   * Pop telemetry exceptions.
+   * The returned promise rejects if redis operations fail.
+   */
+  popExceptions(): Promise<MultiMethodExceptions> {
     return this.redis.hgetall(this.keys.exceptionPrefix).then(exceptions => {
 
       const result: MultiMethodExceptions = new _Map();
@@ -114,12 +120,14 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
       });
 
       return this.redis.del(this.keys.exceptionPrefix).then(() => result);
-    }).catch((e) => {
-      this.log.error(`Error fetching exceptions for SDK Methods: ${e}`);
     });
   }
 
-  popConfigs(): Promise<MultiConfigs | void> {
+  /**
+   * Pop telemetry configs.
+   * The returned promise rejects if redis operations fail.
+   */
+  popConfigs(): Promise<MultiConfigs> {
     return this.redis.hgetall(this.keys.initPrefix).then(configs => {
 
       const result: MultiConfigs = new _Map();
@@ -143,8 +151,6 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
       });
 
       return this.redis.del(this.keys.initPrefix).then(() => result);
-    }).catch((e) => {
-      this.log.error(`Error fetching SDK configs: ${e}`);
     });
   }
 }
