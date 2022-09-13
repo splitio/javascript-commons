@@ -8,6 +8,7 @@ import { wrapperAdapter } from '../../storages/pluggable/wrapperAdapter';
 import { KeyBuilderSS } from '../../storages/KeyBuilderSS';
 import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
+import { metadata } from '../../storages/__tests__/KeyBuilder.spec';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -18,8 +19,7 @@ const sdkReadinessManagerMock = {
   sdkStatus: jest.fn()
 } as ISdkReadinessManager;
 
-// @ts-expect-error
-const keys = new KeyBuilderSS();
+const keys = new KeyBuilderSS('prefix', metadata);
 
 describe('MANAGER API', () => {
 

@@ -2,18 +2,18 @@ import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { TelemetryCacheInRedis } from '../TelemetryCacheInRedis';
-import { fakeMetadata } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
 import { newBuckets } from '../../inMemory/TelemetryCacheInMemory';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
 const prefix = 'telemetry_cache_ut';
 const exceptionKey = `${prefix}.telemetry.exceptions`;
 const latencyKey = `${prefix}.telemetry.latencies`;
 const initKey = `${prefix}.telemetry.init`;
-const fieldVersionablePrefix = `${fakeMetadata.s}/${fakeMetadata.n}/${fakeMetadata.i}`;
+const fieldVersionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
 
 test('TELEMETRY CACHE IN REDIS', async () => {
 
-  const keysBuilder = new KeyBuilderSS(prefix, fakeMetadata);
+  const keysBuilder = new KeyBuilderSS(prefix, metadata);
   const connection = new Redis();
   const cache = new TelemetryCacheInRedis(loggerMock, keysBuilder, connection);
 
@@ -43,7 +43,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // popLatencies
   const latencies = await cache.popLatencies();
   latencies.forEach((latency, metadata) => {
-    expect(metadata).toEqual(fakeMetadata);
+    expect(metadata).toEqual(metadata);
     expect(latency).toEqual({
       t: newBuckets(),
       ts: newBuckets(),
@@ -57,7 +57,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // popExceptions
   const exceptions = await cache.popExceptions();
   exceptions.forEach((exception, metadata) => {
-    expect(metadata).toEqual(fakeMetadata);
+    expect(metadata).toEqual(metadata);
     expect(exception).toEqual({
       t: 0,
       ts: 0,
@@ -71,7 +71,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // popConfig
   const configs = await cache.popConfigs();
   configs.forEach((config, metadata) => {
-    expect(metadata).toEqual(fakeMetadata);
+    expect(metadata).toEqual(metadata);
     expect(config).toEqual({
       oM: 1,
       st: 'redis',
