@@ -1,4 +1,4 @@
-import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
+import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams, ITelemetryCacheAsync } from '../types';
 
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
@@ -68,8 +68,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     // Connects to wrapper and emits SDK_READY event on main client
     const connectPromise = wrapper.connect().then(() => {
       onReadyCb();
-      // @ts-ignore
-      if (telemetry && telemetry.recordConfig) telemetry.recordConfig();
+      // If mode is not defined, it means that the synchronizer is running and so we don't have to record telemetry
+      if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig && mode) (telemetry as ITelemetryCacheAsync).recordConfig();
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');
       onReadyCb(e);
