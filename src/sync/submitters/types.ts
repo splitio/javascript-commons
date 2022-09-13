@@ -123,11 +123,15 @@ export type StreamingEvent = {
   t: number, // timestamp
 }
 
+// 'telemetry.latencias' and 'telemetry.exceptions' Redis/Pluggable keys
+export type TelemetryUsageStats = {
+  mL?: MethodLatencies, // clientMethodLatencies
+  mE?: MethodExceptions, // methodExceptions
+}
+
 // 'metrics/usage' JSON request body
-export type TelemetryUsageStatsPayload = {
+export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   lS: LastSync, // lastSynchronization
-  mL: MethodLatencies, // clientMethodLatencies
-  mE: MethodExceptions, // methodExceptions
   hE: HttpErrors, // httpErrors
   hL: HttpLatencies, // httpLatencies
   tR: number, // tokenRefreshes
