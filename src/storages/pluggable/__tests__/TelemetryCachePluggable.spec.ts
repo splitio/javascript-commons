@@ -41,22 +41,22 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
 
   // popLatencies
   const latencies = await cache.popLatencies();
-  latencies.forEach((latency, metadata) => {
-    expect(metadata).toEqual(metadata);
+  latencies.forEach((latency, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(latency.tr[2]).toBe(2);
   });
 
   // popExceptions
   const exceptions = await cache.popExceptions();
-  exceptions.forEach((exception, metadata) => {
-    expect(metadata).toEqual(metadata);
+  exceptions.forEach((exception, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(exception.tr).toBe(2);
   });
 
   // popConfigs
   const configs = await cache.popConfigs();
-  configs.forEach((config, metadata) => {
-    expect(metadata).toEqual(metadata);
+  configs.forEach((config, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(config).toEqual({
       oM: 1,
       st: 'pluggable',

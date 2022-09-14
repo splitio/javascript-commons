@@ -66,11 +66,11 @@ export type StoredEventWithMetadata = {
   e: SplitIO.EventData
 }
 
-export type MultiMethodLatencies = IMap<IMetadata, MethodLatencies>
+export type MultiMethodLatencies = IMap<string, MethodLatencies>
 
-export type MultiMethodExceptions = IMap<IMetadata, MethodExceptions>
+export type MultiMethodExceptions = IMap<string, MethodExceptions>
 
-export type MultiConfigs = IMap<IMetadata, TelemetryConfigStats>
+export type MultiConfigs = IMap<string, TelemetryConfigStats>
 
 /**
  * Telemetry usage stats

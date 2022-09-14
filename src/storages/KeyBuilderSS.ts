@@ -66,15 +66,15 @@ const REVERSE_METHOD_NAMES = Object.keys(METHOD_NAMES).reduce((acc, key) => {
 }, {} as Record<string, Method>);
 
 
-export function parseMetadata(field: string): [metadata: IMetadata] | string {
+export function parseMetadata(field: string): [metadata: string] | string {
   const parts = field.split('/');
   if (parts.length !== 3) return `invalid subsection count. Expected 4, got: ${parts.length}`;
 
   const [s /* metadata.s */, n /* metadata.n */, i /* metadata.i */] = parts;
-  return [{ s, n, i }];
+  return [JSON.stringify({ s, n, i })];
 }
 
-export function parseExceptionField(field: string): [metadata: IMetadata, method: Method] | string {
+export function parseExceptionField(field: string): [metadata: string, method: Method] | string {
   const parts = field.split('/');
   if (parts.length !== 4) return `invalid subsection count. Expected 4, got: ${parts.length}`;
 
@@ -82,10 +82,10 @@ export function parseExceptionField(field: string): [metadata: IMetadata, method
   const method = REVERSE_METHOD_NAMES[m];
   if (!method) return `unknown method '${m}'`;
 
-  return [{ s, n, i }, method];
+  return [JSON.stringify({ s, n, i }), method];
 }
 
-export function parseLatencyField(field: string): [metadata: IMetadata, method: Method, bucket: number] | string {
+export function parseLatencyField(field: string): [metadata: string, method: Method, bucket: number] | string {
   const parts = field.split('/');
   if (parts.length !== 5) return `invalid subsection count. Expected 5, got: ${parts.length}`;
 
@@ -96,5 +96,5 @@ export function parseLatencyField(field: string): [metadata: IMetadata, method: 
   const bucket = parseInt(b);
   if (isNaN(bucket) || bucket >= MAX_LATENCY_BUCKET_COUNT) return `invalid bucket. Expected a number between 0 and 22, got: ${b}`;
 
-  return [{ s, n, i }, method, bucket];
+  return [JSON.stringify({ s, n, i }), method, bucket];
 }

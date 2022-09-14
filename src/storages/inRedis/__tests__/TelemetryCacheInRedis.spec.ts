@@ -42,8 +42,8 @@ test('TELEMETRY CACHE IN REDIS', async () => {
 
   // popLatencies
   const latencies = await cache.popLatencies();
-  latencies.forEach((latency, metadata) => {
-    expect(metadata).toEqual(metadata);
+  latencies.forEach((latency, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(latency).toEqual({
       t: newBuckets(),
       ts: newBuckets(),
@@ -56,8 +56,8 @@ test('TELEMETRY CACHE IN REDIS', async () => {
 
   // popExceptions
   const exceptions = await cache.popExceptions();
-  exceptions.forEach((exception, metadata) => {
-    expect(metadata).toEqual(metadata);
+  exceptions.forEach((exception, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(exception).toEqual({
       t: 0,
       ts: 0,
@@ -70,8 +70,8 @@ test('TELEMETRY CACHE IN REDIS', async () => {
 
   // popConfig
   const configs = await cache.popConfigs();
-  configs.forEach((config, metadata) => {
-    expect(metadata).toEqual(metadata);
+  configs.forEach((config, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
     expect(config).toEqual({
       oM: 1,
       st: 'redis',
