@@ -70,23 +70,25 @@ export interface IPluggableStorageWrapper {
   /** Integer operations */
 
   /**
-   * Increments in 1 the given `key` value or set it to 1 if the value doesn't exist.
+   * Increments the number stored at `key` by `increment` (or 1 if `increment` is not provided), or set it to `increment` (or 1) if the value doesn't exist.
    *
    * @function incr
    * @param {string} key Key to increment
+   * @param {number} increment Value to increment by
    * @returns {Promise<number>} A promise that resolves with the value of key after the increment. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  incr: (key: string) => Promise<number>
+  incr: (key: string, increment?: number) => Promise<number>
   /**
-   * Decrements in 1 the given `key` value or set it to -1 if the value doesn't exist.
+   * Decrements the number stored at `key` by `decrement` (or 1 if `decrement` is not provided), or set it to minus `decrement` (or minus 1) if the value doesn't exist.
    *
    * @function decr
    * @param {string} key Key to decrement
+   * @param {number} decrement Value to decrement by
    * @returns {Promise<number>} A promise that resolves with the value of key after the decrement. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
-  decr: (key: string) => Promise<number>
+  decr: (key: string, decrement?: number) => Promise<number>
 
   /** Queue operations */
 

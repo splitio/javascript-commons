@@ -14,7 +14,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   private readonly refreshRate: number;
   private intervalId: any;
 
-  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE, refreshRate: number = REFRESH_RATE) {
+  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize = DEFAULT_CACHE_SIZE, refreshRate = REFRESH_RATE) {
     super(uniqueKeysQueueSize);
     this.log = log;
     this.key = key;
@@ -23,7 +23,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     this.onFullQueue = () => {this.postUniqueKeysInRedis();};
   }
 
-  postUniqueKeysInRedis() {
+  private postUniqueKeysInRedis() {
     const featureNames = Object.keys(this.uniqueKeysTracker);
     if (!featureNames) return Promise.resolve(false);
     const pipeline = this.redis.pipeline();

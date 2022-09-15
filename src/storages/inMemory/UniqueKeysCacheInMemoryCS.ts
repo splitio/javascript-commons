@@ -15,7 +15,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
    * @param impressionsQueueSize number of queued impressions to call onFullQueueCb.
    * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
    */
-  constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {   
+  constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
     this.uniqueKeysTracker = {};
   }
@@ -27,10 +27,10 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   /**
    * Store unique keys in sequential order
    * key: string = key.
-   * value: HashSet<string> = set of split names. 
+   * value: HashSet<string> = set of split names.
    */
   track(key: string, featureName: string) {
-    
+
     if (!this.uniqueKeysTracker[key]) this.uniqueKeysTracker[key] = new _Set();
     const tracker = this.uniqueKeysTracker[key];
     if (!tracker.has(featureName)) {
@@ -65,7 +65,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   isEmpty() {
     return Object.keys(this.uniqueKeysTracker).length === 0;
   }
-  
+
   /**
    * Converts `uniqueKeys` data from cache into request payload.
    */
@@ -84,5 +84,5 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
     }
     return { keys: payload };
   }
-  
+
 }
