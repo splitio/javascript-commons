@@ -17,7 +17,7 @@ const imp4 = { ...imp1, keyName: 'k3', feature: 'anotherFeature' };
 
 function getParams(uniqueKeysCache: any) {
   const params = {
-    settings: { log: loggerMock, scheduler: { uniqueKeysRefreshRate: 200 }, core: { key: undefined } },
+    settings: { log: loggerMock, core: { key: undefined } },
     storage: { uniqueKeys: uniqueKeysCache },
     splitApi: {
       postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),
@@ -52,7 +52,7 @@ describe('uniqueKeys submitter', () => {
       uniqueKeysSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.uniqueKeysRefreshRate + 10);
+    }, 10);
   });
 
   test('doesn\'t drop items from cache when POST is resolved CS', (done) => {
@@ -79,7 +79,7 @@ describe('uniqueKeys submitter', () => {
       uniqueKeysSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.uniqueKeysRefreshRate + 10);
+    }, 10);
   });
 
 });

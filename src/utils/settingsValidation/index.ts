@@ -36,8 +36,6 @@ export const base = {
     telemetryRefreshRate: 3600,
     // publish evaluations each 300 sec (default value for OPTIMIZED impressions mode)
     impressionsRefreshRate: 300,
-    // publish unique Keys each 900 sec (15 min) 
-    uniqueKeysRefreshRate: 900,
     // fetch offline changes each 15 sec
     offlineRefreshRate: 15,
     // publish events every 60 seconds after the first flush
@@ -132,13 +130,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
-  scheduler.uniqueKeysRefreshRate = fromSecondsToMillis(scheduler.uniqueKeysRefreshRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Default impressionsRefreshRate for DEBUG mode is 60 secs
   if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
-  
+
 
   // Log deprecation for old telemetry param
   if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');

@@ -22,7 +22,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
-    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemory(params.uniqueKeysCacheSize) : undefined,
+    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
