@@ -1,9 +1,9 @@
 // @ts-nocheck
-import { UniqueKeysCacheInMemoryCS } from '../uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemoryCS } from '../UniqueKeysCacheInMemoryCS';
 
 test('UNIQUE KEYS CACHE IN MEMORY CS / should incrementally store values, clear the queue, and tell if it is empty', () => {
   const c = new UniqueKeysCacheInMemoryCS();
-  
+
   // queue is initially empty
   expect(c.pop()).toEqual({keys:[]});
   expect(c.isEmpty()).toBe(true);

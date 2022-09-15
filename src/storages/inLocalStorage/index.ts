@@ -14,7 +14,7 @@ import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
 import { NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
-import { UniqueKeysCacheInMemoryCS } from '../inMemory/uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 
 export interface InLocalStorageOptions {
   prefix?: string

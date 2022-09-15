@@ -7,8 +7,8 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
   private readonly maxStorage: number;
   protected onFullQueue?: () => void;
   private cacheSize = 0;
-  
-  constructor(impressionCountsCacheSize: number = DEFAULT_CACHE_SIZE) {
+
+  constructor(impressionCountsCacheSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = impressionCountsCacheSize;
   }
 

@@ -1,6 +1,6 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { Redis } from 'ioredis';
-import { UniqueKeysCacheInMemory } from '../inMemory/uniqueKeysCacheInMemory';
+import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
@@ -13,7 +13,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   private readonly redis: Redis;
   private readonly refreshRate: number;
   private intervalId: any;
-  
+
   constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE, refreshRate: number = REFRESH_RATE) {
     super(uniqueKeysQueueSize);
     this.log = log;
@@ -22,7 +22,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     this.refreshRate = refreshRate;
     this.onFullQueue = () => {this.postUniqueKeysInRedis();};
   }
-  
+
   postUniqueKeysInRedis() {
     const featureNames = Object.keys(this.uniqueKeysTracker);
     if (!featureNames) return Promise.resolve(false);
@@ -50,15 +50,15 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
         return false;
       });
   }
-  
-    
+
+
   start() {
     this.intervalId = setInterval(this.postUniqueKeysInRedis.bind(this), this.refreshRate);
   }
-  
+
   stop() {
     clearInterval(this.intervalId);
     return this.postUniqueKeysInRedis();
   }
-  
+
 }

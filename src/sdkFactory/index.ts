@@ -76,13 +76,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
   let strategy;
   switch (storageFactoryParams.impressionsMode) {
-    case OPTIMIZED: 
+    case OPTIMIZED:
       strategy = strategyOptimizedFactory(observer, storage.impressionCounts!);
       break;
-    case NONE: 
+    case NONE:
       strategy = strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!);
       break;
-    default: 
+    default:
       strategy = strategyDebugFactory(observer);
   }
 

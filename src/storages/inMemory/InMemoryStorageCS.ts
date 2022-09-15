@@ -6,7 +6,7 @@ import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
-import { UniqueKeysCacheInMemoryCS } from './uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
