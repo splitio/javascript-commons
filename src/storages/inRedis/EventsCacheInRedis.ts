@@ -59,7 +59,7 @@ export class EventsCacheInRedis implements IEventsCacheAsync {
 
   /**
    * Pop the given number of events from the storage.
-   * The returned promise rejects if the wrapper operation fails.
+   * The returned promise rejects if the redis operation fails.
    *
    * NOTE: this method doesn't take into account MAX_EVENT_SIZE or MAX_QUEUE_BYTE_SIZE limits.
    * It is the submitter responsability to handle that.

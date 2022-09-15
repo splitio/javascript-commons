@@ -29,19 +29,19 @@ export function evaluateFeature(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
-  let stringifiedSplit;
+  let parsedSplit;
 
   try {
-    stringifiedSplit = storage.splits.getSplit(splitName);
+    parsedSplit = storage.splits.getSplit(splitName);
   } catch (e) {
     // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
     return treatmentException;
   }
 
-  if (thenable(stringifiedSplit)) {
-    return stringifiedSplit.then((result) => getEvaluation(
+  if (thenable(parsedSplit)) {
+    return parsedSplit.then((split) => getEvaluation(
       log,
-      result,
+      split,
       key,
       attributes,
       storage,
@@ -54,7 +54,7 @@ export function evaluateFeature(
 
   return getEvaluation(
     log,
-    stringifiedSplit,
+    parsedSplit,
     key,
     attributes,
     storage,

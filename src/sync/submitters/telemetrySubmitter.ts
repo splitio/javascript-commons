@@ -9,11 +9,12 @@ import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
+import { isStorageSync } from '../../trackers/impressionObserver/utils';
 
 /**
  * Converts data from telemetry cache into /metrics/usage request payload.
  */
-export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, splits: ISplitsCacheSync, segments: ISegmentsCacheSync) {
+export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, splits?: ISplitsCacheSync, segments?: ISegmentsCacheSync) {
   return {
     isEmpty() { return false; }, // There is always data in telemetry cache
     clear() { }, //  No-op
@@ -31,9 +32,9 @@ export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, split
         iQ: telemetry.getImpressionStats(QUEUED),
         iDe: telemetry.getImpressionStats(DEDUPED),
         iDr: telemetry.getImpressionStats(DROPPED),
-        spC: splits.getSplitNames().length,
-        seC: segments.getRegisteredSegments().length,
-        skC: segments.getKeysCount(),
+        spC: splits && splits.getSplitNames().length,
+        seC: segments && segments.getRegisteredSegments().length,
+        skC: segments && segments.getKeysCount(),
         sL: telemetry.getSessionLength(),
         eQ: telemetry.getEventStats(QUEUED),
         eD: telemetry.getEventStats(DROPPED),
@@ -137,7 +138,12 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
   const startTime = timer(now);
 
   const submitter = firstPushWindowDecorator(
-    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(telemetry, splits, segments), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    submitterFactory(
+      log, splitApi.postMetricsUsage,
+      // @TODO cannot provide splits and segments cache if they are async, because `submitterFactory` expects a sync storage source
+      isStorageSync(params.settings) ? telemetryCacheStatsAdapter(telemetry, splits, segments) : telemetryCacheStatsAdapter(telemetry),
+      telemetryRefreshRate, 'telemetry stats', undefined, 0, true
+    ),
     telemetryRefreshRate
   );
 

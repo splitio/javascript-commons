@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { EventsCacheInRedis } from '../EventsCacheInRedis';
-import { fakeMetadata, fakeEvent1, fakeEvent1stored, fakeEvent2, fakeEvent2stored, fakeEvent3, fakeEvent3stored } from '../../pluggable/__tests__/EventsCachePluggable.spec';
+import { metadata, fakeEvent1, fakeEvent1stored, fakeEvent2, fakeEvent2stored, fakeEvent3, fakeEvent3stored } from '../../pluggable/__tests__/EventsCachePluggable.spec';
 
 const prefix = 'events_cache_ut';
 const eventsKey = `${prefix}.events`;
@@ -17,11 +17,11 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
 
   expect(redisValues.length).toBe(0); // control assertion, there are no events previously queued.
 
-  const cache = new EventsCacheInRedis(loggerMock, eventsKey, connection, fakeMetadata);
+  const cache = new EventsCacheInRedis(loggerMock, eventsKey, connection, metadata);
   // I'll use a "bad" instance so I can force an issue with the rpush command. I'll store an integer and will make the cache try to use rpush there.
   await connection.set(nonListKey, 10);
 
-  const faultyCache = new EventsCacheInRedis(loggerMock, nonListKey, connection, fakeMetadata);
+  const faultyCache = new EventsCacheInRedis(loggerMock, nonListKey, connection, metadata);
 
   expect(await cache.track(fakeEvent1)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
   expect(await cache.track(fakeEvent2)).toBe(true); // If the queueing operation was successful, it should resolve the returned promise with "true"
