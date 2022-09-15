@@ -68,7 +68,7 @@ const REVERSE_METHOD_NAMES = Object.keys(METHOD_NAMES).reduce((acc, key) => {
 
 export function parseMetadata(field: string): [metadata: string] | string {
   const parts = field.split('/');
-  if (parts.length !== 3) return `invalid subsection count. Expected 4, got: ${parts.length}`;
+  if (parts.length !== 3) return `invalid subsection count. Expected 3, got: ${parts.length}`;
 
   const [s /* metadata.s */, n /* metadata.n */, i /* metadata.i */] = parts;
   return [JSON.stringify({ s, n, i })];
@@ -94,7 +94,7 @@ export function parseLatencyField(field: string): [metadata: string, method: Met
   if (!method) return `unknown method '${m}'`;
 
   const bucket = parseInt(b);
-  if (isNaN(bucket) || bucket >= MAX_LATENCY_BUCKET_COUNT) return `invalid bucket. Expected a number between 0 and 22, got: ${b}`;
+  if (isNaN(bucket) || bucket >= MAX_LATENCY_BUCKET_COUNT) return `invalid bucket. Expected a number between 0 and ${MAX_LATENCY_BUCKET_COUNT - 1}, got: ${b}`;
 
   return [JSON.stringify({ s, n, i }), method, bucket];
 }
