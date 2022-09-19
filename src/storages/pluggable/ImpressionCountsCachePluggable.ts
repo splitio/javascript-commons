@@ -24,7 +24,7 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
   private storeImpressionCounts() {
     const counts = this.pop();
     const keys = Object.keys(counts);
-    if (!keys) return Promise.resolve(false);
+    if (!keys.length) return Promise.resolve(false);
 
     const pipeline = keys.reduce<Promise<any>>((pipeline, key) => {
       return pipeline.then(() => this.wrapper.incr(`${this.key}::${key}`, counts[key]));
