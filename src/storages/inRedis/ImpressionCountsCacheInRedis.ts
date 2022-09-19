@@ -23,7 +23,8 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   private postImpressionCountsInRedis(){
     const counts = this.pop();
     const keys = Object.keys(counts);
-    if (!keys) return Promise.resolve(false);
+    if (!keys.length) return Promise.resolve(false);
+
     const pipeline = this.redis.pipeline();
     keys.forEach(key => {
       pipeline.hincrby(this.key, key, counts[key]);

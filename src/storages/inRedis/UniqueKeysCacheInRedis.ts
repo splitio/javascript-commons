@@ -25,7 +25,8 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
 
   private postUniqueKeysInRedis() {
     const featureNames = Object.keys(this.uniqueKeysTracker);
-    if (!featureNames) return Promise.resolve(false);
+    if (!featureNames.length) return Promise.resolve(false);
+
     const pipeline = this.redis.pipeline();
     for (let i = 0; i < featureNames.length; i++) {
       const featureName = featureNames[i];
