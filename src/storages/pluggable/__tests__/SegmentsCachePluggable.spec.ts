@@ -2,9 +2,9 @@ import { SegmentsCachePluggable } from '../SegmentsCachePluggable';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMock } from './wrapper.mock';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
-// @ts-ignore. Doesn't require metadata
-const keyBuilder = new KeyBuilderSS();
+const keyBuilder = new KeyBuilderSS('prefix', metadata);
 
 describe('SEGMENTS CACHE PLUGGABLE', () => {
 

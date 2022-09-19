@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './uniqueKeysCacheInMemoryCS';
 
@@ -21,9 +21,8 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
     impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
-    telemetry: params.mode !== LOCALHOST_MODE && shouldRecordTelemetry() ? new TelemetryCacheInMemory() : undefined,
+    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
     uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS(params.uniqueKeysCacheSize) : undefined,
-    
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

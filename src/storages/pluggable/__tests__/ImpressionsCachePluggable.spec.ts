@@ -1,12 +1,10 @@
 import { ImpressionsCachePluggable } from '../ImpressionsCachePluggable';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMock } from './wrapper.mock';
-import { IMetadata } from '../../../dtos/types';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
 const prefix = 'impr_cache_ut';
 const impressionsKey = `${prefix}.impressions`;
-
-const fakeMetadata: IMetadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
 
 const o1 = {
   feature: 'test1',
@@ -18,7 +16,7 @@ const o1 = {
 };
 
 const o1stored = {
-  m: fakeMetadata,
+  m: metadata,
   i: { k: o1.keyName, f: o1.feature, t: o1.treatment, r: o1.label, c: o1.changeNumber, m: o1.time }
 };
 
@@ -33,7 +31,7 @@ const o2 = {
 };
 
 const o2stored = {
-  m: fakeMetadata,
+  m: metadata,
   i: { k: o2.keyName, b: o2.bucketingKey, f: o2.feature, t: o2.treatment, r: o2.label, c: o2.changeNumber, m: o2.time }
 };
 
@@ -47,11 +45,11 @@ const o3 = {
 };
 
 const o3stored = {
-  m: fakeMetadata,
+  m: metadata,
   i: { k: o3.keyName, f: o3.feature, t: o3.treatment, r: o3.label, c: o3.changeNumber, m: o3.time }
 };
 
-export { fakeMetadata, o1, o2, o3, o1stored, o2stored, o3stored };
+export { metadata, o1, o2, o3, o1stored, o2stored, o3stored };
 
 describe('PLUGGABLE IMPRESSIONS CACHE', () => {
 
@@ -61,7 +59,7 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
   });
 
   test('`track`, `count`, `popNWithMetadata` and `drop` methods', async () => {
-    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, fakeMetadata);
+    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, metadata);
 
     // Testing track and count methods.
     await cache.track([o1]);
@@ -93,7 +91,7 @@ describe('PLUGGABLE IMPRESSIONS CACHE', () => {
   test('`track` method rejects if wrapper operation fails', (done) => {
     // make wrapper operation fail
     wrapperMock.pushItems.mockImplementation(() => Promise.reject());
-    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, fakeMetadata);
+    const cache = new ImpressionsCachePluggable(loggerMock, impressionsKey, wrapperMock, metadata);
 
     cache.track([o1]).catch(done); // result should rejects
   });

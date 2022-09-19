@@ -129,14 +129,14 @@ export function splitApiFactory(
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
 
-    postMetricsConfig(body: string) {
+    postMetricsConfig(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/metrics/config`;
-      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
     },
 
-    postMetricsUsage(body: string) {
+    postMetricsUsage(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/metrics/usage`;
-      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
     }
   };
 }
