@@ -8,7 +8,9 @@ const MAX_TAGS = 10;
 export const MAX_LATENCY_BUCKET_COUNT = 23;
 
 export function newBuckets() {
-  return new Array(MAX_LATENCY_BUCKET_COUNT).fill(0);
+  // MAX_LATENCY_BUCKET_COUNT (length) is 23
+  // Not using Array.fill for old browsers compatibility
+  return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 const ACCEPTANCE_RANGE = 0.001;
