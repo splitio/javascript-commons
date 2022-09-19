@@ -1,6 +1,6 @@
 import { MaybeThenable, IMetadata, ISplitFiltersValidation, ISplit } from '../dtos/types';
 import { ILogger } from '../logger/types';
-import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
+import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, SDKMode } from '../types';
 
 /**
@@ -423,18 +423,19 @@ export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITel
  */
 
 export interface ITelemetryEvaluationConsumerAsync {
-  popExceptions(): Promise<MethodExceptions>;
-  popLatencies(): Promise<MethodLatencies>;
+  popLatencies(): Promise<MultiMethodLatencies>;
+  popExceptions(): Promise<MultiMethodExceptions>;
+  popConfigs(): Promise<MultiConfigs>;
 }
 
 export interface ITelemetryEvaluationProducerAsync {
   recordLatency(method: Method, latencyMs: number): Promise<any>;
   recordException(method: Method): Promise<any>;
+  recordConfig(): Promise<any>;
 }
 
 // ATM it only implements the producer API, used by the SDK in consumer mode.
-// @TODO implement consumer API for JS Synchronizer.
-export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync { }
+export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync, ITelemetryEvaluationConsumerAsync { }
 
 /**
  * Storages

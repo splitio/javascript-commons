@@ -35,9 +35,11 @@ test('KEYS / splits keys with custom prefix', () => {
   // expect(builder.buildSplitsReady() === expectedReady).toBe(true);
 });
 
+const prefix = 'SPLITIO';
+export const metadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
+
 test('KEYS / segments keys', () => {
-  // @ts-expect-error
-  const builder = new KeyBuilderSS();
+  const builder = new KeyBuilderSS(prefix, metadata);
 
   const segmentName = 'segment_name__for_testing';
   const expectedKey = `SPLITIO.segment.${segmentName}`;
@@ -66,8 +68,6 @@ test('KEYS / traffic type keys', () => {
 });
 
 test('KEYS / impressions', () => {
-  const prefix = 'SPLITIO';
-  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const expectedImpressionKey = `${prefix}.impressions`;
@@ -76,14 +76,12 @@ test('KEYS / impressions', () => {
 });
 
 test('KEYS / events', () => {
-  // @ts-expect-error
-  let builder = new KeyBuilderSS('test-prefix-1');
+  let builder = new KeyBuilderSS('test-prefix-1', metadata);
 
   expect(builder.buildEventsKey()).toBe('test-prefix-1.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
   expect(builder.buildEventsKey()).toBe('test-prefix-1.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
 
-  // @ts-expect-error
-  builder = new KeyBuilderSS('testPrefix2');
+  builder = new KeyBuilderSS('testPrefix2', metadata);
 
   expect(builder.buildEventsKey()).toBe('testPrefix2.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
   expect(builder.buildEventsKey()).toBe('testPrefix2.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
@@ -91,8 +89,6 @@ test('KEYS / events', () => {
 });
 
 test('KEYS / latency and exception keys (telemetry)', () => {
-  const prefix = 'SPLITIO';
-  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const methodName = 't'; // treatment

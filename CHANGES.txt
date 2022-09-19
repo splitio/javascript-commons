@@ -1,4 +1,5 @@
-1.6.2 (September XXX, 2022)
+1.7.0 (September XXX, 2022)
+- Updated SDK telemetry to support pluggable storage, partial consumer mode, and synchronizer.
 - Updated storage implementations to improve the performance of split evaluations (i.e., `getTreatment(s)` method calls) when using the default storage in memory.
 
 1.6.1 (July 22, 2022)

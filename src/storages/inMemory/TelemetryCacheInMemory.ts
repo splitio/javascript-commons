@@ -5,10 +5,10 @@ import { IStorageFactoryParams, ITelemetryCacheSync } from '../types';
 
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
+export const MAX_LATENCY_BUCKET_COUNT = 23;
 
-function newBuckets() {
-  // MAX_LATENCY_BUCKET_COUNT (length) is 23;
-  return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+export function newBuckets() {
+  return new Array(MAX_LATENCY_BUCKET_COUNT).fill(0);
 }
 
 const ACCEPTANCE_RANGE = 0.001;
