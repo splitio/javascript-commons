@@ -37,7 +37,7 @@ describe('PLUGGABLE STORAGE', () => {
     const sharedStorage = storage.shared('some_key', sharedOnReadyCb);
     assertStorageInterface(sharedStorage);
     expect(sharedStorage.splits).toBe(storage.splits);
-    expect(wrapperMock.connect).toBeCalledTimes(2);
+    expect(wrapperMock.connect).toBeCalledTimes(1); // wrapper connect method should be called once
 
     expect(await storage.splits.getSplit('some_split')).toBe(null);
     expect(await sharedStorage.splits.getSplit('some_split')).toBe(null);

@@ -2,9 +2,9 @@ import Redis from 'ioredis';
 import { SegmentsCacheInRedis } from '../SegmentsCacheInRedis';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
-// @ts-expect-error. Doesn't require metadata
-const keys = new KeyBuilderSS();
+const keys = new KeyBuilderSS('prefix', metadata);
 
 describe('SEGMENTS CACHE IN REDIS', () => {
 

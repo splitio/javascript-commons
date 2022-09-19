@@ -4,6 +4,7 @@ import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
 const prefix = 'splits_cache_ut';
 
@@ -11,8 +12,7 @@ describe('SPLITS CACHE REDIS', () => {
 
   test('add/remove/get splits & set/get change number', async () => {
     const connection = new Redis();
-    // @ts-expect-error
-    const keysBuilder = new KeyBuilderSS(prefix);
+    const keysBuilder = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.clear();
@@ -61,8 +61,7 @@ describe('SPLITS CACHE REDIS', () => {
   test('trafficTypeExists', async () => {
     const prefix = 'splits_cache_ut';
     const connection = new Redis();
-    // @ts-expect-error
-    const keysBuilder = new KeyBuilderSS(prefix);
+    const keysBuilder = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplits([
@@ -113,8 +112,7 @@ describe('SPLITS CACHE REDIS', () => {
 
   test('killLocally', async () => {
     const connection = new Redis();
-    // @ts-expect-error
-    const keys = new KeyBuilderSS(prefix);
+    const keys = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
 
     await cache.addSplit('lol1', splitWithUserTT);

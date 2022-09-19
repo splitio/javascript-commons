@@ -47,9 +47,9 @@ export type IPostTestImpressionsBulk = (body: string, headers?: Record<string, s
 
 export type IPostTestImpressionsCount = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostMetricsConfig = (body: string) => Promise<IResponse>
+export type IPostMetricsConfig = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostMetricsUsage = (body: string) => Promise<IResponse>
+export type IPostMetricsUsage = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export interface ISplitApi {
 	getSdkAPIHealthCheck: IHealthCheckAPI

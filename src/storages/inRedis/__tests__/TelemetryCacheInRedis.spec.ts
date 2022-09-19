@@ -2,17 +2,18 @@ import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { TelemetryCacheInRedis } from '../TelemetryCacheInRedis';
-import { fakeMetadata } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
+import { newBuckets } from '../../inMemory/TelemetryCacheInMemory';
+import { metadata } from '../../__tests__/KeyBuilder.spec';
 
 const prefix = 'telemetry_cache_ut';
 const exceptionKey = `${prefix}.telemetry.exceptions`;
 const latencyKey = `${prefix}.telemetry.latencies`;
 const initKey = `${prefix}.telemetry.init`;
-const fieldVersionablePrefix = `${fakeMetadata.s}/${fakeMetadata.n}/${fakeMetadata.i}`;
+const fieldVersionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
 
 test('TELEMETRY CACHE IN REDIS', async () => {
 
-  const keysBuilder = new KeyBuilderSS(prefix, fakeMetadata);
+  const keysBuilder = new KeyBuilderSS(prefix, metadata);
   const connection = new Redis();
   const cache = new TelemetryCacheInRedis(loggerMock, keysBuilder, connection);
 
@@ -39,9 +40,51 @@ test('TELEMETRY CACHE IN REDIS', async () => {
     rF: 0
   });
 
-  // Clean up then end.
-  await connection.hdel(exceptionKey, fieldVersionablePrefix + '/track');
-  await connection.hdel(latencyKey, fieldVersionablePrefix + '/track/2');
-  await connection.hdel(initKey, fieldVersionablePrefix);
+  // popLatencies
+  const latencies = await cache.popLatencies();
+  latencies.forEach((latency, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
+    expect(latency).toEqual({
+      t: newBuckets(),
+      ts: newBuckets(),
+      tc: newBuckets(),
+      tcs: newBuckets(),
+      tr: [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    });
+  });
+  expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/track/2')).toBe(null);
+
+  // popExceptions
+  const exceptions = await cache.popExceptions();
+  exceptions.forEach((exception, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
+    expect(exception).toEqual({
+      t: 0,
+      ts: 0,
+      tc: 0,
+      tcs: 0,
+      tr: 2,
+    });
+  });
+  expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/track')).toBe(null);
+
+  // popConfig
+  const configs = await cache.popConfigs();
+  configs.forEach((config, m) => {
+    expect(JSON.parse(m)).toEqual(metadata);
+    expect(config).toEqual({
+      oM: 1,
+      st: 'redis',
+      aF: 0,
+      rF: 0
+    });
+  });
+  expect(await connection.hget(initKey, fieldVersionablePrefix)).toBe(null);
+
+  // pops when there is no data
+  expect((await cache.popLatencies()).size).toBe(0);
+  expect((await cache.popExceptions()).size).toBe(0);
+  expect((await cache.popConfigs()).size).toBe(0);
+
   await connection.quit();
 });

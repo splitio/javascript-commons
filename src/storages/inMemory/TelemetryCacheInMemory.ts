@@ -1,22 +1,26 @@
 import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies } from '../../sync/submitters/types';
+import { LOCALHOST_MODE } from '../../utils/constants';
 import { findLatencyIndex } from '../findLatencyIndex';
-import { ITelemetryCacheSync } from '../types';
+import { IStorageFactoryParams, ITelemetryCacheSync } from '../types';
 
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
+export const MAX_LATENCY_BUCKET_COUNT = 23;
 
-function newBuckets() {
-  // MAX_LATENCY_BUCKET_COUNT (length) is 23;
+export function newBuckets() {
+  // MAX_LATENCY_BUCKET_COUNT (length) is 23
+  // Not using Array.fill for old browsers compatibility
   return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 const ACCEPTANCE_RANGE = 0.001;
 
 /**
- * Used on client-side. 0.1% of instances will track telemetry
+ * Record telemetry if mode is not localhost.
+ * All factory instances track telemetry on server-side, and 0.1% on client-side.
  */
-export function shouldRecordTelemetry() {
-  return Math.random() <= ACCEPTANCE_RANGE;
+export function shouldRecordTelemetry(params: IStorageFactoryParams) {
+  return params.mode !== LOCALHOST_MODE && (params.matchingKey === undefined || Math.random() <= ACCEPTANCE_RANGE);
 }
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
