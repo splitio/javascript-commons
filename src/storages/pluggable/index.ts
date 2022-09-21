@@ -64,14 +64,23 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     const { log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, impressionsMode, matchingKey } = params;
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
+
+    const isSyncronizer = mode === undefined; // If mode is not defined, the synchronizer is running
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
-    const telemetry = shouldRecordTelemetry(params) ?
-      isPartialConsumer ? new TelemetryCacheInMemory() : new TelemetryCachePluggable(log, keys, wrapper) :
+
+    const telemetry = shouldRecordTelemetry(params) || isSyncronizer ?
+      isPartialConsumer ?
+        new TelemetryCacheInMemory() :
+        new TelemetryCachePluggable(log, keys, wrapper) :
       undefined;
-    const impressionCountsCache = impressionsMode !== DEBUG ?
-      isPartialConsumer ? new ImpressionCountsCacheInMemory() : new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper) :
+
+    const impressionCountsCache = impressionsMode !== DEBUG || isSyncronizer ?
+      isPartialConsumer ?
+        new ImpressionCountsCacheInMemory() :
+        new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper) :
       undefined;
-    const uniqueKeysCache = impressionsMode === NONE ?
+
+    const uniqueKeysCache = impressionsMode === NONE || isSyncronizer ?
       isPartialConsumer ?
         matchingKey === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
         new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper) :
@@ -84,9 +93,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       // Start periodic flush of async storages
       if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
       if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
-
-      // If mode is not defined, it means that the synchronizer is running and so we don't have to record telemetry
-      if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig && mode) (telemetry as ITelemetryCacheAsync).recordConfig();
+      if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig && !isSyncronizer) (telemetry as ITelemetryCacheAsync).recordConfig();
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');
       onReadyCb(e);

@@ -52,7 +52,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
       // When using REDIS we should:
       // 1- Disconnect from the storage
-      destroy(): Promise<void>{
+      destroy(): Promise<void> {
         let promises = [];
         if (impressionCountsCache) promises.push(impressionCountsCache.stop());
         if (uniqueKeysCache) promises.push(uniqueKeysCache.stop());

@@ -1,4 +1,5 @@
 import { ILogger } from '../../logger/types';
+import { ImpressionCountsPayload } from '../../sync/submitters/types';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { REFRESH_RATE } from '../inRedis/constants';
 import { IPluggableStorageWrapper } from '../types';
@@ -43,5 +44,49 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
   stop() {
     clearInterval(this.intervalId);
     return this.storeImpressionCounts();
+  }
+
+  // Async consumer API, used by synchronizer
+  getImpressionsCount(): Promise<ImpressionCountsPayload | undefined> {
+    return this.wrapper.getKeysByPrefix(this.key)
+      .then(keys => {
+        return keys.length ? Promise.all(keys.map(key => this.wrapper.get(key)))
+          .then(counts => {
+            keys.forEach(key => this.wrapper.del(key));
+
+            const impressionsCount: ImpressionCountsPayload = { pf: [] };
+
+            for (let i = 0; i < keys.length; i++) {
+              const key = keys[i];
+              const count = counts[i];
+
+              const nameAndTime = key.split('::');
+              if (nameAndTime.length !== 2) {
+                this.log.error(`${LOG_PREFIX}Error spliting key ${key}`);
+                continue;
+              }
+
+              const timeFrame = parseInt(nameAndTime[1]);
+              if (isNaN(timeFrame)) {
+                this.log.error(`${LOG_PREFIX}Error parsing time frame ${nameAndTime[1]}`);
+                continue;
+              }
+              // @ts-ignore
+              const rawCount = parseInt(count);
+              if (isNaN(rawCount)) {
+                this.log.error(`${LOG_PREFIX}Error parsing raw count ${count}`);
+                continue;
+              }
+
+              impressionsCount.pf.push({
+                f: nameAndTime[0],
+                m: timeFrame,
+                rc: rawCount,
+              });
+            }
+
+            return impressionsCount;
+          }) : undefined;
+      });
   }
 }
