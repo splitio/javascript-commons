@@ -67,18 +67,18 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     await new Promise(resolve => setTimeout(resolve));
 
     expect(wrapperMock.pushItems.mock.calls).toEqual([
-      [key, [JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] })]],
-      [key, [JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]],
-      [key, [JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })]]
+      [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] })]],
+      [key, [JSON.stringify({ f: 'feature2', ks: ['key1'] })]],
+      [key, [JSON.stringify({ f: 'feature3', ks: ['key2'] })]]
     ]);
 
     expect(cache.isEmpty()).toBe(true);
 
     // Validate `popNRaw` method
     let poped = await cache.popNRaw(2); // pop two items
-    expect(poped).toEqual([JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }), JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]);
+    expect(poped).toEqual([{ f: 'feature1', ks: ['key1'] }, { f: 'feature2', ks: ['key1'] }]);
     poped = await cache.popNRaw(); // pop remaining items
-    expect(poped).toEqual([JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })]);
+    expect(poped).toEqual([{ f: 'feature3', ks: ['key2'] }]);
     poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
     expect(poped).toEqual([]);
   });

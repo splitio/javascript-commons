@@ -37,13 +37,15 @@ export type ImpressionCountsPayload = {
   }[]
 }
 
+export type UniqueKeysItemSs = {
+  /** Split name */
+  f: string
+  /** keyNames */
+  ks: string[]
+}
+
 export type UniqueKeysPayloadSs = {
-  keys: {
-    /** Split name */
-    f: string
-    /** keyNames */
-    ks: string[]
-  }[]
+  keys: UniqueKeysItemSs[]
 }
 
 export type UniqueKeysPayloadCs = {
