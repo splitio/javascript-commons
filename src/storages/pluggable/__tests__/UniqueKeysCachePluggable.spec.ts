@@ -1,6 +1,6 @@
 import { UniqueKeysCachePluggable } from '../UniqueKeysCachePluggable';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { wrapperMock } from './wrapper.mock';
+import { wrapperMock, wrapperMockFactory } from './wrapper.mock';
 
 describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
   const key = 'unique_key_post';
@@ -49,7 +49,8 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     }, 2 * refreshRate + 20);
   });
 
-  test('Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
+    const wrapperMock = wrapperMockFactory();
     const cache = new UniqueKeysCachePluggable(loggerMock, key, wrapperMock, 3);
 
     cache.track('key1', 'feature1');
@@ -72,5 +73,13 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     ]);
 
     expect(cache.isEmpty()).toBe(true);
+
+    // Validate `popNRaw` method
+    let poped = await cache.popNRaw(2); // pop two items
+    expect(poped).toEqual([JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }), JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]);
+    poped = await cache.popNRaw(100); // pop remaining items
+    expect(poped).toEqual([JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })]);
+    poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
+    expect(poped).toEqual([]);
   });
 });

@@ -144,7 +144,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     }, 2 * refreshRate + 30);
   });
 
-  test('Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
     const connection = new Redis();
     const key = 'unique_key_post';
 
@@ -168,27 +168,26 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })
     ];
 
-    connection.lrange(key, 0, 10, (err, data) => {
-      expect(data).toStrictEqual(expected1);
-    });
-
-    const expected2 = [
-      ...expected1,
-      JSON.stringify({ 'f': 'feature4', 'ks': ['key2'] }),
-      JSON.stringify({ 'f': 'feature5', 'ks': ['key3'] }),
-      JSON.stringify({ 'f': 'feature6', 'ks': ['key2'] })
-    ];
+    let data = await connection.lrange(key, 0, 10);
+    expect(data).toStrictEqual(expected1);
 
     cache.track('key2', 'feature4');
     cache.track('key2', 'feature4');
     cache.track('key3', 'feature5');
     cache.track('key2', 'feature6');
 
-    connection.lrange(key, 0, 10, async (err, data) => {
-      expect(data).toStrictEqual(expected2);
-      await connection.del(key);
-      await connection.quit();
-    });
+    // Validate `popNRaw` method
+    let poped = await cache.popNRaw(2); // pop two items
+    expect(poped).toEqual([JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }), JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]);
+    poped = await cache.popNRaw(100); // pop remaining items
+    expect(poped).toEqual([JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] }), JSON.stringify({ 'f': 'feature4', 'ks': ['key2'] }), JSON.stringify({ 'f': 'feature5', 'ks': ['key3'] }), JSON.stringify({ 'f': 'feature6', 'ks': ['key2'] })]);
+    poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
+    expect(poped).toEqual([]);
 
+    data = await connection.lrange(key, 0, 10);
+    expect(data).toStrictEqual([]);
+
+    await connection.del(key);
+    await connection.quit();
   });
 });
