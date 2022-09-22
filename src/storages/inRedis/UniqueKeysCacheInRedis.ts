@@ -62,9 +62,11 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     return this.postUniqueKeysInRedis();
   }
 
-
-  // Async consumer API, used by synchronizer
-  popNRaw(count: number): Promise<string[]> {
+  /**
+   * Async consumer API, used by synchronizer.
+   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   */
+  popNRaw(count = 0): Promise<string[]> {
     return this.redis.lrange(this.key, 0, count - 1).then(items => {
       return this.redis.ltrim(this.key, items.length, -1).then(() => items);
     });

@@ -53,9 +53,14 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
     return this.storeUniqueKeys();
   }
 
-  // Async consumer API, used by synchronizer
-  popNRaw(count: number): Promise<string[]> {
-    return this.wrapper.popItems(this.key, count);
+  /**
+   * Async consumer API, used by synchronizer.
+   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   */
+  popNRaw(count = 0): Promise<string[]> {
+    return count ?
+      this.wrapper.popItems(this.key, count) :
+      this.wrapper.getItemsCount(this.key).then(count => this.wrapper.popItems(this.key, count));
   }
 
 }

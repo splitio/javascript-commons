@@ -77,7 +77,7 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     // Validate `popNRaw` method
     let poped = await cache.popNRaw(2); // pop two items
     expect(poped).toEqual([JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }), JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]);
-    poped = await cache.popNRaw(100); // pop remaining items
+    poped = await cache.popNRaw(); // pop remaining items
     expect(poped).toEqual([JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })]);
     poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
     expect(poped).toEqual([]);
