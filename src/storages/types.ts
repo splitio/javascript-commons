@@ -349,12 +349,12 @@ export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProdu
  * Only in memory. Named `ImpressionsCounter` in spec.
  */
 export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
-// Used by impressions tracker
+  // Used by impressions tracker
   track(featureName: string, timeFrame: number, amount: number): void
 
   // Used by impressions count submitter in standalone and producer mode
   isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(toMerge?: Record<string, number> ): Record<string, number> // pop cache data
+  pop(toMerge?: Record<string, number>): Record<string, number> // pop cache data
 }
 
 export interface IUniqueKeysCacheBase {

@@ -20,7 +20,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     this.key = key;
     this.redis = redis;
     this.refreshRate = refreshRate;
-    this.onFullQueue = () => {this.postUniqueKeysInRedis();};
+    this.onFullQueue = () => { this.postUniqueKeysInRedis(); };
   }
 
   private postUniqueKeysInRedis() {
@@ -60,6 +60,14 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   stop() {
     clearInterval(this.intervalId);
     return this.postUniqueKeysInRedis();
+  }
+
+
+  // Async consumer API, used by synchronizer
+  popNRaw(count: number): Promise<string[]> {
+    return this.redis.lrange(this.key, 0, count - 1).then(items => {
+      return this.redis.ltrim(this.key, items.length, -1).then(() => items);
+    });
   }
 
 }
