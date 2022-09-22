@@ -145,46 +145,44 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
   });
 
-  test('Should call "onFullQueueCb" when the queue is full.', (done) => {
+  test('Should call "onFullQueueCb" when the queue is full. "getImpressionsCount" should pop data.', async () => {
     const connection = new Redis();
-    const shortCounter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, 5);
+    const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, 5);
     // Clean up in case there are still keys there.
-    connection.del(key);
-    shortCounter.track('feature1', timestamp + 1, 1);
-    shortCounter.track('feature1', timestamp + 2, 1);
-    shortCounter.track('feature2', timestamp + 3, 2);
-    connection.hgetall(key, (err, data) => {
-      expect(data).toStrictEqual({});
-    });
+    await connection.del(key);
+    counter.track('feature1', timestamp + 1, 1);
+    counter.track('feature1', timestamp + 2, 1);
+    counter.track('feature2', timestamp + 3, 2);
 
-    shortCounter.track('feature2', nextHourTimestamp, 1);
+    expect(await connection.hgetall(key)).toStrictEqual({});
+
+    counter.track('feature2', nextHourTimestamp, 1);
 
     const expected1 = {};
     expected1[`feature1::${truncateTimeFrame(timestamp)}`] = '2';
     expected1[`feature2::${truncateTimeFrame(timestamp)}`] = '2';
     expected1[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '1';
 
-    connection.hgetall(key, (err, data) => {
-      expect(data).toStrictEqual(expected1);
+    expect(await connection.hgetall(key)).toStrictEqual(expected1);
+
+    counter.track('feature1', timestamp + 1, 1);
+    counter.track('feature1', timestamp + 2, 1);
+    counter.track('feature2', timestamp + 3, 2);
+    counter.track('feature1', nextHourTimestamp + 2, 3);
+
+    // Validate `getImpressionsCount` method
+    expect(await counter.getImpressionsCount()).toStrictEqual({ // pop data
+      pf: [
+        { f: 'feature1', m: truncateTimeFrame(timestamp), rc: 4 },
+        { f: 'feature2', m: truncateTimeFrame(timestamp), rc: 4 },
+        { f: 'feature2', m: truncateTimeFrame(nextHourTimestamp), rc: 1 },
+        { f: 'feature1', m: truncateTimeFrame(nextHourTimestamp), rc: 3 },
+      ]
     });
+    expect(await counter.getImpressionsCount()).toStrictEqual(undefined); // try to pop data again
 
-    const expected2 = {};
-    expected2[`feature1::${truncateTimeFrame(timestamp)}`] = '4';
-    expected2[`feature1::${truncateTimeFrame(nextHourTimestamp)}`] = '3';
-    expected2[`feature2::${truncateTimeFrame(timestamp)}`] = '4';
-    expected2[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '1';
-
-    shortCounter.track('feature1', timestamp + 1, 1);
-    shortCounter.track('feature1', timestamp + 2, 1);
-    shortCounter.track('feature2', timestamp + 3, 2);
-    shortCounter.track('feature1', nextHourTimestamp + 2, 3);
-
-    connection.hgetall(key, async (err, data) => {
-      expect(data).toStrictEqual(expected2);
-      await connection.del(key);
-      await connection.quit();
-      done();
-    });
-
+    expect(await connection.hgetall(key)).toStrictEqual({});
+    await connection.del(key);
+    await connection.quit();
   });
 });

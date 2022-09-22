@@ -1,6 +1,6 @@
 import { UniqueKeysCachePluggable } from '../UniqueKeysCachePluggable';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { wrapperMock, wrapperMockFactory } from './wrapper.mock';
+import { wrapperMock } from './wrapper.mock';
 
 describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
   const key = 'unique_key_post';
@@ -50,7 +50,7 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
   });
 
   test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
-    const wrapperMock = wrapperMockFactory();
+    const key = 'other_key';
     const cache = new UniqueKeysCachePluggable(loggerMock, key, wrapperMock, 3);
 
     cache.track('key1', 'feature1');

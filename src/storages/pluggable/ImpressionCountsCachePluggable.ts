@@ -52,7 +52,7 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
       .then(keys => {
         return keys.length ? Promise.all(keys.map(key => this.wrapper.get(key)))
           .then(counts => {
-            keys.forEach(key => this.wrapper.del(key));
+            keys.forEach(key => this.wrapper.del(key).catch(() => { /* noop */ }));
 
             const impressionsCount: ImpressionCountsPayload = { pf: [] };
 
@@ -60,15 +60,15 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
               const key = keys[i];
               const count = counts[i];
 
-              const nameAndTime = key.split('::');
-              if (nameAndTime.length !== 2) {
+              const keyFeatureNameAndTime = key.split('::');
+              if (keyFeatureNameAndTime.length !== 3) {
                 this.log.error(`${LOG_PREFIX}Error spliting key ${key}`);
                 continue;
               }
 
-              const timeFrame = parseInt(nameAndTime[1]);
+              const timeFrame = parseInt(keyFeatureNameAndTime[2]);
               if (isNaN(timeFrame)) {
-                this.log.error(`${LOG_PREFIX}Error parsing time frame ${nameAndTime[1]}`);
+                this.log.error(`${LOG_PREFIX}Error parsing time frame ${keyFeatureNameAndTime[2]}`);
                 continue;
               }
               // @ts-ignore
@@ -79,7 +79,7 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
               }
 
               impressionsCount.pf.push({
-                f: nameAndTime[0],
+                f: keyFeatureNameAndTime[1],
                 m: timeFrame,
                 rc: rawCount,
               });

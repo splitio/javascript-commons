@@ -59,7 +59,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
       .then(counts => {
         if (!Object.keys(counts).length) return undefined;
 
-        this.redis.del(this.key);
+        this.redis.del(this.key).catch(() => { /* no-op */ });
 
         const impressionsCount: ImpressionCountsPayload = { pf: [] };
 
