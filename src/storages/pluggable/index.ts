@@ -90,10 +90,12 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     const connectPromise = wrapper.connect().then(() => {
       onReadyCb();
 
-      // Start periodic flush of async storages
-      if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
-      if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
-      if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig && !isSyncronizer) (telemetry as ITelemetryCacheAsync).recordConfig();
+      // Start periodic flush of async storages if not running synchronizer (producer mode)
+      if (!isSyncronizer) {
+        if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
+        if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
+        if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
+      }
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');
       onReadyCb(e);
@@ -109,9 +111,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       telemetry,
       uniqueKeys: uniqueKeysCache,
 
-      // Disconnect the underlying storage
+      // Stop periodic flush and disconnect the underlying storage
       destroy() {
-        return Promise.all([
+        return Promise.all(isSyncronizer ? [] : [
           impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).stop && (impressionCountsCache as ImpressionCountsCachePluggable).stop(),
           uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).stop && (uniqueKeysCache as UniqueKeysCachePluggable).stop(),
         ]).then(() => wrapper.disconnect());
