@@ -18,6 +18,7 @@ import { ImpressionCountsCachePluggable } from './ImpressionCountsCachePluggable
 import { UniqueKeysCachePluggable } from './UniqueKeysCachePluggable';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
+import { metadataBuilder } from '../metadataBuilder';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -61,7 +62,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
   const prefix = validatePrefix(options.prefix);
 
   function PluggableStorageFactory(params: IStorageFactoryParams): IStorageAsync {
-    const { log, metadata, onReadyCb, mode, eventsQueueSize, impressionsQueueSize, impressionsMode, matchingKey } = params;
+    const { onReadyCb, settings, settings: { log, mode, sync: { impressionsMode }, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
+    const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
@@ -82,7 +84,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
     const uniqueKeysCache = impressionsMode === NONE || isSyncronizer ?
       isPartialConsumer ?
-        matchingKey === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
+        settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
         new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper) :
       undefined;
 

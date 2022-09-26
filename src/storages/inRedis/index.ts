@@ -10,6 +10,7 @@ import { DEBUG, NONE, STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
+import { metadataBuilder } from '../metadataBuilder';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -24,7 +25,9 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
   const prefix = validatePrefix(options.prefix);
 
-  function InRedisStorageFactory({ log, metadata, onReadyCb, impressionsMode }: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+    const { onReadyCb, settings, settings: { log, sync: { impressionsMode } } } = params;
+    const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);

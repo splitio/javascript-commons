@@ -1,7 +1,6 @@
-import { MaybeThenable, IMetadata, ISplitFiltersValidation, ISplit } from '../dtos/types';
-import { ILogger } from '../logger/types';
+import { MaybeThenable, ISplit } from '../dtos/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, SDKMode } from '../types';
+import { SplitIO, ImpressionDTO, ISettings } from '../types';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -499,21 +498,12 @@ export interface IStorageAsync extends IStorageBase<
 export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
 
 export interface IStorageFactoryParams {
-  log: ILogger,
-  impressionsQueueSize?: number,
-  eventsQueueSize?: number,
-  optimize?: boolean /* whether create the `impressionCounts` cache (OPTIMIZED impression mode) or not (DEBUG impression mode) */,
-  mode: SDKMode,
-  impressionsMode?: string,
-  // ATM, only used by InLocalStorage
-  matchingKey?: string, /* undefined on server-side SDKs */
-  splitFiltersValidation?: ISplitFiltersValidation,
-
-  // This callback is invoked when the storage is ready to be used. Error-first callback style: if an error is passed,
-  // it means that the storge fail to connect and shouldn't be used.
-  // It is meant for emitting SDK_READY event in consumer mode, and for synchronizer to wait before using the storage.
+  settings: ISettings,
+  /**
+   * Error-first callback invoked when the storage is ready to be used. An error means that the storage failed to connect and shouldn't be used.
+   * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
+   */
   onReadyCb: (error?: any) => void,
-  metadata: IMetadata,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';

@@ -1,11 +1,11 @@
 // @ts-nocheck
 
 // Mocks
-import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
 import { IStorageFactoryParams } from '../../types';
 import { wrapperMock, wrapperMockFactory } from './wrapper.mock';
 
-const metadata = { s: 'version', i: 'ip', n: 'hostname' };
+// const metadata = { s: 'version', i: 'ip', n: 'hostname' };
 const prefix = 'some_prefix';
 
 // Test target
@@ -16,8 +16,7 @@ import { CONSUMER_PARTIAL_MODE } from '../../../utils/constants';
 describe('PLUGGABLE STORAGE', () => {
 
   const internalSdkParams: IStorageFactoryParams = {
-    log: loggerMock,
-    metadata,
+    settings: fullSettings,
     onReadyCb: jest.fn()
   };
 
@@ -73,7 +72,7 @@ describe('PLUGGABLE STORAGE', () => {
 
   test('creates a storage instance for partial consumer mode (events and impressions cache in memory)', async () => {
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
-    const storage = storageFactory({ ...internalSdkParams, mode: CONSUMER_PARTIAL_MODE, optimize: true });
+    const storage = storageFactory({ ...internalSdkParams, settings: { ...internalSdkParams.settings, mode: CONSUMER_PARTIAL_MODE } });
 
     assertStorageInterface(storage);
     expect(wrapperMock.connect).toBeCalledTimes(1);
@@ -94,7 +93,7 @@ describe('PLUGGABLE STORAGE', () => {
 
   test('creates a storage instance for the synchronizer', async () => {
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
-    const storage = storageFactory({ ...internalSdkParams, mode: undefined });
+    const storage = storageFactory({ ...internalSdkParams, settings: { ...internalSdkParams.settings, mode: undefined } });
 
     assertStorageInterface(storage);
 

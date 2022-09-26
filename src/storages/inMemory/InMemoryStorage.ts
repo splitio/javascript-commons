@@ -14,15 +14,16 @@ import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
  * @param params parameters required by EventsCacheSync
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
 
   return {
     splits: new SplitsCacheInMemory(),
     segments: new SegmentsCacheInMemory(),
-    impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
-    impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.eventsQueueSize),
+    impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
+    impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
+    events: new EventsCacheInMemory(eventsQueueSize),
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
-    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
+    uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

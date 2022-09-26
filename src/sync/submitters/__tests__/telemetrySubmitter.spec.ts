@@ -10,10 +10,15 @@ describe('Telemetry submitter', () => {
   const postMetricsUsage = jest.fn(() => Promise.resolve());
   const postMetricsConfig = jest.fn(() => Promise.resolve());
   const readinessGateCallbacks: Record<string, () => void> = {};
+  const settings = {
+    ...fullSettings,
+    core: { ...fullSettings.core, key: undefined }, // server-side -> storage.telemetry defined
+    scheduler: { ...fullSettings.scheduler, telemetryRefreshRate }
+  };
   const params = {
-    settings: { ...fullSettings, scheduler: { ...fullSettings.scheduler, telemetryRefreshRate } },
+    settings,
     splitApi: { postMetricsUsage, postMetricsConfig }, // @ts-ignore
-    storage: InMemoryStorageFactory({}),
+    storage: InMemoryStorageFactory({ settings }),
     platform: { now: () => 123 }, // by returning a fixed timestamp, all latencies are equal to 0
     sdkReadinessManager: { incInternalReadyCbCount: jest.fn(), },
     readiness: {
@@ -61,7 +66,7 @@ describe('Telemetry submitter', () => {
     expect(recordTimeUntilReadySpy).toBeCalledTimes(1);
 
     expect(postMetricsConfig).toBeCalledWith(JSON.stringify({
-      oM: 0, st: 'memory', aF: 0, rF: 0, sE: true, rR: { sp: 0.001, ms: 0.001, im: 0.001, ev: 0.001, te: 0.1 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration'], uC: 0
+      oM: 0, st: 'memory', aF: 0, rF: 0, sE: true, rR: { sp: 0.001, se: 0.001, im: 0.001, ev: 0.001, te: 0.1 }, uO: { s: true, e: true, a: true, st: true, t: true }, iQ: 1, eQ: 1, iM: 0, iL: false, hP: false, tR: 0, tC: 0, nR: 0, t: [], i: ['NoopIntegration'], uC: 0
     }));
 
     // Stop submitter, to not execute the 1st periodic metrics/usage POST
