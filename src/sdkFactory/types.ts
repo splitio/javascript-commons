@@ -97,9 +97,9 @@ export interface ISdkFactoryParams {
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
   sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey, trafficType?: string | undefined): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
-  // Impression observer factory. If provided, will be used for impressions dedupe
+  // Impression observer factory.
   impressionsObserverFactory: () => IImpressionObserver
-  
+
   filterAdapterFactory?: () => IFilterAdapter
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
