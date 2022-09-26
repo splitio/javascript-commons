@@ -91,4 +91,16 @@ describe('PLUGGABLE STORAGE', () => {
     const impResult = storage.impressions.track(['some data']);
     expect(impResult).toBe(undefined);
   });
+
+  test('creates a storage instance for the synchronizer', async () => {
+    const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
+    const storage = storageFactory({ ...internalSdkParams, mode: undefined });
+
+    assertStorageInterface(storage);
+
+    // All caches are present
+    expect(storage.telemetry).toBeDefined();
+    expect(storage.impressionCounts).toBeDefined();
+    expect(storage.uniqueKeys).toBeDefined();
+  });
 });
