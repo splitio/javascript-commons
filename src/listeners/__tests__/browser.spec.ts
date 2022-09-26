@@ -1,5 +1,5 @@
 import { BrowserSignalListener } from '../browser';
-import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync } from '../../storages/types';
+import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync, IUniqueKeysCacheBase } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
@@ -37,6 +37,9 @@ const fakeEvent = {
 const fakeImpressionCounts = {
   'someFeature::0': 1
 };
+const fakeUniqueKeys = {
+  keys: [{ k: 'emi', fs: ['split1'] }],
+};
 
 // Storage with impressionsCount and telemetry cache
 const fakeStorageOptimized = { // @ts-expect-error
@@ -60,7 +63,14 @@ const fakeStorageOptimized = { // @ts-expect-error
     pop() {
       return fakeImpressionCounts;
     }
-  } as IImpressionCountsCacheSync,
+  } as IImpressionCountsCacheSync, // @ts-expect-error
+  uniqueKeys: {
+    isEmpty: jest.fn(),
+    clear: jest.fn(),
+    pop() {
+      return fakeUniqueKeys;
+    }
+  } as IUniqueKeysCacheBase,
   telemetry: {}
 };
 
@@ -75,6 +85,7 @@ const fakeSplitApi = {
   postEventsBulk: jest.fn(() => Promise.resolve()),
   postTestImpressionsCount: jest.fn(() => Promise.resolve()),
   postMetricsUsage: jest.fn(() => Promise.resolve()),
+  postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),
 } as ISplitApi;
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
@@ -190,8 +201,8 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
 
-  // Visibility change event was triggered. Thus sendBeacon method should be called four times.
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(4);
+  // Visibility change event was triggered. Thus sendBeacon method should be called five times (events, impressions, impression count, unique keys and telemetry).
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(5);
 
   // Http post services should have not been called
   expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
@@ -297,8 +308,8 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   settings.userConsent = undefined;
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
 
-  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 8 times (4 times per event in optimized mode with telemetry).
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(8);
+  // Unload event was triggered when user consent was granted and undefined. Thus sendBeacon should be called 10 times (5 times per event).
+  expect(global.window.navigator.sendBeacon).toBeCalledTimes(10);
 
   listener.stop();
 });
