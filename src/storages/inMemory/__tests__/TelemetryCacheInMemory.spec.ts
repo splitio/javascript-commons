@@ -209,11 +209,12 @@ describe('TELEMETRY CACHE', () => {
   });
 
   test('"isEmpty" and "pop" methods', () => {
+    const cache = new TelemetryCacheInMemory();
     const expectedEmptyPayload = {
       lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: []
     };
 
-    // Initialy the cache is empty
+    // Initially, the cache is empty
     expect(cache.isEmpty()).toBe(true);
     expect(cache.pop()).toEqual(expectedEmptyPayload);
 
