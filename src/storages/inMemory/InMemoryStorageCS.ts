@@ -6,7 +6,7 @@ import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
-import { UniqueKeysCacheInMemoryCS } from './uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -22,7 +22,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     impressionCounts: params.impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(params.eventsQueueSize),
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
-    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS(params.uniqueKeysCacheSize) : undefined,
+    uniqueKeys: params.impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {

@@ -1,10 +1,10 @@
 import { ImpressionCountsCacheInMemory } from '../../../storages/inMemory/ImpressionCountsCacheInMemory';
-import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/uniqueKeysCacheInMemory';
+import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/UniqueKeysCacheInMemory';
 import { strategyNoneFactory } from '../strategyNone';
 import { uniqueKeysTrackerFactory } from '../../uniqueKeysTracker';
 import { impression1, impression2 } from './testUtils';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/UniqueKeysCacheInMemoryCS';
 
 const fakeFilter = {
   add: jest.fn(() => { return true; }),
@@ -25,15 +25,15 @@ test('strategyNone - Client side', () => {
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
   const uniqueKeysCacheCS = new UniqueKeysCacheInMemoryCS(6);
   const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, uniqueKeysCacheCS, fakeFilter);
-  
+
   const strategyNone = strategyNoneFactory(impressionCountsCache, uniqueKeysTracker);
-  
-  const { 
-    impressionsToStore: impressionsToStoreCs, 
-    impressionsToListener: impressionsToListenerCs, 
-    deduped: dedupedCs 
+
+  const {
+    impressionsToStore: impressionsToStoreCs,
+    impressionsToListener: impressionsToListenerCs,
+    deduped: dedupedCs
   } = strategyNone.process(impressions);
-  
+
   expect(uniqueKeysCacheCS.pop()).toStrictEqual({
     keys: [
       {
@@ -52,7 +52,7 @@ test('strategyNone - Client side', () => {
   });
 
   expect(uniqueKeysCacheCS.pop()).toStrictEqual({ keys: [] });
-  
+
   expect(impressionsToStoreCs).toStrictEqual([]);
   expect(impressionsToListenerCs).toStrictEqual(impressions);
   expect(dedupedCs).toStrictEqual(0);
@@ -64,15 +64,15 @@ test('strategyNone - Server side', () => {
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
   const uniqueKeysCache = new UniqueKeysCacheInMemory(6);
   const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, uniqueKeysCache, fakeFilter);
-  
+
   const strategyNone = strategyNoneFactory(impressionCountsCache, uniqueKeysTracker);
-  
-  const { 
-    impressionsToStore: impressionsToStoreSs, 
-    impressionsToListener: impressionsToListenerSs, 
-    deduped: dedupedSs 
+
+  const {
+    impressionsToStore: impressionsToStoreSs,
+    impressionsToListener: impressionsToListenerSs,
+    deduped: dedupedSs
   } = strategyNone.process(impressions);
-  
+
   expect(uniqueKeysCache.pop()).toStrictEqual({
     keys: [
       {
@@ -90,9 +90,9 @@ test('strategyNone - Server side', () => {
     ]
   });
   expect(uniqueKeysCache.pop()).toStrictEqual({ keys: [] });
-  
+
   expect(impressionsToStoreSs).toStrictEqual([]);
   expect(impressionsToListenerSs).toStrictEqual(impressions);
   expect(dedupedSs).toStrictEqual(0);
-  
+
 });

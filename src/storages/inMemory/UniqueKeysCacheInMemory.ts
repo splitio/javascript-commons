@@ -10,7 +10,7 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
   private uniqueTrackerSize = 0;
   protected uniqueKeysTracker: { [keys: string]: ISet<string> };
 
-  constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {
+  constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
     this.uniqueKeysTracker = {};
   }
@@ -22,7 +22,7 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
   /**
    * Store unique keys in sequential order
    * key: string = feature name.
-   * value: Set<string> = set of unique keys. 
+   * value: Set<string> = set of unique keys.
    */
   track(key: string, featureName: string) {
     if (!this.uniqueKeysTracker[featureName]) this.uniqueKeysTracker[featureName] = new _Set();
@@ -59,7 +59,7 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
   isEmpty() {
     return Object.keys(this.uniqueKeysTracker).length === 0;
   }
-  
+
   /**
    * Converts `uniqueKeys` data from cache into request payload for SS.
    */
@@ -78,5 +78,5 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
     }
     return { keys: payload };
   }
-  
+
 }

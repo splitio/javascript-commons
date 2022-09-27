@@ -1,7 +1,7 @@
 import { uniqueKeysSubmitterFactory } from '../uniqueKeysSubmitter';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/uniqueKeysCacheInMemory';
-import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/uniqueKeysCacheInMemoryCS';
+import { UniqueKeysCacheInMemory } from '../../../storages/inMemory/UniqueKeysCacheInMemory';
+import { UniqueKeysCacheInMemoryCS } from '../../../storages/inMemory/UniqueKeysCacheInMemoryCS';
 
 const imp1 = {
   feature: 'someFeature',
@@ -17,13 +17,13 @@ const imp4 = { ...imp1, keyName: 'k3', feature: 'anotherFeature' };
 
 function getParams(uniqueKeysCache: any) {
   const params = {
-    settings: { log: loggerMock, scheduler: { uniqueKeysRefreshRate: 200 }, core: { key: undefined } },
+    settings: { log: loggerMock, core: { key: undefined } },
     storage: { uniqueKeys: uniqueKeysCache },
-    splitApi: { 
+    splitApi: {
       postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),
       postUniqueKeysBulkSs: jest.fn(() => Promise.resolve()) }
   };
-  
+
   return params;
 }
 
@@ -52,9 +52,9 @@ describe('uniqueKeys submitter', () => {
       uniqueKeysSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.uniqueKeysRefreshRate + 10);
+    }, 10);
   });
-  
+
   test('doesn\'t drop items from cache when POST is resolved CS', (done) => {
     const uniqueKeysCache = new UniqueKeysCacheInMemoryCS(4);
     const params: any = getParams(uniqueKeysCache);
@@ -79,7 +79,7 @@ describe('uniqueKeys submitter', () => {
       uniqueKeysSubmitter.stop();
 
       done();
-    }, params.settings.scheduler.uniqueKeysRefreshRate + 10);
+    }, 10);
   });
-  
+
 });
