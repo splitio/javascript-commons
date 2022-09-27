@@ -1,19 +1,7 @@
 import { BrowserSignalListener } from '../browser';
-import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync, IUniqueKeysCacheBase } from '../../storages/types';
+import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync, ITelemetryCacheSync, IUniqueKeysCacheBase } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
-
-jest.mock('../../sync/submitters/telemetrySubmitter', () => {
-  return {
-    telemetryCacheStatsAdapter: () => {
-      return {
-        isEmpty: () => false,
-        clear: () => { },
-        pop: () => ({}),
-      };
-    }
-  };
-});
 
 /* Mocks start */
 
@@ -45,33 +33,34 @@ const fakeUniqueKeys = {
 const fakeStorageOptimized = { // @ts-expect-error
   impressions: {
     isEmpty: jest.fn(),
-    clear: jest.fn(),
     pop() {
       return [fakeImpression];
     }
   } as IImpressionsCacheSync, // @ts-expect-error
   events: {
     isEmpty: jest.fn(),
-    clear: jest.fn(),
     pop() {
       return [fakeEvent];
     }
   } as IEventsCacheSync, // @ts-expect-error
   impressionCounts: {
     isEmpty: jest.fn(),
-    clear: jest.fn(),
     pop() {
       return fakeImpressionCounts;
     }
   } as IImpressionCountsCacheSync, // @ts-expect-error
   uniqueKeys: {
     isEmpty: jest.fn(),
-    clear: jest.fn(),
     pop() {
       return fakeUniqueKeys;
     }
-  } as IUniqueKeysCacheBase,
-  telemetry: {}
+  } as IUniqueKeysCacheBase, // @ts-expect-error
+  telemetry: {
+    isEmpty: jest.fn(),
+    pop() {
+      return 'fake telemetry';
+    }
+  } as ITelemetryCacheSync
 };
 
 const fakeStorageDebug = {

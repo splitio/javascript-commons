@@ -75,7 +75,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
               tr: newBuckets(),
             });
 
-            result.get(metadata)![method][bucket] = count;
+            result.get(metadata)![method]![bucket] = count;
           }
 
           return Promise.all(latencyKeys.map((latencyKey) => this.wrapper.del(latencyKey))).then(() => result);

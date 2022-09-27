@@ -76,7 +76,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
           tr: newBuckets(),
         });
 
-        result.get(metadata)![method][bucket] = count;
+        result.get(metadata)![method]![bucket] = count;
       });
 
       return this.redis.del(this.keys.latencyPrefix).then(() => result);

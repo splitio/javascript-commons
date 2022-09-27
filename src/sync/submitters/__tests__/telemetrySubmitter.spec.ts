@@ -32,20 +32,31 @@ describe('Telemetry submitter', () => {
 
   test('submits metrics/usage periodically', async () => { // @ts-ignore
     const telemetrySubmitter = telemetrySubmitterFactory(params) as ISyncTask;
-    const popLatenciesSpy = jest.spyOn(params.storage.telemetry!, 'popLatencies');
+    const isEmptySpy = jest.spyOn(params.storage.telemetry!, 'isEmpty');
+    const popSpy = jest.spyOn(params.storage.telemetry!, 'pop');
+
+    params.storage.telemetry?.addTag('tag1'); // add some data
 
     telemetrySubmitter.start();
     expect(telemetrySubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
     expect(telemetrySubmitter.isExecuting()).toEqual(false); // but not executed immediatelly (first push window)
-    expect(popLatenciesSpy).toBeCalledTimes(0);
+    expect(popSpy).toBeCalledTimes(0);
 
-    // Await first push
+    // Await first periodic execution
     await new Promise(res => setTimeout(res, params.settings.scheduler.telemetryRefreshRate + 10));
-    // after the first push, telemetry cache should have been used to create the request payload
-    expect(popLatenciesSpy).toBeCalledTimes(1);
+    // Telemetry cache is not empty, so data is popped and sent
+    expect(isEmptySpy).toBeCalledTimes(1);
+    expect(popSpy).toBeCalledTimes(1);
     expect(postMetricsUsage).toBeCalledWith(JSON.stringify({
-      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: 0, seC: 0, skC: 0, eQ: 0, eD: 0, sE: [], t: []
+      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: 0, seC: 0, skC: 0, eQ: 0, eD: 0, sE: [], t: ['tag1']
     }));
+
+    // Await second periodic execution
+    await new Promise(res => setTimeout(res, params.settings.scheduler.telemetryRefreshRate + 10));
+    // Telemetry cache is empty, so no data is popped and sent
+    expect(isEmptySpy).toBeCalledTimes(2);
+    expect(popSpy).toBeCalledTimes(1);
+    expect(postMetricsUsage).toBeCalledTimes(1);
 
     expect(telemetrySubmitter.isRunning()).toEqual(true);
     telemetrySubmitter.stop();

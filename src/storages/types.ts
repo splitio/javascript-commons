@@ -1,5 +1,5 @@
 import { MaybeThenable, ISplit } from '../dtos/types';
-import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs } from '../sync/submitters/types';
+import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 
 /**
@@ -427,7 +427,7 @@ export interface ITelemetryEvaluationProducerSync {
 
 export interface ITelemetryStorageProducerSync extends ITelemetryInitProducerSync, ITelemetryRuntimeProducerSync, ITelemetryEvaluationProducerSync { }
 
-export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync { }
+export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync, IRecorderCacheProducerSync<TelemetryUsageStatsPayload> { }
 
 /**
  * Telemetry storage interface for consumer mode.

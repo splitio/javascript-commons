@@ -112,9 +112,9 @@ export type SEGMENT = 'se';
 export type MY_SEGMENT = 'ms';
 export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT;
 
-export type LastSync = Record<OperationType, number | undefined>
-export type HttpErrors = Record<OperationType, { [statusCode: string]: number }>
-export type HttpLatencies = Record<OperationType, Array<number>>
+export type LastSync = Partial<Record<OperationType, number | undefined>>
+export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
+export type HttpLatencies = Partial<Record<OperationType, Array<number>>>
 
 export type TREATMENT = 't';
 export type TREATMENTS = 'ts';
@@ -123,9 +123,9 @@ export type TREATMENTS_WITH_CONFIG = 'tcs';
 export type TRACK = 'tr';
 export type Method = TREATMENT | TREATMENTS | TREATMENT_WITH_CONFIG | TREATMENTS_WITH_CONFIG | TRACK;
 
-export type MethodLatencies = Record<Method, Array<number>>;
+export type MethodLatencies = Partial<Record<Method, Array<number>>>;
 
-export type MethodExceptions = Record<Method, number>;
+export type MethodExceptions = Partial<Record<Method, number>>;
 
 export type CONNECTION_ESTABLISHED = 0;
 export type OCCUPANCY_PRI = 10;

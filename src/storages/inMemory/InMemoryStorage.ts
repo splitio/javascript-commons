@@ -16,13 +16,16 @@ import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
 
+  const splits = new SplitsCacheInMemory();
+  const segments = new SegmentsCacheInMemory();
+
   return {
-    splits: new SplitsCacheInMemory(),
-    segments: new SegmentsCacheInMemory(),
+    splits,
+    segments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
     impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(eventsQueueSize),
-    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
+    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
     uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty

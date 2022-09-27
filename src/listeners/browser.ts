@@ -12,7 +12,6 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
-import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitter';
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
@@ -102,10 +101,7 @@ export class BrowserSignalListener implements ISignalListener {
     }
 
     // Flush telemetry data
-    if (this.storage.telemetry) {
-      const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
-      this._flushData(telemetry + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
-    }
+    if (this.storage.telemetry) this._flushData(telemetry + '/v1/metrics/usage/beacon', this.storage.telemetry, this.serviceApi.postMetricsUsage);
   }
 
   flushDataIfHidden() {
@@ -120,7 +116,6 @@ export class BrowserSignalListener implements ISignalListener {
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
         postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exception
       }
-      cache.clear();
     }
   }
 
