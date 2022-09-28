@@ -284,19 +284,29 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
 /** Recorder storages (impressions, events and telemetry) */
 
 export interface IImpressionsCacheBase {
-  // Consumer API method, used by impressions tracker, in standalone and consumer modes, to push impressions into the storage.
+  // Used by impressions tracker, in DEBUG and OPTIMIZED impression modes, to push impressions into the storage.
   track(data: ImpressionDTO[]): MaybeThenable<void>
 }
 
 export interface IEventsCacheBase {
-  // Consumer API method, used by events tracker, in standalone and consumer modes, to push events into the storage.
+  // Used by events tracker to push events into the storage.
   track(data: SplitIO.EventData, size?: number): MaybeThenable<boolean>
 }
 
-/** Impressions and events cache for standalone mode (sync) */
+export interface IImpressionCountsCacheBase {
+  // Used by impressions tracker, in OPTIMIZED and NONE impression modes, to count impressions.
+  track(featureName: string, timeFrame: number, amount: number): void
+}
 
-// Producer API methods for sync recorder storages, used by submitters in standalone mode to pop data and post it to Split BE.
-export interface IRecorderCacheProducerSync<T> {
+export interface IUniqueKeysCacheBase {
+  // Used by impressions tracker, in NONE impression mode, to track unique keys.
+  track(key: string, value: string): void
+}
+
+/** Impressions and events cache for standalone and partial consumer modes (sync methods) */
+
+// API methods for sync recorder storages, used by submitters in standalone mode to pop data and post it to Split BE.
+export interface IRecorderCacheSync<T> {
   // @TODO names are inconsistent with spec
   /* Checks if cache is empty. Returns true if the cache was just created or cleared */
   isEmpty(): boolean
@@ -306,23 +316,29 @@ export interface IRecorderCacheProducerSync<T> {
   pop(toMerge?: T): T
 }
 
-
-export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheProducerSync<ImpressionDTO[]> {
+export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<ImpressionDTO[]> {
   track(data: ImpressionDTO[]): void
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
 
-export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheProducerSync<SplitIO.EventData[]> {
+export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheSync<SplitIO.EventData[]> {
   track(data: SplitIO.EventData, size?: number): boolean
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
 
-/** Impressions and events cache for consumer and producer mode (async) */
+/* Named `ImpressionsCounter` in spec */
+export interface IImpressionCountsCacheSync extends IImpressionCountsCacheBase, IRecorderCacheSync<Record<string, number>> { }
 
-// Producer API methods for async recorder storages, used by submitters in producer mode to pop data and post it to Split BE.
-export interface IRecorderCacheProducerAsync<T> {
+export interface IUniqueKeysCacheSync  extends IUniqueKeysCacheBase, IRecorderCacheSync<UniqueKeysPayloadSs | UniqueKeysPayloadCs> {
+  setOnFullQueueCb(cb: () => void): void,
+}
+
+/** Impressions and events cache for consumer and producer modes (async methods) */
+
+// API methods for async recorder storages, used by submitters in producer mode (synchronizer) to pop data and post it to Split BE.
+export interface IRecorderCacheAsync<T> {
   /* returns the number of stored items */
   count(): Promise<number>
   /* removes the given number of items from the store. If not provided, it deletes all items */
@@ -331,41 +347,16 @@ export interface IRecorderCacheProducerAsync<T> {
   popNWithMetadata(count: number): Promise<T>
 }
 
-export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheProducerAsync<StoredImpressionWithMetadata[]> {
+export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
   // The result promise can reject.
   track(data: ImpressionDTO[]): Promise<void>
 }
 
-export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheProducerAsync<StoredEventWithMetadata[]> {
+export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheAsync<StoredEventWithMetadata[]> {
   // Consumer API method, used by events tracker (in standalone and consumer modes) to push data into.
   // The result promise cannot reject.
   track(data: SplitIO.EventData, size?: number): Promise<boolean>
-}
-
-/**
- * Impression counts cache for impressions dedup in standalone and producer mode.
- * Only in memory. Named `ImpressionsCounter` in spec.
- */
-export interface IImpressionCountsCacheSync extends IRecorderCacheProducerSync<Record<string, number>> {
-  // Used by impressions tracker
-  track(featureName: string, timeFrame: number, amount: number): void
-
-  // Used by impressions count submitter in standalone and producer mode
-  isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(toMerge?: Record<string, number>): Record<string, number> // pop cache data
-}
-
-export interface IUniqueKeysCacheBase {
-  // Used by unique Keys tracker
-  track(key: string, value: string): void
-
-  // Used by unique keys submitter in standalone and producer mode
-  isEmpty(): boolean // check if cache is empty. Return true if the cache was just created or cleared.
-  pop(): UniqueKeysPayloadSs | UniqueKeysPayloadCs // pop cache data
-  /* Registers callback for full queue */
-  setOnFullQueueCb(cb: () => void): void,
-  clear(): void
 }
 
 /**
@@ -427,7 +418,7 @@ export interface ITelemetryEvaluationProducerSync {
 
 export interface ITelemetryStorageProducerSync extends ITelemetryInitProducerSync, ITelemetryRuntimeProducerSync, ITelemetryEvaluationProducerSync { }
 
-export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync, IRecorderCacheProducerSync<TelemetryUsageStatsPayload> { }
+export interface ITelemetryCacheSync extends ITelemetryStorageConsumerSync, ITelemetryStorageProducerSync, IRecorderCacheSync<TelemetryUsageStatsPayload> { }
 
 /**
  * Telemetry storage interface for consumer mode.
@@ -457,7 +448,7 @@ export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase,
-  TImpressionsCountCache extends IImpressionCountsCacheSync,
+  TImpressionsCountCache extends IImpressionCountsCacheBase,
   TEventsCache extends IEventsCacheBase,
   TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
   TUniqueKeysCache extends IUniqueKeysCacheBase
@@ -480,14 +471,14 @@ export interface IStorageSync extends IStorageBase<
   IImpressionCountsCacheSync,
   IEventsCacheSync,
   ITelemetryCacheSync,
-  IUniqueKeysCacheBase
+  IUniqueKeysCacheSync
   > { }
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
-  IImpressionCountsCacheSync,
+  IImpressionCountsCacheBase,
   IEventsCacheAsync | IEventsCacheSync,
   ITelemetryCacheAsync | ITelemetryCacheSync,
   IUniqueKeysCacheBase

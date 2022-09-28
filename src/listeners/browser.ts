@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
-import { IRecorderCacheProducerSync, IStorageSync } from '../storages/types';
+import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
@@ -109,7 +109,7 @@ export class BrowserSignalListener implements ISignalListener {
     if (document.visibilityState === 'hidden') this.flushData(); // On a 'visibilitychange' event, flush data if state is hidden
   }
 
-  private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
+  private _flushData<T>(url: string, cache: IRecorderCacheSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
     // if there is data in cache, send it to backend
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.pop()) : cache.pop();

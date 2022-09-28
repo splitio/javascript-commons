@@ -1,6 +1,6 @@
 import { syncTaskFactory } from '../syncTask';
 import { ISyncTask } from '../types';
-import { IRecorderCacheProducerSync } from '../../storages/types';
+import { IRecorderCacheSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { SUBMITTERS_PUSH, SUBMITTERS_PUSH_FAILS, SUBMITTERS_PUSH_RETRY } from '../../logger/constants';
 import { IResponse } from '../../services/types';
@@ -11,7 +11,7 @@ import { IResponse } from '../../services/types';
 export function submitterFactory<T>(
   log: ILogger,
   postClient: (body: string) => Promise<IResponse>,
-  sourceCache: IRecorderCacheProducerSync<T>,
+  sourceCache: IRecorderCacheSync<T>,
   postRate: number,
   dataName: string,
   fromCacheToPayload?: (cacheData: T) => any,
