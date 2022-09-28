@@ -61,7 +61,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
 
         this.redis.del(this.key).catch(() => { /* no-op */ });
 
-        const impressionsCount: ImpressionCountsPayload = { pf: [] };
+        const pf: ImpressionCountsPayload['pf'] = [];
 
         forOwn(counts, (count, key) => {
           const nameAndTime = key.split('::');
@@ -82,14 +82,14 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
             return;
           }
 
-          impressionsCount.pf.push({
+          pf.push({
             f: nameAndTime[0],
             m: timeFrame,
             rc: rawCount,
           });
         });
 
-        return impressionsCount;
+        return { pf };
       });
   }
 }

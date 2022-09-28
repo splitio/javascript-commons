@@ -54,7 +54,7 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
           .then(counts => {
             keys.forEach(key => this.wrapper.del(key).catch(() => { /* noop */ }));
 
-            const impressionsCount: ImpressionCountsPayload = { pf: [] };
+            const pf = [];
 
             for (let i = 0; i < keys.length; i++) {
               const key = keys[i];
@@ -78,14 +78,14 @@ export class ImpressionCountsCachePluggable extends ImpressionCountsCacheInMemor
                 continue;
               }
 
-              impressionsCount.pf.push({
+              pf.push({
                 f: keyFeatureNameAndTime[1],
                 m: timeFrame,
                 rc: rawCount,
               });
             }
 
-            return impressionsCount;
+            return { pf };
           }) : undefined;
       });
   }
