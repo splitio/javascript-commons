@@ -76,6 +76,8 @@ export type StoredImpressionWithMetadata = {
     c: number,
     /** time */
     m: number
+    /** previous time */
+    pt?: number
   }
 }
 
