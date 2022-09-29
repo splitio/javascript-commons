@@ -10,7 +10,7 @@ import { DEBUG, NONE, STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
-import { metadataBuilder } from '../metadataBuilder';
+import { metadataBuilder } from '../utils';
 
 export interface InRedisStorageOptions {
   prefix?: string

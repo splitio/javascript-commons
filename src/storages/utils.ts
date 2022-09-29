@@ -1,10 +1,19 @@
-// Shared utils for Redis and Pluggable storages.
+// Shared utils for Redis and Pluggable storage
 
 import { IMetadata } from '../dtos/types';
 import { Method, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { ImpressionDTO } from '../types';
+import { ImpressionDTO, ISettings } from '../types';
+import { UNKNOWN } from '../utils/constants';
 import { MAX_LATENCY_BUCKET_COUNT } from './inMemory/TelemetryCacheInMemory';
 import { METHOD_NAMES } from './KeyBuilderSS';
+
+export function metadataBuilder(settings: Pick<ISettings, 'version' | 'runtime'>): IMetadata {
+  return {
+    s: settings.version,
+    i: settings.runtime.ip || UNKNOWN,
+    n: settings.runtime.hostname || UNKNOWN,
+  };
+}
 
 // Converts impressions to be stored in Redis or pluggable storage.
 export function impressionsToJSON(impressions: ImpressionDTO[], metadata: IMetadata): string[] {

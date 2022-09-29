@@ -18,7 +18,7 @@ import { ImpressionCountsCachePluggable } from './ImpressionCountsCachePluggable
 import { UniqueKeysCachePluggable } from './UniqueKeysCachePluggable';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
-import { metadataBuilder } from '../metadataBuilder';
+import { metadataBuilder } from '../utils';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
