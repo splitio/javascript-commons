@@ -5,6 +5,7 @@ import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
+import { UniqueKeysItemSs } from '../../sync/submitters/types';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -14,18 +15,19 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   private readonly refreshRate: number;
   private intervalId: any;
 
-  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE, refreshRate: number = REFRESH_RATE) {
+  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize = DEFAULT_CACHE_SIZE, refreshRate = REFRESH_RATE) {
     super(uniqueKeysQueueSize);
     this.log = log;
     this.key = key;
     this.redis = redis;
     this.refreshRate = refreshRate;
-    this.onFullQueue = () => {this.postUniqueKeysInRedis();};
+    this.onFullQueue = () => { this.postUniqueKeysInRedis(); };
   }
 
-  postUniqueKeysInRedis() {
+  private postUniqueKeysInRedis() {
     const featureNames = Object.keys(this.uniqueKeysTracker);
-    if (!featureNames) return Promise.resolve(false);
+    if (!featureNames.length) return Promise.resolve(false);
+
     const pipeline = this.redis.pipeline();
     for (let i = 0; i < featureNames.length; i++) {
       const featureName = featureNames[i];
@@ -59,6 +61,17 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
   stop() {
     clearInterval(this.intervalId);
     return this.postUniqueKeysInRedis();
+  }
+
+  /**
+   * Async consumer API, used by synchronizer.
+   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   */
+  popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
+    return this.redis.lrange(this.key, 0, count - 1).then(uniqueKeyItems => {
+      return this.redis.ltrim(this.key, uniqueKeyItems.length, -1)
+        .then(() => uniqueKeyItems.map(uniqueKeyItem => JSON.parse(uniqueKeyItem)));
+    });
   }
 
 }

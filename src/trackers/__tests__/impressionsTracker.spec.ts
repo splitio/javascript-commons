@@ -44,7 +44,7 @@ describe('Impressions Tracker', () => {
     fakeListener.logImpression.mockClear();
     fakeIntegrationsManager.handleImpression.mockClear();
   });
-  
+
   const strategy = strategyDebugFactory(impressionObserverCSFactory());
 
   test('Tracker API', () => {

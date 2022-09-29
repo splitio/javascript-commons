@@ -39,7 +39,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
           // Release the API Key if it is the main client
           if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
-          
+
           if (uniqueKeysTracker) uniqueKeysTracker.stop();
 
           // Cleanup storage

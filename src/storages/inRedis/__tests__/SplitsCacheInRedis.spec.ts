@@ -24,7 +24,8 @@ describe('SPLITS CACHE REDIS', () => {
 
     let values = await cache.getAll();
 
-    expect(values).toEqual([splitWithAccountTT, splitWithUserTT]);
+    expect(values).toHaveLength(2);
+    expect(values).toEqual(values[0].name === 'lol1' ? [splitWithUserTT, splitWithAccountTT] : [splitWithAccountTT, splitWithUserTT]);
 
     let splitNames = await cache.getSplitNames();
 

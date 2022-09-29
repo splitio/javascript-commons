@@ -8,14 +8,14 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
-  private uniqueKeysTracker: { [keys: string]: ISet<string> };
+  private uniqueKeysTracker: { [userKey: string]: ISet<string> };
 
   /**
    *
    * @param impressionsQueueSize number of queued impressions to call onFullQueueCb.
    * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
    */
-  constructor(uniqueKeysQueueSize: number = DEFAULT_CACHE_SIZE) {   
+  constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
     this.uniqueKeysTracker = {};
   }
@@ -25,14 +25,12 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   }
 
   /**
-   * Store unique keys in sequential order
-   * key: string = key.
-   * value: HashSet<string> = set of split names. 
+   * Store unique keys per feature.
    */
-  track(key: string, featureName: string) {
-    
-    if (!this.uniqueKeysTracker[key]) this.uniqueKeysTracker[key] = new _Set();
-    const tracker = this.uniqueKeysTracker[key];
+  track(userKey: string, featureName: string) {
+
+    if (!this.uniqueKeysTracker[userKey]) this.uniqueKeysTracker[userKey] = new _Set();
+    const tracker = this.uniqueKeysTracker[userKey];
     if (!tracker.has(featureName)) {
       tracker.add(featureName);
       this.uniqueTrackerSize++;
@@ -65,18 +63,18 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   isEmpty() {
     return Object.keys(this.uniqueKeysTracker).length === 0;
   }
-  
+
   /**
    * Converts `uniqueKeys` data from cache into request payload.
    */
-  private fromUniqueKeysCollector(uniqueKeys: { [featureName: string]: ISet<string> }): UniqueKeysPayloadCs {
+  private fromUniqueKeysCollector(uniqueKeys: { [userKey: string]: ISet<string> }): UniqueKeysPayloadCs {
     const payload = [];
-    const featureKeys = Object.keys(uniqueKeys);
-    for (let k = 0; k < featureKeys.length; k++) {
-      const featureKey = featureKeys[k];
-      const featureNames = setToArray(uniqueKeys[featureKey]);
+    const userKeys = Object.keys(uniqueKeys);
+    for (let k = 0; k < userKeys.length; k++) {
+      const userKey = userKeys[k];
+      const featureNames = setToArray(uniqueKeys[userKey]);
       const uniqueKeysPayload = {
-        k: featureKey,
+        k: userKey,
         fs: featureNames
       };
 
@@ -84,5 +82,5 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
     }
     return { keys: payload };
   }
-  
+
 }

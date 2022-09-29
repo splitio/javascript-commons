@@ -6,15 +6,15 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { RedisMock } from '../../../utils/redis/RedisMock';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
+  const key = 'unique_key_post';
 
-  test('UNIQUE KEYS CACHE IN REDIS / should incrementally store values, clear the queue, and tell if it is empty', async () => {
+  test('should incrementally store values, clear the queue, and tell if it is empty', async () => {
     const connection = new Redis();
-    const key = 'unique_key_post';
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection);
 
     // queue is initially empty
-    expect(cache.pop()).toEqual({keys:[]});
+    expect(cache.pop()).toEqual({ keys: [] });
     expect(cache.isEmpty()).toBe(true);
 
     cache.track('key1', 'feature1');
@@ -49,10 +49,9 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     await connection.quit();
   });
 
-  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full.', async () => {
     let cbCalled = 0;
     const connection = new Redis();
-    const key = 'unique_key_post';
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3); // small uniqueKeysCache size to be reached
     cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
@@ -79,11 +78,8 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     await connection.quit();
   });
 
-  test('UNIQUE KEYS CACHE IN REDIS / post unique keys in redis method', async () => {
+  test('post unique keys in redis method', async () => {
     const connection = new Redis();
-    const key = 'unique_key_post';
-    // Clean up in case there are still keys there.
-    await connection.del(key);
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 20);
     cache.track('key1', 'feature1');
@@ -95,9 +91,9 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
 
     connection.lrange(key, 0, 10, async (err, data) => {
       const expected = [
-        JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
-        JSON.stringify({'f': 'feature2', 'ks': ['key2']}),
-        JSON.stringify({'f': 'feature3', 'ks': ['key1', 'key2']})
+        JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }),
+        JSON.stringify({ 'f': 'feature2', 'ks': ['key2'] }),
+        JSON.stringify({ 'f': 'feature3', 'ks': ['key1', 'key2'] })
       ];
 
       expect(data).toStrictEqual(expected);
@@ -105,16 +101,14 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       await connection.del(key);
       await connection.quit();
     });
-
-
   });
 
-  test('UNIQUE KEYS CACHE IN REDIS / start and stop task', (done) => {
+  test('start and stop task', (done) => {
     const connection = new RedisMock();
     const key = 'unique_key_post';
-    const refreshRate = 200;
+    const refreshRate = 100;
 
-    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection , undefined, refreshRate);
+    const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
     cache.track('key1', 'feature1');
     cache.track('key2', 'feature2');
     cache.track('key1', 'feature3');
@@ -127,29 +121,25 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     setTimeout(() => {
       expect(connection.pipeline).toBeCalledTimes(1);
       cache.stop();
-      expect(connection.pipeline).toBeCalledTimes(2);
+      expect(connection.pipeline).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       cache.track('key3', 'feature4');
     }, refreshRate + 30);
 
     setTimeout(() => {
 
-      expect(connection.pipeline).toBeCalledTimes(2);
+      expect(connection.pipeline).toBeCalledTimes(1);
       cache.start();
 
       setTimeout(() => {
-        expect(connection.pipeline).toBeCalledTimes(3);
+        expect(connection.pipeline).toBeCalledTimes(2);
         cache.stop();
         done();
       }, refreshRate + 30);
     }, 2 * refreshRate + 30);
   });
 
-  test('UNIQUE KEYS CACHE IN REDIS / Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
     const connection = new Redis();
-    const key = 'unique_key_post';
-
-    // Clean up in case there are still keys there.
-    await connection.del(key);
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3);
 
@@ -163,32 +153,31 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     cache.track('key2', 'feature3');
 
     const expected1 = [
-      JSON.stringify({'f': 'feature1', 'ks': ['key1']}),
-      JSON.stringify({'f': 'feature2', 'ks': ['key1']}),
-      JSON.stringify({'f': 'feature3', 'ks': ['key2']})
+      JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] }),
+      JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] }),
+      JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })
     ];
 
-    connection.lrange(key, 0, 10, (err, data) => {
-      expect(data).toStrictEqual(expected1);
-    });
-
-    const expected2 = [
-      ... expected1,
-      JSON.stringify({'f': 'feature4', 'ks': ['key2']}),
-      JSON.stringify({'f': 'feature5', 'ks': ['key3']}),
-      JSON.stringify({'f': 'feature6', 'ks': ['key2']})
-    ];
+    let data = await connection.lrange(key, 0, 10);
+    expect(data).toStrictEqual(expected1);
 
     cache.track('key2', 'feature4');
     cache.track('key2', 'feature4');
     cache.track('key3', 'feature5');
     cache.track('key2', 'feature6');
 
-    connection.lrange(key, 0, 10, async (err, data) => {
-      expect(data).toStrictEqual(expected2);
-      await connection.del(key);
-      await connection.quit();
-    });
+    // Validate `popNRaw` method
+    let poped = await cache.popNRaw(2); // pop two items
+    expect(poped).toEqual([{ f: 'feature1', ks: ['key1'] }, { f: 'feature2', ks: ['key1'] }]);
+    poped = await cache.popNRaw(); // pop remaining items
+    expect(poped).toEqual([{ f: 'feature3', ks: ['key2'] }, { f: 'feature4', ks: ['key2'] }, { f: 'feature5', ks: ['key3'] }, { f: 'feature6', ks: ['key2'] }]);
+    poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
+    expect(poped).toEqual([]);
 
+    data = await connection.lrange(key, 0, 10);
+    expect(data).toStrictEqual([]);
+
+    await connection.del(key);
+    await connection.quit();
   });
 });
