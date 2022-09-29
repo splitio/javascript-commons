@@ -16,10 +16,10 @@ describe('Unique keys tracker', () => {
     clear: jest.fn(),
   };
 
-  test('Should be able to track unique keys', () => { 
-    
+  test('Should be able to track unique keys', () => {
+
     const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
-    
+
     uniqueKeysTracker.track('key1', 'value1');
     expect(fakeFilter.add).toBeCalledWith('key1','value1');
     expect(fakeUniqueKeysCache.track).toBeCalledWith('key1','value1');
@@ -31,40 +31,40 @@ describe('Unique keys tracker', () => {
     uniqueKeysTracker.track('key2', 'value3');
     expect(fakeFilter.add).toBeCalledWith('key2','value3');
     expect(fakeUniqueKeysCache.track).toBeCalledTimes(3);
-    
+
     fakeFilter.add = jest.fn(() => { return true; });
     uniqueKeysTracker.track('key2', 'value4');
     expect(fakeFilter.add).toBeCalledWith('key2','value4');
     expect(fakeUniqueKeysCache.track).toBeCalledWith('key2','value4');
-    
+
   });
-  
-  test('Unique keys filter cleaner', () => { 
-    
+
+  test('Unique keys filter cleaner', () => {
+
     const refreshRate = 500;
-    
+
     fakeFilter.refreshRate = refreshRate;
-    
+
     const uniqueKeysTrackerWithRefresh = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
-    
+
     setTimeout(() => {
-      
+
       expect(fakeFilter.clear).toBeCalledTimes(1);
-    
+
       setTimeout(() => {
-        
+
         expect(fakeFilter.clear).toBeCalledTimes(2);
         uniqueKeysTrackerWithRefresh.stop();
-    
+
         setTimeout(() => {
-          
+
           expect(fakeFilter.clear).toBeCalledTimes(2);
 
         }, refreshRate + 30);
 
       }, refreshRate + 30);
-    
+
     }, refreshRate + 30);
-    
+
   });
 });

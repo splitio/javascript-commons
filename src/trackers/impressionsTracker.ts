@@ -31,9 +31,9 @@ export function impressionsTrackerFactory(
 
       const impressionsCount = impressions.length;
       const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
-      
+
       const impressionsToListenerCount = impressionsToListener.length;
-      
+
       if ( impressionsToStore.length>0 ){
         const res = impressionsCache.track(impressionsToStore);
 
