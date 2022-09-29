@@ -106,7 +106,7 @@ export function splitApiFactory(
       const url = `${urls.events}/testImpressions/count`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
     },
-    
+
     /**
      * Post unique keys for client side.
      *
@@ -117,7 +117,7 @@ export function splitApiFactory(
       const url = `${urls.telemetry}/v1/keys/cs`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
-    
+
     /**
      * Post unique keys for server side.
      *

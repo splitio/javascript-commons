@@ -10,6 +10,7 @@ import { DEBUG, NONE, STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
+import { metadataBuilder } from '../utils';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -24,7 +25,9 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
   const prefix = validatePrefix(options.prefix);
 
-  function InRedisStorageFactory({ log, metadata, onReadyCb, impressionsMode }: IStorageFactoryParams): IStorageAsync {
+  function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+    const { onReadyCb, settings, settings: { log, sync: { impressionsMode } } } = params;
+    const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const redisClient = new RedisAdapter(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
@@ -52,7 +55,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
       // When using REDIS we should:
       // 1- Disconnect from the storage
-      destroy(): Promise<void>{
+      destroy(): Promise<void> {
         let promises = [];
         if (impressionCountsCache) promises.push(impressionCountsCache.stop());
         if (uniqueKeysCache) promises.push(uniqueKeysCache.stop());

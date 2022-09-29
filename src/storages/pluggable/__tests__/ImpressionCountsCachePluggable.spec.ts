@@ -61,7 +61,8 @@ describe('IMPRESSION COUNTS CACHE PLUGGABLE', () => {
 
   });
 
-  test('Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full. "getImpressionsCount" should pop data.', async () => {
+    const key = 'other_key';
     const counter = new ImpressionCountsCachePluggable(loggerMock, key, wrapperMock, 5);
 
     counter.track('feature1', timestamp + 1, 1);
@@ -83,5 +84,15 @@ describe('IMPRESSION COUNTS CACHE PLUGGABLE', () => {
     ]);
 
     expect(counter.isEmpty()).toBe(true);
+
+    // Validate `getImpressionsCount` method
+    expect(await counter.getImpressionsCount()).toStrictEqual({ // pop data
+      pf: [
+        { f: 'feature1', m: truncateTimeFrame(timestamp), rc: 2 },
+        { f: 'feature2', m: truncateTimeFrame(timestamp), rc: 2 },
+        { f: 'feature2', m: truncateTimeFrame(nextHourTimestamp), rc: 1 },
+      ]
+    });
+    expect(await counter.getImpressionsCount()).toStrictEqual(undefined); // try to pop data again
   });
 });

@@ -43,7 +43,7 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
   const latencies = await cache.popLatencies();
   latencies.forEach((latency, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
-    expect(latency.tr[2]).toBe(2);
+    expect(latency.tr![2]).toBe(2);
   });
 
   // popExceptions

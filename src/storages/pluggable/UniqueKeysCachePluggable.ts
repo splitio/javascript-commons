@@ -4,6 +4,7 @@ import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE } from '../inRedis/constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
+import { UniqueKeysItemSs } from '../../sync/submitters/types';
 
 export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -51,6 +52,16 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
   stop() {
     clearInterval(this.intervalId);
     return this.storeUniqueKeys();
+  }
+
+  /**
+   * Async consumer API, used by synchronizer.
+   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   */
+  popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
+    return Promise.resolve(count || this.wrapper.getItemsCount(this.key))
+      .then(count => this.wrapper.popItems(this.key, count))
+      .then((uniqueKeyItems) => uniqueKeyItems.map(uniqueKeyItem => JSON.parse(uniqueKeyItem)));
   }
 
 }

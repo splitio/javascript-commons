@@ -10,6 +10,7 @@ export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
   expect(typeof storage.events).toBe('object');
   expect(!storage.telemetry || typeof storage.telemetry === 'object').toBeTruthy;
   expect(!storage.impressionCounts || typeof storage.impressionCounts === 'object').toBeTruthy;
+  expect(!storage.uniqueKeys || typeof storage.uniqueKeys === 'object').toBeTruthy;
 }
 
 export function assertSyncRecorderCacheInterface(cache: IEventsCacheSync | IImpressionsCacheSync) {

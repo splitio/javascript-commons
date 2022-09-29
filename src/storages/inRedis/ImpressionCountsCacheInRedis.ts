@@ -1,5 +1,7 @@
 import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
+import { ImpressionCountsPayload } from '../../sync/submitters/types';
+import { forOwn } from '../../utils/lang';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { LOG_PREFIX, REFRESH_RATE, TTL_REFRESH } from './constants';
 
@@ -20,7 +22,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
     this.onFullQueue = () => { this.postImpressionCountsInRedis(); };
   }
 
-  private postImpressionCountsInRedis(){
+  private postImpressionCountsInRedis() {
     const counts = this.pop();
     const keys = Object.keys(counts);
     if (!keys.length) return Promise.resolve(false);
@@ -49,5 +51,45 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   stop() {
     clearInterval(this.intervalId);
     return this.postImpressionCountsInRedis();
+  }
+
+  // Async consumer API, used by synchronizer
+  getImpressionsCount(): Promise<ImpressionCountsPayload | undefined> {
+    return this.redis.hgetall(this.key)
+      .then(counts => {
+        if (!Object.keys(counts).length) return undefined;
+
+        this.redis.del(this.key).catch(() => { /* no-op */ });
+
+        const pf: ImpressionCountsPayload['pf'] = [];
+
+        forOwn(counts, (count, key) => {
+          const nameAndTime = key.split('::');
+          if (nameAndTime.length !== 2) {
+            this.log.error(`${LOG_PREFIX}Error spliting key ${key}`);
+            return;
+          }
+
+          const timeFrame = parseInt(nameAndTime[1]);
+          if (isNaN(timeFrame)) {
+            this.log.error(`${LOG_PREFIX}Error parsing time frame ${nameAndTime[1]}`);
+            return;
+          }
+
+          const rawCount = parseInt(count);
+          if (isNaN(rawCount)) {
+            this.log.error(`${LOG_PREFIX}Error parsing raw count ${count}`);
+            return;
+          }
+
+          pf.push({
+            f: nameAndTime[0],
+            m: timeFrame,
+            rc: rawCount,
+          });
+        });
+
+        return { pf };
+      });
   }
 }

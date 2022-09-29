@@ -49,7 +49,8 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     }, 2 * refreshRate + 20);
   });
 
-  test('Should call "onFullQueueCb" when the queue is full.', async () => {
+  test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
+    const key = 'other_key';
     const cache = new UniqueKeysCachePluggable(loggerMock, key, wrapperMock, 3);
 
     cache.track('key1', 'feature1');
@@ -66,11 +67,19 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     await new Promise(resolve => setTimeout(resolve));
 
     expect(wrapperMock.pushItems.mock.calls).toEqual([
-      [key, [JSON.stringify({ 'f': 'feature1', 'ks': ['key1'] })]],
-      [key, [JSON.stringify({ 'f': 'feature2', 'ks': ['key1'] })]],
-      [key, [JSON.stringify({ 'f': 'feature3', 'ks': ['key2'] })]]
+      [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] })]],
+      [key, [JSON.stringify({ f: 'feature2', ks: ['key1'] })]],
+      [key, [JSON.stringify({ f: 'feature3', ks: ['key2'] })]]
     ]);
 
     expect(cache.isEmpty()).toBe(true);
+
+    // Validate `popNRaw` method
+    let poped = await cache.popNRaw(2); // pop two items
+    expect(poped).toEqual([{ f: 'feature1', ks: ['key1'] }, { f: 'feature2', ks: ['key1'] }]);
+    poped = await cache.popNRaw(); // pop remaining items
+    expect(poped).toEqual([{ f: 'feature3', ks: ['key2'] }]);
+    poped = await cache.popNRaw(100); // try to pop more items when the queue is empty
+    expect(poped).toEqual([]);
   });
 });

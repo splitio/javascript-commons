@@ -1,7 +1,4 @@
 // Mocks
-import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { IStorageFactoryParams } from '../../types';
-import { assertStorageInterface } from '../../__tests__/testUtils';
 const fakeInMemoryStorage = 'fakeStorage';
 const fakeInMemoryStorageFactory = jest.fn(() => fakeInMemoryStorage);
 jest.mock('../../inMemory/InMemoryStorageCS', () => {
@@ -10,13 +7,17 @@ jest.mock('../../inMemory/InMemoryStorageCS', () => {
   };
 });
 
+import { IStorageFactoryParams } from '../../types';
+import { assertStorageInterface } from '../../__tests__/testUtils';
+import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+
 // Test target
 import { InLocalStorage } from '../index';
 
 describe('IN LOCAL STORAGE', () => {
 
   // @ts-ignore
-  const internalSdkParams: IStorageFactoryParams = { log: loggerMock };
+  const internalSdkParams: IStorageFactoryParams = { settings: fullSettings };
 
   afterEach(() => {
     fakeInMemoryStorageFactory.mockClear();

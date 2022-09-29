@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 // @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
-import { IRecorderCacheProducerSync, IStorageSync } from '../storages/types';
+import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
@@ -12,7 +12,6 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
-import { telemetryCacheStatsAdapter } from '../sync/submitters/telemetrySubmitter';
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
@@ -84,27 +83,25 @@ export class BrowserSignalListener implements ISignalListener {
    */
   flushData() {
     if (!this.syncManager) return; // In consumer mode there is not sync manager and data to flush
+    const { events, telemetry } = this.settings.urls;
 
     // Flush impressions & events data if there is user consent
     if (isConsentGranted(this.settings)) {
-      const eventsUrl = this.settings.urls.events;
       const sim = this.settings.sync.impressionsMode;
       const extraMetadata = {
         // sim stands for Sync/Split Impressions Mode
         sim: sim === OPTIMIZED ? OPTIMIZED : sim === DEBUG ? DEBUG : NONE
       };
 
-      this._flushData(eventsUrl + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
-      this._flushData(eventsUrl + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
-      if (this.storage.impressionCounts) this._flushData(eventsUrl + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+      this._flushData(events + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
+      this._flushData(events + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
+      if (this.storage.impressionCounts) this._flushData(events + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+      // @ts-ignore
+      if (this.storage.uniqueKeys) this._flushData(telemetry + '/v1/keys/cs/beacon', this.storage.uniqueKeys, this.serviceApi.postUniqueKeysBulkCs);
     }
 
     // Flush telemetry data
-    if (this.storage.telemetry) {
-      const telemetryUrl = this.settings.urls.telemetry;
-      const telemetryCacheAdapter = telemetryCacheStatsAdapter(this.storage.telemetry, this.storage.splits, this.storage.segments);
-      this._flushData(telemetryUrl + '/v1/metrics/usage/beacon', telemetryCacheAdapter, this.serviceApi.postMetricsUsage);
-    }
+    if (this.storage.telemetry) this._flushData(telemetry + '/v1/metrics/usage/beacon', this.storage.telemetry, this.serviceApi.postMetricsUsage);
   }
 
   flushDataIfHidden() {
@@ -112,14 +109,13 @@ export class BrowserSignalListener implements ISignalListener {
     if (document.visibilityState === 'hidden') this.flushData(); // On a 'visibilitychange' event, flush data if state is hidden
   }
 
-  private _flushData<T>(url: string, cache: IRecorderCacheProducerSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
+  private _flushData<T>(url: string, cache: IRecorderCacheSync<T>, postService: (body: string) => Promise<IResponse>, fromCacheToPayload?: (cacheData: T) => any, extraMetadata?: {}) {
     // if there is data in cache, send it to backend
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.pop()) : cache.pop();
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
         postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exception
       }
-      cache.clear();
     }
   }
 
