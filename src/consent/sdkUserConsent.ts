@@ -40,7 +40,7 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
 
           // @ts-ignore, clear method is present in storage for standalone and partial consumer mode
           if (events.clear) events.clear(); // @ts-ignore
-          if (impressions.clear) impressions.clear();// @ts-ignore
+          if (impressions.clear) impressions.clear(); // @ts-ignore
           if (impressionCounts && impressionCounts.clear) impressionCounts.clear();
         }
       } else {
