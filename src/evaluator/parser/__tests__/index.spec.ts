@@ -662,8 +662,6 @@ test('PARSER / if user is in segment all then split 20%:A,20%:B,60%:A', async fu
   let evaluation = await evaluator(keyParser('aa'), 31, 100, 31);
   expect(evaluation.treatment).toBe('A'); // 20%:A // bucket 6 with murmur3
 
-  console.log(bucket('b297', 31));
-
   evaluation = await evaluator(keyParser('b297'), 31, 100, 31);
   expect(evaluation.treatment).toBe('B'); // 20%:B // bucket 34 with murmur3
 

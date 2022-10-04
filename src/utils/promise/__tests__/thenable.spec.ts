@@ -19,4 +19,6 @@ test('Promise utils / thenable', () => {
   expect(thenable({ catch: () => { } })).toBe(false); // Non thenable objects should fail the test.
   expect(thenable([prom, promResolved])).toBe(false); // Non thenable objects should fail the test.
   expect(thenable(() => { })).toBe(false); // Non thenable objects should fail the test.
+
+  promRejected.catch(() => { }); // Silence the unhandled promise rejection warning
 });

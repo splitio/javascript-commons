@@ -37,9 +37,10 @@ describe('Unique keys tracker', () => {
     expect(fakeFilter.add).toBeCalledWith('key2','value4');
     expect(fakeUniqueKeysCache.track).toBeCalledWith('key2','value4');
 
+    uniqueKeysTracker.stop();
   });
 
-  test('Unique keys filter cleaner', () => {
+  test('Unique keys filter cleaner', (done) => {
 
     const refreshRate = 500;
 
@@ -60,6 +61,8 @@ describe('Unique keys tracker', () => {
 
           expect(fakeFilter.clear).toBeCalledTimes(2);
 
+          uniqueKeysTrackerWithRefresh.stop();
+          done();
         }, refreshRate + 30);
 
       }, refreshRate + 30);
