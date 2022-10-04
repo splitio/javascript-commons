@@ -331,7 +331,7 @@ export interface IEventsCacheSync extends IEventsCacheBase, IRecorderCacheSync<S
 /* Named `ImpressionsCounter` in spec */
 export interface IImpressionCountsCacheSync extends IImpressionCountsCacheBase, IRecorderCacheSync<Record<string, number>> { }
 
-export interface IUniqueKeysCacheSync  extends IUniqueKeysCacheBase, IRecorderCacheSync<UniqueKeysPayloadSs | UniqueKeysPayloadCs> {
+export interface IUniqueKeysCacheSync extends IUniqueKeysCacheBase, IRecorderCacheSync<UniqueKeysPayloadSs | UniqueKeysPayloadCs> {
   setOnFullQueueCb(cb: () => void): void,
 }
 
