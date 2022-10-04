@@ -29,19 +29,19 @@ export function evaluateFeature(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
-  let stringifiedSplit;
+  let parsedSplit;
 
   try {
-    stringifiedSplit = storage.splits.getSplit(splitName);
+    parsedSplit = storage.splits.getSplit(splitName);
   } catch (e) {
     // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
     return treatmentException;
   }
 
-  if (thenable(stringifiedSplit)) {
-    return stringifiedSplit.then((result) => getEvaluation(
+  if (thenable(parsedSplit)) {
+    return parsedSplit.then((split) => getEvaluation(
       log,
-      result,
+      split,
       key,
       attributes,
       storage,
@@ -54,7 +54,7 @@ export function evaluateFeature(
 
   return getEvaluation(
     log,
-    stringifiedSplit,
+    parsedSplit,
     key,
     attributes,
     storage,
@@ -68,28 +68,28 @@ export function evaluateFeatures(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
-  let stringifiedSplits;
+  let parsedSplits;
 
   try {
-    stringifiedSplits = storage.splits.getSplits(splitNames);
+    parsedSplits = storage.splits.getSplits(splitNames);
   } catch (e) {
     // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
     return treatmentsException(splitNames);
   }
 
-  return (thenable(stringifiedSplits)) ?
-    stringifiedSplits.then(splits => getEvaluations(log, splitNames, splits, key, attributes, storage))
+  return thenable(parsedSplits) ?
+    parsedSplits.then(splits => getEvaluations(log, splitNames, splits, key, attributes, storage))
       .catch(() => {
         // Exception on async `getSplits` storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         return treatmentsException(splitNames);
       }) :
-    getEvaluations(log, splitNames, stringifiedSplits, key, attributes, storage);
+    getEvaluations(log, splitNames, parsedSplits, key, attributes, storage);
 }
 
 function getEvaluation(
   log: ILogger,
-  stringifiedSplit: string | null,
+  splitJSON: ISplit | null,
   key: SplitIO.SplitKey,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
@@ -100,8 +100,7 @@ function getEvaluation(
     config: null
   };
 
-  if (stringifiedSplit) {
-    const splitJSON: ISplit = JSON.parse(stringifiedSplit);
+  if (splitJSON) {
     const split = Engine.parse(log, splitJSON, storage);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
@@ -125,7 +124,7 @@ function getEvaluation(
 function getEvaluations(
   log: ILogger,
   splitNames: string[],
-  splits: Record<string, string | null>,
+  splits: Record<string, ISplit | null>,
   key: SplitIO.SplitKey,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,

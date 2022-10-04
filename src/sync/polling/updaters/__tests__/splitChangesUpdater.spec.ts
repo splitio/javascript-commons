@@ -50,7 +50,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
   const splitsMutation = computeSplitsMutation([activeSplitWithSegments, archivedSplit] as ISplit[]);
 
-  expect(splitsMutation.added).toEqual([[activeSplitWithSegments.name, JSON.stringify(activeSplitWithSegments)]]);
+  expect(splitsMutation.added).toEqual([[activeSplitWithSegments.name, activeSplitWithSegments]]);
   expect(splitsMutation.removed).toEqual([archivedSplit.name]);
   expect(splitsMutation.segments).toEqual(['A', 'B']);
 });

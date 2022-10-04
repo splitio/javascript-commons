@@ -1,4 +1,4 @@
-import { metadataBuilder } from '../metadataBuilder';
+import { metadataBuilder } from '../utils';
 import { UNKNOWN } from '../../utils/constants';
 
 describe('metadataBuilder', () => {

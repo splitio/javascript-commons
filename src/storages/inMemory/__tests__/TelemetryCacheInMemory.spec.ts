@@ -179,7 +179,6 @@ describe('TELEMETRY CACHE', () => {
     expect(cache.popTags()).toEqual([]);
   });
 
-
   test('method exceptions', () => {
     expect(cache.popExceptions()).toEqual({});
     methods.forEach((method) => {
@@ -207,6 +206,25 @@ describe('TELEMETRY CACHE', () => {
     const expectedLatencyBuckets = { 't': latencyBuckets, 'ts': latencyBuckets, 'tc': latencyBuckets, 'tcs': latencyBuckets, 'tr': latencyBuckets };
     expect(cache.popLatencies()).toEqual(expectedLatencyBuckets);
     expect(cache.popLatencies()).toEqual({});
+  });
+
+  test('"isEmpty" and "pop" methods', () => {
+    const cache = new TelemetryCacheInMemory();
+    const expectedEmptyPayload = {
+      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: []
+    };
+
+    // Initially, the cache is empty
+    expect(cache.isEmpty()).toBe(true);
+    expect(cache.pop()).toEqual(expectedEmptyPayload);
+
+    // Record some data to flag the cache as not empty
+    cache.recordException(TRACK);
+    expect(cache.isEmpty()).toBe(false);
+
+    // Pop the data and check that the cache is empty again
+    expect(cache.pop()).toEqual({ ...expectedEmptyPayload, mE: { 'tr': 1 } });
+    expect(cache.isEmpty()).toBe(true);
   });
 
 });

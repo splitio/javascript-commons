@@ -107,14 +107,36 @@ export function splitApiFactory(
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
     },
 
-    postMetricsConfig(body: string) {
-      const url = `${urls.telemetry}/v1/metrics/config`;
-      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
+    /**
+     * Post unique keys for client side.
+     *
+     * @param body  unique keys payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
+      const url = `${urls.telemetry}/v1/keys/cs`;
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
 
-    postMetricsUsage(body: string) {
+    /**
+     * Post unique keys for server side.
+     *
+     * @param body  unique keys payload
+     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     */
+    postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
+      const url = `${urls.telemetry}/v1/keys/ss`;
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+    },
+
+    postMetricsConfig(body: string, headers?: Record<string, string>) {
+      const url = `${urls.telemetry}/v1/metrics/config`;
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
+    },
+
+    postMetricsUsage(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/metrics/usage`;
-      return splitHttpClient(url, { method: 'POST', body }, telemetryTracker.trackHttp(TELEMETRY), true);
+      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
     }
   };
 }

@@ -1,7 +1,7 @@
-import { ISegmentsCacheSync, ISplitsCacheSync, ITelemetryCacheSync } from '../../storages/types';
+import { ITelemetryCacheSync } from '../../storages/types';
 import { submitterFactory, firstPushWindowDecorator } from './submitter';
-import { TelemetryUsageStatsPayload, TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
-import { QUEUED, DEDUPED, DROPPED, CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, DEBUG_ENUM, OPTIMIZED_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
+import { TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
+import { CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, NONE, DEBUG_ENUM, OPTIMIZED_ENUM, NONE_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
 import { ConsentStatus, ISettings, SDKMode } from '../../types';
 import { base } from '../../utils/settingsValidation';
@@ -9,40 +9,6 @@ import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
-
-/**
- * Converts data from telemetry cache into /metrics/usage request payload.
- */
-export function telemetryCacheStatsAdapter(telemetry: ITelemetryCacheSync, splits: ISplitsCacheSync, segments: ISegmentsCacheSync) {
-  return {
-    isEmpty() { return false; }, // There is always data in telemetry cache
-    clear() { }, //  No-op
-
-    // @TODO consider moving inside telemetry cache for code size reduction
-    pop(): TelemetryUsageStatsPayload {
-      return {
-        lS: telemetry.getLastSynchronization(),
-        mL: telemetry.popLatencies(),
-        mE: telemetry.popExceptions(),
-        hE: telemetry.popHttpErrors(),
-        hL: telemetry.popHttpLatencies(),
-        tR: telemetry.popTokenRefreshes(),
-        aR: telemetry.popAuthRejections(),
-        iQ: telemetry.getImpressionStats(QUEUED),
-        iDe: telemetry.getImpressionStats(DEDUPED),
-        iDr: telemetry.getImpressionStats(DROPPED),
-        spC: splits.getSplitNames().length,
-        seC: segments.getRegisteredSegments().length,
-        skC: segments.getKeysCount(),
-        sL: telemetry.getSessionLength(),
-        eQ: telemetry.getEventStats(QUEUED),
-        eD: telemetry.getEventStats(DROPPED),
-        sE: telemetry.popStreamingEvents(),
-        t: telemetry.popTags(),
-      };
-    }
-  };
-}
 
 const OPERATION_MODE_MAP = {
   [STANDALONE_MODE]: STANDALONE_ENUM,
@@ -52,8 +18,9 @@ const OPERATION_MODE_MAP = {
 
 const IMPRESSIONS_MODE_MAP = {
   [OPTIMIZED]: OPTIMIZED_ENUM,
-  [DEBUG]: DEBUG_ENUM
-} as Record<ISettings['sync']['impressionsMode'], (0 | 1)>;
+  [DEBUG]: DEBUG_ENUM,
+  [NONE]: NONE_ENUM
+} as Record<ISettings['sync']['impressionsMode'], (0 | 1 | 2)>;
 
 const USER_CONSENT_MAP = {
   [CONSENT_UNKNOWN]: 1,
@@ -129,14 +96,18 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
  * Submitter that periodically posts telemetry data
  */
 export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
-  const { storage: { splits, segments, telemetry }, platform: { now } } = params;
+  const { storage: { telemetry }, platform: { now } } = params;
   if (!telemetry || !now) return; // No submitter created if telemetry cache is not defined
 
   const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness, sdkReadinessManager } = params;
   const startTime = timer(now);
 
   const submitter = firstPushWindowDecorator(
-    submitterFactory(log, splitApi.postMetricsUsage, telemetryCacheStatsAdapter(telemetry, splits, segments), telemetryRefreshRate, 'telemetry stats', undefined, 0, true),
+    submitterFactory(
+      log, splitApi.postMetricsUsage,
+      telemetry,
+      telemetryRefreshRate, 'telemetry stats', undefined, 0, true
+    ),
     telemetryRefreshRate
   );
 

@@ -1,8 +1,16 @@
 import { truncateTimeFrame } from '../../utils/time';
+import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
 import { IImpressionCountsCacheSync } from '../types';
 
 export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
-  private cache: Record<string, number> = {};
+  protected cache: Record<string, number> = {};
+  private readonly maxStorage: number;
+  protected onFullQueue?: () => void;
+  private cacheSize = 0;
+
+  constructor(impressionCountsCacheSize = DEFAULT_CACHE_SIZE) {
+    this.maxStorage = impressionCountsCacheSize;
+  }
 
   /**
   * Builds key to be stored in the cache with the featureName and the timeFrame truncated.
@@ -18,6 +26,13 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
     const key = this._makeKey(featureName, timeFrame);
     const currentAmount = this.cache[key];
     this.cache[key] = currentAmount ? currentAmount + amount : amount;
+    if (this.onFullQueue) {
+      this.cacheSize = this.cacheSize + amount;
+      if (this.cacheSize >= this.maxStorage) {
+        this.onFullQueue();
+        this.cacheSize = 0;
+      }
+    }
   }
 
 

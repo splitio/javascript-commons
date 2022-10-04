@@ -12,6 +12,7 @@ import { SplitIO } from '../../types';
 import { Identity, GoogleAnalyticsToSplitOptions } from './types';
 import { ILogger } from '../../logger/types';
 import { IIntegrationFactoryParams } from '../types';
+import { ITelemetryTracker } from '../../trackers/types';
 
 const logPrefix = 'ga-to-split: ';
 const logNameMapper = 'ga-to-split:mapper';
@@ -25,7 +26,7 @@ const logNameMapper = 'ga-to-split:mapper';
  * @param log Logger instance.
  * @param autoRequire If true, log error when auto-require script is not detected
  */
-function providePlugin(window: any, pluginName: string, pluginConstructor: Function, log: ILogger, autoRequire?: boolean) {
+function providePlugin(window: any, pluginName: string, pluginConstructor: Function, log: ILogger, autoRequire: boolean, telemetryTracker?: ITelemetryTracker) {
   // get reference to global command queue. Init it if not defined yet.
   const gaAlias = window.GoogleAnalyticsObject || 'ga';
   window[gaAlias] = window[gaAlias] || function () {
@@ -35,9 +36,12 @@ function providePlugin(window: any, pluginName: string, pluginConstructor: Funct
   // provides the plugin for use with analytics.js.
   window[gaAlias]('provide', pluginName, pluginConstructor);
 
-  if (autoRequire && (!window[gaAlias].q || window[gaAlias].q.push === [].push)) {
-    // Expecting spy on ga.q push method but not found
+  const hasAutoRequire = window[gaAlias].q && window[gaAlias].q.push !== [].push;
+  if (autoRequire && !hasAutoRequire) { // Expecting spy on ga.q push method but not found
     log.error(logPrefix + 'integration is configured to autorequire the splitTracker plugin, but the necessary script does not seem to have run. Please check the docs.');
+  }
+  if (telemetryTracker && hasAutoRequire) {
+    telemetryTracker.addTag('integration:ga-autorequire');
   }
 }
 
@@ -191,7 +195,7 @@ export function fixEventTypeId(log: ILogger, eventTypeId: any) {
  */
 export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIntegrationFactoryParams) {
 
-  const { storage, settings: { core: coreSettings, log } } = params;
+  const { storage, settings: { core: coreSettings, log }, telemetryTracker } = params;
 
   const defaultOptions = {
     prefix: defaultPrefix,
@@ -291,5 +295,5 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
-  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire === true);
+  providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire === true, telemetryTracker);
 }

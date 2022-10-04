@@ -718,7 +718,7 @@ export namespace SplitIO {
   * ImpressionsMode type
   * @typedef {string} ImpressionsMode
   */
-  export type ImpressionsMode = 'OPTIMIZED' | 'DEBUG'
+  export type ImpressionsMode = 'OPTIMIZED' | 'DEBUG' | 'NONE'
   /**
    * Defines the format of Split data to preload on the factory storage (cache).
    */

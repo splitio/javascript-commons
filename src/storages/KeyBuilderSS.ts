@@ -2,7 +2,7 @@ import { KeyBuilder } from './KeyBuilder';
 import { IMetadata } from '../dtos/types';
 import { Method } from '../sync/submitters/types';
 
-const methodNames: Record<Method, string> = {
+export const METHOD_NAMES: Record<Method, string> = {
   t: 'treatment',
   ts: 'treatments',
   tc: 'treatmentWithConfig',
@@ -12,11 +12,17 @@ const methodNames: Record<Method, string> = {
 
 export class KeyBuilderSS extends KeyBuilder {
 
-  protected readonly metadata: IMetadata;
+  latencyPrefix: string;
+  exceptionPrefix: string;
+  initPrefix: string;
+  private versionablePrefix: string;
 
   constructor(prefix: string, metadata: IMetadata) {
     super(prefix);
-    this.metadata = metadata;
+    this.latencyPrefix = `${this.prefix}.telemetry.latencies`;
+    this.exceptionPrefix = `${this.prefix}.telemetry.exceptions`;
+    this.initPrefix = `${this.prefix}.telemetry.init`;
+    this.versionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
   }
 
   buildRegisteredSegmentsKey() {
@@ -25,6 +31,14 @@ export class KeyBuilderSS extends KeyBuilder {
 
   buildImpressionsKey() {
     return `${this.prefix}.impressions`;
+  }
+
+  buildImpressionsCountKey() {
+    return `${this.prefix}.impressions.count`;
+  }
+
+  buildUniqueKeysKey() {
+    return `${this.prefix}.uniquekeys`;
   }
 
   buildEventsKey() {
@@ -38,19 +52,15 @@ export class KeyBuilderSS extends KeyBuilder {
   /* Telemetry keys */
 
   buildLatencyKey(method: Method, bucket: number) {
-    return `${this.prefix}.telemetry.latencies::${this.buildVersionablePrefix()}/${methodNames[method]}/${bucket}`;
+    return `${this.latencyPrefix}::${this.versionablePrefix}/${METHOD_NAMES[method]}/${bucket}`;
   }
 
   buildExceptionKey(method: Method) {
-    return `${this.prefix}.telemetry.exceptions::${this.buildVersionablePrefix()}/${methodNames[method]}`;
+    return `${this.exceptionPrefix}::${this.versionablePrefix}/${METHOD_NAMES[method]}`;
   }
 
   buildInitKey() {
-    return `${this.prefix}.telemetry.init::${this.buildVersionablePrefix()}`;
-  }
-
-  private buildVersionablePrefix() {
-    return `${this.metadata.s}/${this.metadata.n}/${this.metadata.i}`;
+    return `${this.initPrefix}::${this.versionablePrefix}`;
   }
 
 }

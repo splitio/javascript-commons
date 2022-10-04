@@ -1,25 +1,65 @@
-import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies } from '../../sync/submitters/types';
+import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload } from '../../sync/submitters/types';
+import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
 import { findLatencyIndex } from '../findLatencyIndex';
-import { ITelemetryCacheSync } from '../types';
+import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
 
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
+export const MAX_LATENCY_BUCKET_COUNT = 23;
 
-function newBuckets() {
-  // MAX_LATENCY_BUCKET_COUNT (length) is 23;
+export function newBuckets() {
+  // MAX_LATENCY_BUCKET_COUNT (length) is 23
+  // Not using Array.fill for old browsers compatibility
   return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 const ACCEPTANCE_RANGE = 0.001;
 
 /**
- * Used on client-side. 0.1% of instances will track telemetry
+ * Record telemetry if mode is not localhost.
+ * All factory instances track telemetry on server-side, and 0.1% on client-side.
  */
-export function shouldRecordTelemetry() {
-  return Math.random() <= ACCEPTANCE_RANGE;
+export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
+  return settings.mode !== LOCALHOST_MODE && (settings.core.key === undefined || Math.random() <= ACCEPTANCE_RANGE);
 }
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
+
+  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync) { }
+
+  // isEmpty flag
+  private e = true;
+
+  isEmpty() { return this.e; }
+
+  clear() { /* no-op */ }
+
+  pop(): TelemetryUsageStatsPayload {
+    this.e = true;
+
+    return {
+      lS: this.getLastSynchronization(),
+      mL: this.popLatencies(),
+      mE: this.popExceptions(),
+      hE: this.popHttpErrors(),
+      hL: this.popHttpLatencies(),
+      tR: this.popTokenRefreshes(),
+      aR: this.popAuthRejections(),
+      iQ: this.getImpressionStats(QUEUED),
+      iDe: this.getImpressionStats(DEDUPED),
+      iDr: this.getImpressionStats(DROPPED),
+      spC: this.splits && this.splits.getSplitNames().length,
+      seC: this.segments && this.segments.getRegisteredSegments().length,
+      skC: this.segments && this.segments.getKeysCount(),
+      sL: this.getSessionLength(),
+      eQ: this.getEventStats(QUEUED),
+      eD: this.getEventStats(DROPPED),
+      sE: this.popStreamingEvents(),
+      t: this.popTags(),
+    };
+  }
+
+  /** Config stats */
 
   private timeUntilReady?: number;
 
@@ -51,6 +91,8 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     this.notReadyUsage++;
   }
 
+  /** Usage stats */
+
   private impressionStats = [0, 0, 0];
 
   getImpressionStats(type: ImpressionDataType) {
@@ -59,6 +101,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordImpressionStats(type: ImpressionDataType, count: number) {
     this.impressionStats[type] += count;
+    this.e = false;
   }
 
   private eventStats = [0, 0];
@@ -69,9 +112,9 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordEventStats(type: EventDataType, count: number) {
     this.eventStats[type] += count;
+    this.e = false;
   }
 
-  // @ts-expect-error
   private lastSync: LastSync = {};
 
   getLastSynchronization() {
@@ -80,40 +123,35 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordSuccessfulSync(resource: OperationType, timeMs: number) {
     this.lastSync[resource] = timeMs;
+    this.e = false;
   }
 
-  // @ts-expect-error
   private httpErrors: HttpErrors = {};
 
   popHttpErrors() {
-    const result = this.httpErrors; // @ts-expect-error
+    const result = this.httpErrors;
     this.httpErrors = {};
     return result;
   }
 
   recordHttpError(resource: OperationType, status: number) {
-    if (!this.httpErrors[resource]) this.httpErrors[resource] = {};
-    if (!this.httpErrors[resource][status]) {
-      this.httpErrors[resource][status] = 1;
-    } else {
-      this.httpErrors[resource][status]++;
-    }
+    const statusErrors = (this.httpErrors[resource] = this.httpErrors[resource] || {});
+    statusErrors[status] = (statusErrors[status] || 0) + 1;
+    this.e = false;
   }
 
-  // @ts-expect-error
   private httpLatencies: HttpLatencies = {};
 
   popHttpLatencies() {
-    const result = this.httpLatencies; // @ts-expect-error
+    const result = this.httpLatencies;
     this.httpLatencies = {};
     return result;
   }
 
   recordHttpLatency(resource: OperationType, latencyMs: number) {
-    if (!this.httpLatencies[resource]) {
-      this.httpLatencies[resource] = newBuckets();
-    }
-    this.httpLatencies[resource][findLatencyIndex(latencyMs)]++;
+    const latencyBuckets = (this.httpLatencies[resource] = this.httpLatencies[resource] || newBuckets());
+    latencyBuckets[findLatencyIndex(latencyMs)]++;
+    this.e = false;
   }
 
   private authRejections = 0;
@@ -126,6 +164,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordAuthRejections() {
     this.authRejections++;
+    this.e = false;
   }
 
   private tokenRefreshes = 0;
@@ -138,6 +177,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordTokenRefreshes() {
     this.tokenRefreshes++;
+    this.e = false;
   }
 
   private streamingEvents: StreamingEvent[] = []
@@ -150,6 +190,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     if (this.streamingEvents.length < MAX_STREAMING_EVENTS) {
       this.streamingEvents.push(streamingEvent);
     }
+    this.e = false;
   }
 
   private tags: string[] = [];
@@ -162,6 +203,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     if (this.tags.length < MAX_TAGS) {
       this.tags.push(tag);
     }
+    this.e = false;
   }
 
   private sessionLength?: number;
@@ -172,39 +214,34 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   recordSessionLength(ms: number) {
     this.sessionLength = ms;
+    this.e = false;
   }
 
-  // @ts-expect-error
   private exceptions: MethodExceptions = {};
 
   popExceptions() {
-    const result = this.exceptions; // @ts-expect-error
+    const result = this.exceptions;
     this.exceptions = {};
     return result;
   }
 
   recordException(method: Method) {
-    if (!this.exceptions[method]) {
-      this.exceptions[method] = 1;
-    } else {
-      this.exceptions[method]++;
-    }
+    this.exceptions[method] = (this.exceptions[method] || 0) + 1;
+    this.e = false;
   }
 
-  // @ts-expect-error
   private latencies: MethodLatencies = {};
 
   popLatencies() {
-    const result = this.latencies; // @ts-expect-error
+    const result = this.latencies;
     this.latencies = {};
     return result;
   }
 
   recordLatency(method: Method, latencyMs: number) {
-    if (!this.latencies[method]) {
-      this.latencies[method] = newBuckets();
-    }
-    this.latencies[method][findLatencyIndex(latencyMs)]++;
+    const latencyBuckets = (this.latencies[method] = this.latencies[method] || newBuckets());
+    latencyBuckets[findLatencyIndex(latencyMs)]++;
+    this.e = false;
   }
 
 }

@@ -8,7 +8,7 @@ import { isFiniteNumber } from '../../utils/lang';
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
-  private splitsCache: Record<string, string> = {};
+  private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
   private splitsWithSegmentsCount: number = 0;
@@ -20,10 +20,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.splitsWithSegmentsCount = 0;
   }
 
-  addSplit(name: string, split: string): boolean {
-    const splitFromMemory = this.getSplit(name);
-    if (splitFromMemory) { // We had this Split already
-      const previousSplit: ISplit = JSON.parse(splitFromMemory);
+  addSplit(name: string, split: ISplit): boolean {
+    const previousSplit = this.getSplit(name);
+    if (previousSplit) { // We had this Split already
 
       if (previousSplit.trafficTypeName) {
         const previousTtName = previousSplit.trafficTypeName;
@@ -36,20 +35,18 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       }
     }
 
-    const parsedSplit: ISplit = JSON.parse(split);
-
-    if (parsedSplit) {
+    if (split) {
       // Store the Split.
       this.splitsCache[name] = split;
       // Update TT cache
-      const ttName = parsedSplit.trafficTypeName;
+      const ttName = split.trafficTypeName;
       if (ttName) { // safeguard
         if (!this.ttCache[ttName]) this.ttCache[ttName] = 0;
         this.ttCache[ttName]++;
       }
 
       // Add to segments count for the new version of the Split
-      if (usesSegments(parsedSplit)) this.splitsWithSegmentsCount++;
+      if (usesSegments(split)) this.splitsWithSegmentsCount++;
 
       return true;
     } else {
@@ -63,8 +60,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       // Delete the Split
       delete this.splitsCache[name];
 
-      const parsedSplit: ISplit = JSON.parse(split);
-      const ttName = parsedSplit.trafficTypeName;
+      const ttName = split.trafficTypeName;
 
       if (ttName) { // safeguard
         this.ttCache[ttName]--; // Update tt cache
@@ -72,7 +68,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       }
 
       // Update the segments count.
-      if (usesSegments(parsedSplit)) this.splitsWithSegmentsCount--;
+      if (usesSegments(split)) this.splitsWithSegmentsCount--;
 
       return true;
     } else {
@@ -80,7 +76,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     }
   }
 
-  getSplit(name: string): string | null {
+  getSplit(name: string): ISplit | null {
     return this.splitsCache[name] || null;
   }
 

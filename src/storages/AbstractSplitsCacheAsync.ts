@@ -1,5 +1,6 @@
 import { ISplitsCacheAsync } from './types';
 import { ISplit } from '../dtos/types';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheAsync interface
@@ -7,14 +8,14 @@ import { ISplit } from '../dtos/types';
  */
 export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
-  abstract addSplit(name: string, split: string): Promise<boolean>
-  abstract addSplits(entries: [string, string][]): Promise<boolean[] | void>
+  abstract addSplit(name: string, split: ISplit): Promise<boolean>
+  abstract addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>
   abstract removeSplits(names: string[]): Promise<boolean[] | void>
-  abstract getSplit(name: string): Promise<string | null>
-  abstract getSplits(names: string[]): Promise<Record<string, string | null>>
+  abstract getSplit(name: string): Promise<ISplit | null>
+  abstract getSplits(names: string[]): Promise<Record<string, ISplit | null>>
   abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
   abstract getChangeNumber(): Promise<number>
-  abstract getAll(): Promise<string[]>
+  abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
@@ -40,23 +41,20 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
    * @param {string} name
    * @param {string} defaultTreatment
    * @param {number} changeNumber
-   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the kill success updating the split or `false` if no split is updated,
+   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
    * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
    * The promise will never be rejected.
    */
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean> {
     return this.getSplit(name).then(split => {
 
-      if (split) {
-        const parsedSplit: ISplit = JSON.parse(split);
-        if (!parsedSplit.changeNumber || parsedSplit.changeNumber < changeNumber) {
-          parsedSplit.killed = true;
-          parsedSplit.defaultTreatment = defaultTreatment;
-          parsedSplit.changeNumber = changeNumber;
-          const newSplit = JSON.stringify(parsedSplit);
+      if (split && (!split.changeNumber || split.changeNumber < changeNumber)) {
+        const newSplit = objectAssign({}, split);
+        newSplit.killed = true;
+        newSplit.defaultTreatment = defaultTreatment;
+        newSplit.changeNumber = changeNumber;
 
-          return this.addSplit(name, newSplit);
-        }
+        return this.addSplit(name, newSplit);
       }
       return false;
     }).catch(() => false);
