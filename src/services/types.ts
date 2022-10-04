@@ -43,6 +43,10 @@ export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => P
 
 export type IPostEventsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
+export type IPostUniqueKeysBulkCs = (body: string, headers?: Record<string, string>) => Promise<IResponse>
+
+export type IPostUniqueKeysBulkSs = (body: string, headers?: Record<string, string>) => Promise<IResponse>
+
 export type IPostTestImpressionsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export type IPostTestImpressionsCount = (body: string, headers?: Record<string, string>) => Promise<IResponse>
@@ -59,6 +63,8 @@ export interface ISplitApi {
 	fetchSegmentChanges: IFetchSegmentChanges
 	fetchMySegments: IFetchMySegments
 	postEventsBulk: IPostEventsBulk
+	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
+	postUniqueKeysBulkSs: IPostUniqueKeysBulkSs
 	postTestImpressionsBulk: IPostTestImpressionsBulk
 	postTestImpressionsCount: IPostTestImpressionsCount
 	postMetricsConfig: IPostMetricsConfig

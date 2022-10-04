@@ -1,6 +1,6 @@
 import { ILogger } from '../../logger/types';
 import { Method, MultiConfigs, MultiMethodExceptions, MultiMethodLatencies } from '../../sync/submitters/types';
-import { KeyBuilderSS, parseExceptionField, parseLatencyField, parseMetadata } from '../KeyBuilderSS';
+import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ITelemetryCacheAsync } from '../types';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
@@ -8,6 +8,7 @@ import { CONSUMER_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { isString, isNaNNumber } from '../../utils/lang';
 import { _Map } from '../../utils/lang/maps';
 import { MAX_LATENCY_BUCKET_COUNT, newBuckets } from '../inMemory/TelemetryCacheInMemory';
+import { parseLatencyField, parseExceptionField, parseMetadata } from '../utils';
 
 export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
@@ -75,7 +76,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
               tr: newBuckets(),
             });
 
-            result.get(metadata)![method][bucket] = count;
+            result.get(metadata)![method]![bucket] = count;
           }
 
           return Promise.all(latencyKeys.map((latencyKey) => this.wrapper.del(latencyKey))).then(() => result);

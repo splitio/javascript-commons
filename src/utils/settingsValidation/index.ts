@@ -136,6 +136,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
 
+
   // Log deprecation for old telemetry param
   if (scheduler.metricsRefreshRate) log.warn('`metricsRefreshRate` will be deprecated soon. For configuring telemetry rates, update `telemetryRefreshRate` value in configs');
 
@@ -153,8 +154,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   if (storage) withDefaults.storage = storage(withDefaults);
 
   // Validate key and TT (for client-side)
+  const maybeKey = withDefaults.core.key;
   if (validationParams.acceptKey) {
-    const maybeKey = withDefaults.core.key;
     // Although `key` is required in client-side, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
     if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
       withDefaults.core.key = 'localhost_key';
@@ -171,6 +172,10 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
         withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
       }
     }
+  } else {
+    // On server-side, key is undefined and used to distinguish from client-side
+    if (maybeKey !== undefined) log.warn('Provided `key` is ignored in server-side SDK.'); // @ts-ignore
+    withDefaults.core.key = undefined;
   }
 
   // Current ip/hostname information

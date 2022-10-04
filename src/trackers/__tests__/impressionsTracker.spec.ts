@@ -4,6 +4,8 @@ import { impressionObserverSSFactory } from '../impressionObserver/impressionObs
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
 import { ImpressionDTO } from '../../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { strategyDebugFactory } from '../strategy/strategyDebug';
+import { strategyOptimizedFactory } from '../strategy/strategyOptimized';
 import { DEDUPED, QUEUED } from '../../utils/constants';
 
 /* Mocks */
@@ -43,15 +45,17 @@ describe('Impressions Tracker', () => {
     fakeIntegrationsManager.handleImpression.mockClear();
   });
 
+  const strategy = strategyDebugFactory(impressionObserverCSFactory());
+
   test('Tracker API', () => {
     expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const instance = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache);
+    const instance = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategy);
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method which will actually track queued impressions.
   });
 
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategy);
 
     const imp1 = {
       feature: '10',
@@ -71,7 +75,7 @@ describe('Impressions Tracker', () => {
   });
 
   test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
-    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, fakeIntegrationsManager);
+    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, strategy, fakeIntegrationsManager);
 
     const fakeImpression = {
       feature: 'impression'
@@ -145,8 +149,8 @@ describe('Impressions Tracker', () => {
     impression3.time = 1234567891;
 
     const trackers = [
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverSSFactory()),
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory())
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyDebugFactory(impressionObserverSSFactory()), undefined),
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyDebugFactory(impressionObserverCSFactory()), undefined)
     ];
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
@@ -173,7 +177,7 @@ describe('Impressions Tracker', () => {
     impression3.time = Date.now();
 
     const impressionCountsCache = new ImpressionCountsCacheInMemory(); // @ts-ignore
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, undefined, impressionObserverCSFactory(), impressionCountsCache, fakeTelemetryCache);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache), undefined, fakeTelemetryCache);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
@@ -188,7 +192,7 @@ describe('Impressions Tracker', () => {
     expect(lastArgs[0][1].pt).toBe(undefined);
     expect(lastArgs[0][1].feature).toBe('qc_team_2');
 
-    expect(Object.keys(impressionCountsCache.pop()).length).toBe(2);
+    expect(Object.keys(impressionCountsCache.pop()).length).toBe(1);
     expect(fakeTelemetryCache.recordImpressionStats.mock.calls).toEqual([[QUEUED, 2], [DEDUPED, 1]]);
 
   });
@@ -196,7 +200,7 @@ describe('Impressions Tracker', () => {
   test('Should track or not impressions depending on user consent status', () => {
     const settings = { ...fullSettings };
 
-    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache);
+    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache, strategy);
 
     tracker.track([impression]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(1); // impression should be tracked if userConsent is undefined

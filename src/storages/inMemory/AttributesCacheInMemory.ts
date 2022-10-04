@@ -7,10 +7,10 @@ export class AttributesCacheInMemory {
 
   /**
    * Create or update the value for the given attribute
-   * 
+   *
    * @param {string} attributeName attribute name
    * @param {Object} attributeValue attribute value
-   * @returns {boolean} the attribute was stored 
+   * @returns {boolean} the attribute was stored
    */
   setAttribute(attributeName: string, attributeValue: Object): boolean {
     this.attributesCache[attributeName] = attributeValue;
@@ -19,7 +19,7 @@ export class AttributesCacheInMemory {
 
   /**
    * Retrieves the value of a given attribute
-   * 
+   *
    * @param {string} attributeName attribute name
    * @returns {Object?} stored attribute value
    */
@@ -29,7 +29,7 @@ export class AttributesCacheInMemory {
 
   /**
    * Create or update all the given attributes
-   * 
+   *
    * @param {[string, Object]} attributes attributes to create or update
    * @returns {boolean} attributes were stored
    */
@@ -40,7 +40,7 @@ export class AttributesCacheInMemory {
 
   /**
    * Retrieve the full attributes map
-   * 
+   *
    * @returns {Map<string, Object>} stored attributes
    */
   getAll(): Record<string, Object> {
@@ -49,7 +49,7 @@ export class AttributesCacheInMemory {
 
   /**
    * Removes a given attribute from the map
-   * 
+   *
    * @param {string} attributeName attribute to remove
    * @returns {boolean} attribute removed
    */
@@ -63,7 +63,7 @@ export class AttributesCacheInMemory {
 
   /**
    * Clears all attributes stored in the SDK
-   * 
+   *
    */
   clear() {
     this.attributesCache = {};

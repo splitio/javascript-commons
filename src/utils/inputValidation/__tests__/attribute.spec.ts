@@ -3,7 +3,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 
 test('INPUT VALIDATION for Attribute', () => {
-  
+
   // @ts-ignore
   expect(validateAttribute(loggerMock, 2, 'dos', 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute key is not a string
   expect(validateAttribute(loggerMock, '', 'empty', 'some_method_attrs')).toEqual(false); // It should be invalid if the attribute key is not a string

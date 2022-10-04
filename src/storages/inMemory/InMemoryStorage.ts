@@ -4,8 +4,9 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
+import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
 
 /**
  * InMemory storage factory for standalone server-side SplitFactory
@@ -13,14 +14,19 @@ import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheI
  * @param params parameters required by EventsCacheSync
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
+
+  const splits = new SplitsCacheInMemory();
+  const segments = new SegmentsCacheInMemory();
 
   return {
-    splits: new SplitsCacheInMemory(),
-    segments: new SegmentsCacheInMemory(),
-    impressions: new ImpressionsCacheInMemory(params.impressionsQueueSize),
-    impressionCounts: params.optimize ? new ImpressionCountsCacheInMemory() : undefined,
-    events: new EventsCacheInMemory(params.eventsQueueSize),
-    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory() : undefined,
+    splits,
+    segments,
+    impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
+    impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
+    events: new EventsCacheInMemory(eventsQueueSize),
+    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
+    uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
     // When using MEMORY we should clean all the caches to leave them empty
     destroy() {
@@ -29,6 +35,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
+      this.uniqueKeys?.clear();
     }
   };
 }

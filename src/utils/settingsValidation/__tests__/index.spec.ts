@@ -222,6 +222,17 @@ describe('settingsValidation', () => {
     expect(integrationsValidatorMock).toBeCalledWith(settings);
   });
 
+  test('ignores key in server-side', () => {
+    const settings = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+        key: 'ignored'
+      }
+    }, minimalSettingsParams);
+
+    expect(settings.core.key).toBe(undefined);
+  });
+
   test('validates and sanitizes key and traffic type in client-side', () => {
     const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
 
