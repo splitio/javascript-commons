@@ -15,8 +15,6 @@ describe('SPLITS CACHE REDIS', () => {
     const keysBuilder = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    await cache.clear();
-
     await cache.addSplits([
       ['lol1', splitWithUserTT],
       ['lol2', splitWithAccountTT]
