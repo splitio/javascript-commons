@@ -114,7 +114,7 @@ export class BrowserSignalListener implements ISignalListener {
     if (!cache.isEmpty()) {
       const dataPayload = fromCacheToPayload ? fromCacheToPayload(cache.pop()) : cache.pop();
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
-        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op just to catch a possible exception
+        postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op to handle possible promise rejection
       }
     }
   }
@@ -138,8 +138,13 @@ export class BrowserSignalListener implements ISignalListener {
       // Stringify the payload
       const payload = JSON.stringify(json);
 
-      // eslint-disable-next-line compat/compat
-      return navigator.sendBeacon(url, payload);
+      // https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
+      try { // eslint-disable-next-line compat/compat
+        return navigator.sendBeacon(url, payload);
+      } catch (e) {
+        // Handle exceptions by falling back to regular post transport
+        return false;
+      }
     }
     return false;
   }
