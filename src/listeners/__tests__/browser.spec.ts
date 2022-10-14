@@ -242,30 +242,35 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   assertStop(listener);
 });
 
-test('Browser JS listener / standalone mode / Impressions debug mode without sendBeacon API', () => {
-  // remove sendBeacon API temporally
+test('Browser JS listener / standalone mode / Fallback to regular Fetch transport', () => {
+
+  function runBrowserListener() { // @ts-expect-error
+    const listener = new BrowserSignalListener({}, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+    listener.start();
+    // Trigger data flush
+    triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
+    listener.stop();
+  }
+
+  // Case 1: sendBeacon API is not available
   const sendBeacon = global.navigator.sendBeacon; // @ts-expect-error
   global.navigator.sendBeacon = undefined;
-  const syncManagerMockWithoutPushManager = {};
 
-  // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMockWithoutPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  runBrowserListener();
 
-  listener.start();
-  assertStart(listener);
+  // Case 2: sendBeacon API returns false (i.e., it fails to queue the data for transfer)
+  global.navigator.sendBeacon = () => false;
 
-  triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
+  runBrowserListener();
 
-  // Visibility has changed to hidden and sendBeacon API is not available, so http post services should be called
-  expect(sendBeacon).not.toBeCalled();
-  expect(fakeSplitApi.postTestImpressionsBulk).toBeCalledTimes(1);
-  expect(fakeSplitApi.postEventsBulk).toBeCalledTimes(1);
-  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  // Case 3: sendBeacon API throws error
+  global.navigator.sendBeacon = () => { throw new Error('sendBeacon error'); };
 
-  // pre-check and call stop
-  expect(global.window.removeEventListener).not.toBeCalled();
-  listener.stop();
-  assertStop(listener);
+  runBrowserListener();
+
+  // Assert that browser listener has fallen back to the regular Fetch transport when sendBeacon fails or is not available
+  expect(fakeSplitApi.postTestImpressionsBulk).toBeCalledTimes(3);
+  expect(fakeSplitApi.postEventsBulk).toBeCalledTimes(3);
 
   // restore sendBeacon API
   global.navigator.sendBeacon = sendBeacon;

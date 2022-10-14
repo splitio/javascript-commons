@@ -1,3 +1,6 @@
+1.7.2 (October 14, 2022)
+- Bugfixing - Handle `Navigator.sendBeacon` API exceptions in the browser, and fallback to regular Fetch/XHR transport in case of error.
+
 1.7.1 (October 5, 2022)
 - Updated default value of `scheduler.featuresRefreshRate` config parameter to 60 seconds.
 
