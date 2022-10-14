@@ -122,6 +122,7 @@ export class BrowserSignalListener implements ISignalListener {
   /**
    * _sendBeacon method.
    * Util method that check if beacon API is available, build the payload and send it.
+   * Returns true if beacon API was used successfully, false otherwise.
    */
   private _sendBeacon(url: string, data: any, extraMetadata?: {}) {
     // eslint-disable-next-line compat/compat
@@ -142,7 +143,6 @@ export class BrowserSignalListener implements ISignalListener {
       try { // eslint-disable-next-line compat/compat
         return navigator.sendBeacon(url, payload);
       } catch (e) {
-        // Handle exceptions by falling back to regular post transport
         return false;
       }
     }
