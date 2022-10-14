@@ -7,12 +7,12 @@ import { ISplit } from '../../../dtos/types';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
 
 const prefix = 'splits_cache_ut';
+const keysBuilder = new KeyBuilderSS(prefix, metadata);
 
 describe('SPLITS CACHE REDIS', () => {
 
   test('add/remove/get splits & set/get change number', async () => {
     const connection = new Redis();
-    const keysBuilder = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplits([
@@ -23,7 +23,7 @@ describe('SPLITS CACHE REDIS', () => {
     let values = await cache.getAll();
 
     expect(values).toHaveLength(2);
-    expect(values).toEqual(values[0].name === 'lol1' ? [splitWithUserTT, splitWithAccountTT] : [splitWithAccountTT, splitWithUserTT]);
+    expect(values).toEqual(values[0].trafficTypeName === splitWithUserTT.trafficTypeName ? [splitWithUserTT, splitWithAccountTT] : [splitWithAccountTT, splitWithUserTT]);
 
     let splitNames = await cache.getSplitNames();
 
@@ -58,9 +58,7 @@ describe('SPLITS CACHE REDIS', () => {
   });
 
   test('trafficTypeExists', async () => {
-    const prefix = 'splits_cache_ut';
     const connection = new Redis();
-    const keysBuilder = new KeyBuilderSS(prefix, metadata);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplits([
@@ -106,13 +104,11 @@ describe('SPLITS CACHE REDIS', () => {
     await connection.del(keysBuilder.buildSplitKey('malformed'));
     await connection.del(keysBuilder.buildSplitKey('split1'));
     await connection.quit();
-
   });
 
   test('killLocally', async () => {
     const connection = new Redis();
-    const keys = new KeyBuilderSS(prefix, metadata);
-    const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplit('lol1', splitWithUserTT);
     await cache.addSplit('lol2', splitWithAccountTT);
@@ -144,10 +140,9 @@ describe('SPLITS CACHE REDIS', () => {
 
     // Delete splits and TT keys
     await cache.removeSplits(['lol1', 'lol2']);
-    await connection.del(keys.buildTrafficTypeKey('account_tt'));
-    await connection.del(keys.buildTrafficTypeKey('user_tt'));
+    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
+    await connection.del(keysBuilder.buildTrafficTypeKey('user_tt'));
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
-
     await connection.quit();
   });
 
