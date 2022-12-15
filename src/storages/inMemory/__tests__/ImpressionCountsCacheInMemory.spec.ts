@@ -14,6 +14,8 @@ test('IMPRESSION COUNTS CACHE / Impression Counter Test makeKey', () => {
 test('IMPRESSION COUNTS CACHE / Impression Counter Test BasicUsage', () => {
   const timestamp = new Date(2020, 9, 2, 10, 10, 12).getTime();
   const counter = new ImpressionCountsCacheInMemory();
+  counter.onFullQueue = () => {};
+
   counter.track('feature1', timestamp, 1);
   counter.track('feature1', timestamp + 1, 1);
   counter.track('feature1', timestamp + 2, 1);

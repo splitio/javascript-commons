@@ -3,6 +3,7 @@ import { ImpressionsCacheInMemory } from '../ImpressionsCacheInMemory';
 
 test('IMPRESSIONS CACHE IN MEMORY / should incrementally store values, clear the queue, and tell if it is empty', () => {
   const c = new ImpressionsCacheInMemory();
+  c.setOnFullQueueCb(() => {});
 
   // queue is initially empty
   expect(c.pop()).toEqual([]);

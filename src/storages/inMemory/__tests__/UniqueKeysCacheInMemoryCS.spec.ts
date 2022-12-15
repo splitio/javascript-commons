@@ -3,6 +3,7 @@ import { UniqueKeysCacheInMemoryCS } from '../UniqueKeysCacheInMemoryCS';
 
 test('UNIQUE KEYS CACHE IN MEMORY CS / should incrementally store values, clear the queue, and tell if it is empty', () => {
   const c = new UniqueKeysCacheInMemoryCS();
+  c.setOnFullQueueCb(() => {});
 
   // queue is initially empty
   expect(c.pop()).toEqual({keys:[]});

@@ -11,6 +11,7 @@ test('EVENTS CACHE / Should be able to instantiate and start with an empty queue
 
 test('EVENTS CACHE / Should be able to add items sequentially and retrieve the queue', () => {
   const cache = new EventsCacheInMemory(500);
+  cache.setOnFullQueueCb(() => {});
   const queueValues = [1, '2', { p: 3 }, ['4']];
 
   expect(cache.track.bind(cache, queueValues[0])).not.toThrow(); // Calling track should not throw
@@ -38,6 +39,7 @@ test('EVENTS CACHE / Should be able to clear the queue and accumulated byte size
 
 test('EVENTS CACHE / Should be able to tell if the queue is empty', () => {
   const cache = new EventsCacheInMemory(500);
+  cache.setOnFullQueueCb(() => {});
 
   expect(cache.pop().length).toBe(0); // The queue is empty,
   expect(cache.isEmpty()).toBe(true); // so if it is empty, it returns true.
@@ -51,6 +53,8 @@ test('EVENTS CACHE / Should be able to tell if the queue is empty', () => {
 
 test('EVENTS CACHE / Should be able to return the DTO we will send to BE', () => {
   const cache = new EventsCacheInMemory(500);
+  cache.setOnFullQueueCb(() => {});
+
   const queueValues = [1, '2', { p: 3 }, ['4']];
 
   cache.track(queueValues[0]);

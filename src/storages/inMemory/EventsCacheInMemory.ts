@@ -29,10 +29,19 @@ export class EventsCacheInMemory implements IEventsCacheSync {
    * Add a new event object at the end of the queue.
    */
   track(data: SplitIO.EventData, size = 0) {
+    if (!this.onFullQueue) return true;
+
     this.queueByteSize += size;
     this.queue.push(data);
 
-    this._checkForFlush();
+    // Check if the cache queue is full and we need to flush it.
+    if (
+      (this.queueByteSize > MAX_QUEUE_BYTE_SIZE) ||
+      // 0 means no maximum value, in case we want to avoid this being triggered. Size limit is not affected by it.
+      (this.maxQueue > 0 && this.queue.length >= this.maxQueue)
+    ) {
+      this.onFullQueue();
+    }
 
     return true;
   }
@@ -59,18 +68,5 @@ export class EventsCacheInMemory implements IEventsCacheSync {
    */
   isEmpty() {
     return this.queue.length === 0;
-  }
-
-  /**
-   * Check if the cache queue is full and we need to flush it.
-   */
-  private _checkForFlush() {
-    if (
-      (this.queueByteSize > MAX_QUEUE_BYTE_SIZE) ||
-      // 0 means no maximum value, in case we want to avoid this being triggered. Size limit is not affected by it.
-      (this.maxQueue > 0 && this.queue.length >= this.maxQueue)
-    ) {
-      this.onFullQueue && this.onFullQueue();
-    }
   }
 }

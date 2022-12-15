@@ -5,7 +5,7 @@ import { IImpressionCountsCacheSync } from '../types';
 export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
   protected cache: Record<string, number> = {};
   private readonly maxStorage: number;
-  protected onFullQueue?: () => void;
+  public onFullQueue?: () => void;
   private cacheSize = 0;
 
   constructor(impressionCountsCacheSize = DEFAULT_CACHE_SIZE) {
@@ -23,19 +23,17 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
   * Increments the quantity of impressions with the passed featureName and timeFrame.
   */
   track(featureName: string, timeFrame: number, amount: number) {
+    if (!this.onFullQueue) return;
+
     const key = this._makeKey(featureName, timeFrame);
     const currentAmount = this.cache[key];
     this.cache[key] = currentAmount ? currentAmount + amount : amount;
-    if (this.onFullQueue) {
-      this.cacheSize = this.cacheSize + amount;
-      if (this.cacheSize >= this.maxStorage) {
-        this.onFullQueue();
-        this.cacheSize = 0;
-      }
+
+    this.cacheSize = this.cacheSize + amount;
+    if (this.cacheSize >= this.maxStorage) {
+      this.onFullQueue();
     }
   }
-
-
 
   /**
    * Pop the collected data, used as payload for posting.
@@ -58,6 +56,7 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
    */
   clear() {
     this.cache = {};
+    this.cacheSize = 0;
   }
 
   /**

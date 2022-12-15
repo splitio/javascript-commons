@@ -23,7 +23,9 @@ let impressions = [
 
 test('strategyNone - Client side', () => {
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
+  impressionCountsCache.onFullQueue = () => {};
   const uniqueKeysCacheCS = new UniqueKeysCacheInMemoryCS(6);
+  uniqueKeysCacheCS.setOnFullQueueCb(() => {});
   const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, uniqueKeysCacheCS, fakeFilter);
 
   const strategyNone = strategyNoneFactory(impressionCountsCache, uniqueKeysTracker);
@@ -63,6 +65,7 @@ test('strategyNone - Server side', () => {
 
   const impressionCountsCache = new ImpressionCountsCacheInMemory();
   const uniqueKeysCache = new UniqueKeysCacheInMemory(6);
+  uniqueKeysCache.setOnFullQueueCb(() => {});
   const uniqueKeysTracker = uniqueKeysTrackerFactory(loggerMock, uniqueKeysCache, fakeFilter);
 
   const strategyNone = strategyNoneFactory(impressionCountsCache, uniqueKeysTracker);

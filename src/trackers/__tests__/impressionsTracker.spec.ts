@@ -176,7 +176,8 @@ describe('Impressions Tracker', () => {
     impression2.time = Date.now();
     impression3.time = Date.now();
 
-    const impressionCountsCache = new ImpressionCountsCacheInMemory(); // @ts-ignore
+    const impressionCountsCache = new ImpressionCountsCacheInMemory();
+    impressionCountsCache.onFullQueue = () => { }; // @ts-ignore
     const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache), undefined, fakeTelemetryCache);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker

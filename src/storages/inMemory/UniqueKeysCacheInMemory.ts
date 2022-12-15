@@ -43,13 +43,15 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
    * Store unique keys per feature.
    */
   track(userKey: string, featureName: string) {
+    if (!this.onFullQueue) return;
+
     if (!this.uniqueKeysTracker[featureName]) this.uniqueKeysTracker[featureName] = new _Set();
     const tracker = this.uniqueKeysTracker[featureName];
     if (!tracker.has(userKey)) {
       tracker.add(userKey);
       this.uniqueTrackerSize++;
     }
-    if (this.uniqueTrackerSize >= this.maxStorage && this.onFullQueue) {
+    if (this.uniqueTrackerSize >= this.maxStorage) {
       this.onFullQueue();
     }
   }

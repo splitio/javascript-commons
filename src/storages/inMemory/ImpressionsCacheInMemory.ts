@@ -25,10 +25,12 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
    * Store impressions in sequential order
    */
   track(data: ImpressionDTO[]) {
+    if (!this.onFullQueue) return;
+
     this.queue.push(...data);
 
     // Check if the cache queue is full and we need to flush it.
-    if (this.maxQueue > 0 && this.queue.length >= this.maxQueue && this.onFullQueue) {
+    if (this.maxQueue > 0 && this.queue.length >= this.maxQueue) {
       this.onFullQueue();
     }
   }

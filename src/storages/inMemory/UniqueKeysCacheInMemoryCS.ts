@@ -29,6 +29,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
    * Store unique keys per feature.
    */
   track(userKey: string, featureName: string) {
+    if (!this.onFullQueue) return;
 
     if (!this.uniqueKeysTracker[userKey]) this.uniqueKeysTracker[userKey] = new _Set();
     const tracker = this.uniqueKeysTracker[userKey];
@@ -36,7 +37,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
       tracker.add(featureName);
       this.uniqueTrackerSize++;
     }
-    if (this.uniqueTrackerSize >= this.maxStorage && this.onFullQueue) {
+    if (this.uniqueTrackerSize >= this.maxStorage) {
       this.onFullQueue();
     }
   }
