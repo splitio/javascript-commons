@@ -28,22 +28,20 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     const featureNames = Object.keys(this.uniqueKeysTracker);
     if (!featureNames.length) return Promise.resolve(false);
 
-    const pipeline = this.redis.pipeline();
-    for (let i = 0; i < featureNames.length; i++) {
-      const featureName = featureNames[i];
+    const uniqueKeysArray = featureNames.map((featureName) => {
       const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys
       };
+      return JSON.stringify(uniqueKeysPayload);
+    });
 
-      pipeline.rpush(this.key, JSON.stringify(uniqueKeysPayload));
-    }
     this.clear();
-    return pipeline.exec()
+    return this.redis.rpush(this.key, uniqueKeysArray)
       .then(data => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
-        if (data.length && data.length === featureNames.length) {
+        if (data === featureNames.length) {
           return this.redis.expire(this.key, TTL_REFRESH);
         }
       })
