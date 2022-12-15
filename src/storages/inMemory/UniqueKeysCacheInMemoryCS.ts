@@ -35,9 +35,9 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
       tracker.add(featureName);
       this.uniqueTrackerSize++;
     }
-    if (this.uniqueTrackerSize >= this.maxStorage && this.onFullQueue) {
+    if (this.uniqueTrackerSize >= this.maxStorage) {
       this.uniqueTrackerSize = 0;
-      this.onFullQueue();
+      this.onFullQueue ? this.onFullQueue() : this.clear();
     }
   }
 

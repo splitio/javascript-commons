@@ -70,7 +70,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
       // 0 means no maximum value, in case we want to avoid this being triggered. Size limit is not affected by it.
       (this.maxQueue > 0 && this.queue.length >= this.maxQueue)
     ) {
-      this.onFullQueue && this.onFullQueue();
+      this.onFullQueue ? this.onFullQueue() : this.clear();
     }
   }
 }

@@ -28,8 +28,8 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
     this.queue.push(...data);
 
     // Check if the cache queue is full and we need to flush it.
-    if (this.maxQueue > 0 && this.queue.length >= this.maxQueue && this.onFullQueue) {
-      this.onFullQueue();
+    if (this.maxQueue > 0 && this.queue.length >= this.maxQueue) {
+      this.onFullQueue ? this.onFullQueue() : this.clear();
     }
   }
 
