@@ -117,22 +117,28 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(connection.rpush).not.toBeCalled();
 
     cache.start();
+    expect(cache.isEmpty()).toBe(false);
 
     setTimeout(() => {
       expect(connection.rpush).toBeCalledTimes(1);
+      expect(cache.isEmpty()).toBe(true);
+
       cache.stop();
       expect(connection.rpush).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       cache.track('key3', 'feature4');
     }, refreshRate + 30);
 
     setTimeout(() => {
-
       expect(connection.rpush).toBeCalledTimes(1);
+      expect(cache.isEmpty()).toBe(false);
       cache.start();
-
-      setTimeout(() => {
-        expect(connection.rpush).toBeCalledTimes(2);
-        cache.stop();
+      cache.stop().then(() => {
+        expect(connection.rpush).toBeCalledTimes(2); // Stopping when cache is not empty, calls the wrapper
+        expect(connection.rpush.mock.calls).toEqual([
+          [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] }), JSON.stringify({ f: 'feature2', ks: ['key2'] }), JSON.stringify({ f: 'feature3', ks: ['key1', 'key2'] })]],
+          [key, [JSON.stringify({ f: 'feature4', ks: ['key3'] })]]
+        ]);
+        expect(cache.isEmpty()).toBe(true);
         done();
       }, refreshRate + 30);
     }, 2 * refreshRate + 30);
