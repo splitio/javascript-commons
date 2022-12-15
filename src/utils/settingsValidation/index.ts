@@ -51,7 +51,7 @@ export const base = {
   urls: {
     // CDN having all the information for your environment
     sdk: 'https://sdk.split.io/api',
-    // Storage for your SDK events
+    // SDK event and impression endpoints
     events: 'https://events.split.io/api',
     // SDK Auth Server
     auth: 'https://auth.split.io/api',
