@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageSync, IStorageFactoryParams } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 
@@ -19,7 +19,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   const splits = new SplitsCacheInMemory();
   const segments = new MySegmentsCacheInMemory();
 
-  return {
+  const storage = {
     splits,
     segments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
@@ -35,7 +35,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
-      this.uniqueKeys?.clear();
+      this.uniqueKeys && this.uniqueKeys.clear();
     },
 
     // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
@@ -56,6 +56,17 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       };
     },
   };
+
+  // No need to track data in localhost mode
+  if (params.settings.mode === LOCALHOST_MODE) {
+    const noopTrack = () => true;
+    storage.impressions.track = noopTrack;
+    storage.events.track = noopTrack;
+    if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
+    if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+  }
+
+  return storage;
 }
 
 InMemoryStorageCSFactory.type = STORAGE_MEMORY;
