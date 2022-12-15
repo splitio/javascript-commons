@@ -7,8 +7,8 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
 
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
-  private uniqueTrackerSize: number;
-  private uniqueKeysTracker: { [userKey: string]: ISet<string> };
+  private uniqueTrackerSize = 0;
+  private uniqueKeysTracker: { [userKey: string]: ISet<string> } = {};
 
   /**
    *
@@ -17,8 +17,6 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
    */
   constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
-    this.uniqueTrackerSize = 0;
-    this.uniqueKeysTracker = {};
   }
 
   setOnFullQueueCb(cb: () => void) {

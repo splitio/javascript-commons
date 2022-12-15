@@ -26,13 +26,11 @@ export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
   protected onFullQueue?: () => void;
   private readonly maxStorage: number;
-  private uniqueTrackerSize: number;
-  protected uniqueKeysTracker: { [featureName: string]: ISet<string> };
+  private uniqueTrackerSize = 0;
+  protected uniqueKeysTracker: { [featureName: string]: ISet<string> } = {};
 
   constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
-    this.uniqueTrackerSize = 0;
-    this.uniqueKeysTracker = {};
   }
 
   setOnFullQueueCb(cb: () => void) {
