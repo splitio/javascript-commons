@@ -27,21 +27,21 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
     const featureNames = Object.keys(this.uniqueKeysTracker);
     if (!featureNames.length) return Promise.resolve(false);
 
-    const pipeline = featureNames.reduce<Promise<any>>((pipeline, featureName) => {
+    const uniqueKeysArray = featureNames.map((featureName) => {
       const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys
       };
-
-      return pipeline.then(() => this.wrapper.pushItems(this.key, [JSON.stringify(uniqueKeysPayload)]));
-    }, Promise.resolve());
+      return JSON.stringify(uniqueKeysPayload);
+    });
 
     this.clear();
-    return pipeline.catch(err => {
-      this.log.error(`${LOG_PREFIX}Error in uniqueKeys pipeline: ${err}.`);
-      return false;
-    });
+    return this.wrapper.pushItems(this.key, uniqueKeysArray)
+      .catch(err => {
+        this.log.error(`${LOG_PREFIX}Error in uniqueKeys pipeline: ${err}.`);
+        return false;
+      });
   }
 
 

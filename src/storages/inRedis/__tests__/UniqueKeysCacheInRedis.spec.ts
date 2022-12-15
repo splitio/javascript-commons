@@ -114,24 +114,24 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     cache.track('key1', 'feature3');
     cache.track('key2', 'feature3');
 
-    expect(connection.pipeline).not.toBeCalled();
+    expect(connection.rpush).not.toBeCalled();
 
     cache.start();
 
     setTimeout(() => {
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.rpush).toBeCalledTimes(1);
       cache.stop();
-      expect(connection.pipeline).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
+      expect(connection.rpush).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       cache.track('key3', 'feature4');
     }, refreshRate + 30);
 
     setTimeout(() => {
 
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.rpush).toBeCalledTimes(1);
       cache.start();
 
       setTimeout(() => {
-        expect(connection.pipeline).toBeCalledTimes(2);
+        expect(connection.rpush).toBeCalledTimes(2);
         cache.stop();
         done();
       }, refreshRate + 30);

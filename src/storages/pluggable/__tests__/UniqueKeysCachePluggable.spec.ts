@@ -24,25 +24,23 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     expect(cache.isEmpty()).toBe(false);
 
     setTimeout(() => {
-      expect(wrapperMock.pushItems).toBeCalledTimes(3);
+      expect(wrapperMock.pushItems).toBeCalledTimes(1);
       expect(wrapperMock.pushItems.mock.calls).toEqual([
-        [key, ['{"f":"feature1","ks":["key1"]}']],
-        [key, ['{"f":"feature2","ks":["key2"]}']],
-        [key, ['{"f":"feature3","ks":["key1","key2"]}']]
+        [key, ['{"f":"feature1","ks":["key1"]}', '{"f":"feature2","ks":["key2"]}', '{"f":"feature3","ks":["key1","key2"]}']]
       ]);
       expect(cache.isEmpty()).toBe(true);
 
       cache.stop();
-      expect(wrapperMock.pushItems).toBeCalledTimes(3); // Stopping when cache is empty, does not call the wrapper
+      expect(wrapperMock.pushItems).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       cache.track('key3', 'feature4');
     }, refreshRate + 20);
 
     setTimeout(() => {
-      expect(wrapperMock.pushItems).toBeCalledTimes(3);
+      expect(wrapperMock.pushItems).toBeCalledTimes(1);
       expect(cache.isEmpty()).toBe(false);
       cache.start();
       cache.stop().then(() => {
-        expect(wrapperMock.pushItems).toBeCalledTimes(4); // Stopping when cache is not empty, calls the wrapper
+        expect(wrapperMock.pushItems).toBeCalledTimes(2); // Stopping when cache is not empty, calls the wrapper
         expect(cache.isEmpty()).toBe(true);
         done();
       });
@@ -67,9 +65,7 @@ describe('UNIQUE KEYS CACHE PLUGGABLE', () => {
     await new Promise(resolve => setTimeout(resolve));
 
     expect(wrapperMock.pushItems.mock.calls).toEqual([
-      [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] })]],
-      [key, [JSON.stringify({ f: 'feature2', ks: ['key1'] })]],
-      [key, [JSON.stringify({ f: 'feature3', ks: ['key2'] })]]
+      [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] }), JSON.stringify({ f: 'feature2', ks: ['key1'] }), JSON.stringify({ f: 'feature3', ks: ['key2'] })]]
     ]);
 
     expect(cache.isEmpty()).toBe(true);
