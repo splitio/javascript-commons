@@ -1,4 +1,5 @@
 1.7.3 (December 16, 2022)
+- Updated events and impressions cache to drop items in localhost mode in order to avoid memory leaks.
 - Updated unique keys cache for Redis and Pluggable storages to optimize the usage of the underlying storage.
 - Updated some transitive dependencies for vulnerability fixes.
 
