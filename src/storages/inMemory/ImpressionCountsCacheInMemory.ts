@@ -30,7 +30,6 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
       this.cacheSize = this.cacheSize + amount;
       if (this.cacheSize >= this.maxStorage) {
         this.onFullQueue();
-        this.cacheSize = 0;
       }
     }
   }
@@ -58,6 +57,7 @@ export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync
    */
   clear() {
     this.cache = {};
+    this.cacheSize = 0;
   }
 
   /**
