@@ -1,7 +1,7 @@
 1.7.3 (December 16, 2022)
-- Updated events and impressions cache in localhost mode in order to avoid memory leaks (Related to issue https://github.com/splitio/javascript-commons/issues/181).
 - Updated unique keys cache for Redis and Pluggable storages to optimize the usage of the underlying storage.
 - Updated some transitive dependencies for vulnerability fixes.
+- Bugfixing - Updated events and impressions cache in localhost mode in order to avoid memory leaks (Related to issue https://github.com/splitio/javascript-commons/issues/181).
 
 1.7.2 (October 14, 2022)
 - Bugfixing - Handle `Navigator.sendBeacon` API exceptions in the browser, and fallback to regular Fetch/XHR transport in case of error.
