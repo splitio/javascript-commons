@@ -30,7 +30,7 @@ function getParams(uniqueKeysCache: any) {
 describe('uniqueKeys submitter', () => {
 
   test('doesn\'t drop items from cache when POST is resolved SS', (done) => {
-    const uniqueKeysCache = new UniqueKeysCacheInMemory(4);
+    const uniqueKeysCache = new UniqueKeysCacheInMemory(3);
     const params: any = getParams(uniqueKeysCache);
     const uniqueKeysSubmitter = uniqueKeysSubmitterFactory(params);
     uniqueKeysCache.track(imp1.keyName, imp1.feature);
@@ -56,7 +56,7 @@ describe('uniqueKeys submitter', () => {
   });
 
   test('doesn\'t drop items from cache when POST is resolved CS', (done) => {
-    const uniqueKeysCache = new UniqueKeysCacheInMemoryCS(4);
+    const uniqueKeysCache = new UniqueKeysCacheInMemoryCS(3);
     const params: any = getParams(uniqueKeysCache);
     params.settings.core.key = 'emma';
     const uniqueKeysSubmitter = uniqueKeysSubmitterFactory(params);

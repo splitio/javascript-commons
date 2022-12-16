@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { DEBUG, NONE, STORAGE_MEMORY } from '../../utils/constants';
+import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
 
@@ -19,7 +19,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
   const splits = new SplitsCacheInMemory();
   const segments = new SegmentsCacheInMemory();
 
-  return {
+  const storage = {
     splits,
     segments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
@@ -35,9 +35,21 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
-      this.uniqueKeys?.clear();
+      this.uniqueKeys && this.uniqueKeys.clear();
     }
   };
+
+  // @TODO revisit storage logic in localhost mode
+  // No tracking data in localhost mode to avoid memory leaks
+  if (params.settings.mode === LOCALHOST_MODE) {
+    const noopTrack = () => true;
+    storage.impressions.track = noopTrack;
+    storage.events.track = noopTrack;
+    if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
+    if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+  }
+
+  return storage;
 }
 
 InMemoryStorageFactory.type = STORAGE_MEMORY;
