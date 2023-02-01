@@ -41,18 +41,24 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   // multiple calls should return the same instance
   expect(sdkClientMethod()).toBe(client);
 
-  // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
-  client.destroy().then(() => {
-    expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
-    expect(params.storage.destroy).toBeCalledTimes(1);
-
+  client.flush().then(() => {
     if (params.syncManager) {
-      expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
     }
-    if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
 
-    done();
+    // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
+    client.destroy().then(() => {
+      expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
+      expect(params.storage.destroy).toBeCalledTimes(1);
+
+      if (params.syncManager) {
+        expect(params.syncManager.stop).toBeCalledTimes(1);
+        expect(params.syncManager.flush).toBeCalledTimes(2);
+      }
+      if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
+
+      done();
+    });
   });
 
   // calling the function with parameters should throw an error
