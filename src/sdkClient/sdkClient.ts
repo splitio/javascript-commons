@@ -24,15 +24,17 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
     // Sdk destroy
     {
+      flush() {
+        return syncManager ? syncManager.flush() : Promise.resolve();
+      },
       destroy() {
         // record stat before flushing data
         if (!isSharedClient) telemetryTracker.sessionLength();
 
         // Stop background jobs
         syncManager && syncManager.stop();
-        const flush = syncManager ? syncManager.flush() : Promise.resolve();
 
-        return flush.then(() => {
+        return this.flush().then(() => {
           // Cleanup event listeners
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
