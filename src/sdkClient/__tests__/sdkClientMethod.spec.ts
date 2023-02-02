@@ -41,23 +41,44 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   // multiple calls should return the same instance
   expect(sdkClientMethod()).toBe(client);
 
+  // flush exposed
   client.flush().then(() => {
     if (params.syncManager) {
       expect(params.syncManager.flush).toBeCalledTimes(1);
     }
 
-    // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
-    client.destroy().then(() => {
-      expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
-      expect(params.storage.destroy).toBeCalledTimes(1);
-
+    // flush called before cooldown time elapsed
+    client.flush().then(() => {
       if (params.syncManager) {
-        expect(params.syncManager.stop).toBeCalledTimes(1);
-        expect(params.syncManager.flush).toBeCalledTimes(2);
+        expect(loggerMock.warn).toBeCalledTimes(1);
+        expect(params.syncManager.flush).toBeCalledTimes(1);
       }
-      if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
 
-      done();
+      // wait for cooldown time (1sec)
+      setTimeout(() => {
+        // flush called after cooldown time should be executed
+        client.flush().then(() => {
+          if (params.syncManager) {
+            expect(loggerMock.warn).toBeCalledTimes(1);
+            expect(params.syncManager.flush).toBeCalledTimes(2);
+          }
+
+          // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
+          client.destroy().then(() => {
+            expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
+            expect(params.storage.destroy).toBeCalledTimes(1);
+
+            if (params.syncManager) {
+              expect(params.syncManager.stop).toBeCalledTimes(1);
+              expect(params.syncManager.flush).toBeCalledTimes(3);
+            }
+            if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
+
+            done();
+          });
+        });
+      }, 3600);
+
     });
   });
 
@@ -65,5 +86,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   // @ts-expect-error
   expect(() => { sdkClientMethod('some_key'); }).toThrow(errorMessage); // @ts-expect-error
   expect(() => { sdkClientMethod('some_key', 'some_tt'); }).toThrow(errorMessage);
+
+  loggerMock.mockClear();
 
 });
