@@ -77,7 +77,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
             done();
           });
         });
-      }, 3600);
+      }, 1000);
 
     });
   });
