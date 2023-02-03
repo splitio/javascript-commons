@@ -16,9 +16,9 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
   let lastActionTime = 0;
 
   function __cooldown(func: Function, time: number) {
-    let now = Date.now();
+    const now = Date.now();
     //get the actual time elapsed in ms
-    let timeElapsed = now - lastActionTime;
+    const timeElapsed = now - lastActionTime;
     //check if the time elapsed is less than desired cooldown
     if (timeElapsed < time){
       //if yes, return message with remaining time in seconds
