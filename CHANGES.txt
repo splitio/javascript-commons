@@ -1,3 +1,6 @@
+1.8.0 (February 3, 2023)
+- Added flush data method to client
+
 1.7.3 (December 16, 2022)
 - Updated unique keys cache for Redis and Pluggable storages to optimize the usage of the underlying storage.
 - Updated some transitive dependencies for vulnerability fixes.

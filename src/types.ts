@@ -412,6 +412,12 @@ export interface IStatusInterface extends IEventEmitter {
  */
 interface IBasicClient extends IStatusInterface {
   /**
+   * Flush data
+   * @function flush
+   * @return {Promise<void>}
+   */
+  flush(): Promise<void>
+  /**
    * Destroy the client instance.
    * @function destroy
    * @returns {Promise<void>}
