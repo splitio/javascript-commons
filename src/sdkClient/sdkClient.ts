@@ -5,7 +5,7 @@ import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
-const COOLDOWN_TIME_IN_MILIS = 1000;
+const COOLDOWN_TIME_IN_MILLIS = 1000;
 
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
@@ -51,7 +51,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     {
       flush() {
         // @TODO define cooldown time
-        return __cooldown(__flush, COOLDOWN_TIME_IN_MILIS);
+        return __cooldown(__flush, COOLDOWN_TIME_IN_MILLIS);
       },
       destroy() {
         // record stat before flushing data
