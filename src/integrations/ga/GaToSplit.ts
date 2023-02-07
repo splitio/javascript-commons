@@ -6,7 +6,7 @@ import {
   validateEventValue,
   validateEventProperties,
   validateKey,
-  validateTrafficType,
+  validateTrafficType
 } from '../../utils/inputValidation';
 import { SplitIO } from '../../types';
 import { Identity, GoogleAnalyticsToSplitOptions } from './types';
