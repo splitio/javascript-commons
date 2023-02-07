@@ -9,7 +9,7 @@ export type ImpressionsPayload = {
   f: string,
   /** Key Impressions */
   i: {
-    /** Key */
+    /** User Key */
     k: string;
     /** Treatment */
     t: string;
