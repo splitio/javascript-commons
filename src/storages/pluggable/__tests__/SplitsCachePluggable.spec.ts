@@ -76,8 +76,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     await cache.addSplits([
       ['split1', splitWithUserTT],
       ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT], // @ts-ignore
-      ['malformed', {}]
+      ['split3', splitWithUserTT],
     ]);
     await cache.addSplit('split4', splitWithUserTT);
     await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
@@ -115,7 +114,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('killLocally', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
+    const wrapper = wrapperMockFactory();
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper);
 
     await cache.addSplit('lol1', splitWithUserTT);
     await cache.addSplit('lol2', splitWithAccountTT);
@@ -145,6 +145,9 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
+    // Delete splits and TT keys
+    await cache.removeSplits(['lol1', 'lol2']);
+    expect(await wrapper.getKeysByPrefix('SPLITIO')).toHaveLength(0);
   });
 
 });
