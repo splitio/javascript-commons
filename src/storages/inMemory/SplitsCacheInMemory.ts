@@ -24,7 +24,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     const previousSplit = this.getSplit(name);
     if (previousSplit) { // We had this Split already
 
-      this.ttCache[previousSplit.trafficTypeName]--;
+      const previousTtName = previousSplit.trafficTypeName;
+      this.ttCache[previousTtName]--;
+      if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
 
       if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
         this.splitsWithSegmentsCount--;
@@ -53,7 +55,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       // Delete the Split
       delete this.splitsCache[name];
 
-      this.ttCache[split.trafficTypeName]--; // Update tt cache
+      const ttName = split.trafficTypeName;
+      this.ttCache[ttName]--; // Update tt cache
+      if (!this.ttCache[ttName]) delete this.ttCache[ttName];
 
       // Update the segments count.
       if (usesSegments(split)) this.splitsWithSegmentsCount--;
