@@ -7,6 +7,7 @@ import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
+import { _Map } from '../../../utils/lang/maps';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -51,20 +52,25 @@ interface ISplitMutations {
  * Exported for testing purposes.
  */
 export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
+  const uniqueEntries = new _Map();
+  entries.forEach(split => {
+    const prevSplit = uniqueEntries.get(split.name);
+    if (!prevSplit || prevSplit.changeNumber < split.changeNumber) uniqueEntries.set(split.name, split);
+  });
+
   const segments = new _Set<string>();
-  const computed = entries.reduce((accum, split) => {
+  const computed = { added: [], removed: [], segments: [] } as ISplitMutations;
+  uniqueEntries.forEach((split) => {
     if (split.status === 'ACTIVE') {
-      accum.added.push([split.name, split]);
+      computed.added.push([split.name, split]);
 
       parseSegments(split).forEach((segmentName: string) => {
         segments.add(segmentName);
       });
     } else {
-      accum.removed.push(split.name);
+      computed.removed.push(split.name);
     }
-
-    return accum;
-  }, { added: [], removed: [], segments: [] } as ISplitMutations);
+  });
 
   computed.segments = setToArray(segments);
 

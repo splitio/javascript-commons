@@ -1,3 +1,6 @@
+1.8.2 (February 27, 2023)
+- Updated internal splitChangesUpdater module to be resilient to duplicated split definitions when fetching split changes from Split backend.
+
 1.8.1 (February 7, 2023)
 - Updated a module import to remove a trailing comma that can cause issues with some bundlers.
 

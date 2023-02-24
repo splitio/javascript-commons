@@ -48,11 +48,32 @@ test('splitChangesUpdater / segments parser', () => {
 
 test('splitChangesUpdater / compute splits mutation', () => {
 
+  // Basic case
   const splitsMutation = computeSplitsMutation([activeSplitWithSegments, archivedSplit] as ISplit[]);
 
   expect(splitsMutation.added).toEqual([[activeSplitWithSegments.name, activeSplitWithSegments]]);
   expect(splitsMutation.removed).toEqual([archivedSplit.name]);
   expect(splitsMutation.segments).toEqual(['A', 'B']);
+
+  // Duplicated splits
+  const split1Killed = {
+    ...activeSplitWithSegments,
+    killed: true,
+    changeNumber: 1675988633850
+  };
+  const split1Archived = {
+    ...activeSplitWithSegments,
+    status: 'ARCHIVED',
+    changeNumber: 1675988615973 // older changeNumber, must be ignored
+  };
+  [
+    computeSplitsMutation([split1Killed, split1Archived] as ISplit[]),
+    computeSplitsMutation([split1Archived, split1Killed] as ISplit[])
+  ].forEach(splitsMutation => {
+    expect(splitsMutation.added).toEqual([[split1Killed.name, split1Killed]]);
+    expect(splitsMutation.removed).toEqual([]);
+    expect(splitsMutation.segments).toEqual(['A', 'B']);
+  });
 });
 
 test('splitChangesUpdater / factory', (done) => {
