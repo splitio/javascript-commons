@@ -1,6 +1,6 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { IStatusInterface, SplitIO } from '../types';
-import { releaseApiKey } from '../utils/inputValidation/apiKey';
+import { releaseSdkKey } from '../utils/inputValidation/sdkKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -64,8 +64,8 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
 
-          // Release the API Key if it is the main client
-          if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
+          // Release the SDK Key if it is the main client
+          if (!isSharedClient) releaseSdkKey(settings.core.authorizationKey);
 
           if (uniqueKeysTracker) uniqueKeysTracker.stop();
 

@@ -194,14 +194,14 @@ interface ISharedSettings {
    */
   sync?: {
     /**
-     * List of Split filters. These filters are used to fetch a subset of the Splits definitions in your environment, in order to reduce the delay of the SDK to be ready.
+     * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
      * This configuration is only meaningful when the SDK is working in "standalone" mode.
      *
-     * At the moment, two types of split filters are supported: by name and by prefix.
+     * At the moment, only one type of feature flag filter is supported: by name.
+     *
      * Example:
      *  `splitFilter: [
-     *    { type: 'byName', values: ['my_split_1', 'my_split_2'] }, // will fetch splits named 'my_split_1' and 'my_split_2'
-     *    { type: 'byPrefix', values: ['testing'] } // will fetch splits whose names start with 'testing__' prefix
+     *    { type: 'byName', values: ['my_feature_flag_1', 'my_feature_flag_2'] }, // will fetch feature flags named 'my_feature_flag_1' and 'my_feature_flag_2'
      *  ]`
      * @property {SplitIO.SplitFilter[]} splitFilters
      */
@@ -337,7 +337,7 @@ interface INodeBasicSettings extends ISharedSettings {
    */
   core: {
     /**
-     * Your API key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+     * Your SDK key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
      * @property {string} authorizationKey
      */
     authorizationKey: string,
@@ -362,14 +362,14 @@ interface INodeBasicSettings extends ISharedSettings {
   /**
    * The SDK mode. Possible values are "standalone" (which is the default) and "consumer". For "localhost" mode, use "localhost" as authorizationKey.
    * @property {SDKMode} mode
-   * @default standalone
+   * @default 'standalone'
    */
   mode?: SDKMode,
   /**
    * Mocked features file path. For testing purposses only. For using this you should specify "localhost" as authorizationKey on core settings.
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
    * @property {MockedFeaturesFilePath} features
-   * @default $HOME/.split
+   * @default '$HOME/.split'
    */
   features?: SplitIO.MockedFeaturesFilePath,
 }
@@ -494,7 +494,7 @@ export namespace SplitIO {
   export type AsyncTreatmentWithConfig = Promise<TreatmentWithConfig>;
   /**
    * An object with the treatments with configs for a bulk of splits, returned by getTreatmentsWithConfig.
-   * Each existing configuration is a stringified version of the JSON you defined on the Split web console. For example:
+   * Each existing configuration is a stringified version of the JSON you defined on the Split user interface. For example:
    *   {
    *     feature1: { treatment: 'on', config: null }
    *     feature2: { treatment: 'off', config: '{"bannerText":"Click here."}' }
@@ -599,7 +599,7 @@ export namespace SplitIO {
     changeNumber: number,
     /**
      * Map of configurations per treatment.
-     * Each existing configuration is a stringified version of the JSON you defined on the Split web console.
+     * Each existing configuration is a stringified version of the JSON you defined on the Split user interface.
      * @property {Object.<string>} configs
      */
     configs: {
@@ -877,7 +877,7 @@ export namespace SplitIO {
      */
     core: {
       /**
-       * Your API key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+       * Your SDK key. More information: @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
        * @property {string} authorizationKey
        */
       authorizationKey: string,
@@ -1055,7 +1055,7 @@ export namespace SplitIO {
      */
     getTreatmentsWithConfig(key: SplitKey, splitNames: string[], attributes?: Attributes): TreatmentsWithConfig,
     /**
-     * Tracks an event to be fed to the results product on Split Webconsole.
+     * Tracks an event to be fed to the results product on Split user interface.
      * @function track
      * @param {SplitKey} key - The key that identifies the entity related to this event.
      * @param {string} trafficType - The traffic type of the entity related to this event.
@@ -1115,7 +1115,7 @@ export namespace SplitIO {
      */
     getTreatmentsWithConfig(key: SplitKey, splitNames: string[], attributes?: Attributes): AsyncTreatmentsWithConfig,
     /**
-     * Tracks an event to be fed to the results product on Split Webconsole and returns a promise to signal when the event was successfully queued (or not).
+     * Tracks an event to be fed to the results product on Split user interface and returns a promise to signal when the event was successfully queued (or not).
      * @function track
      * @param {SplitKey} key - The key that identifies the entity related to this event.
      * @param {string} trafficType - The traffic type of the entity related to this event.
@@ -1165,7 +1165,7 @@ export namespace SplitIO {
      */
     getTreatmentsWithConfig(splitNames: string[], attributes?: Attributes): TreatmentsWithConfig,
     /**
-     * Tracks an event to be fed to the results product on Split Webconsole.
+     * Tracks an event to be fed to the results product on Split user interface.
      * @function track
      * @param {string} trafficType - The traffic type of the entity related to this event. NOTE: only has to be provided if the client doesn't have a traffic type
      * @param {string} eventType - The event type corresponding to this event.

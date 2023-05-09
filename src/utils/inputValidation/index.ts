@@ -1,4 +1,4 @@
-export { validateApiKey, validateAndTrackApiKey, releaseApiKey } from './apiKey';
+export { validateSdkKey, validateAndTrackSdkKey, releaseSdkKey } from './sdkKey';
 export { validateAttributes } from './attributes';
 export { validateEvent } from './event';
 export { validateEventValue } from './eventValue';

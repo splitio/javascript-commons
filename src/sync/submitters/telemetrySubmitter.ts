@@ -5,7 +5,7 @@ import { CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, S
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
 import { ConsentStatus, ISettings, SDKMode } from '../../types';
 import { base } from '../../utils/settingsValidation';
-import { usedKeysMap } from '../../utils/inputValidation/apiKey';
+import { usedKeysMap } from '../../utils/inputValidation/sdkKey';
 import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
@@ -33,8 +33,8 @@ function getActiveFactories() {
 }
 
 function getRedundantActiveFactories() {
-  return Object.keys(usedKeysMap).reduce((acum, apiKey) => {
-    return acum + usedKeysMap[apiKey] - 1;
+  return Object.keys(usedKeysMap).reduce((acum, sdkKey) => {
+    return acum + usedKeysMap[sdkKey] - 1;
   }, 0);
 }
 
