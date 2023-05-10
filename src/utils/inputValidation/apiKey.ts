@@ -4,8 +4,9 @@ import { isString } from '../lang';
 
 const item = 'sdk_key';
 
+// @TODO replace ApiKey with SdkKey in function names
 /** validates the given SDK key */
-export function validateSdkKey(log: ILogger, maybeSdkKey: any): string | false {
+export function validateApiKey(log: ILogger, maybeSdkKey: any): string | false {
   let sdkKey: string | false = false;
   if (maybeSdkKey == undefined) { // eslint-disable-line eqeqeq
     log.error(ERROR_NULL, [LOG_PREFIX_INSTANTIATION, item]);
@@ -25,8 +26,8 @@ export function validateSdkKey(log: ILogger, maybeSdkKey: any): string | false {
 export const usedKeysMap: Record<string, number> = {};
 
 /** validates the given SDK key and also warns if it is in use */
-export function validateAndTrackSdkKey(log: ILogger, maybeSdkKey: any): string | false {
-  const sdkKey = validateSdkKey(log, maybeSdkKey);
+export function validateAndTrackApiKey(log: ILogger, maybeSdkKey: any): string | false {
+  const sdkKey = validateApiKey(log, maybeSdkKey);
 
   // If sdkKey is correct, we'll save it as the instance creation should work.
   if (sdkKey) {
@@ -45,7 +46,7 @@ export function validateAndTrackSdkKey(log: ILogger, maybeSdkKey: any): string |
   return sdkKey;
 }
 
-export function releaseSdkKey(sdkKey: string) {
+export function releaseApiKey(sdkKey: string) {
   if (usedKeysMap[sdkKey]) usedKeysMap[sdkKey]--;
   if (usedKeysMap[sdkKey] === 0) delete usedKeysMap[sdkKey];
 }

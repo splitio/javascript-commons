@@ -97,7 +97,7 @@ function fromSecondsToMillis(n: number) {
 
 /**
  * Validates the given config and use it to build a settings object.
- * NOTE: it doesn't validate the SDK Key. Call `validateSdkKey` or `validateAndTrackSdkKey` for that after settings validation.
+ * NOTE: it doesn't validate the SDK Key. Call `validateApiKey` or `validateAndTrackApiKey` for that after settings validation.
  *
  * @param config user defined configuration
  * @param validationParams defaults and fields validators used to validate and creates a settings object from a given config

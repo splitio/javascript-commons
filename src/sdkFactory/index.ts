@@ -4,7 +4,7 @@ import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import { SplitIO } from '../types';
-import { validateAndTrackSdkKey } from '../utils/inputValidation/sdkKey';
+import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
@@ -30,7 +30,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
-  validateAndTrackSdkKey(log, settings.core.authorizationKey);
+  validateAndTrackApiKey(log, settings.core.authorizationKey);
 
   const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
   const readiness = sdkReadinessManager.readinessManager;
