@@ -28,7 +28,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.STREAMING_REFRESH_TOKEN, c.LOG_PREFIX_SYNC_STREAMING + 'Refreshing streaming token in %s seconds, and connecting streaming in %s seconds.'],
   [c.STREAMING_RECONNECT, c.LOG_PREFIX_SYNC_STREAMING + 'Attempting to reconnect streaming in %s seconds.'],
   [c.STREAMING_CONNECTING, c.LOG_PREFIX_SYNC_STREAMING + 'Connecting streaming.'],
-  [c.STREAMING_DISABLED, c.LOG_PREFIX_SYNC_STREAMING + 'Streaming is disabled for given Api key. Switching to polling mode.'],
+  [c.STREAMING_DISABLED, c.LOG_PREFIX_SYNC_STREAMING + 'Streaming is disabled for given SDK key. Switching to polling mode.'],
   [c.STREAMING_DISCONNECTING, c.LOG_PREFIX_SYNC_STREAMING + 'Disconnecting streaming.'],
   [c.SYNC_START_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming not available. Starting polling.'],
   [c.SYNC_CONTINUE_POLLING, c.LOG_PREFIX_SYNC_MANAGER + 'Streaming couldn\'t connect. Continue polling.'],

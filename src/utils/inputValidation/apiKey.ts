@@ -1,51 +1,52 @@
-import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_API_KEY, LOG_PREFIX_INSTANTIATION } from '../../logger/constants';
+import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_SDK_KEY, LOG_PREFIX_INSTANTIATION } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { isString } from '../lang';
 
-const item = 'api_key';
+const item = 'sdk_key';
 
-/** validates the given api key */
-export function validateApiKey(log: ILogger, maybeApiKey: any): string | false {
-  let apiKey: string | false = false;
-  if (maybeApiKey == undefined) { // eslint-disable-line eqeqeq
+// @TODO replace ApiKey with SdkKey in function names
+/** validates the given SDK key */
+export function validateApiKey(log: ILogger, maybeSdkKey: any): string | false {
+  let sdkKey: string | false = false;
+  if (maybeSdkKey == undefined) { // eslint-disable-line eqeqeq
     log.error(ERROR_NULL, [LOG_PREFIX_INSTANTIATION, item]);
-  } else if (isString(maybeApiKey)) {
-    if (maybeApiKey.length > 0)
-      apiKey = maybeApiKey;
+  } else if (isString(maybeSdkKey)) {
+    if (maybeSdkKey.length > 0)
+      sdkKey = maybeSdkKey;
     else
       log.error(ERROR_EMPTY, [LOG_PREFIX_INSTANTIATION, item]);
   } else {
     log.error(ERROR_INVALID, [LOG_PREFIX_INSTANTIATION, item]);
   }
 
-  return apiKey;
+  return sdkKey;
 }
 
 // Exported for telemetry
 export const usedKeysMap: Record<string, number> = {};
 
-/** validates the given api key and also warns if it is in use */
-export function validateAndTrackApiKey(log: ILogger, maybeApiKey: any): string | false {
-  const apiKey = validateApiKey(log, maybeApiKey);
+/** validates the given SDK key and also warns if it is in use */
+export function validateAndTrackApiKey(log: ILogger, maybeSdkKey: any): string | false {
+  const sdkKey = validateApiKey(log, maybeSdkKey);
 
-  // If the apiKey is correct, we'll save it as the instance creation should work.
-  if (apiKey) {
-    if (!usedKeysMap[apiKey]) {
+  // If sdkKey is correct, we'll save it as the instance creation should work.
+  if (sdkKey) {
+    if (!usedKeysMap[sdkKey]) {
       // If this key is not present, only warning scenarios is that we have factories for other keys.
-      usedKeysMap[apiKey] = 1;
+      usedKeysMap[sdkKey] = 1;
       if (Object.keys(usedKeysMap).length > 1) {
-        log.warn(WARN_API_KEY, ['an instance of the Split factory']);
+        log.warn(WARN_SDK_KEY, ['an instance of the Split factory']);
       }
     } else {
-      log.warn(WARN_API_KEY, [`${usedKeysMap[apiKey]} factory/ies with this API Key`]);
-      usedKeysMap[apiKey]++;
+      log.warn(WARN_SDK_KEY, [`${usedKeysMap[sdkKey]} factory/ies with this SDK Key`]);
+      usedKeysMap[sdkKey]++;
     }
   }
 
-  return apiKey;
+  return sdkKey;
 }
 
-export function releaseApiKey(apiKey: string) {
-  if (usedKeysMap[apiKey]) usedKeysMap[apiKey]--;
-  if (usedKeysMap[apiKey] === 0) delete usedKeysMap[apiKey];
+export function releaseApiKey(sdkKey: string) {
+  if (usedKeysMap[sdkKey]) usedKeysMap[sdkKey]--;
+  if (usedKeysMap[sdkKey] === 0) delete usedKeysMap[sdkKey];
 }

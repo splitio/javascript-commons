@@ -139,7 +139,7 @@ export function pushManagerFactory(
 
         log.error(ERROR_STREAMING_AUTH, [error.message]);
 
-        // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
+        // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
           telemetryTracker.streamingEvent(AUTH_REJECTION);
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
