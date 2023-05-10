@@ -1,6 +1,3 @@
-1.8.2 (May 12, 2023)
- - Updated README file, code comments and log messages, to replace the terms "split" with "feature flag", "API Key" with "SDK Key" and "Split Web console" with "Split user interface", for improved clarity and consistency with industry terminology.
-
 1.8.1 (February 7, 2023)
 - Updated a module import to remove a trailing comma that can cause issues with some bundlers.
 

@@ -715,7 +715,7 @@ export namespace SplitIO {
      */
     type: SplitFilterType,
     /**
-     * List of values: split names for 'byName' filter type, and split prefixes for 'byPrefix' type.
+     * List of values: feature flag names for 'byName' filter type, and feature flag name prefixes for 'byPrefix' type.
      * @property {string[]} values
      */
     values: string[],
