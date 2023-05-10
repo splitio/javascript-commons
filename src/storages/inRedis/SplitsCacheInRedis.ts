@@ -75,7 +75,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         newStringifiedSplit = JSON.stringify(split);
       } catch (e) {
-        throw new Error('Error parsing split definition: ' + e);
+        throw new Error('Error parsing feature flag definition: ' + e);
       }
 
       return Promise.all([
@@ -247,7 +247,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         return Promise.resolve(splits);
       })
       .catch(e => {
-        this.log.error(LOG_PREFIX + `Could not grab splits due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not grab feature flags due to an error: ${e}.`);
         return Promise.reject(e);
       });
   }

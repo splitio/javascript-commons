@@ -12,11 +12,11 @@ function validateTimestampData(log: ILogger, maybeTimestamp: any, method: string
 function validateSplitsData(log: ILogger, maybeSplitsData: any, method: string) {
   if (isObject(maybeSplitsData)) {
     const splitNames = Object.keys(maybeSplitsData);
-    if (splitNames.length === 0) log.warn(`${method}: preloadedData.splitsData doesn't contain split definitions.`);
+    if (splitNames.length === 0) log.warn(`${method}: preloadedData.splitsData doesn't contain feature flag definitions.`);
     // @TODO in the future, consider handling the possibility of having parsed definitions of splits
     if (splitNames.every(splitName => validateSplit(log, splitName, method) && isString(maybeSplitsData[splitName]))) return true;
   }
-  log.error(`${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`);
+  log.error(`${method}: preloadedData.splitsData must be a map of feature flag names to their stringified definitions.`);
   return false;
 }
 
