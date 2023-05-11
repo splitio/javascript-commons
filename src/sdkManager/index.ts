@@ -57,10 +57,10 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
     Object.create(sdkStatus),
     {
       /**
-       * Get the Split object corresponding to the given split name if valid
+       * Get the feature flag object corresponding to the given feature flag name if valid
        */
-      split(maybeSplitName: string) {
-        const splitName = validateSplit(log, maybeSplitName, SPLIT_FN_LABEL);
+      split(featureFlagName: string) {
+        const splitName = validateSplit(log, featureFlagName, SPLIT_FN_LABEL);
         if (!validateIfNotDestroyed(log, readinessManager, SPLIT_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
           return null;
         }
@@ -79,7 +79,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
         return objectToView(split);
       },
       /**
-       * Get the Split objects present on the factory storage
+       * Get the feature flag objects present on the factory storage
        */
       splits() {
         if (!validateIfNotDestroyed(log, readinessManager, SPLITS_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLITS_FN_LABEL)) {
@@ -92,7 +92,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
           objectsToViews(currentSplits);
       },
       /**
-       * Get the Split names present on the factory storage
+       * Get the feature flag names present on the factory storage
        */
       names() {
         if (!validateIfNotDestroyed(log, readinessManager, NAMES_FN_LABEL) || !validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {

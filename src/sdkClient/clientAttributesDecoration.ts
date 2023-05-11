@@ -18,20 +18,20 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   const clientGetTreatmentsWithConfig = client.getTreatmentsWithConfig;
   const clientTrack = client.track;
 
-  function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatment(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
+  function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatment(maybeKey, maybeFeatureFlagName, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
+  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentWithConfig(maybeKey, maybeFeatureFlagName, combineAttributes(maybeAttributes));
   }
 
-  function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatments(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
+  function getTreatments(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatments(maybeKey, maybeFeatureFlagNames, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
+  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsWithConfig(maybeKey, maybeFeatureFlagNames, combineAttributes(maybeAttributes));
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {

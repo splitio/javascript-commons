@@ -3,16 +3,16 @@ import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // mocked methods return the provided attributes object (2nd argument), to assert that it was properly passed
 const clientMock = {
-  getTreatment(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+  getTreatment(maybeKey: any, maybeFeatureFlagName: string, maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatmentWithConfig(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+  getTreatmentWithConfig(maybeKey: any, maybeFeatureFlagName: string, maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatments(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+  getTreatments(maybeKey: any, maybeFeatureFlagNames: string[], maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatmentsWithConfig(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+  getTreatmentsWithConfig(maybeKey: any, maybeFeatureFlagNames: string[], maybeAttributes?: any) {
     return maybeAttributes;
   }
 };
