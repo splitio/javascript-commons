@@ -13,7 +13,7 @@ const paramMocks = [
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: undefined,
-    settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'api key '} },
+    settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory()
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
@@ -22,7 +22,7 @@ const paramMocks = [
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: { stop: jest.fn() },
-    settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'api key '} },
+    settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory()
   }
 ];

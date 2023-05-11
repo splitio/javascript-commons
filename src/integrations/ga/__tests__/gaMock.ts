@@ -1,9 +1,9 @@
 export function modelMock(fieldsObject: UniversalAnalytics.FieldsObject) {
   return {
-    get (fieldName: string) {
+    get(fieldName: string) {
       return fieldsObject[fieldName as keyof UniversalAnalytics.FieldsObject];
     },
-    set (fieldNameOrObject: string | {}, fieldValue?: any) {
+    set(fieldNameOrObject: string | {}, fieldValue?: any) {
       if (typeof fieldNameOrObject === 'object')
         fieldsObject = { ...fieldsObject, ...fieldNameOrObject };
       else

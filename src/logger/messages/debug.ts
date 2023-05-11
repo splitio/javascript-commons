@@ -13,8 +13,8 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.ENGINE_MATCHER_CONTAINS_ALL, c.LOG_PREFIX_ENGINE_MATCHER + '[containsAllMatcher] %s contains all elements of %s? %s'],
   [c.ENGINE_MATCHER_CONTAINS_ANY, c.LOG_PREFIX_ENGINE_MATCHER + '[containsAnyMatcher] %s contains at least an element of %s? %s'],
   [c.ENGINE_MATCHER_CONTAINS_STRING, c.LOG_PREFIX_ENGINE_MATCHER + '[containsStringMatcher] %s contains %s? %s'],
-  [c.ENGINE_MATCHER_DEPENDENCY, c.LOG_PREFIX_ENGINE_MATCHER + '[dependencyMatcher] parent split "%s" evaluated to "%s" with label "%s". %s evaluated treatment is part of [%s] ? %s.'],
-  [c.ENGINE_MATCHER_DEPENDENCY_PRE, c.LOG_PREFIX_ENGINE_MATCHER + '[dependencyMatcher] will evaluate parent split: "%s" with key: %s %s'],
+  [c.ENGINE_MATCHER_DEPENDENCY, c.LOG_PREFIX_ENGINE_MATCHER + '[dependencyMatcher] parent feature flag "%s" evaluated to "%s" with label "%s". %s evaluated treatment is part of [%s] ? %s.'],
+  [c.ENGINE_MATCHER_DEPENDENCY_PRE, c.LOG_PREFIX_ENGINE_MATCHER + '[dependencyMatcher] will evaluate parent feature flag: "%s" with key: %s %s'],
   [c.ENGINE_MATCHER_EQUAL, c.LOG_PREFIX_ENGINE_MATCHER + '[equalToMatcher] is %s equal to %s? %s'],
   [c.ENGINE_MATCHER_EQUAL_TO_SET, c.LOG_PREFIX_ENGINE_MATCHER + '[equalToSetMatcher] is %s equal to set %s? %s'],
   [c.ENGINE_MATCHER_ENDS_WITH, c.LOG_PREFIX_ENGINE_MATCHER + '[endsWithMatcher] %s ends with %s? %s'],
@@ -35,15 +35,15 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.RETRIEVE_CLIENT_EXISTING, 'Retrieving existing SDK client.'],
   [c.RETRIEVE_MANAGER, 'Retrieving manager instance.'],
   // synchronizer
-  [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Splits data: \n%s'],
-  [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up split update using since = %s'],
-  [c.SYNC_SPLITS_NEW, c.LOG_PREFIX_SYNC_SPLITS + 'New splits %s'],
-  [c.SYNC_SPLITS_REMOVED, c.LOG_PREFIX_SYNC_SPLITS + 'Removed splits %s'],
+  [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Feature flags data: \n%s'],
+  [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up feature flags update using since = %s'],
+  [c.SYNC_SPLITS_NEW, c.LOG_PREFIX_SYNC_SPLITS + 'New feature flags %s'],
+  [c.SYNC_SPLITS_REMOVED, c.LOG_PREFIX_SYNC_SPLITS + 'Removed feature flags %s'],
   [c.SYNC_SPLITS_SEGMENTS, c.LOG_PREFIX_SYNC_SPLITS + 'Segment names collected %s'],
   [c.STREAMING_NEW_MESSAGE, c.LOG_PREFIX_SYNC_STREAMING + 'New SSE message received, with data: %s.'],
   [c.SYNC_TASK_START, c.LOG_PREFIX_SYNC + ': Starting %s. Running each %s millis'],
   [c.SYNC_TASK_EXECUTE, c.LOG_PREFIX_SYNC + ': Running %s'],
   [c.SYNC_TASK_STOP, c.LOG_PREFIX_SYNC + ': Stopping %s'],
   // initialization / settings validation
-  [c.SETTINGS_SPLITS_FILTER, c.LOG_PREFIX_SETTINGS + ': splits filtering criteria is "%s".']
+  [c.SETTINGS_SPLITS_FILTER, c.LOG_PREFIX_SETTINGS + ': feature flags filtering criteria is "%s".']
 ]);

@@ -30,10 +30,10 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   /**
    * Avoid repeating this validations code
    */
-  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeSplitOrSplits: string | string[], maybeAttributes: SplitIO.Attributes | undefined, methodName: string) {
+  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNameOrNames: string | string[], maybeAttributes: SplitIO.Attributes | undefined, methodName: string) {
     const multi = startsWith(methodName, 'getTreatments');
     const key = validateKey(log, maybeKey, methodName);
-    const splitOrSplits = multi ? validateSplits(log, maybeSplitOrSplits, methodName) : validateSplit(log, maybeSplitOrSplits, methodName);
+    const splitOrSplits = multi ? validateSplits(log, maybeFeatureFlagNameOrNames, methodName) : validateSplit(log, maybeFeatureFlagNameOrNames, methodName);
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isOperational = validateIfNotDestroyed(log, readinessManager, methodName);
 
@@ -53,8 +53,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     return isSync ? value : Promise.resolve(value);
   }
 
-  function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, maybeSplit, maybeAttributes, 'getTreatment');
+  function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, maybeFeatureFlagName, maybeAttributes, 'getTreatment');
 
     if (params.valid) {
       return client.getTreatment(params.key as SplitIO.SplitKey, params.splitOrSplits as string, params.attributes as SplitIO.Attributes | undefined);
@@ -63,8 +63,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     }
   }
 
-  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, maybeSplit, maybeAttributes, 'getTreatmentWithConfig');
+  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, maybeFeatureFlagName, maybeAttributes, 'getTreatmentWithConfig');
 
     if (params.valid) {
       return client.getTreatmentWithConfig(params.key as SplitIO.SplitKey, params.splitOrSplits as string, params.attributes as SplitIO.Attributes | undefined);
@@ -73,8 +73,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     }
   }
 
-  function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, maybeSplits, maybeAttributes, 'getTreatments');
+  function getTreatments(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, maybeFeatureFlagNames, maybeAttributes, 'getTreatments');
 
     if (params.valid) {
       return client.getTreatments(params.key as SplitIO.SplitKey, params.splitOrSplits as string[], params.attributes as SplitIO.Attributes | undefined);
@@ -86,8 +86,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     }
   }
 
-  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, maybeSplits, maybeAttributes, 'getTreatmentsWithConfig');
+  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, maybeFeatureFlagNames, maybeAttributes, 'getTreatmentsWithConfig');
 
     if (params.valid) {
       return client.getTreatmentsWithConfig(params.key as SplitIO.SplitKey, params.splitOrSplits as string[], params.attributes as SplitIO.Attributes | undefined);

@@ -5,7 +5,7 @@ import { isString } from '../lang';
 // include BOM and nbsp
 const TRIMMABLE_SPACES_REGEX = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/;
 
-export function validateSplit(log: ILogger, maybeSplit: any, method: string, item = 'split name'): string | false {
+export function validateSplit(log: ILogger, maybeSplit: any, method: string, item = 'feature flag name'): string | false {
   if (maybeSplit == undefined) { // eslint-disable-line eqeqeq
     log.error(ERROR_NULL, [method, item]);
   } else if (!isString(maybeSplit)) {

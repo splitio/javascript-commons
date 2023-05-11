@@ -55,7 +55,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         stringifiedNewSplit = JSON.stringify(split);
       } catch (e) {
-        throw new Error('Error parsing split definition: ' + e);
+        throw new Error('Error parsing feature flag definition: ' + e);
       }
 
       return this.wrapper.set(splitKey, stringifiedNewSplit).then(() => {

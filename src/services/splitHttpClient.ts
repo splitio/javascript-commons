@@ -55,7 +55,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
 
         if (resp) { // An HTTP error
           switch (resp.status) {
-            case 404: msg = 'Invalid API key or resource not found.';
+            case 404: msg = 'Invalid SDK key or resource not found.';
               break;
             // Don't use resp.statusText since reason phrase is removed in HTTP/2
             default: msg = error.message;
