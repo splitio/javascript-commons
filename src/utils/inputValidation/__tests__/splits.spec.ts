@@ -32,7 +32,7 @@ const invalidSplits = [
   NaN
 ];
 
-describe('INPUT VALIDATION for Split names', () => {
+describe('INPUT VALIDATION for feature flag names', () => {
 
   afterEach(() => {
     loggerMock.mockClear();
@@ -62,7 +62,7 @@ describe('INPUT VALIDATION for Split names', () => {
   test('Should return false and log an error for the array if it is invalid', () => {
     for (let i = 0; i < invalidSplits.length; i++) {
       expect(validateSplits(loggerMock, invalidSplits[i], 'test_method')).toBe(false); // It will return false as the array is of an incorrect type.
-      expect(loggerMock.error).toBeCalledWith(ERROR_EMPTY_ARRAY, ['test_method', 'split_names']); // Should log the error for the collection.
+      expect(loggerMock.error).toBeCalledWith(ERROR_EMPTY_ARRAY, ['test_method', 'feature flag names']); // Should log the error for the collection.
       expect(validateSplitMock).not.toBeCalled(); // Should not try to validate any inner value if there is no valid array.
 
       loggerMock.error.mockClear();
@@ -79,7 +79,7 @@ describe('INPUT VALIDATION for Split names', () => {
     expect(validateSplits(loggerMock, myArr, 'test_method')).toEqual(['valid_name', 'something_valid']); // It will return the array without the invalid values.
 
     for (let i = 0; i < myArr.length; i++) {
-      expect(validateSplitMock.mock.calls[i]).toEqual([loggerMock, myArr[i], 'test_method', 'split name']); // Should validate any inner value independently.
+      expect(validateSplitMock.mock.calls[i]).toEqual([loggerMock, myArr[i], 'test_method', 'feature flag name']); // Should validate any inner value independently.
     }
 
     expect(loggerMock.error).not.toBeCalled(); // Should not log any error for the collection.

@@ -3,16 +3,16 @@ import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // mocked methods return the provided attributes object (2nd argument), to assert that it was properly passed
 const clientMock = {
-  getTreatment(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+  getTreatment(maybeKey: any, maybeFeatureFlagName: string, maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatmentWithConfig(maybeKey: any, maybeSplit: string, maybeAttributes?: any) {
+  getTreatmentWithConfig(maybeKey: any, maybeFeatureFlagName: string, maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatments(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+  getTreatments(maybeKey: any, maybeFeatureFlagNames: string[], maybeAttributes?: any) {
     return maybeAttributes;
   },
-  getTreatmentsWithConfig(maybeKey: any, maybeSplits: string[], maybeAttributes?: any) {
+  getTreatmentsWithConfig(maybeKey: any, maybeFeatureFlagNames: string[], maybeAttributes?: any) {
     return maybeAttributes;
   }
 };
@@ -75,7 +75,9 @@ describe('ATTRIBUTES DECORATION / validation', () => {
 
   test('Should return false if it is an invalid attributes map', () => {
     expect(client.setAttribute('', 'attributeValue')).toEqual(false); // It should be invalid if the attribute key is not a string
+    // @ts-expect-error
     expect(client.setAttribute('attributeKey1', new Date())).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
+    // @ts-expect-error
     expect(client.setAttribute('attributeKey2', { 'some': 'object' })).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
     expect(client.setAttribute('attributeKey3', Infinity)).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
 
