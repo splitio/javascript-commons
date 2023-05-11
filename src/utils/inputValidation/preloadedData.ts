@@ -38,7 +38,7 @@ function validateSegmentsData(log: ILogger, maybeSegmentsData: any, method: stri
     const segmentNames = Object.keys(maybeSegmentsData);
     if (segmentNames.every(segmentName => isString(maybeSegmentsData[segmentName]))) return true;
   }
-  log.error(`${method}: preloadedData.segmentsData must be a map of segment names to their serialized definitions.`);
+  log.error(`${method}: preloadedData.segmentsData must be a map of segment names to their stringified definitions.`);
   return false;
 }
 

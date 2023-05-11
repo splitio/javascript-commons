@@ -75,7 +75,9 @@ describe('ATTRIBUTES DECORATION / validation', () => {
 
   test('Should return false if it is an invalid attributes map', () => {
     expect(client.setAttribute('', 'attributeValue')).toEqual(false); // It should be invalid if the attribute key is not a string
+    // @ts-expect-error
     expect(client.setAttribute('attributeKey1', new Date())).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
+    // @ts-expect-error
     expect(client.setAttribute('attributeKey2', { 'some': 'object' })).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
     expect(client.setAttribute('attributeKey3', Infinity)).toEqual(false); // It should be invalid if the attribute value is not a String, Number, Boolean or Lists.
 

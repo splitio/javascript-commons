@@ -60,7 +60,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
      * @param {string, number, boolean, list} attributeValue Attribute value
      * @returns {boolean} true if the attribute was stored and false otherways
      */
-    setAttribute(attributeName: string, attributeValue: Object) {
+    setAttribute(attributeName: string, attributeValue: SplitIO.AttributeType) {
       const attribute: Record<string, Object> = {};
       attribute[attributeName] = attributeValue;
       if (!validateAttributesDeep(log, attribute, 'setAttribute')) return false;
@@ -95,7 +95,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
      *
      * @returns {Object} returns all the stored attributes
      */
-    getAttributes(): Record<string, Object> {
+    getAttributes() {
       return attributeStorage.getAll();
     },
 
