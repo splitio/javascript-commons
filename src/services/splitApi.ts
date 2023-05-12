@@ -30,6 +30,7 @@ export function splitApiFactory(
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
 
   return {
+    // @TODO throw errors if health check requests fail, to log them in the Synchronizer
     getSdkAPIHealthCheck() {
       const url = `${urls.sdk}/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
