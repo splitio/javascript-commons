@@ -45,19 +45,15 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   private _decrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.redis.decr(ttKey).then(count => {
-        if (count === 0) return this.redis.del(ttKey);
-      });
-    }
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.redis.decr(ttKey).then(count => {
+      if (count === 0) return this.redis.del(ttKey);
+    });
   }
 
   private _incrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.redis.incr(ttKey);
-    }
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.redis.incr(ttKey);
   }
 
   /**
@@ -70,7 +66,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     return this.redis.get(splitKey).then(splitFromStorage => {
 
       // handling parsing errors
-      let parsedPreviousSplit, newStringifiedSplit;
+      let parsedPreviousSplit: ISplit, newStringifiedSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         newStringifiedSplit = JSON.stringify(split);
@@ -78,13 +74,16 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         throw new Error('Error parsing feature flag definition: ' + e);
       }
 
-      return Promise.all([
-        this.redis.set(splitKey, newStringifiedSplit),
-        this._incrementCounts(split),
-        // If it's an update, we decrement the traffic type of the existing split,
-        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
-      ]);
-    }).then(([status]) => status === 'OK');
+      return this.redis.set(splitKey, newStringifiedSplit).then(() => {
+        // avoid unnecessary increment/decrement operations
+        if (parsedPreviousSplit && parsedPreviousSplit.trafficTypeName === split.trafficTypeName) return;
+
+        // update traffic type counts
+        return this._incrementCounts(split).then(() => {
+          if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
+        });
+      });
+    }).then(() => true);
   }
 
   /**

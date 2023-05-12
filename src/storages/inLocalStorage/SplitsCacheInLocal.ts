@@ -41,10 +41,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private _decrementCounts(split: ISplit | null) {
     try {
       if (split) {
-        if (split.trafficTypeName) {
-          const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-          this._decrementCount(ttKey);
-        }
+        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+        this._decrementCount(ttKey);
 
         if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
@@ -59,11 +57,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private _incrementCounts(split: ISplit) {
     try {
       if (split) {
-        if (split.trafficTypeName) {
-          const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-          // @ts-expect-error
-          localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
-        }
+        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+        // @ts-expect-error
+        localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
 
         if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
@@ -104,11 +100,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const splitKey = this.keys.buildSplitKey(name);
       const splitFromLocalStorage = localStorage.getItem(splitKey);
       const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
-      this._decrementCounts(previousSplit);
 
       localStorage.setItem(splitKey, JSON.stringify(split));
 
       this._incrementCounts(split);
+      this._decrementCounts(previousSplit);
 
       return true;
     } catch (e) {

@@ -24,11 +24,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     const previousSplit = this.getSplit(name);
     if (previousSplit) { // We had this Split already
 
-      if (previousSplit.trafficTypeName) {
-        const previousTtName = previousSplit.trafficTypeName;
-        this.ttCache[previousTtName]--;
-        if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
-      }
+      const previousTtName = previousSplit.trafficTypeName;
+      this.ttCache[previousTtName]--;
+      if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
 
       if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
         this.splitsWithSegmentsCount--;
@@ -40,10 +38,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.splitsCache[name] = split;
       // Update TT cache
       const ttName = split.trafficTypeName;
-      if (ttName) { // safeguard
-        if (!this.ttCache[ttName]) this.ttCache[ttName] = 0;
-        this.ttCache[ttName]++;
-      }
+      this.ttCache[ttName] = (this.ttCache[ttName] || 0) + 1;
 
       // Add to segments count for the new version of the Split
       if (usesSegments(split)) this.splitsWithSegmentsCount++;
@@ -61,11 +56,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       delete this.splitsCache[name];
 
       const ttName = split.trafficTypeName;
-
-      if (ttName) { // safeguard
-        this.ttCache[ttName]--; // Update tt cache
-        if (!this.ttCache[ttName]) delete this.ttCache[ttName];
-      }
+      this.ttCache[ttName]--; // Update tt cache
+      if (!this.ttCache[ttName]) delete this.ttCache[ttName];
 
       // Update the segments count.
       if (usesSegments(split)) this.splitsWithSegmentsCount--;
