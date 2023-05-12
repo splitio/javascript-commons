@@ -33,8 +33,8 @@ function getActiveFactories() {
 }
 
 function getRedundantActiveFactories() {
-  return Object.keys(usedKeysMap).reduce((acum, apiKey) => {
-    return acum + usedKeysMap[apiKey] - 1;
+  return Object.keys(usedKeysMap).reduce((acum, sdkKey) => {
+    return acum + usedKeysMap[sdkKey] - 1;
   }, 0);
 }
 

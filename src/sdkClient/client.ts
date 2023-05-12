@@ -13,10 +13,10 @@ import { isStorageSync } from '../trackers/impressionObserver/utils';
 
 const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
 
-function treatmentsNotReady(splitNames: string[]) {
+function treatmentsNotReady(featureFlagNames: string[]) {
   const evaluations: Record<string, IEvaluationResult> = {};
-  splitNames.forEach(splitName => {
-    evaluations[splitName] = treatmentNotReady;
+  featureFlagNames.forEach(featureFlagName => {
+    evaluations[featureFlagName] = treatmentNotReady;
   });
   return evaluations;
 }
@@ -28,12 +28,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
 
-  function getTreatment(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
+  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
-      const treatment = processEvaluation(evaluationResult, splitName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
+      const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
       impressionsTracker.track(queue, attributes);
 
       stopTelemetryTracker(queue[0] && queue[0].label);
@@ -41,7 +41,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluation = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeature(log, key, splitName, attributes, storage) :
+      evaluateFeature(log, key, featureFlagName, attributes, storage) :
       isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         treatmentNotReady :
         Promise.resolve(treatmentNotReady); // Promisify if async
@@ -49,18 +49,18 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluation) ? evaluation.then((res) => wrapUp(res)) : wrapUp(evaluation);
   }
 
-  function getTreatmentWithConfig(key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatment(key, splitName, attributes, true);
+  function getTreatmentWithConfig(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined) {
+    return getTreatment(key, featureFlagName, attributes, true);
   }
 
-  function getTreatments(key: SplitIO.SplitKey, splitNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
+  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
-      Object.keys(evaluationResults).forEach(splitName => {
-        treatments[splitName] = processEvaluation(evaluationResults[splitName], splitName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
+      Object.keys(evaluationResults).forEach(featureFlagName => {
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -69,22 +69,22 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeatures(log, key, splitNames, attributes, storage) :
+      evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
       isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
-        treatmentsNotReady(splitNames) :
-        Promise.resolve(treatmentsNotReady(splitNames)); // Promisify if async
+        treatmentsNotReady(featureFlagNames) :
+        Promise.resolve(treatmentsNotReady(featureFlagNames)); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
-  function getTreatmentsWithConfig(key: SplitIO.SplitKey, splitNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatments(key, splitNames, attributes, true);
+  function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined) {
+    return getTreatments(key, featureFlagNames, attributes, true);
   }
 
   // Internal function
   function processEvaluation(
     evaluation: IEvaluationResult,
-    splitName: string,
+    featureFlagName: string,
     key: SplitIO.SplitKey,
     attributes: SplitIO.Attributes | undefined,
     withConfig: boolean,
@@ -95,12 +95,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const bucketingKey = getBucketing(key);
 
     const { treatment, label, changeNumber, config = null } = evaluation;
-    log.info(IMPRESSION, [splitName, matchingKey, treatment, label]);
+    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
-    if (validateSplitExistance(log, readinessManager, splitName, label, invokingMethodName)) {
+    if (validateSplitExistance(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
       queue.push({
-        feature: splitName,
+        feature: featureFlagName,
         keyName: matchingKey,
         treatment,
         time: Date.now(),

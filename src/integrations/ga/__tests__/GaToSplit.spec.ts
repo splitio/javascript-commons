@@ -101,7 +101,7 @@ test('defaultMapper', () => {
 });
 
 const coreSettings = {
-  authorizationKey: 'apikey',
+  authorizationKey: 'sdkkey',
   key: 'key',
   trafficType: 'user',
 } as ISettings['core'];

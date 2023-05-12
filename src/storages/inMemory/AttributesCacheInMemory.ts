@@ -1,8 +1,9 @@
+import { SplitIO } from '../../types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 
 export class AttributesCacheInMemory {
 
-  private attributesCache: Record<string, Object> = {};
+  private attributesCache: Record<string, SplitIO.AttributeType> = {};
 
 
   /**
@@ -12,7 +13,7 @@ export class AttributesCacheInMemory {
    * @param {Object} attributeValue attribute value
    * @returns {boolean} the attribute was stored
    */
-  setAttribute(attributeName: string, attributeValue: Object): boolean {
+  setAttribute(attributeName: string, attributeValue: SplitIO.AttributeType) {
     this.attributesCache[attributeName] = attributeValue;
     return true;
   }
@@ -23,7 +24,7 @@ export class AttributesCacheInMemory {
    * @param {string} attributeName attribute name
    * @returns {Object?} stored attribute value
    */
-  getAttribute(attributeName: string): Object {
+  getAttribute(attributeName: string) {
     return this.attributesCache[attributeName];
   }
 
@@ -33,7 +34,7 @@ export class AttributesCacheInMemory {
    * @param {[string, Object]} attributes attributes to create or update
    * @returns {boolean} attributes were stored
    */
-  setAttributes(attributes: Record<string, Object>): boolean {
+  setAttributes(attributes: Record<string, Object>) {
     this.attributesCache = objectAssign(this.attributesCache, attributes);
     return true;
   }
@@ -43,7 +44,7 @@ export class AttributesCacheInMemory {
    *
    * @returns {Map<string, Object>} stored attributes
    */
-  getAll(): Record<string, Object> {
+  getAll() {
     return this.attributesCache;
   }
 
@@ -53,7 +54,7 @@ export class AttributesCacheInMemory {
    * @param {string} attributeName attribute to remove
    * @returns {boolean} attribute removed
    */
-  removeAttribute(attributeName: string): boolean {
+  removeAttribute(attributeName: string) {
     if (Object.keys(this.attributesCache).indexOf(attributeName) >= 0) {
       delete this.attributesCache[attributeName];
       return true;

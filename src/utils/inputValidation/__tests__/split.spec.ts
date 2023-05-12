@@ -27,11 +27,11 @@ const trimmableSplits = [
   ' split_name3'
 ];
 
-describe('INPUT VALIDATION for Split name', () => {
+describe('INPUT VALIDATION for feature flag name', () => {
 
   afterEach(() => { loggerMock.mockClear(); });
 
-  test('Should return the provided split name if it is a valid string without logging any errors', () => {
+  test('Should return the provided feature flag name if it is a valid string without logging any errors', () => {
     expect(validateSplit(loggerMock, 'splitName', 'some_method_splitName')).toBe('splitName'); // It should return the provided string if it is valid.
     expect(loggerMock.error.mock.calls[0]).not.toEqual('some_method_splitName'); // Should not log any errors.
     expect(validateSplit(loggerMock, 'split_name', 'some_method_splitName')).toBe('split_name'); // It should return the provided string if it is valid.
@@ -42,11 +42,11 @@ describe('INPUT VALIDATION for Split name', () => {
     expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
   });
 
-  test('Should trim split name if it is a valid string with trimmable spaces and log a warning (if those are enabled)', () => {
+  test('Should trim feature flag name if it is a valid string with trimmable spaces and log a warning (if those are enabled)', () => {
     for (let i = 0; i < trimmableSplits.length; i++) {
       const trimmableSplit = trimmableSplits[i];
-      expect(validateSplit(loggerMock, trimmableSplit, 'some_method_splitName')).toBe(trimmableSplit.trim()); // It should return the trimmed version of the split name received.
-      expect(loggerMock.warn).toBeCalledWith(WARN_TRIMMING, ['some_method_splitName', 'split name', trimmableSplit]); // Should log a warning if those are enabled.
+      expect(validateSplit(loggerMock, trimmableSplit, 'some_method_splitName')).toBe(trimmableSplit.trim()); // It should return the trimmed version of the feature flag name received.
+      expect(loggerMock.warn).toBeCalledWith(WARN_TRIMMING, ['some_method_splitName', 'feature flag name', trimmableSplit]); // Should log a warning if those are enabled.
 
       loggerMock.warn.mockClear();
     }
@@ -54,14 +54,14 @@ describe('INPUT VALIDATION for Split name', () => {
     expect(loggerMock.error).not.toBeCalled(); // It should have not logged any errors.
   });
 
-  test('Should return false and log error if split name is not a valid string', () => {
+  test('Should return false and log error if feature flag name is not a valid string', () => {
     for (let i = 0; i < invalidSplits.length; i++) {
       const invalidValue = invalidSplits[i]['split'];
       // @ts-ignore
       const expectedLog = invalidSplits[i]['msg'];
 
       expect(validateSplit(loggerMock, invalidValue, 'test_method')).toBe(false); // Invalid event types should always return false.
-      expect(loggerMock.error).toBeCalledWith(expectedLog, ['test_method', 'split name']); // Should log the error for the invalid event type.
+      expect(loggerMock.error).toBeCalledWith(expectedLog, ['test_method', 'feature flag name']); // Should log the error for the invalid event type.
 
       loggerMock.error.mockClear();
     }

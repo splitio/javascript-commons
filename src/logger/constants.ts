@@ -94,7 +94,7 @@ export const WARN_INTEGRATION_INVALID = 218;
 export const WARN_SPLITS_FILTER_IGNORED = 219;
 export const WARN_SPLITS_FILTER_INVALID = 220;
 export const WARN_SPLITS_FILTER_EMPTY = 221;
-export const WARN_API_KEY = 222;
+export const WARN_SDK_KEY = 222;
 export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 223;
 
 export const ERROR_ENGINE_COMBINER_IFELSEIF = 300;
@@ -136,7 +136,7 @@ export const LOG_PREFIX_SYNC = 'sync';
 export const LOG_PREFIX_SYNC_MANAGER = LOG_PREFIX_SYNC + ':sync-manager: ';
 export const LOG_PREFIX_SYNC_OFFLINE = LOG_PREFIX_SYNC + ':offline: ';
 export const LOG_PREFIX_SYNC_STREAMING = LOG_PREFIX_SYNC + ':streaming: ';
-export const LOG_PREFIX_SYNC_SPLITS = LOG_PREFIX_SYNC + ':split-changes: ';
+export const LOG_PREFIX_SYNC_SPLITS = LOG_PREFIX_SYNC + ':featureflag-changes: ';
 export const LOG_PREFIX_SYNC_SEGMENTS = LOG_PREFIX_SYNC + ':segment-changes: ';
 export const LOG_PREFIX_SYNC_MYSEGMENTS = LOG_PREFIX_SYNC + ':my-segments: ';
 export const LOG_PREFIX_SYNC_POLLING = LOG_PREFIX_SYNC + ':polling-manager: ';
