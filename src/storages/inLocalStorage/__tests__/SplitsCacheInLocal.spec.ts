@@ -75,8 +75,7 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
   cache.addSplits([ // loop of addSplit
     ['split1', splitWithUserTT],
     ['split2', splitWithAccountTT],
-    ['split3', splitWithUserTT], // @ts-ignore
-    ['malformed', {}]
+    ['split3', splitWithUserTT],
   ]);
   cache.addSplit('split4', splitWithUserTT);
 

@@ -64,8 +64,7 @@ describe('SPLITS CACHE REDIS', () => {
     await cache.addSplits([
       ['split1', splitWithUserTT],
       ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT], // @ts-ignore
-      ['malformed', {}]
+      ['split3', splitWithUserTT],
     ]);
     await cache.addSplit('split4', splitWithUserTT);
     await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
@@ -140,8 +139,6 @@ describe('SPLITS CACHE REDIS', () => {
 
     // Delete splits and TT keys
     await cache.removeSplits(['lol1', 'lol2']);
-    await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
-    await connection.del(keysBuilder.buildTrafficTypeKey('user_tt'));
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.quit();
   });

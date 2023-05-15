@@ -108,7 +108,7 @@ export const fullSettingsServerSide = {
 
 export const settingsSplitApi = {
   core: {
-    authorizationKey: 'api-key'
+    authorizationKey: 'sdk-key'
   },
   version: 'jest',
   urls: {

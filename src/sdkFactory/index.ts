@@ -26,7 +26,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     filterAdapterFactory } = params;
   const { log, sync: { impressionsMode } } = settings;
 
-  // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid API Key, etc.
+  // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.

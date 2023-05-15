@@ -2,7 +2,7 @@ import * as c from '../constants';
 
 export const codesError: [number, string][] = [
   // evaluator
-  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid Split, no valid rules found'],
+  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid feature flag, no valid rules found'],
   // SDK
   [c.ERROR_LOGLEVEL_INVALID, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
   [c.ERROR_CLIENT_CANNOT_GET_READY, 'The SDK will not get ready. Reason: %s'],
@@ -10,7 +10,7 @@ export const codesError: [number, string][] = [
   [c.ERROR_IMPRESSIONS_LISTENER, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Impression listener logImpression method threw: %s.'],
   [c.ERROR_EVENTS_TRACKER, c.LOG_PREFIX_EVENTS_TRACKER + 'Failed to queue %s'],
   // synchronizer
-  [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
+  [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock feature flags data. No changes will be applied to the current cache. %s'],
   [c.ERROR_STREAMING_SSE, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to connect or error on streaming connection, with error message: %s'],
   [c.ERROR_STREAMING_AUTH, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to authenticate for streaming. Error: %s.'],
   [c.ERROR_HTTP, 'Response status is not OK. Status: %s. URL: %s. Message: %s'],

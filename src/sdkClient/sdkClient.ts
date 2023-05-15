@@ -20,9 +20,9 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     //get the actual time elapsed in ms
     const timeElapsed = now - lastActionTime;
     //check if the time elapsed is less than desired cooldown
-    if (timeElapsed < time){
+    if (timeElapsed < time) {
       //if yes, return message with remaining time in seconds
-      settings.log.warn(`Flush cooldown, remaining time ${(time-timeElapsed)/1000} seconds`);
+      settings.log.warn(`Flush cooldown, remaining time ${(time - timeElapsed) / 1000} seconds`);
       return Promise.resolve();
     } else {
       //Do the requested action and re-assign the lastActionTime
@@ -64,7 +64,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           sdkReadinessManager.readinessManager.destroy();
           signalListener && signalListener.stop();
 
-          // Release the API Key if it is the main client
+          // Release the SDK Key if it is the main client
           if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
 
           if (uniqueKeysTracker) uniqueKeysTracker.stop();

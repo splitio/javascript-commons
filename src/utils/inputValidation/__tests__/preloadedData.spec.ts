@@ -9,7 +9,7 @@ const testCases = [
   {
     input: { lastUpdated: 10, since: 10, splitsData: {} },
     output: true,
-    warn: `${method}: preloadedData.splitsData doesn't contain split definitions.`
+    warn: `${method}: preloadedData.splitsData doesn't contain feature flag definitions.`
   },
   {
     input: { lastUpdated: 10, since: 10, splitsData: { 'some_split': 'SPLIT DEFINITION' } },
@@ -94,19 +94,19 @@ const testCases = [
     // should be false if splitsData property is invalid
     input: { lastUpdated: 10, since: 10, splitsData: undefined },
     output: false,
-    error: `${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`
+    error: `${method}: preloadedData.splitsData must be a map of feature flag names to their stringified definitions.`
   },
   {
     // should be false if splitsData property is invalid
     input: { lastUpdated: 10, since: 10, splitsData: ['DEFINITION'] },
     output: false,
-    error: `${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`
+    error: `${method}: preloadedData.splitsData must be a map of feature flag names to their stringified definitions.`
   },
   {
     // should be false if splitsData property is invalid
     input: { lastUpdated: 10, since: 10, splitsData: { some_split: undefined } },
     output: false,
-    error: `${method}: preloadedData.splitsData must be a map of split names to their serialized definitions.`
+    error: `${method}: preloadedData.splitsData must be a map of feature flag names to their stringified definitions.`
   },
   {
     // should be false if mySegmentsData property is invalid
@@ -124,13 +124,13 @@ const testCases = [
     // should be false if segmentsData property is invalid
     input: { lastUpdated: 10, since: 10, splitsData: { some_split: 'DEFINITION' }, segmentsData: ['DEFINITION'] },
     output: false,
-    error: `${method}: preloadedData.segmentsData must be a map of segment names to their serialized definitions.`
+    error: `${method}: preloadedData.segmentsData must be a map of segment names to their stringified definitions.`
   },
   {
     // should be false if segmentsData property is invalid
     input: { lastUpdated: 10, since: 10, splitsData: { some_split: 'DEFINITION' }, segmentsData: { some_segment: undefined } },
     output: false,
-    error: `${method}: preloadedData.segmentsData must be a map of segment names to their serialized definitions.`
+    error: `${method}: preloadedData.segmentsData must be a map of segment names to their stringified definitions.`
   }
 ];
 

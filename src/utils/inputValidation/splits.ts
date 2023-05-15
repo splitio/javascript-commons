@@ -3,7 +3,7 @@ import { ILogger } from '../../logger/types';
 import { uniq } from '../lang';
 import { validateSplit } from './split';
 
-export function validateSplits(log: ILogger, maybeSplits: any, method: string, listName = 'split_names', item = 'split name'): string[] | false {
+export function validateSplits(log: ILogger, maybeSplits: any, method: string, listName = 'feature flag names', item = 'feature flag name'): string[] | false {
   if (Array.isArray(maybeSplits) && maybeSplits.length > 0) {
     let validatedArray: string[] = [];
     // Remove invalid values
