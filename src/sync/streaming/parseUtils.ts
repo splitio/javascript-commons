@@ -1,6 +1,6 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
-import { Compression, KeyList } from './SSEHandler/types';
+import { Compression, ISplitUpdateData, KeyList } from './SSEHandler/types';
 
 const GZIP = 1;
 const ZLIB = 2;
@@ -37,15 +37,16 @@ function decompress(data: string, compression: Compression) {
  *
  * @param {string} data
  * @param {number} compression
+ * @param {boolean} avoidPrecisionLoss true as default, set it as false if dont need to avoid precission loss
  * @returns {{a?: string[], r?: string[] }}
  * @throws if data string cannot be decoded, decompressed or parsed
  */
-export function parseKeyList(data: string, compression: Compression): KeyList {
+export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss: boolean = true): KeyList {
   const binKeyList = decompress(data, compression);
-  const strKeyList = Uint8ArrayToString(binKeyList);
-
+  let strKeyList = Uint8ArrayToString(binKeyList);
   // replace numbers to strings, to avoid losing precision
-  return JSON.parse(strKeyList.replace(/\d+/g, '"$&"'));
+  if (avoidPrecisionLoss) strKeyList = strKeyList.replace(/\d+/g, '"$&"');
+  return JSON.parse(strKeyList);
 }
 
 /**
@@ -74,4 +75,23 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
   const internal = Math.floor(index / 8);
   const offset = index % 8;
   return (bitmap[internal] & 1 << offset) > 0;
+}
+
+/**
+ * Check if the 'bitmap' bit at 'hash64hex' position is 1
+ *
+ * @param {Uint8Array} bitmap
+ * @returns {boolean}
+ */
+export function parseFFUpdatePayload(data: ISplitUpdateData)  {
+  const avoidPrecisionLoss = false;
+  try {
+    if (data.c > 0)
+      return parseKeyList(data.d, data.c, avoidPrecisionLoss);
+    else
+      return JSON.parse(decodeFromBase64(data.d));
+  } catch (e) {
+    // @TODO define a error code for feature flags parsing
+    console.log(e);
+  }
 }
