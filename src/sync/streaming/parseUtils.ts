@@ -78,12 +78,12 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
 }
 
 /**
- * Check if the 'bitmap' bit at 'hash64hex' position is 1
+ * Parse feature flags notifications for instant feature flag updates
  *
- * @param {Uint8Array} bitmap
- * @returns {boolean}
+ * @param {ISplitUpdateData} data
+ * @returns {KeyList}
  */
-export function parseFFUpdatePayload(data: ISplitUpdateData)  {
+export function parseFFUpdatePayload(data: ISplitUpdateData): KeyList | undefined {
   const avoidPrecisionLoss = false;
   try {
     if (data.c > 0)

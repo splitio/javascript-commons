@@ -231,7 +231,7 @@ export function pushManagerFactory(
       splitsUpdateWorker.put(parsedData);
     }
   });
-  console.log('listener enabled');
+
   if (userKey) {
     pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
       const userKeyHash = channel.split('_')[2];
