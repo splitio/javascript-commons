@@ -83,15 +83,10 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
  * @param {ISplitUpdateData} data
  * @returns {KeyList}
  */
-export function parseFFUpdatePayload(data: ISplitUpdateData): KeyList | undefined {
+export function parseFFUpdatePayload(compression: Compression, data: string): KeyList | undefined {
   const avoidPrecisionLoss = false;
-  try {
-    if (data.c > 0)
-      return parseKeyList(data.d, data.c, avoidPrecisionLoss);
-    else
-      return JSON.parse(decodeFromBase64(data.d));
-  } catch (e) {
-    // @TODO define a error code for feature flags parsing
-    console.log(e);
-  }
+  if (compression > 0)
+    return parseKeyList(data, compression, avoidPrecisionLoss);
+  else
+    return JSON.parse(decodeFromBase64(data));
 }

@@ -55,19 +55,9 @@ test('parseBitmap & isInBitmap', () => {
 
 test('split notification - parseKeyList', () => {
 
-  let mockedNotification = {
-    type: 'SPLIT_UPDATE' as SPLIT_UPDATE,
-    changeNumber: 0,
-    pcn: 0,
-    d: '',
-    c: 0,
-  };
-
   splitNotifications.forEach(notification => {
     let { compression, data, decoded } = notification;
-    mockedNotification.d = data;
-    mockedNotification.c = compression;
-    expect(parseFFUpdatePayload(mockedNotification)).toEqual(decoded); // decompress split notification
+    expect(parseFFUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
   });
 
 });

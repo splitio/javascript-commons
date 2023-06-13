@@ -44,9 +44,9 @@ export interface ISegmentUpdateData {
 export interface ISplitUpdateData {
   type: SPLIT_UPDATE,
   changeNumber: number,
-  pcn: number,
-  d: string,
-  c: Compression
+  pcn?: number,
+  d?: string,
+  c?: Compression
 }
 
 export interface ISplitKillData {
