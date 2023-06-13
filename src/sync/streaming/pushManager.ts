@@ -222,10 +222,9 @@ export function pushManagerFactory(
 
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
   pushEmitter.on(SPLIT_UPDATE, (parsedData) => {
-    if (parsedData.d) {
+    if (parsedData.d && parsedData.c !== undefined) {
       try {
-        const compressType = parsedData.c ? parsedData.c : 0;
-        const payload = parseFFUpdatePayload(compressType, parsedData.d);
+        const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
         if (payload) {
           // @TODO replace splitsUpdateWorker.put method with instant ff processor and updater
           //  splitsUpdateWorker.putWithPayload(payload);
@@ -233,7 +232,7 @@ export function pushManagerFactory(
         }
       } catch (e) {
         // @TODO define a error code for feature flags parsing
-        console.log(e);
+        log.debug(e);
       }
     }
     splitsUpdateWorker.put(parsedData);

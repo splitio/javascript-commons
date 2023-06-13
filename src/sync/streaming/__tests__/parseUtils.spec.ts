@@ -3,7 +3,6 @@ import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
 import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload } from '../parseUtils';
 import { _Set } from '../../../utils/lang/sets';
-import { SPLIT_UPDATE } from '../types';
 
 test('parseKeyList', () => {
   keylists.forEach(keylist => {

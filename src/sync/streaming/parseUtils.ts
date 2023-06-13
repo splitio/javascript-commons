@@ -1,6 +1,6 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
-import { Compression, ISplitUpdateData, KeyList } from './SSEHandler/types';
+import { Compression, KeyList } from './SSEHandler/types';
 
 const GZIP = 1;
 const ZLIB = 2;
