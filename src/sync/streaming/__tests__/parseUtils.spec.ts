@@ -1,7 +1,7 @@
 import { hash64 } from '../../../utils/murmur3/murmur3_64';
-import { keylists, bitmaps } from './dataMocks';
+import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
-import { parseKeyList, parseBitmap, isInBitmap } from '../mySegmentsV2utils';
+import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload } from '../parseUtils';
 import { _Set } from '../../../utils/lang/sets';
 
 test('parseKeyList', () => {
@@ -50,4 +50,13 @@ test('parseBitmap & isInBitmap', () => {
       expect(isInBitmap(actualBitmap, hash.hex)).toBe(false); // key hash doesn\'t belong to Bitmap
     });
   });
+});
+
+test('split notification - parseKeyList', () => {
+
+  splitNotifications.forEach(notification => {
+    let { compression, data, decoded } = notification;
+    expect(parseFFUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
+  });
+
 });

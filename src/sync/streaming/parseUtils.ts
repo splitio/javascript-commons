@@ -37,15 +37,16 @@ function decompress(data: string, compression: Compression) {
  *
  * @param {string} data
  * @param {number} compression
+ * @param {boolean} avoidPrecisionLoss true as default, set it as false if dont need to avoid precission loss
  * @returns {{a?: string[], r?: string[] }}
  * @throws if data string cannot be decoded, decompressed or parsed
  */
-export function parseKeyList(data: string, compression: Compression): KeyList {
+export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss: boolean = true): KeyList {
   const binKeyList = decompress(data, compression);
-  const strKeyList = Uint8ArrayToString(binKeyList);
-
+  let strKeyList = Uint8ArrayToString(binKeyList);
   // replace numbers to strings, to avoid losing precision
-  return JSON.parse(strKeyList.replace(/\d+/g, '"$&"'));
+  if (avoidPrecisionLoss) strKeyList = strKeyList.replace(/\d+/g, '"$&"');
+  return JSON.parse(strKeyList);
 }
 
 /**
@@ -74,4 +75,18 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
   const internal = Math.floor(index / 8);
   const offset = index % 8;
   return (bitmap[internal] & 1 << offset) > 0;
+}
+
+/**
+ * Parse feature flags notifications for instant feature flag updates
+ *
+ * @param {ISplitUpdateData} data
+ * @returns {KeyList}
+ */
+export function parseFFUpdatePayload(compression: Compression, data: string): KeyList | undefined {
+  const avoidPrecisionLoss = false;
+  if (compression > 0)
+    return parseKeyList(data, compression, avoidPrecisionLoss);
+  else
+    return JSON.parse(decodeFromBase64(data));
 }
