@@ -226,9 +226,8 @@ export function pushManagerFactory(
       try {
         const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
         if (payload) {
-          // @TODO replace splitsUpdateWorker.put method with instant ff processor and updater
-          //  splitsUpdateWorker.putWithPayload(payload);
-          //  return;
+          splitsUpdateWorker.putWithPayload(payload);
+          return;
         }
       } catch (e) {
         // @TODO define a error code for feature flags parsing

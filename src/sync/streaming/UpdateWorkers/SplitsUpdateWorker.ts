@@ -11,7 +11,7 @@ import { IUpdateWorker } from './types';
 /**
  * SplitsUpdateWorker factory
  */
-export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void } {
+export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void, putWithPayload(payload: any): void } {
 
   let maxChangeNumber = 0;
   let handleNewEvent = false;
@@ -19,13 +19,13 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
   let cdnBypass: boolean;
   const backoff = new Backoff(__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
-  function __handleSplitUpdateCall() {
+  function __handleSplitUpdateCall(payload?: any) {
     isHandlingEvent = true;
     if (maxChangeNumber > splitsCache.getChangeNumber()) {
       handleNewEvent = false;
 
       // fetch splits revalidating data if cached
-      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined).then(() => {
+      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, payload).then(() => {
         if (!isHandlingEvent) return; // halt if `stop` has been called
         if (handleNewEvent) {
           __handleSplitUpdateCall();
@@ -79,9 +79,24 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
     backoff.reset();
   }
 
+  function putWithPayload(payload: any) {
+    const currentChangeNumber = splitsCache.getChangeNumber();
+    const { changeNumber } = payload;
+
+    if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
+
+    // @TODO check conditions regarding maxChangeNumber
+    if (payload && currentChangeNumber === payload.PreviousChangeNumber) {
+      __handleSplitUpdateCall(payload);
+      return;
+    }
+
+    put({changeNumber});
+  }
+
   return {
     put,
-
+    putWithPayload,
     /**
      * Invoked by NotificationProcessor on SPLIT_KILL event
      *

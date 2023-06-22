@@ -2,7 +2,7 @@ import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { ITask, ISyncTask } from '../types';
 
-export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number], boolean> { }
+export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, payload?: any], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 
