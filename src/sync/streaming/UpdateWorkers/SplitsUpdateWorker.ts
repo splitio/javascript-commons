@@ -96,7 +96,6 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
      * @param {string} defaultTreatment default treatment value
      */
     killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
-      payload = undefined;
       if (splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
         // trigger an SDK_UPDATE if Split was killed locally
         splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
