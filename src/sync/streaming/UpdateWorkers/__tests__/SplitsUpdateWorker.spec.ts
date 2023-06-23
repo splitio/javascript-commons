@@ -126,8 +126,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('Refresh completed bypassing the CDN in 2 attempts.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
-      [true, 100], [true, 100],
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
+      [true, 100, undefined], [true, 100, undefined],
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
 
     // Handle new event after previous is completed
@@ -151,8 +151,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('No changes fetched after 10 attempts with CDN bypassed.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined]),
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100, undefined]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
 
     // Handle new event after previous ends (not completed)
