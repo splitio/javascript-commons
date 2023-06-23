@@ -1,3 +1,4 @@
+import { ISplit } from '../../../dtos/types';
 import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
@@ -11,21 +12,22 @@ import { IUpdateWorker } from './types';
 /**
  * SplitsUpdateWorker factory
  */
-export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void, putWithPayload(payload: any): void } {
+export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void } {
 
   let maxChangeNumber = 0;
   let handleNewEvent = false;
   let isHandlingEvent: boolean;
   let cdnBypass: boolean;
+  let payload: ISplit | undefined;
   const backoff = new Backoff(__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
-  function __handleSplitUpdateCall(payload?: any) {
+  function __handleSplitUpdateCall() {
     isHandlingEvent = true;
     if (maxChangeNumber > splitsCache.getChangeNumber()) {
       handleNewEvent = false;
-
+      const splitUpdateNotification = payload ? { payload, changeNumber: maxChangeNumber } : undefined;
       // fetch splits revalidating data if cached
-      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, payload).then(() => {
+      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, splitUpdateNotification ).then(() => {
         if (!isHandlingEvent) return; // halt if `stop` has been called
         if (handleNewEvent) {
           __handleSplitUpdateCall();
@@ -66,7 +68,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
    *
    * @param {number} changeNumber change number of the SPLIT_UPDATE notification
    */
-  function put({ changeNumber }: Pick<ISplitUpdateData, 'changeNumber'>) {
+  function put({ changeNumber, pcn }: ISplitUpdateData, _payload?: ISplit) {
     const currentChangeNumber = splitsCache.getChangeNumber();
 
     if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
@@ -74,29 +76,18 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
     maxChangeNumber = changeNumber;
     handleNewEvent = true;
     cdnBypass = false;
+    payload = undefined;
+
+    if (_payload && currentChangeNumber === pcn) {
+      payload = _payload;
+    }
 
     if (backoff.timeoutID || !isHandlingEvent) __handleSplitUpdateCall();
     backoff.reset();
   }
 
-  function putWithPayload(payload: any) {
-    const currentChangeNumber = splitsCache.getChangeNumber();
-    const { changeNumber } = payload;
-
-    if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
-
-    // @TODO check conditions regarding maxChangeNumber
-    if (payload && currentChangeNumber === payload.PreviousChangeNumber) {
-      __handleSplitUpdateCall(payload);
-      return;
-    }
-
-    put({changeNumber});
-  }
-
   return {
     put,
-    putWithPayload,
     /**
      * Invoked by NotificationProcessor on SPLIT_KILL event
      *
@@ -105,12 +96,13 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
      * @param {string} defaultTreatment default treatment value
      */
     killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
+      payload = undefined;
       if (splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {
         // trigger an SDK_UPDATE if Split was killed locally
         splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
       }
       // queues the SplitChanges fetch (only if changeNumber is newer)
-      put({ changeNumber });
+      put({ changeNumber } as ISplitUpdateData);
     },
 
     stop() {

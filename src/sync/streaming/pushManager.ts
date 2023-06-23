@@ -226,7 +226,7 @@ export function pushManagerFactory(
       try {
         const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
         if (payload) {
-          splitsUpdateWorker.putWithPayload(payload);
+          splitsUpdateWorker.put(parsedData, payload);
           return;
         }
       } catch (e) {
