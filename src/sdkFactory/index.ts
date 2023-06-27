@@ -38,7 +38,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const storage = storageFactory({
     settings,
     onReadyCb: (error) => {
-      if (error) return; // Don't emit SDK_READY if storage failed to connect. Error message is logged by wrapperAdapter
+      if (error) {
+        // Emit SDK_READY_TIMED_OUT if storage failed to connect. Error message was logged by wrapperAdapter
+        readiness.timeout();
+        return;
+      }
       readiness.splits.emit(SDK_SPLITS_ARRIVED);
       readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
