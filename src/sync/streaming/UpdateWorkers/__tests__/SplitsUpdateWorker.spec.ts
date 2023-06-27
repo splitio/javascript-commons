@@ -224,7 +224,7 @@ describe('SplitsUpdateWorker', () => {
   test('put, ccn and pcn validation for IFF', () => {
     const cache = new SplitsCacheInMemory();
 
-    // ccn = 103 & pcn = 104: Something was missed -> fetch sdk ap
+    // ccn = 103 & pcn = 104: Something was missed -> fetch split changes
     let ccn = 103;
     let pcn = 104;
     let changeNumber = 105;
@@ -238,7 +238,7 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
-    // ccn = 110 & pcn = 0: Something was missed -> something wrong in `pushNotificationManager` -> fetch sdk api
+    // ccn = 110 & pcn = 0: Something was missed -> something wrong in `pushNotificationManager` -> fetch split changes
     ccn = 110;
     pcn = 0;
     changeNumber = 111;
@@ -251,7 +251,7 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
-    // ccn = 120 & pcn = 120: In order consecutive notifications apply normaly
+    // ccn = 120 & pcn = 120: In order consecutive notifications arrived, apply updates normaly
     ccn = 120;
     pcn = 120;
     changeNumber = 121;
