@@ -170,9 +170,14 @@ describe('READINESS MANAGER / Timeout ready event', () => {
       done();
     });
 
-    // Calling timeout again should not re-trigger the event
     readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
-      readinessManager.timeout();
+      expect(readinessManager.hasTimedout()).toBe(true);
+      expect(readinessManager.isDestroyed()).toBe(false);
+
+      // Calling timeout again should not re-trigger the event, but flags the SDK as destroyed if called with true
+      readinessManager.timeout(true);
+      expect(readinessManager.hasTimedout()).toBe(true);
+      expect(readinessManager.isDestroyed()).toBe(true);
     });
   });
 
@@ -183,7 +188,7 @@ describe('READINESS MANAGER / Timeout ready event', () => {
       done();
     });
 
-    // Calling timeout immediately multiple times
+    // Calling timeout immediately multiple times triggers the event only once
     readinessManager.timeout();
     setTimeout(readinessManager.timeout);
   });

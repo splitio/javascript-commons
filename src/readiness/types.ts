@@ -54,7 +54,7 @@ export interface IReadinessManager {
   isDestroyed(): boolean,
   isOperational(): boolean,
 
-  timeout(): void,
+  timeout(flagAsDestroyed?: boolean): void,
   destroy(): void,
 
   /** for client-side */
