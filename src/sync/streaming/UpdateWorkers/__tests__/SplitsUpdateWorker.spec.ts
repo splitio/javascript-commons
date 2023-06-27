@@ -6,6 +6,7 @@ import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { syncTaskFactory } from '../../../syncTask';
 import { Backoff } from '../../../../utils/Backoff';
+import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 
 function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers = []) {
 
@@ -205,4 +206,62 @@ describe('SplitsUpdateWorker', () => {
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 
+  test('put, avoid fetching if payload sent', async () => {
+
+    const cache = new SplitsCacheInMemory();
+    splitNotifications.forEach(notification => {
+      const pcn = cache.getChangeNumber();
+      const splitsSyncTask = splitsSyncTaskMock(cache);
+      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+      const payload = notification.decoded;
+      const changeNumber = payload.changeNumber;
+      splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
+      expect(splitsSyncTask.execute).toBeCalledTimes(1);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
+    });
+  });
+
+  test('put, ccn and pcn validation for IFF', () => {
+    const cache = new SplitsCacheInMemory();
+
+    // ccn = 103 & pcn = 104: Something was missed -> fetch split changes
+    let ccn = 103;
+    let pcn = 104;
+    let changeNumber = 105;
+    cache.setChangeNumber(ccn);
+    const notification = splitNotifications[0];
+
+    let splitsSyncTask = splitsSyncTaskMock(cache);
+    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
+    splitsSyncTask.execute.mockClear();
+
+    // ccn = 110 & pcn = 0: Something was missed -> something wrong in `pushNotificationManager` -> fetch split changes
+    ccn = 110;
+    pcn = 0;
+    changeNumber = 111;
+    cache.setChangeNumber(ccn);
+
+    splitsSyncTask = splitsSyncTaskMock(cache);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
+    splitsSyncTask.execute.mockClear();
+
+    // ccn = 120 & pcn = 120: In order consecutive notifications arrived, apply updates normaly
+    ccn = 120;
+    pcn = 120;
+    changeNumber = 121;
+    cache.setChangeNumber(ccn);
+
+    splitsSyncTask = splitsSyncTaskMock(cache);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    expect(splitsSyncTask.execute).toBeCalledTimes(1);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
+
+  });
 });
