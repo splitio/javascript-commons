@@ -1,3 +1,6 @@
+1.8.3 (June 27, 2023)
+ - Bugfix - Fixed an issue with SDK_READY_TIMED_OUT event, that was not being emitted immediately when a connection error occurs when using pluggable storage in consumer and partial consumer modes.
+
 1.8.2 (May 15, 2023)
  - Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and IntelliSense comments.
  - Updated split storage modules to optimize some operations when using Redis and pluggable storages.
