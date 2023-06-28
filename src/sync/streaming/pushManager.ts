@@ -14,7 +14,7 @@ import { getMatching } from '../../utils/key';
 import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 } from '../../logger/constants';
 import { KeyList, UpdateStrategy } from './SSEHandler/types';
-import { isInBitmap, parseBitmap, parseKeyList } from './parseUtils';
+import { isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
@@ -221,7 +221,22 @@ export function pushManagerFactory(
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
-  pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
+  pushEmitter.on(SPLIT_UPDATE, (parsedData) => {
+    if (parsedData.d && parsedData.c !== undefined) {
+      try {
+        const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
+        if (payload) {
+          // @TODO replace splitsUpdateWorker.put method with instant ff processor and updater
+          //  splitsUpdateWorker.putWithPayload(payload);
+          //  return;
+        }
+      } catch (e) {
+        // @TODO define a error code for feature flags parsing
+        log.debug(e);
+      }
+    }
+    splitsUpdateWorker.put(parsedData);
+  });
 
   if (userKey) {
     pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
