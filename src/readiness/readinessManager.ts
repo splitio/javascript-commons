@@ -48,6 +48,7 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
+
   function timeout(flagAsDestroyed?: boolean) {
     if (flagAsDestroyed) isDestroyed = true;
     if (hasTimedout) return;
@@ -55,7 +56,7 @@ export function readinessManagerFactory(
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
   }
 
-  let readyTimeoutId: number;
+  let readyTimeoutId: any;
   if (readyTimeout > 0) {
     readyTimeoutId = setTimeout(timeout, readyTimeout);
   }
