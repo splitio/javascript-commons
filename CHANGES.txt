@@ -1,4 +1,5 @@
 1.8.3 (June 28, 2023)
+ - Updated some transitive dependencies for vulnerability fixes.
  - Bugfix - The `destroy` method has been updated to immediately flag the SDK client as destroyed, to prevent access to the storage when `getTreatment` and `track` methods are called after the SDK is destroyed.
  - Bugfix - Fixed an issue with SDK_READY_TIMED_OUT event, that was not being emitted immediately when a connection error occurs using pluggable storage in consumer and partial consumer modes.
 
