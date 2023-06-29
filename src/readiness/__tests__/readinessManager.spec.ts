@@ -68,7 +68,7 @@ test('READINESS MANAGER / Ready event should be fired once', () => {
   expect(counter).toBe(1); // should be called once
 });
 
-test('READINESS MANAGER / Ready event should be fired once', (done) => {
+test('READINESS MANAGER / Ready from cache event should be fired once', (done) => {
   const readinessManager = readinessManagerFactory(EventEmitter);
   let counter = 0;
 
@@ -143,26 +143,51 @@ test('READINESS MANAGER / Segment updates should not be propagated', (done) => {
   });
 });
 
-test('READINESS MANAGER / Timeout ready event', (done) => {
-  const readinessManager = readinessManagerFactory(EventEmitter, 10);
+describe('READINESS MANAGER / Timeout ready event', () => {
+  let readinessManager: IReadinessManager;
+  let timeoutCounter: number;
 
-  let timeoutCounter = 0;
+  beforeEach(() => {
+    // Schedule timeout to be fired before SDK_READY
+    readinessManager = readinessManagerFactory(EventEmitter, 10);
+    timeoutCounter = 0;
 
-  readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
-    expect(readinessManager.hasTimedout()).toBe(true);
-    if (!readinessManager.isReady()) timeoutCounter++;
+    readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      expect(readinessManager.hasTimedout()).toBe(true);
+      if (!readinessManager.isReady()) timeoutCounter++;
+    });
+
+    setTimeout(() => {
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+    }, 20);
   });
 
-  readinessManager.gate.on(SDK_READY, () => {
-    expect(readinessManager.isReady()).toBe(true);
-    expect(timeoutCounter).toBe(1); // Timeout was scheduled to be fired quickly
-    done();
+  test('should be fired once', (done) => {
+    readinessManager.gate.on(SDK_READY, () => {
+      expect(readinessManager.isReady()).toBe(true);
+      expect(timeoutCounter).toBe(1);
+      done();
+    });
+
+    readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      // Calling timeout again should not re-trigger the event
+      readinessManager.timeout();
+      setTimeout(readinessManager.timeout);
+    });
   });
 
-  setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-    readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  }, 50);
+  test('should be fired once if called explicitly', (done) => {
+    readinessManager.gate.on(SDK_READY, () => {
+      expect(readinessManager.isReady()).toBe(true);
+      expect(timeoutCounter).toBe(1);
+      done();
+    });
+
+    // Calling timeout multiple times triggers the event only once
+    readinessManager.timeout();
+    setTimeout(readinessManager.timeout);
+  });
 });
 
 test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {

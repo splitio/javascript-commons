@@ -101,7 +101,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');
       onReadyCb(e);
-      return e;
+      return e; // Propagate error for shared clients
     });
 
     return {
