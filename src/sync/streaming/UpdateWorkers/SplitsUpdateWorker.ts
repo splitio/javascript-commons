@@ -3,6 +3,7 @@ import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
+import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
@@ -12,7 +13,7 @@ import { IUpdateWorker } from './types';
 /**
  * SplitsUpdateWorker factory
  */
-export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker & { killSplit(event: ISplitKillData): void } {
+export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, segmentsSyncTask?: ISegmentsSyncTask, telemetryTracker?: ITelemetryTracker): IUpdateWorker & { killSplit(event: ISplitKillData): void } {
 
   let maxChangeNumber = 0;
   let handleNewEvent = false;
@@ -27,7 +28,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
       handleNewEvent = false;
       const splitUpdateNotification = payload ? { payload, changeNumber: maxChangeNumber } : undefined;
       // fetch splits revalidating data if cached
-      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, splitUpdateNotification ).then(() => {
+      splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, splitUpdateNotification, telemetryTracker).then(() => {
         if (!isHandlingEvent) return; // halt if `stop` has been called
         if (handleNewEvent) {
           __handleSplitUpdateCall();

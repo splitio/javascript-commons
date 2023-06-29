@@ -1,5 +1,5 @@
 import { MaybeThenable, ISplit } from '../dtos/types';
-import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload } from '../sync/submitters/types';
+import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 
 /**
@@ -409,6 +409,7 @@ export interface ITelemetryRuntimeProducerSync {
   recordTokenRefreshes(): void;
   recordStreamingEvents(streamingEvent: StreamingEvent): void;
   recordSessionLength(ms: number): void;
+  recordUpdatesFromSSE(type: UpdatesFromSSEEnum, amount: number): void
 }
 
 export interface ITelemetryEvaluationProducerSync {

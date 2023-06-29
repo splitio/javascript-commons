@@ -127,8 +127,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('Refresh completed bypassing the CDN in 2 attempts.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
-      [true, 100, undefined], [true, 100, undefined],
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined, undefined]),
+      [true, 100, undefined, undefined], [true, 100, undefined, undefined],
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
 
     // Handle new event after previous is completed
@@ -152,8 +152,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('No changes fetched after 10 attempts with CDN bypassed.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100, undefined]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined, undefined]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100, undefined, undefined]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
 
     // Handle new event after previous ends (not completed)
@@ -217,7 +217,7 @@ describe('SplitsUpdateWorker', () => {
       const changeNumber = payload.changeNumber;
       splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
-      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}, undefined]);
     });
   });
 
@@ -235,7 +235,7 @@ describe('SplitsUpdateWorker', () => {
     let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
     // ccn = 110 & pcn = 0: Something was missed -> something wrong in `pushNotificationManager` -> fetch split changes
@@ -248,7 +248,7 @@ describe('SplitsUpdateWorker', () => {
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
     // ccn = 120 & pcn = 120: In order consecutive notifications arrived, apply updates normaly
@@ -261,7 +261,7 @@ describe('SplitsUpdateWorker', () => {
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }, undefined]);
 
   });
 });

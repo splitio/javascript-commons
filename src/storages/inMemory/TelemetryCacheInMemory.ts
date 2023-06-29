@@ -1,4 +1,4 @@
-import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload } from '../../sync/submitters/types';
+import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../../sync/submitters/types';
 import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
@@ -56,6 +56,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       eD: this.getEventStats(DROPPED),
       sE: this.popStreamingEvents(),
       t: this.popTags(),
+      ufs: this.popUpdatesFromSSE(),
     };
   }
 
@@ -241,6 +242,29 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
   recordLatency(method: Method, latencyMs: number) {
     const latencyBuckets = (this.latencies[method] = this.latencies[method] || newBuckets());
     latencyBuckets[findLatencyIndex(latencyMs)]++;
+    this.e = false;
+  }
+
+  private updatesFromSSE = {
+    Splits: 0,
+    MySegments: 0
+  };
+
+  popUpdatesFromSSE() {
+    const { Splits, MySegments } = this.updatesFromSSE;
+    const result = {
+      sp: Splits,
+      ms: MySegments
+    };
+    this.updatesFromSSE = {
+      Splits: 0,
+      MySegments: 0,
+    };
+    return result;
+  }
+
+  recordUpdatesFromSSE(type: UpdatesFromSSEEnum, amount: number) {
+    this.updatesFromSSE[type] += amount;
     this.e = false;
   }
 
