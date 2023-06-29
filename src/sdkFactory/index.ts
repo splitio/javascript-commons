@@ -39,9 +39,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     settings,
     onReadyCb: (error) => {
       if (error) {
-        // If storage fails to connect (a non-recoverable error), SDK_READY_TIMED_OUT event is emitted and the SDK is flagged
-        // as destroyed to ensure that any subsequent call to `getTreatment` or `track` will not access the storage
-        readiness.timeout(true);
+        // If storage fails to connect, SDK_READY_TIMED_OUT event is emitted immediately. Review when timeout and non-recoverable errors are reworked
+        readiness.timeout();
         return;
       }
       readiness.splits.emit(SDK_SPLITS_ARRIVED);

@@ -39,8 +39,6 @@ export function readinessManagerFactory(
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
   const gate: IReadinessEventEmitter = new EventEmitter();
 
-  let isDestroyed = false;
-
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
   if (splits.splitsCacheLoaded) isReadyFromCache = true; // ready from cache, but doesn't emit SDK_READY_FROM_CACHE
@@ -49,14 +47,13 @@ export function readinessManagerFactory(
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
 
-  function timeout(flagAsDestroyed?: boolean) {
-    if (flagAsDestroyed) isDestroyed = true;
+  function timeout() {
     if (hasTimedout) return;
     hasTimedout = true;
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
   }
 
-  let readyTimeoutId: any;
+  let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
     readyTimeoutId = setTimeout(timeout, readyTimeout);
   }
@@ -65,6 +62,8 @@ export function readinessManagerFactory(
   let isReady = false;
   splits.on(SDK_SPLITS_ARRIVED, checkIsReadyOrUpdate);
   segments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
+
+  let isDestroyed = false;
 
   function checkIsReadyFromCache() {
     isReadyFromCache = true;
