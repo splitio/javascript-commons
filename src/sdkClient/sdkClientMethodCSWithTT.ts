@@ -65,7 +65,10 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
       const sharedStorage = storage.shared && storage.shared(matchingKey, (err) => {
-        if (err) return;
+        if (err) {
+          sharedSdkReadiness.readinessManager.timeout();
+          return;
+        }
         // Emit SDK_READY in consumer mode for shared clients
         sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
       });

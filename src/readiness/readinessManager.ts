@@ -46,12 +46,16 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
+
+  function timeout() {
+    if (hasTimedout) return;
+    hasTimedout = true;
+    gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
+  }
+
   let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(() => {
-      hasTimedout = true;
-      gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
-    }, readyTimeout);
+    readyTimeoutId = setTimeout(timeout, readyTimeout);
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -107,6 +111,8 @@ export function readinessManagerFactory(
       refCount++;
       return readinessManagerFactory(EventEmitter, readyTimeout, splits);
     },
+
+    timeout,
 
     destroy() {
       isDestroyed = true;
