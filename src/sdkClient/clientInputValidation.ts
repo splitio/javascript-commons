@@ -35,11 +35,11 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const key = validateKey(log, maybeKey, methodName);
     const splitOrSplits = multi ? validateSplits(log, maybeFeatureFlagNameOrNames, methodName) : validateSplit(log, maybeFeatureFlagNameOrNames, methodName);
     const attributes = validateAttributes(log, maybeAttributes, methodName);
-    const isOperational = validateIfNotDestroyed(log, readinessManager, methodName);
+    const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
 
     validateIfOperational(log, readinessManager, methodName);
 
-    const valid = isOperational && key && splitOrSplits && attributes !== false;
+    const valid = isNotDestroyed && key && splitOrSplits && attributes !== false;
 
     return {
       valid,
@@ -105,9 +105,9 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const event = validateEvent(log, maybeEvent, 'track');
     const eventValue = validateEventValue(log, maybeEventValue, 'track');
     const { properties, size } = validateEventProperties(log, maybeProperties, 'track');
-    const isOperational = validateIfNotDestroyed(log, readinessManager, 'track');
+    const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, 'track');
 
-    if (isOperational && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
+    if (isNotDestroyed && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
       return client.track(key, tt, event, eventValue, properties, size);
     } else {
       return isSync ? false : Promise.resolve(false);
