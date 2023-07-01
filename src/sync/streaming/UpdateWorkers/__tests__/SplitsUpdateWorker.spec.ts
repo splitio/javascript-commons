@@ -7,6 +7,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { syncTaskFactory } from '../../../syncTask';
 import { Backoff } from '../../../../utils/Backoff';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
+import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 
 function splitsSyncTaskMock(splitStorage: SplitsCacheInMemory, changeNumbers = []) {
 
@@ -61,7 +62,7 @@ describe('SplitsUpdateWorker', () => {
     const splitsSyncTask = splitsSyncTaskMock(cache);
 
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
 
     // assert calling `splitsSyncTask.execute` if `isExecuting` is false
     expect(splitsSyncTask.isExecuting()).toBe(false);
@@ -100,7 +101,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__BASE_MILLIS = 50;
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [90, 90, 90]);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
 
     // while fetch fails, should retry with backoff
     splitUpdateWorker.put({ changeNumber: 100 });
@@ -119,7 +120,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -127,8 +128,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('Refresh completed bypassing the CDN in 2 attempts.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined, undefined]),
-      [true, 100, undefined, undefined], [true, 100, undefined, undefined],
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
+      [true, 100, undefined], [true, 100, undefined],
     ]); // `execute` was called 12 times. Last 2 with CDN bypass
 
     // Handle new event after previous is completed
@@ -144,7 +145,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -152,8 +153,8 @@ describe('SplitsUpdateWorker', () => {
 
     expect(loggerMock.debug).lastCalledWith('No changes fetched after 10 attempts with CDN bypassed.');
     expect(splitsSyncTask.execute.mock.calls).toEqual([
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined, undefined]),
-      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100, undefined, undefined]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, undefined, undefined]),
+      ...Array(FETCH_BACKOFF_MAX_RETRIES).fill([true, 100, undefined]),
     ]); // `execute` was called 20 times. Last 10 with CDN bypass
 
     // Handle new event after previous ends (not completed)
@@ -169,7 +170,7 @@ describe('SplitsUpdateWorker', () => {
     cache.addSplit('lol2', '{ "name": "something else"}');
 
     const splitsSyncTask = splitsSyncTaskMock(cache);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock, telemetryTrackerFactory());
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
     splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'lol1', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
@@ -196,7 +197,7 @@ describe('SplitsUpdateWorker', () => {
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
     Backoff.__TEST__BASE_MILLIS = 1;
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
 
     splitUpdateWorker.put({ changeNumber: 100 });
 
@@ -212,12 +213,12 @@ describe('SplitsUpdateWorker', () => {
     splitNotifications.forEach(notification => {
       const pcn = cache.getChangeNumber();
       const splitsSyncTask = splitsSyncTaskMock(cache);
-      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
       splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
-      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}, undefined]);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
     });
   });
 
@@ -232,10 +233,10 @@ describe('SplitsUpdateWorker', () => {
     const notification = splitNotifications[0];
 
     let splitsSyncTask = splitsSyncTaskMock(cache);
-    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined, undefined]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
     // ccn = 110 & pcn = 0: Something was missed -> something wrong in `pushNotificationManager` -> fetch split changes
@@ -245,10 +246,10 @@ describe('SplitsUpdateWorker', () => {
     cache.setChangeNumber(ccn);
 
     splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined, undefined]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
 
     // ccn = 120 & pcn = 120: In order consecutive notifications arrived, apply updates normaly
@@ -258,10 +259,10 @@ describe('SplitsUpdateWorker', () => {
     cache.setChangeNumber(ccn);
 
     splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTrackerFactory());
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }, undefined]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
 
   });
 });

@@ -54,8 +54,8 @@ export function telemetryTrackerFactory(
         // @ts-ignore
         if (telemetryCache.addTag) telemetryCache.addTag(tag);
       },
-      trackUpdatesFromSSE(type: UpdatesFromSSEEnum, amount: number) {
-        (telemetryCache as ITelemetryCacheSync).recordUpdatesFromSSE(type, amount);
+      trackUpdatesFromSSE(type: UpdatesFromSSEEnum) {
+        (telemetryCache as ITelemetryCacheSync).recordUpdatesFromSSE(type);
       }
     };
 

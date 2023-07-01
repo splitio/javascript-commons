@@ -227,4 +227,21 @@ describe('TELEMETRY CACHE', () => {
     expect(cache.isEmpty()).toBe(true);
   });
 
+  test('updates from SSE', () => {
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 3, ms: 2});
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 2, ms: 2});
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+  });
+
 });

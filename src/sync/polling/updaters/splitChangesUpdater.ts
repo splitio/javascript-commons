@@ -7,9 +7,8 @@ import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
-import { ITelemetryTracker } from '../../../trackers/types';
 
-type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }, telemetryTracker?: ITelemetryTracker) => Promise<boolean>
+type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
 // Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
 // Returns a promise that could be rejected.
@@ -112,7 +111,7 @@ export function splitChangesUpdaterFactory(
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    * @param {boolean | undefined} till query param to bypass CDN requests
    */
-  return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }, telemetryTracker?: ITelemetryTracker) {
+  return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) {
 
     /**
      * @param {number} since current changeNumber at splitsCache
@@ -140,12 +139,8 @@ export function splitChangesUpdaterFactory(
             splits.setChangeNumber(splitChanges.till),
             splits.addSplits(mutation.added),
             splits.removeSplits(mutation.removed),
-            segments.registerSegments(mutation.segments),
+            segments.registerSegments(mutation.segments)
           ]).then(() => {
-            if (telemetryTracker) {
-              telemetryTracker.trackUpdatesFromSSE('Splits', 1);
-              telemetryTracker.trackUpdatesFromSSE('MySegments', mutation.segments.length);
-            }
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched

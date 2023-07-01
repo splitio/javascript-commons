@@ -246,25 +246,21 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
   }
 
   private updatesFromSSE = {
-    Splits: 0,
-    MySegments: 0
+    sp: 0,
+    ms: 0
   };
 
   popUpdatesFromSSE() {
-    const { Splits, MySegments } = this.updatesFromSSE;
-    const result = {
-      sp: Splits,
-      ms: MySegments
-    };
+    const result = this.updatesFromSSE;
     this.updatesFromSSE = {
-      Splits: 0,
-      MySegments: 0,
+      sp: 0,
+      ms: 0,
     };
     return result;
   }
 
-  recordUpdatesFromSSE(type: UpdatesFromSSEEnum, amount: number) {
-    this.updatesFromSSE[type] += amount;
+  recordUpdatesFromSSE(type: UpdatesFromSSEEnum) {
+    this.updatesFromSSE[type]++;
     this.e = false;
   }
 

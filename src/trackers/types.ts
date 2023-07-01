@@ -48,7 +48,7 @@ export interface ITelemetryTracker {
   /**
    * Records updates from sse
    */
-  trackUpdatesFromSSE(type: UpdatesFromSSEEnum, amount?: number): void;
+  trackUpdatesFromSSE(type: UpdatesFromSSEEnum): void;
 }
 
 export interface IFilterAdapter {

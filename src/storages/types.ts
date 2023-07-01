@@ -409,7 +409,7 @@ export interface ITelemetryRuntimeProducerSync {
   recordTokenRefreshes(): void;
   recordStreamingEvents(streamingEvent: StreamingEvent): void;
   recordSessionLength(ms: number): void;
-  recordUpdatesFromSSE(type: UpdatesFromSSEEnum, amount: number): void
+  recordUpdatesFromSSE(type: UpdatesFromSSEEnum): void
 }
 
 export interface ITelemetryEvaluationProducerSync {

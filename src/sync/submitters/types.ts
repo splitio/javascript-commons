@@ -103,7 +103,7 @@ export type DROPPED = 1;
 export type DEDUPED = 2;
 export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
 export type EventDataType = QUEUED | DROPPED;
-export type UpdatesFromSSEEnum = 'Splits' | 'MySegments';
+export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT;
 
 export type SPLITS = 'sp';
 export type IMPRESSIONS = 'im';
