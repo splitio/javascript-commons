@@ -31,6 +31,9 @@ function mySegmentsSyncTaskMock(values = []) {
   };
 }
 
+const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
+
+
 describe('MySegmentsUpdateWorker', () => {
 
   afterEach(() => {
@@ -41,7 +44,6 @@ describe('MySegmentsUpdateWorker', () => {
 
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock();
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
@@ -111,7 +113,6 @@ describe('MySegmentsUpdateWorker', () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 50;
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false, false, false]); // fetch fail
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
@@ -127,7 +128,6 @@ describe('MySegmentsUpdateWorker', () => {
   test('stop', async () => {
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     Backoff.__TEST__BASE_MILLIS = 1;
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 

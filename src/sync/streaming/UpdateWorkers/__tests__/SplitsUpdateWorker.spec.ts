@@ -48,6 +48,9 @@ function assertKilledSplit(cache, changeNumber, splitName, defaultTreatment) {
   expect(split.changeNumber).toBe(changeNumber); // split must have the given change number
 }
 
+const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
+
+
 describe('SplitsUpdateWorker', () => {
 
   afterEach(() => { // restore
@@ -60,7 +63,6 @@ describe('SplitsUpdateWorker', () => {
     // setup
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
 
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
@@ -102,7 +104,6 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__BASE_MILLIS = 50;
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [90, 90, 90]);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
@@ -122,7 +123,6 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
@@ -148,7 +148,6 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
@@ -174,7 +173,6 @@ describe('SplitsUpdateWorker', () => {
     cache.addSplit('lol2', '{ "name": "something else"}');
 
     const splitsSyncTask = splitsSyncTaskMock(cache);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
@@ -201,7 +199,6 @@ describe('SplitsUpdateWorker', () => {
     // setup
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     Backoff.__TEST__BASE_MILLIS = 1;
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
 
@@ -219,7 +216,6 @@ describe('SplitsUpdateWorker', () => {
     splitNotifications.forEach(notification => {
       const pcn = cache.getChangeNumber();
       const splitsSyncTask = splitsSyncTaskMock(cache);
-      const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
       const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
@@ -240,7 +236,6 @@ describe('SplitsUpdateWorker', () => {
     const notification = splitNotifications[0];
 
     let splitsSyncTask = splitsSyncTaskMock(cache);
-    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
