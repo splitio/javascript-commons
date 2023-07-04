@@ -41,8 +41,9 @@ describe('MySegmentsUpdateWorker', () => {
 
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock();
+    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTrackerFactory());
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     // assert calling `mySegmentsSyncTask.execute` if `isExecuting` is false
     expect(mySegmentsSyncTask.isExecuting()).toBe(false);
@@ -110,7 +111,8 @@ describe('MySegmentsUpdateWorker', () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 50;
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false, false, false]); // fetch fail
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTrackerFactory());
+    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
     mySegmentUpdateWorker.put(100);
@@ -125,8 +127,9 @@ describe('MySegmentsUpdateWorker', () => {
   test('stop', async () => {
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
+    const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
     Backoff.__TEST__BASE_MILLIS = 1;
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTrackerFactory());
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     mySegmentUpdateWorker.put(100);
 
