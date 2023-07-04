@@ -48,7 +48,7 @@ describe('Telemetry submitter', () => {
     expect(isEmptySpy).toBeCalledTimes(1);
     expect(popSpy).toBeCalledTimes(1);
     expect(postMetricsUsage).toBeCalledWith(JSON.stringify({
-      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: 0, seC: 0, skC: 0, eQ: 0, eD: 0, sE: [], t: ['tag1']
+      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: 0, seC: 0, skC: 0, eQ: 0, eD: 0, sE: [], t: ['tag1'], ufs:{ sp: 0, ms: 0 }
     }));
 
     // Await second periodic execution

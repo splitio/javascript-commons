@@ -1,5 +1,5 @@
 import { SplitIO, ImpressionDTO } from '../types';
-import { StreamingEventType, Method, OperationType } from '../sync/submitters/types';
+import { StreamingEventType, Method, OperationType, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
 
@@ -45,6 +45,10 @@ export interface ITelemetryTracker {
    * Records tag
    */
   addTag(tag: string): void
+  /**
+   * Records updates from sse
+   */
+  trackUpdatesFromSSE(type: UpdatesFromSSEEnum): void;
 }
 
 export interface IFilterAdapter {
