@@ -69,10 +69,10 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     },
 
     /**
-     * Returns the attribute with the given key
+     * Returns the attribute with the given name
      *
      * @param {string} attributeName Attribute name
-     * @returns {Object} Attribute with the given key
+     * @returns {Object} Attribute with the given name
      */
     getAttribute(attributeName: string) {
       log.debug(`retrieved attribute ${attributeName}`);
@@ -100,7 +100,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     },
 
     /**
-     * Removes from client's in memory attributes storage the attribute with the given key
+     * Removes from client's in memory attributes storage the attribute with the given name
      *
      * @param {string} attributeName
      * @returns {boolean} true if attribute was removed and false otherways

@@ -34,7 +34,7 @@ export function impressionsTrackerFactory(
 
       const impressionsToListenerCount = impressionsToListener.length;
 
-      if ( impressionsToStore.length>0 ){
+      if (impressionsToStore.length > 0) {
         const res = impressionsCache.track(impressionsToStore);
 
         // If we're on an async storage, handle error and log it.
