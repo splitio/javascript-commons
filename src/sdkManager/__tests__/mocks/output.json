@@ -6,5 +6,6 @@
   "treatments": ["on", "off"],
   "configs": {
     "on": "\"color\": \"green\""
-  }
+  },
+  "defaultTreatment": "off"
 }
