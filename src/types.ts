@@ -610,6 +610,11 @@ export namespace SplitIO {
     configs: {
       [treatmentName: string]: string
     }
+    /**
+     * Default treatment value for feature flag.
+     * @property {string} defaultTreatment
+     */
+    defaultTreatment: string,
   };
   /**
    * A promise that resolves to a feature flag view.
