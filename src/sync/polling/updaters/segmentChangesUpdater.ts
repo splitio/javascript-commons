@@ -80,7 +80,6 @@ export function segmentChangesUpdaterFactory(
 
       for (let index = 0; index < segmentNames.length; index++) {
         updaters.push(updateSegment(segmentNames[index], noCache, till, fetchOnlyNew));
-
       }
 
       return Promise.all(updaters).then(shouldUpdateFlags => {

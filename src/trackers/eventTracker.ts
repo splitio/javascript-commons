@@ -35,7 +35,7 @@ export function eventTrackerFactory(
         setTimeout(function () {
           // copy of event, to avoid unexpected behaviour if modified by integrations
           const eventDataCopy = objectAssign({}, eventData);
-          if (eventData.properties) eventDataCopy.properties = objectAssign({}, eventData.properties);
+          if (properties) eventDataCopy.properties = objectAssign({}, properties);
           // integrationsManager does not throw errors (they are internally handled by each integration module)
           integrationsManager.handleEvent(eventDataCopy);
         }, 0);
