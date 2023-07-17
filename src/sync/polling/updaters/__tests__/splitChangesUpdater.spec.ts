@@ -11,6 +11,7 @@ import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__
 import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
+import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 
 const activeSplitWithSegments = {
   name: 'Split1',
@@ -55,10 +56,11 @@ test('splitChangesUpdater / compute splits mutation', () => {
   expect(splitsMutation.segments).toEqual(['A', 'B']);
 });
 
-test('splitChangesUpdater / factory', (done) => {
+describe('splitChangesUpdater', () => {
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
   const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter }, telemetryTrackerFactory());
+  const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges');
   const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
 
   const splitsCache = new SplitsCacheInMemory();
@@ -73,7 +75,12 @@ test('splitChangesUpdater / factory', (done) => {
 
   const splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, readinessManager.splits, 1000, 1);
 
-  splitChangesUpdater().then((result) => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('test without payload', async () => {
+    const result = await splitChangesUpdater();
     expect(setChangeNumber).toBeCalledTimes(1);
     expect(setChangeNumber).lastCalledWith(splitChangesMock1.till);
     expect(addSplits).toBeCalledTimes(1);
@@ -83,7 +90,31 @@ test('splitChangesUpdater / factory', (done) => {
     expect(registerSegments).toBeCalledTimes(1);
     expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
     expect(result).toBe(true);
-    done();
   });
 
+  test('test with payload', async () => {
+    const ARCHIVED_FF = 'ARCHIVED';
+    let index = 0;
+    for (const notification of splitNotifications) {
+      const payload = notification.decoded as ISplit;
+      const changeNumber = payload.changeNumber;
+
+      await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber })).resolves.toBe(true);
+      // fetch not being called
+      expect(fetchSplitChanges).toBeCalledTimes(0);
+      // Change number being updated
+      expect(setChangeNumber).toBeCalledTimes(index + 1);
+      expect(setChangeNumber.mock.calls[index][0]).toEqual(changeNumber);
+      // Add feature flag in notification
+      expect(addSplits).toBeCalledTimes(index + 1);
+      expect(addSplits.mock.calls[index][0].length).toBe(payload.status === ARCHIVED_FF ? 0 : 1);
+      // Remove feature flag if status is ARCHIVED
+      expect(removeSplits).toBeCalledTimes(index + 1);
+      expect(removeSplits.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [payload.name] : []);
+      // fetch segments after feature flag update
+      expect(registerSegments).toBeCalledTimes(index + 1);
+      expect(registerSegments.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [] : ['maur-2']);
+      index++;
+    }
+  });
 });
