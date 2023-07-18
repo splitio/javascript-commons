@@ -1,5 +1,5 @@
 1.8.4 (July 18, 2023)
- - Improved streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
+ - Updated streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
 
 1.8.3 (June 29, 2023)
  - Updated some transitive dependencies for vulnerability fixes.
