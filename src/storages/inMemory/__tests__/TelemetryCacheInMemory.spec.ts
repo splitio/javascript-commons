@@ -211,7 +211,7 @@ describe('TELEMETRY CACHE', () => {
   test('"isEmpty" and "pop" methods', () => {
     const cache = new TelemetryCacheInMemory();
     const expectedEmptyPayload = {
-      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: []
+      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: [], ufs:{ sp: 0, ms: 0 }
     };
 
     // Initially, the cache is empty
@@ -225,6 +225,23 @@ describe('TELEMETRY CACHE', () => {
     // Pop the data and check that the cache is empty again
     expect(cache.pop()).toEqual({ ...expectedEmptyPayload, mE: { 'tr': 1 } });
     expect(cache.isEmpty()).toBe(true);
+  });
+
+  test('updates from SSE', () => {
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 3, ms: 2});
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    cache.recordUpdatesFromSSE(SPLITS);
+    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 2, ms: 2});
+    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
   });
 
 });

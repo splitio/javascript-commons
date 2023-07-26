@@ -1,3 +1,6 @@
+1.9.0 (July 18, 2023)
+ - Updated streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
+
 1.8.3 (June 29, 2023)
  - Updated some transitive dependencies for vulnerability fixes.
  - Updated SDK_READY_TIMED_OUT event to be emitted immediately when a connection error occurs using pluggable storage (i.e., when the wrapper `connect` promise is rejected) in consumer and partial consumer modes.
