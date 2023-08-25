@@ -709,7 +709,7 @@ export namespace SplitIO {
    * SplitFilter type.
    * @typedef {string} SplitFilterType
    */
-  export type SplitFilterType = 'byName' | 'byPrefix';
+  export type SplitFilterType = 'byName' | 'byPrefix' | 'bySet';
   /**
    * Defines a feature flag filter, described by a type and list of values.
    */
