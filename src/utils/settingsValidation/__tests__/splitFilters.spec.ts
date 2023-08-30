@@ -17,6 +17,17 @@ describe('validateSplitFilters', () => {
     groupedFilters: { bySet: [], byName: [], byPrefix: [] }
   };
 
+  const getOutput = (testIndex: number) => {
+    return {
+      // @ts-ignore
+      validFilters: [...flagSetValidFilters[testIndex]],
+      queryString: queryStrings[testIndex],
+      groupedFilters: groupedFilters[testIndex]
+    };
+  };
+
+  const regexp = /^[a-z][_a-z0-9]{0,49}$/;
+
   afterEach(() => { loggerMock.mockClear(); });
 
   test('Returns default output with empty values if `splitFilters` is an invalid object or `mode` is not \'standalone\'', () => {
@@ -91,23 +102,7 @@ describe('validateSplitFilters', () => {
     }
   });
 
-});
-
-
-describe('validateSetFilter', () => {
-
-  const getOutput = (testIndex: number) => {
-    return {
-      // @ts-ignore
-      validFilters: [...flagSetValidFilters[testIndex]],
-      queryString: queryStrings[testIndex],
-      groupedFilters: groupedFilters[testIndex]
-    };
-  };
-
-  const regexp = /^[a-z][_a-z0-9]{0,49}$/;
-
-  test('Config validations', () => {
+  test('Validates flag set filters', () => {
     // extra spaces trimmed and sorted query output
     expect(validateSplitFilters(loggerMock, splitFilters[6], STANDALONE_MODE)).toEqual(getOutput(6)); // trim & sort
     expect(loggerMock.warn.mock.calls[0]).toEqual([WARN_TRIMMING, ['settings', 'bySet filter value', ' set_1']]);
