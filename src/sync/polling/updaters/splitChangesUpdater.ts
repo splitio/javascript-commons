@@ -1,7 +1,7 @@
 import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
-import { ISplit, ISplitChangesResponse } from '../../../dtos/types';
+import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
@@ -46,14 +46,28 @@ interface ISplitMutations {
 }
 
 /**
+ * If there are defined filters and one feature flag doesn't match with them, its status is changed to 'ARCHIVE' to avoid storing it
+ * If there are set filter defined, names filter is ignored
+ *
+ * @param featureFlag feature flag to be evaluated
+ * @param filters splitFiltersValidation bySet | byName
+ */
+function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
+  const { bySet: setsFilter, byName: namesFilter } = filters.groupedFilters;
+  if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.find((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
+  if (namesFilter.length > 0) return namesFilter.indexOf(featureFlag.name) > -1;
+  return true;
+}
+
+/**
  * Given the list of splits from /splitChanges endpoint, it returns the mutations,
  * i.e., an object with added splits, removed splits and used segments.
  * Exported for testing purposes.
  */
-export function computeSplitsMutation(entries: ISplit[]): ISplitMutations {
+export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersValidation): ISplitMutations {
   const segments = new _Set<string>();
   const computed = entries.reduce((accum, split) => {
-    if (split.status === 'ACTIVE') {
+    if (split.status === 'ACTIVE' && matchFilters(split, filters)) {
       accum.added.push([split.name, split]);
 
       parseSegments(split).forEach((segmentName: string) => {
@@ -90,6 +104,7 @@ export function splitChangesUpdaterFactory(
   splitChangesFetcher: ISplitChangesFetcher,
   splits: ISplitsCacheBase,
   segments: ISegmentsCacheBase,
+  splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
@@ -126,7 +141,7 @@ export function splitChangesUpdaterFactory(
         .then((splitChanges: ISplitChangesResponse) => {
           startingUp = false;
 
-          const mutation = computeSplitsMutation(splitChanges.splits);
+          const mutation = computeSplitsMutation(splitChanges.splits, splitFiltersValidation);
 
           log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
           log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
