@@ -163,7 +163,8 @@ export interface ISplit {
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
-  }
+  },
+  sets: string[]
 }
 
 // Split definition used in offline mode

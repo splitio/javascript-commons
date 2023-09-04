@@ -5,7 +5,7 @@ import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, WARN_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
-import { uniq } from '../lang';
+import { find, uniq } from '../lang';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -121,7 +121,7 @@ function sanitizeFlagSets(log: ILogger, flagsets: string[]) {
 }
 
 function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: SplitIO.SplitFilterType) {
-  return validFilters.find(filter => filter.type === filterType && filter.values.length > 0);
+  return find(validFilters, (filter: SplitIO.SplitFilter) => filter.type === filterType && filter.values.length > 0);
 }
 
 /**
