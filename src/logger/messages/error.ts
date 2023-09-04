@@ -34,4 +34,5 @@ export const codesError: [number, string][] = [
   [c.ERROR_LOCALHOST_MODULE_REQUIRED, c.LOG_PREFIX_SETTINGS + ': an invalid value was received for "sync.localhostMode" config. A valid entity should be provided for localhost mode.'],
   [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': the provided storage is invalid.%s Falling back into default MEMORY storage'],
   [c.ERROR_MIN_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': the provided "%s" config param is lower than allowed. Setting to the minimum value %s seconds'],
+  [c.ERROR_TOO_MANY_SETS, c.LOG_PREFIX_SETTINGS + ': the amount of flag sets provided are big causing uri length error.'],
 ];
