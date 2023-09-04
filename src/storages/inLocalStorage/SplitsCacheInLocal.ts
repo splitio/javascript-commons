@@ -21,7 +21,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @param {number | undefined} expirationTimestamp
    * @param {ISplitFiltersValidation} splitFiltersValidation
    */
-  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [], originalFilters: [] }) {
     super();
     this.keys = keys;
     this.splitFiltersValidation = splitFiltersValidation;

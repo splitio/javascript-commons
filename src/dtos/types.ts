@@ -209,5 +209,6 @@ export interface IMetadata {
 export type ISplitFiltersValidation = {
   queryString: string | null,
   groupedFilters: Record<SplitIO.SplitFilterType, string[]>,
-  validFilters: SplitIO.SplitFilter[]
+  validFilters: SplitIO.SplitFilter[],
+  originalFilters: SplitIO.SplitFilter[]
 };

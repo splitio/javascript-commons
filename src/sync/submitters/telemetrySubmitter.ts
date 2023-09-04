@@ -3,12 +3,13 @@ import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
 import { CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, NONE, DEBUG_ENUM, OPTIMIZED_ENUM, NONE_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
-import { ConsentStatus, ISettings, SDKMode } from '../../types';
+import { ConsentStatus, ISettings, SDKMode, SplitIO } from '../../types';
 import { base } from '../../utils/settingsValidation';
 import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
+import { ISplitFiltersValidation } from '../../dtos/types';
 
 const OPERATION_MODE_MAP = {
   [STANDALONE_MODE]: STANDALONE_ENUM,
@@ -38,6 +39,25 @@ function getRedundantActiveFactories() {
   }, 0);
 }
 
+function getTelemetryFlagSetsStats(splitFiltersValidation: ISplitFiltersValidation) {
+  // Group every configured flagset in an unique array called originalSets
+  const originalSets: any[] = [];
+  splitFiltersValidation.originalFilters.forEach((filter: SplitIO.SplitFilter) => {
+    if (filter.type === 'bySet') {
+      if (Array.isArray(filter.values) && filter.values.length > 0) {
+        originalSets.push(...filter.values);
+        return;
+      }
+      else originalSets.push(filter.values);
+    }
+  });
+
+  const flagSetsTotal = originalSets.length;
+  const flagSetsValid = splitFiltersValidation.groupedFilters.bySet.length;
+  const flagSetsIgnored = flagSetsTotal - flagSetsValid;
+  return { flagSetsTotal, flagSetsIgnored };
+}
+
 export function getTelemetryConfigStats(mode: SDKMode, storageType: string): TelemetryConfigStats {
   return {
     oM: OPERATION_MODE_MAP[mode], // @ts-ignore lower case of storage type
@@ -58,6 +78,8 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
     pop(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
       const isClientSide = settings.core.key !== undefined;
+
+      const { flagSetsTotal, flagSetsIgnored } = getTelemetryFlagSetsStats(settings.sync.__splitFiltersValidation);
 
       return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
@@ -86,7 +108,9 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
         nR: telemetry.getNonReadyUsage(),
         t: telemetry.popTags(),
         i: settings.integrations && settings.integrations.map(int => int.type),
-        uC: settings.userConsent ? USER_CONSENT_MAP[settings.userConsent] : 0
+        uC: settings.userConsent ? USER_CONSENT_MAP[settings.userConsent] : 0,
+        fsT: flagSetsTotal,
+        fsI: flagSetsIgnored
       });
     }
   };

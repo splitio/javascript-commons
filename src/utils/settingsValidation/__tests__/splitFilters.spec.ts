@@ -7,14 +7,15 @@ import { splitFilters, queryStrings, groupedFilters, flagSetValidFilters } from 
 
 // Test target
 import { validateSplitFilters } from '../splitFilters';
-import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_TRIMMING, WARN_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_SPLITS_FILTER_LOWERCASE_SET } from '../../../logger/constants';
+import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_TRIMMING, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_SPLITS_FILTER_LOWERCASE_SET } from '../../../logger/constants';
 
 describe('validateSplitFilters', () => {
 
   const defaultOutput = {
     validFilters: [],
     queryString: null,
-    groupedFilters: { bySet: [], byName: [], byPrefix: [] }
+    groupedFilters: { bySet: [], byName: [], byPrefix: [] },
+    originalFilters: []
   };
 
   const getOutput = (testIndex: number) => {
@@ -22,7 +23,8 @@ describe('validateSplitFilters', () => {
       // @ts-ignore
       validFilters: [...flagSetValidFilters[testIndex]],
       queryString: queryStrings[testIndex],
-      groupedFilters: groupedFilters[testIndex]
+      groupedFilters: groupedFilters[testIndex],
+      originalFilters: splitFilters[testIndex]
     };
   };
 
@@ -57,7 +59,8 @@ describe('validateSplitFilters', () => {
     const output = {
       validFilters: [...splitFilters],
       queryString: null,
-      groupedFilters: { bySet: [], byName: [], byPrefix: [] }
+      groupedFilters: { bySet: [], byName: [], byPrefix: [] },
+      originalFilters: [...splitFilters]
     };
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // filters without values
     expect(loggerMock.debug).toBeCalledWith(SETTINGS_SPLITS_FILTER, [null]);
@@ -69,6 +72,11 @@ describe('validateSplitFilters', () => {
       { type: null, values: [] },
       { type: 'byName', values: [13] });
     output.validFilters.push({ type: 'byName', values: [13] });
+    output.originalFilters.push(
+      { type: 'invalid', values: [] },
+      { type: 'byName', values: 'invalid' },
+      { type: null, values: [] },
+      { type: 'byName', values: [13] });
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // some filters are invalid
     expect(loggerMock.debug.mock.calls).toEqual([[SETTINGS_SPLITS_FILTER, [null]]]);
     expect(loggerMock.warn.mock.calls).toEqual([
@@ -91,7 +99,8 @@ describe('validateSplitFilters', () => {
         const output = {
           validFilters: [...splitFilters[i]],
           queryString: queryStrings[i],
-          groupedFilters: groupedFilters[i]
+          groupedFilters: groupedFilters[i],
+          originalFilters: [...splitFilters[i]]
         };
         expect(validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toEqual(output); // splitFilters #${i}
         expect(loggerMock.debug).lastCalledWith(SETTINGS_SPLITS_FILTER, [queryStrings[i]]);
@@ -108,24 +117,25 @@ describe('validateSplitFilters', () => {
     expect(loggerMock.warn.mock.calls[0]).toEqual([WARN_TRIMMING, ['settings', 'bySet filter value', ' set_1']]);
     expect(loggerMock.warn.mock.calls[1]).toEqual([WARN_TRIMMING, ['settings', 'bySet filter value', 'set_3 ']]);
     expect(loggerMock.warn.mock.calls[2]).toEqual([WARN_TRIMMING, ['settings', 'bySet filter value', ' set_a ']]);
-    expect(loggerMock.warn.mock.calls[3]).toEqual([WARN_SPLITS_FILTER_NAME_AND_SET]);
+    expect(loggerMock.error.mock.calls[0]).toEqual([ERROR_SPLITS_FILTER_NAME_AND_SET]);
 
     expect(validateSplitFilters(loggerMock, splitFilters[7], STANDALONE_MODE)).toEqual(getOutput(7)); // lowercase and regexp
-    expect(loggerMock.warn.mock.calls[4]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['seT_c']]); // lowercase
-    expect(loggerMock.warn.mock.calls[5]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
-    expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_ 1', regexp, 'set_ 1']]); // empty spaces
-    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set _3', regexp, 'set _3']]); // empty spaces
-    expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['3set_a', regexp, '3set_a']]); // start with a letter
-    expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_2', regexp, '_set_2']]); // start with a letter
-    expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_1234567890_1234567890_234567890_1234567890_1234567890', regexp, 'set_1234567890_1234567890_234567890_1234567890_1234567890']]); // max of 50 characters
-    expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_SPLITS_FILTER_NAME_AND_SET]);
+    expect(loggerMock.warn.mock.calls[3]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['seT_c']]); // lowercase
+    expect(loggerMock.warn.mock.calls[4]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
+    expect(loggerMock.warn.mock.calls[5]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_ 1', regexp, 'set_ 1']]); // empty spaces
+    expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set _3', regexp, 'set _3']]); // empty spaces
+    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['3set_a', regexp, '3set_a']]); // start with a letter
+    expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_2', regexp, '_set_2']]); // start with a letter
+    expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_1234567890_1234567890_234567890_1234567890_1234567890', regexp, 'set_1234567890_1234567890_234567890_1234567890_1234567890']]); // max of 50 characters
+    expect(loggerMock.error.mock.calls[1]).toEqual([ERROR_SPLITS_FILTER_NAME_AND_SET]);
 
     expect(validateSplitFilters(loggerMock, splitFilters[8], STANDALONE_MODE)).toEqual(getOutput(8)); // lowercase and dedupe
-    expect(loggerMock.warn.mock.calls[12]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['SET_2']]); // lowercase
-    expect(loggerMock.warn.mock.calls[13]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
-    expect(loggerMock.warn.mock.calls[14]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_3!', regexp, 'set_3!']]); // special character
-    expect(loggerMock.warn.mock.calls[15]).toEqual([WARN_SPLITS_FILTER_NAME_AND_SET]);
+    expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['SET_2']]); // lowercase
+    expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
+    expect(loggerMock.warn.mock.calls[12]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_3!', regexp, 'set_3!']]); // special character
+    expect(loggerMock.error.mock.calls[2]).toEqual([ERROR_SPLITS_FILTER_NAME_AND_SET]);
 
-    expect(loggerMock.warn.mock.calls.length).toEqual(16);
+    expect(loggerMock.warn.mock.calls.length).toEqual(13);
+    expect(loggerMock.error.mock.calls.length).toEqual(3);
   });
 });

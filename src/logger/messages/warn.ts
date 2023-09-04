@@ -33,7 +33,6 @@ export const codesWarn: [number, string][] = codesError.concat([
 
   [c.STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching MySegments due to an error processing %s notification: %s'],
   [c.STREAMING_PARSING_SPLIT_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching SplitChanges due to an error processing SPLIT_UPDATE notification: %s'],
-  [c.WARN_SPLITS_FILTER_NAME_AND_SET, c.LOG_PREFIX_SETTINGS+': names and sets filter cannot be used at the same time. The sdk will proceed using sets filter.'],
   [c.WARN_SPLITS_FILTER_INVALID_SET, c.LOG_PREFIX_SETTINGS+': you passed %s, flag set must adhere to the regular expressions %s. This means a flag set must start with a letter, be in lowercase, alphanumeric and have a max length of 50 characteres. %s was discarded.'],
   [c.WARN_SPLITS_FILTER_LOWERCASE_SET, c.LOG_PREFIX_SETTINGS+': flag set %s should be all lowercase - converting string to lowercase.'],
 ]);

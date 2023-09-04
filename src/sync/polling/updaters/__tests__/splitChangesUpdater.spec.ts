@@ -92,7 +92,7 @@ test('splitChangesUpdater / segments parser', () => {
 });
 
 test('splitChangesUpdater / compute splits mutation', () => {
-  const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+  const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [], originalFilters: [] };
 
   let splitsMutation = computeSplitsMutation([activeSplitWithSegments, archivedSplit] as ISplit[], splitFiltersValidation);
 
@@ -111,7 +111,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
 test('splitChangesUpdater / compute splits mutation with filters', () => {
   // SDK initialization with sets: [set_a, set_b]
-  let splitFiltersValidation = { queryString: '&sets=set_a,set_b', groupedFilters: { bySet: ['set_a','set_b'], byName: ['name_1'], byPrefix: [] }, validFilters: [] };
+  let splitFiltersValidation = { queryString: '&sets=set_a,set_b', groupedFilters: { bySet: ['set_a','set_b'], byName: ['name_1'], byPrefix: [] }, validFilters: [], originalFilters: [] };
 
   // fetching new feature flag in sets A & B
   let splitsMutation = computeSplitsMutation([testFFSetsAB], splitFiltersValidation);
@@ -139,7 +139,7 @@ test('splitChangesUpdater / compute splits mutation with filters', () => {
   expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
 
   // SDK initialization with names: ['test2']
-  splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
+  splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [], originalFilters: [] };
   splitsMutation = computeSplitsMutation([testFFSetsAB], splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
@@ -168,7 +168,7 @@ describe('splitChangesUpdater', () => {
   const readinessManager = readinessManagerFactory(EventEmitter);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
-  const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+  const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [], originalFilters: [] };
 
   const splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1);
 

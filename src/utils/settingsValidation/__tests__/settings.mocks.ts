@@ -77,7 +77,8 @@ export const fullSettings: ISettings = {
     __splitFiltersValidation: {
       validFilters: [],
       queryString: null,
-      groupedFilters: { bySet: [], byName: [], byPrefix: [] }
+      groupedFilters: { bySet: [], byName: [], byPrefix: [] },
+      originalFilters: [],
     },
     enabled: true
   },
