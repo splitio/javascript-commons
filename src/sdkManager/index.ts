@@ -31,7 +31,8 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     killed: splitObject.killed,
     changeNumber: splitObject.changeNumber || 0,
     treatments: collectTreatments(splitObject),
-    configs: splitObject.configurations || {}
+    configs: splitObject.configurations || {},
+    sets: splitObject.sets || []
   };
 }
 
