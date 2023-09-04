@@ -56,9 +56,8 @@ export function splitApiFactory(
       const url = `${urls.sdk}/splitChanges?since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
-          if (err.statusCode === 414)
-            settings.log.error(ERROR_TOO_MANY_SETS);
-          return err;
+          if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);
+          throw err;
         });
     },
 
