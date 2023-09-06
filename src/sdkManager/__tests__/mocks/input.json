@@ -40,5 +40,6 @@
   ],
   "configurations": {
     "on": "\"color\": \"green\""
-  }
+  },
+  "sets": ["set_a"]
 }

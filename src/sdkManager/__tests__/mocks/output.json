@@ -6,5 +6,6 @@
   "treatments": ["on", "off"],
   "configs": {
     "on": "\"color\": \"green\""
-  }
+  },
+  "sets": ["set_a"]
 }

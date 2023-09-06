@@ -610,6 +610,11 @@ export namespace SplitIO {
     configs: {
       [treatmentName: string]: string
     }
+    /**
+     * list of sets per feature flag
+     * @property {string[]} sets
+     */
+    sets: string[]
   };
   /**
    * A promise that resolves to a feature flag view.
