@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { isString, isFiniteNumber, uniqAsStrings } from '../../utils/lang';
 import {
@@ -295,5 +294,6 @@ export function GaToSplit(sdkOptions: GoogleAnalyticsToSplitOptions, params: IIn
   }
 
   // Register the plugin, even if config is invalid, since, if not provided, it will block `ga` command queue.
+  // eslint-disable-next-line no-undef
   providePlugin(window, 'splitTracker', SplitTracker, log, sdkOptions.autoRequire === true, telemetryTracker);
 }
