@@ -41,18 +41,11 @@ function getRedundantActiveFactories() {
 
 function getTelemetryFlagSetsStats(splitFiltersValidation: ISplitFiltersValidation) {
   // Group every configured flagset in an unique array called originalSets
-  const originalSets: any[] = [];
-  splitFiltersValidation.originalFilters.forEach((filter: SplitIO.SplitFilter) => {
-    if (filter.type === 'bySet') {
-      if (Array.isArray(filter.values) && filter.values.length > 0) {
-        originalSets.push(...filter.values);
-        return;
-      }
-      else originalSets.push(filter.values);
-    }
+  let flagSetsTotal = 0;
+  splitFiltersValidation.validFilters.forEach((filter: SplitIO.SplitFilter) => {
+    if (filter.type === 'bySet') flagSetsTotal += filter.values.length;
   });
 
-  const flagSetsTotal = originalSets.length;
   const flagSetsValid = splitFiltersValidation.groupedFilters.bySet.length;
   const flagSetsIgnored = flagSetsTotal - flagSetsValid;
   return { flagSetsTotal, flagSetsIgnored };

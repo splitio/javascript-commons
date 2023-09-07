@@ -124,10 +124,3 @@ export const groupedFilters = [
     byPrefix: []
   },
 ];
-
-export const flagSetValidFilters = [
-  undefined, undefined, undefined, undefined, undefined, undefined,
-  [{ type: 'bySet', values: valuesExamples[10] }],
-  [{ type: 'bySet', values: valuesExamples[12] }],
-  [{ type: 'bySet', values: valuesExamples[14] }],
-];

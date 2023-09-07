@@ -143,7 +143,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
     validFilters: [],
     queryString: null,
     groupedFilters: { bySet: [], byName: [], byPrefix: [] },
-    originalFilters: []
   } as ISplitFiltersValidation;
 
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
@@ -159,7 +158,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
     return res;
   }
 
-  res.originalFilters = maybeSplitFilters;
   // Validate filters and group their values by filter type inside `groupedFilters` object
   res.validFilters = maybeSplitFilters.filter((filter, index) => {
     if (filter && validateFilterType(filter.type) && Array.isArray(filter.values)) {
@@ -181,7 +179,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   if (setFilter) {
     if (configuredFilter(res.validFilters, 'byName')) log.error(ERROR_SPLITS_FILTER_NAME_AND_SET);
     objectAssign(res.groupedFilters, { byName: [], byPrefix: [] });
-    res.validFilters = [{type: 'bySet', values: res.groupedFilters.bySet}];
   }
 
   // build query string

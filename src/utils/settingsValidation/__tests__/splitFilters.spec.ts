@@ -3,7 +3,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { STANDALONE_MODE, CONSUMER_MODE } from '../../constants';
 
 // Split filter and QueryStrings examples
-import { splitFilters, queryStrings, groupedFilters, flagSetValidFilters } from '../../../__tests__/mocks/fetchSpecificSplits';
+import { splitFilters, queryStrings, groupedFilters } from '../../../__tests__/mocks/fetchSpecificSplits';
 
 // Test target
 import { validateSplitFilters } from '../splitFilters';
@@ -15,16 +15,14 @@ describe('validateSplitFilters', () => {
     validFilters: [],
     queryString: null,
     groupedFilters: { bySet: [], byName: [], byPrefix: [] },
-    originalFilters: []
   };
 
   const getOutput = (testIndex: number) => {
     return {
       // @ts-ignore
-      validFilters: [...flagSetValidFilters[testIndex]],
+      validFilters: splitFilters[testIndex],
       queryString: queryStrings[testIndex],
       groupedFilters: groupedFilters[testIndex],
-      originalFilters: splitFilters[testIndex]
     };
   };
 
@@ -60,7 +58,6 @@ describe('validateSplitFilters', () => {
       validFilters: [...splitFilters],
       queryString: null,
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
-      originalFilters: [...splitFilters]
     };
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // filters without values
     expect(loggerMock.debug).toBeCalledWith(SETTINGS_SPLITS_FILTER, [null]);
@@ -72,11 +69,6 @@ describe('validateSplitFilters', () => {
       { type: null, values: [] },
       { type: 'byName', values: [13] });
     output.validFilters.push({ type: 'byName', values: [13] });
-    output.originalFilters.push(
-      { type: 'invalid', values: [] },
-      { type: 'byName', values: 'invalid' },
-      { type: null, values: [] },
-      { type: 'byName', values: [13] });
     expect(validateSplitFilters(loggerMock, splitFilters, STANDALONE_MODE)).toEqual(output); // some filters are invalid
     expect(loggerMock.debug.mock.calls).toEqual([[SETTINGS_SPLITS_FILTER, [null]]]);
     expect(loggerMock.warn.mock.calls).toEqual([
@@ -100,7 +92,6 @@ describe('validateSplitFilters', () => {
           validFilters: [...splitFilters[i]],
           queryString: queryStrings[i],
           groupedFilters: groupedFilters[i],
-          originalFilters: [...splitFilters[i]]
         };
         expect(validateSplitFilters(loggerMock, splitFilters[i], STANDALONE_MODE)).toEqual(output); // splitFilters #${i}
         expect(loggerMock.debug).lastCalledWith(SETTINGS_SPLITS_FILTER, [queryStrings[i]]);
