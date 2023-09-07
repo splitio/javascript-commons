@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, WARN_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
 
@@ -142,7 +142,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   const res = {
     validFilters: [],
     queryString: null,
-    groupedFilters: { bySet: [], byName: [], byPrefix: [] }
+    groupedFilters: { bySet: [], byName: [], byPrefix: [] },
   } as ISplitFiltersValidation;
 
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
@@ -177,9 +177,8 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   const setFilter = configuredFilter(res.validFilters, 'bySet');
   // Clean all filters if set filter is present
   if (setFilter) {
-    if (configuredFilter(res.validFilters, 'byName')) log.warn(WARN_SPLITS_FILTER_NAME_AND_SET);
+    if (configuredFilter(res.validFilters, 'byName')) log.error(ERROR_SPLITS_FILTER_NAME_AND_SET);
     objectAssign(res.groupedFilters, { byName: [], byPrefix: [] });
-    res.validFilters = [setFilter];
   }
 
   // build query string

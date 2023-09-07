@@ -97,9 +97,8 @@ export const WARN_SPLITS_FILTER_EMPTY = 221;
 export const WARN_SDK_KEY = 222;
 export const STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 = 223;
 export const STREAMING_PARSING_SPLIT_UPDATE = 224;
-export const WARN_SPLITS_FILTER_NAME_AND_SET = 225;
-export const WARN_SPLITS_FILTER_INVALID_SET = 226;
-export const WARN_SPLITS_FILTER_LOWERCASE_SET = 227;
+export const WARN_SPLITS_FILTER_INVALID_SET = 225;
+export const WARN_SPLITS_FILTER_LOWERCASE_SET = 226;
 
 export const ERROR_ENGINE_COMBINER_IFELSEIF = 300;
 export const ERROR_LOGLEVEL_INVALID = 301;
@@ -129,6 +128,7 @@ export const ERROR_STORAGE_INVALID = 324;
 export const ERROR_NOT_BOOLEAN = 325;
 export const ERROR_MIN_CONFIG_PARAM = 326;
 export const ERROR_TOO_MANY_SETS = 327;
+export const ERROR_SPLITS_FILTER_NAME_AND_SET = 328;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';
