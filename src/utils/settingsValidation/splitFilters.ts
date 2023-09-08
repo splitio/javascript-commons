@@ -27,7 +27,7 @@ const FILTERS_METADATA = [
   }
 ];
 
-const VALID_FLAGSET_REGEX = /^[a-z][_a-z0-9]{0,49}$/;
+const VALID_FLAGSET_REGEX = /^[a-z0-9][_a-z0-9]{0,49}$/;
 const CAPITAL_LETTERS_REGEX = /[A-Z]/;
 
 /**
@@ -90,11 +90,11 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 /**
  * Sanitizes set names list taking in account:
  *  - It should be lowercase
- *  - Must adhere the following regular expression /^[a-z][_a-z0-9]{0,49}$/ that means
- *   - must start with a letter
+ *  - Must adhere the following regular expression /^[a-z0-9][_a-z0-9]{0,49}$/ that means
+ *   - must start with a letter or number
  *   - Be in lowercase
  *   - Be alphanumeric
- *   - have a max length of 50 characteres
+ *   - have a max length of 50 characters
  *
  * @param {ILogger} log
  * @param {string[]} flagsets

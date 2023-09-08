@@ -26,7 +26,7 @@ describe('validateSplitFilters', () => {
     };
   };
 
-  const regexp = /^[a-z][_a-z0-9]{0,49}$/;
+  const regexp = /^[a-z0-9][_a-z0-9]{0,49}$/;
 
   afterEach(() => { loggerMock.mockClear(); });
 
@@ -115,18 +115,17 @@ describe('validateSplitFilters', () => {
     expect(loggerMock.warn.mock.calls[4]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
     expect(loggerMock.warn.mock.calls[5]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_ 1', regexp, 'set_ 1']]); // empty spaces
     expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set _3', regexp, 'set _3']]); // empty spaces
-    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['3set_a', regexp, '3set_a']]); // start with a letter
-    expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_2', regexp, '_set_2']]); // start with a letter
-    expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_1234567890_1234567890_234567890_1234567890_1234567890', regexp, 'set_1234567890_1234567890_234567890_1234567890_1234567890']]); // max of 50 characters
+    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_2', regexp, '_set_2']]); // start with a letter
+    expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_1234567890_1234567890_234567890_1234567890_1234567890', regexp, 'set_1234567890_1234567890_234567890_1234567890_1234567890']]); // max of 50 characters
     expect(loggerMock.error.mock.calls[1]).toEqual([ERROR_SPLITS_FILTER_NAME_AND_SET]);
 
     expect(validateSplitFilters(loggerMock, splitFilters[8], STANDALONE_MODE)).toEqual(getOutput(8)); // lowercase and dedupe
-    expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['SET_2']]); // lowercase
-    expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
-    expect(loggerMock.warn.mock.calls[12]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_3!', regexp, 'set_3!']]); // special character
+    expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['SET_2']]); // lowercase
+    expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_SPLITS_FILTER_LOWERCASE_SET, ['set_B']]); // lowercase
+    expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set_3!', regexp, 'set_3!']]); // special character
     expect(loggerMock.error.mock.calls[2]).toEqual([ERROR_SPLITS_FILTER_NAME_AND_SET]);
 
-    expect(loggerMock.warn.mock.calls.length).toEqual(13);
+    expect(loggerMock.warn.mock.calls.length).toEqual(12);
     expect(loggerMock.error.mock.calls.length).toEqual(3);
   });
 });
