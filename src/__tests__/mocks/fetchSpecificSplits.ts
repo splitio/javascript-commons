@@ -14,7 +14,7 @@ const valuesExamples = [
   [' set_1','set_3 ',' set_a ','set_2','set_c','set_b'], // [9] trim
   ['set_1','set_2','set_3','set_a','set_b','set_c'], // [10] sanitized [9]
   ['set_ 1','set _3','3set_a','_set_2','seT_c','set_B','set_1234567890_1234567890_234567890_1234567890_1234567890','set_a','set_2'], // [11] lowercase & regexp
-  ['set_2','set_a','set_b','set_c'], // [12] sanitized [11]
+  ['3set_a','set_2','set_a','set_b','set_c'], // [12] sanitized [11]
   ['set_2','set_a','SET_2','set_a','set_b','set_B','set_1','set_3!'], // [13] dedupe, dedupe with case sensitive
   ['set_1','set_2','set_a','set_b'], // [14] sanitized [13]
 ];
@@ -77,7 +77,7 @@ export const queryStrings = [
   '&names=%25,%2525,__a,__%D1%88', // [5]
   // FlagSet filters
   '&sets=set_1,set_2,set_3,set_a,set_b,set_c', // [6]
-  '&sets=set_2,set_a,set_b,set_c', // [7]
+  '&sets=3set_a,set_2,set_a,set_b,set_c', // [7]
   '&sets=set_1,set_2,set_a,set_b', // [8]
 ];
 
