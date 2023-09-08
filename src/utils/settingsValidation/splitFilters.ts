@@ -94,7 +94,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *   - must start with a letter or number
  *   - Be in lowercase
  *   - Be alphanumeric
- *   - have a max length of 50 characteres
+ *   - have a max length of 50 characters
  *
  * @param {ILogger} log
  * @param {string[]} flagsets
