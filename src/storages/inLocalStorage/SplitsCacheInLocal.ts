@@ -13,7 +13,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private readonly keys: KeyBuilderCS;
   private readonly splitFiltersValidation: ISplitFiltersValidation;
   private hasSync?: boolean;
-  private cacheReadyButNeedsToFlush: boolean = false;
   private updateNewFilter?: boolean;
 
   /**
@@ -133,11 +132,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   setChangeNumber(changeNumber: number): boolean {
-    // when cache is ready but using a new split query, we must clear all split data
-    if (this.cacheReadyButNeedsToFlush) {
-      this.clear();
-      this.cacheReadyButNeedsToFlush = false;
-    }
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
@@ -220,7 +214,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @override
    */
   checkCache(): boolean {
-    return this.getChangeNumber() > -1 || this.cacheReadyButNeedsToFlush;
+    return this.getChangeNumber() > -1;
   }
 
   /**
@@ -237,7 +231,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   private _checkFilterQuery() {
-    const { queryString, groupedFilters } = this.splitFiltersValidation;
+    const { queryString } = this.splitFiltersValidation;
     const queryKey = this.keys.buildSplitsFilterQueryKey();
     const currentQueryString = localStorage.getItem(queryKey);
 
@@ -251,19 +245,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
           // * set change number to -1, to fetch splits with -1 `since` value.
           localStorage.setItem(this.keys.buildSplitsTillKey(), '-1');
 
-          // * remove from cache splits that doesn't match with the new filters
-          this.getSplitNames().forEach((splitName) => {
-            if (queryString && (
-              // @TODO consider redefining `groupedFilters` to expose a method like `groupedFilters::filter(splitName): boolean`
-              groupedFilters.byName.indexOf(splitName) > -1 ||
-              groupedFilters.byPrefix.some((prefix: string) => splitName.startsWith(prefix + '__'))
-            )) {
-              // * set `cacheReadyButNeedsToFlush` so that `checkCache` returns true (the storage is ready to be used) and the data is cleared before updating on first successful splits fetch
-              this.cacheReadyButNeedsToFlush = true;
-              return;
-            }
-            this.removeSplit(splitName);
-          });
+          // * Remove all splits from cache
+          this.removeSplits(this.getSplitNames());
         }
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
