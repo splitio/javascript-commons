@@ -245,8 +245,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
           // * set change number to -1, to fetch splits with -1 `since` value.
           localStorage.setItem(this.keys.buildSplitsTillKey(), '-1');
 
-          // * Remove all splits from cache
-          this.removeSplits(this.getSplitNames());
+          // * clear cache
+          this.clear();
         }
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
