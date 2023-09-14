@@ -240,14 +240,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         // mark cache to update the new query filter on first successful splits fetch
         this.updateNewFilter = true;
 
-        // if cache is ready:
-        if (this.checkCache()) {
-          // * set change number to -1, to fetch splits with -1 `since` value.
-          localStorage.setItem(this.keys.buildSplitsTillKey(), '-1');
+        // if there is cache, clear it
+        if (this.checkCache()) this.clear();
 
-          // * clear cache
-          this.clear();
-        }
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
