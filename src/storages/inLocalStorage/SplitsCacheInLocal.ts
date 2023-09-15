@@ -4,6 +4,7 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { ISet, _Set, returnSetsUnion, setToArray } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -12,6 +13,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly splitFiltersValidation: ISplitFiltersValidation;
+  private readonly flagsetsFilter: string[];
   private hasSync?: boolean;
   private updateNewFilter?: boolean;
 
@@ -24,6 +26,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     super();
     this.keys = keys;
     this.splitFiltersValidation = splitFiltersValidation;
+    this.flagsetsFilter = this.splitFiltersValidation.groupedFilters.bySet;
 
     this._checkExpiration(expirationTimestamp);
 
@@ -105,6 +108,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
+      if (previousSplit && previousSplit.sets) this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
+      this.addToFlagsets(split);
+
       return true;
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
@@ -118,6 +124,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
+      if (split && split.sets) this.removeFromFlagsets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -249,4 +256,65 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
     // if the filter didn't change, nothing is done
   }
+
+  getNamesByFlagsets(flagsets: string[]): ISet<string>{
+    let toReturn: ISet<string> = new _Set([]);
+    flagsets.forEach(flagset => {
+      const flagsetKey = this.keys.buildFlagsetKey(flagset);
+      let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+
+      if (flagsetFromLocalStorage) {
+        const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
+        toReturn = returnSetsUnion(toReturn, flagsetCache);
+      }
+    });
+    return toReturn;
+
+  }
+
+  addToFlagsets(featureFlag: ISplit) {
+    if (!featureFlag.sets) return;
+
+    featureFlag.sets.forEach(featureFlagset => {
+
+      if (this.flagsetsFilter.length > 0 && !this.flagsetsFilter.some(filterFlagset => filterFlagset === featureFlagset)) return;
+
+      const flagsetKey = this.keys.buildFlagsetKey(featureFlagset);
+
+      let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+      if (!flagsetFromLocalStorage) flagsetFromLocalStorage = '[]';
+
+      const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
+      flagsetCache.add(featureFlag.name);
+
+      localStorage.setItem(flagsetKey, JSON.stringify(setToArray(flagsetCache)));
+    });
+  }
+
+  removeFromFlagsets(featureFlagName: string, flagsets: string[]) {
+    if (!flagsets) return;
+
+    flagsets.forEach(flagset => {
+      this.removeNames(flagset, featureFlagName);
+    });
+  }
+
+  removeNames(flagsetName: string, featureFlagName: string) {
+    const flagsetKey = this.keys.buildFlagsetKey(flagsetName);
+
+    let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+
+    if (!flagsetFromLocalStorage) return;
+
+    const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
+    flagsetCache.delete(featureFlagName);
+
+    if (flagsetCache.size === 0) {
+      localStorage.removeItem(flagsetKey);
+      return;
+    }
+
+    localStorage.setItem(flagsetKey, JSON.stringify(setToArray(flagsetCache)));
+  }
+
 }

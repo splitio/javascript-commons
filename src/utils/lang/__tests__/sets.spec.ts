@@ -1,4 +1,4 @@
-import { __getSetConstructor, SetPoly } from '../sets';
+import { __getSetConstructor, _Set, returnSetsUnion, SetPoly } from '../sets';
 
 test('__getSetConstructor', () => {
 
@@ -13,4 +13,12 @@ test('__getSetConstructor', () => {
 
   global.Set = originalSet; // restore original global Set
 
+});
+
+test('returnSetsUnion', () => {
+  const set = new _Set(['1','2','3']);
+  const set2 = new _Set(['4','5','6']);
+  expect(returnSetsUnion(set, set2)).toEqual(new _Set(['1','2','3','4','5','6']));
+  expect(set).toEqual(new _Set(['1','2','3']));
+  expect(set2).toEqual(new _Set(['4','5','6']));
 });

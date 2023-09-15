@@ -111,3 +111,11 @@ export function __getSetConstructor(): ISetConstructor {
 }
 
 export const _Set = __getSetConstructor();
+
+export function returnSetsUnion<T>(set: ISet<T>, set2: ISet<T>): ISet<T> {
+  const result = new _Set(setToArray(set));
+  set2.forEach( value => {
+    result.add(value);
+  });
+  return result;
+}
