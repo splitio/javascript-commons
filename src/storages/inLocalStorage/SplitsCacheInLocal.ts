@@ -108,7 +108,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
-      if (previousSplit && previousSplit.sets) this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
+      if (previousSplit) this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
       this.addToFlagsets(split);
 
       return true;
@@ -124,7 +124,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
-      if (split && split.sets) this.removeFromFlagsets(split.name, split.sets);
+      if (split) this.removeFromFlagsets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -291,7 +291,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  removeFromFlagsets(featureFlagName: string, flagsets: string[]) {
+  private removeFromFlagsets(featureFlagName: string, flagsets?: string[]) {
     if (!flagsets) return;
 
     flagsets.forEach(flagset => {
@@ -299,7 +299,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  removeNames(flagsetName: string, featureFlagName: string) {
+  private removeNames(flagsetName: string, featureFlagName: string) {
     const flagsetKey = this.keys.buildFlagsetKey(flagsetName);
 
     let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);

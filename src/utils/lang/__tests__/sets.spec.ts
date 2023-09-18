@@ -21,4 +21,9 @@ test('returnSetsUnion', () => {
   expect(returnSetsUnion(set, set2)).toEqual(new _Set(['1','2','3','4','5','6']));
   expect(set).toEqual(new _Set(['1','2','3']));
   expect(set2).toEqual(new _Set(['4','5','6']));
+
+  const emptySet = new _Set([]);
+  expect(returnSetsUnion(emptySet, emptySet)).toEqual(emptySet);
+  expect(returnSetsUnion(set, emptySet)).toEqual(set);
+  expect(returnSetsUnion(emptySet, set2)).toEqual(set2);
 });

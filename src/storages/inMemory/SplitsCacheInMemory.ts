@@ -34,8 +34,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
       const previousTtName = previousSplit.trafficTypeName;
       this.ttCache[previousTtName]--;
-      this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
       if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
+
+      this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
 
       if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
         this.splitsWithSegmentsCount--;
@@ -128,14 +129,14 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     });
   }
 
-  removeFromFlagsets(featureFlagName :string, flagsets: string[] | undefined) {
+  private removeFromFlagsets(featureFlagName :string, flagsets: string[] | undefined) {
     if (!flagsets) return;
     flagsets.forEach(flagset => {
       this.removeNames(flagset, featureFlagName);
     });
   }
 
-  removeNames(flagsetName: string, featureFlagName: string) {
+  private removeNames(flagsetName: string, featureFlagName: string) {
     if (!this.flagsetsCache[flagsetName]) return;
     this.flagsetsCache[flagsetName].delete(featureFlagName);
     if (this.flagsetsCache[flagsetName].size === 0) delete this.flagsetsCache[flagsetName];
