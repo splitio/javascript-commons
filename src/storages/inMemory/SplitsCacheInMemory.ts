@@ -117,7 +117,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
   }
 
-  addToFlagsets(featureFlag: ISplit) {
+  private addToFlagsets(featureFlag: ISplit) {
     if (!featureFlag.sets) return;
     featureFlag.sets.forEach(featureFlagset => {
 
