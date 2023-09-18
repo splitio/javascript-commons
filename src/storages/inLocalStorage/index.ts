@@ -54,7 +54,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
       destroy() {
-        this.splits = new SplitsCacheInMemory();
+        this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
         this.segments = new MySegmentsCacheInMemory();
         this.impressions.clear();
         this.impressionCounts && this.impressionCounts.clear();
@@ -75,7 +75,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
           telemetry: this.telemetry,
 
           destroy() {
-            this.splits = new SplitsCacheInMemory();
+            this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
             this.segments = new MySegmentsCacheInMemory();
           }
         };

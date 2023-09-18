@@ -14,9 +14,9 @@ import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
  * @param params parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
 
-  const splits = new SplitsCacheInMemory();
+  const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const segments = new MySegmentsCacheInMemory();
 
   const storage = {
@@ -50,7 +50,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
 
         // Set a new splits cache to clean it for the client without affecting other clients
         destroy() {
-          this.splits = new SplitsCacheInMemory();
+          this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
           this.segments.clear();
         }
       };

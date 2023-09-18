@@ -32,3 +32,16 @@ export const splitWithAccountTTAndUsesSegments: ISplit = { trafficTypeName: 'acc
 export const something: ISplit = { name: 'something' };
 //@ts-ignore
 export const somethingElse: ISplit = { name: 'something else' };
+
+// - With flagsets
+
+//@ts-ignore
+export const featureFlagWithEmptyFS: ISplit = { name: 'ff_empty', sets: [] };
+//@ts-ignore
+export const featureFlagOne: ISplit = { name: 'ff_one', sets: ['o','n','e'] };
+//@ts-ignore
+export const featureFlagTwo: ISplit = { name: 'ff_two', sets: ['t','w','o'] };
+//@ts-ignore
+export const featureFlagThree: ISplit = { name: 'ff_three', sets: ['t','h','r','e'] };
+//@ts-ignore
+export const featureFlagWithoutFS: ISplit = { name: 'ff_four' };
