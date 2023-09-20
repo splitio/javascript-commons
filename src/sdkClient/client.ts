@@ -1,4 +1,4 @@
-import { evaluateFeature, evaluateFeatures } from '../evaluator';
+import { evaluateFeature, evaluateFeatures, evaluateFeaturesByFlagSets } from '../evaluator';
 import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
 import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
@@ -81,6 +81,42 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return getTreatments(key, featureFlagNames, attributes, true);
   }
 
+  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
+    const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
+
+    const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
+      const queue: ImpressionDTO[] = [];
+      const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
+      Object.keys(evaluationResults).forEach(featureFlagName => {
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatmentsByFlagSets${withConfig ? 'WithConfig' : ''}`, queue);
+      });
+      impressionsTracker.track(queue, attributes);
+
+      stopTelemetryTracker(queue[0] && queue[0].label);
+      return treatments;
+    };
+
+    const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
+      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
+        treatmentsNotReady([]) :
+        Promise.resolve(treatmentsNotReady([])); // Promisify if async
+
+    return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
+  }
+
+  function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined) {
+    return getTreatmentsByFlagSets(key, featureFlagNames, attributes, true);
+  }
+
+  function getTreatmentsByFlagSet(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined) {
+    return getTreatmentsByFlagSets(key, [featureFlagName], attributes);
+  }
+
+  function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined) {
+    return getTreatmentsByFlagSets(key, [featureFlagName], attributes, true);
+  }
+
   // Internal function
   function processEvaluation(
     evaluation: IEvaluationResult,
@@ -155,6 +191,10 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     getTreatmentWithConfig,
     getTreatments,
     getTreatmentsWithConfig,
+    getTreatmentsByFlagSets,
+    getTreatmentsWithConfigByFlagSets,
+    getTreatmentsByFlagSet,
+    getTreatmentsWithConfigByFlagSet,
     track,
     isClientSide: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;

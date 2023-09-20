@@ -7,6 +7,7 @@ import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
+import { setToArray } from '../utils/lang/sets';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -85,6 +86,30 @@ export function evaluateFeatures(
         return treatmentsException(splitNames);
       }) :
     getEvaluations(log, splitNames, parsedSplits, key, attributes, storage);
+}
+
+export function evaluateFeaturesByFlagSets(
+  log: ILogger,
+  key: SplitIO.SplitKey,
+  flagsets: string[],
+  attributes: SplitIO.Attributes | undefined,
+  storage: IStorageSync | IStorageAsync,
+): MaybeThenable<Record<string, IEvaluationResult>> {
+  let storedSplitNames;
+
+  // get ff by flagsets
+  try {
+    storedSplitNames = storage.splits.getNamesByFlagsets(flagsets);
+  } catch (e) {
+    // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
+    // @todo - review exception
+    return treatmentsException(flagsets);
+  }
+
+  return thenable(storedSplitNames) ?
+    storedSplitNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
+    evaluateFeatures(log, key, setToArray(storedSplitNames), attributes, storage);
+
 }
 
 function getEvaluation(
