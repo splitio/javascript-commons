@@ -1,6 +1,7 @@
 import { MaybeThenable, ISplit } from '../dtos/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ISet } from '../utils/lang/sets';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -208,7 +209,8 @@ export interface ISplitsCacheBase {
   clear(): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
   checkCache(): MaybeThenable<boolean>,
-  killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
+  getNamesByFlagSets(flagsets: string[]): MaybeThenable<ISet<string>>
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
@@ -224,7 +226,8 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   usesSegments(): boolean,
   clear(): void,
   checkCache(): boolean,
-  killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
+  getNamesByFlagSets(flagsets: string[]): ISet<string>
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
@@ -240,7 +243,8 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
   checkCache(): Promise<boolean>,
-  killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>
+  killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
+  getNamesByFlagSets(flagsets: string[]): Promise<ISet<string>>
 }
 
 /** Segments cache */

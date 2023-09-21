@@ -74,7 +74,7 @@ test('KEYS / flagset keys', () => {
   const flagsetName = 'flagset_x';
   const expectedKey = `${prefix}.flagset.${flagsetName}`;
 
-  expect(builder.buildFlagsetKey(flagsetName)).toBe(expectedKey);
+  expect(builder.buildFlagSetKey(flagsetName)).toBe(expectedKey);
 
 });
 
