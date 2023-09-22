@@ -257,15 +257,15 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     // if the filter didn't change, nothing is done
   }
 
-  getNamesByFlagSets(flagsets: string[]): ISet<string>{
+  getNamesByFlagSets(flagSets: string[]): ISet<string>{
     let toReturn: ISet<string> = new _Set([]);
-    flagsets.forEach(flagset => {
-      const flagsetKey = this.keys.buildFlagSetKey(flagset);
-      let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+    flagSets.forEach(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      if (flagsetFromLocalStorage) {
-        const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
-        toReturn = returnSetsUnion(toReturn, flagsetCache);
+      if (flagSetFromLocalStorage) {
+        const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+        toReturn = returnSetsUnion(toReturn, flagSetCache);
       }
     });
     return toReturn;

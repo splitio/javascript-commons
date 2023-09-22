@@ -9,16 +9,16 @@ import { ISet, _Set, returnSetsUnion } from '../../utils/lang/sets';
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
-  private flagsetsFilter: string[];
+  private flagSetsFilter: string[];
   private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
   private splitsWithSegmentsCount: number = 0;
-  private flagsetsCache: Record<string, ISet<string>> = {};
+  private flagSetsCache: Record<string, ISet<string>> = {};
 
   constructor(splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
     super();
-    this.flagsetsFilter = splitFiltersValidation.groupedFilters.bySet;
+    this.flagSetsFilter = splitFiltersValidation.groupedFilters.bySet;
   }
 
   clear() {
@@ -105,10 +105,10 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
   }
 
-  getNamesByFlagSets(flagsets: string[]): ISet<string>{
+  getNamesByFlagSets(flagSets: string[]): ISet<string>{
     let toReturn: ISet<string> = new _Set([]);
-    flagsets.forEach(flagset => {
-      const featureFlagNames = this.flagsetsCache[flagset];
+    flagSets.forEach(flagSet => {
+      const featureFlagNames = this.flagSetsCache[flagSet];
       if (featureFlagNames) {
         toReturn = returnSetsUnion(toReturn, featureFlagNames);
       }
@@ -121,11 +121,11 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     if (!featureFlag.sets) return;
     featureFlag.sets.forEach(featureFlagSet => {
 
-      if (this.flagsetsFilter.length > 0 && !this.flagsetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
 
-      if (!this.flagsetsCache[featureFlagSet]) this.flagsetsCache[featureFlagSet] = new _Set([]);
+      if (!this.flagSetsCache[featureFlagSet]) this.flagSetsCache[featureFlagSet] = new _Set([]);
 
-      this.flagsetsCache[featureFlagSet].add(featureFlag.name);
+      this.flagSetsCache[featureFlagSet].add(featureFlag.name);
     });
   }
 
@@ -137,9 +137,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   }
 
   private removeNames(flagsetName: string, featureFlagName: string) {
-    if (!this.flagsetsCache[flagsetName]) return;
-    this.flagsetsCache[flagsetName].delete(featureFlagName);
-    if (this.flagsetsCache[flagsetName].size === 0) delete this.flagsetsCache[flagsetName];
+    if (!this.flagSetsCache[flagsetName]) return;
+    this.flagSetsCache[flagsetName].delete(featureFlagName);
+    if (this.flagSetsCache[flagsetName].size === 0) delete this.flagSetsCache[flagsetName];
   }
 
 }
