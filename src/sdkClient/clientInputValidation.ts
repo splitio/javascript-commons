@@ -44,7 +44,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
 
     validateIfOperational(log, readinessManager, methodName);
 
-    const valid = isNotDestroyed && key && splitOrSplits && attributes !== false;
+    const valid = isNotDestroyed && key && (splitOrSplits || flagSetOrFlagSets) && attributes !== false;
 
     return {
       valid,
@@ -111,7 +111,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatmentsByFlagSets(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string[], params.attributes as SplitIO.Attributes | undefined);
     } else {
-      return wrapResult(CONTROL);
+      return wrapResult({});
     }
   }
 
@@ -121,7 +121,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatmentsWithConfigByFlagSets(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string[], params.attributes as SplitIO.Attributes | undefined);
     } else {
-      return wrapResult(CONTROL);
+      return wrapResult({});
     }
   }
 
@@ -131,7 +131,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
     } else {
-      return wrapResult(CONTROL);
+      return wrapResult({});
     }
   }
 
@@ -141,7 +141,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
     } else {
-      return wrapResult(CONTROL);
+      return wrapResult({});
     }
   }
 

@@ -95,20 +95,20 @@ export function evaluateFeaturesByFlagSets(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
-  let storedSplitNames;
+  let storedFlagNames;
 
   // get ff by flagsets
   try {
-    storedSplitNames = storage.splits.getNamesByFlagSets(flagsets);
+    storedFlagNames = storage.splits.getNamesByFlagSets(flagsets);
   } catch (e) {
     // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
     // @todo - review exception
     return treatmentsException(flagsets);
   }
 
-  return thenable(storedSplitNames) ?
-    storedSplitNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
-    evaluateFeatures(log, key, setToArray(storedSplitNames), attributes, storage);
+  return thenable(storedFlagNames) ?
+    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
+    evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
 
 }
 

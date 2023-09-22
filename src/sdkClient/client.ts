@@ -98,9 +98,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
       evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
-      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
-        treatmentsNotReady([]) :
-        Promise.resolve(treatmentsNotReady([])); // Promisify if async
+      isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
