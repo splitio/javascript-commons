@@ -97,21 +97,24 @@ export function evaluateFeaturesByFlagSets(
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IByFlagSetsResult> {
   const stopTimer = timer(Date.now);
-  let elapsedMilliseconds: number;
+  let elapsedMilliseconds: number = 0;
   let storedFlagNames: MaybeThenable<ISet<string>>;
 
-  // get ff by flagsets
+  // get features by flagsets
   try {
     storedFlagNames = storage.splits.getNamesByFlagSets(flagsets);
   } catch (e) {
-    // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
-    // @todo - review exception
+    // return empty evaluations
     elapsedMilliseconds = stopTimer();
     return {evaluations:{}, elapsedMilliseconds};
   }
 
-  const evaluatedFeatures = getByFlagSetsEvaluations(log, key, storedFlagNames, attributes, storage);
+  // evaluate related features
+  const evaluatedFeatures = thenable(storedFlagNames) ?
+    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
+    evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
 
+  // craft IByFlagSetsResult adding elapsedMilliseconds property
   if (thenable(evaluatedFeatures)) {
     return evaluatedFeatures.then((evaluations) => {
       elapsedMilliseconds = stopTimer();
@@ -120,20 +123,6 @@ export function evaluateFeaturesByFlagSets(
   }
   elapsedMilliseconds = stopTimer();
   return {evaluations: evaluatedFeatures, elapsedMilliseconds};
-}
-
-
-function getByFlagSetsEvaluations(
-  log: ILogger,
-  key: SplitIO.SplitKey,
-  storedFlagNames: MaybeThenable<ISet<string>>,
-  attributes: SplitIO.Attributes | undefined,
-  storage: IStorageSync | IStorageAsync,
-): MaybeThenable<Record<string, IEvaluationResult>> {
-  return thenable(storedFlagNames) ?
-    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
-    evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
-
 }
 
 function getEvaluation(
