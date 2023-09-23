@@ -4,10 +4,11 @@ import * as LabelsConstants from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluationResult } from './types';
+import { IByFlagSetsResult, IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
-import { setToArray } from '../utils/lang/sets';
+import { ISet, setToArray } from '../utils/lang/sets';
+import { timer } from '../utils/timeTracker/timer';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -94,8 +95,10 @@ export function evaluateFeaturesByFlagSets(
   flagsets: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-): MaybeThenable<Record<string, IEvaluationResult>> {
-  let storedFlagNames;
+): MaybeThenable<IByFlagSetsResult> {
+  const stopTimer = timer(Date.now);
+  let elapsedMilliseconds: number;
+  let storedFlagNames: MaybeThenable<ISet<string>>;
 
   // get ff by flagsets
   try {
@@ -103,9 +106,30 @@ export function evaluateFeaturesByFlagSets(
   } catch (e) {
     // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
     // @todo - review exception
-    return treatmentsException(flagsets);
+    elapsedMilliseconds = stopTimer();
+    return {evaluations:{}, elapsedMilliseconds};
   }
 
+  const evaluatedFeatures = getByFlagSetsEvaluations(log, key, storedFlagNames, attributes, storage);
+
+  if (thenable(evaluatedFeatures)) {
+    return evaluatedFeatures.then((evaluations) => {
+      elapsedMilliseconds = stopTimer();
+      return {evaluations, elapsedMilliseconds};
+    });
+  }
+  elapsedMilliseconds = stopTimer();
+  return {evaluations: evaluatedFeatures, elapsedMilliseconds};
+}
+
+
+function getByFlagSetsEvaluations(
+  log: ILogger,
+  key: SplitIO.SplitKey,
+  storedFlagNames: MaybeThenable<ISet<string>>,
+  attributes: SplitIO.Attributes | undefined,
+  storage: IStorageSync | IStorageAsync,
+): MaybeThenable<Record<string, IEvaluationResult>> {
   return thenable(storedFlagNames) ?
     storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
     evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);

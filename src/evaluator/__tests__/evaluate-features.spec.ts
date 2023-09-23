@@ -39,6 +39,14 @@ const mockStorage = {
     },
     getNamesByFlagSets(flagSets) {
       let toReturn = new _Set([]);
+      // Forced thenable delayed response for testing purposes
+      if (flagSets[0] === 'delay') {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(toReturn);
+          }, 86);
+        });
+      }
       flagSets.forEach(flagset => {
         const featureFlagNames = flagSetsMock[flagset];
         if (featureFlagNames) {
@@ -124,6 +132,7 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
 });
 
 test('EVALUATOR - Multiple evaluations at once by flagsets / should return right labels, treatments and configs if storage returns without errors.', async function () {
+
   const expectedOutput = {
     config: {
       treatment: 'on', label: 'in segment all',
@@ -134,29 +143,54 @@ test('EVALUATOR - Multiple evaluations at once by flagsets / should return right
     },
   };
 
-  const multipleEvaluationAtOnce = await evaluateFeaturesByFlagSets(
-    loggerMock,
-    'fake-key',
-    ['reg_and_config', 'arch_and_killed'],
-    null,
-    mockStorage,
-  );
+  const getResultsByFlagsets = (flagSets: string[]) => {
+    return evaluateFeaturesByFlagSets(
+      loggerMock,
+      'fake-key',
+      flagSets,
+      null,
+      mockStorage,
+    );
+  };
+
+  let multipleResultsAtOnceByFlagSets = await getResultsByFlagsets(['delay']);
+  expect(multipleResultsAtOnceByFlagSets.elapsedMilliseconds).toBeGreaterThanOrEqual(86); // defined 86 ms delay for testing purposes in mocked storage
+
+
+  multipleResultsAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config', 'arch_and_killed']);
+  let multipleEvaluationAtOnceByFlagSets = multipleResultsAtOnceByFlagSets.evaluations;
 
   // assert evaluationWithConfig
-  expect(multipleEvaluationAtOnce['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
+  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
   // @todo assert flagset not found - for input validations
 
   // assert regular
-  expect(multipleEvaluationAtOnce['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
+  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
   // assert killed
-  expect(multipleEvaluationAtOnce['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
+  expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
   // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
   // assert archived
-  expect(multipleEvaluationAtOnce['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
+  expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
   // assert not_existent_split not in evaluation if it is not related to defined flagsets
-  expect(multipleEvaluationAtOnce['not_existent_split']).toEqual(undefined);
+  expect(multipleEvaluationAtOnceByFlagSets['not_existent_split']).toEqual(undefined);
+
+  multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets([]);
+  expect(multipleEvaluationAtOnceByFlagSets.evaluations).toEqual({});
+
+  multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config']).evaluations;
+  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
+  // @todo assert flagset not found - for input validations
+
+  // assert regular
+  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
+  // assert killed
+  expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
+  // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
+
+  // assert archived
+  expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual(undefined);
 
 });

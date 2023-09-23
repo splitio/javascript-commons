@@ -5,7 +5,7 @@ import { validateSplitExistance } from '../utils/inputValidation/splitExistance'
 import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK } from '../utils/constants';
-import { IEvaluationResult } from '../evaluator/types';
+import { IByFlagSetsResult, IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -84,11 +84,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
-    const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
+    const wrapUp = (evaluationResults: IByFlagSetsResult) => {
       const queue: ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
-      Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatmentsByFlagSets${withConfig ? 'WithConfig' : ''}`, queue);
+      const evaluations = evaluationResults.evaluations;
+      Object.keys(evaluations).forEach(featureFlagName => {
+        treatments[featureFlagName] = processEvaluation(evaluations[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatmentsByFlagSets${withConfig ? 'WithConfig' : ''}`, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -96,9 +97,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatments;
     };
 
+    const emptyEvaluationByFlagSet = {evaluations: {}, elapsedMilliseconds: 0};
+
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
       evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
-      isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
+      isStorageSync(settings) ? emptyEvaluationByFlagSet : Promise.resolve(emptyEvaluationByFlagSet); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
