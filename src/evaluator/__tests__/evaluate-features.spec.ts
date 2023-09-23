@@ -181,16 +181,9 @@ test('EVALUATOR - Multiple evaluations at once by flagsets / should return right
   expect(multipleEvaluationAtOnceByFlagSets.evaluations).toEqual({});
 
   multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config']).evaluations;
-  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
-  // @todo assert flagset not found - for input validations
-
-  // assert regular
-  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
-  // assert killed
+  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']);
+  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null });
   expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
-  // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
-
-  // assert archived
   expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual(undefined);
 
 });
