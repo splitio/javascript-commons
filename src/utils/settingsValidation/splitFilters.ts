@@ -97,11 +97,11 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *   - have a max length of 50 characters
  *
  * @param {ILogger} log
- * @param {string[]} flagsets
+ * @param {string[]} flagSets
  * @returns sanitized list of set names
  */
-function sanitizeFlagSets(log: ILogger, flagsets: string[]) {
-  let sanitizedSets = flagsets
+function sanitizeFlagSets(log: ILogger, flagSets: string[]) {
+  let sanitizedSets = flagSets
     .map(flagSet => {
       if (CAPITAL_LETTERS_REGEX.test(flagSet)){
         log.warn(WARN_SPLITS_FILTER_LOWERCASE_SET,[flagSet]);

@@ -234,8 +234,8 @@ export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   nR: number, // SDKNotReadyUsage
   i?: Array<string>, // integrations
   uC: number, // userConsent
-  fsT: number, // flagsetsTotal
-  fsI: number, // flagsetsInvalid
+  fsT: number, // flagSetsTotal
+  fsI: number, // flagSetsInvalid
 }
 
 export interface ISubmitterManager extends ISyncTask {

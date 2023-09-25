@@ -9,16 +9,16 @@ import { ISet, _Set, returnSetsUnion } from '../../utils/lang/sets';
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
-  private flagsetsFilter: string[];
+  private flagSetsFilter: string[];
   private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
   private splitsWithSegmentsCount: number = 0;
-  private flagsetsCache: Record<string, ISet<string>> = {};
+  private flagSetsCache: Record<string, ISet<string>> = {};
 
   constructor(splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
     super();
-    this.flagsetsFilter = splitFiltersValidation.groupedFilters.bySet;
+    this.flagSetsFilter = splitFiltersValidation.groupedFilters.bySet;
   }
 
   clear() {
@@ -36,7 +36,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.ttCache[previousTtName]--;
       if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
 
-      this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
+      this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
 
       if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
         this.splitsWithSegmentsCount--;
@@ -49,7 +49,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       // Update TT cache
       const ttName = split.trafficTypeName;
       this.ttCache[ttName] = (this.ttCache[ttName] || 0) + 1;
-      this.addToFlagsets(split);
+      this.addToFlagSets(split);
 
       // Add to segments count for the new version of the Split
       if (usesSegments(split)) this.splitsWithSegmentsCount++;
@@ -69,7 +69,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       const ttName = split.trafficTypeName;
       this.ttCache[ttName]--; // Update tt cache
       if (!this.ttCache[ttName]) delete this.ttCache[ttName];
-      this.removeFromFlagsets(split.name, split.sets);
+      this.removeFromFlagSets(split.name, split.sets);
 
       // Update the segments count.
       if (usesSegments(split)) this.splitsWithSegmentsCount--;
@@ -105,10 +105,10 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
   }
 
-  getNamesByFlagsets(flagsets: string[]): ISet<string>{
+  getNamesByFlagSets(flagSets: string[]): ISet<string>{
     let toReturn: ISet<string> = new _Set([]);
-    flagsets.forEach(flagset => {
-      const featureFlagNames = this.flagsetsCache[flagset];
+    flagSets.forEach(flagSet => {
+      const featureFlagNames = this.flagSetsCache[flagSet];
       if (featureFlagNames) {
         toReturn = returnSetsUnion(toReturn, featureFlagNames);
       }
@@ -117,29 +117,29 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
   }
 
-  private addToFlagsets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: ISplit) {
     if (!featureFlag.sets) return;
-    featureFlag.sets.forEach(featureFlagset => {
+    featureFlag.sets.forEach(featureFlagSet => {
 
-      if (this.flagsetsFilter.length > 0 && !this.flagsetsFilter.some(filterFlagset => filterFlagset === featureFlagset)) return;
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
 
-      if (!this.flagsetsCache[featureFlagset]) this.flagsetsCache[featureFlagset] = new _Set([]);
+      if (!this.flagSetsCache[featureFlagSet]) this.flagSetsCache[featureFlagSet] = new _Set([]);
 
-      this.flagsetsCache[featureFlagset].add(featureFlag.name);
+      this.flagSetsCache[featureFlagSet].add(featureFlag.name);
     });
   }
 
-  private removeFromFlagsets(featureFlagName :string, flagsets: string[] | undefined) {
-    if (!flagsets) return;
-    flagsets.forEach(flagset => {
-      this.removeNames(flagset, featureFlagName);
+  private removeFromFlagSets(featureFlagName :string, flagSets: string[] | undefined) {
+    if (!flagSets) return;
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
     });
   }
 
-  private removeNames(flagsetName: string, featureFlagName: string) {
-    if (!this.flagsetsCache[flagsetName]) return;
-    this.flagsetsCache[flagsetName].delete(featureFlagName);
-    if (this.flagsetsCache[flagsetName].size === 0) delete this.flagsetsCache[flagsetName];
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    if (!this.flagSetsCache[flagSetName]) return;
+    this.flagSetsCache[flagSetName].delete(featureFlagName);
+    if (this.flagSetsCache[flagSetName].size === 0) delete this.flagSetsCache[flagSetName];
   }
 
 }

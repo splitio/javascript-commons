@@ -33,7 +33,7 @@ export const something: ISplit = { name: 'something' };
 //@ts-ignore
 export const somethingElse: ISplit = { name: 'something else' };
 
-// - With flagsets
+// - With flag sets
 
 //@ts-ignore
 export const featureFlagWithEmptyFS: ISplit = { name: 'ff_empty', sets: [] };

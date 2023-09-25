@@ -13,7 +13,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly splitFiltersValidation: ISplitFiltersValidation;
-  private readonly flagsetsFilter: string[];
+  private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
   private updateNewFilter?: boolean;
 
@@ -26,7 +26,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     super();
     this.keys = keys;
     this.splitFiltersValidation = splitFiltersValidation;
-    this.flagsetsFilter = this.splitFiltersValidation.groupedFilters.bySet;
+    this.flagSetsFilter = this.splitFiltersValidation.groupedFilters.bySet;
 
     this._checkExpiration(expirationTimestamp);
 
@@ -108,8 +108,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
-      if (previousSplit) this.removeFromFlagsets(previousSplit.name, previousSplit.sets);
-      this.addToFlagsets(split);
+      if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      this.addToFlagSets(split);
 
       return true;
     } catch (e) {
@@ -124,7 +124,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
-      if (split) this.removeFromFlagsets(split.name, split.sets);
+      if (split) this.removeFromFlagSets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -257,64 +257,64 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     // if the filter didn't change, nothing is done
   }
 
-  getNamesByFlagsets(flagsets: string[]): ISet<string>{
+  getNamesByFlagSets(flagSets: string[]): ISet<string>{
     let toReturn: ISet<string> = new _Set([]);
-    flagsets.forEach(flagset => {
-      const flagsetKey = this.keys.buildFlagsetKey(flagset);
-      let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+    flagSets.forEach(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      if (flagsetFromLocalStorage) {
-        const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
-        toReturn = returnSetsUnion(toReturn, flagsetCache);
+      if (flagSetFromLocalStorage) {
+        const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+        toReturn = returnSetsUnion(toReturn, flagSetCache);
       }
     });
     return toReturn;
 
   }
 
-  private addToFlagsets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: ISplit) {
     if (!featureFlag.sets) return;
 
-    featureFlag.sets.forEach(featureFlagset => {
+    featureFlag.sets.forEach(featureFlagSet => {
 
-      if (this.flagsetsFilter.length > 0 && !this.flagsetsFilter.some(filterFlagset => filterFlagset === featureFlagset)) return;
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
 
-      const flagsetKey = this.keys.buildFlagsetKey(featureFlagset);
+      const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
 
-      let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
-      if (!flagsetFromLocalStorage) flagsetFromLocalStorage = '[]';
+      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+      if (!flagSetFromLocalStorage) flagSetFromLocalStorage = '[]';
 
-      const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
-      flagsetCache.add(featureFlag.name);
+      const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+      flagSetCache.add(featureFlag.name);
 
-      localStorage.setItem(flagsetKey, JSON.stringify(setToArray(flagsetCache)));
+      localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
     });
   }
 
-  private removeFromFlagsets(featureFlagName: string, flagsets?: string[]) {
-    if (!flagsets) return;
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+    if (!flagSets) return;
 
-    flagsets.forEach(flagset => {
-      this.removeNames(flagset, featureFlagName);
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
     });
   }
 
-  private removeNames(flagsetName: string, featureFlagName: string) {
-    const flagsetKey = this.keys.buildFlagsetKey(flagsetName);
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
 
-    let flagsetFromLocalStorage = localStorage.getItem(flagsetKey);
+    let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-    if (!flagsetFromLocalStorage) return;
+    if (!flagSetFromLocalStorage) return;
 
-    const flagsetCache = new _Set(JSON.parse(flagsetFromLocalStorage));
-    flagsetCache.delete(featureFlagName);
+    const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+    flagSetCache.delete(featureFlagName);
 
-    if (flagsetCache.size === 0) {
-      localStorage.removeItem(flagsetKey);
+    if (flagSetCache.size === 0) {
+      localStorage.removeItem(flagSetKey);
       return;
     }
 
-    localStorage.setItem(flagsetKey, JSON.stringify(setToArray(flagsetCache)));
+    localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
   }
 
 }
