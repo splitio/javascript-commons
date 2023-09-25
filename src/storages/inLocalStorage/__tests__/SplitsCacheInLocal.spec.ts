@@ -162,7 +162,7 @@ test('SPLIT CACHE / LocalStorage / usesSegments', () => {
   expect(cache.usesSegments()).toBe(false); // 0 splits using segments
 });
 
-test('SPLIT CACHE / LocalStorage / flagset cache tests', () => {
+test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
   // @ts-ignore
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'), undefined, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
   const emptySet = new _Set([]);
@@ -203,7 +203,7 @@ test('SPLIT CACHE / LocalStorage / flagset cache tests', () => {
 });
 
 // if FlagSets are not defined, it should store all FlagSets in memory.
-test('SPLIT CACHE / LocalStorage / flagset cache tests without filters', () => {
+test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
   const cacheWithoutFilters = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
   const emptySet = new _Set([]);
 

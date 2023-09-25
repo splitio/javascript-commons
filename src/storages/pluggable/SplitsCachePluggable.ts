@@ -156,7 +156,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Get list of split names related to a given flagset names list.
+   * Get list of split names related to a given flag set names list.
    * The returned promise is resolved with the list of split names,
    * or rejected if wrapper operation fails.
    * @todo this is a no-op method to be implemented

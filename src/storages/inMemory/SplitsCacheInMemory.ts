@@ -129,17 +129,17 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     });
   }
 
-  private removeFromFlagSets(featureFlagName :string, flagsets: string[] | undefined) {
-    if (!flagsets) return;
-    flagsets.forEach(flagset => {
-      this.removeNames(flagset, featureFlagName);
+  private removeFromFlagSets(featureFlagName :string, flagSets: string[] | undefined) {
+    if (!flagSets) return;
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
     });
   }
 
-  private removeNames(flagsetName: string, featureFlagName: string) {
-    if (!this.flagSetsCache[flagsetName]) return;
-    this.flagSetsCache[flagsetName].delete(featureFlagName);
-    if (this.flagSetsCache[flagsetName].size === 0) delete this.flagSetsCache[flagsetName];
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    if (!this.flagSetsCache[flagSetName]) return;
+    this.flagSetsCache[flagSetName].delete(featureFlagName);
+    if (this.flagSetsCache[flagSetName].size === 0) delete this.flagSetsCache[flagSetName];
   }
 
 }
