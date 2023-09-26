@@ -4,11 +4,10 @@ import * as LabelsConstants from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IByFlagSetsResult, IEvaluationResult } from './types';
+import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
 import { ISet, setToArray } from '../utils/lang/sets';
-import { timer } from '../utils/timeTracker/timer';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -92,37 +91,24 @@ export function evaluateFeatures(
 export function evaluateFeaturesByFlagSets(
   log: ILogger,
   key: SplitIO.SplitKey,
-  flagsets: string[],
+  flagSets: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-): MaybeThenable<IByFlagSetsResult> {
-  const stopTimer = timer(Date.now);
-  let elapsedMilliseconds: number = 0;
+): MaybeThenable<Record<string,IEvaluationResult>> {
   let storedFlagNames: MaybeThenable<ISet<string>>;
 
-  // get features by flagsets
+  // get features by flag sets
   try {
-    storedFlagNames = storage.splits.getNamesByFlagSets(flagsets);
+    storedFlagNames = storage.splits.getNamesByFlagSets(flagSets);
   } catch (e) {
     // return empty evaluations
-    elapsedMilliseconds = stopTimer();
-    return {evaluations:{}, elapsedMilliseconds};
+    return {};
   }
 
   // evaluate related features
-  const evaluatedFeatures = thenable(storedFlagNames) ?
+  return thenable(storedFlagNames) ?
     storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
     evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
-
-  // craft IByFlagSetsResult adding elapsedMilliseconds property
-  if (thenable(evaluatedFeatures)) {
-    return evaluatedFeatures.then((evaluations) => {
-      elapsedMilliseconds = stopTimer();
-      return {evaluations, elapsedMilliseconds};
-    });
-  }
-  elapsedMilliseconds = stopTimer();
-  return {evaluations: evaluatedFeatures, elapsedMilliseconds};
 }
 
 function getEvaluation(

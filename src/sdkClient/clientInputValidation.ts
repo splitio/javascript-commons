@@ -125,8 +125,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     }
   }
 
-  function getTreatmentsByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSets: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsByFlagSet', maybeFlagSets);
+  function getTreatmentsByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsByFlagSet', maybeFlagSet);
 
     if (params.valid) {
       return client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
@@ -135,8 +135,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     }
   }
 
-  function getTreatmentsWithConfigByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSets: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsWithConfigByFlagSet', maybeFlagSets);
+  function getTreatmentsWithConfigByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
+    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsWithConfigByFlagSet', maybeFlagSet);
 
     if (params.valid) {
       return client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
