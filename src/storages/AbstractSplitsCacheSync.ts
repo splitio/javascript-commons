@@ -1,7 +1,7 @@
 import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ISet, _Set } from '../utils/lang/sets';
+import { ISet } from '../utils/lang/sets';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -78,11 +78,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     }
     return false;
   }
-  /** NO-OP */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getNamesByFlagSets(flagsets: string[]): ISet<string> {
-    return new _Set([]);
-  }
+
+  abstract getNamesByFlagSets(flagSets: string[]): ISet<string>
 
 }
 

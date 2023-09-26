@@ -115,7 +115,7 @@ test('SPLITS CACHE / In Memory / killLocally', () => {
 
 });
 
-test('SPLITS CACHE / In Memory / flagset cache tests', () => {
+test('SPLITS CACHE / In Memory / flag set cache tests', () => {
   // @ts-ignore
   const cache = new SplitsCacheInMemory({ groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
   const emptySet = new _Set([]);
@@ -156,7 +156,7 @@ test('SPLITS CACHE / In Memory / flagset cache tests', () => {
 });
 
 // if FlagSets are not defined, it should store all FlagSets in memory.
-test('SPLIT CACHE / LocalStorage / flagset cache tests without filters', () => {
+test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
   const cacheWithoutFilters = new SplitsCacheInMemory();
   const emptySet = new _Set([]);
 

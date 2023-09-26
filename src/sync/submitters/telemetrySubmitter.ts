@@ -40,7 +40,7 @@ function getRedundantActiveFactories() {
 }
 
 function getTelemetryFlagSetsStats(splitFiltersValidation: ISplitFiltersValidation) {
-  // Group every configured flagset in an unique array called originalSets
+  // Group every configured flag set in an unique array called originalSets
   let flagSetsTotal = 0;
   splitFiltersValidation.validFilters.forEach((filter: SplitIO.SplitFilter) => {
     if (filter.type === 'bySet') flagSetsTotal += filter.values.length;
