@@ -65,6 +65,10 @@ export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
 export const TREATMENT_WITH_CONFIG = 'tc';
 export const TREATMENTS_WITH_CONFIG = 'tcs';
+export const TREATMENTS_BY_FLAGSET = 'tf';
+export const TREATMENTS_BY_FLAGSETS = 'tfs';
+export const TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf';
+export const TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs';
 export const TRACK = 'tr';
 
 export const CONNECTION_ESTABLISHED = 0;
