@@ -17,6 +17,7 @@ import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
+import { flagSetsAreValid } from '../utils/settingsValidation/splitFilters';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
@@ -30,21 +31,22 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   /**
    * Avoid repeating this validations code
    */
-  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNameOrNames: string | string[] | undefined, maybeAttributes: SplitIO.Attributes | undefined, methodName: string, maybeFlagSetNameOrNames?: string | string[] | undefined) {
+  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNameOrNames: string | string[] | undefined, maybeAttributes: SplitIO.Attributes | undefined, methodName: string, maybeFlagSetNameOrNames?: string[] | undefined) {
     const multi = startsWith(methodName, 'getTreatments');
     const key = validateKey(log, maybeKey, methodName);
     let splitOrSplits: string | string[] | false = false;
+    let flagSetOrFlagSets: string[] = [];
     if (maybeFeatureFlagNameOrNames) {
       splitOrSplits = multi ? validateSplits(log, maybeFeatureFlagNameOrNames, methodName) : validateSplit(log, maybeFeatureFlagNameOrNames, methodName);
     }
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
-    // @todo maybeFlagSets validation method
-    const flagSetOrFlagSets = maybeFlagSetNameOrNames;
-
+    if (maybeFlagSetNameOrNames) {
+      flagSetOrFlagSets = flagSetsAreValid(log, methodName, maybeFlagSetNameOrNames, settings.sync.__splitFiltersValidation.groupedFilters.bySet);
+    }
     validateIfOperational(log, readinessManager, methodName);
 
-    const valid = isNotDestroyed && key && (splitOrSplits || flagSetOrFlagSets) && attributes !== false;
+    const valid = isNotDestroyed && key && (splitOrSplits || flagSetOrFlagSets.length > 0) && attributes !== false;
 
     return {
       valid,
@@ -126,20 +128,20 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   }
 
   function getTreatmentsByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsByFlagSet', maybeFlagSet);
+    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsByFlagSet', [maybeFlagSet]);
 
     if (params.valid) {
-      return client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets[0] as string, params.attributes as SplitIO.Attributes | undefined);
     } else {
       return wrapResult({});
     }
   }
 
   function getTreatmentsWithConfigByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
-    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsWithConfigByFlagSet', maybeFlagSet);
+    const params = validateEvaluationParams(maybeKey, undefined, maybeAttributes, 'getTreatmentsWithConfigByFlagSet', [maybeFlagSet]);
 
     if (params.valid) {
-      return client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets as string, params.attributes as SplitIO.Attributes | undefined);
+      return client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, params.flagSetOrFlagSets[0] as string, params.attributes as SplitIO.Attributes | undefined);
     } else {
       return wrapResult({});
     }
