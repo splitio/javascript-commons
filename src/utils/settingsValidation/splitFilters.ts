@@ -196,12 +196,15 @@ export function flagSetsAreValid(log: ILogger, method: string, flagSets: string[
   }
   const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
   toReturn = sets ? sanitizeFlagSets(log, sets) : [];
-  return toReturn.filter(flagSet => {
-    if (flagSetsInConfig.indexOf(flagSet) > -1) {
-      return true;
-    }
-    log.warn(WARN_FLAGSET_NOT_CONFIGURED, [flagSet]);
-    return false;
-  });
+  if (flagSetsInConfig.length > 0) {
+    toReturn = toReturn.filter(flagSet => {
+      if (flagSetsInConfig.indexOf(flagSet) > -1) {
+        return true;
+      }
+      log.warn(WARN_FLAGSET_NOT_CONFIGURED, [flagSet]);
+      return false;
+    });
+  }
 
+  return toReturn;
 }
