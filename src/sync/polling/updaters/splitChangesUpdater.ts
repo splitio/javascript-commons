@@ -7,6 +7,7 @@ import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
+import { startsWith } from '../../../utils/lang';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
@@ -53,10 +54,17 @@ interface ISplitMutations {
  * @param filters splitFiltersValidation bySet | byName
  */
 function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
-  const { bySet: setsFilter, byName: namesFilter } = filters.groupedFilters;
+  const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter} = filters.groupedFilters;
   if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
-  if (namesFilter.length > 0) return namesFilter.indexOf(featureFlag.name) > -1;
-  return true;
+
+  const namesFilterConfigured = namesFilter.length > 0;
+  const prefixFilterConfigured = prefixFilter.length > 0;
+
+  if (!namesFilterConfigured && !prefixFilterConfigured) return true;
+
+  const matchNames = namesFilterConfigured && namesFilter.indexOf(featureFlag.name) > -1;
+  const matchPrefix = prefixFilterConfigured && prefixFilter.some(prefix => startsWith(featureFlag.name, prefix));
+  return matchNames || matchPrefix;
 }
 
 /**

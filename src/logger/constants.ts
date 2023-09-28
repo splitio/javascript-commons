@@ -129,7 +129,7 @@ export const ERROR_STORAGE_INVALID = 324;
 export const ERROR_NOT_BOOLEAN = 325;
 export const ERROR_MIN_CONFIG_PARAM = 326;
 export const ERROR_TOO_MANY_SETS = 327;
-export const ERROR_SPLITS_FILTER_NAME_AND_SET = 328;
+export const ERROR_SETS_FILTER_EXCLUSIVE = 328;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';
