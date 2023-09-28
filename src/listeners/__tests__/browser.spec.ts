@@ -79,12 +79,10 @@ const fakeSplitApi = {
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
-const UNLOAD_EVENT = 'unload';
 
 const eventListeners: any = {
   [VISIBILITYCHANGE_EVENT]: new Set<() => any>(),
   [PAGEHIDE_EVENT]: new Set<() => any>(),
-  [UNLOAD_EVENT]: new Set<() => any>()
 };
 
 // mock window and navigator objects
@@ -144,13 +142,13 @@ function triggerEvent(event: string, visibilityState?: string) { // @ts-expect-e
 function assertStart(listener: BrowserSignalListener) {
   // Assigned right function to right signal.
   expect((global.document.addEventListener as jest.Mock).mock.calls).toEqual([[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden]]);
-  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData], [UNLOAD_EVENT, listener.stopSync]]);
+  expect((global.window.addEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData]]);
 }
 
 function assertStop(listener: BrowserSignalListener) {
   // removed correct listener from correct signal on stop.
   expect((global.document.removeEventListener as jest.Mock).mock.calls).toEqual([[VISIBILITYCHANGE_EVENT, listener.flushDataIfHidden]]);
-  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData], [UNLOAD_EVENT, listener.stopSync]]);
+  expect((global.window.removeEventListener as jest.Mock).mock.calls).toEqual([[PAGEHIDE_EVENT, listener.flushData]]);
 }
 
 /* Mocks end */
@@ -164,7 +162,6 @@ test('Browser JS listener / consumer mode', () => {
 
   triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
   triggerEvent(PAGEHIDE_EVENT);
-  triggerEvent(UNLOAD_EVENT);
 
   // Unload event was triggered, but sendBeacon and post services should not be called
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
@@ -205,10 +202,10 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
 });
 
 test('Browser JS listener / standalone mode / Impressions debug mode', () => {
-  const syncManagerMockWithPushManager = { pushManager: { stop: jest.fn() } };
+  const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMockWithPushManager, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
 
   listener.start();
   assertStart(listener);
@@ -216,19 +213,11 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   triggerEvent(VISIBILITYCHANGE_EVENT, 'visible');
 
   // If visibility changes to visible, do nothing
-  expect(syncManagerMockWithPushManager.pushManager.stop).not.toBeCalled();
   expect(global.window.navigator.sendBeacon).not.toBeCalled();
 
   triggerEvent(PAGEHIDE_EVENT);
 
   // Pagehide event was triggered. Thus sendBeacon method should be called twice.
-  expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
-  expect(syncManagerMockWithPushManager.pushManager.stop).not.toBeCalled();
-
-  triggerEvent(UNLOAD_EVENT);
-
-  // Unload event was triggered and pushManager is defined, so it must be stopped.
-  expect(syncManagerMockWithPushManager.pushManager.stop).toBeCalledTimes(1);
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
 
   // Http post services should have not been called
