@@ -15,8 +15,7 @@ import { isConsentGranted } from '../consent';
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
-const UNLOAD_EVENT = 'unload';
-const EVENT_NAME = 'for unload page event.';
+const EVENT_NAME = 'for visibilitychange and pagehide events.';
 
 /**
  * We'll listen for events over the window object.
@@ -33,7 +32,6 @@ export class BrowserSignalListener implements ISignalListener {
   ) {
     this.flushData = this.flushData.bind(this);
     this.flushDataIfHidden = this.flushDataIfHidden.bind(this);
-    this.stopSync = this.stopSync.bind(this);
     this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled);
   }
 
@@ -48,11 +46,9 @@ export class BrowserSignalListener implements ISignalListener {
       document.addEventListener(VISIBILITYCHANGE_EVENT, this.flushDataIfHidden);
     }
     if (typeof window !== 'undefined' && window.addEventListener) {
-      // Some browsers like Safari does not fire the `visibilitychange` event when the page is being unloaded. So we also flush data in the `pagehide` event.
-      // If both events are triggered, the last one will find the storage empty, so no duplicated data will be submitted.
+      // Some browsers, like Safari, does not fire the `visibilitychange` event when the page is being unloaded. Therefore, we also flush data in the `pagehide` event.
+      // If both events are triggered, the latter will find the storage empty, so no duplicate data will be submitted.
       window.addEventListener(PAGEHIDE_EVENT, this.flushData);
-      // Stop streaming on 'unload' event. Used instead of 'beforeunload', because 'unload' is not a cancelable event, so no other listeners can stop the event from occurring.
-      window.addEventListener(UNLOAD_EVENT, this.stopSync);
     }
   }
 
@@ -67,13 +63,7 @@ export class BrowserSignalListener implements ISignalListener {
     }
     if (typeof window !== 'undefined' && window.removeEventListener) {
       window.removeEventListener(PAGEHIDE_EVENT, this.flushData);
-      window.removeEventListener(UNLOAD_EVENT, this.stopSync);
     }
-  }
-
-  stopSync() {
-    // Close streaming connection
-    if (this.syncManager && this.syncManager.pushManager) this.syncManager.pushManager.stop();
   }
 
   /**

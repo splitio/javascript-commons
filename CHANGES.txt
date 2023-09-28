@@ -1,10 +1,13 @@
+1.9.1 (September 21, 2023)
+ - Updated browser listener to avoid registering a handler for 'unload' DOM events, that can prevent browsers from being able to put pages in the back/forward cache for faster back and forward loads (Related to issue https://github.com/splitio/javascript-client/issues/759).
+
 1.9.0 (July 18, 2023)
  - Updated streaming architecture implementation to apply feature flag updates from the notification received which is now enhanced, improving efficiency and reliability of the whole update system.
 
 1.8.3 (June 29, 2023)
  - Updated some transitive dependencies for vulnerability fixes.
  - Updated SDK_READY_TIMED_OUT event to be emitted immediately when a connection error occurs using pluggable storage (i.e., when the wrapper `connect` promise is rejected) in consumer and partial consumer modes.
- - Bugfix - The `destroy` method has been updated to immediately flag the SDK client as destroyed, to prevent unexpected behaviours when `getTreatment` and `track` methods are called synchronously after `destroy` method is called.
+ - Bugfixing - The `destroy` method has been updated to immediately flag the SDK client as destroyed, to prevent unexpected behaviours when `getTreatment` and `track` methods are called synchronously after `destroy` method is called.
 
 1.8.2 (May 15, 2023)
  - Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and IntelliSense comments.
@@ -90,7 +93,7 @@
    - Integration with Auth service V2, connecting to the new channels and applying the received connection delay.
    - Implemented handling of the new MySegmentsV2 notification types (SegmentRemoval, KeyList, Bounded and Unbounded)
    - New control notification for environment scoped streaming reset.
- - Updated localhost mode to emit SDK_READY_FROM_CACHE event in Browser when using localStorage (Related to issue https://github.com/splitio/react-client/issues/34).
+ - Updated localhost mode to emit SDK_READY_FROM_CACHE event in browser when using localStorage (Related to issue https://github.com/splitio/react-client/issues/34).
  - Updated dependencies for vulnerability fixes.
 
 0.1.0 (March 30, 2021)
