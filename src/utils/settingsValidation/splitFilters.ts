@@ -189,19 +189,14 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 }
 
 export function flagSetsAreValid(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
-  let toReturn: string[] = [];
-  if (flagSets.length === 0) {
-    log.error(ERROR_EMPTY_ARRAY, [method, 'flagSets']);
-    return toReturn;
-  }
   const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
-  toReturn = sets ? sanitizeFlagSets(log, sets) : [];
+  let toReturn = sets ? sanitizeFlagSets(log, sets) : [];
   if (flagSetsInConfig.length > 0) {
     toReturn = toReturn.filter(flagSet => {
       if (flagSetsInConfig.indexOf(flagSet) > -1) {
         return true;
       }
-      log.warn(WARN_FLAGSET_NOT_CONFIGURED, [flagSet]);
+      log.warn(WARN_FLAGSET_NOT_CONFIGURED, [method, flagSet]);
       return false;
     });
   }

@@ -31,7 +31,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   /**
    * Avoid repeating this validations code
    */
-  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNameOrNames: string | string[] | undefined, maybeAttributes: SplitIO.Attributes | undefined, methodName: string, maybeFlagSetNameOrNames?: string[] | undefined) {
+  function validateEvaluationParams(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNameOrNames: string | string[] | undefined, maybeAttributes: SplitIO.Attributes | undefined, methodName: string, maybeFlagSetNameOrNames?: string[]) {
     const multi = startsWith(methodName, 'getTreatments');
     const key = validateKey(log, maybeKey, methodName);
     let splitOrSplits: string | string[] | false = false;

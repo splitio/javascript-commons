@@ -160,11 +160,11 @@ describe('validateSplitFilters', () => {
 
     // set_3 not included in configuration but set_1 included => [set_1] & warn
     expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1','set_3'], flagSetsFilter)).toEqual(['set_1']);
-    expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['set_3']]);
+    expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['test_method', 'set_3']]);
 
     // set_3 not included in configuration => [] & warn
     expect(flagSetsAreValid(loggerMock, 'test_method', ['set_3'], flagSetsFilter)).toEqual([]);
-    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['set_3']]);
+    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['test_method','set_3']]);
 
     // empty config
 
