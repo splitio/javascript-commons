@@ -100,15 +100,20 @@ export function segmentChangesUpdaterFactory(
       ? [segmentName]
       : segments.getRegisteredSegments());
     try {
-      // Async fetchers are collected here.
-      const updaters: Promise<number>[] = [];
+      let shouldUpdateFlags: number[] = [];
 
-      for (let index = 0; index < segmentNames.length; index++) {
-        updaters.push(
-          updateSegment(segmentNames[index], noCache, till, fetchOnlyNew)
+      // chunk in order to avoid an unbounded amount of simultaneous segment fetch requests
+      const chunkSize = 10;
+      for (let i = 0; i < segmentNames.length; i += chunkSize) {
+        const chunk = segmentNames.slice(i, i + chunkSize);
+        shouldUpdateFlags = shouldUpdateFlags.concat(
+          await Promise.all(
+            chunk.map((segmentName) =>
+              updateSegment(segmentName, noCache, till, fetchOnlyNew)
+            )
+          )
         );
       }
-      const shouldUpdateFlags = await Promise.all(updaters);
 
       // if at least one segment fetch succeeded, mark segments ready
       if (
