@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
 
@@ -186,4 +186,20 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   log.debug(SETTINGS_SPLITS_FILTER, [res.queryString]);
 
   return res;
+}
+
+export function flagSetsAreValid(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
+  const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
+  let toReturn = sets ? sanitizeFlagSets(log, sets) : [];
+  if (flagSetsInConfig.length > 0) {
+    toReturn = toReturn.filter(flagSet => {
+      if (flagSetsInConfig.indexOf(flagSet) > -1) {
+        return true;
+      }
+      log.warn(WARN_FLAGSET_NOT_CONFIGURED, [method, flagSet]);
+      return false;
+    });
+  }
+
+  return toReturn;
 }

@@ -6,8 +6,8 @@ import { STANDALONE_MODE, CONSUMER_MODE } from '../../constants';
 import { splitFilters, queryStrings, groupedFilters } from '../../../__tests__/mocks/fetchSpecificSplits';
 
 // Test target
-import { validateSplitFilters } from '../splitFilters';
-import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_TRIMMING, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_SPLITS_FILTER_LOWERCASE_SET } from '../../../logger/constants';
+import { flagSetsAreValid, validateSplitFilters } from '../splitFilters';
+import { SETTINGS_SPLITS_FILTER, ERROR_INVALID, ERROR_EMPTY_ARRAY, WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_INVALID, WARN_SPLITS_FILTER_EMPTY, WARN_TRIMMING, ERROR_SPLITS_FILTER_NAME_AND_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../../logger/constants';
 
 describe('validateSplitFilters', () => {
 
@@ -128,4 +128,73 @@ describe('validateSplitFilters', () => {
     expect(loggerMock.warn.mock.calls.length).toEqual(12);
     expect(loggerMock.error.mock.calls.length).toEqual(3);
   });
+
+  test('flagSetsAreValid - Flag set validation for evaluations', () => {
+
+    let flagSetsFilter = ['set_1', 'set_2'];
+
+    // empty array
+    expect(flagSetsAreValid(loggerMock, 'test_method', [], flagSetsFilter)).toEqual([]);
+
+    // must start with a letter or number
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['_set_1'], flagSetsFilter)).toEqual([]);
+    expect(loggerMock.warn.mock.calls[0]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_1', regexp, '_set_1']]);
+
+    // can contain _a-z0-9
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set*1'], flagSetsFilter)).toEqual([]);
+    expect(loggerMock.warn.mock.calls[1]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*1', regexp, 'set*1']]);
+
+    // have a max length of 50 characters
+    const longName = '1234567890_1234567890_1234567890_1234567890_1234567890';
+    expect(flagSetsAreValid(loggerMock, 'test_method', [longName], flagSetsFilter)).toEqual([]);
+    expect(loggerMock.warn.mock.calls[2]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, [longName, regexp, longName]]);
+
+    // both set names invalid -> empty list & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set*1','set*3'], flagSetsFilter)).toEqual([]);
+    expect(loggerMock.warn.mock.calls[3]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*1', regexp, 'set*1']]);
+    expect(loggerMock.warn.mock.calls[4]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*3', regexp, 'set*3']]);
+
+    // only set_1 is valid => [set_1] & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1','set*3'], flagSetsFilter)).toEqual(['set_1']);
+    expect(loggerMock.warn.mock.calls[5]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*3', regexp, 'set*3']]);
+
+    // set_3 not included in configuration but set_1 included => [set_1] & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1','set_3'], flagSetsFilter)).toEqual(['set_1']);
+    expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['test_method', 'set_3']]);
+
+    // set_3 not included in configuration => [] & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_3'], flagSetsFilter)).toEqual([]);
+    expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, ['test_method','set_3']]);
+
+    // empty config
+
+
+    // must start with a letter or number
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['_set_1'], [])).toEqual([]);
+    expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['_set_1', regexp, '_set_1']]);
+
+    // can contain _a-z0-9
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set*1'], [])).toEqual([]);
+    expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*1', regexp, 'set*1']]);
+
+    // have a max length of 50 characters
+    expect(flagSetsAreValid(loggerMock, 'test_method', [longName], [])).toEqual([]);
+    expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, [longName, regexp, longName]]);
+
+    // both set names invalid -> empty list & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set*1','set*3'], [])).toEqual([]);
+    expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*1', regexp, 'set*1']]);
+    expect(loggerMock.warn.mock.calls[12]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*3', regexp, 'set*3']]);
+
+    // only set_1 is valid => [set_1] & warn
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1','set*3'], [])).toEqual(['set_1']);
+    expect(loggerMock.warn.mock.calls[13]).toEqual([WARN_SPLITS_FILTER_INVALID_SET, ['set*3', regexp, 'set*3']]);
+
+    // any set should be returned if there isn't flag sets in filter
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1'], [])).toEqual(['set_1']);
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_1','set_2'], [])).toEqual(['set_1','set_2']);
+    expect(flagSetsAreValid(loggerMock, 'test_method', ['set_3'], [])).toEqual(['set_3']);
+
+  });
+
 });
