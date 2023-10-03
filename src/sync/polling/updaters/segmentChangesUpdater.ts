@@ -103,7 +103,7 @@ export function segmentChangesUpdaterFactory(
       let shouldUpdateFlags: number[] = [];
 
       // chunk in order to avoid an unbounded amount of simultaneous segment fetch requests
-      const chunkSize = 10;
+      const chunkSize = 50;
       for (let i = 0; i < segmentNames.length; i += chunkSize) {
         const chunk = segmentNames.slice(i, i + chunkSize);
         shouldUpdateFlags = shouldUpdateFlags.concat(
