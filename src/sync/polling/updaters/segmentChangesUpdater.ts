@@ -130,7 +130,7 @@ export function segmentChangesUpdaterFactory(
         error &&
         typeof error === 'object' &&
         'statusCode' in error &&
-        error.statusCode === 403
+        (error as any).statusCode === 403
       ) {
         // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
         // @TODO although factory status is destroyed, synchronization is not stopped
