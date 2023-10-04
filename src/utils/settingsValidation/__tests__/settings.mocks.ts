@@ -79,7 +79,8 @@ export const fullSettings: ISettings = {
       queryString: null,
       groupedFilters: { byName: [], byPrefix: [] }
     },
-    enabled: true
+    enabled: true,
+    numConcurrentSegmentFetches: 10
   },
   version: 'jest',
   runtime: {

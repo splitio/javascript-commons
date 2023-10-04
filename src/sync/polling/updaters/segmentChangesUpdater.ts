@@ -33,6 +33,7 @@ export function segmentChangesUpdaterFactory(
   log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
   segments: ISegmentsCacheBase,
+  numConcurrentSegmentFetches: number,
   readiness?: IReadinessManager
 ): ISegmentChangesUpdater {
   let readyOnAlreadyExistentState = true;
@@ -103,7 +104,7 @@ export function segmentChangesUpdaterFactory(
       let shouldUpdateFlags: number[] = [];
 
       // chunk in order to avoid an unbounded amount of simultaneous segment fetch requests
-      const chunkSize = 10;
+      const chunkSize = numConcurrentSegmentFetches;
       for (let i = 0; i < segmentNames.length; i += chunkSize) {
         const chunk = segmentNames.slice(i, i + chunkSize);
         shouldUpdateFlags = shouldUpdateFlags.concat(
