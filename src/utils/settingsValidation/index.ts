@@ -203,7 +203,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate numConcurrentSegmentFetches is numeric and greater than 0
-  if (!Number.isFinite(withDefaults.sync.numConcurrentSegmentFetches) || withDefaults.sync.numConcurrentSegmentFetches<1){
+  if (!Number.isFinite(withDefaults.sync.numConcurrentSegmentFetches) || withDefaults.sync.numConcurrentSegmentFetches < 1) {
     withDefaults.sync.numConcurrentSegmentFetches = base.sync.numConcurrentSegmentFetches;
   }
 
