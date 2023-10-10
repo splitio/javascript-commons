@@ -182,7 +182,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     this.e = false;
   }
 
-  private streamingEvents: StreamingEvent[] = []
+  private streamingEvents: StreamingEvent[] = [];
 
   popStreamingEvents() {
     return this.streamingEvents.splice(0);

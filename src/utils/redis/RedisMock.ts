@@ -13,7 +13,7 @@ const PIPELINE_METHODS = ['rpush', 'hincrby'];
 
 export class RedisMock {
 
-  private pipelineMethods: any = { exec: jest.fn(asyncFunction) }
+  private pipelineMethods: any = { exec: jest.fn(asyncFunction) };
 
   constructor() {
     IDENTITY_METHODS.forEach(method => {

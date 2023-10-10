@@ -33,7 +33,7 @@ interface IRedisCommand {
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
  */
 export class RedisAdapter extends ioredis {
-  private readonly log: ILogger
+  private readonly log: ILogger;
   private _options: object;
   private _notReadyCommandsQueue?: IRedisCommand[];
   private _runningCommands: ISet<Promise<any>>;
