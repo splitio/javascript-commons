@@ -1,7 +1,7 @@
 import * as c from '../constants';
 import { codesWarn } from './warn';
 
-const READY_MSG = 'Split SDK is ready';
+const READY_MSG = 'Split SDK client is ready';
 
 export const codesInfo: [number, string][] = codesWarn.concat([
   // client status
