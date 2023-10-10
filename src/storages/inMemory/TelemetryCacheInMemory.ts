@@ -50,6 +50,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       iDr: this.getImpressionStats(DROPPED),
       spC: this.splits && this.splits.getSplitNames().length,
       seC: this.segments && this.segments.getRegisteredSegments().length,
+      // @TODO number of clients in client-side API?
       skC: this.segments && this.segments.getKeysCount(),
       sL: this.getSessionLength(),
       eQ: this.getEventStats(QUEUED),
