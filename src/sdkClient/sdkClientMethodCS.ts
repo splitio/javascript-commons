@@ -17,8 +17,8 @@ function buildInstanceId(key: SplitIO.SplitKey) {
 const method = 'Client instantiation';
 
 /**
- * Factory of client method for the client-side API variant where TT is ignored and thus
- * clients don't have a binded TT for the track method.
+ * Factory of client method for the client-side API variant where TT is ignored.
+ * Therefore, clients don't have a bound TT for the track method.
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
   const { storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
