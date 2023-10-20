@@ -37,7 +37,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
 
-    validateIfOperational(log, readinessManager, methodName);
+    validateIfOperational(log, readinessManager, methodName, splitOrSplits);
 
     const valid = isNotDestroyed && key && splitOrSplits && attributes !== false;
 

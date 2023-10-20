@@ -1,3 +1,7 @@
+1.10.0 (October 20, 2023)
+ - Added `defaultTreatment` property to the `SplitView` object returned by the `split` and `splits` methods of the SDK manager (Related to issue https://github.com/splitio/javascript-commons/issues/225).
+ - Updated log warning message to include the feature flag name when `getTreatment` method is called and the SDK client is not ready.
+
 1.9.2 (October 19, 2023)
  - Updated client module to support the Split Suite.
  - Updated some transitive dependencies for vulnerability fixes.
