@@ -1,4 +1,4 @@
-1.9.2 (October 20, 2023)
+1.10.0 (October 20, 2023)
  - Added defaultTreatment property to the SplitView object returned by the `split` and `splits` methods of the SDK manager.
 
 1.9.2 (October 19, 2023)
