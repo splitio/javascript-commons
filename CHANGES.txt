@@ -1,3 +1,6 @@
+1.9.2 (October 20, 2023)
+ - Added defaultTreatment property to the SplitView object returned by the `split` and `splits` methods of the SDK manager.
+
 1.9.2 (October 19, 2023)
  - Updated client module to support the Split Suite.
  - Updated some transitive dependencies for vulnerability fixes.
