@@ -29,6 +29,9 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: Sp
     // Key is bound to the `track` method. Same thing happens with trafficType but only if provided
     track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key),
 
-    isClientSide: true
+    // Not part of the public API. These properties are used to support other modules (e.g., Split Suite)
+    isClientSide: true,
+    key,
+    trafficType
   }) as SplitIO.ICsClient;
 }

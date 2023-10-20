@@ -44,7 +44,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (maybeFlagSetNameOrNames) {
       flagSetOrFlagSets = flagSetsAreValid(log, methodName, maybeFlagSetNameOrNames, settings.sync.__splitFiltersValidation.groupedFilters.bySet);
     }
-    validateIfOperational(log, readinessManager, methodName);
+
+    validateIfOperational(log, readinessManager, methodName, splitOrSplits);
 
     const valid = isNotDestroyed && key && (splitOrSplits || flagSetOrFlagSets.length > 0) && attributes !== false;
 
