@@ -9,9 +9,9 @@ export function validateIfNotDestroyed(log: ILogger, readinessManager: IReadines
   return false;
 }
 
-export function validateIfOperational(log: ILogger, readinessManager: IReadinessManager, method: string) {
+export function validateIfOperational(log: ILogger, readinessManager: IReadinessManager, method: string, featureFlagNameOrNames?: string | string[] | false) {
   if (readinessManager.isReady() || readinessManager.isReadyFromCache()) return true;
 
-  log.warn(CLIENT_NOT_READY, [method]);
+  log.warn(CLIENT_NOT_READY, [method, featureFlagNameOrNames ? ` for feature flag ${featureFlagNameOrNames.toString()}` : '']);
   return false;
 }

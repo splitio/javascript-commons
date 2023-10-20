@@ -611,7 +611,7 @@ export namespace SplitIO {
       [treatmentName: string]: string
     }
     /**
-     * Default treatment value for feature flag.
+     * The default treatment of the feature flag.
      * @property {string} defaultTreatment
      */
     defaultTreatment: string,
