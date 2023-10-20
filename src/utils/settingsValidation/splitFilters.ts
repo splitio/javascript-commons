@@ -1,9 +1,8 @@
-import { STANDALONE_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
 
@@ -129,7 +128,6 @@ function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: Split
  *
  * @param {ILogger} log logger
  * @param {any} maybeSplitFilters split filters configuration param provided by the user
- * @param {string} mode settings mode
  * @returns it returns an object with the following properties:
  *  - `validFilters`: the validated `splitFilters` configuration object defined by the user.
  *  - `queryString`: the parsed split filter query. it is null if all filters are invalid or all values in filters are invalid.
@@ -137,7 +135,7 @@ function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: Split
  *
  * @throws Error if the some of the grouped list of values per filter exceeds the max allowed length
  */
-export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
+export function validateSplitFilters(log: ILogger, maybeSplitFilters: any): ISplitFiltersValidation {
   // Validation result schema
   const res = {
     validFilters: [],
