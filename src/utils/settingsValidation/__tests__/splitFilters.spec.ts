@@ -40,8 +40,7 @@ describe('validateSplitFilters', () => {
     expect(validateSplitFilters(loggerMock, 15, STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
     expect(validateSplitFilters(loggerMock, 'string', STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
     expect(validateSplitFilters(loggerMock, [], STANDALONE_MODE)).toEqual(defaultOutput); // splitFilters ignored if not a non-empty array
-    expect(validateSplitFilters(loggerMock, [{ type: 'byName', values: ['split_1'] }], CONSUMER_MODE)).toEqual(defaultOutput); // splitFilters ignored if not in 'standalone' mode
-    expect(loggerMock.warn.mock.calls).toEqual([[WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_IGNORED, ['standalone']]]);
+    expect(loggerMock.warn.mock.calls).toEqual([[WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY], [WARN_SPLITS_FILTER_EMPTY]]);
 
     expect(loggerMock.debug).not.toBeCalled();
     expect(loggerMock.error).not.toBeCalled();

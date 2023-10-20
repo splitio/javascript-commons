@@ -147,11 +147,6 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
   if (!maybeSplitFilters) return res;
-  // Warn depending on the mode
-  if (mode !== STANDALONE_MODE) {
-    log.warn(WARN_SPLITS_FILTER_IGNORED, [STANDALONE_MODE]);
-    return res;
-  }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
     log.warn(WARN_SPLITS_FILTER_EMPTY);
