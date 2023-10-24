@@ -202,7 +202,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
+  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters);
   withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
   withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
 
