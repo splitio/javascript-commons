@@ -27,7 +27,6 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_FLAGSET_NOT_CONFIGURED, '%s: : you passed %s wich is not part of the configured FlagSetsFilter, ignoring Flag Set.'],
   // initialization / settings validation
   [c.WARN_INTEGRATION_INVALID, c.LOG_PREFIX_SETTINGS+': %s integration item(s) at settings is invalid. %s'],
-  [c.WARN_SPLITS_FILTER_IGNORED, c.LOG_PREFIX_SETTINGS+': feature flag filters have been configured but will have no effect if mode is not "%s", since synchronization is being deferred to an external tool.'],
   [c.WARN_SPLITS_FILTER_INVALID, c.LOG_PREFIX_SETTINGS+': feature flag filter at position %s is invalid. It must be an object with a valid filter type ("bySet", "byName" or "byPrefix") and a list of "values".'],
   [c.WARN_SPLITS_FILTER_EMPTY, c.LOG_PREFIX_SETTINGS+': feature flag filter configuration must be a non-empty array of filter objects.'],
   [c.WARN_SDK_KEY, c.LOG_PREFIX_SETTINGS+': You already have %s. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application'],
