@@ -55,7 +55,6 @@ interface ISplitMutations {
  */
 function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
   const { byName: namesFilter, byPrefix: prefixFilter} = filters.groupedFilters;
-  // if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
 
   const namesFilterConfigured = namesFilter.length > 0;
   const prefixFilterConfigured = prefixFilter.length > 0;
