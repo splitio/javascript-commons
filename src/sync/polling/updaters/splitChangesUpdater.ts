@@ -54,8 +54,8 @@ interface ISplitMutations {
  * @param filters splitFiltersValidation bySet | byName
  */
 function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
-  const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter} = filters.groupedFilters;
-  if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
+  const { byName: namesFilter, byPrefix: prefixFilter} = filters.groupedFilters;
+  // if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
 
   const namesFilterConfigured = namesFilter.length > 0;
   const prefixFilterConfigured = prefixFilter.length > 0;
@@ -65,6 +65,42 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
   const matchNames = namesFilterConfigured && namesFilter.indexOf(featureFlag.name) > -1;
   const matchPrefix = prefixFilterConfigured && prefixFilter.some(prefix => startsWith(featureFlag.name, prefix));
   return matchNames || matchPrefix;
+}
+
+/**
+ * Given the list of splits from /splitChanges endpoint, configured sets & splitsCache it returns the mutations for configured sets,
+ * i.e., an object with added splits, removed splits and used segments.
+ * Exported for testing purposes.
+ */
+export function computeFromSets(entries: ISplit[], setsFilter: string[], splitsCache: ISplitsCacheBase): ISplitMutations {
+  const segments = new _Set<string>();
+  const computedFromSets = entries.reduce((accum, flag) => {
+
+    // validate that flag belongs to configured flag sets
+    if (flag.sets && flag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1)) {
+      if (flag.status === 'ACTIVE') {
+        accum.added.push([flag.name, flag]);
+
+        parseSegments(flag).forEach((segmentName: string) => {
+          segments.add(segmentName);
+        });
+
+      } else {
+        accum.removed.push(flag.name);
+      }
+    } else {
+
+      // check if it is a flag removed from a configured flag set
+      if (splitsCache.getSplit(flag.name))
+        accum.removed.push(flag.name);
+    }
+
+    return accum;
+  }, { added: [], removed: [], segments: [] } as ISplitMutations);
+
+  computedFromSets.segments = setToArray(segments);
+
+  return computedFromSets;
 }
 
 /**
@@ -148,8 +184,9 @@ export function splitChangesUpdaterFactory(
       )
         .then((splitChanges: ISplitChangesResponse) => {
           startingUp = false;
-
-          const mutation = computeSplitsMutation(splitChanges.splits, splitFiltersValidation);
+          const setsFilter = splitFiltersValidation.groupedFilters.bySet;
+          const configuredFilters = setsFilter.length > 0;
+          const mutation = configuredFilters ? computeFromSets(splitChanges.splits, setsFilter, splits) : computeSplitsMutation(splitChanges.splits, splitFiltersValidation);
 
           log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
           log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
@@ -170,6 +207,8 @@ export function splitChangesUpdaterFactory(
               return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
+                  // if there are configured filters and there isn't any change on mutations, skip emiting
+                  if (configuredFilters && mutation.added.length === 0 && mutation.removed.length === 0) return true;
                   // emit SDK events
                   if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
                   return true;

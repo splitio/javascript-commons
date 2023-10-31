@@ -4,7 +4,7 @@ import { splitApiFactory } from '../../../../services/splitApi';
 import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
 import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
 import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
-import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation } from '../splitChangesUpdater';
+import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation, computeFromSets } from '../splitChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
@@ -12,6 +12,7 @@ import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
+import { ISplitsCacheBase } from '../../../../storages/types';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -111,35 +112,44 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
 test('splitChangesUpdater / compute splits mutation with filters', () => {
   // SDK initialization with sets: [set_a, set_b]
-  let splitFiltersValidation = { queryString: '&sets=set_a,set_b', groupedFilters: { bySet: ['set_a','set_b'], byName: ['name_1'], byPrefix: [] }, validFilters: [] };
+  const configuredSets = ['set_a','set_b'];
 
+  const updateCache = (splits: ISplitsCacheBase, mutation: any) => {
+    splits.addSplits(mutation.added);
+    splits.removeSplits(mutation.removed);
+  };
+
+  let splitsCache = new SplitsCacheInMemory();
   // fetching new feature flag in sets A & B
-  let splitsMutation = computeSplitsMutation([testFFSetsAB], splitFiltersValidation);
+  let splitsMutation = computeFromSets([testFFSetsAB], configuredSets, splitsCache);
 
   // should add it to mutations
   expect(splitsMutation.added).toEqual([[testFFSetsAB.name, testFFSetsAB]]);
   expect(splitsMutation.removed).toEqual([]);
+  updateCache(splitsCache, splitsMutation);
 
   // fetching existing test feature flag removed from set B
-  splitsMutation = computeSplitsMutation([testFFRemoveSetB], splitFiltersValidation);
+  splitsMutation = computeFromSets([testFFRemoveSetB], configuredSets, splitsCache);
 
   expect(splitsMutation.added).toEqual([[testFFRemoveSetB.name, testFFRemoveSetB]]);
   expect(splitsMutation.removed).toEqual([]);
+  updateCache(splitsCache, splitsMutation);
 
-  // fetching existing test feature flag removed from set B
-  splitsMutation = computeSplitsMutation([testFFRemoveSetA], splitFiltersValidation);
+  // fetching existing test feature flag removed from set A
+  splitsMutation = computeFromSets([testFFRemoveSetA], configuredSets, splitsCache);
 
   expect(splitsMutation.added).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFRemoveSetA.name]);
+  updateCache(splitsCache, splitsMutation);
 
   // fetching existing test feature flag removed from set B
-  splitsMutation = computeSplitsMutation([testFFEmptySet], splitFiltersValidation);
+  splitsMutation = computeFromSets([testFFEmptySet], configuredSets, splitsCache);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
+  expect(splitsMutation.removed).toEqual([]);
 
   // SDK initialization with names: ['test2']
-  splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
+  const splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
   splitsMutation = computeSplitsMutation([testFFSetsAB], splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
@@ -168,9 +178,9 @@ describe('splitChangesUpdater', () => {
   const readinessManager = readinessManagerFactory(EventEmitter);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
-  const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+  let splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
 
-  const splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1);
+  let splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -212,5 +222,41 @@ describe('splitChangesUpdater', () => {
       expect(registerSegments.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [] : ['maur-2']);
       index++;
     }
+  });
+
+  test('flag sets splits-arrived emition', async () => {
+    const payload = splitNotifications[3].decoded as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
+    const setMocks = [
+      { sets: [], shouldEmit: false }, /* should not emit if flag does not have any set */
+      { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is in configured sets */
+      { sets: ['set_b'], shouldEmit: true }, /* should emit if flag was just removed from configured sets */
+      { sets: ['set_b'], shouldEmit: false }, /* should NOT emit if flag is nor was just removed from configured sets */
+      { sets: ['set_c'], shouldEmit: false }, /* should NOT emit if flag is nor was just removed from configured sets */
+      { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is back in configured sets */
+    ];
+
+    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, new SplitsCacheInMemory(), segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+
+    let index = 0;
+    let calls = 0;
+    // emit always if not configured sets
+    for (const setMock of setMocks) {
+      await expect(splitChangesUpdater(undefined, undefined, { payload: {...payload, sets: setMock.sets, status: 'ACTIVE'}, changeNumber: index })).resolves.toBe(true);
+      expect(splitsEmitSpy.mock.calls[index][0]).toBe('state::splits-arrived');
+      index++;
+    }
+
+    // @ts-ignore
+    splitFiltersValidation = { queryString: null, groupedFilters: { bySet: ['set_a'], byName: [], byPrefix: [] }, validFilters: [] };
+    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, new SplitsCacheInMemory(), segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    splitsEmitSpy.mockReset();
+    index = 0;
+    for (const setMock of setMocks) {
+      await expect(splitChangesUpdater(undefined, undefined, { payload: {...payload, sets: setMock.sets, status: 'ACTIVE'}, changeNumber: index })).resolves.toBe(true);
+      if (setMock.shouldEmit) calls++;
+      expect(splitsEmitSpy.mock.calls.length).toBe(calls);
+      index++;
+    }
+
   });
 });
