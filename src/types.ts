@@ -609,12 +609,12 @@ export namespace SplitIO {
      */
     configs: {
       [treatmentName: string]: string
-    }
+    },
     /**
-     * list of sets per feature flag
+     * List of sets of the feature flag.
      * @property {string[]} sets
      */
-    sets?: string[],
+    sets: string[],
     /**
      * The default treatment of the feature flag.
      * @property {string} defaultTreatment
