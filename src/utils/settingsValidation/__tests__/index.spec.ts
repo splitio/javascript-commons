@@ -59,6 +59,24 @@ describe('settingsValidation', () => {
     expect(settings.scheduler.impressionsRefreshRate).toBe(10000);
   });
 
+  test('numConcurrentSegmentFetches should be configurable', () => {
+    const config = {
+      core: { authorizationKey: 'dummy token' },
+      sync: { numConcurrentSegmentFetches: 20 },
+    };
+    let settings = settingsValidation(config, minimalSettingsParams);
+
+    expect(settings.sync.numConcurrentSegmentFetches).toEqual(20);
+
+
+    settings = settingsValidation(
+      { ...config, sync: {numConcurrentSegmentFetches: 'asdf'} },
+      minimalSettingsParams
+    );
+
+    expect(settings.sync.numConcurrentSegmentFetches).toEqual(10);
+  });
+
   test('impressionsMode should be configurable', () => {
     const config = {
       core: { authorizationKey: 'dummy token' },

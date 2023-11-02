@@ -14,7 +14,7 @@ export function segmentsSyncTaskFactory(
   fetchSegmentChanges: IFetchSegmentChanges,
   storage: IStorageSync,
   readiness: IReadinessManager,
-  settings: ISettings,
+  settings: ISettings
 ): ISegmentsSyncTask {
   return syncTaskFactory(
     settings.log,
@@ -22,7 +22,8 @@ export function segmentsSyncTaskFactory(
       settings.log,
       segmentChangesFetcherFactory(fetchSegmentChanges),
       storage.segments,
-      readiness,
+      settings.sync.numConcurrentSegmentFetches,
+      readiness
     ),
     settings.scheduler.segmentsRefreshRate,
     'segmentChangesUpdater'

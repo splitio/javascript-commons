@@ -84,7 +84,8 @@ export const base = {
     // impressions collection mode
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
-    enabled: true
+    enabled: true,
+    numConcurrentSegmentFetches: 10
   },
 
   // Logger
@@ -199,6 +200,11 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // validate sync enabled
   if (withDefaults.sync.enabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.sync.enabled = true;
+  }
+
+  // validate numConcurrentSegmentFetches is numeric and greater than 0
+  if (!Number.isFinite(withDefaults.sync.numConcurrentSegmentFetches) || withDefaults.sync.numConcurrentSegmentFetches < 1) {
+    withDefaults.sync.numConcurrentSegmentFetches = base.sync.numConcurrentSegmentFetches;
   }
 
   // validate the `splitFilters` settings and parse splits query
