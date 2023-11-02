@@ -127,6 +127,16 @@ export function splitChangesUpdaterFactory(
     return promise;
   }
 
+  /** Returns true if at least one split was updated */
+  function isThereUpdate(flagsChange: [boolean | void, void | boolean[], void | boolean[], boolean | void] | [any, any, any]) {
+    const [, added, removed, ] = flagsChange;
+    // There is at least one added or modified feature flag
+    if (added && added.some((update: boolean) => update)) return true;
+    // There is at least one removed feature flag
+    if (removed && removed.some((update: boolean) => update)) return true;
+    return false;
+  }
+
   /**
    * SplitChanges updater returns a promise that resolves with a `false` boolean value if it fails to fetch splits or synchronize them with the storage.
    * Returned promise will not be rejected.
@@ -163,11 +173,10 @@ export function splitChangesUpdaterFactory(
             splits.addSplits(mutation.added),
             splits.removeSplits(mutation.removed),
             segments.registerSegments(mutation.segments)
-          ]).then(() => {
-
+          ]).then((flagsChange) => {
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && (isClientSide || checkAllSegmentsExist(segments))))
+              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && isThereUpdate(flagsChange) && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
