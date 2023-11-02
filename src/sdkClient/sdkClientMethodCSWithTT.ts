@@ -19,7 +19,7 @@ const method = 'Client instantiation';
 
 /**
  * Factory of client method for the client-side (browser) variant of the Isomorphic JS SDK,
- * where clients can have a binded TT for the track method, which is provided via the settings
+ * where clients can have a bound TT for the track method, which is provided via the settings
  * (default client) or the client method (shared clients).
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {

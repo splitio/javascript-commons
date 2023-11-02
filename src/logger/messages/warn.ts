@@ -14,7 +14,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.SUBMITTERS_PUSH_FAILS, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Dropping %s after retry. Reason: %s.'],
   [c.SUBMITTERS_PUSH_RETRY, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Failed to push %s, keeping data to retry on next iteration. Reason: %s.'],
   // client status
-  [c.CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect. Make sure to wait for SDK readiness before using this method.'],
+  [c.CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect%s. Make sure to wait for SDK readiness before using this method.'],
   [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],
   // input validation
   [c.WARN_SETTING_NULL, '%s: Property "%s" is of invalid type. Setting value to null.'],

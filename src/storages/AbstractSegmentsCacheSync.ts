@@ -44,6 +44,7 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
 
   /**
    * Only used for the `skC`(segment keys count) telemetry stat: 1 for client-side, and total count of keys in server-side.
+   * @TODO for client-side it should be the number of clients, but it requires a refactor of MySegments caches to simplify the code.
    */
   abstract getKeysCount(): number
 
