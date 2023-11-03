@@ -21,7 +21,7 @@ export class KeyBuilder {
   }
 
   buildFlagSetKey(flagSet: string) {
-    return `${this.prefix}.flagset.${flagSet}`;
+    return `${this.prefix}.flagSet.${flagSet}`;
   }
 
   buildSplitKey(splitName: string) {

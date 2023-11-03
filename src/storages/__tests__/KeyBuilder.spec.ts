@@ -72,7 +72,7 @@ test('KEYS / flag set keys', () => {
   const builder = new KeyBuilder(prefix);
 
   const flagSetName = 'flagset_x';
-  const expectedKey = `${prefix}.flagset.${flagSetName}`;
+  const expectedKey = `${prefix}.flagSet.${flagSetName}`;
 
   expect(builder.buildFlagSetKey(flagSetName)).toBe(expectedKey);
 
