@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set } from '../../utils/lang/sets';
+import { ISet } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -162,8 +162,8 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @todo this is a no-op method to be implemented
   */
   getNamesByFlagSets(): Promise<ISet<string>> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise(flagSets => new _Set([]));
+    this.log.error(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported with pluggable storage yet.');
+    return Promise.reject();
   }
 
   /**
