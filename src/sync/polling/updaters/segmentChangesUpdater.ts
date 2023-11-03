@@ -96,7 +96,7 @@ export function segmentChangesUpdaterFactory(
         if (error && error.statusCode === 403) {
           // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
           // @TODO although factory status is destroyed, synchronization is not stopped
-          if (readiness) readiness.destroy();
+          if (readiness) readiness.setDestroyed();
           log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an SDK Key from the Split user interface that is of type server-side.`);
         } else {
           log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
