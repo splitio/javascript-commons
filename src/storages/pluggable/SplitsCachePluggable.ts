@@ -162,7 +162,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @todo this is a no-op method to be implemented
   */
   getNamesByFlagSets(): Promise<ISet<string>> {
-    this.log.warn(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported in pluggable storage yet.');
+    this.log.error(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported with pluggable storage yet.');
     return Promise.reject();
   }
 
