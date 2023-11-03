@@ -10,7 +10,7 @@ import { ISet, _Set } from '../../utils/lang/sets';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
+function processPipelineAnswer(results: Array<[Error | null, string]>): (string | string[])[] {
   return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
     if (errValuePair[0] === null) accum.push(errValuePair[1]);
     return accum;
@@ -195,9 +195,29 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if wrapper operation fails.
    * @todo this is a no-op method to be implemented
   */
-  getNamesByFlagSets(): Promise<ISet<string>> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise(flagSets => new _Set([]));
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>> {
+    const toReturn: ISet<string> = new _Set([]);
+    const listOfKeys: string[] = [];
+
+    flagSets && flagSets.forEach(flagSet => {
+      listOfKeys.push(this.keys.buildFlagSetKey(flagSet));
+    });
+
+    if (listOfKeys.length > 0) {
+
+      return this.redis.pipeline(listOfKeys.map(k => ['smembers', k])).exec()
+        .then(processPipelineAnswer)
+        .then((setsRaw) => {
+          this.log.error(setsRaw);
+          setsRaw.forEach((setContent) => {
+            (setContent as string[]).forEach(flagName => toReturn.add(flagName));
+          });
+
+          return toReturn;
+        });
+    } else {
+      return new Promise(() => toReturn);
+    }
   }
 
   /**
