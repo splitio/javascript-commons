@@ -1,6 +1,7 @@
 import { ISplitsCacheAsync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
+import { ISet } from '../utils/lang/sets';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheAsync interface
@@ -17,6 +18,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   abstract getChangeNumber(): Promise<number>
   abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
+  abstract getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
 

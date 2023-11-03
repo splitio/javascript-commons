@@ -67,6 +67,17 @@ test('KEYS / traffic type keys', () => {
 
 });
 
+test('KEYS / flag set keys', () => {
+  const prefix = 'unit_test.SPLITIO';
+  const builder = new KeyBuilder(prefix);
+
+  const flagSetName = 'flagset_x';
+  const expectedKey = `${prefix}.flagSet.${flagSetName}`;
+
+  expect(builder.buildFlagSetKey(flagSetName)).toBe(expectedKey);
+
+});
+
 test('KEYS / impressions', () => {
   const builder = new KeyBuilderSS(prefix, metadata);
 

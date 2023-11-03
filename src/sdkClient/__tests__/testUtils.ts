@@ -1,4 +1,4 @@
-const clientApiMethods = ['getTreatment', 'getTreatments', 'getTreatmentWithConfig', 'getTreatmentsWithConfig', 'track', 'destroy'];
+const clientApiMethods = ['getTreatment', 'getTreatments', 'getTreatmentWithConfig', 'getTreatmentsWithConfig', 'getTreatmentsByFlagSets', 'getTreatmentsWithConfigByFlagSets', 'getTreatmentsByFlagSet', 'getTreatmentsWithConfigByFlagSet', 'track', 'destroy'];
 
 export function assertClientApi(client: any, sdkStatus?: object) {
 

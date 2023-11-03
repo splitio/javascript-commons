@@ -112,7 +112,12 @@ export function readinessManagerFactory(
       return readinessManagerFactory(EventEmitter, readyTimeout, splits);
     },
 
+    // @TODO review/remove next methods when non-recoverable errors are reworked
+    // Called on consumer mode, when storage fails to connect
     timeout,
+    // Called on 403 error (client-side SDK key on server-side), to set the SDK as destroyed for
+    // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
+    setDestroyed() { isDestroyed = true; },
 
     destroy() {
       isDestroyed = true;

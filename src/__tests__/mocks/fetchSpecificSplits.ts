@@ -10,6 +10,13 @@ const valuesExamples = [
   ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15', 'p16', 'p17', 'p18', 'p19', 'p20', 'p21', 'p22', 'p23', 'p24', 'p25', 'p26', 'p27', 'p28', 'p29', 'p30', 'p31', 'p32', 'p33', 'p34', 'p35', 'p36', 'p37', 'p38', 'p39', 'p40', 'p41', 'p42', 'p43', 'p44', 'p45', 'p46', 'p47', 'p48', 'p49', 'p50'],
   ['__ш', '__a', '%', '%25', ' __ш ', '%  '], // to test that we order before encoding: '__a' < '__ш' but encodeURIComponent('__a') > encodeURIComponent('__ш')
   ['%', '%25', '__a', '__ш'], // [7] ordered and deduplicated
+  // flagSets examples
+  [' set_1','set_3 ',' set_a ','set_2','set_c','set_b'], // [9] trim
+  ['set_1','set_2','set_3','set_a','set_b','set_c'], // [10] sanitized [9]
+  ['set_ 1','set _3','3set_a','_set_2','seT_c','set_B','set_1234567890_1234567890_234567890_1234567890_1234567890','set_a','set_2'], // [11] lowercase & regexp
+  ['3set_a','set_2','set_a','set_b','set_c'], // [12] sanitized [11]
+  ['set_2','set_a','SET_2','set_a','set_b','set_B','set_1','set_3!'], // [13] dedupe, dedupe with case sensitive
+  ['set_1','set_2','set_a','set_b'], // [14] sanitized [13]
 ];
 
 export const splitFilters: SplitIO.SplitFilter[][] = [
@@ -41,39 +48,79 @@ export const splitFilters: SplitIO.SplitFilter[][] = [
   ],
   [
     { type: 'byName', values: valuesExamples[7] }
-  ]
+  ],
+  // FlagSet filters
+  [ // [6]
+    { type: 'byPrefix', values: valuesExamples[1] },
+    { type: 'bySet', values: valuesExamples[9] },
+    { type: 'byName', values: valuesExamples[1] }
+  ],
+  [ // [7]
+    { type: 'bySet', values: valuesExamples[11] },
+    { type: 'byPrefix', values: [] },
+    { type: 'byName', values: valuesExamples[6] }
+  ],
+  [ // [8]
+    { type: 'byPrefix', values: [] },
+    { type: 'byName', values: valuesExamples[6] },
+    { type: 'bySet', values: valuesExamples[13] }
+  ],
 ];
 
 // each entry corresponds to the queryString or exception message of each splitFilters entry
 export const queryStrings = [
-  '&names=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc',
-  '&prefixes=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc',
-  '&names=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc&prefixes=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc',
-  "400 unique values can be specified at most for 'byName' filter. You passed 401. Please consider reducing the amount or using other filter.",
-  "50 unique values can be specified at most for 'byPrefix' filter. You passed 51. Please consider reducing the amount or using other filter.",
-  '&names=%25,%2525,__a,__%D1%88',
+  '&names=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc', // [0]
+  '&prefixes=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc', // [1]
+  '&names=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc&prefixes=abc%C8%A3,abc%C8%A3asd,ausgef%C3%BCllt,%C8%A3abc', // [2]
+  "400 unique values can be specified at most for 'byName' filter. You passed 401. Please consider reducing the amount or using other filter.", // [3]
+  "50 unique values can be specified at most for 'byPrefix' filter. You passed 51. Please consider reducing the amount or using other filter.", // [4]
+  '&names=%25,%2525,__a,__%D1%88', // [5]
+  // FlagSet filters
+  '&sets=set_1,set_2,set_3,set_a,set_b,set_c', // [6]
+  '&sets=3set_a,set_2,set_a,set_b,set_c', // [7]
+  '&sets=set_1,set_2,set_a,set_b', // [8]
 ];
 
 // each entry corresponds to a `groupedFilter` object returned by `validateSplitFilter` for each `splitFilters` input.
 // `groupedFilter` contains valid, unique and ordered values per filter type.
 // An `undefined` value means that `validateSplitFilter` throws an exception which message value is at `queryStrings`.
 export const groupedFilters = [
-  {
+  { // [0]
+    bySet: [],
     byName: valuesExamples[2],
     byPrefix: []
   },
-  {
+  { // [1]
+    bySet: [],
     byName: [],
     byPrefix: valuesExamples[2]
   },
-  {
+  { // [2]
+    bySet: [],
     byName: valuesExamples[2],
     byPrefix: valuesExamples[2]
   },
-  undefined,
-  undefined,
-  {
+  undefined, // [3]
+  undefined, // [4]
+  { // [5]
+    bySet: [],
     byName: valuesExamples[8],
     byPrefix: []
-  }
+  },
+  // FlagSet filters
+  { // [6]
+    byName: [],
+    bySet: valuesExamples[10],
+    byPrefix: []
+  },
+  { // [7]
+    byName: [],
+    bySet: valuesExamples[12],
+    byPrefix: []
+  },
+  { // [8]
+    byName: [],
+    bySet: valuesExamples[14],
+    byPrefix: []
+  },
 ];

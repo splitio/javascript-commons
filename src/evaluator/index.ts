@@ -7,6 +7,7 @@ import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
+import { ISet, setToArray } from '../utils/lang/sets';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -85,6 +86,32 @@ export function evaluateFeatures(
         return treatmentsException(splitNames);
       }) :
     getEvaluations(log, splitNames, parsedSplits, key, attributes, storage);
+}
+
+export function evaluateFeaturesByFlagSets(
+  log: ILogger,
+  key: SplitIO.SplitKey,
+  flagSets: string[],
+  attributes: SplitIO.Attributes | undefined,
+  storage: IStorageSync | IStorageAsync,
+): MaybeThenable<Record<string, IEvaluationResult>> {
+  let storedFlagNames: MaybeThenable<ISet<string>>;
+
+  // get features by flag sets
+  try {
+    storedFlagNames = storage.splits.getNamesByFlagSets(flagSets);
+  } catch (e) {
+    // return empty evaluations
+    return {};
+  }
+
+  // evaluate related features
+  return thenable(storedFlagNames) ?
+    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage))
+      .catch(() => {
+        return {};
+      }) :
+    evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
 }
 
 function getEvaluation(

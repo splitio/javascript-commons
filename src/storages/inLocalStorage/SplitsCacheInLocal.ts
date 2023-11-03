@@ -4,6 +4,7 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { ISet, _Set, returnSetsUnion, setToArray } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -12,8 +13,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly splitFiltersValidation: ISplitFiltersValidation;
+  private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private cacheReadyButNeedsToFlush: boolean = false;
   private updateNewFilter?: boolean;
 
   /**
@@ -21,10 +22,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @param {number | undefined} expirationTimestamp
    * @param {ISplitFiltersValidation} splitFiltersValidation
    */
-  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
     super();
     this.keys = keys;
     this.splitFiltersValidation = splitFiltersValidation;
+    this.flagSetsFilter = this.splitFiltersValidation.groupedFilters.bySet;
 
     this._checkExpiration(expirationTimestamp);
 
@@ -106,6 +108,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
+      if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      this.addToFlagSets(split);
+
       return true;
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
@@ -119,6 +124,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
+      if (split) this.removeFromFlagSets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -133,11 +139,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   setChangeNumber(changeNumber: number): boolean {
-    // when cache is ready but using a new split query, we must clear all split data
-    if (this.cacheReadyButNeedsToFlush) {
-      this.clear();
-      this.cacheReadyButNeedsToFlush = false;
-    }
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
@@ -220,7 +221,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @override
    */
   checkCache(): boolean {
-    return this.getChangeNumber() > -1 || this.cacheReadyButNeedsToFlush;
+    return this.getChangeNumber() > -1;
   }
 
   /**
@@ -237,7 +238,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   private _checkFilterQuery() {
-    const { queryString, groupedFilters } = this.splitFiltersValidation;
+    const { queryString } = this.splitFiltersValidation;
     const queryKey = this.keys.buildSplitsFilterQueryKey();
     const currentQueryString = localStorage.getItem(queryKey);
 
@@ -246,29 +247,74 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         // mark cache to update the new query filter on first successful splits fetch
         this.updateNewFilter = true;
 
-        // if cache is ready:
-        if (this.checkCache()) {
-          // * set change number to -1, to fetch splits with -1 `since` value.
-          localStorage.setItem(this.keys.buildSplitsTillKey(), '-1');
+        // if there is cache, clear it
+        if (this.checkCache()) this.clear();
 
-          // * remove from cache splits that doesn't match with the new filters
-          this.getSplitNames().forEach((splitName) => {
-            if (queryString && (
-              // @TODO consider redefining `groupedFilters` to expose a method like `groupedFilters::filter(splitName): boolean`
-              groupedFilters.byName.indexOf(splitName) > -1 ||
-              groupedFilters.byPrefix.some((prefix: string) => splitName.startsWith(prefix + '__'))
-            )) {
-              // * set `cacheReadyButNeedsToFlush` so that `checkCache` returns true (the storage is ready to be used) and the data is cleared before updating on first successful splits fetch
-              this.cacheReadyButNeedsToFlush = true;
-              return;
-            }
-            this.removeSplit(splitName);
-          });
-        }
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
     }
     // if the filter didn't change, nothing is done
   }
+
+  getNamesByFlagSets(flagSets: string[]): ISet<string>{
+    let toReturn: ISet<string> = new _Set([]);
+    flagSets.forEach(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+
+      if (flagSetFromLocalStorage) {
+        const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+        toReturn = returnSetsUnion(toReturn, flagSetCache);
+      }
+    });
+    return toReturn;
+
+  }
+
+  private addToFlagSets(featureFlag: ISplit) {
+    if (!featureFlag.sets) return;
+
+    featureFlag.sets.forEach(featureFlagSet => {
+
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
+
+      const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
+
+      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+      if (!flagSetFromLocalStorage) flagSetFromLocalStorage = '[]';
+
+      const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+      flagSetCache.add(featureFlag.name);
+
+      localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+    });
+  }
+
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+    if (!flagSets) return;
+
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
+    });
+  }
+
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
+
+    let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+
+    if (!flagSetFromLocalStorage) return;
+
+    const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+    flagSetCache.delete(featureFlagName);
+
+    if (flagSetCache.size === 0) {
+      localStorage.removeItem(flagSetKey);
+      return;
+    }
+
+    localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+  }
+
 }

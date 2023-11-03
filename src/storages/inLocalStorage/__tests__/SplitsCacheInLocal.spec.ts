@@ -1,8 +1,9 @@
 import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
 import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse } from '../../__tests__/testUtils';
+import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse, featureFlagOne, featureFlagTwo, featureFlagThree, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
+import { _Set } from '../../../utils/lang/sets';
 
 test('SPLIT CACHE / LocalStorage', () => {
   const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
@@ -159,4 +160,64 @@ test('SPLIT CACHE / LocalStorage / usesSegments', () => {
 
   cache.removeSplit('split4');
   expect(cache.usesSegments()).toBe(false); // 0 splits using segments
+});
+
+test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
+  // @ts-ignore
+  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'), undefined, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+  const emptySet = new _Set([]);
+
+  cache.addSplits([
+    [featureFlagOne.name, featureFlagOne],
+    [featureFlagTwo.name, featureFlagTwo],
+    [featureFlagThree.name, featureFlagThree],
+  ]);
+  cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+  expect(cache.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_one', 'ff_two']));
+  expect(cache.getNamesByFlagSets(['n'])).toEqual(new _Set(['ff_one']));
+  expect(cache.getNamesByFlagSets(['e'])).toEqual(new _Set(['ff_one','ff_three']));
+  expect(cache.getNamesByFlagSets(['t'])).toEqual(emptySet); // 't' not in filter
+  expect(cache.getNamesByFlagSets(['o','n','e'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
+
+  cache.addSplit(featureFlagOne.name, {...featureFlagOne, sets: ['1']});
+
+  expect(cache.getNamesByFlagSets(['1'])).toEqual(emptySet); // '1' not in filter
+  expect(cache.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_two']));
+  expect(cache.getNamesByFlagSets(['n'])).toEqual(emptySet);
+
+  cache.addSplit(featureFlagOne.name, {...featureFlagOne, sets: ['x']});
+  expect(cache.getNamesByFlagSets(['x'])).toEqual(new _Set(['ff_one']));
+  expect(cache.getNamesByFlagSets(['o','e','x'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
+
+
+  cache.removeSplit(featureFlagOne.name);
+  expect(cache.getNamesByFlagSets(['x'])).toEqual(emptySet);
+
+  cache.removeSplit(featureFlagOne.name);
+  expect(cache.getNamesByFlagSets(['y'])).toEqual(emptySet); // 'y' not in filter
+  expect(cache.getNamesByFlagSets([])).toEqual(emptySet);
+
+  cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithoutFS);
+  expect(cache.getNamesByFlagSets([])).toEqual(emptySet);
+});
+
+// if FlagSets are not defined, it should store all FlagSets in memory.
+test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
+  const cacheWithoutFilters = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const emptySet = new _Set([]);
+
+  cacheWithoutFilters.addSplits([
+    [featureFlagOne.name, featureFlagOne],
+    [featureFlagTwo.name, featureFlagTwo],
+    [featureFlagThree.name, featureFlagThree],
+  ]);
+  cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+  expect(cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_one', 'ff_two']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual(new _Set(['ff_one']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual(new _Set(['ff_one','ff_three']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual(new _Set(['ff_two','ff_three']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual(emptySet);
+  expect(cacheWithoutFilters.getNamesByFlagSets(['o','n','e'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
 });

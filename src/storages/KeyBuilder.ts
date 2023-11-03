@@ -20,6 +20,10 @@ export class KeyBuilder {
     return `${this.prefix}.trafficType.${trafficType}`;
   }
 
+  buildFlagSetKey(flagSet: string) {
+    return `${this.prefix}.flagSet.${flagSet}`;
+  }
+
   buildSplitKey(splitName: string) {
     return `${this.prefix}.split.${splitName}`;
   }

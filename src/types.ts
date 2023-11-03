@@ -609,7 +609,12 @@ export namespace SplitIO {
      */
     configs: {
       [treatmentName: string]: string
-    }
+    },
+    /**
+     * List of sets of the feature flag.
+     * @property {string[]} sets
+     */
+    sets: string[],
     /**
      * The default treatment of the feature flag.
      * @property {string} defaultTreatment
@@ -714,7 +719,7 @@ export namespace SplitIO {
    * SplitFilter type.
    * @typedef {string} SplitFilterType
    */
-  export type SplitFilterType = 'byName' | 'byPrefix';
+  export type SplitFilterType = 'byName' | 'byPrefix' | 'bySet';
   /**
    * Defines a feature flag filter, described by a type and list of values.
    */
@@ -1065,6 +1070,42 @@ export namespace SplitIO {
      */
     getTreatmentsWithConfig(key: SplitKey, featureFlagNames: string[], attributes?: Attributes): TreatmentsWithConfig,
     /**
+     * Returns a Treatments value, which is an object map with the treatments for the feature flags related to the given flagSet.
+     * @function getTreatmentsByFlagSet
+     * @param {string} key - The string key representing the consumer.
+     * @param {string} flagSet - The flagSet name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes): Treatments,
+    /**
+     * Returns a TreatmentsWithConfig value, which is an object map with the TreatmentWithConfig (an object with both treatment and config string) for the feature flags related to the given flagSets.
+     * @function getTreatmentsWithConfigByFlagSet
+     * @param {string} key - The string key representing the consumer.
+     * @param {string} flagSet - The flagSet name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes): TreatmentsWithConfig,
+    /**
+     * Returns a Returns a Treatments value, which is an object with both treatment and config string for to the feature flags related to the given flagSets.
+     * @function getTreatmentsByFlagSets
+     * @param {string} key - The string key representing the consumer.
+     * @param {Array<string>} flagSets - An array of the flagSet names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes): Treatments,
+    /**
+     * Returns a TreatmentsWithConfig value, which is an object map with the TreatmentWithConfig (an object with both treatment and config string) for the feature flags related to the given flagSets.
+     * @function getTreatmentsWithConfigByFlagSets
+     * @param {string} key - The string key representing the consumer.
+     * @param {Array<string>} flagSets - An array of the flagSet names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes): TreatmentsWithConfig,
+    /**
      * Tracks an event to be fed to the results product on Split user interface.
      * @function track
      * @param {SplitKey} key - The key that identifies the entity related to this event.
@@ -1125,6 +1166,46 @@ export namespace SplitIO {
      */
     getTreatmentsWithConfig(key: SplitKey, featureFlagNames: string[], attributes?: Attributes): AsyncTreatmentsWithConfig,
     /**
+     * Returns a Treatments value, which will be (or eventually be) an object map with the treatments for the features related to the given flag set.
+     * For usage on NodeJS as we don't have only one key.
+     * @function getTreatmentsByFlagSet
+     * @param {string} key - The string key representing the consumer.
+     * @param {string} flagSet - The flag set name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes): AsyncTreatments,
+    /**
+     * Returns a TreatmentWithConfig value, which will be (or eventually be) an object with both treatment and config string for features related to the given flag set.
+     * For usage on NodeJS as we don't have only one key.
+     * @function getTreatmentsWithConfigByFlagSet
+     * @param {string} key - The string key representing the consumer.
+     * @param {string} flagSet - The flag set name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes): AsyncTreatmentsWithConfig,
+    /**
+     * Returns a Treatments value, which will be (or eventually be) an object map with the treatments for the feature flags related to the given flag sets.
+     * For usage on NodeJS as we don't have only one key.
+     * @function getTreatmentsByFlagSets
+     * @param {string} key - The string key representing the consumer.
+     * @param {Array<string>} flagSets - An array of the flag set names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes): AsyncTreatments,
+    /**
+     * Returns a TreatmentWithConfig value, which will be (or eventually be) an object with both treatment and config string for the feature flags related to the given flag sets.
+     * For usage on NodeJS as we don't have only one key.
+     * @function getTreatmentsWithConfigByFlagSets
+     * @param {string} key - The string key representing the consumer.
+     * @param {Array<string>} flagSets - An array of the flag set names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes): AsyncTreatmentsWithConfig,
+    /**
      * Tracks an event to be fed to the results product on Split user interface, and returns a promise to signal when the event was successfully queued (or not).
      * @function track
      * @param {SplitKey} key - The key that identifies the entity related to this event.
@@ -1174,6 +1255,38 @@ export namespace SplitIO {
      * @returns {TreatmentsWithConfig} The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfig(featureFlagNames: string[], attributes?: Attributes): TreatmentsWithConfig,
+    /**
+     * Returns a Treatments value, which is an object map with the treatments for the feature flags related to the given flag set.
+     * @function getTreatmentsByFlagSet
+     * @param {string} flagSet - The flag set name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSet(flagSet: string, attributes?: Attributes): Treatments,
+    /**
+     * Returns a TreatmentsWithConfig value, which is an object map with the TreatmentWithConfig (an object with both treatment and config string) for the feature flags related to the given flag set.
+     * @function getTreatmentsWithConfigByFlagSet
+     * @param {string} flagSet - The flag set name we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSet(flagSet: string, attributes?: Attributes): TreatmentsWithConfig,
+    /**
+     * Returns a Returns a Treatments value, which is an object with both treatment and config string for to the feature flags related to the given flag sets.
+     * @function getTreatmentsByFlagSets
+     * @param {Array<string>} flagSets - An array of the flag set names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsByFlagSets(flagSets: string[], attributes?: Attributes): Treatments,
+    /**
+     * Returns a TreatmentsWithConfig value, which is an object map with the TreatmentWithConfig (an object with both treatment and config string) for the feature flags related to the given flag sets.
+     * @function getTreatmentsWithConfigByFlagSets
+     * @param {Array<string>} flagSets - An array of the flag set names we want to get the treatments.
+     * @param {Attributes=} attributes - An object of type Attributes defining the attributes for the given key.
+     * @returns {Treatments} The map with all the TreatmentWithConfig objects
+     */
+    getTreatmentsWithConfigByFlagSets(flagSets: string[], attributes?: Attributes): TreatmentsWithConfig,
     /**
      * Tracks an event to be fed to the results product on Split user interface.
      * @function track

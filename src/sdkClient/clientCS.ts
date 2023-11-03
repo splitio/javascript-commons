@@ -21,6 +21,10 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: Sp
     getTreatmentWithConfig: clientCS.getTreatmentWithConfig.bind(clientCS, key),
     getTreatments: clientCS.getTreatments.bind(clientCS, key),
     getTreatmentsWithConfig: clientCS.getTreatmentsWithConfig.bind(clientCS, key),
+    getTreatmentsByFlagSets: clientCS.getTreatmentsByFlagSets.bind(clientCS, key),
+    getTreatmentsWithConfigByFlagSets: clientCS.getTreatmentsWithConfigByFlagSets.bind(clientCS, key),
+    getTreatmentsByFlagSet: clientCS.getTreatmentsByFlagSet.bind(clientCS, key),
+    getTreatmentsWithConfigByFlagSet: clientCS.getTreatmentsWithConfigByFlagSet.bind(clientCS, key),
 
     // Key is bound to the `track` method. Same thing happens with trafficType but only if provided
     track: trafficType ? clientCS.track.bind(clientCS, key, trafficType) : clientCS.track.bind(clientCS, key),
