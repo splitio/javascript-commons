@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set } from '../../utils/lang/sets';
+import { ISet } from '../../utils/lang/sets';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -196,8 +196,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * @todo this is a no-op method to be implemented
   */
   getNamesByFlagSets(): Promise<ISet<string>> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise(flagSets => new _Set([]));
+    this.log.warn(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported in Redis storage yet.');
+    return Promise.reject();
   }
 
   /**

@@ -94,7 +94,7 @@ export function evaluateFeaturesByFlagSets(
   flagSets: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-): MaybeThenable<Record<string,IEvaluationResult>> {
+): MaybeThenable<Record<string, IEvaluationResult>> {
   let storedFlagNames: MaybeThenable<ISet<string>>;
 
   // get features by flag sets
@@ -107,7 +107,10 @@ export function evaluateFeaturesByFlagSets(
 
   // evaluate related features
   return thenable(storedFlagNames) ?
-    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage)) :
+    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage))
+      .catch(() => {
+        return {};
+      }) :
     evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
 }
 
