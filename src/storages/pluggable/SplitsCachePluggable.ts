@@ -5,6 +5,7 @@ import { ILogger } from '../../logger/types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
+import { ISet } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -152,6 +153,17 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
       (listOfKeys) => listOfKeys.map(this.keys.extractKey)
     );
+  }
+
+  /**
+   * Get list of split names related to a given flag set names list.
+   * The returned promise is resolved with the list of split names,
+   * or rejected if wrapper operation fails.
+   * @todo this is a no-op method to be implemented
+  */
+  getNamesByFlagSets(): Promise<ISet<string>> {
+    this.log.error(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported with pluggable storage yet.');
+    return Promise.reject();
   }
 
   /**

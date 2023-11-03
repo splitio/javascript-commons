@@ -1,6 +1,7 @@
 import { SplitsCacheInMemory } from '../SplitsCacheInMemory';
 import { ISplit } from '../../../dtos/types';
-import { splitWithUserTT, splitWithAccountTT, something, somethingElse } from '../../__tests__/testUtils';
+import { splitWithUserTT, splitWithAccountTT, something, somethingElse, featureFlagWithEmptyFS, featureFlagWithoutFS, featureFlagOne, featureFlagTwo, featureFlagThree } from '../../__tests__/testUtils';
+import { _Set } from '../../../utils/lang/sets';
 
 test('SPLITS CACHE / In Memory', () => {
   const cache = new SplitsCacheInMemory();
@@ -112,4 +113,64 @@ test('SPLITS CACHE / In Memory / killLocally', () => {
   expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
   expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
+});
+
+test('SPLITS CACHE / In Memory / flag set cache tests', () => {
+  // @ts-ignore
+  const cache = new SplitsCacheInMemory({ groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+  const emptySet = new _Set([]);
+
+  cache.addSplits([
+    [featureFlagOne.name, featureFlagOne],
+    [featureFlagTwo.name, featureFlagTwo],
+    [featureFlagThree.name, featureFlagThree],
+  ]);
+  cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+  expect(cache.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_one', 'ff_two']));
+  expect(cache.getNamesByFlagSets(['n'])).toEqual(new _Set(['ff_one']));
+  expect(cache.getNamesByFlagSets(['e'])).toEqual(new _Set(['ff_one','ff_three']));
+  expect(cache.getNamesByFlagSets(['t'])).toEqual(emptySet); // 't' not in filter
+  expect(cache.getNamesByFlagSets(['o','n','e'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
+
+  cache.addSplit(featureFlagOne.name, {...featureFlagOne, sets: ['1']});
+
+  expect(cache.getNamesByFlagSets(['1'])).toEqual(emptySet); // '1' not in filter
+  expect(cache.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_two']));
+  expect(cache.getNamesByFlagSets(['n'])).toEqual(emptySet);
+
+  cache.addSplit(featureFlagOne.name, {...featureFlagOne, sets: ['x']});
+  expect(cache.getNamesByFlagSets(['x'])).toEqual(new _Set(['ff_one']));
+  expect(cache.getNamesByFlagSets(['o','e','x'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
+
+
+  cache.removeSplit(featureFlagOne.name);
+  expect(cache.getNamesByFlagSets(['x'])).toEqual(emptySet);
+
+  cache.removeSplit(featureFlagOne.name);
+  expect(cache.getNamesByFlagSets(['y'])).toEqual(emptySet); // 'y' not in filter
+  expect(cache.getNamesByFlagSets([])).toEqual(emptySet);
+
+  cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithoutFS);
+  expect(cache.getNamesByFlagSets([])).toEqual(emptySet);
+});
+
+// if FlagSets are not defined, it should store all FlagSets in memory.
+test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
+  const cacheWithoutFilters = new SplitsCacheInMemory();
+  const emptySet = new _Set([]);
+
+  cacheWithoutFilters.addSplits([
+    [featureFlagOne.name, featureFlagOne],
+    [featureFlagTwo.name, featureFlagTwo],
+    [featureFlagThree.name, featureFlagThree],
+  ]);
+  cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+  expect(cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual(new _Set(['ff_one', 'ff_two']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual(new _Set(['ff_one']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual(new _Set(['ff_one','ff_three']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual(new _Set(['ff_two','ff_three']));
+  expect(cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual(emptySet);
+  expect(cacheWithoutFilters.getNamesByFlagSets(['o','n','e'])).toEqual(new _Set(['ff_one','ff_two','ff_three']));
 });

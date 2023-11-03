@@ -1,6 +1,7 @@
 import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
+import { ISet } from '../utils/lang/sets';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -77,6 +78,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     }
     return false;
   }
+
+  abstract getNamesByFlagSets(flagSets: string[]): ISet<string>
 
 }
 

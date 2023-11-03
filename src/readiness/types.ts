@@ -55,6 +55,7 @@ export interface IReadinessManager {
   isOperational(): boolean,
 
   timeout(): void,
+  setDestroyed(): void,
   destroy(): void,
 
   /** for client-side */

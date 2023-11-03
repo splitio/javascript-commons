@@ -163,7 +163,8 @@ export interface ISplit {
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
-  }
+  },
+  sets?: string[]
 }
 
 // Split definition used in offline mode
@@ -208,5 +209,5 @@ export interface IMetadata {
 export type ISplitFiltersValidation = {
   queryString: string | null,
   groupedFilters: Record<SplitIO.SplitFilterType, string[]>,
-  validFilters: SplitIO.SplitFilter[]
+  validFilters: SplitIO.SplitFilter[],
 };
