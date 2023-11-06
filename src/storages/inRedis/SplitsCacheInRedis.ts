@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set } from '../../utils/lang/sets';
+import { ISet } from '../../utils/lang/sets';
 
 /**
  * Discard errors for an answer of multiple operations.
