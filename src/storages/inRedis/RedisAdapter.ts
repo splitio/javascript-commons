@@ -1,4 +1,4 @@
-import ioredis from 'ioredis';
+import ioredis, { Pipeline } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
@@ -89,12 +89,15 @@ export class RedisAdapter extends ioredis {
     };
 
     const wrapCommand = (originalMethod: Function, methodName: string) => {
+      // The value of "this" in this function should be the instance actually executing the method. It might be the instance referred (the base one)
+      // or it can be the instance of a Pipeline object.
       return function () {
         const params = arguments;
+        const caller: (Pipeline | RedisAdapter) = this; // Need to change this crap to have TypeScript stop complaining
 
         const commandWrapper = () => {
           instance.log.debug(`${LOG_PREFIX} Executing ${methodName}.`);
-          const result = originalMethod.apply(this, params);
+          const result = originalMethod.apply(caller, params);
 
           if (thenable(result)) {
             // For handling pending commands on disconnect, add to the set and remove once finished.
