@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import { ISplit } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set } from '../../utils/lang/sets';
+import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -15,6 +15,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
   private readonly wrapper: IPluggableStorageWrapper;
+  private readonly flagSetsFilter: string[];
 
   /**
    * Create a SplitsCache that uses a storage wrapper.
@@ -22,11 +23,12 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @param keys  Key builder.
    * @param wrapper  Adapted wrapper storage.
    */
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, flagSetsFilter: string[] = []) {
     super();
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
+    this.flagSetsFilter = flagSetsFilter;
   }
 
   private _decrementCounts(split: ISplit) {
@@ -39,6 +41,24 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private _incrementCounts(split: ISplit) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.wrapper.incr(ttKey);
+  }
+
+  private _updateFlagSets(name: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+    const removeFromFlagSets = returnListDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+
+    let addToFlagSets = returnListDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    if (this.flagSetsFilter.length > 0) {
+      addToFlagSets = addToFlagSets.filter(flagSet => {
+        return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
+      });
+    }
+
+    const items = [name];
+
+    return Promise.all([
+      ...removeFromFlagSets.map(flagSetName => this.wrapper.removeItems(this.keys.buildFlagSetKey(flagSetName), items)),
+      ...addToFlagSets.map(flagSetName => this.wrapper.addItems(this.keys.buildFlagSetKey(flagSetName), items))
+    ]);
   }
 
   /**
@@ -67,7 +87,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
         return this._incrementCounts(split).then(() => {
           if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
         });
-      });
+      }).then(() => this._updateFlagSets(name, parsedPreviousSplit && parsedPreviousSplit.sets, split.sets));
     }).then(() => true);
   }
 
@@ -88,8 +108,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        this._decrementCounts(split);
+        return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
+    }).then(() => {
       return this.wrapper.del(this.keys.buildSplitKey(name));
     });
   }

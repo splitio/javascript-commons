@@ -44,10 +44,10 @@ export interface IPluggableStorageWrapper {
    *
    * @function del
    * @param {string} key Item to delete
-   * @returns {Promise<void>} A promise that resolves if the operation success, whether the key existed and was removed or it didn't exist.
+   * @returns {Promise<boolean>} A promise that resolves if the operation success, whether the key existed and was removed (resolves with true) or it didn't exist (resolves with false).
    * The promise rejects if the operation fails, for example, if there is a connection error.
    */
-  del: (key: string) => Promise<boolean | void>
+  del: (key: string) => Promise<boolean>
   /**
    * Returns all keys matching the given prefix.
    *
