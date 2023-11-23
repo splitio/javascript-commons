@@ -114,7 +114,6 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       }
     });
     return toReturn;
-
   }
 
   private addToFlagSets(featureFlag: ISplit) {
