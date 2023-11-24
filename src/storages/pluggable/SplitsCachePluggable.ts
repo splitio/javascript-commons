@@ -2,7 +2,7 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilder } from '../KeyBuilder';
 import { IPluggableStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
@@ -23,12 +23,12 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @param keys  Key builder.
    * @param wrapper  Adapted wrapper storage.
    */
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, flagSetsFilter: string[] = []) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
-    this.flagSetsFilter = flagSetsFilter;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
   private _decrementCounts(split: ISplit) {

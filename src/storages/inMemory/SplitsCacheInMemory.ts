@@ -16,9 +16,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   private splitsWithSegmentsCount: number = 0;
   private flagSetsCache: Record<string, ISet<string>> = {};
 
-  constructor(splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(splitFiltersValidation?: ISplitFiltersValidation) {
     super();
-    this.flagSetsFilter = splitFiltersValidation.groupedFilters.bySet;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
   clear() {
