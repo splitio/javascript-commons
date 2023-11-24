@@ -43,7 +43,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     return this.wrapper.incr(ttKey);
   }
 
-  private _updateFlagSets(name: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
     const removeFromFlagSets = returnListDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
 
     let addToFlagSets = returnListDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
@@ -53,7 +53,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
       });
     }
 
-    const items = [name];
+    const items = [featureFlagName];
 
     return Promise.all([
       ...removeFromFlagSets.map(flagSetName => this.wrapper.removeItems(this.keys.buildFlagSetKey(flagSetName), items)),
