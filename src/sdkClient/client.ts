@@ -99,7 +99,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, method) :
       isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);

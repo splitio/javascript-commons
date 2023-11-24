@@ -18,7 +18,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   abstract getChangeNumber(): Promise<number>
   abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
-  abstract getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>>
+  abstract getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
 

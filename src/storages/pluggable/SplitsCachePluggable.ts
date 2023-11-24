@@ -181,17 +181,11 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of split names,
    * or rejected if any wrapper operation fails.
   */
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>> {
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
     return Promise.all(flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
       return this.wrapper.getItems(flagSetKey);
-    })).then(namesByFlagSets => {
-      const featureFlagNames = new _Set<string>();
-      namesByFlagSets.forEach(names => {
-        names.forEach(name => featureFlagNames.add(name));
-      });
-      return featureFlagNames;
-    });
+    })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
   /**

@@ -195,7 +195,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if wrapper operation fails.
    * @todo this is a no-op method to be implemented
   */
-  getNamesByFlagSets(): Promise<ISet<string>> {
+  getNamesByFlagSets(): Promise<ISet<string>[]> {
     this.log.error(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported with Redis storage yet.');
     return Promise.reject();
   }
