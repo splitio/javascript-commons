@@ -2,10 +2,10 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilder } from '../KeyBuilder';
 import { IPluggableStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet } from '../../utils/lang/sets';
+import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -15,6 +15,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
   private readonly wrapper: IPluggableStorageWrapper;
+  private readonly flagSetsFilter: string[];
 
   /**
    * Create a SplitsCache that uses a storage wrapper.
@@ -22,11 +23,12 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @param keys  Key builder.
    * @param wrapper  Adapted wrapper storage.
    */
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
   private _decrementCounts(split: ISplit) {
@@ -39,6 +41,24 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private _incrementCounts(split: ISplit) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.wrapper.incr(ttKey);
+  }
+
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+    const removeFromFlagSets = returnListDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+
+    let addToFlagSets = returnListDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    if (this.flagSetsFilter.length > 0) {
+      addToFlagSets = addToFlagSets.filter(flagSet => {
+        return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
+      });
+    }
+
+    const items = [featureFlagName];
+
+    return Promise.all([
+      ...removeFromFlagSets.map(flagSetName => this.wrapper.removeItems(this.keys.buildFlagSetKey(flagSetName), items)),
+      ...addToFlagSets.map(flagSetName => this.wrapper.addItems(this.keys.buildFlagSetKey(flagSetName), items))
+    ]);
   }
 
   /**
@@ -67,7 +87,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
         return this._incrementCounts(split).then(() => {
           if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
         });
-      });
+      }).then(() => this._updateFlagSets(name, parsedPreviousSplit && parsedPreviousSplit.sets, split.sets));
     }).then(() => true);
   }
 
@@ -88,8 +108,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        this._decrementCounts(split);
+        return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
+    }).then(() => {
       return this.wrapper.del(this.keys.buildSplitKey(name));
     });
   }
@@ -158,12 +179,19 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   /**
    * Get list of split names related to a given flag set names list.
    * The returned promise is resolved with the list of split names,
-   * or rejected if wrapper operation fails.
-   * @todo this is a no-op method to be implemented
+   * or rejected if any wrapper operation fails.
   */
-  getNamesByFlagSets(): Promise<ISet<string>> {
-    this.log.error(LOG_PREFIX + 'ByFlagSet/s evaluations are not supported with pluggable storage yet.');
-    return Promise.reject();
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>> {
+    return Promise.all(flagSets.map(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      return this.wrapper.getItems(flagSetKey);
+    })).then(namesByFlagSets => {
+      const featureFlagNames = new _Set<string>();
+      namesByFlagSets.forEach(names => {
+        names.forEach(name => featureFlagNames.add(name));
+      });
+      return featureFlagNames;
+    });
   }
 
   /**
