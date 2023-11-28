@@ -10,8 +10,8 @@ import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
-  return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
+function processPipelineAnswer<T>(results: Array<[Error | null, T]>): T[] {
+  return results.reduce((accum: T[], errValuePair: [Error | null, T]) => {
     if (errValuePair[0] === null) accum.push(errValuePair[1]);
     return accum;
   }, []);
@@ -216,10 +216,9 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if any wrapper operation fails.
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
-    return Promise.all(flagSets.map(flagSet => {
-      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
-      return this.redis.smembers(flagSetKey);
-    })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
+    return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
+      .then(processPipelineAnswer)
+      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
   /**
