@@ -36,4 +36,5 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.STREAMING_PARSING_SPLIT_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching SplitChanges due to an error processing SPLIT_UPDATE notification: %s'],
   [c.WARN_SPLITS_FILTER_INVALID_SET, c.LOG_PREFIX_SETTINGS + ': you passed %s, flag set must adhere to the regular expressions %s. This means a flag set must start with a letter or number, be in lowercase, alphanumeric and have a max length of 50 characters. %s was discarded.'],
   [c.WARN_SPLITS_FILTER_LOWERCASE_SET, c.LOG_PREFIX_SETTINGS + ': flag set %s should be all lowercase - converting string to lowercase.'],
+  [c.WARN_FLAGSET_WITHOUT_FLAGS, '%s: you passed %s flag set that does not contain cached feature flag names. Please double check what flag sets are in use in the Split user interface.'],
 ]);
