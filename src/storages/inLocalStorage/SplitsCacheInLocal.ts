@@ -260,7 +260,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
     return flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
-      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
       return new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
     });
@@ -275,10 +275,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
 
-      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
-      if (!flagSetFromLocalStorage) flagSetFromLocalStorage = '[]';
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+      const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
       flagSetCache.add(featureFlag.name);
 
       localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
@@ -296,7 +295,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private removeNames(flagSetName: string, featureFlagName: string) {
     const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
 
-    let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+    const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
     if (!flagSetFromLocalStorage) return;
 
