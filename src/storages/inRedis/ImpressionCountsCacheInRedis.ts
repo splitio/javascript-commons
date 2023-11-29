@@ -1,19 +1,19 @@
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { ImpressionCountsPayload } from '../../sync/submitters/types';
 import { forOwn } from '../../utils/lang';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { LOG_PREFIX, REFRESH_RATE, TTL_REFRESH } from './constants';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly refreshRate: number;
   private intervalId: any;
 
-  constructor(log: ILogger, key: string, redis: Redis, impressionCountsCacheSize?: number, refreshRate = REFRESH_RATE) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, impressionCountsCacheSize?: number, refreshRate = REFRESH_RATE) {
     super(impressionCountsCacheSize);
     this.log = log;
     this.key = key;
@@ -27,11 +27,8 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
     const keys = Object.keys(counts);
     if (!keys.length) return Promise.resolve(false);
 
-    const pipeline = this.redis.pipeline();
-    keys.forEach(key => {
-      pipeline.hincrby(this.key, key, counts[key]);
-    });
-    return pipeline.exec()
+    // @ts-ignore
+    return this.redis.pipelineExec(keys.map(key => ['hincrby', this.key, key, counts[key]]))
       .then(data => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
         if (data.length && data.length === keys.length) {

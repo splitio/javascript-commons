@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { ImpressionCountsCacheInRedis } from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
-import Redis from 'ioredis';
 import { RedisMock } from '../../../utils/redis/RedisMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { RedisAdapter } from '../RedisAdapter';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
@@ -16,7 +16,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   expected[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '4';
 
   test('Impression Counter Test makeKey', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     const timestamp1 = new Date(2020, 9, 2, 10, 0, 0).getTime();
 
@@ -25,11 +25,11 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(counter._makeKey(null, new Date(2020, 9, 2, 10, 53, 12).getTime())).toBe(`null::${timestamp1}`);
     expect(counter._makeKey(null, 0)).toBe('null::0');
 
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('Impression Counter Test BasicUsage', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
 
     counter.track('feature1', timestamp, 1);
@@ -76,11 +76,14 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(Object.keys(counter.pop()).length).toBe(0);
 
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 
-  test('POST IMPRESSION COUNTS IN REDIS FUNCTION', (done) => {
-    const connection = new Redis();
+  test('POST IMPRESSION COUNTS IN REDIS FUNCTION', async () => {
+    const connection = new RedisAdapter(loggerMock);
+    // @TODO next line is not required with ioredis
+    await new Promise(res => connection.once('ready', res));
+
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.
     connection.del(key);
@@ -95,15 +98,12 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     counter.track('feature2', nextHourTimestamp + 3, 2);
     counter.track('feature2', nextHourTimestamp + 4, 2);
 
-    counter.postImpressionCountsInRedis().then(() => {
+    await counter.postImpressionCountsInRedis();
 
-      connection.hgetall(key).then(async data => {
-        expect(data).toStrictEqual(expected);
-        await connection.del(key);
-        await connection.quit();
-        done();
-      });
-    });
+    const data = await connection.hgetall(key);
+    expect(data).toStrictEqual(expected);
+    await connection.del(key);
+    await connection.disconnect();
   });
 
   test('start and stop task', (done) => {
@@ -122,22 +122,22 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     counter.track('feature2', nextHourTimestamp + 3, 2);
     counter.track('feature2', nextHourTimestamp + 4, 2);
 
-    expect(connection.pipeline).not.toBeCalled();
+    expect(connection.pipelineExec).not.toBeCalled();
 
     counter.start();
     setTimeout(() => {
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.pipelineExec).toBeCalledTimes(1);
       expect(counter.isEmpty()).toBe(true);
       counter.stop();
-      expect(connection.pipeline).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
+      expect(connection.pipelineExec).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       counter.track('feature3', nextHourTimestamp + 4, 2);
     }, refreshRate + 30);
 
     setTimeout(() => {
-      expect(connection.pipeline).toBeCalledTimes(1);
+      expect(connection.pipelineExec).toBeCalledTimes(1);
       counter.start();
       setTimeout(() => {
-        expect(connection.pipeline).toBeCalledTimes(2);
+        expect(connection.pipelineExec).toBeCalledTimes(2);
         counter.stop();
         done();
       }, refreshRate + 30);
@@ -146,7 +146,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   });
 
   test('Should call "onFullQueueCb" when the queue is full. "getImpressionsCount" should pop data.', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, 5);
     // Clean up in case there are still keys there.
     await connection.del(key);
@@ -183,6 +183,6 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
     expect(await connection.hgetall(key)).toStrictEqual({});
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 });

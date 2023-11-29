@@ -1,11 +1,11 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
+import type { RedisAdapter } from './RedisAdapter';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -24,12 +24,12 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
   private redisError?: string;
   private readonly flagSetsFilter: string[];
 
-  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis, splitFiltersValidation?: ISplitFiltersValidation) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.redis = redis;
@@ -192,7 +192,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    */
   getAll(): Promise<ISplit[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
-      .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
+      .then((listOfKeys) => this.redis.pipelineExec(listOfKeys.map(k => ['get', k])))
       .then(processPipelineAnswer)
       .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
         return JSON.parse(splitDefinition);
@@ -216,7 +216,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if the pipelined redis operation fails.
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
-    return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
+    return this.redis.pipelineExec(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)]))
       .then((results) => results.map(([e, value], index) => {
         if (e === null) return value;
 

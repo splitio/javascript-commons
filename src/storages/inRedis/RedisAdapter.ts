@@ -8,7 +8,7 @@ import { timeout } from '../../utils/promise/timeout';
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
-const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'pipelineExec'];
+const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw', 'flushdb', 'pipelineExec'];
 
 // Not part of the settings since it'll vary on each storage. We should be removing storage specific logic from elsewhere.
 const DEFAULT_OPTIONS = {
@@ -38,7 +38,7 @@ export class RedisAdapter extends ioredis {
   private _notReadyCommandsQueue?: IRedisCommand[];
   private _runningCommands: ISet<Promise<any>>;
 
-  constructor(log: ILogger, storageSettings: Record<string, any>) {
+  constructor(log: ILogger, storageSettings?: Record<string, any>) {
     const options = RedisAdapter._defineOptions(storageSettings);
     // Call the ioredis constructor
     super(...RedisAdapter._defineLibrarySettings(options));
@@ -182,7 +182,7 @@ export class RedisAdapter extends ioredis {
   /**
    * Parses the options into what we care about.
    */
-  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any>) {
+  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any> = {}) {
     const parsedOptions = {
       connectionTimeout, operationTimeout, url, host, port, db, pass, tls
     };
