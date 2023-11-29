@@ -54,5 +54,5 @@ test('EVENTS CACHE IN REDIS / `track`, `count`, `popNWithMetadata` and `drop` me
 
   // Clean up then end.
   await connection.del(eventsKey, nonListKey);
-  await connection.quit();
+  await connection.disconnect();
 });

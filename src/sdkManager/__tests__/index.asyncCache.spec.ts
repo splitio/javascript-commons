@@ -70,7 +70,7 @@ describe('MANAGER API', () => {
 
     /** Teardown */
     await cache.removeSplit(splitObject.name);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('Async cache with error', async () => {

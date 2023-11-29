@@ -25,7 +25,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(counter._makeKey(null, new Date(2020, 9, 2, 10, 53, 12).getTime())).toBe(`null::${timestamp1}`);
     expect(counter._makeKey(null, 0)).toBe('null::0');
 
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('Impression Counter Test BasicUsage', async () => {
@@ -76,10 +76,10 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     expect(Object.keys(counter.pop()).length).toBe(0);
 
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 
-  test('POST IMPRESSION COUNTS IN REDIS FUNCTION', (done) => {
+  test('POST IMPRESSION COUNTS IN REDIS FUNCTION', async () => {
     const connection = new Redis();
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.
@@ -95,15 +95,12 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     counter.track('feature2', nextHourTimestamp + 3, 2);
     counter.track('feature2', nextHourTimestamp + 4, 2);
 
-    counter.postImpressionCountsInRedis().then(() => {
+    await counter.postImpressionCountsInRedis();
 
-      connection.hgetall(key).then(async data => {
-        expect(data).toStrictEqual(expected);
-        await connection.del(key);
-        await connection.quit();
-        done();
-      });
-    });
+    const data = await connection.hgetall(key);
+    expect(data).toStrictEqual(expected);
+    await connection.del(key);
+    await connection.disconnect();
   });
 
   test('start and stop task', (done) => {
@@ -183,6 +180,6 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
     expect(await connection.hgetall(key)).toStrictEqual({});
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 });

@@ -55,7 +55,7 @@ describe('SPLITS CACHE REDIS', () => {
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('lol2'));
     await connection.del(keysBuilder.buildSplitsTillKey());
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('trafficTypeExists', async () => {
@@ -103,7 +103,7 @@ describe('SPLITS CACHE REDIS', () => {
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('malformed'));
     await connection.del(keysBuilder.buildSplitKey('split1'));
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('killLocally', async () => {
@@ -141,7 +141,7 @@ describe('SPLITS CACHE REDIS', () => {
     // Delete splits and TT keys
     await cache.removeSplits(['lol1', 'lol2']);
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('flag set cache tests', async () => {
@@ -195,7 +195,7 @@ describe('SPLITS CACHE REDIS', () => {
     // Delete splits, TT and flag set keys
     await cache.removeSplits([featureFlagThree.name, featureFlagTwo.name, featureFlagWithEmptyFS.name]);
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   // if FlagSets filter is not defined, it should store all FlagSets in memory.
@@ -222,7 +222,7 @@ describe('SPLITS CACHE REDIS', () => {
     // Delete splits, TT and flag set keys
     await cacheWithoutFilters.removeSplits([featureFlagThree.name, featureFlagTwo.name, featureFlagOne.name, featureFlagWithEmptyFS.name]);
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
-    await connection.quit();
+    await connection.disconnect();
   });
 
 });
