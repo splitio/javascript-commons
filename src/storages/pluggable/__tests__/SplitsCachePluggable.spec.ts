@@ -152,8 +152,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('flag set cache tests', async () => {
-    // @ts-ignore
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory(), { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+    const wrapper = wrapperMockFactory(); // @ts-ignore
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
     const emptySet = new _Set([]);
 
     await cache.addSplits([
@@ -178,6 +178,10 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['x'] });
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([new _Set(['ff_one'])]);
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new _Set(['ff_two']), new _Set(['ff_three']), new _Set(['ff_one'])]);
+
+    // Simulate one error in getItems
+    wrapper.getItems.mockImplementationOnce(() => Promise.reject('error'));
+    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new _Set(['ff_three']), new _Set(['ff_one'])]);
 
     await cache.removeSplit(featureFlagOne.name);
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([emptySet]);

@@ -10,8 +10,8 @@ import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer<T>(results: Array<[Error | null, T]>): T[] {
-  return results.reduce((accum: T[], errValuePair: [Error | null, T]) => {
+function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
+  return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
     if (errValuePair[0] === null) accum.push(errValuePair[1]);
     return accum;
   }, []);
@@ -195,7 +195,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
       .then(processPipelineAnswer)
       .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
-        return JSON.parse(splitDefinition as string);
+        return JSON.parse(splitDefinition);
       }));
   }
 
@@ -211,13 +211,17 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Get list of split names related to a given flag set names list.
-   * The returned promise is resolved with the list of split names,
-   * or rejected if any wrapper operation fails.
+   * Get list of feature flag names related to a given list of flag set names.
+   * The returned promise is resolved with the list of feature flag names per flag set,
+   * or rejected if the pipelined redis operation fails.
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
-      .then(processPipelineAnswer)
+      .then((results) => results.map(([e, value], index) => {
+        if (e === null) return value;
+
+        this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
+      }))
       .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
@@ -235,14 +239,14 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });

@@ -177,14 +177,14 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Get list of split names related to a given flag set names list.
-   * The returned promise is resolved with the list of split names,
-   * or rejected if any wrapper operation fails.
-  */
+   * Get list of feature flag names related to a given list of flag set names.
+   * The returned promise is resolved with the list of feature flag names per flag set.
+   * It never rejects (If there is a wrapper error for some flag set, an empty set is returned for it).
+   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
     return Promise.all(flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
-      return this.wrapper.getItems(flagSetKey);
+      return this.wrapper.getItems(flagSetKey).catch(() => []);
     })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
