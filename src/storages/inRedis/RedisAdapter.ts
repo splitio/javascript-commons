@@ -53,8 +53,7 @@ export class RedisAdapter extends ioredis {
   }
 
   pipelineExec(commands?: (string | number)[][]): Promise<Array<[Error | null, any]>> {
-    // @ts-ignore
-    return this.pipeline(commands).exec();
+    return this.pipeline(commands as string[][]).exec();
   }
 
   _listenToEvents() {
