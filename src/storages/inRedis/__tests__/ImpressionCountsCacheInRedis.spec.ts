@@ -9,11 +9,12 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
   const timestamp = new Date(2020, 9, 2, 10, 10, 12).getTime();
   const nextHourTimestamp = new Date(2020, 9, 2, 11, 10, 12).getTime();
-  const expected = {};
-  expected[`feature1::${truncateTimeFrame(timestamp)}`] = '3';
-  expected[`feature1::${truncateTimeFrame(nextHourTimestamp)}`] = '3';
-  expected[`feature2::${truncateTimeFrame(timestamp)}`] = '4';
-  expected[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '4';
+  const expected = {
+    [`feature1::${truncateTimeFrame(timestamp)}`]: '3',
+    [`feature1::${truncateTimeFrame(nextHourTimestamp)}`]: '3',
+    [`feature2::${truncateTimeFrame(timestamp)}`]: '4',
+    [`feature2::${truncateTimeFrame(nextHourTimestamp)}`]: '4'
+  };
 
   test('Impression Counter Test makeKey', async () => {
     const connection = new RedisAdapter(loggerMock);
