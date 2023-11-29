@@ -1,6 +1,7 @@
 1.12.0 (December XX, 2023)
  - Added support for Flag Sets in "consumer" and "partial consumer" modes for Pluggable and Redis storages.
  - Updated evaluation flow to log a warning when using flag sets that don't contain cached feature flags.
+ - Updated Redis adapter to wrap missing commands: 'hincrby', 'popNRaw', 'flushdb' and 'pipeline.exec'.
 
 1.11.0 (November 3, 2023)
   - Added support for Flag Sets on the SDK, which enables grouping feature flags and interacting with the group rather than individually (more details in our documentation):
