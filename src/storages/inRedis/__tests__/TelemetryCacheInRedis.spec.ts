@@ -86,5 +86,5 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   expect((await cache.popExceptions()).size).toBe(0);
   expect((await cache.popConfigs()).size).toBe(0);
 
-  await connection.quit();
+  await connection.disconnect();
 });

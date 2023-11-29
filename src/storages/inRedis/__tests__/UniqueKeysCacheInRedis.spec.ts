@@ -46,7 +46,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(cache.pop()).toEqual({ keys: [] });
     expect(cache.isEmpty()).toBe(true);
 
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('Should call "onFullQueueCb" when the queue is full.', async () => {
@@ -75,7 +75,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(cbCalled).toBe(2); // Until the queue is filled with events again.
 
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('post unique keys in redis method', async () => {
@@ -99,7 +99,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       expect(data).toStrictEqual(expected);
 
       await connection.del(key);
-      await connection.quit();
+      await connection.disconnect();
     });
   });
 
@@ -184,6 +184,6 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
     expect(data).toStrictEqual([]);
 
     await connection.del(key);
-    await connection.quit();
+    await connection.disconnect();
   });
 });

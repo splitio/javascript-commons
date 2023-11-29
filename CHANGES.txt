@@ -1,5 +1,5 @@
 1.12.0 (December XX, 2023)
- - Added support for Flag Sets in "consumer" and "partial consumer" modes for pluggable storage.
+ - Added support for Flag Sets in "consumer" and "partial consumer" modes for Pluggable and Redis storages.
  - Updated evaluation flow to log a warning when using flag sets that don't contain cached feature flags.
 
 1.11.0 (November 3, 2023)
@@ -57,7 +57,7 @@
  - Added a new impressions mode for the SDK called NONE, to be used in factory when there is no desire to capture impressions on an SDK factory to feed Split's analytics engine. Running NONE mode, the SDK will only capture unique keys evaluated for a particular feature flag instead of full blown impressions.
  - Updated SDK telemetry to support pluggable storage, partial consumer mode, and synchronizer.
  - Updated storage implementations to improve the performance of feature flag evaluations (i.e., `getTreatment(s)` method calls) when using the default storage in memory.
- - Updated evaluation flow to avoid unnecessarily storage calls when the SDK is not ready.
+ - Updated evaluation flow (i.e., `getTreatment(s)` method calls) to avoid calling the storage for cached feature flags when the SDK is not ready or ready from cache. It applies to all SDK modes.
 
 1.6.1 (July 22, 2022)
  - Updated GoogleAnalyticsToSplit integration to validate `autoRequire` config parameter and avoid some wrong warning logs when mapping GA hit fields to Split event properties.
