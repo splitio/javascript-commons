@@ -72,8 +72,8 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     return this.redis.smembers(this.keys.buildRegisteredSegmentsKey());
   }
 
-  // @TODO remove/review. It is not being used.
+  // @TODO remove or implement. It is not being used.
   clear() {
-    return this.redis.flushdb().then(status => status === 'OK');
+    return Promise.resolve();
   }
 }
