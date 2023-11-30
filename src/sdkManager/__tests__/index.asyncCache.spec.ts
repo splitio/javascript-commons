@@ -9,6 +9,7 @@ import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { metadata } from '../../storages/__tests__/KeyBuilder.spec';
 import { RedisAdapter } from '../../storages/inRedis/RedisAdapter';
+import { SplitIO } from '../../types';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -21,16 +22,16 @@ const sdkReadinessManagerMock = {
 
 const keys = new KeyBuilderSS('prefix', metadata);
 
-describe('MANAGER API', () => {
+describe('Manager with async cache', () => {
 
   afterEach(() => { loggerMock.mockClear(); });
 
-  test('Async cache (In Redis)', async () => {
+  test('returns the expected data from the cache', async () => {
 
     /** Setup: create manager */
     const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
-    const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
+    const manager = sdkManagerFactory({ mode: 'consumer', log: loggerMock }, cache, sdkReadinessManagerMock);
     await cache.clear();
     await cache.addSplit(splitObject.name, splitObject as any);
 
@@ -42,7 +43,6 @@ describe('MANAGER API', () => {
 
     const split = await manager.split(splitObject.name);
     expect(split).toEqual(splitView);
-
 
     /** List all the split names */
 
@@ -66,24 +66,51 @@ describe('MANAGER API', () => {
     expect(await manager.splits()).toEqual([]); // If the factory/client is destroyed, `manager.splits()` will return empty array either way since the storage is not valid.
     expect(await manager.names()).toEqual([]); // If the factory/client is destroyed, `manager.names()` will return empty array either way since the storage is not valid.
 
-
-
     /** Teardown */
     await cache.removeSplit(splitObject.name);
     await connection.disconnect();
   });
 
-  test('Async cache with error', async () => {
+  test('handles storage errors', async () => {
     // passing an empty object as wrapper, to make method calls of splits cache fail returning a rejected promise.
     // @ts-expect-error
     const cache = new SplitsCachePluggable(loggerMock, keys, wrapperAdapter(loggerMock, {}));
-    const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
+    const manager = sdkManagerFactory({ mode: 'consumer_partial', log: loggerMock }, cache, sdkReadinessManagerMock);
 
     expect(await manager.split('some_spplit')).toEqual(null);
     expect(await manager.splits()).toEqual([]);
     expect(await manager.names()).toEqual([]);
 
     expect(loggerMock.error).toBeCalledTimes(3); // 3 error logs, one for each attempt to call a wrapper method
+  });
+
+  test('returns empty results when not operational', async () => {
+    // SDK is flagged as destroyed
+    const sdkReadinessManagerMock = {
+      readinessManager: {
+        isReady: () => true,
+        isReadyFromCache: () => true,
+        isDestroyed: () => true
+      },
+      sdkStatus: {}
+    };
+    // @ts-expect-error
+    const manager = sdkManagerFactory({ mode: 'consumer_partial', log: loggerMock }, {}, sdkReadinessManagerMock) as SplitIO.IAsyncManager;
+
+    function validateManager() {
+      expect(manager.split('some_spplit')).resolves.toBe(null);
+      expect(manager.splits()).resolves.toEqual([]);
+      expect(manager.names()).resolves.toEqual([]);
+    }
+
+    validateManager();
+
+    // SDK is not ready
+    sdkReadinessManagerMock.readinessManager.isReady = () => false;
+    sdkReadinessManagerMock.readinessManager.isReadyFromCache = () => false;
+    sdkReadinessManagerMock.readinessManager.isDestroyed = () => false;
+
+    validateManager();
   });
 
 });
