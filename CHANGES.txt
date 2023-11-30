@@ -1,3 +1,6 @@
+1.11.1 (December XX, 2023)
+  - Bugfixing - Fixed manager methods to return a promise in consumer modes when called while the SDK is not operational (not ready or destroyed).
+
 1.11.0 (November 3, 2023)
   - Added support for Flag Sets on the SDK, which enables grouping feature flags and interacting with the group rather than individually (more details in our documentation):
     - Added new variations of the get treatment methods to support evaluating flags in given flag set/s.

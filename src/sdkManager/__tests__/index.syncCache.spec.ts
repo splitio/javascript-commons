@@ -14,11 +14,11 @@ const sdkReadinessManagerMock = {
   sdkStatus: jest.fn()
 } as ISdkReadinessManager;
 
-describe('MANAGER API / Sync cache (In Memory)', () => {
+describe('Manager with sync cache (In Memory)', () => {
 
   /** Setup: create manager */
   const cache = new SplitsCacheInMemory();
-  const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
+  const manager = sdkManagerFactory({ mode: 'standalone', log: loggerMock }, cache, sdkReadinessManagerMock);
   cache.addSplit(splitObject.name, splitObject as any);
 
   test('List all splits', () => {
@@ -55,6 +55,28 @@ describe('MANAGER API / Sync cache (In Memory)', () => {
     expect(manager.split(splitObject.name)).toBe(null); // If the factory/client is destroyed, `manager.split(validName)` will return null either way since the storage is not valid.
     expect(manager.splits()).toEqual([]); // If the factory/client is destroyed, `manager.splits()` will return empty array either way since the storage is not valid.
     expect(manager.names()).toEqual([]); // If the factory/client is destroyed, `manager.names()` will return empty array either way since the storage is not valid.
+  });
+
+  // @TODO tests for not operational
+
+  test('returns empty results when not operational', async () => {
+    // SDK is flagged as destroyed
+    sdkReadinessManagerMock.readinessManager.isDestroyed = () => true;
+
+    function validateManager() {
+      expect(manager.split('some_spplit')).toBe(null);
+      expect(manager.splits()).toEqual([]);
+      expect(manager.names()).toEqual([]);
+    }
+
+    validateManager();
+
+    // SDK is not ready
+    sdkReadinessManagerMock.readinessManager.isReady = () => false;
+    sdkReadinessManagerMock.readinessManager.isReadyFromCache = () => false;
+    sdkReadinessManagerMock.readinessManager.isDestroyed = () => false;
+
+    validateManager();
   });
 
 });

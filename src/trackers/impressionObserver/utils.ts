@@ -4,6 +4,6 @@ import { ISettings } from '../../types';
 /**
  * Storage is async if mode is consumer or partial consumer
  */
-export function isStorageSync(settings: ISettings) {
+export function isStorageSync(settings: Pick<ISettings, 'mode'>) {
   return [CONSUMER_MODE, CONSUMER_PARTIAL_MODE].indexOf(settings.mode) === -1 ? true : false;
 }
