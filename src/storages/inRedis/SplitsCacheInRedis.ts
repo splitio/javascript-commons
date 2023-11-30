@@ -1,11 +1,11 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { _Set, ISet } from '../../utils/lang/sets';
+import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
+import type { RedisAdapter } from './RedisAdapter';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -24,15 +24,17 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): (string 
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
   private redisError?: string;
+  private readonly flagSetsFilter: string[];
 
-  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.redis = redis;
     this.keys = keys;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
 
     // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected and handled by redis storage adapters.
     // But it is done just to avoid getting the ioredis message `Unhandled error event`.
@@ -57,6 +59,24 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     return this.redis.incr(ttKey);
   }
 
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+    const removeFromFlagSets = returnListDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+
+    let addToFlagSets = returnListDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    if (this.flagSetsFilter.length > 0) {
+      addToFlagSets = addToFlagSets.filter(flagSet => {
+        return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
+      });
+    }
+
+    const items = [featureFlagName];
+
+    return Promise.all([
+      ...removeFromFlagSets.map(flagSetName => this.redis.srem(this.keys.buildFlagSetKey(flagSetName), items)),
+      ...addToFlagSets.map(flagSetName => this.redis.sadd(this.keys.buildFlagSetKey(flagSetName), items))
+    ]);
+  }
+
   /**
    * Add a given split.
    * The returned promise is resolved when the operation success
@@ -66,16 +86,16 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then(splitFromStorage => {
 
-      // handling parsing errors
-      let parsedPreviousSplit: ISplit, newStringifiedSplit;
+      // handling parsing error
+      let parsedPreviousSplit: ISplit, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
-        newStringifiedSplit = JSON.stringify(split);
+        stringifiedNewSplit = JSON.stringify(split);
       } catch (e) {
         throw new Error('Error parsing feature flag definition: ' + e);
       }
 
-      return this.redis.set(splitKey, newStringifiedSplit).then(() => {
+      return this.redis.set(splitKey, stringifiedNewSplit).then(() => {
         // avoid unnecessary increment/decrement operations
         if (parsedPreviousSplit && parsedPreviousSplit.trafficTypeName === split.trafficTypeName) return;
 
@@ -83,7 +103,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         return this._incrementCounts(split).then(() => {
           if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
         });
-      });
+      }).then(() => this._updateFlagSets(name, parsedPreviousSplit && parsedPreviousSplit.sets, split.sets));
     }).then(() => true);
   }
 
@@ -101,11 +121,12 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success, with 1 or 0 indicating if the split existed or not.
    * or rejected if it fails (e.g., redis operation fails).
    */
-  removeSplit(name: string): Promise<number> {
+  removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        this._decrementCounts(split);
+        return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
+    }).then(() => {
       return this.redis.del(this.keys.buildSplitKey(name));
     });
   }
@@ -174,7 +195,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
       .then(processPipelineAnswer)
       .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
-        return JSON.parse(splitDefinition as string);
+        return JSON.parse(splitDefinition);
       }));
   }
 
@@ -190,34 +211,18 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Get list of split names related to a given flag set names list.
-   * The returned promise is resolved with the list of split names,
-   * or rejected if wrapper operation fails.
-   * @todo this is a no-op method to be implemented
+   * Get list of feature flag names related to a given list of flag set names.
+   * The returned promise is resolved with the list of feature flag names per flag set,
+   * or rejected if the pipelined redis operation fails.
   */
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>> {
-    const toReturn: ISet<string> = new _Set([]);
-    const listOfKeys: string[] = [];
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
+    return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
+      .then((results) => results.map(([e, value], index) => {
+        if (e === null) return value;
 
-    flagSets && flagSets.forEach(flagSet => {
-      listOfKeys.push(this.keys.buildFlagSetKey(flagSet));
-    });
-
-    if (listOfKeys.length > 0) {
-
-      return this.redis.pipeline(listOfKeys.map(k => ['smembers', k])).exec()
-        .then(processPipelineAnswer)
-        .then((setsRaw) => {
-          this.log.error(setsRaw);
-          setsRaw.forEach((setContent) => {
-            (setContent as string[]).forEach(flagName => toReturn.add(flagName));
-          });
-
-          return toReturn;
-        });
-    } else {
-      return new Promise(() => toReturn);
-    }
+        this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
+      }))
+      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
   /**
@@ -234,14 +239,14 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });

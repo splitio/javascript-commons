@@ -49,7 +49,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
       expect(sdkStatus[propName]).toBeTruthy(); // The sdkStatus exposes all minimal EventEmitter functionality.
     });
 
-    expect(typeof sdkStatus['ready']).toBe('function'); // The sdkStatus exposes a .ready() function.
+    expect(typeof sdkStatus.ready).toBe('function'); // The sdkStatus exposes a .ready() function.
 
     expect(typeof sdkStatus.Event).toBe('object'); // It also exposes the Event map,
     expect(sdkStatus.Event.SDK_READY).toBe(SDK_READY); // which contains the constants for the events, for backwards compatibility.

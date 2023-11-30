@@ -1,8 +1,8 @@
 import { evaluateFeature, evaluateFeatures, evaluateFeaturesByFlagSets } from '../evaluator';
 import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
-import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
-import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
+import { validateSplitExistence } from '../utils/inputValidation/splitExistence';
+import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTypeExistence';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
@@ -99,7 +99,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, method) :
       isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
@@ -133,7 +133,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const { treatment, label, changeNumber, config = null } = evaluation;
     log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
-    if (validateSplitExistance(log, readinessManager, featureFlagName, label, invokingMethodName)) {
+    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
       queue.push({
         feature: featureFlagName,
@@ -171,7 +171,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
+    validateTrafficTypeExistence(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
 
     const result = eventTracker.track(eventData, size);
 

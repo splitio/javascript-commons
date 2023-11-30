@@ -1,15 +1,15 @@
-import Redis from 'ioredis';
 import { SegmentsCacheInRedis } from '../SegmentsCacheInRedis';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
+import { RedisAdapter } from '../RedisAdapter';
 
 const keys = new KeyBuilderSS('prefix', metadata);
 
 describe('SEGMENTS CACHE IN REDIS', () => {
 
   test('isInSegment, set/getChangeNumber, add/removeFromSegment', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SegmentsCacheInRedis(loggerMock, keys, connection);
 
     await cache.clear();
@@ -37,11 +37,11 @@ describe('SEGMENTS CACHE IN REDIS', () => {
     expect(await cache.isInSegment('mocked-segment', 'e')).toBe(true);
 
     await cache.clear();
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('registerSegment / getRegisteredSegments', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SegmentsCacheInRedis(loggerMock, keys, connection);
 
     await cache.clear();
@@ -55,7 +55,7 @@ describe('SEGMENTS CACHE IN REDIS', () => {
     ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
 
     await cache.clear();
-    await connection.quit();
+    await connection.disconnect();
   });
 
 });

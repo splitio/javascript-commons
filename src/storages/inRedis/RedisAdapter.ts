@@ -8,7 +8,7 @@ import { timeout } from '../../utils/promise/timeout';
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
-const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset'];
+const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw', 'flushdb'];
 const METHODS_TO_PROMISE_WRAP_EXEC = ['pipeline'];
 
 // Not part of the settings since it'll vary on each storage. We should be removing storage specific logic from elsewhere.
@@ -39,7 +39,7 @@ export class RedisAdapter extends ioredis {
   private _notReadyCommandsQueue?: IRedisCommand[];
   private _runningCommands: ISet<Promise<any>>;
 
-  constructor(log: ILogger, storageSettings: Record<string, any>) {
+  constructor(log: ILogger, storageSettings?: Record<string, any>) {
     const options = RedisAdapter._defineOptions(storageSettings);
     // Call the ioredis constructor
     super(...RedisAdapter._defineLibrarySettings(options));
@@ -96,7 +96,7 @@ export class RedisAdapter extends ioredis {
         const caller: (Pipeline | RedisAdapter) = this; // Need to change this crap to have TypeScript stop complaining
 
         const commandWrapper = () => {
-          instance.log.debug(`${LOG_PREFIX} Executing ${methodName}.`);
+          instance.log.debug(`${LOG_PREFIX}Executing ${methodName}.`);
           const result = originalMethod.apply(caller, params);
 
           if (thenable(result)) {
@@ -152,7 +152,7 @@ export class RedisAdapter extends ioredis {
 
     instance.disconnect = function disconnect(...params: []) {
 
-      setTimeout(function deferedDisconnect() {
+      setTimeout(function deferredDisconnect() {
         if (instance._runningCommands.size > 0) {
           instance.log.info(LOG_PREFIX + `Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
 
@@ -205,7 +205,7 @@ export class RedisAdapter extends ioredis {
   /**
    * Parses the options into what we care about.
    */
-  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any>) {
+  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any> = {}) {
     const parsedOptions = {
       connectionTimeout, operationTimeout, url, host, port, db, pass, tls
     };

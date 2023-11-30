@@ -1,4 +1,3 @@
-import Redis from 'ioredis';
 import splitObject from './mocks/input.json';
 import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
@@ -9,6 +8,7 @@ import { KeyBuilderSS } from '../../storages/KeyBuilderSS';
 import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { metadata } from '../../storages/__tests__/KeyBuilder.spec';
+import { RedisAdapter } from '../../storages/inRedis/RedisAdapter';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -28,7 +28,7 @@ describe('MANAGER API', () => {
   test('Async cache (In Redis)', async () => {
 
     /** Setup: create manager */
-    const connection = new Redis({});
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
     const manager = sdkManagerFactory(loggerMock, cache, sdkReadinessManagerMock);
     await cache.clear();
@@ -70,7 +70,7 @@ describe('MANAGER API', () => {
 
     /** Teardown */
     await cache.removeSplit(splitObject.name);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('Async cache with error', async () => {

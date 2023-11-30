@@ -1,7 +1,7 @@
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
-import { ISet, _Set, returnSetsUnion } from '../../utils/lang/sets';
+import { ISet, _Set } from '../../utils/lang/sets';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
@@ -16,9 +16,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   private splitsWithSegmentsCount: number = 0;
   private flagSetsCache: Record<string, ISet<string>> = {};
 
-  constructor(splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(splitFiltersValidation?: ISplitFiltersValidation) {
     super();
-    this.flagSetsFilter = splitFiltersValidation.groupedFilters.bySet;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
   clear() {
@@ -105,16 +105,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
   }
 
-  getNamesByFlagSets(flagSets: string[]): ISet<string>{
-    let toReturn: ISet<string> = new _Set([]);
-    flagSets.forEach(flagSet => {
-      const featureFlagNames = this.flagSetsCache[flagSet];
-      if (featureFlagNames) {
-        toReturn = returnSetsUnion(toReturn, featureFlagNames);
-      }
-    });
-    return toReturn;
-
+  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
+    return flagSets.map(flagSet => this.flagSetsCache[flagSet] || new _Set());
   }
 
   private addToFlagSets(featureFlag: ISplit) {
@@ -129,7 +121,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     });
   }
 
-  private removeFromFlagSets(featureFlagName :string, flagSets: string[] | undefined) {
+  private removeFromFlagSets(featureFlagName: string, flagSets: string[] | undefined) {
     if (!flagSets) return;
     flagSets.forEach(flagSet => {
       this.removeNames(flagSet, featureFlagName);

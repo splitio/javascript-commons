@@ -79,7 +79,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     return false;
   }
 
-  abstract getNamesByFlagSets(flagSets: string[]): ISet<string>
+  abstract getNamesByFlagSets(flagSets: string[]): ISet<string>[]
 
 }
 

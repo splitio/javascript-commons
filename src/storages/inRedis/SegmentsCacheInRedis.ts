@@ -1,17 +1,17 @@
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
 import { LOG_PREFIX } from '../inLocalStorage/constants';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
 
-  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter) {
     this.log = log;
     this.redis = redis;
     this.keys = keys;

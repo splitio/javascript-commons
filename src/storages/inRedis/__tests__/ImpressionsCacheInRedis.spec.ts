@@ -44,7 +44,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     expect(await c.count()).toBe(0); // storage should be empty after dropping it
 
     await connection.del(impressionsKey);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('`track` should not resolve before calling expire', async () => {
@@ -76,7 +76,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     // @ts-expect-error
     await c.track([i1, i2]).then(() => {
       connection.del(impressionsKey);
-      connection.quit(); // Try to disconnect right away.
+      connection.disconnect(); // Try to disconnect right away.
       expect(spy1).toBeCalled(); // Redis rpush was called once before executing external callback.
       // Following assertion fails if the expire takes place after disconnected and throws unhandledPromiseRejection
       expect(spy2).toBeCalled(); // Redis expire was called once before executing external callback.

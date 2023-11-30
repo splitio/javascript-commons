@@ -114,8 +114,16 @@ export const _Set = __getSetConstructor();
 
 export function returnSetsUnion<T>(set: ISet<T>, set2: ISet<T>): ISet<T> {
   const result = new _Set(setToArray(set));
-  set2.forEach( value => {
+  set2.forEach(value => {
     result.add(value);
   });
   return result;
+}
+
+export function returnListDifference<T>(list: T[] = [], list2: T[] = []): T[] {
+  const result = new _Set(list);
+  list2.forEach(item => {
+    result.delete(item);
+  });
+  return setToArray(result);
 }
