@@ -213,7 +213,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Get list of feature flag names related to a given list of flag set names.
    * The returned promise is resolved with the list of feature flag names per flag set,
-   * or rejected if the pipelined redis operation fails.
+   * or rejected if the pipelined redis operation fails (e.g., timeout).
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
@@ -252,13 +252,9 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       });
   }
 
-  /**
-   * Delete everything in the current database.
-   *
-   * @NOTE documentation says it never fails.
-   */
+  // @TODO remove or implement. It is not being used.
   clear() {
-    return this.redis.flushdb().then(status => status === 'OK');
+    return Promise.resolve();
   }
 
   /**
