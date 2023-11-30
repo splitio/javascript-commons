@@ -57,8 +57,6 @@ describe('Manager with sync cache (In Memory)', () => {
     expect(manager.names()).toEqual([]); // If the factory/client is destroyed, `manager.names()` will return empty array either way since the storage is not valid.
   });
 
-  // @TODO tests for not operational
-
   test('returns empty results when not operational', async () => {
     // SDK is flagged as destroyed
     sdkReadinessManagerMock.readinessManager.isDestroyed = () => true;
