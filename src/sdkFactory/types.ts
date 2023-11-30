@@ -1,9 +1,9 @@
 import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/types';
 import { ISignalListener } from '../listeners/types';
-import { ILogger } from '../logger/types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
+import type { sdkManagerFactory } from '../sdkManager';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
-import { IStorageAsync, IStorageSync, ISplitsCacheSync, ISplitsCacheAsync, IStorageFactoryParams } from '../storages/types';
+import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter, IUniqueKeysTracker } from '../trackers/types';
@@ -87,11 +87,7 @@ export interface ISdkFactoryParams {
   syncManagerFactory?: (params: ISdkFactoryContextSync) => ISyncManager,
 
   // Sdk manager factory
-  sdkManagerFactory: (
-    log: ILogger,
-    splits: ISplitsCacheSync | ISplitsCacheAsync,
-    sdkReadinessManager: ISdkReadinessManager
-  ) => SplitIO.IManager | SplitIO.IAsyncManager,
+  sdkManagerFactory: typeof sdkManagerFactory,
 
   // Sdk client method factory (ISDK::client method).
   // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).

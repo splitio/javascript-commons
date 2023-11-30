@@ -52,6 +52,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(splits['lol1']).toEqual(null);
     expect(splits['lol2']).toEqual(splitWithAccountTT);
 
+    // Teardown @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('lol2'));
     await connection.del(keysBuilder.buildSplitsTillKey());
@@ -100,6 +101,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
 
+    // Teardown @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('malformed'));
     await connection.del(keysBuilder.buildSplitKey('split1'));
