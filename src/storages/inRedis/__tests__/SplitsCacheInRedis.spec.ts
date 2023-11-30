@@ -173,12 +173,12 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([new _Set(['ff_one'])]);
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new _Set(['ff_two']), new _Set(['ff_three']), new _Set(['ff_one'])]);
 
-    // @ts-ignore Simulate one error in connection.pipelineExec()
-    jest.spyOn(connection, 'pipelineExec').mockImplementationOnce(() => {
-      return Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]);
+    // @ts-ignore Simulate an error in connection.pipeline().exec()
+    jest.spyOn(connection, 'pipeline').mockImplementationOnce(() => {
+      return { exec: () => Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]) };
     });
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new _Set(['ff_three']), new _Set(['ff_one'])]);
-    (connection.pipelineExec as jest.Mock).mockRestore();
+    (connection.pipeline as jest.Mock).mockRestore();
 
     await cache.removeSplit(featureFlagOne.name);
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([emptySet]);

@@ -27,7 +27,11 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
     const keys = Object.keys(counts);
     if (!keys.length) return Promise.resolve(false);
 
-    return this.redis.pipelineExec(keys.map(key => ['hincrby', this.key, key, counts[key]]))
+    const pipeline = this.redis.pipeline();
+    keys.forEach(key => {
+      pipeline.hincrby(this.key, key, counts[key]);
+    });
+    return pipeline.exec()
       .then(data => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
         if (data.length && data.length === keys.length) {

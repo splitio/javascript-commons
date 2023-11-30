@@ -192,7 +192,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    */
   getAll(): Promise<ISplit[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
-      .then((listOfKeys) => this.redis.pipelineExec(listOfKeys.map(k => ['get', k])))
+      .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
       .then(processPipelineAnswer)
       .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
         return JSON.parse(splitDefinition);
@@ -216,7 +216,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if the pipelined redis operation fails.
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
-    return this.redis.pipelineExec(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)]))
+    return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
       .then((results) => results.map(([e, value], index) => {
         if (e === null) return value;
 

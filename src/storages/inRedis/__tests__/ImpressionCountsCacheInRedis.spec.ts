@@ -123,22 +123,22 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
     counter.track('feature2', nextHourTimestamp + 3, 2);
     counter.track('feature2', nextHourTimestamp + 4, 2);
 
-    expect(connection.pipelineExec).not.toBeCalled();
+    expect(connection.pipeline).not.toBeCalled();
 
     counter.start();
     setTimeout(() => {
-      expect(connection.pipelineExec).toBeCalledTimes(1);
+      expect(connection.pipeline).toBeCalledTimes(1);
       expect(counter.isEmpty()).toBe(true);
       counter.stop();
-      expect(connection.pipelineExec).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
+      expect(connection.pipeline).toBeCalledTimes(1); // Stopping when cache is empty, does not call the wrapper
       counter.track('feature3', nextHourTimestamp + 4, 2);
     }, refreshRate + 30);
 
     setTimeout(() => {
-      expect(connection.pipelineExec).toBeCalledTimes(1);
+      expect(connection.pipeline).toBeCalledTimes(1);
       counter.start();
       setTimeout(() => {
-        expect(connection.pipelineExec).toBeCalledTimes(2);
+        expect(connection.pipeline).toBeCalledTimes(2);
         counter.stop();
         done();
       }, refreshRate + 30);
