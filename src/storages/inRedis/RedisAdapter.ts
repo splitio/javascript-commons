@@ -73,29 +73,14 @@ export class RedisAdapter extends ioredis {
   _setTimeoutWrappers() {
     const instance: Record<string, any> = this;
 
-    const wrapWithQueueOrExecute = (method: string, commandWrapper: Function) => {
-      if (instance._notReadyCommandsQueue) {
-        return new Promise((resolve, reject) => {
-          instance._notReadyCommandsQueue.unshift({
-            resolve,
-            reject,
-            command: commandWrapper,
-            name: method.toUpperCase()
-          });
-        });
-      } else {
-        return commandWrapper();
-      }
-    };
-
     const wrapCommand = (originalMethod: Function, methodName: string) => {
       // The value of "this" in this function should be the instance actually executing the method. It might be the instance referred (the base one)
       // or it can be the instance of a Pipeline object.
       return function (this: RedisAdapter | Pipeline) {
         const params = arguments;
-        const caller: (Pipeline | RedisAdapter) = this;
+        const caller = this;
 
-        const commandWrapper = () => {
+        function commandWrapper() {
           instance.log.debug(`${LOG_PREFIX}Executing ${methodName}.`);
           const result = originalMethod.apply(caller, params);
 
@@ -117,9 +102,20 @@ export class RedisAdapter extends ioredis {
           }
 
           return result;
-        };
+        }
 
-        return wrapWithQueueOrExecute(methodName, commandWrapper);
+        if (instance._notReadyCommandsQueue) {
+          return new Promise((resolve, reject) => {
+            instance._notReadyCommandsQueue.unshift({
+              resolve,
+              reject,
+              command: commandWrapper,
+              name: methodName.toUpperCase()
+            });
+          });
+        } else {
+          return commandWrapper();
+        }
       };
     };
 
@@ -134,8 +130,6 @@ export class RedisAdapter extends ioredis {
       const originalFn = instance[methodName];
       // "First level wrapper" to handle the sync execution and wrap async, queueing later if applicable.
       instance[methodName] = function () {
-        instance.log.debug(`${LOG_PREFIX} Creating ${methodName}.`);
-
         const res = originalFn.apply(instance, arguments);
         const originalExec = res.exec;
 
