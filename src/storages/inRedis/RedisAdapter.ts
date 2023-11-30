@@ -39,7 +39,7 @@ export class RedisAdapter extends ioredis {
   private _notReadyCommandsQueue?: IRedisCommand[];
   private _runningCommands: ISet<Promise<any>>;
 
-  constructor(log: ILogger, storageSettings?: Record<string, any>) {
+  constructor(log: ILogger, storageSettings: Record<string, any> = {}) {
     const options = RedisAdapter._defineOptions(storageSettings);
     // Call the ioredis constructor
     super(...RedisAdapter._defineLibrarySettings(options));
@@ -103,7 +103,7 @@ export class RedisAdapter extends ioredis {
             // For handling pending commands on disconnect, add to the set and remove once finished.
             // On sync commands there's no need, only thenables.
             instance._runningCommands.add(result);
-            const cleanUpRunningCommandsCb = () => {
+            const cleanUpRunningCommandsCb = function () {
               instance._runningCommands.delete(result);
             };
             // Both success and error remove from queue.
@@ -205,7 +205,7 @@ export class RedisAdapter extends ioredis {
   /**
    * Parses the options into what we care about.
    */
-  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any> = {}) {
+  static _defineOptions({ connectionTimeout, operationTimeout, url, host, port, db, pass, tls }: Record<string, any>) {
     const parsedOptions = {
       connectionTimeout, operationTimeout, url, host, port, db, pass, tls
     };
