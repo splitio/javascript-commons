@@ -91,9 +91,9 @@ export class RedisAdapter extends ioredis {
     const wrapCommand = (originalMethod: Function, methodName: string) => {
       // The value of "this" in this function should be the instance actually executing the method. It might be the instance referred (the base one)
       // or it can be the instance of a Pipeline object.
-      return function () {
+      return function (this: RedisAdapter | Pipeline) {
         const params = arguments;
-        const caller: (Pipeline | RedisAdapter) = this; // Need to change this crap to have TypeScript stop complaining
+        const caller: (Pipeline | RedisAdapter) = this;
 
         const commandWrapper = () => {
           instance.log.debug(`${LOG_PREFIX}Executing ${methodName}.`);

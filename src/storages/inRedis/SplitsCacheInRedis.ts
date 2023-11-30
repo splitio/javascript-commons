@@ -10,7 +10,7 @@ import type { RedisAdapter } from './RedisAdapter';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer(results: Array<[Error | null, string]>): (string | string[])[] {
+function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
   return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
     if (errValuePair[0] === null) accum.push(errValuePair[1]);
     return accum;
