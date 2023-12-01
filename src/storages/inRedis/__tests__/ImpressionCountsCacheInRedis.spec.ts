@@ -1,22 +1,23 @@
 // @ts-nocheck
 import { ImpressionCountsCacheInRedis } from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
-import Redis from 'ioredis';
 import { RedisMock } from '../../../utils/redis/RedisMock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { RedisAdapter } from '../RedisAdapter';
 
 describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   const key = 'impression_count_post';
   const timestamp = new Date(2020, 9, 2, 10, 10, 12).getTime();
   const nextHourTimestamp = new Date(2020, 9, 2, 11, 10, 12).getTime();
-  const expected = {};
-  expected[`feature1::${truncateTimeFrame(timestamp)}`] = '3';
-  expected[`feature1::${truncateTimeFrame(nextHourTimestamp)}`] = '3';
-  expected[`feature2::${truncateTimeFrame(timestamp)}`] = '4';
-  expected[`feature2::${truncateTimeFrame(nextHourTimestamp)}`] = '4';
+  const expected = {
+    [`feature1::${truncateTimeFrame(timestamp)}`]: '3',
+    [`feature1::${truncateTimeFrame(nextHourTimestamp)}`]: '3',
+    [`feature2::${truncateTimeFrame(timestamp)}`]: '4',
+    [`feature2::${truncateTimeFrame(nextHourTimestamp)}`]: '4'
+  };
 
   test('Impression Counter Test makeKey', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     const timestamp1 = new Date(2020, 9, 2, 10, 0, 0).getTime();
 
@@ -29,7 +30,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   });
 
   test('Impression Counter Test BasicUsage', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
 
     counter.track('feature1', timestamp, 1);
@@ -80,7 +81,10 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   });
 
   test('POST IMPRESSION COUNTS IN REDIS FUNCTION', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
+    // @TODO next line is not required with ioredis
+    await new Promise(res => connection.once('ready', res));
+
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.
     connection.del(key);
@@ -143,7 +147,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   });
 
   test('Should call "onFullQueueCb" when the queue is full. "getImpressionsCount" should pop data.', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, 5);
     // Clean up in case there are still keys there.
     await connection.del(key);

@@ -1,11 +1,11 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
+import type { RedisAdapter } from './RedisAdapter';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -24,12 +24,12 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
   private redisError?: string;
   private readonly flagSetsFilter: string[];
 
-  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis, splitFiltersValidation?: ISplitFiltersValidation) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.redis = redis;
@@ -213,7 +213,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   /**
    * Get list of feature flag names related to a given list of flag set names.
    * The returned promise is resolved with the list of feature flag names per flag set,
-   * or rejected if the pipelined redis operation fails.
+   * or rejected if the pipelined redis operation fails (e.g., timeout).
   */
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
@@ -252,13 +252,9 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       });
   }
 
-  /**
-   * Delete everything in the current database.
-   *
-   * @NOTE documentation says it never fails.
-   */
+  // @TODO remove or implement. It is not being used.
   clear() {
-    return this.redis.flushdb().then(status => status === 'OK');
+    return Promise.resolve();
   }
 
   /**

@@ -1,4 +1,3 @@
-import Redis from 'ioredis';
 import { SplitsCacheInRedis } from '../SplitsCacheInRedis';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
@@ -6,6 +5,7 @@ import { splitWithUserTT, splitWithAccountTT, featureFlagOne, featureFlagThree, 
 import { ISplit } from '../../../dtos/types';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
 import { _Set } from '../../../utils/lang/sets';
+import { RedisAdapter } from '../RedisAdapter';
 
 const prefix = 'splits_cache_ut';
 const keysBuilder = new KeyBuilderSS(prefix, metadata);
@@ -13,7 +13,7 @@ const keysBuilder = new KeyBuilderSS(prefix, metadata);
 describe('SPLITS CACHE REDIS', () => {
 
   test('add/remove/get splits & set/get change number', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplits([
@@ -52,6 +52,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(splits['lol1']).toEqual(null);
     expect(splits['lol2']).toEqual(splitWithAccountTT);
 
+    // Teardown. @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('lol2'));
     await connection.del(keysBuilder.buildSplitsTillKey());
@@ -59,7 +60,7 @@ describe('SPLITS CACHE REDIS', () => {
   });
 
   test('trafficTypeExists', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplits([
@@ -100,6 +101,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
 
+    // Teardown. @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
     await connection.del(keysBuilder.buildSplitKey('malformed'));
     await connection.del(keysBuilder.buildSplitKey('split1'));
@@ -107,7 +109,7 @@ describe('SPLITS CACHE REDIS', () => {
   });
 
   test('killLocally', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.addSplit('lol1', splitWithUserTT);
@@ -145,7 +147,7 @@ describe('SPLITS CACHE REDIS', () => {
   });
 
   test('flag set cache tests', async () => {
-    const connection = new Redis(); // @ts-ignore
+    const connection = new RedisAdapter(loggerMock); // @ts-ignore
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
 
     const emptySet = new _Set([]);
@@ -173,11 +175,9 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([new _Set(['ff_one'])]);
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new _Set(['ff_two']), new _Set(['ff_three']), new _Set(['ff_one'])]);
 
-    // @ts-ignore Simulate one error in connection.pipeline().exec()
+    // @ts-ignore Simulate an error in connection.pipeline().exec()
     jest.spyOn(connection, 'pipeline').mockImplementationOnce(() => {
-      return {
-        exec: () => Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]),
-      };
+      return { exec: () => Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]) };
     });
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new _Set(['ff_three']), new _Set(['ff_one'])]);
     (connection.pipeline as jest.Mock).mockRestore();
@@ -200,7 +200,7 @@ describe('SPLITS CACHE REDIS', () => {
 
   // if FlagSets filter is not defined, it should store all FlagSets in memory.
   test('flag set cache tests without filters', async () => {
-    const connection = new Redis(); // @ts-ignore
+    const connection = new RedisAdapter(loggerMock);
     const cacheWithoutFilters = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
     const emptySet = new _Set([]);

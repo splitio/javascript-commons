@@ -1,9 +1,9 @@
-import Redis from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { TelemetryCacheInRedis } from '../TelemetryCacheInRedis';
 import { newBuckets } from '../../inMemory/TelemetryCacheInMemory';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
+import { RedisAdapter } from '../RedisAdapter';
 
 const prefix = 'telemetry_cache_ut';
 const exceptionKey = `${prefix}.telemetry.exceptions`;
@@ -14,7 +14,7 @@ const fieldVersionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
 test('TELEMETRY CACHE IN REDIS', async () => {
 
   const keysBuilder = new KeyBuilderSS(prefix, metadata);
-  const connection = new Redis();
+  const connection = new RedisAdapter(loggerMock);
   const cache = new TelemetryCacheInRedis(loggerMock, keysBuilder, connection);
 
   // recordException

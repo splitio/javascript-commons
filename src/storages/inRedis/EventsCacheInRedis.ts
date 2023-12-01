@@ -1,19 +1,19 @@
 import { IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { Redis } from 'ioredis';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class EventsCacheInRedis implements IEventsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, key: string, redis: Redis, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, metadata: IMetadata) {
     this.log = log;
     this.key = key;
     this.redis = redis;

@@ -1,21 +1,21 @@
 import { IUniqueKeysCacheBase } from '../types';
-import { Redis } from 'ioredis';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly refreshRate: number;
   private intervalId: any;
 
-  constructor(log: ILogger, key: string, redis: Redis, uniqueKeysQueueSize = DEFAULT_CACHE_SIZE, refreshRate = REFRESH_RATE) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, uniqueKeysQueueSize = DEFAULT_CACHE_SIZE, refreshRate = REFRESH_RATE) {
     super(uniqueKeysQueueSize);
     this.log = log;
     this.key = key;

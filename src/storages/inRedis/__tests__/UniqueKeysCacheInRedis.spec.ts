@@ -1,15 +1,15 @@
 //@ts-nocheck
 
-import Redis from 'ioredis';
 import { UniqueKeysCacheInRedis } from '../UniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { RedisMock } from '../../../utils/redis/RedisMock';
+import { RedisAdapter } from '../RedisAdapter';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
   const key = 'unique_key_post';
 
   test('should incrementally store values, clear the queue, and tell if it is empty', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection);
 
@@ -51,7 +51,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
 
   test('Should call "onFullQueueCb" when the queue is full.', async () => {
     let cbCalled = 0;
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3); // small uniqueKeysCache size to be reached
     cache.setOnFullQueueCb(() => { cbCalled++; cache.clear(); });
@@ -79,7 +79,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   });
 
   test('post unique keys in redis method', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 20);
     cache.track('key1', 'feature1');
@@ -145,7 +145,9 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   });
 
   test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
-    const connection = new Redis();
+    const connection = new RedisAdapter(loggerMock);
+    // @TODO next line is not required with ioredis
+    await new Promise(res => connection.once('ready', res));
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3);
 
