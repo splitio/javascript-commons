@@ -88,7 +88,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 }
 
 /**
- * Sanitizes set names list taking in account:
+ * Sanitizes set names list taking into account:
  *  - It should be lowercase
  *  - Must adhere the following regular expression /^[a-z0-9][_a-z0-9]{0,49}$/ that means
  *   - must start with a letter or number
@@ -188,7 +188,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   return res;
 }
 
-export function flagSetsAreValid(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
+export function validateFlagSets(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
   const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
   let toReturn = sets ? sanitizeFlagSets(log, sets) : [];
   if (flagSetsInConfig.length > 0) {

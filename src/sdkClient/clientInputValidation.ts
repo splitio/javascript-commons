@@ -17,7 +17,7 @@ import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
-import { flagSetsAreValid } from '../utils/settingsValidation/splitFilters';
+import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
@@ -42,7 +42,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
     if (maybeFlagSetNameOrNames) {
-      flagSetOrFlagSets = flagSetsAreValid(log, methodName, maybeFlagSetNameOrNames, settings.sync.__splitFiltersValidation.groupedFilters.bySet);
+      flagSetOrFlagSets = validateFlagSets(log, methodName, maybeFlagSetNameOrNames, settings.sync.__splitFiltersValidation.groupedFilters.bySet);
     }
 
     validateIfOperational(log, readinessManager, methodName, splitOrSplits);
