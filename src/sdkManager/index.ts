@@ -7,10 +7,7 @@ import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
-
-const SPLIT_FN_LABEL = 'split';
-const SPLITS_FN_LABEL = 'splits';
-const NAMES_FN_LABEL = 'names';
+import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
 function collectTreatments(splitObject: ISplit) {
   const conditions = splitObject.conditions;
