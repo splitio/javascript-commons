@@ -1,4 +1,4 @@
-import ioredis from 'ioredis';
+import ioredis, { Pipeline } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { _Set, setToArray, ISet } from '../../utils/lang/sets';
@@ -9,6 +9,7 @@ const LOG_PREFIX = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
 const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw'];
+const METHODS_TO_PROMISE_WRAP_EXEC = ['pipeline'];
 
 // Not part of the settings since it'll vary on each storage. We should be removing storage specific logic from elsewhere.
 const DEFAULT_OPTIONS = {
@@ -72,15 +73,16 @@ export class RedisAdapter extends ioredis {
   _setTimeoutWrappers() {
     const instance: Record<string, any> = this;
 
-    METHODS_TO_PROMISE_WRAP.forEach(methodName => {
-      const originalMethod = instance[methodName];
-
-      instance[methodName] = function () {
+    const wrapCommand = (originalMethod: Function, methodName: string) => {
+      // The value of "this" in this function should be the instance actually executing the method. It might be the instance referred (the base one)
+      // or it can be the instance of a Pipeline object.
+      return function (this: RedisAdapter | Pipeline) {
         const params = arguments;
+        const caller = this;
 
         function commandWrapper() {
           instance.log.debug(`${LOG_PREFIX}Executing ${methodName}.`);
-          const result = originalMethod.apply(instance, params);
+          const result = originalMethod.apply(caller, params);
 
           if (thenable(result)) {
             // For handling pending commands on disconnect, add to the set and remove once finished.
@@ -103,10 +105,10 @@ export class RedisAdapter extends ioredis {
         }
 
         if (instance._notReadyCommandsQueue) {
-          return new Promise((res, rej) => {
+          return new Promise((resolve, reject) => {
             instance._notReadyCommandsQueue.unshift({
-              resolve: res,
-              reject: rej,
+              resolve,
+              reject,
               command: commandWrapper,
               name: methodName.toUpperCase()
             });
@@ -114,6 +116,26 @@ export class RedisAdapter extends ioredis {
         } else {
           return commandWrapper();
         }
+      };
+    };
+
+    // Wrap regular async methods to track timeouts and queue when Redis is not yet executing commands.
+    METHODS_TO_PROMISE_WRAP.forEach(methodName => {
+      const originalFn = instance[methodName];
+      instance[methodName] = wrapCommand(originalFn, methodName);
+    });
+
+    // Special handling for pipeline~like methods. We need to wrap the async trigger, which is exec, but return the Pipeline right away.
+    METHODS_TO_PROMISE_WRAP_EXEC.forEach(methodName => {
+      const originalFn = instance[methodName];
+      // "First level wrapper" to handle the sync execution and wrap async, queueing later if applicable.
+      instance[methodName] = function () {
+        const res = originalFn.apply(instance, arguments);
+        const originalExec = res.exec;
+
+        res.exec = wrapCommand(originalExec, methodName + '.exec').bind(res);
+
+        return res;
       };
     });
   }
