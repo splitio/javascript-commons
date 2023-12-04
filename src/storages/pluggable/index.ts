@@ -105,7 +105,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     });
 
     return {
-      splits: new SplitsCachePluggable(log, keys, wrapper),
+      splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: impressionCountsCache,

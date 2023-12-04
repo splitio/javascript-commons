@@ -1,10 +1,10 @@
 import { evaluateFeature, evaluateFeatures, evaluateFeaturesByFlagSets } from '../evaluator';
 import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
-import { validateSplitExistance } from '../utils/inputValidation/splitExistance';
-import { validateTrafficTypeExistance } from '../utils/inputValidation/trafficTypeExistance';
+import { validateSplitExistence } from '../utils/inputValidation/splitExistence';
+import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTypeExistence';
 import { SDK_NOT_READY } from '../utils/labels';
-import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET } from '../utils/constants';
+import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
@@ -29,12 +29,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
 
-  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined, withConfig = false) {
+  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined, withConfig = false, methodName = GET_TREATMENT) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDTO[] = [];
-      const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, `getTreatment${withConfig ? 'withConfig' : ''}`, queue);
+      const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, methodName, queue);
       impressionsTracker.track(queue, attributes);
 
       stopTelemetryTracker(queue[0] && queue[0].label);
@@ -51,17 +51,17 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function getTreatmentWithConfig(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatment(key, featureFlagName, attributes, true);
+    return getTreatment(key, featureFlagName, attributes, true, GET_TREATMENT_WITH_CONFIG);
   }
 
-  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false) {
+  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, methodName = GET_TREATMENTS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatments${withConfig ? 'withConfig' : ''}`, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -79,18 +79,18 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   }
 
   function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatments(key, featureFlagNames, attributes, true);
+    return getTreatments(key, featureFlagNames, attributes, true, GET_TREATMENTS_WITH_CONFIG);
   }
 
-  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS) {
+  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
-    const wrapUp = (evaluationResults: Record<string,IEvaluationResult>) => {
+    const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       const evaluations = evaluationResults;
       Object.keys(evaluations).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluations[featureFlagName], featureFlagName, key, attributes, withConfig, `getTreatmentsByFlagSets${withConfig ? 'WithConfig' : ''}`, queue);
+        treatments[featureFlagName] = processEvaluation(evaluations[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -99,22 +99,22 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
       isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
   function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, flagSetNames, attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS);
+    return getTreatmentsByFlagSets(key, flagSetNames, attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
   }
 
   function getTreatmentsByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, false, TREATMENTS_BY_FLAGSET);
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, false, TREATMENTS_BY_FLAGSET, GET_TREATMENTS_BY_FLAG_SET);
   }
 
   function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET);
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
   }
 
   // Internal function
@@ -133,7 +133,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const { treatment, label, changeNumber, config = null } = evaluation;
     log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
-    if (validateSplitExistance(log, readinessManager, featureFlagName, label, invokingMethodName)) {
+    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
       queue.push({
         feature: featureFlagName,
@@ -171,7 +171,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistance(log, readinessManager, storage.splits, mode, trafficTypeName, 'track');
+    validateTrafficTypeExistence(log, readinessManager, storage.splits, mode, trafficTypeName, TRACK_FN_LABEL);
 
     const result = eventTracker.track(eventData, size);
 

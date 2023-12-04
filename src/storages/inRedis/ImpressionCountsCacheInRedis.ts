@@ -1,19 +1,19 @@
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { ImpressionCountsPayload } from '../../sync/submitters/types';
 import { forOwn } from '../../utils/lang';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { LOG_PREFIX, REFRESH_RATE, TTL_REFRESH } from './constants';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly refreshRate: number;
   private intervalId: any;
 
-  constructor(log: ILogger, key: string, redis: Redis, impressionCountsCacheSize?: number, refreshRate = REFRESH_RATE) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, impressionCountsCacheSize?: number, refreshRate = REFRESH_RATE) {
     super(impressionCountsCacheSize);
     this.log = log;
     this.key = key;

@@ -3,7 +3,7 @@ import { evaluateFeatures, evaluateFeaturesByFlagSets } from '../index';
 import * as LabelsConstants from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { _Set } from '../../utils/lang/sets';
-import { returnSetsUnion } from '../../utils/lang/sets';
+import { WARN_FLAGSET_WITHOUT_FLAGS } from '../../logger/constants';
 
 const splitsMock = {
   regular: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': '', 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': '', 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
@@ -38,14 +38,7 @@ const mockStorage = {
       return splits;
     },
     getNamesByFlagSets(flagSets) {
-      let toReturn = new _Set([]);
-      flagSets.forEach(flagset => {
-        const featureFlagNames = flagSetsMock[flagset];
-        if (featureFlagNames) {
-          toReturn = returnSetsUnion(toReturn, featureFlagNames);
-        }
-      });
-      return toReturn;
+      return flagSets.map(flagset => flagSetsMock[flagset] || new _Set());
     }
   }
 };
@@ -123,7 +116,7 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
 
 });
 
-test('EVALUATOR - Multiple evaluations at once by flag sets / should return right labels, treatments and configs if storage returns without errors.', async function () {
+describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
 
   const expectedOutput = {
     config: {
@@ -135,44 +128,76 @@ test('EVALUATOR - Multiple evaluations at once by flag sets / should return righ
     },
   };
 
-  const getResultsByFlagsets = (flagSets: string[]) => {
+  const getResultsByFlagsets = (flagSets: string[], storage = mockStorage) => {
     return evaluateFeaturesByFlagSets(
       loggerMock,
       'fake-key',
       flagSets,
       null,
-      mockStorage,
+      storage,
+      'method-name'
     );
   };
 
+  test('should return right labels, treatments and configs if storage returns without errors', async () => {
 
+    let multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config', 'arch_and_killed']);
 
-  let multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config', 'arch_and_killed']);
+    // assert evaluationWithConfig
+    expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
+    // @todo assert flag set not found - for input validations
 
-  // assert evaluationWithConfig
-  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
-  // @todo assert flag set not found - for input validations
+    // assert regular
+    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
+    // assert killed
+    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
+    // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
-  // assert regular
-  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
-  // assert killed
-  expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
-  // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
+    // assert archived
+    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
+    // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
-  // assert archived
-  expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
-  // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
+    // assert not_existent_split not in evaluation if it is not related to defined flag sets
+    expect(multipleEvaluationAtOnceByFlagSets['not_existent_split']).toEqual(undefined);
 
-  // assert not_existent_split not in evaluation if it is not related to defined flag sets
-  expect(multipleEvaluationAtOnceByFlagSets['not_existent_split']).toEqual(undefined);
+    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets([]);
+    expect(multipleEvaluationAtOnceByFlagSets).toEqual({});
 
-  multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets([]);
-  expect(multipleEvaluationAtOnceByFlagSets).toEqual({});
+    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config']);
+    expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']);
+    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null });
+    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
+    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual(undefined);
+  });
 
-  multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config']);
-  expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']);
-  expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null });
-  expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
-  expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual(undefined);
+  test('should log a warning if evaluating with flag sets that doesn\'t contain cached feature flags', async () => {
+    const getSplitsSpy = jest.spyOn(mockStorage.splits, 'getSplits');
 
+    // No flag set contains cached feature flags -> getSplits method is not called
+    expect(getResultsByFlagsets(['inexistent_set1', 'inexistent_set2'])).toEqual({});
+    expect(getSplitsSpy).not.toHaveBeenCalled();
+    expect(loggerMock.warn.mock.calls).toEqual([
+      [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set1']],
+      [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set2']],
+    ]);
+
+    // One flag set contains cached feature flags -> getSplits method is called
+    expect(getResultsByFlagsets(['inexistent_set3', 'reg_and_config'])).toEqual(getResultsByFlagsets(['reg_and_config']));
+    expect(getSplitsSpy).toHaveBeenLastCalledWith(['regular', 'config']);
+    expect(loggerMock.warn).toHaveBeenLastCalledWith(WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set3']);
+
+    getSplitsSpy.mockRestore();
+    loggerMock.warn.mockClear();
+
+    // Should support async storage too
+    expect(await getResultsByFlagsets(['inexistent_set1', 'inexistent_set2'], {
+      splits: {
+        getNamesByFlagSets(flagSets) { return Promise.resolve(flagSets.map(flagset => flagSetsMock[flagset] || new _Set())); }
+      }
+    })).toEqual({});
+    expect(loggerMock.warn.mock.calls).toEqual([
+      [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set1']],
+      [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set2']],
+    ]);
+  });
 });

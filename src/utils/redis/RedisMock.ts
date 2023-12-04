@@ -26,8 +26,6 @@ export class RedisMock {
       this.pipelineMethods[method] = this[method];
     });
 
-    this.pipeline = jest.fn(() => {return this.pipelineMethods;});
+    this.pipeline = jest.fn(() => { return this.pipelineMethods; });
   }
-
-
 }

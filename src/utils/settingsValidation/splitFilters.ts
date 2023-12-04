@@ -1,8 +1,9 @@
+import { CONSUMER_MODE, CONSUMER_PARTIAL_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
 
@@ -53,7 +54,7 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
   if (result) {
 
     if (type === 'bySet') {
-      result = sanitizeFlagSets(log, result);
+      result = sanitizeFlagSets(log, result, LOG_PREFIX_SETTINGS);
     }
 
     // check max length
@@ -87,7 +88,7 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 }
 
 /**
- * Sanitizes set names list taking in account:
+ * Sanitizes set names list taking into account:
  *  - It should be lowercase
  *  - Must adhere the following regular expression /^[a-z0-9][_a-z0-9]{0,49}$/ that means
  *   - must start with a letter or number
@@ -97,20 +98,21 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *
  * @param {ILogger} log
  * @param {string[]} flagSets
+ * @param {string} method
  * @returns sanitized list of set names
  */
-function sanitizeFlagSets(log: ILogger, flagSets: string[]) {
+function sanitizeFlagSets(log: ILogger, flagSets: string[], method: string) {
   let sanitizedSets = flagSets
     .map(flagSet => {
-      if (CAPITAL_LETTERS_REGEX.test(flagSet)){
-        log.warn(WARN_SPLITS_FILTER_LOWERCASE_SET,[flagSet]);
+      if (CAPITAL_LETTERS_REGEX.test(flagSet)) {
+        log.warn(WARN_LOWERCASE_FLAGSET, [method, flagSet]);
         flagSet = flagSet.toLowerCase();
       }
       return flagSet;
     })
     .filter(flagSet => {
-      if (!VALID_FLAGSET_REGEX.test(flagSet)){
-        log.warn(WARN_SPLITS_FILTER_INVALID_SET, [flagSet,VALID_FLAGSET_REGEX,flagSet]);
+      if (!VALID_FLAGSET_REGEX.test(flagSet)) {
+        log.warn(WARN_INVALID_FLAGSET, [method, flagSet, VALID_FLAGSET_REGEX, flagSet]);
         return false;
       }
       if (typeof flagSet !== 'string') return false;
@@ -128,6 +130,7 @@ function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: Split
  *
  * @param {ILogger} log logger
  * @param {any} maybeSplitFilters split filters configuration param provided by the user
+ * @param {string} mode settings mode
  * @returns it returns an object with the following properties:
  *  - `validFilters`: the validated `splitFilters` configuration object defined by the user.
  *  - `queryString`: the parsed split filter query. it is null if all filters are invalid or all values in filters are invalid.
@@ -135,7 +138,7 @@ function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: Split
  *
  * @throws Error if the some of the grouped list of values per filter exceeds the max allowed length
  */
-export function validateSplitFilters(log: ILogger, maybeSplitFilters: any): ISplitFiltersValidation {
+export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode: string): ISplitFiltersValidation {
   // Validation result schema
   const res = {
     validFilters: [],
@@ -145,6 +148,11 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any): ISpl
 
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
   if (!maybeSplitFilters) return res;
+  // Warn depending on the mode
+  if (mode === CONSUMER_MODE || mode === CONSUMER_PARTIAL_MODE) {
+    log.warn(WARN_SPLITS_FILTER_IGNORED);
+    return res;
+  }
   // Check collection type
   if (!Array.isArray(maybeSplitFilters) || maybeSplitFilters.length === 0) {
     log.warn(WARN_SPLITS_FILTER_EMPTY);
@@ -181,9 +189,9 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any): ISpl
   return res;
 }
 
-export function flagSetsAreValid(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
+export function validateFlagSets(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
   const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
-  let toReturn = sets ? sanitizeFlagSets(log, sets) : [];
+  let toReturn = sets ? sanitizeFlagSets(log, sets, method) : [];
   if (flagSetsInConfig.length > 0) {
     toReturn = toReturn.filter(flagSet => {
       if (flagSetsInConfig.indexOf(flagSet) > -1) {

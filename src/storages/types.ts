@@ -44,10 +44,10 @@ export interface IPluggableStorageWrapper {
    *
    * @function del
    * @param {string} key Item to delete
-   * @returns {Promise<void>} A promise that resolves if the operation success, whether the key existed and was removed or it didn't exist.
+   * @returns {Promise<boolean>} A promise that resolves if the operation success, whether the key existed and was removed (resolves with true) or it didn't exist (resolves with false).
    * The promise rejects if the operation fails, for example, if there is a connection error.
    */
-  del: (key: string) => Promise<boolean | void>
+  del: (key: string) => Promise<boolean>
   /**
    * Returns all keys matching the given prefix.
    *
@@ -210,7 +210,7 @@ export interface ISplitsCacheBase {
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
   checkCache(): MaybeThenable<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
-  getNamesByFlagSets(flagSets: string[]): MaybeThenable<ISet<string>>
+  getNamesByFlagSets(flagSets: string[]): MaybeThenable<ISet<string>[]>
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
@@ -227,7 +227,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   clear(): void,
   checkCache(): boolean,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
-  getNamesByFlagSets(flagSets: string[]): ISet<string>
+  getNamesByFlagSets(flagSets: string[]): ISet<string>[]
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
@@ -244,7 +244,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   clear(): Promise<boolean | void>,
   checkCache(): Promise<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>>
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
 }
 
 /** Segments cache */

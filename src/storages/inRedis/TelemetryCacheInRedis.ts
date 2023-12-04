@@ -3,13 +3,13 @@ import { Method, MultiConfigs, MultiMethodExceptions, MultiMethodLatencies } fro
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ITelemetryCacheAsync } from '../types';
 import { findLatencyIndex } from '../findLatencyIndex';
-import { Redis } from 'ioredis';
 import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
 import { CONSUMER_MODE, STORAGE_REDIS } from '../../utils/constants';
 import { isNaNNumber, isString } from '../../utils/lang';
 import { _Map } from '../../utils/lang/maps';
 import { MAX_LATENCY_BUCKET_COUNT, newBuckets } from '../inMemory/TelemetryCacheInMemory';
 import { parseLatencyField, parseExceptionField, parseMetadata } from '../utils';
+import type { RedisAdapter } from './RedisAdapter';
 
 export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
 
@@ -19,7 +19,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
    * @param keys  Key builder.
    * @param redis  Redis client.
    */
-  constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly redis: Redis) { }
+  constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly redis: RedisAdapter) { }
 
   recordLatency(method: Method, latencyMs: number) {
     const [key, field] = this.keys.buildLatencyKey(method, findLatencyIndex(latencyMs)).split('::');

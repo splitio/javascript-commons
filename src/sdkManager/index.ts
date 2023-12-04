@@ -1,16 +1,13 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateSplitExistance, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
+import { validateSplit, validateSplitExistence, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
-import { SplitIO } from '../types';
-import { ILogger } from '../logger/types';
-
-const SPLIT_FN_LABEL = 'split';
-const SPLITS_FN_LABEL = 'splits';
-const NAMES_FN_LABEL = 'names';
+import { ISettings, SplitIO } from '../types';
+import { isStorageSync } from '../trackers/impressionObserver/utils';
+import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
 function collectTreatments(splitObject: ISplit) {
   const conditions = splitObject.conditions;
@@ -49,10 +46,13 @@ function objectsToViews(splitObjects: ISplit[]) {
 }
 
 export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplitsCacheAsync>(
-  log: ILogger,
+  settings: Pick<ISettings, 'log' | 'mode'>,
   splits: TSplitCache,
-  { readinessManager, sdkStatus }: ISdkReadinessManager
+  { readinessManager, sdkStatus }: ISdkReadinessManager,
 ): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
+
+  const log = settings.log;
+  const isSync = isStorageSync(settings);
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
@@ -64,19 +64,19 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
       split(featureFlagName: string) {
         const splitName = validateSplit(log, featureFlagName, SPLIT_FN_LABEL);
         if (!validateIfNotDestroyed(log, readinessManager, SPLIT_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
-          return null;
+          return isSync ? null : Promise.resolve(null);
         }
 
         const split = splits.getSplit(splitName);
 
         if (thenable(split)) {
           return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
-            validateSplitExistance(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
+            validateSplitExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
         }
 
-        validateSplitExistance(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
+        validateSplitExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
 
         return objectToView(split);
       },
@@ -85,7 +85,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       splits() {
         if (!validateIfNotDestroyed(log, readinessManager, SPLITS_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLITS_FN_LABEL)) {
-          return [];
+          return isSync ? [] : Promise.resolve([]);
         }
         const currentSplits = splits.getAll();
 
@@ -98,7 +98,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       names() {
         if (!validateIfNotDestroyed(log, readinessManager, NAMES_FN_LABEL) || !validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {
-          return [];
+          return isSync ? [] : Promise.resolve([]);
         }
         const splitNames = splits.getSplitNames();
 

@@ -1,10 +1,10 @@
 import { IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
-import { Redis } from 'ioredis';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 import { ILogger } from '../../logger/types';
 import { impressionsToJSON } from '../utils';
+import type { RedisAdapter } from './RedisAdapter';
 
 const IMPRESSIONS_TTL_REFRESH = 3600; // 1 hr
 
@@ -12,10 +12,10 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, key: string, redis: Redis, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, metadata: IMetadata) {
     this.log = log;
     this.key = key;
     this.redis = redis;
