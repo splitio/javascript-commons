@@ -3,7 +3,7 @@ import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_SPLITS_FILTER_LOWERCASE_SET, WARN_SPLITS_FILTER_INVALID_SET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
 
@@ -54,7 +54,7 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
   if (result) {
 
     if (type === 'bySet') {
-      result = sanitizeFlagSets(log, result);
+      result = sanitizeFlagSets(log, result, LOG_PREFIX_SETTINGS);
     }
 
     // check max length
@@ -98,20 +98,21 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
  *
  * @param {ILogger} log
  * @param {string[]} flagSets
+ * @param {string} method
  * @returns sanitized list of set names
  */
-function sanitizeFlagSets(log: ILogger, flagSets: string[]) {
+function sanitizeFlagSets(log: ILogger, flagSets: string[], method: string) {
   let sanitizedSets = flagSets
     .map(flagSet => {
       if (CAPITAL_LETTERS_REGEX.test(flagSet)) {
-        log.warn(WARN_SPLITS_FILTER_LOWERCASE_SET, [flagSet]);
+        log.warn(WARN_LOWERCASE_FLAGSET, [method, flagSet]);
         flagSet = flagSet.toLowerCase();
       }
       return flagSet;
     })
     .filter(flagSet => {
       if (!VALID_FLAGSET_REGEX.test(flagSet)) {
-        log.warn(WARN_SPLITS_FILTER_INVALID_SET, [flagSet, VALID_FLAGSET_REGEX, flagSet]);
+        log.warn(WARN_INVALID_FLAGSET, [method, flagSet, VALID_FLAGSET_REGEX, flagSet]);
         return false;
       }
       if (typeof flagSet !== 'string') return false;
@@ -190,7 +191,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 
 export function validateFlagSets(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] {
   const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
-  let toReturn = sets ? sanitizeFlagSets(log, sets) : [];
+  let toReturn = sets ? sanitizeFlagSets(log, sets, method) : [];
   if (flagSetsInConfig.length > 0) {
     toReturn = toReturn.filter(flagSet => {
       if (flagSetsInConfig.indexOf(flagSet) > -1) {
