@@ -4,7 +4,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set, returnListDifference } from '../../utils/lang/sets';
+import { ISet, _Set, returnDifference } from '../../utils/lang/sets';
 import type { RedisAdapter } from './RedisAdapter';
 
 /**
@@ -60,9 +60,9 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
-    const removeFromFlagSets = returnListDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+    const removeFromFlagSets = returnDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
 
-    let addToFlagSets = returnListDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    let addToFlagSets = returnDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
     if (this.flagSetsFilter.length > 0) {
       addToFlagSets = addToFlagSets.filter(flagSet => {
         return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
