@@ -45,7 +45,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
     });
 
     return {
-      splits: new SplitsCacheInRedis(log, keys, redisClient),
+      splits: new SplitsCacheInRedis(log, keys, redisClient, settings.sync.__splitFiltersValidation),
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
       impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
       impressionCounts: impressionCountsCache,
