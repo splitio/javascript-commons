@@ -1,16 +1,13 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateSplitExistance, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
+import { validateSplit, validateSplitExistence, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
 import { isStorageSync } from '../trackers/impressionObserver/utils';
-
-const SPLIT_FN_LABEL = 'split';
-const SPLITS_FN_LABEL = 'splits';
-const NAMES_FN_LABEL = 'names';
+import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
 function collectTreatments(splitObject: ISplit) {
   const conditions = splitObject.conditions;
@@ -74,12 +71,12 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
 
         if (thenable(split)) {
           return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
-            validateSplitExistance(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
+            validateSplitExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
         }
 
-        validateSplitExistance(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
+        validateSplitExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
 
         return objectToView(split);
       },

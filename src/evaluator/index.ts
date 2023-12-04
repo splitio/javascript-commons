@@ -7,7 +7,8 @@ import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
-import { ISet, setToArray } from '../utils/lang/sets';
+import { ISet, setToArray, returnSetsUnion, _Set } from '../utils/lang/sets';
+import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -94,8 +95,27 @@ export function evaluateFeaturesByFlagSets(
   flagSets: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  method: string,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
-  let storedFlagNames: MaybeThenable<ISet<string>>;
+  let storedFlagNames: MaybeThenable<ISet<string>[]>;
+
+  function evaluate(
+    featureFlagsByFlagSets: ISet<string>[],
+  ) {
+    let featureFlags = new _Set();
+    for (let i = 0; i < flagSets.length; i++) {
+      const featureFlagByFlagSet = featureFlagsByFlagSets[i];
+      if (featureFlagByFlagSet.size) {
+        featureFlags = returnSetsUnion(featureFlags, featureFlagByFlagSet);
+      } else {
+        log.warn(WARN_FLAGSET_WITHOUT_FLAGS, [method, flagSets[i]]);
+      }
+    }
+
+    return featureFlags.size ?
+      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage) :
+      {};
+  }
 
   // get features by flag sets
   try {
@@ -107,11 +127,11 @@ export function evaluateFeaturesByFlagSets(
 
   // evaluate related features
   return thenable(storedFlagNames) ?
-    storedFlagNames.then((splitNames) => evaluateFeatures(log, key, setToArray(splitNames), attributes, storage))
+    storedFlagNames.then((storedFlagNames) => evaluate(storedFlagNames))
       .catch(() => {
         return {};
       }) :
-    evaluateFeatures(log, key, setToArray(storedFlagNames), attributes, storage);
+    evaluate(storedFlagNames);
 }
 
 function getEvaluation(

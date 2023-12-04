@@ -11,14 +11,28 @@ const LOG_PREFIX = 'storage:redis-adapter: ';
 // Mocking ioredis
 
 // The list of methods we're wrapping on a promise (for timeout) on the adapter.
-const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'pipeline', 'expire', 'mget', 'lrange', 'ltrim', 'hset'];
+const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw'];
+const METHODS_TO_PROMISE_WRAP_EXEC = ['pipeline'];
 
+const pipelineExecMock = jest.fn(() => Promise.resolve('exec'));
 const ioredisMock = reduce([...METHODS_TO_PROMISE_WRAP, 'disconnect'], (acc, methodName) => {
   acc[methodName] = jest.fn(() => Promise.resolve(methodName));
   return acc;
+}, reduce(METHODS_TO_PROMISE_WRAP_EXEC, (acc, methodName) => {
+  acc[methodName] = jest.fn(() => {
+    const pipelineAlikeMock = Object.assign(reduce(METHODS_TO_PROMISE_WRAP, (acc, methodName) => {
+      acc[methodName] = jest.fn(() => pipelineAlikeMock);
+      return acc;
+    }, {}), {
+      exec: pipelineExecMock
+    });
+
+    return pipelineAlikeMock;
+  });
+  return acc;
 }, {
   once: jest.fn()
-}) as { once: jest.Mock };
+}) as { once: jest.Mock });
 
 let constructorParams: any = false;
 
@@ -247,14 +261,16 @@ describe('STORAGE Redis Adapter', () => {
       url: 'redis://localhost:6379/0'
     });
 
-    forEach(METHODS_TO_PROMISE_WRAP, methodName => {
+    forEach([...METHODS_TO_PROMISE_WRAP, ...METHODS_TO_PROMISE_WRAP_EXEC], methodName => {
       expect(instance[methodName]).not.toBe(ioredisMock[methodName]); // Method "${methodName}" from ioredis library should be wrapped.
       expect(ioredisMock[methodName]).not.toBeCalled(); // Checking that the method was not called yet.
 
       const startingQueueLength = instance._notReadyCommandsQueue.length;
 
       // We do have the commands queue on this state, so a call for this methods will queue the command.
-      const wrapperResult = instance[methodName](methodName);
+      const wrapperResult = METHODS_TO_PROMISE_WRAP_EXEC.includes(methodName) ?
+        instance[methodName](methodName).exec() :
+        instance[methodName](methodName);
       expect(wrapperResult instanceof Promise).toBe(true); // The result is a promise since we are queueing commands on this state.
 
       expect(instance._notReadyCommandsQueue.length).toBe(startingQueueLength + 1); // The queue should have one more item.
@@ -263,19 +279,24 @@ describe('STORAGE Redis Adapter', () => {
       expect(typeof queuedCommand.resolve).toBe('function'); // The queued item should have the correct form.
       expect(typeof queuedCommand.reject).toBe('function'); // The queued item should have the correct form.
       expect(typeof queuedCommand.command).toBe('function'); // The queued item should have the correct form.
-      expect(queuedCommand.name).toBe(methodName.toUpperCase()); // The queued item should have the correct form.
+      expect(queuedCommand.name).toBe((METHODS_TO_PROMISE_WRAP_EXEC.includes(methodName) ? methodName + '.exec' : methodName).toUpperCase()); // The queued item should have the correct form.
     });
 
     instance._notReadyCommandsQueue = false; // Remove the queue.
     loggerMock.error.resetHistory;
 
-    forEach(METHODS_TO_PROMISE_WRAP, (methodName, index) => {
+    forEach([...METHODS_TO_PROMISE_WRAP, ...METHODS_TO_PROMISE_WRAP_EXEC], (methodName, index) => {
       // We do NOT have the commands queue on this state, so a call for this methods will execute the command.
-      expect(ioredisMock[methodName]).not.toBeCalled(); // Control assertion - Original method (${methodName}) was not called yet
+      if (METHODS_TO_PROMISE_WRAP.includes(methodName)) expect(ioredisMock[methodName]).not.toBeCalled(); // Control assertion - Original method (${methodName}) was not called yet
+      else expect(pipelineExecMock).not.toBeCalled(); // Control assertion - Original Pipeline exec method was not called yet
 
       const previousTimeoutCalls = timeout.mock.calls.length;
       let previousRunningCommandsSize = instance._runningCommands.size;
-      instance[methodName](methodName).catch(() => { }); // Swallow exception so it's not spread to logs.
+
+      (METHODS_TO_PROMISE_WRAP_EXEC.includes(methodName) ?
+        instance[methodName](methodName).exec() :
+        instance[methodName](methodName)
+      ).catch(() => { }); // Swallow exception so it's not spread to logs.
       expect(ioredisMock[methodName]).toBeCalled(); // Original method (${methodName}) is called right away (through wrapper) when we are not queueing anymore.
       expect(instance._runningCommands.size).toBe(previousRunningCommandsSize + 1); // If the result of the operation was a thenable it will add the item to the running commands queue.
 
@@ -290,7 +311,7 @@ describe('STORAGE Redis Adapter', () => {
       commandTimeoutResolver.rej('test');
       setTimeout(() => { // Allow the promises to tick.
         expect(instance._runningCommands.has(commandTimeoutResolver.originalPromise)).toBe(false); // After a command finishes with error, it's promise is removed from the instance._runningCommands queue.
-        expect(loggerMock.error.mock.calls[index]).toEqual([`${LOG_PREFIX}${methodName} operation threw an error or exceeded configured timeout of 5000ms. Message: test`]); // The log error method should be called with the corresponding messages, depending on the method, error and operationTimeout.
+        expect(loggerMock.error.mock.calls[index]).toEqual([`${LOG_PREFIX}${METHODS_TO_PROMISE_WRAP_EXEC.includes(methodName) ? methodName + '.exec' : methodName} operation threw an error or exceeded configured timeout of 5000ms. Message: test`]); // The log error method should be called with the corresponding messages, depending on the method, error and operationTimeout.
       }, 0);
     });
 
@@ -306,9 +327,10 @@ describe('STORAGE Redis Adapter', () => {
 
     instance._notReadyCommandsQueue = false; // Connection is "ready"
 
-    forEach(METHODS_TO_PROMISE_WRAP, methodName => {
+    forEach([...METHODS_TO_PROMISE_WRAP, ...METHODS_TO_PROMISE_WRAP_EXEC], methodName => {
       // Just call the wrapped method, we don't care about all the paths tested on the previous case, just how it behaves when the command is resolved.
-      instance[methodName](methodName);
+      if (METHODS_TO_PROMISE_WRAP_EXEC.includes(methodName)) instance[methodName](methodName).exec();
+      else instance[methodName](methodName);
       // Get the original promise (the one passed to timeout)
       const commandTimeoutResolver = timeoutPromiseResolvers[0];
 

@@ -4,7 +4,7 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISet, _Set, returnSetsUnion, setToArray } from '../../utils/lang/sets';
+import { ISet, _Set, setToArray } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -257,19 +257,13 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     // if the filter didn't change, nothing is done
   }
 
-  getNamesByFlagSets(flagSets: string[]): ISet<string>{
-    let toReturn: ISet<string> = new _Set([]);
-    flagSets.forEach(flagSet => {
+  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
+    return flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
-      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      if (flagSetFromLocalStorage) {
-        const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
-        toReturn = returnSetsUnion(toReturn, flagSetCache);
-      }
+      return new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
     });
-    return toReturn;
-
   }
 
   private addToFlagSets(featureFlag: ISplit) {
@@ -281,10 +275,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
 
-      let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
-      if (!flagSetFromLocalStorage) flagSetFromLocalStorage = '[]';
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+      const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
       flagSetCache.add(featureFlag.name);
 
       localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
@@ -302,7 +295,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private removeNames(flagSetName: string, featureFlagName: string) {
     const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
 
-    let flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+    const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
     if (!flagSetFromLocalStorage) return;
 
