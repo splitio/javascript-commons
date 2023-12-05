@@ -10,7 +10,7 @@ export function validatePrefix(prefix: unknown) {
 
 export class KeyBuilder {
 
-  protected readonly prefix: string;
+  readonly prefix: string;
 
   constructor(prefix: string = DEFAULT_PREFIX) {
     this.prefix = prefix;

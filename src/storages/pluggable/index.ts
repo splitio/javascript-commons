@@ -113,6 +113,12 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       telemetry,
       uniqueKeys: uniqueKeysCache,
 
+      clear() {
+        return wrapper.getKeysByPrefix(keys.prefix).then(keys => {
+          return Promise.all(keys.map(key => wrapper.del(key)));
+        });
+      },
+
       // Stop periodic flush and disconnect the underlying storage
       destroy() {
         return Promise.all(isSyncronizer ? [] : [
