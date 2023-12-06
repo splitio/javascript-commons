@@ -6,7 +6,7 @@ import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
-import { isStorageSync } from '../trackers/impressionObserver/utils';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
 function collectTreatments(splitObject: ISplit) {
@@ -51,8 +51,8 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
   { readinessManager, sdkStatus }: ISdkReadinessManager,
 ): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
 
-  const log = settings.log;
-  const isSync = isStorageSync(settings);
+  const { log, mode } = settings;
+  const isAsync = isConsumerMode(mode);
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
@@ -64,7 +64,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
       split(featureFlagName: string) {
         const splitName = validateSplit(log, featureFlagName, SPLIT_FN_LABEL);
         if (!validateIfNotDestroyed(log, readinessManager, SPLIT_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
-          return isSync ? null : Promise.resolve(null);
+          return isAsync ? Promise.resolve(null) : null;
         }
 
         const split = splits.getSplit(splitName);
@@ -85,7 +85,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       splits() {
         if (!validateIfNotDestroyed(log, readinessManager, SPLITS_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLITS_FN_LABEL)) {
-          return isSync ? [] : Promise.resolve([]);
+          return isAsync ? Promise.resolve([]) : [];
         }
         const currentSplits = splits.getAll();
 
@@ -98,7 +98,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       names() {
         if (!validateIfNotDestroyed(log, readinessManager, NAMES_FN_LABEL) || !validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {
-          return isSync ? [] : Promise.resolve([]);
+          return isAsync ? Promise.resolve([]) : [];
         }
         const splitNames = splits.getSplitNames();
 

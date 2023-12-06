@@ -9,7 +9,7 @@ import { IEvaluationResult } from '../evaluator/types';
 import { SplitIO, ImpressionDTO } from '../types';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
-import { isStorageSync } from '../trackers/impressionObserver/utils';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { Method } from '../sync/submitters/types';
 
 const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
@@ -43,9 +43,9 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
     const evaluation = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
       evaluateFeature(log, key, featureFlagName, attributes, storage) :
-      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
-        treatmentNotReady :
-        Promise.resolve(treatmentNotReady); // Promisify if async
+      isConsumerMode(mode) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
+        Promise.resolve(treatmentNotReady) : // Promisify if async
+        treatmentNotReady;
 
     return thenable(evaluation) ? evaluation.then((res) => wrapUp(res)) : wrapUp(evaluation);
   }
@@ -71,9 +71,9 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
       evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
-      isStorageSync(settings) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
-        treatmentsNotReady(featureFlagNames) :
-        Promise.resolve(treatmentsNotReady(featureFlagNames)); // Promisify if async
+      isConsumerMode(mode) ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
+        Promise.resolve(treatmentsNotReady(featureFlagNames)) : // Promisify if async
+        treatmentsNotReady(featureFlagNames);
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
@@ -100,7 +100,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
       evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
-      isStorageSync(settings) ? {} : Promise.resolve({}); // Promisify if async
+      isConsumerMode(mode) ? Promise.resolve({}) : {}; // Promisify if async
 
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
