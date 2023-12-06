@@ -82,7 +82,7 @@ export class KeyBuilder {
 
 /**
  * Generates a murmur32 hash based on the authorization key and the feature flags filter query.
- * The hash is in hexadecimal format (8 characters, 32 bits).
+ * The hash is in hexadecimal format (8 characters max, 32 bits).
  */
 export function getStorageHash(settings: ISettings) {
   return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}`).toString(16);
