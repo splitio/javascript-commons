@@ -19,22 +19,14 @@ export class KeyBuilderSS extends KeyBuilder {
   readonly latencyPrefix: string;
   readonly exceptionPrefix: string;
   readonly initPrefix: string;
-  readonly hashKey: string;
   private readonly versionablePrefix: string;
-  private readonly regexRolloutPlanKey: RegExp;
 
   constructor(prefix: string, metadata: IMetadata) {
     super(prefix);
     this.latencyPrefix = `${this.prefix}.telemetry.latencies`;
     this.exceptionPrefix = `${this.prefix}.telemetry.exceptions`;
     this.initPrefix = `${this.prefix}.telemetry.init`;
-    this.hashKey = `${this.prefix}.hash`;
     this.versionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
-    this.regexRolloutPlanKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet|segments)\\.`);
-  }
-
-  isRolloutPlanKey(key: string) {
-    return this.regexRolloutPlanKey.test(key);
   }
 
   buildRegisteredSegmentsKey() {

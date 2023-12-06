@@ -73,4 +73,7 @@ export class KeyBuilder {
     }
   }
 
+  buildSplitsFilterQueryKey() {
+    return `${this.prefix}.splits.filterQuery`;
+  }
 }

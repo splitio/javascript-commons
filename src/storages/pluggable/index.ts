@@ -92,15 +92,16 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     const connectPromise = wrapper.connect().then(() => {
       if (isSyncronizer) {
         // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
-        return wrapper.get(keys.hashKey).then((hash) => {
-          const currentHash = `${settings.core.authorizationKey.slice(-4)}::${settings.sync.__splitFiltersValidation.queryString}`;
-          if (hash !== currentHash) {
-            return wrapper.getKeysByPrefix(`${keys.prefix}.*`).then(storageKeys => {
+        return wrapper.get(keys.buildSplitsFilterQueryKey()).then((filterQuery) => {
+          const currentFilterQuery = `${settings.core.authorizationKey.slice(-4)}::${settings.sync.__splitFiltersValidation.queryString}`;
+          if (filterQuery !== currentFilterQuery) {
+            return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
               return Promise.all(storageKeys
-                .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
+                // @TODO clear only feature flags and segments if SDK key hasn't changed
+                // .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
                 .map(storageKey => wrapper.del(storageKey))
               );
-            }).then(() => wrapper.set(keys.hashKey, currentHash));
+            }).then(() => wrapper.set(keys.buildSplitsFilterQueryKey(), currentFilterQuery));
           }
         }).then(onReadyCb);
       } else {
