@@ -11,9 +11,9 @@ const IDENTITY_METHODS: string[] = [];
 const ASYNC_METHODS = ['rpush', 'hincrby'];
 const PIPELINE_METHODS = ['rpush', 'hincrby'];
 
-export class RedisMock {
+export class RedisAdapterMock {
 
-  private pipelineMethods: any = { exec: jest.fn(asyncFunction) };
+  private pipelineMethods = { exec: jest.fn(asyncFunction) };
 
   constructor() {
     IDENTITY_METHODS.forEach(method => {
