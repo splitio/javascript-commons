@@ -2,7 +2,7 @@
 
 import { UniqueKeysCacheInRedis } from '../UniqueKeysCacheInRedis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { RedisMock } from '../../../utils/redis/RedisMock';
+import { RedisAdapterMock } from './RedisAdapter.mock';
 import { RedisAdapter } from '../RedisAdapter';
 
 describe('UNIQUE KEYS CACHE IN REDIS', () => {
@@ -104,7 +104,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   });
 
   test('start and stop task', (done) => {
-    const connection = new RedisMock();
+    const connection = new RedisAdapterMock();
     const key = 'unique_key_post';
     const refreshRate = 100;
 
