@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { ImpressionCountsCacheInRedis } from '../ImpressionCountsCacheInRedis';
 import { truncateTimeFrame } from '../../../utils/time';
-import { RedisMock } from '../../../utils/redis/RedisMock';
+import { RedisAdapterMock } from './RedisAdapter.mock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { RedisAdapter } from '../RedisAdapter';
 
@@ -109,7 +109,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
 
   test('start and stop task', (done) => {
 
-    const connection = new RedisMock();
+    const connection = new RedisAdapterMock();
     const refreshRate = 100;
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection, undefined, refreshRate);
     counter.track('feature1', timestamp, 1);
