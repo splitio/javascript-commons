@@ -53,9 +53,13 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
       telemetry,
       uniqueKeys: uniqueKeysCache,
 
+      // NOTE: not used at the moment
       clear() {
-        return redisClient.keys(`${keys.prefix}.*`).then(keys => {
-          return redisClient.pipeline(keys.map(key => ['del', key])).exec();
+        return redisClient.keys(`${keys.prefix}.*`).then(storageKeys => {
+          return redisClient.pipeline(storageKeys
+            .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
+            .map(key => ['del', key])
+          ).exec();
         });
       },
 

@@ -16,10 +16,11 @@ export const METHOD_NAMES: Record<Method, string> = {
 
 export class KeyBuilderSS extends KeyBuilder {
 
-  latencyPrefix: string;
-  exceptionPrefix: string;
-  initPrefix: string;
-  private versionablePrefix: string;
+  readonly latencyPrefix: string;
+  readonly exceptionPrefix: string;
+  readonly initPrefix: string;
+  private readonly versionablePrefix: string;
+  private readonly regexRolloutPlanKey: RegExp;
 
   constructor(prefix: string, metadata: IMetadata) {
     super(prefix);
@@ -27,6 +28,11 @@ export class KeyBuilderSS extends KeyBuilder {
     this.exceptionPrefix = `${this.prefix}.telemetry.exceptions`;
     this.initPrefix = `${this.prefix}.telemetry.init`;
     this.versionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
+    this.regexRolloutPlanKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet|segments)\\.`);
+  }
+
+  isRolloutPlanKey(key: string) {
+    return this.regexRolloutPlanKey.test(key);
   }
 
   buildRegisteredSegmentsKey() {

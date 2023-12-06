@@ -114,8 +114,11 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       uniqueKeys: uniqueKeysCache,
 
       clear() {
-        return wrapper.getKeysByPrefix(keys.prefix).then(keys => {
-          return Promise.all(keys.map(key => wrapper.del(key)));
+        return wrapper.getKeysByPrefix(`${keys.prefix}.*`).then(storageKeys => {
+          return Promise.all(storageKeys
+            .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
+            .map(storageKey => wrapper.del(storageKey))
+          );
         });
       },
 
