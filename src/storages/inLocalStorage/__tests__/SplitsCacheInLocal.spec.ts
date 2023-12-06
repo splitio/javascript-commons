@@ -220,4 +220,10 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => 
   expect(cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new _Set(['ff_two', 'ff_three'])]);
   expect(cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
   expect(cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
+
+  // Validate that the cache is cleared when calling `clear` method
+  localStorage.setItem('something', 'something');
+  cacheWithoutFilters.clear();
+  expect(localStorage.length).toBe(1); // only 'something' should remain in localStorage
+  expect(localStorage.getItem(localStorage.key(0)!)).toBe('something');
 });
