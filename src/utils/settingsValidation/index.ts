@@ -1,5 +1,5 @@
 import { merge, get } from '../lang';
-import { mode } from './mode';
+import { validateMode } from './mode';
 import { validateSplitFilters } from './splitFilters';
 import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
@@ -146,7 +146,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
-  withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
+  withDefaults.mode = validateMode(withDefaults.core.authorizationKey, withDefaults.mode);
 
   // ensure a valid Storage based on mode defined.
   // @ts-ignore, modify readonly prop

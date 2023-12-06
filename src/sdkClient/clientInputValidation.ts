@@ -16,7 +16,7 @@ import { CONTROL, CONTROL_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, GET_TREATM
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings, SplitIO } from '../types';
-import { isStorageSync } from '../trackers/impressionObserver/utils';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
 
 /**
@@ -25,8 +25,8 @@ import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
  */
 export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
 
-  const log = settings.log;
-  const isSync = isStorageSync(settings);
+  const { log, mode } = settings;
+  const isAsync = isConsumerMode(mode);
 
   /**
    * Avoid repeating this validations code
@@ -59,7 +59,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   }
 
   function wrapResult<T>(value: T): MaybeThenable<T> {
-    return isSync ? value : Promise.resolve(value);
+    return isAsync ? Promise.resolve(value) : value;
   }
 
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
@@ -159,7 +159,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (isNotDestroyed && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
       return client.track(key, tt, event, eventValue, properties, size);
     } else {
-      return isSync ? false : Promise.resolve(false);
+      return isAsync ? Promise.resolve(false) : false;
     }
   }
 

@@ -1,4 +1,3 @@
-import { CONSUMER_MODE, CONSUMER_PARTIAL_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
@@ -6,6 +5,7 @@ import { ILogger } from '../../logger/types';
 import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
 import { find, uniq } from '../lang';
+import { isConsumerMode } from './mode';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
@@ -149,7 +149,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
-  if (mode === CONSUMER_MODE || mode === CONSUMER_PARTIAL_MODE) {
+  if (isConsumerMode(mode)) {
     log.warn(WARN_SPLITS_FILTER_IGNORED);
     return res;
   }
