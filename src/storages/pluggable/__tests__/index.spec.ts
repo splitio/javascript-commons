@@ -12,6 +12,7 @@ const prefix = 'some_prefix';
 import { PluggableStorage } from '../index';
 import { assertStorageInterface, assertSyncRecorderCacheInterface } from '../../__tests__/testUtils';
 import { CONSUMER_PARTIAL_MODE } from '../../../utils/constants';
+import { getStorageHash } from '../../KeyBuilder';
 
 describe('PLUGGABLE STORAGE', () => {
 
@@ -94,7 +95,7 @@ describe('PLUGGABLE STORAGE', () => {
   test('creates a storage instance for the synchronizer', async () => {
     wrapperMock._cache[`${prefix}.SPLITIO.splits.till`] = '100'; // Simulate that the cache is already populated
 
-    const filterQuery = `${fullSettings.core.authorizationKey.slice(-4)}::${fullSettings.sync.__splitFiltersValidation.queryString}`;
+    const storageHash = getStorageHash(fullSettings);
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
     let storage;
 
@@ -110,10 +111,10 @@ describe('PLUGGABLE STORAGE', () => {
     expect(storage.uniqueKeys).toBeDefined();
 
     // Assert that cache was cleared
-    expect(wrapperMock.get.mock.calls).toEqual([[`${prefix}.SPLITIO.splits.filterQuery`]]);
-    expect(wrapperMock.set.mock.calls).toEqual([[`${prefix}.SPLITIO.splits.filterQuery`, filterQuery]]);
+    expect(wrapperMock.get.mock.calls).toEqual([[`${prefix}.SPLITIO.hash`]]);
+    expect(wrapperMock.set.mock.calls).toEqual([[`${prefix}.SPLITIO.hash`, storageHash]]);
     expect(wrapperMock.del.mock.calls).toEqual([[`${prefix}.SPLITIO.splits.till`]]);
-    expect(wrapperMock._cache).toEqual({ [`${prefix}.SPLITIO.splits.filterQuery`]: filterQuery });
+    expect(wrapperMock._cache).toEqual({ [`${prefix}.SPLITIO.hash`]: storageHash });
 
     wrapperMock.mockClear();
 

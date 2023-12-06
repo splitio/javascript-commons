@@ -45,4 +45,8 @@ export class KeyBuilderCS extends KeyBuilder {
   isSplitsCacheKey(key: string) {
     return this.regexSplitsCacheKey.test(key);
   }
+
+  buildSplitsFilterQueryKey() {
+    return `${this.prefix}.splits.filterQuery`;
+  }
 }

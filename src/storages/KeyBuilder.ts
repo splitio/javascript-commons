@@ -1,4 +1,6 @@
+import { ISettings } from '../types';
 import { startsWith } from '../utils/lang';
+import { hash } from '../utils/murmur3/murmur3';
 
 const everythingAtTheEnd = /[^.]+$/;
 
@@ -73,7 +75,15 @@ export class KeyBuilder {
     }
   }
 
-  buildSplitsFilterQueryKey() {
-    return `${this.prefix}.splits.filterQuery`;
+  buildHashKey() {
+    return `${this.prefix}.hash`;
   }
+}
+
+/**
+ * Generates a murmur32 hash based on the authorization key and the feature flags filter query.
+ * The hash is in hexadecimal format (8 characters, 32 bits).
+ */
+export function getStorageHash(settings: ISettings) {
+  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}`).toString(16);
 }

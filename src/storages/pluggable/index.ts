@@ -7,7 +7,7 @@ import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
 import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
-import { validatePrefix } from '../KeyBuilder';
+import { getStorageHash, validatePrefix } from '../KeyBuilder';
 import { CONSUMER_PARTIAL_MODE, DEBUG, NONE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
@@ -92,16 +92,12 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     const connectPromise = wrapper.connect().then(() => {
       if (isSyncronizer) {
         // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
-        return wrapper.get(keys.buildSplitsFilterQueryKey()).then((filterQuery) => {
-          const currentFilterQuery = `${settings.core.authorizationKey.slice(-4)}::${settings.sync.__splitFiltersValidation.queryString}`;
-          if (filterQuery !== currentFilterQuery) {
+        return wrapper.get(keys.buildHashKey()).then((hash) => {
+          const currentHash = getStorageHash(settings);
+          if (hash !== currentHash) {
             return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
-              return Promise.all(storageKeys
-                // @TODO clear only feature flags and segments if SDK key hasn't changed
-                // .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
-                .map(storageKey => wrapper.del(storageKey))
-              );
-            }).then(() => wrapper.set(keys.buildSplitsFilterQueryKey(), currentFilterQuery));
+              return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
+            }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
           }
         }).then(onReadyCb);
       } else {

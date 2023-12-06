@@ -66,7 +66,6 @@ function hash32(key?: string, seed?: number) {
 }
 
 export function hash(str: string, seed?: number): number {
-
   return hash32(UTF16ToUTF8(str), seed as number >>> 0);
 }
 
