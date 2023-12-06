@@ -41,7 +41,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const keys = new KeyBuilderCS(prefix, matchingKey as string);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(log, keys, expirationTimestamp, __splitFiltersValidation);
+    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
     const segments = new MySegmentsCacheInLocal(log, keys);
 
     return {

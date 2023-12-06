@@ -1,12 +1,13 @@
 import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
 import { KeyBuilderCS } from '../../KeyBuilderCS';
-import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse, featureFlagOne, featureFlagTwo, featureFlagThree, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
 import { _Set } from '../../../utils/lang/sets';
+import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+
 
 test('SPLIT CACHE / LocalStorage', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.clear();
 
@@ -45,7 +46,7 @@ test('SPLIT CACHE / LocalStorage', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / Get Keys', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplit('lol1', something);
   cache.addSplit('lol2', somethingElse);
@@ -57,7 +58,7 @@ test('SPLIT CACHE / LocalStorage / Get Keys', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / Add Splits', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([
     ['lol1', something],
@@ -71,7 +72,7 @@ test('SPLIT CACHE / LocalStorage / Add Splits', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
   cache.addSplits([ // loop of addSplit
     ['split1', splitWithUserTT],
@@ -109,7 +110,7 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / killLocally', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
   cache.addSplit('lol1', something);
   cache.addSplit('lol2', somethingElse);
   const initialChangeNumber = cache.getChangeNumber();
@@ -141,7 +142,7 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
 });
 
 test('SPLIT CACHE / LocalStorage / usesSegments', () => {
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
   expect(cache.usesSegments()).toBe(true); // true initially, until data is synchronized
   cache.setChangeNumber(1); // to indicate that data has been synced.
@@ -164,7 +165,15 @@ test('SPLIT CACHE / LocalStorage / usesSegments', () => {
 
 test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
   // @ts-ignore
-  const cache = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'), undefined, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+  const cache = new SplitsCacheInLocal({
+    ...fullSettings,
+    sync: { // @ts-expect-error
+      __splitFiltersValidation: {
+        groupedFilters: { bySet: ['o', 'n', 'e', 'x'], byName: [], byPrefix: [] },
+        queryString: '&sets=e,n,o,x',
+      }
+    }
+  }, new KeyBuilderCS('SPLITIO', 'user'));
   const emptySet = new _Set([]);
 
   cache.addSplits([
@@ -204,7 +213,7 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
 
 // if FlagSets are not defined, it should store all FlagSets in memory.
 test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
-  const cacheWithoutFilters = new SplitsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'));
+  const cacheWithoutFilters = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
   const emptySet = new _Set([]);
 
   cacheWithoutFilters.addSplits([
@@ -222,8 +231,7 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => 
   expect(cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
 
   // Validate that the cache is cleared when calling `clear` method
-  localStorage.setItem('something', 'something');
   cacheWithoutFilters.clear();
-  expect(localStorage.length).toBe(1); // only 'something' should remain in localStorage
-  expect(localStorage.getItem(localStorage.key(0)!)).toBe('something');
+  expect(localStorage.length).toBe(1); // only 'SPLITIO.hash' should remain in localStorage
+  expect(localStorage.getItem(localStorage.key(0)!)).toBe('ccd10de1');
 });
