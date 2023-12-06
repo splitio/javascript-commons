@@ -90,13 +90,26 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
     // Connects to wrapper and emits SDK_READY event on main client
     const connectPromise = wrapper.connect().then(() => {
-      onReadyCb();
-
-      // Start periodic flush of async storages if not running synchronizer (producer mode)
-      if (!isSyncronizer) {
+      if (isSyncronizer) {
+        // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
+        return wrapper.get(keys.hashKey).then((hash) => {
+          const currentHash = `${settings.core.authorizationKey.slice(-4)}::${settings.sync.__splitFiltersValidation.queryString}`;
+          if (hash !== currentHash) {
+            return wrapper.getKeysByPrefix(`${keys.prefix}.*`).then(storageKeys => {
+              return Promise.all(storageKeys
+                .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
+                .map(storageKey => wrapper.del(storageKey))
+              );
+            }).then(() => wrapper.set(keys.hashKey, currentHash));
+          }
+        }).then(onReadyCb);
+      } else {
+        // Start periodic flush of async storages if not running synchronizer (producer mode)
         if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
         if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
         if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
+
+        onReadyCb();
       }
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');
@@ -112,15 +125,6 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       events: isPartialConsumer ? promisifyEventsTrack(new EventsCacheInMemory(eventsQueueSize)) : new EventsCachePluggable(log, keys.buildEventsKey(), wrapper, metadata),
       telemetry,
       uniqueKeys: uniqueKeysCache,
-
-      clear() {
-        return wrapper.getKeysByPrefix(`${keys.prefix}.*`).then(storageKeys => {
-          return Promise.all(storageKeys
-            .filter((storageKey) => keys.isRolloutPlanKey(storageKey))
-            .map(storageKey => wrapper.del(storageKey))
-          );
-        });
-      },
 
       // Stop periodic flush and disconnect the underlying storage
       destroy() {

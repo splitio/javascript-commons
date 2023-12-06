@@ -487,9 +487,7 @@ export interface IStorageAsync extends IStorageBase<
   IEventsCacheAsync | IEventsCacheSync,
   ITelemetryCacheAsync | ITelemetryCacheSync,
   IUniqueKeysCacheBase
-> {
-  clear(): Promise<any>,
-}
+> { }
 
 /** StorageFactory */
 
