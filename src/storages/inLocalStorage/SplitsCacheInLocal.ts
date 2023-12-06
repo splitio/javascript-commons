@@ -238,7 +238,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   private _checkFilterQuery() {
-    const { queryString } = this.splitFiltersValidation;
+    const queryString = this.splitFiltersValidation.queryString;
     const queryKey = this.keys.buildSplitsFilterQueryKey();
     const currentQueryString = localStorage.getItem(queryKey);
 
