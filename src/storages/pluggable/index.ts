@@ -19,6 +19,7 @@ import { UniqueKeysCachePluggable } from './UniqueKeysCachePluggable';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { metadataBuilder } from '../utils';
+import { LOG_PREFIX } from '../pluggable/constants';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -95,6 +96,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
         return wrapper.get(keys.buildHashKey()).then((hash) => {
           const currentHash = getStorageHash(settings);
           if (hash !== currentHash) {
+            log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key or feature flag filter criteria was modified). Clearing cache');
             return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
               return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
             }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
