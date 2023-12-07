@@ -99,7 +99,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
               return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
             }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
           }
-        }).then(onReadyCb);
+        }).then(() => {
+          onReadyCb();
+        });
       } else {
         // Start periodic flush of async storages if not running synchronizer (producer mode)
         if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
