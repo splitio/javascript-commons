@@ -9,7 +9,7 @@ export class KeyBuilderCS extends KeyBuilder {
   constructor(prefix: string, matchingKey: string) {
     super(prefix);
     this.matchingKey = matchingKey;
-    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.`);
+    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet)\\.`);
   }
 
   /**

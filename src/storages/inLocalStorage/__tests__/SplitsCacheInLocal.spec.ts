@@ -230,9 +230,8 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => 
   expect(cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
   expect(cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
 
-  // Validate that the cache is cleared when calling `clear` method
-  localStorage.setItem('something', 'something');
+  // Validate that the feature flag cache is cleared when calling `clear` method
   cacheWithoutFilters.clear();
-  expect(localStorage.length).toBe(1); // only 'something' should remain in localStorage
-  expect(localStorage.getItem(localStorage.key(0)!)).toBe('something');
+  expect(localStorage.length).toBe(1); // only 'SPLITIO.hash' should remain in localStorage
+  expect(localStorage.key(0)).toBe('SPLITIO.hash');
 });
