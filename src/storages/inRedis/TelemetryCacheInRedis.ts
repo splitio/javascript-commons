@@ -74,6 +74,10 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
           ts: newBuckets(),
           tc: newBuckets(),
           tcs: newBuckets(),
+          tf: newBuckets(),
+          tfs: newBuckets(),
+          tcf: newBuckets(),
+          tcfs: newBuckets(),
           tr: newBuckets(),
         });
 
@@ -114,6 +118,10 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
           ts: 0,
           tc: 0,
           tcs: 0,
+          tf: 0,
+          tfs: 0,
+          tcf: 0,
+          tcfs: 0,
           tr: 0,
         });
 

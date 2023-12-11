@@ -20,16 +20,20 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // recordException
   expect(await cache.recordException('tr')).toBe(1);
   expect(await cache.recordException('tr')).toBe(2);
+  expect(await cache.recordException('tcfs')).toBe(1);
 
   expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/track')).toBe('2');
   expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/treatment')).toBe(null);
+  expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/treatmentsWithConfigByFlagSets')).toBe('1');
 
   // recordLatency
   expect(await cache.recordLatency('tr', 1.6)).toBe(1);
   expect(await cache.recordLatency('tr', 1.6)).toBe(2);
+  expect(await cache.recordLatency('tfs', 1.6)).toBe(1);
 
   expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/track/2')).toBe('2');
   expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/treatment/2')).toBe(null);
+  expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/treatmentsByFlagSets/2')).toBe('1');
 
   // recordConfig
   expect(await cache.recordConfig()).toBe(1);
@@ -49,6 +53,10 @@ test('TELEMETRY CACHE IN REDIS', async () => {
       ts: newBuckets(),
       tc: newBuckets(),
       tcs: newBuckets(),
+      tf: newBuckets(),
+      tfs: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      tcf: newBuckets(),
+      tcfs: newBuckets(),
       tr: [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     });
   });
@@ -63,6 +71,10 @@ test('TELEMETRY CACHE IN REDIS', async () => {
       ts: 0,
       tc: 0,
       tcs: 0,
+      tf: 0,
+      tfs: 0,
+      tcf: 0,
+      tcfs: 1,
       tr: 2,
     });
   });
