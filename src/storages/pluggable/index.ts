@@ -7,7 +7,7 @@ import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
 import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
-import { validatePrefix } from '../KeyBuilder';
+import { getStorageHash, validatePrefix } from '../KeyBuilder';
 import { CONSUMER_PARTIAL_MODE, DEBUG, NONE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
@@ -19,6 +19,7 @@ import { UniqueKeysCachePluggable } from './UniqueKeysCachePluggable';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { metadataBuilder } from '../utils';
+import { LOG_PREFIX } from '../pluggable/constants';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -90,13 +91,26 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
     // Connects to wrapper and emits SDK_READY event on main client
     const connectPromise = wrapper.connect().then(() => {
-      onReadyCb();
-
-      // Start periodic flush of async storages if not running synchronizer (producer mode)
-      if (!isSyncronizer) {
+      if (isSyncronizer) {
+        // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
+        return wrapper.get(keys.buildHashKey()).then((hash) => {
+          const currentHash = getStorageHash(settings);
+          if (hash !== currentHash) {
+            log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key or feature flag filter criteria was modified). Clearing cache');
+            return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
+              return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
+            }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
+          }
+        }).then(() => {
+          onReadyCb();
+        });
+      } else {
+        // Start periodic flush of async storages if not running synchronizer (producer mode)
         if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
         if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
         if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
+
+        onReadyCb();
       }
     }).catch((e) => {
       e = e || new Error('Error connecting wrapper');

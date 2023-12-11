@@ -16,10 +16,10 @@ export const METHOD_NAMES: Record<Method, string> = {
 
 export class KeyBuilderSS extends KeyBuilder {
 
-  latencyPrefix: string;
-  exceptionPrefix: string;
-  initPrefix: string;
-  private versionablePrefix: string;
+  readonly latencyPrefix: string;
+  readonly exceptionPrefix: string;
+  readonly initPrefix: string;
+  private readonly versionablePrefix: string;
 
   constructor(prefix: string, metadata: IMetadata) {
     super(prefix);

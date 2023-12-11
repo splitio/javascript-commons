@@ -1,4 +1,5 @@
-import { KeyBuilder } from '../KeyBuilder';
+import { ISettings } from '../../types';
+import { KeyBuilder, getStorageHash } from '../KeyBuilder';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 
 test('KEYS / splits keys', () => {
@@ -110,4 +111,21 @@ test('KEYS / latency and exception keys (telemetry)', () => {
 
   const expectedExceptionKey = `${prefix}.telemetry.exceptions::${metadata.s}/${metadata.n}/${metadata.i}/treatment`;
   expect(builder.buildExceptionKey(methodName)).toBe(expectedExceptionKey);
+});
+
+test('getStorageHash', () => {
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: '&names=p1__split,p2__split' } }
+  } as ISettings)).toBe('6a596ded');
+
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: '&names=p2__split,p3__split' } }
+  } as ISettings)).toBe('18ad36f3');
+
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: null } }
+  } as ISettings)).toBe('9507ef4');
 });

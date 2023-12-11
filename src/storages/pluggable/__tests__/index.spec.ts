@@ -12,6 +12,7 @@ const prefix = 'some_prefix';
 import { PluggableStorage } from '../index';
 import { assertStorageInterface, assertSyncRecorderCacheInterface } from '../../__tests__/testUtils';
 import { CONSUMER_PARTIAL_MODE } from '../../../utils/constants';
+import { getStorageHash } from '../../KeyBuilder';
 
 describe('PLUGGABLE STORAGE', () => {
 
@@ -92,14 +93,39 @@ describe('PLUGGABLE STORAGE', () => {
   });
 
   test('creates a storage instance for the synchronizer', async () => {
+    wrapperMock._cache[`${prefix}.SPLITIO.splits.till`] = '100'; // Simulate that the cache is already populated
+
+    const storageHash = getStorageHash(fullSettings);
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
-    const storage = storageFactory({ ...internalSdkParams, settings: { ...internalSdkParams.settings, mode: undefined } });
+    let storage;
 
+    // Create storage instance. Wrapper is pollute but doesn't have filter query key, so it should clear the cache
+    await new Promise(resolve => {
+      storage = storageFactory({ onReadyCb: resolve, settings: { ...fullSettings, mode: undefined } });
+    });
+
+    // Assert that expected caches are present
     assertStorageInterface(storage);
-
-    // All caches are present
     expect(storage.telemetry).toBeDefined();
     expect(storage.impressionCounts).toBeDefined();
     expect(storage.uniqueKeys).toBeDefined();
+
+    // Assert that cache was cleared
+    expect(wrapperMock.get.mock.calls).toEqual([[`${prefix}.SPLITIO.hash`]]);
+    expect(wrapperMock.set.mock.calls).toEqual([[`${prefix}.SPLITIO.hash`, storageHash]]);
+    expect(wrapperMock.del.mock.calls).toEqual([[`${prefix}.SPLITIO.splits.till`]]);
+    expect(wrapperMock._cache).toEqual({ [`${prefix}.SPLITIO.hash`]: storageHash });
+
+    wrapperMock.mockClear();
+
+    // Create storage instance. This time the wrapper has the current filter query key, so it should not clear the cache
+    await new Promise(resolve => {
+      storage = storageFactory({ onReadyCb: resolve, settings: { ...fullSettings, mode: undefined } });
+    });
+
+    // Assert that cache was not cleared
+    expect(wrapperMock.get).toBeCalledTimes(1);
+    expect(wrapperMock.set).toBeCalledTimes(0);
+    expect(wrapperMock.del).toBeCalledTimes(0);
   });
 });
