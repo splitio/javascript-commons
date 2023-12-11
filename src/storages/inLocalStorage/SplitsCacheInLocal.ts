@@ -1,10 +1,12 @@
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISet, _Set, setToArray } from '../../utils/lang/sets';
+import { ISettings } from '../../types';
+import { getStorageHash } from '../KeyBuilder';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -12,7 +14,8 @@ import { ISet, _Set, setToArray } from '../../utils/lang/sets';
 export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
-  private readonly splitFiltersValidation: ISplitFiltersValidation;
+  private readonly log: ILogger;
+  private readonly storageHash: string;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
   private updateNewFilter?: boolean;
@@ -22,11 +25,12 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @param {number | undefined} expirationTimestamp
    * @param {ISplitFiltersValidation} splitFiltersValidation
    */
-  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, expirationTimestamp?: number) {
     super();
     this.keys = keys;
-    this.splitFiltersValidation = splitFiltersValidation;
-    this.flagSetsFilter = this.splitFiltersValidation.groupedFilters.bySet;
+    this.log = settings.log;
+    this.storageHash = getStorageHash(settings);
+    this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
 
     this._checkExpiration(expirationTimestamp);
 
@@ -142,12 +146,10 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'Split filter query was modified. Updating cache.');
-      const queryKey = this.keys.buildSplitsFilterQueryKey();
-      const queryString = this.splitFiltersValidation.queryString;
+      this.log.info(LOG_PREFIX + 'SDK key or feature flag filter criteria was modified. Updating cache');
+      const storageHashKey = this.keys.buildHashKey();
       try {
-        if (queryString) localStorage.setItem(queryKey, queryString);
-        else localStorage.removeItem(queryKey);
+        localStorage.setItem(storageHashKey, this.storageHash);
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
@@ -237,12 +239,12 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
+  // @TODO eventually remove `_checkFilterQuery`. Cache should be cleared at the storage level, reusing same logic than PluggableStorage
   private _checkFilterQuery() {
-    const queryString = this.splitFiltersValidation.queryString;
-    const queryKey = this.keys.buildSplitsFilterQueryKey();
-    const currentQueryString = localStorage.getItem(queryKey);
+    const storageHashKey = this.keys.buildHashKey();
+    const storageHash = localStorage.getItem(storageHashKey);
 
-    if (currentQueryString !== queryString) {
+    if (storageHash !== this.storageHash) {
       try {
         // mark cache to update the new query filter on first successful splits fetch
         this.updateNewFilter = true;
