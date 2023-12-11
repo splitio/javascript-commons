@@ -1,5 +1,6 @@
 1.12.1 (December 12, 2023)
  - Updated PluggableStorage, for producer mode, and LocalStorage, for standalone mode, to clear the storage before initiating the synchronization process if it was previously synchronized with a different SDK key (i.e., a different environment) or different Split Filter criteria.
+ - Bugfixing - Fixed an issue when tracking telemetry latencies for the new `getTreatmentsByFlagSet(s)` methods in Redis and Pluggable storages, which was causing the SDK to not track those stats.
 
 1.12.0 (December 4, 2023)
  - Added support for Flag Sets in "consumer" and "partial consumer" modes for Pluggable and Redis storages.

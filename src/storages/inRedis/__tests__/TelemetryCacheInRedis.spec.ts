@@ -1,7 +1,6 @@
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { TelemetryCacheInRedis } from '../TelemetryCacheInRedis';
-import { newBuckets } from '../../inMemory/TelemetryCacheInMemory';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
 import { RedisAdapter } from '../RedisAdapter';
 
@@ -20,16 +19,20 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   // recordException
   expect(await cache.recordException('tr')).toBe(1);
   expect(await cache.recordException('tr')).toBe(2);
+  expect(await cache.recordException('tcfs')).toBe(1);
 
   expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/track')).toBe('2');
   expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/treatment')).toBe(null);
+  expect(await connection.hget(exceptionKey, fieldVersionablePrefix + '/treatmentsWithConfigByFlagSets')).toBe('1');
 
   // recordLatency
   expect(await cache.recordLatency('tr', 1.6)).toBe(1);
   expect(await cache.recordLatency('tr', 1.6)).toBe(2);
+  expect(await cache.recordLatency('tfs', 1.6)).toBe(1);
 
   expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/track/2')).toBe('2');
   expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/treatment/2')).toBe(null);
+  expect(await connection.hget(latencyKey, fieldVersionablePrefix + '/treatmentsByFlagSets/2')).toBe('1');
 
   // recordConfig
   expect(await cache.recordConfig()).toBe(1);
@@ -45,10 +48,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   latencies.forEach((latency, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(latency).toEqual({
-      t: newBuckets(),
-      ts: newBuckets(),
-      tc: newBuckets(),
-      tcs: newBuckets(),
+      tfs: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       tr: [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     });
   });
@@ -59,10 +59,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   exceptions.forEach((exception, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(exception).toEqual({
-      t: 0,
-      ts: 0,
-      tc: 0,
-      tcs: 0,
+      tcfs: 1,
       tr: 2,
     });
   });

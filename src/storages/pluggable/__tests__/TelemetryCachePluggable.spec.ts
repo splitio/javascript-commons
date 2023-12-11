@@ -19,16 +19,20 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
   // recordException
   expect(await cache.recordException('tr')).toBe(1);
   expect(await cache.recordException('tr')).toBe(2);
+  expect(await cache.recordException('tcfs')).toBe(1);
 
   expect(await wrapper.get(exceptionKey + '::' + fieldVersionablePrefix + '/track')).toBe('2');
   expect(await wrapper.get(exceptionKey + '::' + fieldVersionablePrefix + '/treatment')).toBe(null);
+  expect(await wrapper.get(exceptionKey + '::' + fieldVersionablePrefix + '/treatmentsWithConfigByFlagSets')).toBe('1');
 
   // recordLatency
   expect(await cache.recordLatency('tr', 1.6)).toBe(1);
   expect(await cache.recordLatency('tr', 1.6)).toBe(2);
+  expect(await cache.recordLatency('tfs', 1.6)).toBe(1);
 
   expect(await wrapper.get(latencyKey + '::' + fieldVersionablePrefix + '/track/2')).toBe('2');
   expect(await wrapper.get(latencyKey + '::' + fieldVersionablePrefix + '/treatment/2')).toBe(null);
+  expect(await wrapper.get(latencyKey + '::' + fieldVersionablePrefix + '/treatmentsByFlagSets/2')).toBe('1');
 
   // recordConfig
   await cache.recordConfig();
@@ -44,6 +48,7 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
   latencies.forEach((latency, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(latency.tr![2]).toBe(2);
+    expect(latency.tfs![2]).toBe(1);
   });
 
   // popExceptions
@@ -51,6 +56,7 @@ test('TELEMETRY CACHE PLUGGABLE', async () => {
   exceptions.forEach((exception, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(exception.tr).toBe(2);
+    expect(exception.tcfs).toBe(1);
   });
 
   // popConfigs
