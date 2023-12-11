@@ -69,19 +69,10 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
           return;
         }
 
-        if (!result.has(metadata)) result.set(metadata, {
-          t: newBuckets(),
-          ts: newBuckets(),
-          tc: newBuckets(),
-          tcs: newBuckets(),
-          tf: newBuckets(),
-          tfs: newBuckets(),
-          tcf: newBuckets(),
-          tcfs: newBuckets(),
-          tr: newBuckets(),
-        });
-
-        result.get(metadata)![method]![bucket] = count;
+        const methodLatencies = result.get(metadata) || {};
+        methodLatencies[method] = methodLatencies[method] || newBuckets();
+        methodLatencies[method]![bucket] = count;
+        result.set(metadata, methodLatencies);
       });
 
       return this.redis.del(this.keys.latencyPrefix).then(() => result);
@@ -113,18 +104,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
 
         const [metadata, method] = parsedField;
 
-        if (!result.has(metadata)) result.set(metadata, {
-          t: 0,
-          ts: 0,
-          tc: 0,
-          tcs: 0,
-          tf: 0,
-          tfs: 0,
-          tcf: 0,
-          tcfs: 0,
-          tr: 0,
-        });
-
+        if (!result.has(metadata)) result.set(metadata, {});
         result.get(metadata)![method] = count;
       });
 

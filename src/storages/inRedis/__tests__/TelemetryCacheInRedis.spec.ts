@@ -1,7 +1,6 @@
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { TelemetryCacheInRedis } from '../TelemetryCacheInRedis';
-import { newBuckets } from '../../inMemory/TelemetryCacheInMemory';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
 import { RedisAdapter } from '../RedisAdapter';
 
@@ -49,14 +48,7 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   latencies.forEach((latency, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(latency).toEqual({
-      t: newBuckets(),
-      ts: newBuckets(),
-      tc: newBuckets(),
-      tcs: newBuckets(),
-      tf: newBuckets(),
       tfs: [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      tcf: newBuckets(),
-      tcfs: newBuckets(),
       tr: [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     });
   });
@@ -67,13 +59,6 @@ test('TELEMETRY CACHE IN REDIS', async () => {
   exceptions.forEach((exception, m) => {
     expect(JSON.parse(m)).toEqual(metadata);
     expect(exception).toEqual({
-      t: 0,
-      ts: 0,
-      tc: 0,
-      tcs: 0,
-      tf: 0,
-      tfs: 0,
-      tcf: 0,
       tcfs: 1,
       tr: 2,
     });
