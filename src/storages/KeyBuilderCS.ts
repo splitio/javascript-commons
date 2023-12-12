@@ -9,7 +9,7 @@ export class KeyBuilderCS extends KeyBuilder {
   constructor(prefix: string, matchingKey: string) {
     super(prefix);
     this.matchingKey = matchingKey;
-    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType)\\.`);
+    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet)\\.`);
   }
 
   /**
@@ -44,9 +44,5 @@ export class KeyBuilderCS extends KeyBuilder {
 
   isSplitsCacheKey(key: string) {
     return this.regexSplitsCacheKey.test(key);
-  }
-
-  buildSplitsFilterQueryKey() {
-    return `${this.prefix}.splits.filterQuery`;
   }
 }

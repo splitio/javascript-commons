@@ -68,15 +68,10 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
               continue;
             }
 
-            if (!result.has(metadata)) result.set(metadata, {
-              t: newBuckets(),
-              ts: newBuckets(),
-              tc: newBuckets(),
-              tcs: newBuckets(),
-              tr: newBuckets(),
-            });
-
-            result.get(metadata)![method]![bucket] = count;
+            const methodLatencies = result.get(metadata) || {};
+            methodLatencies[method] = methodLatencies[method] || newBuckets();
+            methodLatencies[method]![bucket] = count;
+            result.set(metadata, methodLatencies);
           }
 
           return Promise.all(latencyKeys.map((latencyKey) => this.wrapper.del(latencyKey))).then(() => result);
@@ -115,14 +110,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
             const [metadata, method] = parsedField;
 
-            if (!result.has(metadata)) result.set(metadata, {
-              t: 0,
-              ts: 0,
-              tc: 0,
-              tcs: 0,
-              tr: 0,
-            });
-
+            if (!result.has(metadata)) result.set(metadata, {});
             result.get(metadata)![method] = count;
           }
 

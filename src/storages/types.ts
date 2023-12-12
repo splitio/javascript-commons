@@ -457,7 +457,7 @@ export interface IStorageBase<
   TEventsCache extends IEventsCacheBase,
   TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
   TUniqueKeysCache extends IUniqueKeysCacheBase
-  > {
+> {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
@@ -477,7 +477,7 @@ export interface IStorageSync extends IStorageBase<
   IEventsCacheSync,
   ITelemetryCacheSync,
   IUniqueKeysCacheSync
-  > { }
+> { }
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
@@ -487,7 +487,7 @@ export interface IStorageAsync extends IStorageBase<
   IEventsCacheAsync | IEventsCacheSync,
   ITelemetryCacheAsync | ITelemetryCacheSync,
   IUniqueKeysCacheBase
-  > { }
+> { }
 
 /** StorageFactory */
 

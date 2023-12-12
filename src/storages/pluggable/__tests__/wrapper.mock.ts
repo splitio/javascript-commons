@@ -108,7 +108,6 @@ export function wrapperMockFactory() {
     disconnect: jest.fn(() => Promise.resolve()),
 
     mockClear() {
-      this._cache = {};
       this.get.mockClear();
       this.set.mockClear();
       this.del.mockClear();
