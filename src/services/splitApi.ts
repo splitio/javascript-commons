@@ -17,7 +17,8 @@ function userKeyToQueryParam(userKey: string) {
  * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
  * @param settings validated settings object
- * @param platform object containing environment-specific `getFetch` dependency
+ * @param getFetch environment-specific `getFetch` method
+ * @param telemetryTracker telemetry tracker
  */
 export function splitApiFactory(
   settings: ISettings,
