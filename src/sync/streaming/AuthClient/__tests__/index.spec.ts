@@ -10,7 +10,7 @@ import { authenticateFactory, hashUserKey } from '../index';
 
 const authorizationKey = settingsSplitApi.core.authorizationKey;
 const authUrl = settingsSplitApi.urls.auth; // @ts-ignore
-const splitApi = splitApiFactory(settingsSplitApi, () => fetchMock, telemetryTrackerFactory());
+const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
 const authenticate = authenticateFactory(splitApi.fetchAuth);
 
 test('hashUserKey', () => {

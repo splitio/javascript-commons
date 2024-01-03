@@ -22,7 +22,7 @@ describe('splitApi', () => {
   test.each([settingsSplitApi, settingsWithRuntime])('performs requests with expected headers', (settings) => {
 
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settings, () => fetchMock, telemetryTrackerMock);
+    const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     splitApi.fetchAuth(['key1', 'key2']);
     let [url, { headers }] = fetchMock.mock.calls[0];
@@ -67,7 +67,7 @@ describe('splitApi', () => {
 
   test('rejects requests if fetch Api is not provided', (done) => {
 
-    const splitApi = splitApiFactory(settingsSplitApi, () => undefined, telemetryTrackerMock);
+    const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => undefined }, telemetryTrackerMock);
 
     // Invoking any Service method, returns a rejected promise with Split error
     splitApi.fetchAuth().catch(error => {
@@ -80,7 +80,7 @@ describe('splitApi', () => {
 
   test('performs requests with overwritten headers', () => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settingsWithRuntime, () => fetchMock, telemetryTrackerMock);
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     const newHeaders = { SplitSDKVersion: 'newVersion', SplitSDKMachineIP: 'newIp', SplitSDKMachineName: 'newHostname' };
     const expectedHeaders = { ...settingsWithRuntime, version: newHeaders.SplitSDKVersion, runtime: { ip: newHeaders.SplitSDKMachineIP, hostname: newHeaders.SplitSDKMachineName } };
@@ -95,7 +95,7 @@ describe('splitApi', () => {
 
   test('performs APIs health service check', (done) => {
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
-    const splitApi = splitApiFactory(settingsWithRuntime, () => fetchMock, telemetryTrackerMock);
+    const splitApi = splitApiFactory(settingsWithRuntime, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     splitApi.getSdkAPIHealthCheck().then((res) => {
       expect(res).toEqual(true);
