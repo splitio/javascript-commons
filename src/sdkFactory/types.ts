@@ -17,7 +17,7 @@ export interface IPlatform {
   /**
    * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
    */
-  getFetch?: (settings: ISettings) => (IFetch | undefined)
+  getFetch?: () => (IFetch | undefined)
   /**
    * If provided, it is used to retrieve the EventSource constructor for streaming support.
    */

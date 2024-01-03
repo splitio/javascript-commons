@@ -15,7 +15,7 @@ const messageNoFetch = 'Global fetch API is not available.';
 export function splitHttpClientFactory(settings: ISettings, getFetch?: IPlatform['getFetch']): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
-  const fetch = getFetch && getFetch(settings);
+  const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
