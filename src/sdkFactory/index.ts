@@ -71,7 +71,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
-  const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
+  const splitApi = splitApiFactory && splitApiFactory(settings, platform.getFetch, telemetryTracker);
 
   const ctx: ISdkFactoryContext = { splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
 

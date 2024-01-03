@@ -17,18 +17,18 @@ function userKeyToQueryParam(userKey: string) {
  * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
  * @param settings validated settings object
- * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
+ * @param platform object containing environment-specific `getFetch` dependency
  */
 export function splitApiFactory(
   settings: ISettings,
-  platform: Pick<IPlatform, 'getFetch' | 'getOptions'>,
+  getFetch: IPlatform['getFetch'],
   telemetryTracker: ITelemetryTracker
 ): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch, platform.getOptions);
+  const splitHttpClient = splitHttpClientFactory(settings, getFetch);
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer

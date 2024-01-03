@@ -49,7 +49,6 @@ const fullParamsForSyncSDK = {
   platform: {
     getEventSource: jest.fn(),
     getFetch: jest.fn(),
-    getOptions: jest.fn(),
     EventEmitter
   },
   splitApiFactory: jest.fn(),
@@ -81,7 +80,7 @@ function assertModulesCalled(params: any) {
     expect(SignalListenerInstanceMock.start).toBeCalledTimes(1);
   }
   if (params.splitApiFactory) {
-    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform, telemetryTrackerMock]]);
+    expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform.getFetch, telemetryTrackerMock]]);
   }
   if (params.integrationsManagerFactory) {
     expect(params.integrationsManagerFactory.mock.calls).toEqual([[{ settings: params.settings, storage: mockStorage, telemetryTracker: telemetryTrackerMock }]]);

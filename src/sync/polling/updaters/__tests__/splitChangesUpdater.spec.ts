@@ -154,7 +154,7 @@ test('splitChangesUpdater / compute splits mutation with filters', () => {
 describe('splitChangesUpdater', () => {
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
-  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock, EventEmitter }, telemetryTrackerFactory());
+  const splitApi = splitApiFactory(settingsSplitApi, () => fetchMock, telemetryTrackerFactory());
   const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges');
   const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
 
