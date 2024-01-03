@@ -20,7 +20,7 @@ export interface IPlatform {
   /**
    * If provided, it is used to pass additional options to fetch calls.
    */
-  getOptions?: () => object
+  getOptions?: (settings: ISettings) => object
   /**
    * If provided, it is used to retrieve the EventSource constructor for streaming support.
    */

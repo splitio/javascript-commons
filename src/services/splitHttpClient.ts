@@ -12,10 +12,10 @@ const messageNoFetch = 'Global fetch API is not available.';
  * @param options global request options
  * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
  */
-export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'version' | 'runtime' | 'core'>, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(settings: ISettings, getFetch?: () => (IFetch | undefined), getOptions?: (settings: ISettings) => object): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
-  const options = getOptions && getOptions();
+  const options = getOptions && getOptions(settings);
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error

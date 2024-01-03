@@ -20,7 +20,7 @@ function userKeyToQueryParam(userKey: string) {
  * @param platform object containing environment-specific `getFetch` and `getOptions` dependencies
  */
 export function splitApiFactory(
-  settings: Pick<ISettings, 'urls' | 'sync' | 'log' | 'version' | 'runtime' | 'core'>,
+  settings: ISettings,
   platform: Pick<IPlatform, 'getFetch' | 'getOptions'>,
   telemetryTracker: ITelemetryTracker
 ): ISplitApi {
