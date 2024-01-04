@@ -1,7 +1,8 @@
-import { IFetch, IRequestOptions, IResponse, ISplitHttpClient, NetworkError } from './types';
+import { IRequestOptions, IResponse, ISplitHttpClient, NetworkError } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
+import { IPlatform } from '../sdkFactory/types';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -9,13 +10,11 @@ const messageNoFetch = 'Global fetch API is not available.';
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
  *
  * @param settings SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
- * @param options global request options
- * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
+ * @param getFetch retrieves the Fetch API for HTTP requests
  */
-export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'version' | 'runtime' | 'core'>, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(settings: ISettings, getFetch?: IPlatform['getFetch']): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
-  const options = getOptions && getOptions();
   const fetch = getFetch && getFetch();
 
   // if fetch is not available, log Error
@@ -33,11 +32,11 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
-    const request = objectAssign({
+    const request = {
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
       method: reqOpts.method || 'GET',
       body: reqOpts.body
-    }, options);
+    };
 
     // using `fetch(url, options)` signature to work with unfetch, a lightweight ponyfill of fetch API.
     return fetch ? fetch(url, request)

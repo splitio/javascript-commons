@@ -2,6 +2,7 @@ import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/
 import { ISignalListener } from '../listeners/types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import type { sdkManagerFactory } from '../sdkManager';
+import type { splitApiFactory } from '../services/splitApi';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
@@ -17,10 +18,6 @@ export interface IPlatform {
    * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
    */
   getFetch?: () => (IFetch | undefined)
-  /**
-   * If provided, it is used to pass additional options to fetch calls.
-   */
-  getOptions?: () => object
   /**
    * If provided, it is used to retrieve the EventSource constructor for streaming support.
    */
@@ -79,7 +76,7 @@ export interface ISdkFactoryParams {
 
   // Factory of Split Api (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: (settings: ISettings, platform: IPlatform, telemetryTracker: ITelemetryTracker) => ISplitApi,
+  splitApiFactory?: typeof splitApiFactory,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
