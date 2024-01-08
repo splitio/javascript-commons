@@ -56,8 +56,11 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
         // Mark the SDK as destroyed immediately
         sdkReadinessManager.readinessManager.destroy();
 
-        // record stat before flushing data
-        if (!isSharedClient) telemetryTracker.sessionLength();
+        // For main client, release the SDK Key and record stat before flushing data
+        if (!isSharedClient) {
+          releaseApiKey(settings.core.authorizationKey);
+          telemetryTracker.sessionLength();
+        }
 
         // Stop background jobs
         syncManager && syncManager.stop();
@@ -65,9 +68,6 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
         return __flush().then(() => {
           // Cleanup event listeners
           signalListener && signalListener.stop();
-
-          // Release the SDK Key if it is the main client
-          if (!isSharedClient) releaseApiKey(settings.core.authorizationKey);
 
           // @TODO stop only if last client is destroyed
           if (uniqueKeysTracker) uniqueKeysTracker.stop();
