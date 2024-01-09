@@ -1,4 +1,4 @@
-1.13.1 (January 13, 2024)
+1.13.1 (January 11, 2024)
  - Updated client `destroy` method to release SDK key immediately and avoid unexpected warning logs when a factory is created with the same SDK key after the previous one was destroyed.
 
 1.13.0 (January 4, 2024)
