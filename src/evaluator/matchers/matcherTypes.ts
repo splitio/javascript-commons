@@ -1,5 +1,5 @@
 export const matcherTypes: Record<string, number> = {
-  UNDEFINED: 0,
+  UNDEFINED: 0, // Value for unsupported or invalid matchers
   ALL_KEYS: 1,
   IN_SEGMENT: 2,
   WHITELIST: 3,

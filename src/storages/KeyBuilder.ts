@@ -81,9 +81,9 @@ export class KeyBuilder {
 }
 
 /**
- * Generates a murmur32 hash based on the authorization key and the feature flags filter query.
+ * Generates a murmur32 hash based on the authorization key, the feature flags filter query, and version of SplitChanges API.
  * The hash is in hexadecimal format (8 characters max, 32 bits).
  */
 export function getStorageHash(settings: ISettings) {
-  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}`).toString(16);
+  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}::1.0`).toString(16);
 }

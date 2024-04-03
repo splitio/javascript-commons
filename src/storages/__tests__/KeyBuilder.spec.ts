@@ -117,15 +117,15 @@ test('getStorageHash', () => {
   expect(getStorageHash({
     core: { authorizationKey: '<fake-token-rfc>' },
     sync: { __splitFiltersValidation: { queryString: '&names=p1__split,p2__split' } }
-  } as ISettings)).toBe('6a596ded');
+  } as ISettings)).toBe('ebcf61d9');
 
   expect(getStorageHash({
     core: { authorizationKey: '<fake-token-rfc>' },
     sync: { __splitFiltersValidation: { queryString: '&names=p2__split,p3__split' } }
-  } as ISettings)).toBe('18ad36f3');
+  } as ISettings)).toBe('5eafb958');
 
   expect(getStorageHash({
     core: { authorizationKey: '<fake-token-rfc>' },
     sync: { __splitFiltersValidation: { queryString: null } }
-  } as ISettings)).toBe('9507ef4');
+  } as ISettings)).toBe('7601f4e3');
 });
