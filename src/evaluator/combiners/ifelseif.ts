@@ -14,7 +14,7 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
 
     return {
       treatment: CONTROL,
-      label: LabelsConstants.EXCEPTION
+      label: LabelsConstants.UNSUPPORTED_MATCHER_TYPE
     };
   }
 
