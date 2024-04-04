@@ -14,7 +14,7 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
 
     return {
       treatment: CONTROL,
-      label: LabelsConstants.EXCEPTION
+      label: LabelsConstants.UNSUPPORTED_MATCHER_TYPE
     };
   }
 
@@ -50,7 +50,7 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
   }
 
   // if there is none predicates, then there was an error in parsing phase
-  if (!Array.isArray(predicates) || Array.isArray(predicates) && predicates.length === 0) {
+  if (!Array.isArray(predicates) || predicates.length === 0) {
     return unexpectedInputHandler;
   } else {
     return ifElseIfCombiner;
