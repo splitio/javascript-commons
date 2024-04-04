@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT, SPLIT_CHANGES_VERSION } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -54,7 +54,7 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?v=1.0&since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
+      const url = `${urls.sdk}/splitChanges?v=${SPLIT_CHANGES_VERSION}&since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);
