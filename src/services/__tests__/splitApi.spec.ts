@@ -42,7 +42,7 @@ describe('splitApi', () => {
     splitApi.fetchSplitChanges(-1, false, 100);
     [url, { headers }] = fetchMock.mock.calls[3];
     assertHeaders(settings, headers);
-    expect(url).toBe('sdk/splitChanges?v=1.0&since=-1&till=100');
+    expect(url).toBe('sdk/splitChanges?s=1.1&since=-1&till=100');
 
     splitApi.postEventsBulk('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[4][1].headers);

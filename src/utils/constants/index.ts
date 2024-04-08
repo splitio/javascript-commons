@@ -105,4 +105,4 @@ export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
 
-export const SPLIT_CHANGES_VERSION = '1.0';
+export const FLAGS_SPEC = '1.1';
