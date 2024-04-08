@@ -44,8 +44,7 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
       };
     });
 
-    // if matcher's factory can't instanciate the matchers, the expressions array
-    // will be empty
+    // if matcher's factory can't instantiate the matchers, the expressions array will be empty
     if (expressions.length === 0) {
       // reset any data collected during parsing
       predicates = [];
