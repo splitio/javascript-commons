@@ -4,7 +4,7 @@ import { LogLevel } from '../../../types';
 import { getLogLevel } from './commons';
 
 function isLogger(log: any): log is ILogger {
-  return log && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
+  return log !== null && typeof log === 'object' && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
 }
 
 // By default it starts disabled.

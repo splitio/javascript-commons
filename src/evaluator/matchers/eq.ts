@@ -1,7 +1,7 @@
 import { ENGINE_MATCHER_EQUAL } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 
-export function equalToMatcherContext(log: ILogger, ruleAttr: number) /*: Function */ {
+export function equalToMatcherContext(log: ILogger, ruleAttr: number) {
   return function equalToMatcher(runtimeAttr: number): boolean {
     let isEqual = runtimeAttr === ruleAttr;
 

@@ -2,7 +2,7 @@ import { ENGINE_MATCHER_CONTAINS_ANY } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export function containsAnySetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function containsAnySetMatcherContext(log: ILogger, ruleAttr: string[]) {
   return function containsAnyMatcher(runtimeAttr: string[]): boolean {
     let containsAny = false;
 

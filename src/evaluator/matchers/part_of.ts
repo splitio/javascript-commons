@@ -2,7 +2,7 @@ import { findIndex } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
 import { ENGINE_MATCHER_PART_OF } from '../../logger/constants';
 
-export function partOfSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function partOfSetMatcherContext(log: ILogger, ruleAttr: string[]) {
   return function partOfMatcher(runtimeAttr: string[]): boolean {
     // To be part of the length should be minor or equal.
     let isPartOf = runtimeAttr.length <= ruleAttr.length;
