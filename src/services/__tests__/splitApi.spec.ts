@@ -27,7 +27,7 @@ describe('splitApi', () => {
     splitApi.fetchAuth(['key1', 'key2']);
     let [url, { headers }] = fetchMock.mock.calls[0];
     assertHeaders(settings, headers);
-    expect(url).toBe('auth/v2/auth?users=key1&users=key2');
+    expect(url).toBe('auth/v2/auth?s=1.1&users=key1&users=key2');
 
     splitApi.fetchMySegments('userKey');
     [url, { headers }] = fetchMock.mock.calls[1];

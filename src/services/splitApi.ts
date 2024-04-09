@@ -44,11 +44,10 @@ export function splitApiFactory(
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth`;
-      if (userMatchingKeys) { // accounting the possibility that `userMatchingKeys` is undefined (server-side API)
+      let url = `${urls.auth}/v2/auth?s=${FLAGS_SPEC}`;
+      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-        if (queryParams) // accounting the possibility that `userKeys` and thus `queryParams` are empty
-          url += '?' + queryParams;
+        if (queryParams) url += '&' + queryParams;
       }
       return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
