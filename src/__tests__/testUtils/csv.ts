@@ -2,12 +2,11 @@ import fs from 'fs';
 import rl from 'readline';
 
 export function readCSV(filePath: string, delimiter = ','): Promise<string[][]> {
-  const parser = rl.createInterface({
-    terminal: false,
-    input: fs.createReadStream(filePath)
-  });
-
   return new Promise((resolve) => {
+    const parser = rl.createInterface({
+      input: fs.createReadStream(filePath)
+    });
+
     const data: string[][] = [];
 
     parser
