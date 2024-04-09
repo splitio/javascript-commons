@@ -1,11 +1,10 @@
 import { matcherTypes } from '../matcherTypes';
 import { matcherFactory } from '..';
-import fs from 'fs';
-import rl from 'readline';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { readCSV } from '../../../__tests__/testUtils/csv';
 
-test('MATCHER REGEX (STRING) / should match the attribute value only with the string starts with hello', function () {
+test('MATCHER REGEX (STRING) / should match the attribute value only with the string starts with hello', () => {
   // @ts-ignore
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
@@ -16,7 +15,7 @@ test('MATCHER REGEX (STRING) / should match the attribute value only with the st
   expect(matcher('hello dude!')).toBe(true);
 });
 
-test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', function () {
+test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', () => {
   // @ts-ignore
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
@@ -31,31 +30,20 @@ test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', function
   'regex.txt'
 ].forEach(filename => {
 
-  test('MATCHER REGEX (STRING) / validate regex behavior using sample data', (done) => {
-    const parser = rl.createInterface({
-      terminal: false,
-      input: fs.createReadStream(require.resolve(`./mocks/${filename}`))
-    });
+  test('MATCHER REGEX (STRING) / validate regex behavior using sample data', async () => {
+    const lines = await readCSV(require.resolve(`./mocks/${filename}`), '#');
 
-    parser
-      .on('line', line => {
-        const parts = line.toString().split('#');
+    for (const [regex, input, test] of lines) {
+      const isTestTrue = test === 'true';
 
-        if (parts.length === 3) {
-          let [regex, input, test] = parts;
+      // @ts-ignore
+      const matcher = matcherFactory(loggerMock, {
+        type: matcherTypes.MATCHES_STRING,
+        value: regex
+      } as IMatcherDto) as IMatcher;
 
-          const isTestTrue = test === 'true';
-
-          // @ts-ignore
-          const matcher = matcherFactory(loggerMock, {
-            type: matcherTypes.MATCHES_STRING,
-            value: regex
-          } as IMatcherDto) as IMatcher;
-
-          expect(matcher(input) === isTestTrue).toBe(true);
-        }
-      })
-      .on('close', done);
+      expect(matcher(input) === isTestTrue).toBe(true);
+    }
   });
 
 });
