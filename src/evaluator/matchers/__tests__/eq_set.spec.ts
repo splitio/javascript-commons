@@ -4,8 +4,7 @@ import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER EQUAL_TO_SET / should return true ONLY when value is equal to set ["update", "add"]', function () {
-  // @ts-ignore
-  let matcher = matcherFactory(loggerMock, {
+  const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.EQUAL_TO_SET,
     value: ['update', 'add']

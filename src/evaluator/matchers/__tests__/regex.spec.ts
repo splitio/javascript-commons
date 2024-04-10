@@ -5,7 +5,6 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { readCSV } from '../../../__tests__/testUtils/csv';
 
 test('MATCHER REGEX (STRING) / should match the attribute value only with the string starts with hello', () => {
-  // @ts-ignore
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
     value: '^hello'
@@ -16,7 +15,6 @@ test('MATCHER REGEX (STRING) / should match the attribute value only with the st
 });
 
 test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', () => {
-  // @ts-ignore
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.MATCHES_STRING,
     value: 'a.b'
@@ -36,7 +34,6 @@ test('MATCHER REGEX (STRING) / incorrectly matches unicode characters', () => {
     for (const [regex, input, test] of lines) {
       const isTestTrue = test === 'true';
 
-      // @ts-ignore
       const matcher = matcherFactory(loggerMock, {
         type: matcherTypes.MATCHES_STRING,
         value: regex
