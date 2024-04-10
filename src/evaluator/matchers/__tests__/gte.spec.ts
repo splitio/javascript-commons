@@ -4,8 +4,7 @@ import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER GREATER THAN OR EQUAL / should return true ONLY when the value is greater than or equal to 10', function () {
-  // @ts-ignore
-  let matcher = matcherFactory(loggerMock, {
+  const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.GREATER_THAN_OR_EQUAL_TO,
     value: 10
