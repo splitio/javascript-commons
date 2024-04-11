@@ -40,12 +40,12 @@ export class Semver {
 
   public constructor(version: string) {
     // Separate metadata if exists
-    const vSplit = version.split(METADATA_DELIMITER);
-    if (vSplit.length > 2 || vSplit[1] === '') throwError(version);
-    let [vWithoutMetadata, metadata] = vSplit;
+    let index = version.indexOf(METADATA_DELIMITER);
+    let [vWithoutMetadata, metadata] = index === -1 ? [version] : [version.slice(0, index), version.slice(index + 1)];
+    if (metadata === '') throwError(version);
 
     // Set pre-release versions if exists
-    const index = vWithoutMetadata.indexOf(PRERELEASE_DELIMITER);
+    index = vWithoutMetadata.indexOf(PRERELEASE_DELIMITER);
     if (index === -1) {
       this._isStable = true;
       this._preRelease = [];
@@ -94,8 +94,8 @@ export class Semver {
     result = compareStrings(this._patch, toCompare._patch);
     if (result !== 0) return result;
 
-    if (this._isStable && !toCompare._isStable) return 1;
     if (!this._isStable && toCompare._isStable) return -1;
+    if (this._isStable && !toCompare._isStable) return 1;
 
     for (let i = 0, length = Math.min(this._preRelease.length, toCompare._preRelease.length); i < length; i++) {
       const result = compareStrings(this._preRelease[i], toCompare._preRelease[i]);
