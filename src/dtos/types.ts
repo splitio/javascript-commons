@@ -147,7 +147,7 @@ interface IGreaterThanOrEqualToSemverMatcher extends ISplitMatcherBase {
 }
 
 
-interface ILessThanOrEqualToSemberMatcher extends ISplitMatcherBase {
+interface ILessThanOrEqualToSemverMatcher extends ISplitMatcherBase {
   matcherType: 'LESS_THAN_OR_EQUAL_TO_SEMVER',
   stringMatcherData: string
 }
@@ -165,7 +165,7 @@ interface IInListSemverMatcher extends ISplitMatcherBase {
 export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
-  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemberMatcher | IBetweenSemverMatcher | IInListSemverMatcher
+  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher
 
 /** Split object */
 export interface ISplitPartition {

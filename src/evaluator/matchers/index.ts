@@ -16,6 +16,9 @@ import { dependencyMatcherContext } from './dependency';
 import { booleanMatcherContext } from './boolean';
 import { stringMatcherContext } from './string';
 import { equalToSemverMatcherContext } from './semver_eq';
+import { greaterThanEqualToSemverMatcherContext } from './semver_gte';
+import { lessThanEqualToSemverMatcherContext } from './semver_lte';
+import { betweenSemverMatcherContext } from './semver_between';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { IMatcher, IMatcherDto } from '../types';
 import { ILogger } from '../../logger/types';
@@ -40,6 +43,9 @@ const matchers = [
   booleanMatcherContext, // EQUAL_TO_BOOLEAN: 16
   stringMatcherContext, // MATCHES_STRING: 17
   equalToSemverMatcherContext, // EQUAL_TO_SEMVER: 18
+  greaterThanEqualToSemverMatcherContext, // GREATER_THAN_OR_EQUAL_TO_SEMVER: 19
+  lessThanEqualToSemverMatcherContext, // LESS_THAN_OR_EQUAL_TO_SEMVER: 20
+  betweenSemverMatcherContext, // BETWEEN_SEMVER: 21
 ];
 
 /**
