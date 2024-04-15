@@ -40,7 +40,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       type === matcherTypes.WHITELIST ||
       type === matcherTypes.IN_LIST_SEMVER
     ) {
-      value = whitelistTransform(whitelistMatcherData as IWhitelistMatcherData);
+      value = whitelistTransform(whitelistMatcherData);
     } else if (type === matcherTypes.EQUAL_TO) {
       value = numericTransform(unaryNumericMatcherData as IUnaryNumericMatcherData);
       dataType = matcherDataTypes.NUMBER;
@@ -75,14 +75,14 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       type === matcherTypes.CONTAINS_ALL_OF_SET ||
       type === matcherTypes.PART_OF_SET
     ) {
-      value = setTransform(whitelistMatcherData as IWhitelistMatcherData);
+      value = setTransform(whitelistMatcherData);
       dataType = matcherDataTypes.SET;
     } else if (
       type === matcherTypes.STARTS_WITH ||
       type === matcherTypes.ENDS_WITH ||
       type === matcherTypes.CONTAINS_STRING
     ) {
-      value = setTransform(whitelistMatcherData as IWhitelistMatcherData);
+      value = setTransform(whitelistMatcherData);
     } else if (type === matcherTypes.IN_SPLIT_TREATMENT) {
       value = dependencyMatcherData;
       dataType = matcherDataTypes.NOT_SPECIFIED;
