@@ -16,6 +16,8 @@ describe('MATCHER IN LIST SEMVER', () => {
 
     expect(matcher('1.1.1+build')).toBe(true); // "key1" should be true
     expect(matcher('1.1.1+build2')).toBe(false); // "another key" should be false
+
+    expect(() => matcher('invalid')).toThrowError('Unable to convert to Semver, incorrect format: invalid');
   });
 
   test('Empty list', () => {
