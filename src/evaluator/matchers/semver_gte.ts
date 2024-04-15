@@ -1,3 +1,4 @@
+import { ENGINE_MATCHER_GREATER_SEMVER } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { Semver } from '../../utils/Semver';
 
@@ -8,6 +9,8 @@ export function greaterThanEqualToSemverMatcherContext(log: ILogger, ruleAttr: s
     const runtimeSemver = new Semver(runtimeAttr);
 
     const isGreaterThanEqual = runtimeSemver.compare(ruleSemver) >= 0;
+
+    log.debug(ENGINE_MATCHER_GREATER_SEMVER, [runtimeAttr, ruleAttr, isGreaterThanEqual]);
 
     return isGreaterThanEqual;
   };

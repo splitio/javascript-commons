@@ -27,6 +27,11 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.ENGINE_MATCHER_WHITELIST, c.LOG_PREFIX_ENGINE_MATCHER + '[whitelistMatcher] evaluated %s in [%s] => %s'],
   [c.ENGINE_VALUE, c.LOG_PREFIX_ENGINE_VALUE + 'Extracted attribute [%s], [%s] will be used for matching.'],
   [c.ENGINE_SANITIZE, c.LOG_PREFIX_ENGINE + ':sanitize: Attempted to sanitize [%s] which should be of type [%s]. Sanitized and processed value => [%s]'],
+  [c.ENGINE_MATCHER_EQUAL_SEMVER, c.LOG_PREFIX_ENGINE_MATCHER + '[equalToSemverMatcher] is %s equal to %s? %s'],
+  [c.ENGINE_MATCHER_GREATER_SEMVER, c.LOG_PREFIX_ENGINE_MATCHER + '[greaterThanEqualSemverMatcher] is %s greater than %s? %s'],
+  [c.ENGINE_MATCHER_LESS_SEMVER, c.LOG_PREFIX_ENGINE_MATCHER + '[lessThanEqualSemverMatcher] is %s less than %s? %s'],
+  [c.ENGINE_MATCHER_BETWEEN_SEMVER, c.LOG_PREFIX_ENGINE_MATCHER + '[betweenSemverMatcher] is %s between %s and %s? %s'],
+  [c.ENGINE_MATCHER_IN_LIST_SEMVER, c.LOG_PREFIX_ENGINE_MATCHER + '[inListSemverMatcher] is %s in list [%s]? %s'],
   // SDK
   [c.CLEANUP_REGISTERING, c.LOG_PREFIX_CLEANUP + 'Registering cleanup handler %s'],
   [c.CLEANUP_DEREGISTERING, c.LOG_PREFIX_CLEANUP + 'Deregistering cleanup handler %s'],
