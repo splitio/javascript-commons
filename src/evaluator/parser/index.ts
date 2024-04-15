@@ -29,7 +29,12 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
 
     // create a set of pure functions from the matcher's dto
     const expressions = matchers.map((matcherDto: IMatcherDto, index: number) => {
-      const matcher = matcherFactory(log, matcherDto, storage);
+      let matcher: ReturnType<typeof matcherFactory>;
+      try {
+        matcher = matcherFactory(log, matcherDto, storage);
+      } catch (error) {
+        log.error(ENGINE_MATCHER_ERROR, [matcherGroup.matchers[index].matcherType, error]);
+      }
 
       // Evaluator function.
       return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
