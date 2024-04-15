@@ -5,7 +5,7 @@ import { whitelistTransform } from './whitelist';
 import { setTransform } from './set';
 import { numericTransform } from './unaryNumeric';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
-import { IBetweenMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData, IWhitelistMatcherData } from '../../dtos/types';
+import { IBetweenMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
 import { IMatcherDto } from '../types';
 
 /**

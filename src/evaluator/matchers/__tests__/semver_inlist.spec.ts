@@ -21,12 +21,12 @@ describe('MATCHER IN LIST SEMVER', () => {
   });
 
   test('Empty list', () => {
-    const matcher = matcherFactory(loggerMock, {
-      type: matcherTypes.IN_LIST_SEMVER,
-      value: new _Set()
-    } as IMatcherDto) as IMatcher;
-
-    expect(matcher('1.1.1')).toBe(false);
+    expect(() => {
+      matcherFactory(loggerMock, {
+        type: matcherTypes.IN_LIST_SEMVER,
+        value: new _Set()
+      } as IMatcherDto) as IMatcher;
+    }).toThrowError('whitelistMatcherData is required for IN_LIST_SEMVER matcher type');
   });
 
   test('List with invalid value', () => {
