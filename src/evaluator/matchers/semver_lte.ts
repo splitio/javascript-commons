@@ -7,8 +7,8 @@ export function lessThanEqualToSemverMatcherContext(log: ILogger, ruleAttr: stri
   return function lessThanEqualToSemverMatcher(runtimeAttr: string): boolean {
     const runtimeSemver = new Semver(runtimeAttr);
 
-    const isLessThenEqual = runtimeSemver.compare(ruleSemver) <= 0;
+    const isLessThanEqual = runtimeSemver.compare(ruleSemver) <= 0;
 
-    return isLessThenEqual;
+    return isLessThanEqual;
   };
 }

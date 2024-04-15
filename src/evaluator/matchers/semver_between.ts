@@ -6,8 +6,8 @@ export function betweenSemverMatcherContext(log: ILogger, ruleAttr: IBetweenStri
   const startSemver = new Semver(ruleAttr.start);
   const endSemver = new Semver(ruleAttr.end);
 
-  return function betweenSemverMatcher(key: string): boolean {
-    const runtimeSemver = new Semver(key);
+  return function betweenSemverMatcher(runtimeAttr: string): boolean {
+    const runtimeSemver = new Semver(runtimeAttr);
 
     const isBetween = startSemver.compare(runtimeSemver) <= 0 && endSemver.compare(runtimeSemver) >= 0;
 
