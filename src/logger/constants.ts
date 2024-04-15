@@ -25,7 +25,6 @@ export const ENGINE_MATCHER_LESS = 16;
 export const ENGINE_MATCHER_PART_OF = 17;
 export const ENGINE_MATCHER_SEGMENT = 18;
 export const ENGINE_MATCHER_STRING = 19;
-export const ENGINE_MATCHER_STRING_INVALID = 20;
 export const ENGINE_MATCHER_STARTS_WITH = 21;
 export const ENGINE_MATCHER_WHITELIST = 22;
 export const ENGINE_VALUE = 23;
@@ -131,6 +130,7 @@ export const ERROR_NOT_BOOLEAN = 325;
 export const ERROR_MIN_CONFIG_PARAM = 326;
 export const ERROR_TOO_MANY_SETS = 327;
 export const ERROR_SETS_FILTER_EXCLUSIVE = 328;
+export const ENGINE_MATCHER_ERROR = 329;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';

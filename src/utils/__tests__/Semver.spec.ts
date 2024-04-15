@@ -9,6 +9,9 @@ describe('Semver', () => {
     for (const [invalidVersion] of lines) {
       expect(() => new Semver(invalidVersion)).toThrow();
     }
+
+    // @ts-expect-error No string provided
+    expect(() => new Semver(null)).toThrow('Unable to convert to Semver, incorrect format: null');
   });
 
   test('should correctly parse the version', async () => {
