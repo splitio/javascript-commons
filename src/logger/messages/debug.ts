@@ -23,7 +23,6 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.ENGINE_MATCHER_PART_OF, c.LOG_PREFIX_ENGINE_MATCHER + '[partOfMatcher] %s is part of %s? %s'],
   [c.ENGINE_MATCHER_SEGMENT, c.LOG_PREFIX_ENGINE_MATCHER + '[segmentMatcher] evaluated %s / %s => %s'],
   [c.ENGINE_MATCHER_STRING, c.LOG_PREFIX_ENGINE_MATCHER + '[stringMatcher] does %s matches with %s? %s'],
-  [c.ENGINE_MATCHER_STRING_INVALID, c.LOG_PREFIX_ENGINE_MATCHER + '[stringMatcher] %s is an invalid regex'],
   [c.ENGINE_MATCHER_STARTS_WITH, c.LOG_PREFIX_ENGINE_MATCHER + '[startsWithMatcher] %s starts with %s? %s'],
   [c.ENGINE_MATCHER_WHITELIST, c.LOG_PREFIX_ENGINE_MATCHER + '[whitelistMatcher] evaluated %s in [%s] => %s'],
   [c.ENGINE_VALUE, c.LOG_PREFIX_ENGINE_VALUE + 'Extracted attribute [%s], [%s] will be used for matching.'],
