@@ -1,3 +1,5 @@
+import { isString } from '../utils/lang';
+
 const NUMERIC_IDENTIFIER_REGEX = /^[0-9]+$/;
 
 const METADATA_DELIMITER = '+';
@@ -39,6 +41,8 @@ export class Semver {
   public readonly version: string;
 
   public constructor(version: string) {
+    if (!isString(version)) throwError(version);
+
     // Separate metadata if exists
     let index = version.indexOf(METADATA_DELIMITER);
     let [vWithoutMetadata, metadata] = index === -1 ? [version] : [version.slice(0, index), version.slice(index + 1)];

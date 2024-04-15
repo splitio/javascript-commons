@@ -7,10 +7,11 @@ import { ifElseIfCombinerContext } from '../combiners/ifelseif';
 import { andCombinerContext } from '../combiners/and';
 import { thenable } from '../../utils/promise/thenable';
 import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
-import { ISplitCondition } from '../../dtos/types';
+import { ISplitCondition, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
+import { ENGINE_MATCHER_ERROR } from '../../logger/constants';
 
 export function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
@@ -27,19 +28,30 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
     const matchers = matchersTransform(matcherGroup.matchers);
 
     // create a set of pure functions from the matcher's dto
-    const expressions = matchers.map((matcherDto: IMatcherDto) => {
-      const matcher = matcherFactory(log, matcherDto, storage);
+    const expressions = matchers.map((matcherDto: IMatcherDto, index: number) => {
+      let matcher: ReturnType<typeof matcherFactory>;
+      try {
+        matcher = matcherFactory(log, matcherDto, storage);
+      } catch (error) {
+        log.error(ENGINE_MATCHER_ERROR, [matcherGroup.matchers[index].matcherType, error]);
+      }
 
       // Evaluator function.
       return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
-        const result = value !== undefined && matcher ? matcher(value, splitEvaluator) : false;
+        let result: MaybeThenable<boolean> = false;
 
-        if (thenable(result)) {
-          // @ts-ignore
-          return result.then(res => Boolean(res ^ matcherDto.negate));
+        if (value !== undefined && matcher) {
+          try {
+            result = matcher(value, splitEvaluator);
+          } catch (error) {
+            log.error(ENGINE_MATCHER_ERROR, [matcherGroup.matchers[index].matcherType, error]);
+          }
         }
-        // @ts-ignore
+
+        if (thenable(result)) { // @ts-ignore
+          return result.then(res => Boolean(res ^ matcherDto.negate));
+        } // @ts-ignore
         return Boolean(result ^ matcherDto.negate);
       };
     });
