@@ -29,7 +29,12 @@ export function _sprintf(format: string = '', args: any[] = []): string {
   let i = 0;
   return format.replace(/%s/g, function () {
     let arg = args[i++];
-    return isObject(arg) || Array.isArray(arg) ? JSON.stringify(arg) : arg;
+    if (isObject(arg) || Array.isArray(arg)) {
+      try {
+        arg = JSON.stringify(arg);
+      } catch (e) { /* empty */ }
+    }
+    return arg;
   });
 }
 
