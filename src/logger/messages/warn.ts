@@ -4,7 +4,7 @@ import { codesError } from './error';
 export const codesWarn: [number, string][] = codesError.concat([
   // evaluator
   [c.ENGINE_VALUE_INVALID, c.LOG_PREFIX_ENGINE_VALUE + 'Value %s doesn\'t match with expected type.'],
-  [c.ENGINE_VALUE_NO_ATTRIBUTES, c.LOG_PREFIX_ENGINE_VALUE + 'Defined attribute [%s], no attributes received.'],
+  [c.ENGINE_VALUE_NO_ATTRIBUTES, c.LOG_PREFIX_ENGINE_VALUE + 'Defined attribute `%s`. No attributes received.'],
   // synchronizer
   [c.SYNC_MYSEGMENTS_FETCH_RETRY, c.LOG_PREFIX_SYNC_MYSEGMENTS + 'Retrying download of segments #%s. Reason: %s'],
   [c.SYNC_SPLITS_FETCH_FAILS, c.LOG_PREFIX_SYNC_SPLITS + 'Error while doing fetch of feature flags. %s'],
