@@ -1,6 +1,6 @@
 import { Engine } from './Engine';
 import { thenable } from '../utils/promise/thenable';
-import * as LabelsConstants from '../utils/labels';
+import { EXCEPTION, SPLIT_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
@@ -12,7 +12,7 @@ import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
 const treatmentException = {
   treatment: CONTROL,
-  label: LabelsConstants.EXCEPTION,
+  label: EXCEPTION,
   config: null
 };
 
@@ -143,7 +143,7 @@ function getEvaluation(
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
     treatment: CONTROL,
-    label: LabelsConstants.SPLIT_NOT_FOUND,
+    label: SPLIT_NOT_FOUND,
     config: null
   };
 
