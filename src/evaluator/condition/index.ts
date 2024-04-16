@@ -1,6 +1,6 @@
 import { getTreatment, shouldApplyRollout } from './engineUtils';
 import { thenable } from '../../utils/promise/thenable';
-import * as LabelsConstants from '../../utils/labels';
+import { NOT_IN_SPLIT } from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 import { SplitIO } from '../../types';
@@ -30,7 +30,7 @@ export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) 
     if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation as number, (key as SplitIO.SplitKeyObject).bucketingKey as string, trafficAllocationSeed as number)) {
       return {
         treatment: undefined, // treatment value is assigned later
-        label: LabelsConstants.NOT_IN_SPLIT
+        label: NOT_IN_SPLIT
       };
     }
 
