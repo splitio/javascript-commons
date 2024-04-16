@@ -2,7 +2,7 @@ import { get } from '../utils/lang';
 import { parser } from './parser';
 import { keyParser } from '../utils/key';
 import { thenable } from '../utils/promise/thenable';
-import * as LabelsConstants from '../utils/labels';
+import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { SplitIO } from '../types';
@@ -13,7 +13,7 @@ import { ILogger } from '../logger/types';
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
     treatment: get(result, 'treatment', defaultTreatment),
-    label: get(result, 'label', LabelsConstants.NO_CONDITION_MATCH)
+    label: get(result, 'label', NO_CONDITION_MATCH)
   };
 }
 
@@ -55,16 +55,16 @@ export class Engine {
     } catch (err) {
       return {
         treatment: CONTROL,
-        label: LabelsConstants.EXCEPTION
+        label: EXCEPTION
       };
     }
 
     if (this.isGarbage()) {
       treatment = CONTROL;
-      label = LabelsConstants.SPLIT_ARCHIVED;
+      label = SPLIT_ARCHIVED;
     } else if (killed) {
       treatment = defaultTreatment;
-      label = LabelsConstants.SPLIT_KILLED;
+      label = SPLIT_KILLED;
     } else {
       const evaluation = this.evaluator(
         parsedKey,
@@ -98,4 +98,3 @@ export class Engine {
     return this.baseInfo.changeNumber;
   }
 }
-
