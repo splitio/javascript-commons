@@ -2,16 +2,13 @@ import { matcherTypes } from '../matcherTypes';
 import { matcherFactory } from '../index';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { _Set } from '../../../utils/lang/sets';
 
 describe('MATCHER IN LIST SEMVER', () => {
 
   test('List with some values', () => {
-    const list = new _Set(['1.1.1', '1.1.1+build']);
-
     const matcher = matcherFactory(loggerMock, {
       type: matcherTypes.IN_LIST_SEMVER,
-      value: list
+      value: ['1.1.1', '1.1.1+build']
     } as IMatcherDto) as IMatcher;
 
     expect(matcher('1.1.1+build')).toBe(true); // "key1" should be true
@@ -24,7 +21,7 @@ describe('MATCHER IN LIST SEMVER', () => {
     expect(() => {
       matcherFactory(loggerMock, {
         type: matcherTypes.IN_LIST_SEMVER,
-        value: new _Set()
+        value: [] as string[]
       } as IMatcherDto) as IMatcher;
     }).toThrowError('whitelistMatcherData is required for IN_LIST_SEMVER matcher type');
   });
@@ -33,7 +30,7 @@ describe('MATCHER IN LIST SEMVER', () => {
     expect(() => {
       matcherFactory(loggerMock, {
         type: matcherTypes.IN_LIST_SEMVER,
-        value: new _Set(['invalid', '1.2.3'])
+        value: ['invalid', '1.2.3']
       } as IMatcherDto) as IMatcher;
     }).toThrowError('Unable to convert to Semver, incorrect format: invalid');
   });

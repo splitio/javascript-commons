@@ -5,7 +5,7 @@ import { thenable } from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';
 import { ENGINE_MATCHER_DEPENDENCY, ENGINE_MATCHER_DEPENDENCY_PRE } from '../../logger/constants';
 
-export function dependencyMatcherContext(log: ILogger, { split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync) {
+export function dependencyMatcherContext({ split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync, log: ILogger) {
 
   function checkTreatment(evaluation: IEvaluation, acceptableTreatments: string[], parentName: string) {
     let matches = false;
