@@ -16,7 +16,12 @@ export const matcherTypes: Record<string, number> = {
   CONTAINS_STRING: 14,
   IN_SPLIT_TREATMENT: 15,
   EQUAL_TO_BOOLEAN: 16,
-  MATCHES_STRING: 17
+  MATCHES_STRING: 17,
+  EQUAL_TO_SEMVER: 18,
+  GREATER_THAN_OR_EQUAL_TO_SEMVER: 19,
+  LESS_THAN_OR_EQUAL_TO_SEMVER: 20,
+  BETWEEN_SEMVER: 21,
+  IN_LIST_SEMVER: 22,
 };
 
 export const matcherDataTypes = {

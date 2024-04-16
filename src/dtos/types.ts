@@ -17,6 +17,11 @@ export interface IBetweenMatcherData {
   end: number
 }
 
+export interface IBetweenStringMatcherData {
+  start: string
+  end: string
+}
+
 export interface IWhitelistMatcherData {
   whitelist: string[]
 }
@@ -44,6 +49,7 @@ interface ISplitMatcherBase {
   dependencyMatcherData?: null | IDependencyMatcherData
   booleanMatcherData?: null | boolean
   stringMatcherData?: null | string
+  betweenStringMatcherData?: null | IBetweenStringMatcherData
 }
 
 interface IAllKeysMatcher extends ISplitMatcherBase {
@@ -130,9 +136,36 @@ interface IMatchesStringMatcher extends ISplitMatcherBase {
   stringMatcherData: string
 }
 
+interface IEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+interface IGreaterThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'GREATER_THAN_OR_EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+
+interface ILessThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'LESS_THAN_OR_EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+interface IBetweenSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'BETWEEN_SEMVER'
+  betweenStringMatcherData: IBetweenStringMatcherData
+}
+
+interface IInListSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_LIST_SEMVER',
+  whitelistMatcherData: IWhitelistMatcherData
+}
+
 export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
-  IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher
+  IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
+  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher
 
 /** Split object */
 export interface ISplitPartition {
