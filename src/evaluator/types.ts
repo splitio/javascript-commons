@@ -10,6 +10,7 @@ export interface IDependencyMatcherValue {
 
 export interface IMatcherDto {
   type: number
+  name: string
   value?: string | number | boolean | string[] | IDependencyMatcherData | IBetweenMatcherData | IBetweenStringMatcherData | null
 
   attribute: string | null

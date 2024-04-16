@@ -28,12 +28,12 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
     const matchers = matchersTransform(matcherGroup.matchers);
 
     // create a set of pure functions from the matcher's dto
-    const expressions = matchers.map((matcherDto: IMatcherDto, index: number) => {
+    const expressions = matchers.map((matcherDto: IMatcherDto) => {
       let matcher: ReturnType<typeof matcherFactory>;
       try {
         matcher = matcherFactory(log, matcherDto, storage);
       } catch (error) {
-        log.error(ENGINE_MATCHER_ERROR, [matcherGroup.matchers[index].matcherType, error]);
+        log.error(ENGINE_MATCHER_ERROR, [matcherDto.name, error]);
       }
 
       // Evaluator function.
@@ -45,13 +45,12 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
           try {
             result = matcher(value, splitEvaluator);
           } catch (error) {
-            // @TODO should we propagate the error, to create impressions with label EXCEPTION?
-            log.error(ENGINE_MATCHER_ERROR, [matcherGroup.matchers[index].matcherType, error]);
+            log.error(ENGINE_MATCHER_ERROR, [matcherDto.name, error]);
           }
         }
 
         function handleResult(result: boolean) {
-          log.debug(ENGINE_MATCHER_RESULT, [matcherGroup.matchers[index].matcherType, result, matcherDto.value, value]); // @ts-ignore
+          log.debug(ENGINE_MATCHER_RESULT, [matcherDto.name, result, matcherDto.value, value]); // @ts-ignore
           return Boolean(result ^ matcherDto.negate);
         }
 
