@@ -19,6 +19,7 @@ import { equalToSemverMatcherContext } from './semver_eq';
 import { greaterThanEqualToSemverMatcherContext } from './semver_gte';
 import { lessThanEqualToSemverMatcherContext } from './semver_lte';
 import { betweenSemverMatcherContext } from './semver_between';
+import { inListSemverMatcherContext } from './semver_inlist';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { IMatcher, IMatcherDto } from '../types';
 import { ILogger } from '../../logger/types';
@@ -46,6 +47,7 @@ const matchers = [
   greaterThanEqualToSemverMatcherContext, // GREATER_THAN_OR_EQUAL_TO_SEMVER: 19
   lessThanEqualToSemverMatcherContext, // LESS_THAN_OR_EQUAL_TO_SEMVER: 20
   betweenSemverMatcherContext, // BETWEEN_SEMVER: 21
+  inListSemverMatcherContext, // IN_LIST_SEMVER: 22
 ];
 
 /**
