@@ -1,4 +1,4 @@
-import { IBetweenMatcherData, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
+import { IBetweenMatcherData, IBetweenStringMatcherData, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { ISet } from '../utils/lang/sets';
 import { SplitIO } from '../types';
@@ -11,7 +11,7 @@ export interface IDependencyMatcherValue {
 
 export interface IMatcherDto {
   type: number
-  value?: string | number | boolean | string[] | IDependencyMatcherData | ISet<string> | IBetweenMatcherData | null
+  value?: string | number | boolean | string[] | IDependencyMatcherData | ISet<string> | IBetweenMatcherData | IBetweenStringMatcherData | null
 
   attribute: string | null
   negate: boolean

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { evaluateFeatures, evaluateFeaturesByFlagSets } from '../index';
-import * as LabelsConstants from '../../utils/labels';
+import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { _Set } from '../../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../../logger/constants';
@@ -47,7 +47,7 @@ test('EVALUATOR - Multiple evaluations at once  / should return label exception,
   const expectedOutput = {
     throw_exception: {
       treatment: 'control',
-      label: LabelsConstants.EXCEPTION,
+      label: EXCEPTION,
       config: null
     }
   };
@@ -73,7 +73,7 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: LabelsConstants.SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
     },
   };
 
@@ -91,27 +91,27 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
   // assert regular
   expect(multipleEvaluationAtOnce['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
   // assert killed
-  expect(multipleEvaluationAtOnce['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
+  expect(multipleEvaluationAtOnce['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED });
   // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
   // assert archived
-  expect(multipleEvaluationAtOnce['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
+  expect(multipleEvaluationAtOnce['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
   // assert trafficAllocation1
-  expect(multipleEvaluationAtOnce['trafficAlocation1']).toEqual({ ...expectedOutput['config'], label: LabelsConstants.NOT_IN_SPLIT, config: null, treatment: 'off' });
+  expect(multipleEvaluationAtOnce['trafficAlocation1']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, config: null, treatment: 'off' });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.
 
   // assert killedWithConfig
-  expect(multipleEvaluationAtOnce['killedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'off', label: LabelsConstants.SPLIT_KILLED });
+  expect(multipleEvaluationAtOnce['killedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'off', label: SPLIT_KILLED });
   // If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
   // assert archivedWithConfig
-  expect(multipleEvaluationAtOnce['archivedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
+  expect(multipleEvaluationAtOnce['archivedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
   // assert trafficAlocation1WithConfig
-  expect(multipleEvaluationAtOnce['trafficAlocation1WithConfig']).toEqual({ ...expectedOutput['config'], label: LabelsConstants.NOT_IN_SPLIT, treatment: 'off' });
+  expect(multipleEvaluationAtOnce['trafficAlocation1WithConfig']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, treatment: 'off' });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.
 
 });
@@ -124,7 +124,7 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: LabelsConstants.SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
     },
   };
 
@@ -150,11 +150,11 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
     // assert regular
     expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
     // assert killed
-    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: LabelsConstants.SPLIT_KILLED });
+    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED });
     // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
     // assert archived
-    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: LabelsConstants.SPLIT_ARCHIVED, config: null });
+    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
     // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
     // assert not_existent_split not in evaluation if it is not related to defined flag sets
