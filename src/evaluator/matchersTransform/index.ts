@@ -31,7 +31,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
     let type = matcherTypesMapper(matcherType);
     // As default input data type we use string (even for ALL_KEYS)
     let dataType = matcherDataTypes.STRING;
-    let value: IMatcherDto['value'] = undefined;
+    let value = undefined;
 
     if (type === matcherTypes.IN_SEGMENT) {
       value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
