@@ -102,6 +102,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       attribute,        // attribute over we should do the matching, undefined means 'use the key'
       negate,           // should we negate the result?
       type,             // which kind of matcher we should evaluate
+      name: matcherType,// name of the matcher for logging purposes
       value,            // metadata used for the matching
       dataType          // runtime input data type
     };

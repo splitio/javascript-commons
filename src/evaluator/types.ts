@@ -11,6 +11,7 @@ export interface IDependencyMatcherValue {
 
 export interface IMatcherDto {
   type: number
+  name: string
   value?: string | number | boolean | string[] | IDependencyMatcherData | ISet<string> | IBetweenMatcherData | IBetweenStringMatcherData | null
 
   attribute: string | null
