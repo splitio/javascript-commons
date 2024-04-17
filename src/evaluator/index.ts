@@ -151,7 +151,7 @@ function getEvaluation(
     const split = Engine.parse(log, splitJSON, storage);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
-    // If the storage is async and the evaluated feature flag is type IN_SPLIT_TREATMENT or IN_SEGMENT, evaluation is thenable
+    // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
         result.changeNumber = split.getChangeNumber();
