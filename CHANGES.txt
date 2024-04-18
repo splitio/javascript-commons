@@ -1,4 +1,5 @@
 1.14.0 (April XX, 2024)
+ - Added support for Semver matchers.
  - Updated impression label to 'unsupported matcher type' when the matcher type is not supported by the SDK.
 
 1.13.1 (January 10, 2024)

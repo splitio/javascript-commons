@@ -2,7 +2,6 @@ import { findIndex } from '../../utils/lang';
 import { matcherTypes, matcherTypesMapper, matcherDataTypes } from '../matchers/matcherTypes';
 import { segmentTransform } from './segment';
 import { whitelistTransform } from './whitelist';
-import { setTransform } from './set';
 import { numericTransform } from './unaryNumeric';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
 import { IBetweenMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
@@ -36,11 +35,6 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
 
     if (type === matcherTypes.IN_SEGMENT) {
       value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
-    } else if (
-      type === matcherTypes.WHITELIST ||
-      type === matcherTypes.IN_LIST_SEMVER
-    ) {
-      value = whitelistTransform(whitelistMatcherData);
     } else if (type === matcherTypes.EQUAL_TO) {
       value = numericTransform(unaryNumericMatcherData as IUnaryNumericMatcherData);
       dataType = matcherDataTypes.NUMBER;
@@ -75,14 +69,16 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       type === matcherTypes.CONTAINS_ALL_OF_SET ||
       type === matcherTypes.PART_OF_SET
     ) {
-      value = setTransform(whitelistMatcherData);
+      value = whitelistTransform(whitelistMatcherData);
       dataType = matcherDataTypes.SET;
     } else if (
+      type === matcherTypes.WHITELIST ||
+      type === matcherTypes.IN_LIST_SEMVER ||
       type === matcherTypes.STARTS_WITH ||
       type === matcherTypes.ENDS_WITH ||
       type === matcherTypes.CONTAINS_STRING
     ) {
-      value = setTransform(whitelistMatcherData);
+      value = whitelistTransform(whitelistMatcherData);
     } else if (type === matcherTypes.IN_SPLIT_TREATMENT) {
       value = dependencyMatcherData;
       dataType = matcherDataTypes.NOT_SPECIFIED;
