@@ -2,7 +2,7 @@ import { ENGINE_MATCHER_ENDS_WITH } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { endsWith } from '../../utils/lang';
 
-export function endsWithMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function endsWithMatcherContext(log: ILogger, ruleAttr: string[]) {
   return function endsWithMatcher(runtimeAttr: string): boolean {
     let strEndsWith = ruleAttr.some(e => endsWith(runtimeAttr, e));
 

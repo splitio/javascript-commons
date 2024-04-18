@@ -1,6 +1,6 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ILoggerOptions, ILogger } from './types';
-import { find } from '../utils/lang';
+import { find, isObject } from '../utils/lang';
 import { LogLevel } from '../types';
 import { IMap, _Map } from '../utils/lang/maps';
 
@@ -28,7 +28,13 @@ export function isLogLevelString(str: string): str is LogLevel {
 export function _sprintf(format: string = '', args: any[] = []): string {
   let i = 0;
   return format.replace(/%s/g, function () {
-    return args[i++];
+    let arg = args[i++];
+    if (isObject(arg) || Array.isArray(arg)) {
+      try {
+        arg = JSON.stringify(arg);
+      } catch (e) { /* empty */ }
+    }
+    return arg;
   });
 }
 

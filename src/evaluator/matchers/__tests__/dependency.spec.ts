@@ -107,7 +107,6 @@ test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
       split: 'always-off',
-      // @ts-ignore
       treatments: [null, [1, 2], 3, {}, true, 'on']
     }
   } as IMatcherDto, mockStorage as IStorageSync) as IMatcher;

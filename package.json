@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "1.13.2-rc.2",
+  "version": "1.13.2-rc.5",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -63,7 +63,6 @@
     "@typescript-eslint/eslint-plugin": "^6.6.0",
     "@typescript-eslint/parser": "^6.6.0",
     "cross-env": "^7.0.2",
-    "csv-streamify": "^4.0.0",
     "eslint": "^8.48.0",
     "eslint-plugin-compat": "^4.2.0",
     "eslint-plugin-import": "^2.25.3",

@@ -2,7 +2,7 @@ import { ENGINE_MATCHER_EQUAL_TO_SET } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export function equalToSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function equalToSetMatcherContext(log: ILogger, ruleAttr: string[]) {
   return function equalToSetMatcher(runtimeAttr: string[]): boolean {
     // Length being the same is the first condition.
     let isEqual = runtimeAttr.length === ruleAttr.length;
