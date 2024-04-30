@@ -53,7 +53,7 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?s=${FLAGS_SPEC}&since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
+      const url = `${urls.sdk}/splitChanges?s=${FLAGS_SPEC}&since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);
