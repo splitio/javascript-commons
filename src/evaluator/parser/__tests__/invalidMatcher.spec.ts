@@ -29,7 +29,7 @@ test('PARSER / handle invalid matcher as control', async function () {
   let evaluation = await evaluator('aaaaa', 31);
 
   expect(evaluation.treatment).toBe('control'); // return control when invalid matcher
-  expect(evaluation.label).toBe('unsupported matcher type'); // track invalid as unsupported matcher type
+  expect(evaluation.label).toBe('targeting rule type unsupported by sdk'); // track invalid as targeting rule type unsupported by sdk
 });
 
 test('PARSER / handle invalid matcher as control (complex example)', async function () {
@@ -128,7 +128,7 @@ test('PARSER / handle invalid matcher as control (complex example)', async funct
 
   for (let ev of [ev1, ev2, ev3]) {
     expect(ev.treatment).toBe('control'); // return control when invalid matcher
-    expect(ev.label).toBe('unsupported matcher type'); // track invalid as unsupported matcher type
+    expect(ev.label).toBe('targeting rule type unsupported by sdk'); // track invalid as targeting rule type unsupported by sdk
   }
 });
 
@@ -254,6 +254,6 @@ test('PARSER / handle invalid matcher as control (complex example mixing invalid
 
   for (let ev of [ev1, ev2, ev3]) {
     expect(ev.treatment).toBe('control'); // return control when invalid matcher
-    expect(ev.label).toBe('unsupported matcher type'); // track invalid as unsupported matcher type
+    expect(ev.label).toBe('targeting rule type unsupported by sdk'); // track invalid as targeting rule type unsupported by sdk
   }
 });
