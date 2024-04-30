@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT, FLAGS_SPEC } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -44,17 +44,16 @@ export function splitApiFactory(
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth`;
-      if (userMatchingKeys) { // accounting the possibility that `userMatchingKeys` is undefined (server-side API)
+      let url = `${urls.auth}/v2/auth?s=${FLAGS_SPEC}`;
+      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-        if (queryParams) // accounting the possibility that `userKeys` and thus `queryParams` are empty
-          url += '?' + queryParams;
+        if (queryParams) url += '&' + queryParams;
       }
       return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
+      const url = `${urls.sdk}/splitChanges?s=${FLAGS_SPEC}&since=${since}${till ? '&till=' + till : ''}${filterQueryString || ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);

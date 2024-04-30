@@ -1,6 +1,7 @@
 1.14.0 (April XX, 2024)
  - Added support for Semver matchers.
  - Updated impression label to 'unsupported matcher type' when the matcher type is not supported by the SDK.
+ - Updated Split API client to include the flags spec version query parameter for the `splitChanges` and `auth` endpoints.
 
 1.13.1 (January 10, 2024)
  - Updated client `destroy` method to release SDK key immediately and avoid unexpected warning logs when a factory is created with the same SDK key after the previous one was destroyed.
