@@ -1,6 +1,6 @@
 1.14.0 (April XX, 2024)
- - Added support for Semver matchers.
- - Updated impression label to 'unsupported matcher type' when the matcher type is not supported by the SDK.
+ - Added support for targeting rules based on semantic versions (https://semver.org/).
+ - Added special impression label "targeting rule type unsupported by sdk" when the matcher type is not supported by the SDK, which returns 'control' treatment.
  - Updated Split API client to include the flags spec version query parameter for the `splitChanges` and `auth` endpoints.
 
 1.13.1 (January 10, 2024)

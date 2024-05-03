@@ -96,7 +96,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
         return wrapper.get(keys.buildHashKey()).then((hash) => {
           const currentHash = getStorageHash(settings);
           if (hash !== currentHash) {
-            log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key or feature flag filter criteria was modified). Clearing cache');
+            log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key, flags filter criteria or flags spec version was modified). Clearing cache');
             return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
               return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
             }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
