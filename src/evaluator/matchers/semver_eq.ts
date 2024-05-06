@@ -1,7 +1,6 @@
-import { ILogger } from '../../logger/types';
 import { Semver } from '../../utils/Semver';
 
-export function equalToSemverMatcherContext(log: ILogger, ruleAttr: string) {
+export function equalToSemverMatcherContext(ruleAttr: string) {
   const ruleSemver = new Semver(ruleAttr);
 
   return function equalToSemverMatcher(runtimeAttr: string): boolean {

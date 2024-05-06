@@ -1,8 +1,7 @@
 import { IBetweenStringMatcherData } from '../../dtos/types';
-import { ILogger } from '../../logger/types';
 import { Semver } from '../../utils/Semver';
 
-export function betweenSemverMatcherContext(log: ILogger, ruleAttr: IBetweenStringMatcherData) {
+export function betweenSemverMatcherContext(ruleAttr: IBetweenStringMatcherData) {
   const startSemver = new Semver(ruleAttr.start);
   const endSemver = new Semver(ruleAttr.end);
 

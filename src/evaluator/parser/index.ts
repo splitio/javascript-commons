@@ -11,7 +11,7 @@ import { ISplitCondition, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { ENGINE_MATCHER_ERROR } from '../../logger/constants';
+import { ENGINE_MATCHER_ERROR, ENGINE_MATCHER_RESULT } from '../../logger/constants';
 
 export function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
@@ -49,10 +49,14 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
           }
         }
 
-        if (thenable(result)) { // @ts-ignore
-          return result.then(res => Boolean(res ^ matcherDto.negate));
-        } // @ts-ignore
-        return Boolean(result ^ matcherDto.negate);
+        function handleResult(result: boolean) {
+          log.debug(ENGINE_MATCHER_RESULT, [matcherDto.name, result, matcherDto.value, value]); // @ts-ignore
+          return Boolean(result ^ matcherDto.negate);
+        }
+
+        return thenable(result) ?
+          result.then(handleResult) :
+          handleResult(result);
       };
     });
 
