@@ -104,3 +104,5 @@ export const NON_REQUESTED = 1;
 export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
+
+export const FLAGS_SPEC = '1.1';

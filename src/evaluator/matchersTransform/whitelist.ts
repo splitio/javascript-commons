@@ -1,9 +1,8 @@
-import { IWhitelistMatcherData } from '../../dtos/types';
-import { _Set } from '../../utils/lang/sets';
+import { ISplitMatcher } from '../../dtos/types';
 
 /**
- * Extract whitelist as a set. Used by 'WHITELIST' matcher.
+ * Extract whitelist array.
  */
-export function whitelistTransform(whitelistObject: IWhitelistMatcherData) {
-  return new _Set(whitelistObject.whitelist);
+export function whitelistTransform(whitelistObject: ISplitMatcher['whitelistMatcherData']) {
+  return whitelistObject && whitelistObject.whitelist;
 }

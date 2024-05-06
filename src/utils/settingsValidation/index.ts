@@ -61,7 +61,7 @@ export const base = {
     telemetry: 'https://telemetry.split.io/api',
   },
 
-  // Defines which kind of storage we should instanciate.
+  // Defines which kind of storage we should instantiate.
   storage: undefined,
 
   // Defines if the logs are enabled, SDK wide.

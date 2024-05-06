@@ -4,8 +4,7 @@ import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["a", "b", "c"]', function () {
-  // @ts-ignore
-  let matcher = matcherFactory(loggerMock, {
+  const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.ENDS_WITH,
     value: ['a', 'b', 'c']
@@ -19,8 +18,7 @@ test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["a",
 });
 
 test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["demo.test.org"]', function () {
-  // @ts-ignore
-  let matcher = matcherFactory(loggerMock, {
+  const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.ENDS_WITH,
     value: ['demo.test.org']

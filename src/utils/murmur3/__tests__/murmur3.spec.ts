@@ -1,9 +1,8 @@
-import fs from 'fs';
-import rl from 'readline';
 import * as murmur3 from '../murmur3';
 import { hash128 as hash128x64 } from '../murmur3_128';
 import { hash128 as hash128x86 } from '../murmur3_128_x86';
 import { hash64 } from '../murmur3_64';
+import { readCSV } from '../../../__tests__/testUtils/csv';
 
 [
   'murmur3-sample-v4.csv',
@@ -13,28 +12,18 @@ import { hash64 } from '../murmur3_64';
   'murmur3-sample-double-treatment-users.csv'
 ].forEach(filename => {
 
-  test('MURMUR3 32 / validate hashing behavior using sample data', (done) => {
-    const parser = rl.createInterface({
-      terminal: false,
-      input: fs.createReadStream(require.resolve(`./mocks/${filename}`))
-    });
+  test('MURMUR3 32 / validate hashing behavior using sample data', async () => {
+    const lines = await readCSV(require.resolve(`./mocks/${filename}`));
 
-    parser
-      .on('line', line => {
-        const parts = line.toString().split(',');
+    for (const parts of lines) {
+      let seed = parseInt(parts[0], 10);
+      let key = parts[1];
+      let hash = parseInt(parts[2], 10);
+      let bucket = parseInt(parts[3], 10);
 
-        if (parts.length === 4) {
-
-          let seed = parseInt(parts[0], 10);
-          let key = parts[1];
-          let hash = parseInt(parts[2], 10);
-          let bucket = parseInt(parts[3], 10);
-
-          expect(murmur3.hash(key, seed)).toBe(hash);
-          expect(murmur3.bucket(key, seed)).toBe(bucket);
-        }
-      })
-      .on('close', done);
+      expect(murmur3.hash(key, seed)).toBe(hash);
+      expect(murmur3.bucket(key, seed)).toBe(bucket);
+    }
   }, 30000); // timeout of 30 seconds, since this test can take more time when reporting test coverage
 
 });
@@ -62,26 +51,17 @@ function dec2hex(str: any) {
   { filename: 'murmur3_64_uuids.csv', hash128: hash128x64 }
 ].forEach(({ filename, hash128 }) => {
 
-  test('MURMUR3 128 / validate hashing behavior using sample data', (done) => {
-    const parser = rl.createInterface({
-      terminal: false,
-      input: fs.createReadStream(require.resolve(`./mocks/${filename}`))
-    });
+  test('MURMUR3 128 / validate hashing behavior using sample data', async () => {
+    const lines = await readCSV(require.resolve(`./mocks/${filename}`));
 
-    parser
-      .on('line', line => {
-        const parts = line.split(',');
+    for (const parts of lines) {
+      let key = parts[0];
+      let seed = parseInt(parts[1], 10);
+      let hash = parts[2];
+      const result = hash128(key, seed);
 
-        if (parts.length === 3) {
-          let key = parts[0];
-          let seed = parseInt(parts[1], 10);
-          let hash = parts[2];
-          const result = hash128(key, seed);
-
-          expect(result.substring(0, 16)).toBe(dec2hex(hash).padStart(16, '0'));
-        }
-      })
-      .on('close', done);
+      expect(result.substring(0, 16)).toBe(dec2hex(hash).padStart(16, '0'));
+    }
   }, 30000); // timeout of 30 seconds, since this test can take more time when reporting test coverage
 });
 

@@ -1,12 +1,8 @@
-import { ENGINE_MATCHER_STARTS_WITH } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
 import { startsWith } from '../../utils/lang';
 
-export function startsWithMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function startsWithMatcherContext(ruleAttr: string[]) {
   return function startsWithMatcher(runtimeAttr: string): boolean {
-    let matches = ruleAttr.some(e => startsWith(runtimeAttr, e));
-
-    log.debug(ENGINE_MATCHER_STARTS_WITH, [runtimeAttr, ruleAttr, matches]);
+    const matches = ruleAttr.some(e => startsWith(runtimeAttr, e));
 
     return matches;
   };

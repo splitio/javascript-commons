@@ -1,4 +1,4 @@
-# Javascript commons library
+# JavaScript commons library
 
 ## What did you accomplish?
 
