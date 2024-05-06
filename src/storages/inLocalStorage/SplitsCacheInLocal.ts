@@ -146,7 +146,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'SDK key or feature flag filter criteria was modified. Updating cache');
+      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
       const storageHashKey = this.keys.buildHashKey();
       try {
         localStorage.setItem(storageHashKey, this.storageHash);

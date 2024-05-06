@@ -4,6 +4,7 @@ import { ISettings } from '../../types';
 import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
+const settingsWithSets = { ...settingsSplitApi, validateFilters: true, sync: { __splitFiltersValidation: { queryString: '&testFlagQueryString'}}} as ISettings;
 
 const telemetryTrackerMock = { trackHttp: jest.fn(() => () => { }) };
 
@@ -19,7 +20,7 @@ function assertHeaders(settings: ISettings, headers: Record<string, string>) {
 
 describe('splitApi', () => {
 
-  test.each([settingsSplitApi, settingsWithRuntime])('performs requests with expected headers', (settings) => {
+  test.each([settingsSplitApi, settingsWithRuntime, settingsWithSets])('performs requests with expected headers', (settings) => {
 
     const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
     const splitApi = splitApiFactory(settings, { getFetch: () => fetchMock }, telemetryTrackerMock);
@@ -27,7 +28,7 @@ describe('splitApi', () => {
     splitApi.fetchAuth(['key1', 'key2']);
     let [url, { headers }] = fetchMock.mock.calls[0];
     assertHeaders(settings, headers);
-    expect(url).toBe('auth/v2/auth?users=key1&users=key2');
+    expect(url).toBe('auth/v2/auth?s=1.1&users=key1&users=key2');
 
     splitApi.fetchMySegments('userKey');
     [url, { headers }] = fetchMock.mock.calls[1];
@@ -42,7 +43,7 @@ describe('splitApi', () => {
     splitApi.fetchSplitChanges(-1, false, 100);
     [url, { headers }] = fetchMock.mock.calls[3];
     assertHeaders(settings, headers);
-    expect(url).toBe('sdk/splitChanges?since=-1&till=100');
+    expect(url).toBe(expecteFlagsUrl(-1, 100, settings.validateFilters || false, settings));
 
     splitApi.postEventsBulk('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[4][1].headers);
@@ -63,6 +64,12 @@ describe('splitApi', () => {
 
     telemetryTrackerMock.trackHttp.mockClear();
     fetchMock.mockClear();
+
+
+    function expecteFlagsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings) {
+      const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
+      return `sdk/splitChanges?s=1.1&since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+    }
   });
 
   test('rejects requests if fetch Api is not provided', (done) => {

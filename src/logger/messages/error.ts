@@ -2,7 +2,8 @@ import * as c from '../constants';
 
 export const codesError: [number, string][] = [
   // evaluator
-  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid feature flag, no valid rules or unsupported matcher type found'],
+  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid feature flag, no valid rules or unsupported targeting rule type found'],
+  [c.ENGINE_MATCHER_ERROR, c.LOG_PREFIX_ENGINE_MATCHER + '[%s] %s'],
   // SDK
   [c.ERROR_LOGLEVEL_INVALID, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
   [c.ERROR_CLIENT_CANNOT_GET_READY, 'The SDK will not get ready. Reason: %s'],

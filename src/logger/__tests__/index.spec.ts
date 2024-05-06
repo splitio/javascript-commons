@@ -130,4 +130,12 @@ test('SPLIT LOGGER / _sprintf', () => {
   expect(_sprintf('text %s', ['arg1'])).toBe('text arg1');
   expect(_sprintf('text %s', ['arg1', 'arg2'])).toBe('text arg1');
   expect(_sprintf('%s text %s', ['arg1', true, 'arg3'])).toBe('arg1 text true');
+
+  // Stringify plain objects and arrays, but not other objects
+  expect(_sprintf('Array: %s Object: %s Regex: %s Map: %s Error: %s', [[{a: '1'}], {a: '1'}, /aaa/, new Map([['a', '1']]), new Error('my-error')]))
+    .toBe('Array: [{"a":"1"}] Object: {"a":"1"} Regex: /aaa/ Map: [object Map] Error: Error: my-error');
+
+  // Handle JSON.stringify exceptions
+  const circular: any = { b: null }; circular.b = circular;
+  expect(_sprintf('%s', [circular])).toBe('[object Object]');
 });
