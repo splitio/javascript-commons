@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT, FLAGS_SPEC } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -29,6 +29,7 @@ export function splitApiFactory(
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
+  const flagSpecVersion = settings.sync.flagSpecVersion;
   const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch);
 
   return {
@@ -44,7 +45,7 @@ export function splitApiFactory(
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth?s=${FLAGS_SPEC}`;
+      let url = `${urls.auth}/v2/auth?s=${flagSpecVersion}`;
       if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
         if (queryParams) url += '&' + queryParams;
@@ -53,7 +54,7 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?s=${FLAGS_SPEC}&since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+      const url = `${urls.sdk}/splitChanges?s=${flagSpecVersion}&since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);

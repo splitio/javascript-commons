@@ -105,4 +105,4 @@ export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
 
-export const FLAGS_SPEC = '1.1';
+export const FLAG_SPEC_VERSION = '1.1';

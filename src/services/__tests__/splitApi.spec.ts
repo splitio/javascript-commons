@@ -4,7 +4,7 @@ import { ISettings } from '../../types';
 import { settingsSplitApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const settingsWithRuntime = { ...settingsSplitApi, runtime: { ip: 'ip', hostname: 'hostname' } } as ISettings;
-const settingsWithSets = { ...settingsSplitApi, validateFilters: true, sync: { __splitFiltersValidation: { queryString: '&testFlagQueryString'}}} as ISettings;
+const settingsWithSets = { ...settingsSplitApi, validateFilters: true, sync: { __splitFiltersValidation: { queryString: '&testFlagQueryString' }, flagSpecVersion: '1.1' } } as ISettings;
 
 const telemetryTrackerMock = { trackHttp: jest.fn(() => () => { }) };
 

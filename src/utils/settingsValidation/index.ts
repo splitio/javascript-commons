@@ -1,7 +1,7 @@
 import { merge, get } from '../lang';
 import { validateMode } from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
+import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG, FLAG_SPEC_VERSION } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
@@ -104,7 +104,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, consent } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, consent, flagSpec } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -115,7 +115,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.log = log;
 
   // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
+  const sync = withDefaults.sync;
+  sync.impressionsMode = validImpressionsMode(log, sync.impressionsMode);
 
   function validateMinValue(paramName: string, actualValue: number, minValue: number) {
     if (actualValue >= minValue) return actualValue;
@@ -133,7 +134,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Default impressionsRefreshRate for DEBUG mode is 60 secs
-  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
+  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
 
   // Log deprecation for old telemetry param
@@ -186,25 +187,26 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
-  if (localhost) withDefaults.sync.localhostMode = localhost(withDefaults);
+  if (localhost) sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
-    // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
+    // We are not checking if bases are positive numbers. Thus, we might be re-authenticating immediately (`setTimeout` with NaN or negative number)
     scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
   // validate sync enabled
-  if (withDefaults.sync.enabled !== false) { // @ts-ignore, modify readonly prop
-    withDefaults.sync.enabled = true;
+  if (sync.enabled !== false) {
+    sync.enabled = true;
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
-  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
-  withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
+  const splitFiltersValidation = validateSplitFilters(log, sync.splitFilters, withDefaults.mode);
+  sync.splitFilters = splitFiltersValidation.validFilters;
+  sync.__splitFiltersValidation = splitFiltersValidation;
+  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
 
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop

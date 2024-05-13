@@ -1,3 +1,6 @@
+1.15.0 (May 15, 2024)
+ - Added an optional settings validation parameter to let overwrite the default flag spec version, used by the JS Synchronizer.
+
 1.14.0 (May 6, 2024)
  - Added support for targeting rules based on semantic versions (https://semver.org/).
  - Added special impression label "targeting rule type unsupported by sdk" when the matcher type is not supported by the SDK, which returns 'control' treatment.
