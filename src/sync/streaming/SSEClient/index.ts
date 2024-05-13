@@ -4,7 +4,7 @@ import { isString } from '../../../utils/lang';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
 
-const VERSION = '1.1';
+const ABLY_API_VERSION = '1.1';
 
 const CONTROL_CHANNEL_REGEX = /^control_/;
 
@@ -78,7 +78,7 @@ export class SSEClient implements ISSEClient {
         return encodeURIComponent(params + channel);
       }
     ).join(',');
-    const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
+    const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
 
     this.connection = new this.eventSource!(
       // For client-side SDKs, SplitSDKClientKey and SplitSDKClientKey metadata is passed as query params,

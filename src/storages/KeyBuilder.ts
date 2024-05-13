@@ -1,5 +1,4 @@
 import { ISettings } from '../types';
-import { FLAGS_SPEC } from '../utils/constants';
 import { startsWith } from '../utils/lang';
 import { hash } from '../utils/murmur3/murmur3';
 
@@ -86,5 +85,5 @@ export class KeyBuilder {
  * The hash is in hexadecimal format (8 characters max, 32 bits).
  */
 export function getStorageHash(settings: ISettings) {
-  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}::${FLAGS_SPEC}`).toString(16);
+  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}::${settings.sync.flagSpecVersion}`).toString(16);
 }

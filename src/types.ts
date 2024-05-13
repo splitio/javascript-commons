@@ -118,7 +118,8 @@ export interface ISettings {
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
-    enabled: boolean
+    enabled: boolean,
+    flagSpecVersion: string
   },
   readonly runtime: {
     ip: string | false
