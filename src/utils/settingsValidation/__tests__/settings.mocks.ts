@@ -79,7 +79,8 @@ export const fullSettings: ISettings = {
       queryString: null,
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
-    enabled: true
+    enabled: true,
+    flagSpecVersion: '1.1'
   },
   version: 'jest',
   runtime: {
@@ -119,7 +120,8 @@ export const settingsSplitApi = {
     telemetry: 'telemetry'
   },
   sync: {
-    impressionsMode: 'DEBUG'
+    impressionsMode: 'DEBUG',
+    flagSpecVersion: '1.1'
   },
   runtime: {
     ip: false,
