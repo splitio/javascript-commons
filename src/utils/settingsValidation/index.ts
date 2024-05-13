@@ -84,7 +84,8 @@ export const base = {
     // impressions collection mode
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
-    enabled: true
+    enabled: true,
+    flagSpecVersion: FLAG_SPEC_VERSION
   },
 
   // Logger

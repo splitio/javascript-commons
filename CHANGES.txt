@@ -1,4 +1,4 @@
-1.15.0 (May 15, 2024)
+1.15.0 (May 13, 2024)
  - Added an optional settings validation parameter to let overwrite the default flag spec version, used by the JS Synchronizer.
 
 1.14.0 (May 6, 2024)
