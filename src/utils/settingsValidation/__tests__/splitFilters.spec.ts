@@ -136,24 +136,24 @@ describe('validateSplitFilters', () => {
     const flagSetsFilter = ['set_1', 'set_2'];
     const METHOD_NAME = 'test_method';
 
-    // empty array
-    expect(validateFlagSets(loggerMock, METHOD_NAME, [], flagSetsFilter)).toEqual([]);
+    // false
+    expect(validateFlagSets(loggerMock, METHOD_NAME, [], flagSetsFilter)).toEqual(false);
 
     // must start with a letter or number
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['_set_1'], flagSetsFilter)).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['_set_1'], flagSetsFilter)).toEqual(false);
     expect(loggerMock.warn.mock.calls[0]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, '_set_1', regexp, '_set_1']]);
 
     // can contain _a-z0-9
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1'], flagSetsFilter)).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1'], flagSetsFilter)).toEqual(false);
     expect(loggerMock.warn.mock.calls[1]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*1', regexp, 'set*1']]);
 
     // have a max length of 50 characters
     const longName = '1234567890_1234567890_1234567890_1234567890_1234567890';
-    expect(validateFlagSets(loggerMock, METHOD_NAME, [longName], flagSetsFilter)).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, [longName], flagSetsFilter)).toEqual(false);
     expect(loggerMock.warn.mock.calls[2]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, longName, regexp, longName]]);
 
     // both set names invalid -> empty list & warn
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1', 'set*3'], flagSetsFilter)).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1', 'set*3'], flagSetsFilter)).toEqual(false);
     expect(loggerMock.warn.mock.calls[3]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*1', regexp, 'set*1']]);
     expect(loggerMock.warn.mock.calls[4]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*3', regexp, 'set*3']]);
 
@@ -166,26 +166,26 @@ describe('validateSplitFilters', () => {
     expect(loggerMock.warn.mock.calls[6]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, [METHOD_NAME, 'set_3']]);
 
     // set_3 not included in configuration => [] & warn
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set_3'], flagSetsFilter)).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set_3'], flagSetsFilter)).toEqual(false);
     expect(loggerMock.warn.mock.calls[7]).toEqual([WARN_FLAGSET_NOT_CONFIGURED, [METHOD_NAME, 'set_3']]);
 
     // empty config
 
 
     // must start with a letter or number
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['_set_1'], [])).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['_set_1'], [])).toEqual(false);
     expect(loggerMock.warn.mock.calls[8]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, '_set_1', regexp, '_set_1']]);
 
     // can contain _a-z0-9
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1'], [])).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1'], [])).toEqual(false);
     expect(loggerMock.warn.mock.calls[9]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*1', regexp, 'set*1']]);
 
     // have a max length of 50 characters
-    expect(validateFlagSets(loggerMock, METHOD_NAME, [longName], [])).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, [longName], [])).toEqual(false);
     expect(loggerMock.warn.mock.calls[10]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, longName, regexp, longName]]);
 
     // both set names invalid -> empty list & warn
-    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1', 'set*3'], [])).toEqual([]);
+    expect(validateFlagSets(loggerMock, METHOD_NAME, ['set*1', 'set*3'], [])).toEqual(false);
     expect(loggerMock.warn.mock.calls[11]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*1', regexp, 'set*1']]);
     expect(loggerMock.warn.mock.calls[12]).toEqual([WARN_INVALID_FLAGSET, [METHOD_NAME, 'set*3', regexp, 'set*3']]);
 
