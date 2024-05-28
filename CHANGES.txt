@@ -1,4 +1,5 @@
 1.15.1 (May 28, 2024)
+ - Updated the Redis storage to import `ioredis` dependency when the storage is created, to avoid errors when the SDK is imported or bundled in a .mjs file, since `ioredis` is a CommonJS module.
  - Bugfixing - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
 
 1.15.0 (May 13, 2024)
