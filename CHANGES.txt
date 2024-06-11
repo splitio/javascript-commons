@@ -1,7 +1,5 @@
 1.16.0 (June XX, 2024)
  - Added the `getOptions` method to the `IPlatform` interface to allow the SDK to pass request options to the `fetch` method and `EventSource` constructor when fetching data from the Split servers. The method is optional and, if provided, it is called twice: first for the `fetch` options and then for the `EventSource` options.
-
-1.15.1 (May 28, 2024)
  - Updated the Redis storage to lazily import the `ioredis` dependency when the storage is created. This prevents errors when the SDK is imported or bundled in a .mjs file, as `ioredis` is a CommonJS module.
  - Bugfixing - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
 
