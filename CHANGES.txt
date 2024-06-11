@@ -1,6 +1,7 @@
 1.15.1 (May 28, 2024)
  - Updated the Redis storage to lazily import the `ioredis` dependency when the storage is created. This prevents errors when the SDK is imported or bundled in a .mjs file, as `ioredis` is a CommonJS module.
  - Bugfixing - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
+ - Bugfixing - Fixed localhost mode for client-side SDKs to emit SDK_UPDATE when mocked feature flags are updated in the `features` property of the config object (Related to issue https://github.com/splitio/javascript-browser-client/issues/119).
 
 1.15.0 (May 13, 2024)
  - Added an optional settings validation parameter to let overwrite the default flag spec version, used by the JS Synchronizer.
