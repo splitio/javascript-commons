@@ -18,11 +18,12 @@ const EXPECTED_HEADERS = {
 
 test('SSClient / instance creation throws error if EventSource is not provided', () => {
   expect(() => { new SSEClient(settings); }).toThrow(Error);
-  expect(() => { new SSEClient(settings, false, () => undefined); }).toThrow(Error);
+  expect(() => { new SSEClient(settings, false, {}); }).toThrow(Error);
+  expect(() => { new SSEClient(settings, false, { getEventSource: () => undefined }); }).toThrow(Error);
 });
 
 test('SSClient / instance creation success if EventSource is provided', () => {
-  const instance = new SSEClient(settings, false, () => EventSourceMock);
+  const instance = new SSEClient(settings, false, { getEventSource: () => EventSourceMock });
   expect(instance.eventSource).toBe(EventSourceMock);
 });
 
@@ -35,7 +36,7 @@ test('SSClient / setEventHandler, open and close methods', () => {
   };
 
   // instance SSEClient
-  const instance = new SSEClient(settings, false, () => EventSourceMock);
+  const instance = new SSEClient(settings, false, { getEventSource: () => EventSourceMock });
   instance.setEventHandler(handler);
 
   // open connection
@@ -81,13 +82,13 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
 test('SSClient / open method: URL with metadata query params', () => {
 
-  const instance = new SSEClient(settings, false, () => EventSourceMock);
+  const instance = new SSEClient(settings, false, { getEventSource: () => EventSourceMock });
   instance.open(authDataSample);
 
   const EXPECTED_BROWSER_URL = EXPECTED_URL + `&SplitSDKVersion=${settings.version}&SplitSDKClientKey=${EXPECTED_HEADERS.SplitSDKClientKey}`;
 
   expect(instance.connection.url).toBe(EXPECTED_BROWSER_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toBe(undefined); // No headers are passed for streaming connection
+  expect(instance.connection.__eventSourceInitDict).toEqual({}); // No headers are passed for streaming connection
 });
 
 test('SSClient / open method: URL and metadata headers with IP and Hostname', () => {
@@ -99,7 +100,7 @@ test('SSClient / open method: URL and metadata headers with IP and Hostname', ()
       hostname: 'some hostname'
     }
   };
-  const instance = new SSEClient(settingsWithRuntime, true, () => EventSourceMock);
+  const instance = new SSEClient(settingsWithRuntime, true, { getEventSource: () => EventSourceMock });
   instance.open(authDataSample);
 
   expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
@@ -114,9 +115,23 @@ test('SSClient / open method: URL and metadata headers with IP and Hostname', ()
 
 test('SSClient / open method: URL and metadata headers without IP and Hostname', () => {
 
-  const instance = new SSEClient(settings, true, () => EventSourceMock);
+  const instance = new SSEClient(settings, true, { getEventSource: () => EventSourceMock });
   instance.open(authDataSample);
 
   expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
   expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS }); // Headers are properly set for streaming connection
+});
+
+test('SSClient / open method: URL, metadata headers and options', () => {
+  const platform = { getEventSource: jest.fn(() => EventSourceMock), getOptions: jest.fn(() => ({ withCredentials: true })) };
+
+  const instance = new SSEClient(settings, true, platform);
+  instance.open(authDataSample);
+
+  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
+  expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS, withCredentials: true }); // Headers and options are properly set for streaming connection
+
+  // Assert that getEventSource and getOptions were called once with settings
+  expect(platform.getEventSource.mock.calls).toEqual([[settings]]);
+  expect(platform.getOptions.mock.calls).toEqual([[settings]]);
 });

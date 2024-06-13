@@ -10,12 +10,13 @@ const messageNoFetch = 'Global fetch API is not available.';
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
  *
  * @param settings SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
- * @param getFetch retrieves the Fetch API for HTTP requests
+ * @param platform object containing environment-specific dependencies
  */
-export function splitHttpClientFactory(settings: ISettings, getFetch?: IPlatform['getFetch']): ISplitHttpClient {
+export function splitHttpClientFactory(settings: ISettings, { getOptions, getFetch }: IPlatform): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
-  const fetch = getFetch && getFetch();
+  const options = getOptions && getOptions(settings);
+  const fetch = getFetch && getFetch(settings);
 
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
@@ -32,11 +33,11 @@ export function splitHttpClientFactory(settings: ISettings, getFetch?: IPlatform
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
-    const request = {
+    const request = objectAssign({
       headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
       method: reqOpts.method || 'GET',
       body: reqOpts.body
-    };
+    }, options);
 
     // using `fetch(url, options)` signature to work with unfetch, a lightweight ponyfill of fetch API.
     return fetch ? fetch(url, request)

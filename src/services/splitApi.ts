@@ -22,7 +22,7 @@ function userKeyToQueryParam(userKey: string) {
  */
 export function splitApiFactory(
   settings: ISettings,
-  platform: Pick<IPlatform, 'getFetch'>,
+  platform: IPlatform,
   telemetryTracker: ITelemetryTracker
 ): ISplitApi {
 
@@ -30,7 +30,7 @@ export function splitApiFactory(
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const flagSpecVersion = settings.sync.flagSpecVersion;
-  const splitHttpClient = splitHttpClientFactory(settings, platform.getFetch);
+  const splitHttpClient = splitHttpClientFactory(settings, platform);
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
