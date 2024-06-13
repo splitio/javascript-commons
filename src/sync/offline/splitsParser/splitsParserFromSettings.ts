@@ -1,6 +1,6 @@
 import { ISplitPartial } from '../../../dtos/types';
 import { ISettings, SplitIO } from '../../../types';
-import { isObject, forOwn } from '../../../utils/lang';
+import { isObject, forOwn, merge } from '../../../utils/lang';
 import { parseCondition } from './parseCondition';
 
 function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: string | SplitIO.TreatmentWithConfig) {
@@ -22,7 +22,7 @@ export function splitsParserFromSettingsFactory() {
 
     // Different amount of items
     if (names.length !== Object.keys(previousMock).length) {
-      previousMock = currentData;
+      previousMock = merge({}, currentData) as SplitIO.MockedFeaturesMap;
       return true;
     }
 
@@ -31,7 +31,7 @@ export function splitsParserFromSettingsFactory() {
       const newTreatment = hasTreatmentChanged(previousMock[name], currentData[name]);
       const changed = newSplit || newTreatment;
 
-      if (changed) previousMock = currentData;
+      if (changed) previousMock = merge({}, currentData) as SplitIO.MockedFeaturesMap;
 
       return changed;
     });
@@ -41,7 +41,7 @@ export function splitsParserFromSettingsFactory() {
    *
    * @param settings validated object with mocked features mapping.
    */
-  return function splitsParserFromSettings(settings: ISettings): false | Record<string, ISplitPartial> {
+  return function splitsParserFromSettings(settings: Pick<ISettings, 'features'>): false | Record<string, ISplitPartial> {
     const features = settings.features as SplitIO.MockedFeaturesMap || {};
 
     if (!mockUpdated(features)) return false;

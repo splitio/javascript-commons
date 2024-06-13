@@ -1,4 +1,4 @@
-import { RedisAdapter } from './RedisAdapter';
+import type { RedisAdapter } from './RedisAdapter';
 import { IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderSS } from '../KeyBuilderSS';
@@ -23,13 +23,17 @@ export interface InRedisStorageOptions {
  */
 export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
 
+  // Lazy loading to prevent error when bundling or importing the SDK in a .mjs file, since ioredis is a CommonJS module.
+  // Redis storage is not supported with .mjs files.
+  const RD = require('./RedisAdapter').RedisAdapter;
+
   const prefix = validatePrefix(options.prefix);
 
   function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
     const { onReadyCb, settings, settings: { log, sync: { impressionsMode } } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
-    const redisClient = new RedisAdapter(log, options.options || {});
+    const redisClient: RedisAdapter = new RD(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
     const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient) : undefined;
     const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient) : undefined;

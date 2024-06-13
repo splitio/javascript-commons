@@ -17,11 +17,15 @@ export interface IPlatform {
   /**
    * If provided, it is used to retrieve the Fetch API for HTTP requests. Otherwise, the global fetch is used.
    */
-  getFetch?: () => (IFetch | undefined)
+  getFetch?: (settings: ISettings) => (IFetch | undefined)
+  /**
+   * If provided, it is used to pass additional options to fetch and eventsource calls.
+   */
+  getOptions?: (settings: ISettings) => object
   /**
    * If provided, it is used to retrieve the EventSource constructor for streaming support.
    */
-  getEventSource?: () => (IEventSourceConstructor | undefined)
+  getEventSource?: (settings: ISettings) => (IEventSourceConstructor | undefined)
   /**
    * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
    */
