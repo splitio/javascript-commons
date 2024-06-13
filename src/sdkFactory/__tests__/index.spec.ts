@@ -49,6 +49,7 @@ const fullParamsForSyncSDK = {
   platform: {
     getEventSource: jest.fn(),
     getFetch: jest.fn(),
+    getOptions: jest.fn(),
     EventEmitter
   },
   splitApiFactory: jest.fn(),

@@ -42,7 +42,7 @@ export function pushManagerFactory(
   let sseClient: ISSEClient;
   try {
     // `useHeaders` false for client-side, even if the platform EventSource supports headers (e.g., React Native).
-    sseClient = new SSEClient(settings, userKey ? false : true, platform.getEventSource);
+    sseClient = new SSEClient(settings, userKey ? false : true, platform);
   } catch (e) {
     log.warn(STREAMING_FALLBACK, [e]);
     return;

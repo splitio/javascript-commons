@@ -109,6 +109,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
+  // Keeps reference to the `features` property
+  withDefaults.features = get(config, 'features');
 
   // ensure a valid logger.
   // First thing to validate, since other validators might use the logger.
