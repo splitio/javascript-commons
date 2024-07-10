@@ -61,6 +61,11 @@ interface IInSegmentMatcher extends ISplitMatcherBase {
   userDefinedSegmentMatcherData: IInSegmentMatcherData
 }
 
+interface IInLargeSegmentMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_LARGE_SEGMENT',
+  userDefinedSegmentMatcherData: IInSegmentMatcherData
+}
+
 interface IWhitelistMatcher extends ISplitMatcherBase {
   matcherType: 'WHITELIST',
   whitelistMatcherData: IWhitelistMatcherData
@@ -165,7 +170,8 @@ interface IInListSemverMatcher extends ISplitMatcherBase {
 export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
-  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher
+  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
+  IInLargeSegmentMatcher
 
 /** Split object */
 export interface ISplitPartition {
