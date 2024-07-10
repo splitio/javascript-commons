@@ -27,10 +27,6 @@ export class KeyBuilderCS extends KeyBuilder {
   }
 
   // @BREAKING: The key used to start with the matching key instead of the prefix, this was changed on version 10.17.3
-  buildOldSegmentNameKey(segmentName: string) {
-    return `${this.matchingKey}.${this.prefix}.segment.${segmentName}`;
-  }
-  // @BREAKING: The key used to start with the matching key instead of the prefix, this was changed on version 10.17.3
   extractOldSegmentKey(builtSegmentKeyName: string) {
     const prefix = `${this.matchingKey}.${this.prefix}.segment.`;
 

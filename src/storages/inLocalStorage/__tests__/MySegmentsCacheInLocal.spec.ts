@@ -37,7 +37,7 @@ test('SEGMENT CACHE / in LocalStorage migration for mysegments keys', () => {
   cache.clear(); // cleanup before starting.
 
   // Not adding a full suite for LS keys now, testing here
-  expect(oldKey1).toBe(keys.buildOldSegmentNameKey('segment1'));
+  expect(oldKey1).toBe(`test_nico.${keys.prefix}.segment.segment1`);
   expect('segment1').toBe(keys.extractOldSegmentKey(oldKey1));
 
   // add two segments, one we don't want to send on reset, should only be cleared, other one will be migrated.
