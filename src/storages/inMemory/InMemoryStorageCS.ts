@@ -18,10 +18,12 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const segments = new MySegmentsCacheInMemory();
+  const largeSegments = new MySegmentsCacheInMemory();
 
   const storage = {
     splits,
     segments,
+    largeSegments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
     impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(eventsQueueSize),
@@ -32,6 +34,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     destroy() {
       this.splits.clear();
       this.segments.clear();
+      this.largeSegments.clear();
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
@@ -43,6 +46,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       return {
         splits: this.splits,
         segments: new MySegmentsCacheInMemory(),
+        largeSegments: new MySegmentsCacheInMemory(),
         impressions: this.impressions,
         impressionCounts: this.impressionCounts,
         events: this.events,
@@ -52,6 +56,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         destroy() {
           this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
           this.segments.clear();
+          this.largeSegments.clear();
         }
       };
     },
