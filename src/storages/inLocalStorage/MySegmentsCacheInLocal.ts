@@ -1,14 +1,14 @@
 import { ILogger } from '../../logger/types';
 import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
-import { KeyBuilderCS } from '../KeyBuilderCS';
+import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
 
 export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
-  private readonly keys: KeyBuilderCS;
+  private readonly keys: MySegmentsKeyBuilder;
   private readonly log: ILogger;
 
-  constructor(log: ILogger, keys: KeyBuilderCS) {
+  constructor(log: ILogger, keys: MySegmentsKeyBuilder) {
     super();
     this.log = log;
     this.keys = keys;

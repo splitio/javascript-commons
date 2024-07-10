@@ -477,7 +477,9 @@ export interface IStorageSync extends IStorageBase<
   IEventsCacheSync,
   ITelemetryCacheSync,
   IUniqueKeysCacheSync
-> { }
+> {
+  largeSegments?: ISegmentsCacheSync,
+}
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
