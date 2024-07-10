@@ -1,26 +1,36 @@
 import { MySegmentsCacheInLocal } from '../MySegmentsCacheInLocal';
-import { KeyBuilderCS } from '../../KeyBuilderCS';
+import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('SEGMENT CACHE / in LocalStorage', () => {
-  const keys = new KeyBuilderCS('SPLITIO', 'user');
-  const cache = new MySegmentsCacheInLocal(loggerMock, keys);
+  const caches = [
+    new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user')),
+    new MySegmentsCacheInLocal(loggerMock, myLargeSegmentsKeyBuilder('SPLITIO', 'user'))
+  ];
 
-  cache.clear();
+  caches.forEach(cache => {
+    cache.clear();
 
-  cache.addToSegment('mocked-segment');
-  cache.addToSegment('mocked-segment-2');
+    cache.addToSegment('mocked-segment');
+    cache.addToSegment('mocked-segment-2');
 
-  expect(cache.isInSegment('mocked-segment')).toBe(true);
-  expect(cache.getRegisteredSegments()).toEqual(['mocked-segment', 'mocked-segment-2']);
-  expect(cache.getKeysCount()).toBe(1);
+    expect(cache.isInSegment('mocked-segment')).toBe(true);
+    expect(cache.getRegisteredSegments()).toEqual(['mocked-segment', 'mocked-segment-2']);
+    expect(cache.getKeysCount()).toBe(1);
+  });
 
-  cache.removeFromSegment('mocked-segment');
+  caches.forEach(cache => {
+    cache.removeFromSegment('mocked-segment');
 
-  expect(cache.isInSegment('mocked-segment')).toBe(false);
-  expect(cache.getRegisteredSegments()).toEqual(['mocked-segment-2']);
-  expect(cache.getKeysCount()).toBe(1);
+    expect(cache.isInSegment('mocked-segment')).toBe(false);
+    expect(cache.getRegisteredSegments()).toEqual(['mocked-segment-2']);
+    expect(cache.getKeysCount()).toBe(1);
+  });
 
+  expect(localStorage.getItem('SPLITIO.user.segment.mocked-segment-2')).toBe('1');
+  expect(localStorage.getItem('SPLITIO.user.segment.mocked-segment')).toBe(null);
+  expect(localStorage.getItem('SPLITIO.user.largeSegment.mocked-segment-2')).toBe('1');
+  expect(localStorage.getItem('SPLITIO.user.largeSegment.mocked-segment')).toBe(null);
 });
 
 // @BREAKING: REMOVE when removing this backwards compatibility.
