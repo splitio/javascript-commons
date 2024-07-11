@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter } from '../types';
+import { IEventEmitter, ISettings } from '../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
@@ -33,10 +33,13 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  */
 export function readinessManagerFactory(
   EventEmitter: new () => IEventEmitter,
-  readyTimeout = 0,
+  settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
 
+  const { startup: { readyTimeout, waitForLargeSegments }, sync: { largeSegmentsEnabled } } = settings;
+
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
+  const largeSegments = largeSegmentsEnabled && waitForLargeSegments ? segmentsEventEmitterFactory(EventEmitter) : undefined;
   const gate: IReadinessEventEmitter = new EventEmitter();
 
   // emit SDK_READY_FROM_CACHE
@@ -62,6 +65,7 @@ export function readinessManagerFactory(
   let isReady = false;
   splits.on(SDK_SPLITS_ARRIVED, checkIsReadyOrUpdate);
   segments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
+  if (largeSegments) largeSegments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
 
   let isDestroyed = false;
 
@@ -87,7 +91,7 @@ export function readinessManagerFactory(
         setTimeout(() => { throw e; }, 0);
       }
     } else {
-      if (splits.splitsArrived && segments.segmentsArrived) {
+      if (splits.splitsArrived && segments.segmentsArrived && (!largeSegments || largeSegments.segmentsArrived)) {
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
@@ -105,11 +109,12 @@ export function readinessManagerFactory(
   return {
     splits,
     segments,
+    largeSegments,
     gate,
 
-    shared(readyTimeout = 0) {
+    shared() {
       refCount++;
-      return readinessManagerFactory(EventEmitter, readyTimeout, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits);
     },
 
     // @TODO review/remove next methods when non-recoverable errors are reworked
@@ -123,6 +128,7 @@ export function readinessManagerFactory(
       isDestroyed = true;
 
       segments.removeAllListeners();
+      if (largeSegments) largeSegments.removeAllListeners();
       gate.removeAllListeners();
       clearTimeout(readyTimeoutId);
 
