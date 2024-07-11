@@ -8,6 +8,7 @@ import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
+import { IN_SEGMENT } from '../../../utils/constants';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
@@ -33,7 +34,7 @@ export function parseSegments({ conditions }: ISplit): ISet<string> {
     const matchers = conditions[i].matcherGroup.matchers;
 
     matchers.forEach(matcher => {
-      if (matcher.matcherType === 'IN_SEGMENT') segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
+      if (matcher.matcherType === IN_SEGMENT) segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
     });
   }
 
@@ -54,7 +55,7 @@ interface ISplitMutations {
  * @param filters splitFiltersValidation bySet | byName
  */
 function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
-  const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter} = filters.groupedFilters;
+  const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter } = filters.groupedFilters;
   if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
 
   const namesFilterConfigured = namesFilter.length > 0;
@@ -129,7 +130,7 @@ export function splitChangesUpdaterFactory(
 
   /** Returns true if at least one split was updated */
   function isThereUpdate(flagsChange: [boolean | void, void | boolean[], void | boolean[], boolean | void] | [any, any, any]) {
-    const [, added, removed, ] = flagsChange;
+    const [, added, removed] = flagsChange;
     // There is at least one added or modified feature flag
     if (added && added.some((update: boolean) => update)) return true;
     // There is at least one removed feature flag
