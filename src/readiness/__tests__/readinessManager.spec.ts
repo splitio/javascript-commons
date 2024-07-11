@@ -279,3 +279,44 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
   }, settingsWithTimeout.startup.readyTimeout * 1.5);
 
 });
+
+test('READINESS MANAGER / with large segments', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, {
+    startup: { readyTimeout: 0, waitForLargeSegments: false },
+    sync: { largeSegmentsEnabled: true }
+  } as unknown as ISettings);
+
+  expect(readinessManager.largeSegments).toBeUndefined();
+
+  const readinessManagerWithLargeSegments = readinessManagerFactory(EventEmitter, {
+    startup: { readyTimeout: 0, waitForLargeSegments: true },
+    sync: { largeSegmentsEnabled: true }
+  } as unknown as ISettings);
+
+  expect(readinessManagerWithLargeSegments.largeSegments).toBeDefined();
+
+  [readinessManager, readinessManagerWithLargeSegments].forEach(rm => {
+    let counter = 0;
+
+    rm.gate.on(SDK_READY, () => {
+      expect(rm.isReady()).toBe(true);
+      counter++;
+    });
+
+    rm.splits.emit(SDK_SPLITS_ARRIVED);
+    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
+    if (rm.largeSegments) {
+      expect(counter).toBe(0); // should not be called yet
+      rm.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
+    }
+    expect(counter).toBe(1); // should be called
+
+    rm.splits.emit(SDK_SPLITS_ARRIVED);
+    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
+    rm.splits.emit(SDK_SPLITS_ARRIVED);
+    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
+    if (rm.largeSegments) rm.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
+
+    expect(counter).toBe(1); // should be called once
+  });
+});
