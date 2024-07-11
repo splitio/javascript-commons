@@ -7,7 +7,7 @@ import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { validateTrafficType } from '../inputValidation/trafficType';
-import { ERROR_MIN_CONFIG_PARAM } from '../../logger/constants';
+import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
 
 // Exported for telemetry
 export const base = {
@@ -166,13 +166,13 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
       // Keeping same behaviour than JS SDK: if settings key or TT are invalid,
       // `false` value is used as bound key/TT of the default client, which leads to some issues.
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
-      withDefaults.core.key = validateKey(log, maybeKey, 'Client instantiation');
+      withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
     }
 
     if (validationParams.acceptTT) {
       const maybeTT = withDefaults.core.trafficType;
       if (maybeTT !== undefined) { // @ts-ignore
-        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
+        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, LOG_PREFIX_CLIENT_INSTANTIATION);
       }
     }
   } else {
