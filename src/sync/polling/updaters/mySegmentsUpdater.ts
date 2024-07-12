@@ -6,6 +6,7 @@ import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
+import { IN_SEGMENT } from '../../../utils/constants';
 
 type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
 
@@ -55,7 +56,7 @@ export function mySegmentsUpdaterFactory(
     }
 
     // Notify update if required
-    if (splitsCache.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if (splitsCache.usesMatcher(IN_SEGMENT) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
       segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }

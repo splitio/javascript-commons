@@ -818,6 +818,7 @@ export namespace SplitIO {
       eventsFirstPushWindow?: number,
       /**
        * Whether the SDK should wait for large segments to be ready before emitting SDK_READY event.
+       * It only applies if largeSegmentsEnabled is true.
        * @property {number} waitForLargeSegments
        * @default true
        */
@@ -868,6 +869,7 @@ export namespace SplitIO {
       segmentsRefreshRate?: number,
       /**
        * The SDK polls Split servers for changes to large segment definitions. This parameter controls this polling period in seconds.
+       * It only applies if largeSegmentsEnabled is true.
        * @property {number} largeSegmentsRefreshRate
        * @default 60
        */

@@ -12,7 +12,7 @@ jest.mock('../submitters/submitterManager', () => {
 // Mocked storageManager
 const storageManagerMock = {
   splits: {
-    usesSegments: () => false
+    usesMatcher: () => false
   }
 };
 

@@ -7,7 +7,7 @@ import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 import { isConsentGranted } from '../consent';
-import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
+import { IN_SEGMENT, POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 
 /**
@@ -150,7 +150,7 @@ export function syncManagerOnlineFactory(
               if (pushManager) {
                 if (pollingManager!.isRunning()) {
                   // if doing polling, we must start the periodic fetch of data
-                  if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+                  if (storage.splits.usesMatcher(IN_SEGMENT)) mySegmentsSyncTask.start();
                 } else {
                   // if not polling, we must execute the sync task for the initial fetch
                   // of segments since `syncAll` was already executed when starting the main client
@@ -158,7 +158,7 @@ export function syncManagerOnlineFactory(
                 }
                 pushManager.add(matchingKey, mySegmentsSyncTask);
               } else {
-                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+                if (storage.splits.usesMatcher(IN_SEGMENT)) mySegmentsSyncTask.start();
               }
             } else {
               if (!readinessManager.isReady()) mySegmentsSyncTask.execute();

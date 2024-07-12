@@ -1,7 +1,8 @@
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
-import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
+import { AbstractSplitsCacheSync, usesMatcher } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
 import { ISet, _Set } from '../../utils/lang/sets';
+import { IN_LARGE_SEGMENT, IN_SEGMENT } from '../../utils/constants';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
@@ -13,7 +14,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
-  private splitsWithSegmentsCount: number = 0;
+  private segmentsCount: number = 0;
+  private largeSegmentsCount: number = 0;
   private flagSetsCache: Record<string, ISet<string>> = {};
 
   constructor(splitFiltersValidation?: ISplitFiltersValidation) {
@@ -25,7 +27,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.splitsCache = {};
     this.ttCache = {};
     this.changeNumber = -1;
-    this.splitsWithSegmentsCount = 0;
+    this.segmentsCount = 0;
+    this.largeSegmentsCount = 0;
   }
 
   addSplit(name: string, split: ISplit): boolean {
@@ -38,9 +41,9 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
       this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
 
-      if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
-        this.splitsWithSegmentsCount--;
-      }
+      // Substract from segments count for the previous version of this Split.
+      if (usesMatcher(previousSplit, IN_SEGMENT)) this.segmentsCount--;
+      if (usesMatcher(previousSplit, IN_LARGE_SEGMENT)) this.largeSegmentsCount--;
     }
 
     if (split) {
@@ -52,7 +55,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.addToFlagSets(split);
 
       // Add to segments count for the new version of the Split
-      if (usesSegments(split)) this.splitsWithSegmentsCount++;
+      if (usesMatcher(split, IN_SEGMENT)) this.segmentsCount++;
+      if (usesMatcher(split, IN_LARGE_SEGMENT)) this.largeSegmentsCount++;
 
       return true;
     } else {
@@ -72,7 +76,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.removeFromFlagSets(split.name, split.sets);
 
       // Update the segments count.
-      if (usesSegments(split)) this.splitsWithSegmentsCount--;
+      if (usesMatcher(split, IN_SEGMENT)) this.segmentsCount--;
+      if (usesMatcher(split, IN_LARGE_SEGMENT)) this.largeSegmentsCount--;
 
       return true;
     } else {
@@ -101,8 +106,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return isFiniteNumber(this.ttCache[trafficType]) && this.ttCache[trafficType] > 0;
   }
 
-  usesSegments(): boolean {
-    return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
+  usesMatcher(matcherType: string): boolean {
+    return this.getChangeNumber() === -1 || (matcherType === IN_SEGMENT ? this.segmentsCount > 0 : this.largeSegmentsCount > 0);
   }
 
   getNamesByFlagSets(flagSets: string[]): ISet<string>[] {

@@ -120,6 +120,7 @@ export const ENGINE_MATCHER_ERROR = 329;
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';
 export const LOG_PREFIX_INSTANTIATION = 'Factory instantiation';
+export const LOG_PREFIX_CLIENT_INSTANTIATION = 'Client instantiation';
 export const LOG_PREFIX_ENGINE = 'engine';
 export const LOG_PREFIX_ENGINE_COMBINER = LOG_PREFIX_ENGINE + ':combiner: ';
 export const LOG_PREFIX_ENGINE_MATCHER = LOG_PREFIX_ENGINE + ':matcher: ';

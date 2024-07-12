@@ -6,7 +6,7 @@ import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
 import { ISyncManagerCS } from '../sync/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
+import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, LOG_PREFIX_CLIENT_INSTANTIATION } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
@@ -14,8 +14,6 @@ function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
   // @ts-ignore
   return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-${trafficType !== undefined ? trafficType : ''}`;
 }
-
-const method = 'Client instantiation';
 
 /**
  * Factory of client method for the client-side (browser) variant of the Isomorphic JS SDK,
@@ -46,14 +44,14 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
     }
 
     // Validate the key value
-    const validKey = validateKey(log, key, `Shared ${method}`);
+    const validKey = validateKey(log, key, LOG_PREFIX_CLIENT_INSTANTIATION);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
     }
 
     let validTrafficType;
     if (trafficType !== undefined) {
-      validTrafficType = validateTrafficType(log, trafficType, `Shared ${method}`);
+      validTrafficType = validateTrafficType(log, trafficType, LOG_PREFIX_CLIENT_INSTANTIATION);
       if (validTrafficType === false) {
         throw new Error('Shared Client needs a valid traffic type or no traffic type at all.');
       }

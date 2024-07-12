@@ -205,7 +205,7 @@ export interface ISplitsCacheBase {
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
   // only for Client-Side
-  usesSegments(): MaybeThenable<boolean>,
+  usesMatcher(matcherType: string): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
   checkCache(): MaybeThenable<boolean>,
@@ -223,7 +223,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   getAll(): ISplit[],
   getSplitNames(): string[],
   trafficTypeExists(trafficType: string): boolean,
-  usesSegments(): boolean,
+  usesMatcher(matcherType: string): boolean,
   clear(): void,
   checkCache(): boolean,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
@@ -240,7 +240,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   getAll(): Promise<ISplit[]>,
   getSplitNames(): Promise<string[]>,
   trafficTypeExists(trafficType: string): Promise<boolean>,
-  usesSegments(): Promise<boolean>,
+  usesMatcher(matcherType: string): Promise<boolean>,
   clear(): Promise<boolean | void>,
   checkCache(): Promise<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
