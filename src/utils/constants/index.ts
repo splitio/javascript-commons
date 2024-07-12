@@ -109,3 +109,4 @@ export const FLAG_SPEC_VERSION = '1.1';
 
 // Matcher types
 export const IN_SEGMENT = 'IN_SEGMENT';
+export const IN_LARGE_SEGMENT = 'IN_LARGE_SEGMENT';
