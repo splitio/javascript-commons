@@ -32,6 +32,8 @@ export const base = {
     featuresRefreshRate: 60,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
+    // fetch large segments updates each 60 sec
+    largeSegmentsRefreshRate: 60,
     // publish telemetry stats each 3600 secs (1 hour)
     telemetryRefreshRate: 3600,
     // publish evaluations each 300 sec (default value for OPTIMIZED impressions mode)
@@ -85,7 +87,8 @@ export const base = {
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
     enabled: true,
-    flagSpecVersion: FLAG_SPEC_VERSION
+    flagSpecVersion: FLAG_SPEC_VERSION,
+    largeSegmentsEnabled: false
   },
 
   // Logger
@@ -132,6 +135,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
+  scheduler.largeSegmentsRefreshRate = fromSecondsToMillis(scheduler.largeSegmentsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
@@ -209,11 +213,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const splitFiltersValidation = validateSplitFilters(log, sync.splitFilters, withDefaults.mode);
   sync.splitFilters = splitFiltersValidation.validFilters;
   sync.__splitFiltersValidation = splitFiltersValidation;
-  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
 
+  // ensure a valid flag spec version
+  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
-  withDefaults.userConsent = consent(withDefaults);
+  withDefaults.userConsent = consent ? consent(withDefaults) : undefined;
 
   return withDefaults;
 }
