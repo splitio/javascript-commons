@@ -2,6 +2,7 @@ import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ISet } from '../utils/lang/sets';
+import { IN_SEGMENT } from '../utils/constants';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -93,7 +94,7 @@ export function usesSegments(split: ISplit) {
     const matchers = conditions[i].matcherGroup.matchers;
 
     for (let j = 0; j < matchers.length; j++) {
-      if (matchers[j].matcherType === 'IN_SEGMENT') return true;
+      if (matchers[j].matcherType === IN_SEGMENT) return true;
     }
   }
 

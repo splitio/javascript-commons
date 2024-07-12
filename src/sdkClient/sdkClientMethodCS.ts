@@ -5,7 +5,7 @@ import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
 import { ISyncManagerCS } from '../sync/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING } from '../logger/constants';
+import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, LOG_PREFIX_CLIENT_INSTANTIATION } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
@@ -13,8 +13,6 @@ function buildInstanceId(key: SplitIO.SplitKey) {
   // @ts-ignore
   return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-`;
 }
-
-const method = 'Client instantiation';
 
 /**
  * Factory of client method for the client-side API variant where TT is ignored.
@@ -43,7 +41,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
     }
 
     // Validate the key value. The trafficType (2nd argument) is ignored
-    const validKey = validateKey(log, key, method);
+    const validKey = validateKey(log, key, LOG_PREFIX_CLIENT_INSTANTIATION);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
     }

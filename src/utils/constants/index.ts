@@ -106,3 +106,6 @@ export const ENABLED = 1;
 export const PAUSED = 2;
 
 export const FLAG_SPEC_VERSION = '1.1';
+
+// Matcher types
+export const IN_SEGMENT = 'IN_SEGMENT';
