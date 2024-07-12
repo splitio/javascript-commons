@@ -1,14 +1,11 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
-import { ISegmentsCacheSync, ISplitsCacheSync } from '../../../storages/types';
-import { ISegmentsEventEmitter } from '../../../readiness/types';
+import { ISegmentsCacheSync } from '../../../storages/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
-import { IN_SEGMENT } from '../../../utils/constants';
 
-type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
+type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
 /**
  * factory of MySegments updater, a task that:
@@ -19,9 +16,8 @@ type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise
 export function mySegmentsUpdaterFactory(
   log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
-  splitsCache: ISplitsCacheSync,
   mySegmentsCache: ISegmentsCacheSync,
-  segmentsEventEmitter: ISegmentsEventEmitter,
+  notifyUpdate: () => void,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
   matchingKey: string
@@ -56,9 +52,9 @@ export function mySegmentsUpdaterFactory(
     }
 
     // Notify update if required
-    if (splitsCache.usesMatcher(IN_SEGMENT) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if (shouldNotifyUpdate || readyOnAlreadyExistentState) {
       readyOnAlreadyExistentState = false;
-      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
+      notifyUpdate();
     }
   }
 
