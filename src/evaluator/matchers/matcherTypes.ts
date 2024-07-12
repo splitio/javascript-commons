@@ -22,6 +22,7 @@ export const matcherTypes: Record<string, number> = {
   LESS_THAN_OR_EQUAL_TO_SEMVER: 20,
   BETWEEN_SEMVER: 21,
   IN_LIST_SEMVER: 22,
+  IN_LARGE_SEGMENT: 23,
 };
 
 export const matcherDataTypes = {

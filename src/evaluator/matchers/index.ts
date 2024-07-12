@@ -1,5 +1,6 @@
 import { allMatcherContext } from './all';
 import { segmentMatcherContext } from './segment';
+import { largeSegmentMatcherContext } from './large_segment';
 import { whitelistMatcherContext } from './whitelist';
 import { equalToMatcherContext } from './eq';
 import { greaterThanEqualMatcherContext } from './gte';
@@ -48,6 +49,7 @@ const matchers = [
   lessThanEqualToSemverMatcherContext, // LESS_THAN_OR_EQUAL_TO_SEMVER: 20
   betweenSemverMatcherContext, // BETWEEN_SEMVER: 21
   inListSemverMatcherContext, // IN_LIST_SEMVER: 22
+  largeSegmentMatcherContext, // IN_LARGE_SEGMENT: 23
 ];
 
 /**

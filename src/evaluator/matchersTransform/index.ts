@@ -33,7 +33,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
     let dataType = matcherDataTypes.STRING;
     let value = undefined;
 
-    if (type === matcherTypes.IN_SEGMENT) {
+    if (type === matcherTypes.IN_SEGMENT || type === matcherTypes.IN_LARGE_SEGMENT) {
       value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
     } else if (type === matcherTypes.EQUAL_TO) {
       value = numericTransform(unaryNumericMatcherData as IUnaryNumericMatcherData);
