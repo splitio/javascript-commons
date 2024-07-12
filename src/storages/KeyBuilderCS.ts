@@ -1,7 +1,13 @@
 import { startsWith } from '../utils/lang';
 import { KeyBuilder } from './KeyBuilder';
 
-export class KeyBuilderCS extends KeyBuilder {
+export interface MySegmentsKeyBuilder {
+  buildSegmentNameKey(segmentName: string): string;
+  extractSegmentName(builtSegmentKeyName: string): string | undefined;
+  extractOldSegmentKey(builtSegmentKeyName: string): string | undefined;
+}
+
+export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
 
   protected readonly regexSplitsCacheKey: RegExp;
   protected readonly matchingKey: string;
@@ -27,10 +33,6 @@ export class KeyBuilderCS extends KeyBuilder {
   }
 
   // @BREAKING: The key used to start with the matching key instead of the prefix, this was changed on version 10.17.3
-  buildOldSegmentNameKey(segmentName: string) {
-    return `${this.matchingKey}.${this.prefix}.segment.${segmentName}`;
-  }
-  // @BREAKING: The key used to start with the matching key instead of the prefix, this was changed on version 10.17.3
   extractOldSegmentKey(builtSegmentKeyName: string) {
     const prefix = `${this.matchingKey}.${this.prefix}.segment.`;
 
@@ -45,4 +47,22 @@ export class KeyBuilderCS extends KeyBuilder {
   isSplitsCacheKey(key: string) {
     return this.regexSplitsCacheKey.test(key);
   }
+}
+
+export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): MySegmentsKeyBuilder {
+  return {
+    buildSegmentNameKey(segmentName: string) {
+      return `${prefix}.${matchingKey}.largeSegment.${segmentName}`;
+    },
+
+    extractSegmentName(builtSegmentKeyName: string) {
+      const p = `${prefix}.${matchingKey}.largeSegment.`;
+
+      if (startsWith(builtSegmentKeyName, p)) return builtSegmentKeyName.substr(p.length);
+    },
+
+    extractOldSegmentKey() {
+      return undefined;
+    }
+  };
 }
