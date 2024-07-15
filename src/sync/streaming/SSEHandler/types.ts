@@ -1,5 +1,5 @@
 import { ControlType } from '../constants';
-import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY } from '../types';
+import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MY_LARGE_SEGMENTS_UPDATE } from '../types';
 
 export interface IMySegmentsUpdateData {
   type: MY_SEGMENTS_UPDATE,
@@ -35,6 +35,18 @@ export interface IMySegmentsUpdateV2Data {
   u: UpdateStrategy,
 }
 
+export interface IMyLargeSegmentsUpdateData {
+  type: MY_LARGE_SEGMENTS_UPDATE,
+  changeNumber: number,
+  largeSegment: string,
+  c: Compression,
+  d: string,
+  u: UpdateStrategy,
+  i?: number, // time interval in millis
+  h?: number, // hash function. 0 for murmur3_32, 1 for murmur3_64
+  s?: number, // seed for hash function
+}
+
 export interface ISegmentUpdateData {
   type: SEGMENT_UPDATE,
   changeNumber: number,
@@ -68,6 +80,6 @@ export interface IOccupancyData {
   }
 }
 
-export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
+export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data | IMyLargeSegmentsUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
 export type INotificationError = Event & { parsedData?: any, message?: string }
