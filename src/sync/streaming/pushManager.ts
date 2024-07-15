@@ -277,7 +277,7 @@ export function pushManagerFactory(
           if (add !== undefined) {
             isLS ?
               workerLarge && workerLarge.put(parsedData.changeNumber, {
-                name: parsedData.largeSegment,
+                name: parsedData.largeSegments[0],
                 add
               }) :
               worker.put(parsedData.changeNumber, {
@@ -289,16 +289,18 @@ export function pushManagerFactory(
         return;
       }
       case UpdateStrategy.SegmentRemoval:
-        if (!(parsedData as IMySegmentsUpdateV2Data).segmentName && !(parsedData as IMyLargeSegmentsUpdateData).largeSegment) {
+        if ((isLS && parsedData.largeSegments.length === 0) || (!isLS && !parsedData.segmentName)) {
           log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['SegmentRemoval', 'No segment name was provided']);
           break;
         }
 
         forOwn(clients, ({ worker, workerLarge }) => {
           isLS ?
-            workerLarge && workerLarge.put(parsedData.changeNumber, {
-              name: parsedData.largeSegment,
-              add: false
+            workerLarge && parsedData.largeSegments.forEach(largeSegment => {
+              workerLarge.put(parsedData.changeNumber, {
+                name: largeSegment,
+                add: false
+              });
             }) :
             worker.put(parsedData.changeNumber, {
               name: parsedData.segmentName,
