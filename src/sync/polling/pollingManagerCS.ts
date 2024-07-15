@@ -23,34 +23,32 @@ export function pollingManagerCSFactory(
 
   const splitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
 
-  // Map of matching keys to their corresponding MySegmentsSyncTask.
-  const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
-  const myLargeSegmentsSyncTasks: Record<string, IMySegmentsSyncTask | undefined> = {};
+  // Map of matching keys to their corresponding MySegmentsSyncTask for segments and large segments.
+  const mySegmentsSyncTasks: Record<string, { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask }> = {};
 
   const matchingKey = getMatching(settings.core.key);
   const { msSyncTask, mlsSyncTask } = add(matchingKey, readiness, storage);
 
   function startMySegmentsSyncTasks() {
     const splitsHaveSegments = storage.splits.usesMatcher(IN_SEGMENT);
-
-    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
-      if (splitsHaveSegments) mySegmentsSyncTask.start();
-      else mySegmentsSyncTask.stop();
-    });
-
     const splitsHaveLargeSegments = storage.splits.usesMatcher(IN_LARGE_SEGMENT);
 
-    forOwn(myLargeSegmentsSyncTasks, (myLargeSegmentsSyncTask) => {
-      if (myLargeSegmentsSyncTask) {
-        if (splitsHaveLargeSegments) myLargeSegmentsSyncTask.start();
-        else myLargeSegmentsSyncTask.stop();
+    forOwn(mySegmentsSyncTasks, ({ msSyncTask, mlsSyncTask }) => {
+      if (splitsHaveSegments) msSyncTask.start();
+      else msSyncTask.stop();
+
+      if (mlsSyncTask) {
+        if (splitsHaveLargeSegments) mlsSyncTask.start();
+        else mlsSyncTask.stop();
       }
     });
   }
 
   function stopMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => mySegmentsSyncTask.stop());
-    forOwn(myLargeSegmentsSyncTasks, (myLargeSegmentsSyncTask) => myLargeSegmentsSyncTask && myLargeSegmentsSyncTask.stop());
+    forOwn(mySegmentsSyncTasks, ({ msSyncTask, mlsSyncTask }) => {
+      msSyncTask.stop();
+      mlsSyncTask && mlsSyncTask.stop();
+    });
   }
 
   // smart pausing
@@ -95,8 +93,7 @@ export function pollingManagerCSFactory(
     if (!storage.splits.usesMatcher(IN_SEGMENT) && !storage.splits.usesMatcher(IN_LARGE_SEGMENT)) setTimeout(smartReady, 0);
     else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
 
-    mySegmentsSyncTasks[matchingKey] = msSyncTask;
-    myLargeSegmentsSyncTasks[matchingKey] = mlsSyncTask;
+    mySegmentsSyncTasks[matchingKey] = { msSyncTask: msSyncTask, mlsSyncTask: mlsSyncTask };
 
     return {
       msSyncTask,
@@ -131,8 +128,9 @@ export function pollingManagerCSFactory(
     // fetch splits and segments
     syncAll() {
       const promises = [splitsSyncTask.execute()];
-      forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
-        promises.push(mySegmentsSyncTask.execute());
+      forOwn(mySegmentsSyncTasks, function ({ msSyncTask, mlsSyncTask }) {
+        promises.push(msSyncTask.execute());
+        mlsSyncTask && promises.push(mlsSyncTask.execute());
       });
       return Promise.all(promises);
     },
@@ -142,14 +140,10 @@ export function pollingManagerCSFactory(
 
     remove(matchingKey: string) {
       delete mySegmentsSyncTasks[matchingKey];
-      delete myLargeSegmentsSyncTasks[matchingKey];
     },
 
     get(matchingKey: string) {
-      return {
-        msSyncTask: mySegmentsSyncTasks[matchingKey],
-        mlsSyncTask: myLargeSegmentsSyncTasks[matchingKey]
-      };
+      return mySegmentsSyncTasks[matchingKey];
     }
   };
 
