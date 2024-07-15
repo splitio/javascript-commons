@@ -159,7 +159,7 @@ export type TelemetryUsageStats = {
 
 // amount of instant updates that we are doing by avoiding fetching to Split servers
 export type UpdatesFromSSE = {
-  sp: number, // splits
+  sp?: number, // splits
   ms?: number, // my segments
   mls?: number // my large segments
 }

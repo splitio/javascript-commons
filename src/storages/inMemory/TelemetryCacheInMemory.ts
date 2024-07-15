@@ -1,4 +1,4 @@
-import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../../sync/submitters/types';
+import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum, UpdatesFromSSE } from '../../sync/submitters/types';
 import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
@@ -245,22 +245,16 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     this.e = false;
   }
 
-  private updatesFromSSE = {
-    sp: 0,
-    ms: 0
-  };
+  private updatesFromSSE: UpdatesFromSSE = {};
 
   popUpdatesFromSSE() {
     const result = this.updatesFromSSE;
-    this.updatesFromSSE = {
-      sp: 0,
-      ms: 0,
-    };
+    this.updatesFromSSE = {};
     return result;
   }
 
   recordUpdatesFromSSE(type: UpdatesFromSSEEnum) {
-    this.updatesFromSSE[type]++;
+    this.updatesFromSSE[type] = (this.updatesFromSSE[type] || 0) + 1;
     this.e = false;
   }
 
