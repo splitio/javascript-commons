@@ -177,6 +177,8 @@ export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   spC?: number, // splitCount
   seC?: number, // segmentCount
   skC?: number, // segmentKeyCount
+  lseC?: number, // largeSegmentCount
+  lskC?: number, // largeSegmentKeyCount
   sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
   eD: number, // eventsDropped
@@ -203,6 +205,7 @@ export type RefreshRates = {
   sp: number, // splits
   se?: number, // segments
   ms?: number, // mySegments
+  mls?: number, // myLargeSegments
   im: number, // impressions
   ev: number, // events
   te: number, // telemetry
@@ -228,6 +231,7 @@ export type TelemetryConfigStats = {
 // 'metrics/config' JSON request body
 export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   sE: boolean, // streamingEnabled
+  lE?: boolean, // largeSegmentsEnabled
   rR: RefreshRates, // refreshRates
   uO: UrlOverrides, // urlOverrides
   iQ: number, // impressionsQueueSize
