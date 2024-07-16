@@ -51,6 +51,9 @@ export class KeyBuilder {
   buildSplitsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }
+  buildSplitsWithLargeSegmentCountKey() {
+    return `${this.prefix}.splits.usingLargeSegments`;
+  }
 
   buildSegmentNameKey(segmentName: string) {
     return `${this.prefix}.segment.${segmentName}`;

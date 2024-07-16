@@ -2,7 +2,6 @@ import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ISet } from '../utils/lang/sets';
-import { IN_SEGMENT } from '../utils/constants';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -44,7 +43,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
   abstract trafficTypeExists(trafficType: string): boolean
 
-  abstract usesSegments(): boolean
+  abstract usesMatcher(matcherType: string): boolean
 
   abstract clear(): void
 
@@ -86,15 +85,15 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
 /**
  * Given a parsed split, it returns a boolean flagging if its conditions use segments matchers (rules & whitelists).
- * This util is intended to simplify the implementation of `splitsCache::usesSegments` method
+ * This util is intended to simplify the implementation of `splitsCache::usesMatcher` method
  */
-export function usesSegments(split: ISplit) {
+export function usesMatcher(split: ISplit, matcherType: string) {
   const conditions = split.conditions || [];
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
 
     for (let j = 0; j < matchers.length; j++) {
-      if (matchers[j].matcherType === IN_SEGMENT) return true;
+      if (matchers[j].matcherType === matcherType) return true;
     }
   }
 
