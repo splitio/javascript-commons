@@ -1,5 +1,5 @@
 import { IFetchMySegments, IResponse } from '../../../services/types';
-import { IMySegmentsResponseItem } from '../../../dtos/types';
+import { IMySegmentsResponse, IMyLargeSegmentsResponse } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
 
 /**
@@ -21,7 +21,11 @@ export function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments): IMy
     // Extract segment names
     return mySegmentsPromise
       .then(resp => resp.json())
-      .then(json => json.mySegments.map((segment: IMySegmentsResponseItem) => segment.name));
+      .then((json: IMySegmentsResponse | IMyLargeSegmentsResponse) => {
+        return (json as IMySegmentsResponse).mySegments ?
+          (json as IMySegmentsResponse).mySegments.map((segment) => segment.name) :
+          (json as IMyLargeSegmentsResponse).myLargeSegments;
+      });
   };
 
 }

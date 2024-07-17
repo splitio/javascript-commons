@@ -224,14 +224,18 @@ export interface ISegmentChangesResponse {
   till: number
 }
 
-export interface IMySegmentsResponseItem {
-  id: string,
-  name: string
-}
-
 /** Interface of the parsed JSON response of `/mySegments/{userKey}` */
 export interface IMySegmentsResponse {
-  mySegments: IMySegmentsResponseItem[]
+  mySegments: {
+    id: string,
+    name: string
+  }[]
+}
+
+/** Interface of the parsed JSON response of `/myLargeSegments/{userKey}` */
+export interface IMyLargeSegmentsResponse {
+  myLargeSegments: string[],
+  changeNumber: number
 }
 
 /** Metadata internal type for storages */
