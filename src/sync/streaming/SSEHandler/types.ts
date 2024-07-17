@@ -38,7 +38,7 @@ export interface IMySegmentsUpdateV2Data {
 export interface IMyLargeSegmentsUpdateData {
   type: MY_LARGE_SEGMENTS_UPDATE,
   changeNumber: number,
-  largeSegment: string,
+  largeSegments: string[],
   c: Compression,
   d: string,
   u: UpdateStrategy,

@@ -14,6 +14,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
   let handleNewEvent = false;
   let isHandlingEvent: boolean;
   let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
+  let _delay: undefined | number;
   const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
   function __handleMySegmentsUpdateCall() {
@@ -23,7 +24,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
       const currentMaxChangeNumber = maxChangeNumber;
 
       // fetch mySegments revalidating data if cached
-      mySegmentsSyncTask.execute(_segmentsData, true).then((result) => {
+      mySegmentsSyncTask.execute(_segmentsData, true, _delay).then((result) => {
         if (!isHandlingEvent) return; // halt if `stop` has been called
         if (result !== false) {// Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
           if (_segmentsData) telemetryTracker.trackUpdatesFromSSE(updateType);
@@ -47,12 +48,13 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
      * @param {number} changeNumber change number of the MY_SEGMENTS_UPDATE notification
      * @param {SegmentsData | undefined} segmentsData might be undefined
      */
-    put(changeNumber: number, segmentsData?: MySegmentsData) {
+    put(changeNumber: number, segmentsData?: MySegmentsData, delay?: number) {
       if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
 
       maxChangeNumber = changeNumber;
       handleNewEvent = true;
       _segmentsData = segmentsData;
+      _delay = delay;
 
       if (backoff.timeoutID || !isHandlingEvent) __handleMySegmentsUpdateCall();
       backoff.reset();
