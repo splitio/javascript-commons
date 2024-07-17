@@ -35,11 +35,11 @@ export function pollingManagerCSFactory(
 
     forOwn(mySegmentsSyncTasks, ({ msSyncTask, mlsSyncTask }) => {
       if (splitsHaveSegments) msSyncTask.start();
-      else msSyncTask.stop();
+      else msSyncTask.stop(); // smart pausing
 
       if (mlsSyncTask) {
         if (splitsHaveLargeSegments) mlsSyncTask.start();
-        else mlsSyncTask.stop();
+        else mlsSyncTask.stop(); // smart pausing
       }
     });
   }
@@ -51,9 +51,7 @@ export function pollingManagerCSFactory(
     });
   }
 
-  // smart pausing
   readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
-    // smart pausing of mySegments polling
     if (splitsSyncTask.isRunning()) startMySegmentsSyncTasks();
   });
 
