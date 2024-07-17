@@ -79,12 +79,6 @@ export function splitApiFactory(
     },
 
     fetchMyLargeSegments(userMatchingKey: string, noCache?: boolean) {
-      /**
-       * URI encoding of user keys in order to:
-       *  - avoid 400 responses (due to URI malformed). E.g.: '/api/mySegments/%'
-       *  - avoid 404 responses. E.g.: '/api/mySegments/foo/bar'
-       *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
-       */
       const url = `${urls.sdk}/myLargeSegments/${encodeURIComponent(userMatchingKey)}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MY_LARGE_SEGMENT));
     },
