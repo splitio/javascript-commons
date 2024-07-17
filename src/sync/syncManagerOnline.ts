@@ -7,7 +7,7 @@ import { IPollingManager, IPollingManagerCS } from './polling/types';
 import { PUSH_SUBSYSTEM_UP, PUSH_SUBSYSTEM_DOWN } from './streaming/constants';
 import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '../logger/constants';
 import { isConsentGranted } from '../consent';
-import { IN_SEGMENT, POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
+import { IN_LARGE_SEGMENT, IN_SEGMENT, POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 
 /**
@@ -141,36 +141,44 @@ export function syncManagerOnlineFactory(
       shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync) {
         if (!pollingManager) return;
 
-        const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
+        const { msSyncTask, mlsSyncTask } = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
 
         return {
-          isRunning: mySegmentsSyncTask.isRunning,
+          isRunning: msSyncTask.isRunning,
           start() {
             if (syncEnabled) {
               if (pushManager) {
                 if (pollingManager!.isRunning()) {
                   // if doing polling, we must start the periodic fetch of data
-                  if (storage.splits.usesMatcher(IN_SEGMENT)) mySegmentsSyncTask.start();
+                  if (storage.splits.usesMatcher(IN_SEGMENT)) msSyncTask.start();
+                  if (mlsSyncTask && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) mlsSyncTask.start();
                 } else {
                   // if not polling, we must execute the sync task for the initial fetch
                   // of segments since `syncAll` was already executed when starting the main client
-                  mySegmentsSyncTask.execute();
+                  msSyncTask.execute();
+                  mlsSyncTask && mlsSyncTask.execute();
                 }
-                pushManager.add(matchingKey, mySegmentsSyncTask);
+                pushManager.add(matchingKey, msSyncTask);
               } else {
-                if (storage.splits.usesMatcher(IN_SEGMENT)) mySegmentsSyncTask.start();
+                if (storage.splits.usesMatcher(IN_SEGMENT)) msSyncTask.start();
+                if (mlsSyncTask && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) mlsSyncTask.start();
               }
             } else {
-              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
+              if (!readinessManager.isReady()) {
+                msSyncTask.execute();
+                mlsSyncTask && mlsSyncTask.execute();
+              }
             }
           },
           stop() {
             // check in case `client.destroy()` has been invoked more than once for the same client
-            const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);
-            if (mySegmentsSyncTask) {
+            const syncTasks = (pollingManager as IPollingManagerCS).get(matchingKey);
+            if (syncTasks) {
+              const { msSyncTask, mlsSyncTask } = syncTasks;
               // stop syncing
               if (pushManager) pushManager.remove(matchingKey);
-              if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
+              if (msSyncTask.isRunning()) msSyncTask.stop();
+              if (mlsSyncTask && mlsSyncTask.isRunning()) mlsSyncTask.stop();
 
               (pollingManager as IPollingManagerCS).remove(matchingKey);
             }

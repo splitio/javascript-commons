@@ -29,7 +29,9 @@ const pollingManagerMock = {
   start: jest.fn(),
   stop: jest.fn(),
   isRunning: jest.fn(),
-  add: jest.fn(()=>{return {isrunning: () => true};}),
+  add: jest.fn(() => ({
+    msSyncTask: { isRunning: () => true }
+  })),
   get: jest.fn()
 };
 
