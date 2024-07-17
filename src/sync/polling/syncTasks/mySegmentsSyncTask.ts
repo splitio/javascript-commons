@@ -1,5 +1,4 @@
-import { IStorageSync } from '../../../storages/types';
-import { IReadinessManager } from '../../../readiness/types';
+import { ISegmentsCacheSync } from '../../../storages/types';
 import { syncTaskFactory } from '../../syncTask';
 import { IMySegmentsSyncTask } from '../types';
 import { IFetchMySegments } from '../../../services/types';
@@ -12,24 +11,24 @@ import { mySegmentsUpdaterFactory } from '../updaters/mySegmentsUpdater';
  */
 export function mySegmentsSyncTaskFactory(
   fetchMySegments: IFetchMySegments,
-  storage: IStorageSync,
-  readiness: IReadinessManager,
+  mySegmentsCache: ISegmentsCacheSync,
+  notifyUpdate: () => void,
   settings: ISettings,
-  matchingKey: string
+  matchingKey: string,
+  segmentsRefreshRate: number
 ): IMySegmentsSyncTask {
   return syncTaskFactory(
     settings.log,
     mySegmentsUpdaterFactory(
       settings.log,
       mySegmentsFetcherFactory(fetchMySegments),
-      storage.splits,
-      storage.segments,
-      readiness.segments,
+      mySegmentsCache,
+      notifyUpdate,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
       matchingKey
     ),
-    settings.scheduler.segmentsRefreshRate,
+    segmentsRefreshRate,
     'mySegmentsUpdater',
   );
 }

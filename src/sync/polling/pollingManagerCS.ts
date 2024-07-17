@@ -6,9 +6,9 @@ import { mySegmentsSyncTaskFactory } from './syncTasks/mySegmentsSyncTask';
 import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
 import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
+import { POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-import { IN_SEGMENT } from '../../utils/constants';
+import { IN_LARGE_SEGMENT, IN_SEGMENT } from '../../utils/constants';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -23,62 +23,93 @@ export function pollingManagerCSFactory(
 
   const splitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
 
-  // Map of matching keys to their corresponding MySegmentsSyncTask.
-  const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
+  // Map of matching keys to their corresponding MySegmentsSyncTask for segments and large segments.
+  const mySegmentsSyncTasks: Record<string, { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask }> = {};
 
   const matchingKey = getMatching(settings.core.key);
-  const mySegmentsSyncTask = add(matchingKey, readiness, storage);
+  const { msSyncTask, mlsSyncTask } = add(matchingKey, readiness, storage);
 
   function startMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
-      mySegmentsSyncTask.start();
+    const splitsHaveSegments = storage.splits.usesMatcher(IN_SEGMENT);
+    const splitsHaveLargeSegments = storage.splits.usesMatcher(IN_LARGE_SEGMENT);
+
+    forOwn(mySegmentsSyncTasks, ({ msSyncTask, mlsSyncTask }) => {
+      if (splitsHaveSegments) msSyncTask.start();
+      else msSyncTask.stop(); // smart pausing
+
+      if (mlsSyncTask) {
+        if (splitsHaveLargeSegments) mlsSyncTask.start();
+        else mlsSyncTask.stop(); // smart pausing
+      }
     });
   }
 
   function stopMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
-      if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
+    forOwn(mySegmentsSyncTasks, ({ msSyncTask, mlsSyncTask }) => {
+      msSyncTask.stop();
+      mlsSyncTask && mlsSyncTask.stop();
     });
   }
 
-  // smart pausing
   readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
-    if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
-    const splitsHaveSegments = storage.splits.usesMatcher(IN_SEGMENT);
-    if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(POLLING_SMART_PAUSING, [splitsHaveSegments ? 'ON' : 'OFF']);
-      if (splitsHaveSegments) {
-        startMySegmentsSyncTasks();
-      } else {
-        stopMySegmentsSyncTasks();
-      }
-    }
+    if (splitsSyncTask.isRunning()) startMySegmentsSyncTasks();
   });
 
   function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
-    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMySegments, storage, readiness, settings, matchingKey);
+    const msSyncTask = mySegmentsSyncTaskFactory(
+      splitApi.fetchMySegments,
+      storage.segments,
+      () => {
+        if (storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+      },
+      settings,
+      matchingKey,
+      settings.scheduler.segmentsRefreshRate
+    );
+
+    let mlsSyncTask;
+    if (settings.sync.largeSegmentsEnabled) {
+      mlsSyncTask = mySegmentsSyncTaskFactory(
+        splitApi.fetchMyLargeSegments,
+        storage.largeSegments!,
+        () => {
+          if (readiness.largeSegments && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
+        },
+        settings,
+        matchingKey,
+        settings.scheduler.largeSegmentsRefreshRate
+      );
+    }
 
     // smart ready
     function smartReady() {
-      if (!readiness.isReady() && !storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+      if (!readiness.isReady()) {
+        if (!storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+        if (readiness.largeSegments && !storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
+      }
     }
-    if (!storage.splits.usesMatcher(IN_SEGMENT)) setTimeout(smartReady, 0);
+    if (!storage.splits.usesMatcher(IN_SEGMENT) && !storage.splits.usesMatcher(IN_LARGE_SEGMENT)) setTimeout(smartReady, 0);
     else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
 
-    mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
-    return mySegmentsSyncTask;
+    mySegmentsSyncTasks[matchingKey] = { msSyncTask: msSyncTask, mlsSyncTask: mlsSyncTask };
+
+    return {
+      msSyncTask,
+      mlsSyncTask
+    };
   }
 
   return {
     splitsSyncTask,
-    segmentsSyncTask: mySegmentsSyncTask,
+    segmentsSyncTask: msSyncTask,
+    largeSegmentsSyncTask: mlsSyncTask,
 
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
 
       splitsSyncTask.start();
-      if (storage.splits.usesMatcher(IN_SEGMENT)) startMySegmentsSyncTasks();
+      startMySegmentsSyncTasks();
     },
 
     // Stop periodic fetching (polling)
@@ -95,8 +126,9 @@ export function pollingManagerCSFactory(
     // fetch splits and segments
     syncAll() {
       const promises = [splitsSyncTask.execute()];
-      forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
-        promises.push(mySegmentsSyncTask.execute());
+      forOwn(mySegmentsSyncTasks, function ({ msSyncTask, mlsSyncTask }) {
+        promises.push(msSyncTask.execute());
+        mlsSyncTask && promises.push(mlsSyncTask.execute());
       });
       return Promise.all(promises);
     },

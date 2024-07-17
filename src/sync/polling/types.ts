@@ -20,13 +20,14 @@ export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
   splitsSyncTask: ISplitsSyncTask
   segmentsSyncTask: ISyncTask
+  largeSegmentsSyncTask?: ISyncTask
 }
 
 /**
  * PollingManager for client-side with support for multiple clients
  */
 export interface IPollingManagerCS extends IPollingManager {
-  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): IMySegmentsSyncTask
+  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask }
   remove(matchingKey: string): void;
-  get(matchingKey: string): IMySegmentsSyncTask | undefined
+  get(matchingKey: string): { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask } | undefined
 }
