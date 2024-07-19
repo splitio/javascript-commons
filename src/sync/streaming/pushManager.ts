@@ -16,11 +16,19 @@ import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STRE
 import { IMyLargeSegmentsUpdateData, IMySegmentsUpdateV2Data, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
+import { hash } from '../../utils/murmur3/murmur3';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { IUpdateWorker } from './UpdateWorkers/types';
+
+export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
+  const interval = parsedData.i || 60000;
+  const seed = parsedData.s || 0;
+
+  return hash(matchingKey, seed) % interval;
+}
 
 /**
  * PushManager factory:
@@ -252,10 +260,10 @@ export function pushManagerFactory(
           break;
         }
 
-        forOwn(clients, ({ hash64, worker, workerLarge }) => {
+        forOwn(clients, ({ hash64, worker, workerLarge }, matchingKey) => {
           if (isInBitmap(bitmap, hash64.hex)) {
             isLS ?
-              workerLarge && workerLarge.put(parsedData.changeNumber) :
+              workerLarge && workerLarge.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
               worker.put(parsedData.changeNumber);
           }
         });
@@ -311,9 +319,9 @@ export function pushManagerFactory(
     }
 
     // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
-    forOwn(clients, ({ worker, workerLarge }) => {
+    forOwn(clients, ({ worker, workerLarge }, matchingKey) => {
       isLS ?
-        workerLarge && workerLarge.put(parsedData.changeNumber) :
+        workerLarge && workerLarge.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
         worker.put(parsedData.changeNumber);
     });
   }
