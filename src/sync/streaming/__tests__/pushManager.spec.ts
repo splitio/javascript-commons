@@ -33,7 +33,7 @@ test('pushManagerFactory returns undefined if EventSource is not available', () 
 
 describe('pushManager in client-side', () => {
 
-  test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
+  test('does not connect to streaming if it is stopped immediately after being started', async () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
@@ -122,7 +122,7 @@ describe('pushManager in client-side', () => {
 
 describe('pushManager in server-side', () => {
 
-  test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
+  test('does not connect to streaming if it is stopped immediately after being started', async () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
