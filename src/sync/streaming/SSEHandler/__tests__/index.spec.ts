@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { SSEHandlerFactory } from '..';
-import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, ControlType } from '../../constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, MY_LARGE_SEGMENTS_UPDATE, ControlType } from '../../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
@@ -15,6 +15,10 @@ import boundedGzipMessage from '../../../../__tests__/mocks/message.V2.BOUNDED.G
 import keylistGzipMessage from '../../../../__tests__/mocks/message.V2.KEYLIST.GZIP.1457552652000.json';
 import segmentRemovalMessage from '../../../../__tests__/mocks/message.V2.SEGMENT_REMOVAL.1457552653000.json';
 import { keylists, bitmaps } from '../../__tests__/dataMocks';
+
+// update messages MY_LARGE_SEGMENTS_UPDATE
+import largeSegmentUnboundedMessage from '../../../../__tests__/mocks/message.MY_LARGE_SEGMENTS_UPDATE.UNBOUNDED.1457552650000.json';
+import largeSegmentRemovalMessage from '../../../../__tests__/mocks/message.MY_LARGE_SEGMENTS_UPDATE.SEGMENT_REMOVAL.1457552653000.json';
 
 // occupancy messages
 import occupancy1ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.1.control_pri.1586987434450.json';
@@ -168,6 +172,14 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   expectedParams = [{ type: 'MY_SEGMENTS_UPDATE_V2', changeNumber: 1457552653000, c: 0, d: '', u: 3, segmentName: 'splitters' }];
   sseHandler.handleMessage(segmentRemovalMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+
+  expectedParams = [{ type: 'MY_LARGE_SEGMENTS_UPDATE', changeNumber: 1457552650000, c: 0, d: '', u: 0, largeSegments: [], i: 300, h: 0, s: 0 }];
+  sseHandler.handleMessage(largeSegmentUnboundedMessage);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_LARGE_SEGMENTS_UPDATE, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+
+  expectedParams = [{ type: 'MY_LARGE_SEGMENTS_UPDATE', changeNumber: 1457552653000, c: 0, d: '', u: 3, largeSegments: ['employees'] }];
+  sseHandler.handleMessage(largeSegmentRemovalMessage);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_LARGE_SEGMENTS_UPDATE, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
 
   sseHandler.handleMessage(streamingReset);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(ControlType.STREAMING_RESET); // must emit STREAMING_RESET

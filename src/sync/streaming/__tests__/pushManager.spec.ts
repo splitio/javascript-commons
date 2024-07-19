@@ -3,7 +3,7 @@ import { fullSettings, fullSettingsServerSide } from '../../../utils/settingsVal
 import { syncTaskFactory } from '../../__tests__/syncTask.mock';
 
 // Test target
-import { pushManagerFactory } from '../pushManager';
+import { pushManagerFactory, getDelay } from '../pushManager';
 import { IPushManager } from '../types';
 
 const paramsMock = {
@@ -33,7 +33,7 @@ test('pushManagerFactory returns undefined if EventSource is not available', () 
 
 describe('pushManager in client-side', () => {
 
-  test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
+  test('does not connect to streaming if it is stopped immediately after being started', async () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
@@ -122,7 +122,7 @@ describe('pushManager in client-side', () => {
 
 describe('pushManager in server-side', () => {
 
-  test('does not connect to streaming if it is stopped inmediatelly after being started', async () => {
+  test('does not connect to streaming if it is stopped immediately after being started', async () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
@@ -191,4 +191,11 @@ describe('pushManager in server-side', () => {
     pushManager.stop();
   });
 
+});
+
+test('getDelay', () => {
+  expect(getDelay({ i: 300, h: 0, s: 0 }, 'nicolas@split.io')).toBe(241);
+  expect(getDelay({ i: 60000, h: 0, s: 1 }, 'emi@split.io')).toBe(14389);
+  expect(getDelay({ i: 60000, h: 0, s: 0 }, 'emi@split.io')).toBe(24593);
+  expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });
