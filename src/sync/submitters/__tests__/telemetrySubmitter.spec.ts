@@ -39,7 +39,7 @@ describe('Telemetry submitter', () => {
 
     telemetrySubmitter.start();
     expect(telemetrySubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
-    expect(telemetrySubmitter.isExecuting()).toEqual(false); // but not executed immediatelly (first push window)
+    expect(telemetrySubmitter.isExecuting()).toEqual(false); // but not executed immediately (first push window)
     expect(popSpy).toBeCalledTimes(0);
 
     // Await first periodic execution
