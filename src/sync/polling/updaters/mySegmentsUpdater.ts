@@ -1,6 +1,8 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
 import { ISegmentsCacheSync } from '../../../storages/types';
+import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
+import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
@@ -16,8 +18,9 @@ type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => P
 export function mySegmentsUpdaterFactory(
   log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
+  shouldNotify: () => boolean,
   mySegmentsCache: ISegmentsCacheSync,
-  notifyUpdate: () => void,
+  segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
   matchingKey: string
@@ -52,9 +55,9 @@ export function mySegmentsUpdaterFactory(
     }
 
     // Notify update if required
-    if (shouldNotifyUpdate || readyOnAlreadyExistentState) {
+    if (shouldNotify() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      notifyUpdate();
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }
   }
 
