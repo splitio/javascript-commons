@@ -14,7 +14,7 @@ export type MySegmentsData = string[] | {
   add: boolean
 }
 
-export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean, delay?: number], boolean> { }
+export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>

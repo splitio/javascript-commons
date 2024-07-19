@@ -25,7 +25,6 @@ import { IUpdateWorker } from './UpdateWorkers/types';
 
 export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
   const interval = parsedData.i || 60000;
-  // const hashType = parsedData.h || 0;
   const seed = parsedData.s || 0;
 
   return hash(matchingKey, seed) % interval;
