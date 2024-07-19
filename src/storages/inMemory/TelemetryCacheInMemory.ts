@@ -25,7 +25,7 @@ export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
-  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync) { }
+  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync, private largeSegments?: ISegmentsCacheSync) { }
 
   // isEmpty flag
   private e = true;
@@ -51,6 +51,8 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       spC: this.splits && this.splits.getSplitNames().length,
       seC: this.segments && this.segments.getRegisteredSegments().length,
       skC: this.segments && this.segments.getKeysCount(),
+      lseC: this.largeSegments && this.largeSegments.getRegisteredSegments().length,
+      lskC: this.largeSegments && this.largeSegments.getKeysCount(),
       sL: this.getSessionLength(),
       eQ: this.getEventStats(QUEUED),
       eD: this.getEventStats(DROPPED),
