@@ -103,7 +103,7 @@ export type DROPPED = 1;
 export type DEDUPED = 2;
 export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
 export type EventDataType = QUEUED | DROPPED;
-export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT;
+export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT | MY_LARGE_SEGMENT;
 
 export type SPLITS = 'sp';
 export type IMPRESSIONS = 'im';
@@ -159,8 +159,9 @@ export type TelemetryUsageStats = {
 
 // amount of instant updates that we are doing by avoiding fetching to Split servers
 export type UpdatesFromSSE = {
-  sp: number, // splits
+  sp?: number, // splits
   ms?: number, // my segments
+  mls?: number // my large segments
 }
 
 // 'metrics/usage' JSON request body
@@ -181,7 +182,7 @@ export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   eD: number, // eventsDropped
   sE: Array<StreamingEvent>, // streamingEvents
   t?: Array<string>, // tags
-  ufs?: UpdatesFromSSE, //UpdatesFromSSE
+  ufs?: UpdatesFromSSE, // instant updates
 }
 
 /**

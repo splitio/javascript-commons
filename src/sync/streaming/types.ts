@@ -1,4 +1,4 @@
-import { IMySegmentsUpdateData, IMySegmentsUpdateV2Data, ISegmentUpdateData, ISplitUpdateData, ISplitKillData } from './SSEHandler/types';
+import { IMySegmentsUpdateData, IMySegmentsUpdateV2Data, ISegmentUpdateData, ISplitUpdateData, ISplitKillData, IMyLargeSegmentsUpdateData } from './SSEHandler/types';
 import { ITask } from '../types';
 import { IMySegmentsSyncTask } from '../polling/types';
 import { IEventEmitter } from '../../types';
@@ -16,16 +16,18 @@ export type MY_SEGMENTS_UPDATE_V2 = 'MY_SEGMENTS_UPDATE_V2';
 export type SEGMENT_UPDATE = 'SEGMENT_UPDATE';
 export type SPLIT_KILL = 'SPLIT_KILL';
 export type SPLIT_UPDATE = 'SPLIT_UPDATE';
+export type MY_LARGE_SEGMENTS_UPDATE = 'MY_LARGE_SEGMENTS_UPDATE';
 
 // Control-type push notifications, handled by NotificationKeeper
 export type CONTROL = 'CONTROL';
 export type OCCUPANCY = 'OCCUPANCY';
 
-export type IPushEvent = PUSH_SUBSYSTEM_UP | PUSH_SUBSYSTEM_DOWN | PUSH_NONRETRYABLE_ERROR | PUSH_RETRYABLE_ERROR | MY_SEGMENTS_UPDATE | MY_SEGMENTS_UPDATE_V2 | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL | ControlType.STREAMING_RESET
+export type IPushEvent = PUSH_SUBSYSTEM_UP | PUSH_SUBSYSTEM_DOWN | PUSH_NONRETRYABLE_ERROR | PUSH_RETRYABLE_ERROR | MY_SEGMENTS_UPDATE | MY_SEGMENTS_UPDATE_V2 | SEGMENT_UPDATE | SPLIT_UPDATE | SPLIT_KILL | MY_LARGE_SEGMENTS_UPDATE | ControlType.STREAMING_RESET
 
 type IParsedData<T extends IPushEvent> =
   T extends MY_SEGMENTS_UPDATE ? IMySegmentsUpdateData :
   T extends MY_SEGMENTS_UPDATE_V2 ? IMySegmentsUpdateV2Data :
+  T extends MY_LARGE_SEGMENTS_UPDATE ? IMyLargeSegmentsUpdateData :
   T extends SEGMENT_UPDATE ? ISegmentUpdateData :
   T extends SPLIT_UPDATE ? ISplitUpdateData :
   T extends SPLIT_KILL ? ISplitKillData : undefined;
@@ -45,6 +47,6 @@ export interface IPushEventEmitter extends IEventEmitter {
  */
 export interface IPushManager extends ITask, IPushEventEmitter {
   // Methods used in client-side, to support multiple clients
-  add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask): void,
+  add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask, myLargeSegmentsSyncTask?: IMySegmentsSyncTask): void,
   remove(userKey: string): void
 }

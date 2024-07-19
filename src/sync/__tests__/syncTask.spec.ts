@@ -24,7 +24,7 @@ test('syncTaskFactory / start & stop methods for periodic execution', async () =
     // Calling `start` again has not effect
     expect(syncTask.start(...startArgs)).toBe(undefined);
 
-    // Calling `execute` inmediatelly executes the given task and returns its result
+    // Calling `execute` immediately executes the given task and returns its result
     result = await syncTask.execute(3, 4);
     expect(result).toBe(taskResult);
     expect(asyncTask).toHaveBeenLastCalledWith(3, 4);

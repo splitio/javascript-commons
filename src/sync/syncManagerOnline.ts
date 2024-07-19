@@ -158,7 +158,7 @@ export function syncManagerOnlineFactory(
                   msSyncTask.execute();
                   mlsSyncTask && mlsSyncTask.execute();
                 }
-                pushManager.add(matchingKey, msSyncTask);
+                pushManager.add(matchingKey, msSyncTask, mlsSyncTask);
               } else {
                 if (storage.splits.usesMatcher(IN_SEGMENT)) msSyncTask.start();
                 if (mlsSyncTask && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) mlsSyncTask.start();
