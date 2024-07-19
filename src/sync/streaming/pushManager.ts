@@ -23,7 +23,7 @@ import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { IUpdateWorker } from './UpdateWorkers/types';
 
-export function getDelay(parsedData: IMyLargeSegmentsUpdateData, matchingKey: string) {
+export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
   const interval = parsedData.i || 60000;
   // const hashType = parsedData.h || 0;
   const seed = parsedData.s || 0;
