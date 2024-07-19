@@ -94,14 +94,8 @@ export function mySegmentsUpdaterFactory(
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean, delay?: number) {
-    return delay ?
-      new Promise(res => {
-        setTimeout(() => {
-          _mySegmentsUpdater(0, segmentsData, noCache).then(res);
-        }, delay);
-      }) :
-      _mySegmentsUpdater(0, segmentsData, noCache);
+  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean) {
+    return _mySegmentsUpdater(0, segmentsData, noCache);
   };
 
 }
