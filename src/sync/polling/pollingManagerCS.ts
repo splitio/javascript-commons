@@ -58,9 +58,8 @@ export function pollingManagerCSFactory(
   function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
     const msSyncTask = mySegmentsSyncTaskFactory(
       splitApi.fetchMySegments,
-      () => storage.splits.usesMatcher(IN_SEGMENT),
       storage.segments,
-      readiness.segments,
+      () => { if (storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED); },
       settings,
       matchingKey,
       settings.scheduler.segmentsRefreshRate,
@@ -71,9 +70,8 @@ export function pollingManagerCSFactory(
     if (settings.sync.largeSegmentsEnabled) {
       mlsSyncTask = mySegmentsSyncTaskFactory(
         splitApi.fetchMyLargeSegments,
-        () => storage.splits.usesMatcher(IN_LARGE_SEGMENT),
         storage.largeSegments!,
-        readiness.largeSegments!,
+        () => { if (readiness.largeSegments && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED); },
         settings,
         matchingKey,
         settings.scheduler.largeSegmentsRefreshRate,
