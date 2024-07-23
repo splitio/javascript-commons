@@ -7,7 +7,7 @@ import { UpdatesFromSSEEnum } from '../../submitters/types';
 /**
  * MySegmentsUpdateWorker factory
  */
-export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker, updateType: UpdatesFromSSEEnum): IUpdateWorker {
+export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker, updateType: UpdatesFromSSEEnum): IUpdateWorker<[changeNumber: number, segmentsData?: MySegmentsData, delay?: number]> {
 
   let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
   let currentChangeNumber = -1;

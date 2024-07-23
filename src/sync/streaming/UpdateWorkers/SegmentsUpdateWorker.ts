@@ -9,7 +9,7 @@ import { IUpdateWorker } from './types';
 /**
  * SegmentsUpdateWorker factory
  */
-export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
+export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker<[ISegmentUpdateData]> {
 
   // Handles retries with CDN bypass per segment name
   function SegmentUpdateWorker(segment: string) {
