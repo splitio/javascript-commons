@@ -2,7 +2,7 @@ import { IMySegmentsFetcher } from '../fetchers/types';
 import { ISegmentsCacheSync } from '../../../storages/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { ILogger } from '../../../logger/types';
-import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
+import { ERROR_LS_DISABLED, SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { isObject } from '../../../utils/lang';
 
@@ -72,7 +72,10 @@ export function mySegmentsUpdaterFactory(
       });
 
     return updaterPromise.catch(error => {
-      if (startingUp && retriesOnFailureBeforeReady > retry) {
+      if (error && error.statusCode === 403) {
+        // Don't notify update, because SDK_READY will be emitted since there shouldn't be IN_LARGE_SEGMENT matchers
+        log.error(ERROR_LS_DISABLED);
+      } else if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
         log.warn(SYNC_MYSEGMENTS_FETCH_RETRY, [retry, error]);
         return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params

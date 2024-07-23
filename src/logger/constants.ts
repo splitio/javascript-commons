@@ -115,6 +115,7 @@ export const ERROR_MIN_CONFIG_PARAM = 326;
 export const ERROR_TOO_MANY_SETS = 327;
 export const ERROR_SETS_FILTER_EXCLUSIVE = 328;
 export const ENGINE_MATCHER_ERROR = 329;
+export const ERROR_LS_DISABLED = 330;
 
 // Log prefixes (a.k.a. tags or categories)
 export const LOG_PREFIX_SETTINGS = 'settings';
