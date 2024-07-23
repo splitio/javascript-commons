@@ -16,6 +16,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
   let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
   let _delay: undefined | number;
   let _delayTimeoutID: undefined | number;
+  let _delayPromiseRes: undefined | Function;
   const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
   function __handleMySegmentsUpdateCall() {
@@ -26,8 +27,10 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
       // fetch mySegments revalidating data if cached
       const syncTask = _delay ?
-        new Promise(res => {
+        new Promise<boolean>(res => {
+          _delayPromiseRes = res;
           _delayTimeoutID = setTimeout(() => {
+            _delay = _delayPromiseRes = undefined;
             mySegmentsSyncTask.execute(_segmentsData, true).then(res);
           }, _delay);
         }) :
@@ -52,13 +55,15 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
   return {
     /**
-     * Invoked by NotificationProcessor on MY_SEGMENTS_UPDATE event
+     * Invoked by NotificationProcessor on MY_(LARGE)_SEGMENTS_UPDATE notifications
      *
-     * @param {number} changeNumber change number of the MY_SEGMENTS_UPDATE notification
-     * @param {SegmentsData | undefined} segmentsData might be undefined
+     * @param changeNumber change number of the notification
+     * @param segmentsData data for KeyList or SegmentRemoval instant updates
+     * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
      */
     put(changeNumber: number, segmentsData?: MySegmentsData, delay?: number) {
-      if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
+      // Ignore event if it is outdated or if there is a pending fetch request (_delay is set)
+      if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber || _delay) return;
 
       maxChangeNumber = changeNumber;
       handleNewEvent = true;
@@ -71,6 +76,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
     stop() {
       clearTimeout(_delayTimeoutID);
+      _delayPromiseRes && _delayPromiseRes(false);
       isHandlingEvent = false;
       backoff.reset();
     }
