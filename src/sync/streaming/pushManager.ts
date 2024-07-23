@@ -283,14 +283,14 @@ export function pushManagerFactory(
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
             isLS ?
-              workerLarge && workerLarge.put(parsedData.changeNumber, {
+              workerLarge && workerLarge.put(parsedData.changeNumber, [{
                 name: parsedData.largeSegments[0],
                 add
-              }) :
-              worker.put(parsedData.changeNumber, {
+              }]) :
+              worker.put(parsedData.changeNumber, [{
                 name: parsedData.segmentName,
                 add
-              });
+              }]);
           }
         });
         return;
@@ -303,16 +303,14 @@ export function pushManagerFactory(
 
         forOwn(clients, ({ worker, workerLarge }) => {
           isLS ?
-            workerLarge && parsedData.largeSegments.forEach(largeSegment => {
-              workerLarge.put(parsedData.changeNumber, {
-                name: largeSegment,
-                add: false
-              });
-            }) :
-            worker.put(parsedData.changeNumber, {
+            workerLarge && workerLarge.put(parsedData.changeNumber, parsedData.largeSegments.map(largeSegment => ({
+              name: largeSegment,
+              add: false
+            }))) :
+            worker.put(parsedData.changeNumber, [{
               name: parsedData.segmentName,
               add: false
-            });
+            }]);
         });
         return;
     }

@@ -4,6 +4,7 @@ import { timeout } from '../../../utils/promise/timeout';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
+import { isObject } from '../../../utils/lang';
 
 type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
@@ -36,19 +37,18 @@ export function mySegmentsUpdaterFactory(
   function updateSegments(segmentsData: MySegmentsData) {
 
     let shouldNotifyUpdate;
-    if (Array.isArray(segmentsData)) {
-      // Update the list of segment names available
-      shouldNotifyUpdate = mySegmentsCache.resetSegments(segmentsData);
+    if (isObject(segmentsData[0])) {
+      // Add/Delete the segment names
+      (segmentsData as { name: string, add: boolean }[]).forEach(({ name, add }) => {
+        if (mySegmentsCache.isInSegment(name) !== add) {
+          shouldNotifyUpdate = true;
+          if (add) mySegmentsCache.addToSegment(name);
+          else mySegmentsCache.removeFromSegment(name);
+        }
+      });
     } else {
-      // Add/Delete the segment
-      const { name, add } = segmentsData;
-      if (mySegmentsCache.isInSegment(name) !== add) {
-        shouldNotifyUpdate = true;
-        if (add) mySegmentsCache.addToSegment(name);
-        else mySegmentsCache.removeFromSegment(name);
-      } else {
-        shouldNotifyUpdate = false;
-      }
+      // Reset the list of segment names
+      shouldNotifyUpdate = mySegmentsCache.resetSegments(segmentsData as string[]);
     }
 
     // Notify update if required

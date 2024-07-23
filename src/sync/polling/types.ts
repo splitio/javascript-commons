@@ -12,7 +12,7 @@ export type MySegmentsData = string[] | {
   name: string,
   /* action: `true` for add, and `false` for delete */
   add: boolean
-}
+}[]
 
 export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean], boolean> { }
 
