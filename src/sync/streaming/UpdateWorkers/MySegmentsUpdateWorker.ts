@@ -15,7 +15,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
   let isHandlingEvent: boolean;
   let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
   let _delay: undefined | number;
-  let _delayTimeoutID: undefined | number;
+  let _delayTimeoutID: any;
   const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
   function __handleMySegmentsUpdateCall() {
