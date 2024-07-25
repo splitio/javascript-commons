@@ -28,6 +28,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
       const syncTask = _delay ?
         new Promise(res => {
           _delayTimeoutID = setTimeout(() => {
+            _delay = undefined;
             mySegmentsSyncTask.execute(_segmentsData, true).then(res);
           }, _delay);
         }) :
@@ -52,13 +53,15 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
   return {
     /**
-     * Invoked by NotificationProcessor on MY_SEGMENTS_UPDATE event
+     * Invoked by NotificationProcessor on MY_(LARGE)_SEGMENTS_UPDATE notifications
      *
-     * @param {number} changeNumber change number of the MY_SEGMENTS_UPDATE notification
-     * @param {SegmentsData | undefined} segmentsData might be undefined
+     * @param changeNumber change number of the notification
+     * @param segmentsData data for KeyList or SegmentRemoval instant updates
+     * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
      */
     put(changeNumber: number, segmentsData?: MySegmentsData, delay?: number) {
-      if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
+      // Ignore event if it is outdated or if there is a pending fetch request (_delay is set)
+      if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber || _delay) return;
 
       maxChangeNumber = changeNumber;
       handleNewEvent = true;
