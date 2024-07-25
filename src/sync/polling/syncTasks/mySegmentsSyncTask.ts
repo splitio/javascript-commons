@@ -15,7 +15,8 @@ export function mySegmentsSyncTaskFactory(
   notifyUpdate: () => void,
   settings: ISettings,
   matchingKey: string,
-  segmentsRefreshRate: number
+  segmentsRefreshRate: number,
+  NAME: string
 ): IMySegmentsSyncTask {
   return syncTaskFactory(
     settings.log,
@@ -29,6 +30,6 @@ export function mySegmentsSyncTaskFactory(
       matchingKey
     ),
     segmentsRefreshRate,
-    'mySegmentsUpdater',
+    NAME,
   );
 }

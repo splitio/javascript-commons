@@ -281,21 +281,16 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
 });
 
 test('READINESS MANAGER / with large segments', () => {
-  const readinessManager = readinessManagerFactory(EventEmitter, {
-    startup: { readyTimeout: 0, waitForLargeSegments: false },
-    sync: { largeSegmentsEnabled: true }
-  } as unknown as ISettings);
 
-  expect(readinessManager.largeSegments).toBeUndefined();
+  [true, false].forEach(waitForLargeSegments => {
 
-  const readinessManagerWithLargeSegments = readinessManagerFactory(EventEmitter, {
-    startup: { readyTimeout: 0, waitForLargeSegments: true },
-    sync: { largeSegmentsEnabled: true }
-  } as unknown as ISettings);
+    const rm = readinessManagerFactory(EventEmitter, {
+      startup: { readyTimeout: 0, waitForLargeSegments },
+      sync: { largeSegmentsEnabled: true }
+    } as unknown as ISettings);
 
-  expect(readinessManagerWithLargeSegments.largeSegments).toBeDefined();
+    expect(rm.largeSegments).toBeDefined();
 
-  [readinessManager, readinessManagerWithLargeSegments].forEach(rm => {
     let counter = 0;
 
     rm.gate.on(SDK_READY, () => {
@@ -305,10 +300,10 @@ test('READINESS MANAGER / with large segments', () => {
 
     rm.splits.emit(SDK_SPLITS_ARRIVED);
     rm.segments.emit(SDK_SEGMENTS_ARRIVED);
-    if (rm.largeSegments) {
-      expect(counter).toBe(0); // should not be called yet
-      rm.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
-    }
+
+    expect(counter).toBe(waitForLargeSegments ? 0 : 1); // should be called if waitForLargeSegments is false
+    rm.largeSegments!.emit(SDK_SEGMENTS_ARRIVED);
+
     expect(counter).toBe(1); // should be called
 
     rm.splits.emit(SDK_SPLITS_ARRIVED);

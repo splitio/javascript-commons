@@ -18,10 +18,8 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   return splitsEventEmitter;
 }
 
-function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISegmentsEventEmitter {
-  const segmentsEventEmitter = objectAssign(new EventEmitter(), {
-    segmentsArrived: false
-  });
+function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter, segmentsArrived = false): ISegmentsEventEmitter {
+  const segmentsEventEmitter = objectAssign(new EventEmitter(), { segmentsArrived });
 
   segmentsEventEmitter.once(SDK_SEGMENTS_ARRIVED, () => { segmentsEventEmitter.segmentsArrived = true; });
 
@@ -39,7 +37,7 @@ export function readinessManagerFactory(
   const { startup: { readyTimeout, waitForLargeSegments }, sync: { largeSegmentsEnabled } } = settings;
 
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
-  const largeSegments = largeSegmentsEnabled && waitForLargeSegments ? segmentsEventEmitterFactory(EventEmitter) : undefined;
+  const largeSegments = largeSegmentsEnabled ? segmentsEventEmitterFactory(EventEmitter, !waitForLargeSegments) : undefined;
   const gate: IReadinessEventEmitter = new EventEmitter();
 
   // emit SDK_READY_FROM_CACHE

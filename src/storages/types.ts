@@ -204,7 +204,7 @@ export interface ISplitsCacheBase {
   getSplitNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
-  // only for Client-Side
+  // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === 1) or contains a FF using the given matcher
   usesMatcher(matcherType: string): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.

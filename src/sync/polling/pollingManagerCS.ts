@@ -59,12 +59,11 @@ export function pollingManagerCSFactory(
     const msSyncTask = mySegmentsSyncTaskFactory(
       splitApi.fetchMySegments,
       storage.segments,
-      () => {
-        if (storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
-      },
+      () => { if (storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED); },
       settings,
       matchingKey,
-      settings.scheduler.segmentsRefreshRate
+      settings.scheduler.segmentsRefreshRate,
+      'mySegmentsUpdater'
     );
 
     let mlsSyncTask;
@@ -72,24 +71,24 @@ export function pollingManagerCSFactory(
       mlsSyncTask = mySegmentsSyncTaskFactory(
         splitApi.fetchMyLargeSegments,
         storage.largeSegments!,
-        () => {
-          if (readiness.largeSegments && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
-        },
+        () => { if (readiness.largeSegments && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED); },
         settings,
         matchingKey,
-        settings.scheduler.largeSegmentsRefreshRate
+        settings.scheduler.largeSegmentsRefreshRate,
+        'myLargeSegmentsUpdater'
       );
     }
 
     // smart ready
     function smartReady() {
       if (!readiness.isReady()) {
-        if (!storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         if (readiness.largeSegments && !storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
+        if (!storage.splits.usesMatcher(IN_SEGMENT)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
       }
     }
-    if (!storage.splits.usesMatcher(IN_SEGMENT) && !storage.splits.usesMatcher(IN_LARGE_SEGMENT)) setTimeout(smartReady, 0);
-    else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
+
+    if (storage.splits.usesMatcher(IN_SEGMENT) && storage.splits.usesMatcher(IN_LARGE_SEGMENT)) readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
+    else setTimeout(smartReady, 0);
 
     mySegmentsSyncTasks[matchingKey] = { msSyncTask: msSyncTask, mlsSyncTask: mlsSyncTask };
 
