@@ -74,6 +74,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
     stop() {
       clearTimeout(_delayTimeoutID);
+      _delay = undefined;
       isHandlingEvent = false;
       backoff.reset();
     }
