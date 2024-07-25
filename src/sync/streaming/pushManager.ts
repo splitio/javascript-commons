@@ -21,7 +21,6 @@ import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-import { IUpdateWorker } from './UpdateWorkers/types';
 
 export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
   const interval = parsedData.i || 60000;
@@ -72,7 +71,7 @@ export function pushManagerFactory(
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
-  const clients: Record<string, { hash64: Hash64, worker: IUpdateWorker, workerLarge?: IUpdateWorker }> = {};
+  const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker>, workerLarge?: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -284,14 +283,14 @@ export function pushManagerFactory(
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
             isLS ?
-              workerLarge && workerLarge.put(parsedData.changeNumber, {
+              workerLarge && workerLarge.put(parsedData.changeNumber, [{
                 name: parsedData.largeSegments[0],
                 add
-              }) :
-              worker.put(parsedData.changeNumber, {
+              }]) :
+              worker.put(parsedData.changeNumber, [{
                 name: parsedData.segmentName,
                 add
-              });
+              }]);
           }
         });
         return;
@@ -304,16 +303,14 @@ export function pushManagerFactory(
 
         forOwn(clients, ({ worker, workerLarge }) => {
           isLS ?
-            workerLarge && parsedData.largeSegments.forEach(largeSegment => {
-              workerLarge.put(parsedData.changeNumber, {
-                name: largeSegment,
-                add: false
-              });
-            }) :
-            worker.put(parsedData.changeNumber, {
+            workerLarge && workerLarge.put(parsedData.changeNumber, parsedData.largeSegments.map(largeSegment => ({
+              name: largeSegment,
+              add: false
+            }))) :
+            worker.put(parsedData.changeNumber, [{
               name: parsedData.segmentName,
               add: false
-            });
+            }]);
         });
         return;
     }

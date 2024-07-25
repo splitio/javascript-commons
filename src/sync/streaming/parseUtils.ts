@@ -1,6 +1,7 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
 import { Compression, KeyList } from './SSEHandler/types';
+import { ISplit } from '../../dtos/types';
 
 const GZIP = 1;
 const ZLIB = 2;
@@ -42,7 +43,7 @@ function decompress(data: string, compression: Compression) {
  * @returns {{a?: string[], r?: string[] }}
  * @throws if data string cannot be decoded, decompressed or parsed
  */
-export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss: boolean = true): KeyList {
+export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss = true): KeyList {
   const binKeyList = decompress(data, compression);
   let strKeyList = Uint8ArrayToString(binKeyList);
   // replace numbers to strings, to avoid losing precision
@@ -80,14 +81,9 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
 
 /**
  * Parse feature flags notifications for instant feature flag updates
- *
- * @param {ISplitUpdateData} data
- * @returns {KeyList}
  */
-export function parseFFUpdatePayload(compression: Compression, data: string): KeyList | undefined {
-  const avoidPrecisionLoss = false;
-  if (compression > 0)
-    return parseKeyList(data, compression, avoidPrecisionLoss);
-  else
-    return JSON.parse(decodeFromBase64(data));
+export function parseFFUpdatePayload(compression: Compression, data: string): ISplit | undefined {
+  return compression > 0 ?
+    parseKeyList(data, compression, false) :
+    JSON.parse(decodeFromBase64(data));
 }

@@ -206,7 +206,7 @@ describe('SplitsUpdateWorker', () => {
 
     splitUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after reseting
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after resetting
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 

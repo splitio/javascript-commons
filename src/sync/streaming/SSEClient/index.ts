@@ -76,12 +76,10 @@ export class SSEClient implements ISSEClient {
   open(authToken: IAuthTokenPushEnabled) {
     this.close(); // it closes connection if previously opened
 
-    const channelsQueryParam = Object.keys(authToken.channels).map(
-      function (channel) {
-        const params = CONTROL_CHANNEL_REGEX.test(channel) ? '[?occupancy=metrics.publishers]' : '';
-        return encodeURIComponent(params + channel);
-      }
-    ).join(',');
+    const channelsQueryParam = Object.keys(authToken.channels).map((channel) => {
+      const params = CONTROL_CHANNEL_REGEX.test(channel) ? '[?occupancy=metrics.publishers]' : '';
+      return encodeURIComponent(params + channel);
+    }).join(',');
     const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
 
     this.connection = new this.eventSource!(
