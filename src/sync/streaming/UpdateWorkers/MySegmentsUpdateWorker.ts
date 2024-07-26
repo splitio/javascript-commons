@@ -26,7 +26,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
       // fetch mySegments revalidating data if cached
       const syncTask = _delay ?
-        new Promise<boolean>(res => {
+        new Promise(res => {
           _delayTimeoutID = setTimeout(() => {
             _delay = undefined;
             mySegmentsSyncTask.execute(_segmentsData, true).then(res);

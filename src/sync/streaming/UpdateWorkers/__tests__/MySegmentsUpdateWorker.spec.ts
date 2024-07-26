@@ -127,7 +127,7 @@ describe('MySegmentsUpdateWorker', () => {
 
   test('stop', async () => {
     // setup
-    const mySegmentsSyncTask = mySegmentsSyncTaskMock();
+    const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     mySegmentUpdateWorker.put(100);
