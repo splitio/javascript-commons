@@ -130,12 +130,17 @@ describe('MySegmentsUpdateWorker', () => {
     const mySegmentsSyncTask = mySegmentsSyncTaskMock();
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
-    mySegmentUpdateWorker.put(100, undefined, 10);
-
+    mySegmentUpdateWorker.put(100);
     mySegmentUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no calls to `execute` after stopping
-    expect(mySegmentsSyncTask.execute).toBeCalledTimes(0);
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after stopping
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
+
+    mySegmentUpdateWorker.put(150, undefined, 10);
+    mySegmentUpdateWorker.stop();
+
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no calls to `execute` after stopping (fetch request with delay is cleared)
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
   test('put with delay', async () => {

@@ -15,8 +15,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
   let isHandlingEvent: boolean;
   let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
   let _delay: undefined | number;
-  let _delayTimeoutID: undefined | number;
-  let _delayPromiseRes: undefined | Function;
+  let _delayTimeoutID: any;
   const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
   function __handleMySegmentsUpdateCall() {
@@ -28,9 +27,8 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
       // fetch mySegments revalidating data if cached
       const syncTask = _delay ?
         new Promise<boolean>(res => {
-          _delayPromiseRes = res;
           _delayTimeoutID = setTimeout(() => {
-            _delay = _delayPromiseRes = undefined;
+            _delay = undefined;
             mySegmentsSyncTask.execute(_segmentsData, true).then(res);
           }, _delay);
         }) :
@@ -76,7 +74,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
     stop() {
       clearTimeout(_delayTimeoutID);
-      _delayPromiseRes && _delayPromiseRes(false);
+      _delay = undefined;
       isHandlingEvent = false;
       backoff.reset();
     }
