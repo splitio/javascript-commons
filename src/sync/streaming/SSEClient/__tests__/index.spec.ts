@@ -16,18 +16,18 @@ const EXPECTED_HEADERS = {
   SplitSDKVersion: settings.version
 };
 
-test('SSClient / instance creation throws error if EventSource is not provided', () => {
+test('SSEClient / instance creation throws error if EventSource is not provided', () => {
   expect(() => { new SSEClient(settings); }).toThrow(Error);
   expect(() => { new SSEClient(settings, false, {}); }).toThrow(Error);
   expect(() => { new SSEClient(settings, false, { getEventSource: () => undefined }); }).toThrow(Error);
 });
 
-test('SSClient / instance creation success if EventSource is provided', () => {
+test('SSEClient / instance creation success if EventSource is provided', () => {
   const instance = new SSEClient(settings, false, { getEventSource: () => EventSourceMock });
   expect(instance.eventSource).toBe(EventSourceMock);
 });
 
-test('SSClient / setEventHandler, open and close methods', () => {
+test('SSEClient / setEventHandler, open and close methods', () => {
   // instance event handler
   const handler = {
     handleOpen: jest.fn(),
@@ -80,7 +80,7 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
 });
 
-test('SSClient / open method: URL with metadata query params', () => {
+test('SSEClient / open method: URL with metadata query params', () => {
 
   const instance = new SSEClient(settings, false, { getEventSource: () => EventSourceMock });
   instance.open(authDataSample);
@@ -91,7 +91,7 @@ test('SSClient / open method: URL with metadata query params', () => {
   expect(instance.connection.__eventSourceInitDict).toEqual({}); // No headers are passed for streaming connection
 });
 
-test('SSClient / open method: URL and metadata headers with IP and Hostname', () => {
+test('SSEClient / open method: URL and metadata headers with IP and Hostname', () => {
 
   const settingsWithRuntime = {
     ...settings,
@@ -113,7 +113,7 @@ test('SSClient / open method: URL and metadata headers with IP and Hostname', ()
   }); // Headers are properly set for streaming connection
 });
 
-test('SSClient / open method: URL and metadata headers without IP and Hostname', () => {
+test('SSEClient / open method: URL and metadata headers without IP and Hostname', () => {
 
   const instance = new SSEClient(settings, true, { getEventSource: () => EventSourceMock });
   instance.open(authDataSample);
@@ -122,7 +122,7 @@ test('SSClient / open method: URL and metadata headers without IP and Hostname',
   expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS }); // Headers are properly set for streaming connection
 });
 
-test('SSClient / open method: URL, metadata headers and options', () => {
+test('SSEClient / open method: URL, metadata headers and options', () => {
   const platform = { getEventSource: jest.fn(() => EventSourceMock), getOptions: jest.fn(() => ({ withCredentials: true })) };
 
   const instance = new SSEClient(settings, true, platform);
@@ -134,4 +134,27 @@ test('SSClient / open method: URL, metadata headers and options', () => {
   // Assert that getEventSource and getOptions were called once with settings
   expect(platform.getEventSource.mock.calls).toEqual([[settings]]);
   expect(platform.getOptions.mock.calls).toEqual([[settings]]);
+});
+
+test('SSEClient / open method: largeSegmentsEnabled true', () => {
+  const authDataWithMyLargeSegmentsChannel = {
+    ...authDataSample,
+    channels: { ...authDataSample.channels, 'NzM2MDI5Mzc0_MzQyODU4NDUyNg==_myLargeSegments': ['subscribe'] },
+  };
+
+  let instance = new SSEClient({
+    ...settings,
+    sync: { largeSegmentsEnabled: false }
+  }, true, { getEventSource: () => EventSourceMock });
+
+  instance.open(authDataWithMyLargeSegmentsChannel);
+  expect(instance.connection.url).toBe(EXPECTED_URL);
+
+  instance = new SSEClient({
+    ...settings,
+    sync: { largeSegmentsEnabled: true }
+  }, true, { getEventSource: () => EventSourceMock });
+
+  instance.open(authDataWithMyLargeSegmentsChannel);
+  expect(instance.connection.url).toBe(EXPECTED_URL.replace('&accessToken', ',NzM2MDI5Mzc0_MzQyODU4NDUyNg%3D%3D_myLargeSegments&accessToken'));
 });

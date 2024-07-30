@@ -1,7 +1,7 @@
 import { IPlatform } from '../../../sdkFactory/types';
 import { IEventSourceConstructor } from '../../../services/types';
 import { ISettings } from '../../../types';
-import { isString } from '../../../utils/lang';
+import { endsWith, isString } from '../../../utils/lang';
 import { objectAssign } from '../../../utils/lang/objectAssign';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
@@ -42,6 +42,7 @@ export class SSEClient implements ISSEClient {
   useHeaders?: boolean;
   headers: Record<string, string>;
   options?: object;
+  lse?: boolean;
 
   /**
    * SSEClient constructor.
@@ -61,6 +62,7 @@ export class SSEClient implements ISSEClient {
     this.useHeaders = useHeaders;
     this.headers = buildSSEHeaders(settings);
     this.options = getOptions && getOptions(settings);
+    this.lse = settings.sync.largeSegmentsEnabled;
   }
 
   setEventHandler(handler: ISseEventHandler) {
@@ -79,7 +81,10 @@ export class SSEClient implements ISSEClient {
     const channelsQueryParam = Object.keys(authToken.channels).map((channel) => {
       const params = CONTROL_CHANNEL_REGEX.test(channel) ? '[?occupancy=metrics.publishers]' : '';
       return encodeURIComponent(params + channel);
+    }).filter(channel => {
+      return this.lse || !endsWith(channel, 'myLargeSegments');
     }).join(',');
+
     const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
 
     this.connection = new this.eventSource!(
