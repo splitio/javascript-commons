@@ -231,7 +231,8 @@ export type TelemetryConfigStats = {
 // 'metrics/config' JSON request body
 export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   sE: boolean, // streamingEnabled
-  lE?: boolean, // largeSegmentsEnabled
+  lsE?: boolean, // largeSegmentsEnabled
+  wls?: boolean, // waitForLargeSegments
   rR: RefreshRates, // refreshRates
   uO: UrlOverrides, // urlOverrides
   iQ: number, // impressionsQueueSize

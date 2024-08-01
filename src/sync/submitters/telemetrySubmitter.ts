@@ -71,17 +71,19 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
     pop(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
       const isClientSide = settings.core.key !== undefined;
+      const largeSegmentsEnabled = isClientSide && settings.sync.largeSegmentsEnabled;
 
       const { flagSetsTotal, flagSetsIgnored } = getTelemetryFlagSetsStats(settings.sync.__splitFiltersValidation);
 
       return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
-        lE: isClientSide ? settings.sync.largeSegmentsEnabled : undefined,
+        lsE: largeSegmentsEnabled ? largeSegmentsEnabled : undefined,
+        wls: largeSegmentsEnabled ? settings.startup.waitForLargeSegments : undefined,
         rR: {
           sp: scheduler.featuresRefreshRate / 1000,
           se: isClientSide ? undefined : scheduler.segmentsRefreshRate / 1000,
           ms: isClientSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
-          mls: isClientSide && settings.sync.largeSegmentsEnabled ? scheduler.largeSegmentsRefreshRate / 1000 : undefined,
+          mls: largeSegmentsEnabled ? scheduler.largeSegmentsRefreshRate / 1000 : undefined,
           im: scheduler.impressionsRefreshRate / 1000,
           ev: scheduler.eventsPushRate / 1000,
           te: scheduler.telemetryRefreshRate / 1000,
