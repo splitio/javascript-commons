@@ -22,7 +22,7 @@ function userKeyToQueryParam(userKey: string) {
  */
 export function splitApiFactory(
   settings: ISettings,
-  platform: IPlatform,
+  platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
   telemetryTracker: ITelemetryTracker
 ): ISplitApi {
 
