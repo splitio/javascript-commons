@@ -194,8 +194,8 @@ describe('pushManager in server-side', () => {
 });
 
 test('getDelay', () => {
-  expect(getDelay({ i: 300, h: 0, s: 0 }, 'nicolas@split.io')).toBe(241);
-  expect(getDelay({ i: 60000, h: 0, s: 1 }, 'emi@split.io')).toBe(14389);
-  expect(getDelay({ i: 60000, h: 0, s: 0 }, 'emi@split.io')).toBe(24593);
+  expect(getDelay({ i: 300, h: 1, s: 0 }, 'nicolas@split.io')).toBe(241);
+  expect(getDelay({ i: 60000, h: 1, s: 1 }, 'emi@split.io')).toBe(14389);
+  expect(getDelay({ i: 60000, h: 1, s: 0 }, 'emi@split.io')).toBe(24593);
   expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });

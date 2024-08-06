@@ -173,7 +173,7 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   sseHandler.handleMessage(segmentRemovalMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
 
-  expectedParams = [{ type: 'MY_LARGE_SEGMENTS_UPDATE', changeNumber: 1457552650000, c: 0, d: '', u: 0, largeSegments: [], i: 300, h: 0, s: 0 }];
+  expectedParams = [{ type: 'MY_LARGE_SEGMENTS_UPDATE', changeNumber: 1457552650000, c: 0, d: '', u: 0, largeSegments: [], i: 300, h: 1, s: 0 }];
   sseHandler.handleMessage(largeSegmentUnboundedMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_LARGE_SEGMENTS_UPDATE, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
 

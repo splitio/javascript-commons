@@ -23,6 +23,8 @@ import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
+  if (parsedData.h === 0) return 0;
+
   const interval = parsedData.i || 60000;
   const seed = parsedData.s || 0;
 
