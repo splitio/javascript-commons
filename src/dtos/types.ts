@@ -235,7 +235,7 @@ export interface IMySegmentsResponse {
 /** Interface of the parsed JSON response of `/myLargeSegments/{userKey}` */
 export interface IMyLargeSegmentsResponse {
   myLargeSegments: string[],
-  changeNumber: number
+  till: number
 }
 
 /** Metadata internal type for storages */
