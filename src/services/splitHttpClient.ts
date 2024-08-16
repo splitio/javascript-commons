@@ -3,8 +3,38 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
 import { IPlatform } from '../sdkFactory/types';
+import { _Set } from '../utils/lang/sets';
 
 const messageNoFetch = 'Global fetch API is not available.';
+
+const FORBIDDEN_HEADERS = new _Set([
+  'splitsdkversion',
+  'splitmachineip',
+  'splitmachinename',
+  'splitimpressionsmode',
+  'host',
+  'referrer',
+  'content-type',
+  'content-length',
+  'content-encoding',
+  'accept',
+  'keep-alive',
+  'x-fastly-debug'
+]);
+
+export function _decorateHeaders(settings: ISettings, headers: Record<string, string>) {
+  if (settings.sync.requestOptions?.getHeaderOverrides) {
+    const context = { headers: objectAssign({}, headers) };
+    try {
+      const headerOverrides = settings.sync.requestOptions.getHeaderOverrides(context);
+      Object.keys(headerOverrides)
+        .filter(key => !FORBIDDEN_HEADERS.has(key.toLowerCase()))
+        .forEach(key => headers[key] = headerOverrides[key]);
+    } catch (e) {
+      settings.log.error('Problem adding custom headers to request decorator: ' + e);
+    }
+  }
+}
 
 /**
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
@@ -21,20 +51,24 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
-  const headers: Record<string, string> = {
+  const commonHeaders: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${authorizationKey}`,
     'SplitSDKVersion': version
   };
 
-  if (ip) headers['SplitSDKMachineIP'] = ip;
-  if (hostname) headers['SplitSDKMachineName'] = hostname;
+  if (ip) commonHeaders['SplitSDKMachineIP'] = ip;
+  if (hostname) commonHeaders['SplitSDKMachineName'] = hostname;
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
+    const headers = reqOpts.headers ? objectAssign({}, commonHeaders, reqOpts.headers) : commonHeaders;
+
+    _decorateHeaders(settings, headers);
+
     const request = objectAssign({
-      headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
+      headers,
       method: reqOpts.method || 'GET',
       body: reqOpts.body
     }, options);

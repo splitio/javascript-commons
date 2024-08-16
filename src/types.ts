@@ -119,7 +119,10 @@ export interface ISettings {
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
     enabled: boolean,
-    flagSpecVersion: string
+    flagSpecVersion: string,
+    requestOptions?: {
+      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
+    }
   },
   readonly runtime: {
     ip: string | false
@@ -218,7 +221,10 @@ interface ISharedSettings {
      * Enables synchronization.
      * @property {boolean} enabled
      */
-    enabled: boolean
+    enabled?: boolean,
+    requestOptions?: {
+      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
+    },
   }
 }
 /**
