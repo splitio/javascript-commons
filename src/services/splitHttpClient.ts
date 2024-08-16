@@ -34,10 +34,8 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
-    const headers = decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {}));
-
     const request = objectAssign({
-      headers,
+      headers: decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {})),
       method: reqOpts.method || 'GET',
       body: reqOpts.body
     }, options);
