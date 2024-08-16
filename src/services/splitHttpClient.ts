@@ -3,46 +3,9 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
 import { IPlatform } from '../sdkFactory/types';
-import { _Set } from '../utils/lang/sets';
+import { decorateHeaders } from './decorateHeaders';
 
 const messageNoFetch = 'Global fetch API is not available.';
-
-const FORBIDDEN_HEADERS = new _Set([
-  'splitsdkversion',
-  'splitsdkmachineip',
-  'splitsdkmachinename',
-  'splitsdkimpressionsmode',
-  'host',
-  'referrer',
-  'content-type',
-  'content-length',
-  'content-encoding',
-  'accept',
-  'keep-alive',
-  'x-fastly-debug'
-]);
-
-function _convertKeysToLowerCase(obj: Record<string, string>) {
-  return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
-    acc[key.toLowerCase()] = obj[key];
-    return acc;
-  }, {});
-}
-
-export function _decorateHeaders(settings: ISettings, headers: Record<string, string>) {
-  if (settings.sync.requestOptions?.getHeaderOverrides) {
-    headers = _convertKeysToLowerCase(headers);
-    try {
-      const headerOverrides = _convertKeysToLowerCase(settings.sync.requestOptions.getHeaderOverrides({ headers: objectAssign({}, headers) }));
-      Object.keys(headerOverrides)
-        .filter(key => !FORBIDDEN_HEADERS.has(key))
-        .forEach(key => headers[key] = headerOverrides[key]);
-    } catch (e) {
-      settings.log.error('Problem adding custom headers to request decorator: ' + e);
-    }
-  }
-  return headers;
-}
 
 /**
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
@@ -71,7 +34,7 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
-    const headers = _decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {}));
+    const headers = decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {}));
 
     const request = objectAssign({
       headers,

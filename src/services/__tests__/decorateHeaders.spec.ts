@@ -1,18 +1,18 @@
 import { ISettings } from '../../types';
-import { _decorateHeaders } from '../splitHttpClient';
+import { decorateHeaders } from '../decorateHeaders';
 
 const HEADERS = {
   'authorization': 'Bearer SDK-KEY',
   'splitsdkversion': 'JS' // Overriding is forbidden
 };
 
-describe('_decorateHeaders', () => {
+describe('decorateHeaders', () => {
 
   test('should not decorate headers if getHeaderOverrides is not provided', () => {
     const headers = { ...HEADERS };
     const settings = { sync: {} };
 
-    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
+    expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
   });
 
   test('should decorate headers with header overrides, ignoring forbidden headers', () => {
@@ -28,7 +28,7 @@ describe('_decorateHeaders', () => {
       }
     };
 
-    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual({ 'authorization': 'updated', 'other_header': 'other_value', 'splitsdkversion': 'JS' });
+    expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual({ 'authorization': 'updated', 'other_header': 'other_value', 'splitsdkversion': 'JS' });
   });
 
   test('should handle errors when decorating headers', () => {
@@ -44,7 +44,7 @@ describe('_decorateHeaders', () => {
       log: { error: jest.fn() }
     };
 
-    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
+    expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
     expect(settings.log.error).toHaveBeenCalledWith('Problem adding custom headers to request decorator: Error: Unexpected error');
   });
 });
