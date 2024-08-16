@@ -2,8 +2,8 @@ import { ISettings } from '../../types';
 import { _decorateHeaders } from '../splitHttpClient';
 
 const HEADERS = {
-  'Authorization': 'Bearer SDK-KEY',
-  'SplitSdkVersion': 'JS' // Overriding is forbidden
+  'authorization': 'Bearer SDK-KEY',
+  'splitsdkversion': 'JS' // Overriding is forbidden
 };
 
 describe('_decorateHeaders', () => {
@@ -12,9 +12,7 @@ describe('_decorateHeaders', () => {
     const headers = { ...HEADERS };
     const settings = { sync: {} };
 
-    _decorateHeaders(settings as unknown as ISettings, headers);
-
-    expect(headers).toEqual(HEADERS);
+    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
   });
 
   test('should decorate headers with header overrides, ignoring forbidden headers', () => {
@@ -24,15 +22,13 @@ describe('_decorateHeaders', () => {
         requestOptions: {
           getHeaderOverrides: (context: { headers: Record<string, string> }) => {
             context.headers['Authorization'] = 'ignored';
-            return { 'Authorization': 'updated', 'other_header': 'other_value', 'SplitSdkVersion': 'FORBIDDEN' };
+            return { 'Authorization': 'updated', 'OTHER_HEADER': 'other_value', 'SplitSdkVersion': 'FORBIDDEN' };
           }
         }
       }
     };
 
-    _decorateHeaders(settings as unknown as ISettings, headers);
-
-    expect(headers).toEqual({ 'Authorization': 'updated', 'other_header': 'other_value', 'SplitSdkVersion': 'JS' });
+    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual({ 'authorization': 'updated', 'other_header': 'other_value', 'splitsdkversion': 'JS' });
   });
 
   test('should handle errors when decorating headers', () => {
@@ -48,9 +44,7 @@ describe('_decorateHeaders', () => {
       log: { error: jest.fn() }
     };
 
-    _decorateHeaders(settings as unknown as ISettings, headers);
-
+    expect(_decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
     expect(settings.log.error).toHaveBeenCalledWith('Problem adding custom headers to request decorator: Error: Unexpected error');
-    expect(headers).toEqual(HEADERS);
   });
 });
