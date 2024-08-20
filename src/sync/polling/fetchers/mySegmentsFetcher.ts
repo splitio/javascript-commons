@@ -1,5 +1,5 @@
 import { IFetchMySegments, IResponse } from '../../../services/types';
-import { IMySegmentsResponse, IMyLargeSegmentsResponse } from '../../../dtos/types';
+import { IMySegmentsResponse } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
 
 /**
@@ -13,19 +13,14 @@ export function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments): IMy
     noCache?: boolean,
     // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-  ): Promise<string[]> {
+  ): Promise<IMySegmentsResponse> {
 
     let mySegmentsPromise = fetchMySegments(userMatchingKey, noCache);
     if (decorator) mySegmentsPromise = decorator(mySegmentsPromise);
 
     // Extract segment names
     return mySegmentsPromise
-      .then(resp => resp.json())
-      .then((json: IMySegmentsResponse | IMyLargeSegmentsResponse) => {
-        return (json as IMySegmentsResponse).mySegments ?
-          (json as IMySegmentsResponse).mySegments.map((segment) => segment.name) :
-          (json as IMyLargeSegmentsResponse).myLargeSegments;
-      });
+      .then(resp => resp.json());
   };
 
 }

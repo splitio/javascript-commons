@@ -19,7 +19,7 @@ import { ISet, _Set } from '../../utils/lang/sets';
 import { hash } from '../../utils/murmur3/murmur3';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
-import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
@@ -73,7 +73,7 @@ export function pushManagerFactory(
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
-  const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker>, workerLarge?: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
+  const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -180,10 +180,7 @@ export function pushManagerFactory(
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
     splitsUpdateWorker.stop();
-    if (userKey) forOwn(clients, ({ worker, workerLarge }) => {
-      worker.stop();
-      workerLarge && workerLarge.stop();
-    });
+    if (userKey) forOwn(clients, ({ worker }) => worker.stop());
     else segmentsUpdateWorker!.stop();
   }
 
@@ -261,10 +258,10 @@ export function pushManagerFactory(
           break;
         }
 
-        forOwn(clients, ({ hash64, worker, workerLarge }, matchingKey) => {
+        forOwn(clients, ({ hash64, worker }, matchingKey) => {
           if (isInBitmap(bitmap, hash64.hex)) {
             isLS ?
-              workerLarge && workerLarge.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
+              worker.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
               worker.put(parsedData.changeNumber);
           }
         });
@@ -281,11 +278,12 @@ export function pushManagerFactory(
           break;
         }
 
-        forOwn(clients, ({ hash64, worker, workerLarge }) => {
+        forOwn(clients, ({ hash64, worker }) => {
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
             isLS ?
-              workerLarge && workerLarge.put(parsedData.changeNumber, [{
+              worker.put(parsedData.changeNumber, [{
+                isLS,
                 name: parsedData.largeSegments[0],
                 add
               }]) :
@@ -303,9 +301,10 @@ export function pushManagerFactory(
           break;
         }
 
-        forOwn(clients, ({ worker, workerLarge }) => {
+        forOwn(clients, ({ worker }) => {
           isLS ?
-            workerLarge && workerLarge.put(parsedData.changeNumber, parsedData.largeSegments.map(largeSegment => ({
+            worker.put(parsedData.changeNumber, parsedData.largeSegments.map(largeSegment => ({
+              isLS,
               name: largeSegment,
               add: false
             }))) :
@@ -318,9 +317,9 @@ export function pushManagerFactory(
     }
 
     // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
-    forOwn(clients, ({ worker, workerLarge }, matchingKey) => {
+    forOwn(clients, ({ worker }, matchingKey) => {
       isLS ?
-        workerLarge && workerLarge.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
+        worker.put(parsedData.changeNumber, undefined, getDelay(parsedData, matchingKey)) :
         worker.put(parsedData.changeNumber);
     });
   }
@@ -332,7 +331,7 @@ export function pushManagerFactory(
       if (userKey && clients[userKey]) { // check existence since it can be undefined if client has been destroyed
         clients[userKey].worker.put(
           parsedData.changeNumber,
-          parsedData.includesPayload ? parsedData.segmentList ? parsedData.segmentList : [] : undefined);
+          parsedData.includesPayload ? { mySegments: parsedData.segmentList ? parsedData.segmentList.map(segment => ({ name: segment })) : [] } : undefined);
       }
     });
 
@@ -360,7 +359,7 @@ export function pushManagerFactory(
         if (disabled || disconnected === false) return;
         disconnected = false;
 
-        if (userKey) this.add(userKey, pollingManager.segmentsSyncTask, pollingManager.largeSegmentsSyncTask!); // client-side
+        if (userKey) this.add(userKey, pollingManager.segmentsSyncTask); // client-side
         else setTimeout(connectPush); // server-side runs in next cycle as in client-side, for consistency with client-side
       },
 
@@ -370,15 +369,14 @@ export function pushManagerFactory(
       },
 
       // [Only for client-side]
-      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask, myLargeSegmentsSyncTask?: IMySegmentsSyncTask) {
+      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
           userKeyHashes[hash] = userKey;
           clients[userKey] = {
             hash64: hash64(userKey),
-            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker, MY_SEGMENT),
-            workerLarge: myLargeSegmentsSyncTask ? MySegmentsUpdateWorker(myLargeSegmentsSyncTask, telemetryTracker, MY_LARGE_SEGMENT) : undefined
+            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker)
           };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 

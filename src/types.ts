@@ -86,7 +86,6 @@ export interface ISettings {
     metricsRefreshRate?: number,
     telemetryRefreshRate: number,
     segmentsRefreshRate: number,
-    largeSegmentsRefreshRate: number,
     offlineRefreshRate: number,
     eventsPushRate: number,
     eventsQueueSize: number,
@@ -96,8 +95,7 @@ export interface ISettings {
     readyTimeout: number,
     requestTimeoutBeforeReady: number,
     retriesOnFailureBeforeReady: number,
-    eventsFirstPushWindow: number,
-    waitForLargeSegments: boolean
+    eventsFirstPushWindow: number
   },
   readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
   readonly integrations: Array<{
@@ -121,7 +119,6 @@ export interface ISettings {
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
     enabled: boolean,
-    largeSegmentsEnabled: boolean,
     flagSpecVersion: string
   },
   readonly runtime: {
@@ -816,13 +813,6 @@ export namespace SplitIO {
        * @default 10
        */
       eventsFirstPushWindow?: number,
-      /**
-       * Whether the SDK should wait for large segments to be ready before emitting SDK_READY event.
-       * It only applies if largeSegmentsEnabled is true.
-       * @property {number} waitForLargeSegments
-       * @default true
-       */
-      waitForLargeSegments?: boolean
     },
     /**
      * SDK scheduler settings.
@@ -867,13 +857,6 @@ export namespace SplitIO {
        * @default 60
        */
       segmentsRefreshRate?: number,
-      /**
-       * The SDK polls Split servers for changes to large segment definitions. This parameter controls this polling period in seconds.
-       * It only applies if largeSegmentsEnabled is true.
-       * @property {number} largeSegmentsRefreshRate
-       * @default 60
-       */
-      largeSegmentsRefreshRate?: number,
       /**
        * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
        * @property {number} eventsPushRate
@@ -946,14 +929,6 @@ export namespace SplitIO {
      * @property {Object} urls
      */
     urls?: UrlSettings,
-    sync?: ISharedSettings['sync'] & {
-      /**
-       * Enables synchronization of large segments.
-       * @property {boolean} largeSegmentsEnabled
-       * @default false
-       */
-      largeSegmentsEnabled?: boolean
-    }
   }
   /**
    * Settings interface for SDK instances created on NodeJS.

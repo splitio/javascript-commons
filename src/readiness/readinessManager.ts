@@ -18,8 +18,10 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   return splitsEventEmitter;
 }
 
-function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter, segmentsArrived = false): ISegmentsEventEmitter {
-  const segmentsEventEmitter = objectAssign(new EventEmitter(), { segmentsArrived });
+function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISegmentsEventEmitter {
+  const segmentsEventEmitter = objectAssign(new EventEmitter(), {
+    segmentsArrived: false
+  });
 
   segmentsEventEmitter.once(SDK_SEGMENTS_ARRIVED, () => { segmentsEventEmitter.segmentsArrived = true; });
 
@@ -34,10 +36,9 @@ export function readinessManagerFactory(
   settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
 
-  const { startup: { readyTimeout, waitForLargeSegments }, sync: { largeSegmentsEnabled } } = settings;
+  const readyTimeout = settings.startup.readyTimeout;
 
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
-  const largeSegments = largeSegmentsEnabled ? segmentsEventEmitterFactory(EventEmitter, !waitForLargeSegments) : undefined;
   const gate: IReadinessEventEmitter = new EventEmitter();
 
   // emit SDK_READY_FROM_CACHE
@@ -63,7 +64,6 @@ export function readinessManagerFactory(
   let isReady = false;
   splits.on(SDK_SPLITS_ARRIVED, checkIsReadyOrUpdate);
   segments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
-  if (largeSegments) largeSegments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
 
   let isDestroyed = false;
 
@@ -89,7 +89,7 @@ export function readinessManagerFactory(
         setTimeout(() => { throw e; }, 0);
       }
     } else {
-      if (splits.splitsArrived && segments.segmentsArrived && (!largeSegments || largeSegments.segmentsArrived)) {
+      if (splits.splitsArrived && segments.segmentsArrived) {
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
@@ -107,7 +107,6 @@ export function readinessManagerFactory(
   return {
     splits,
     segments,
-    largeSegments,
     gate,
 
     shared() {
@@ -126,7 +125,6 @@ export function readinessManagerFactory(
       isDestroyed = true;
 
       segments.removeAllListeners();
-      if (largeSegments) largeSegments.removeAllListeners();
       gate.removeAllListeners();
       clearTimeout(readyTimeoutId);
 

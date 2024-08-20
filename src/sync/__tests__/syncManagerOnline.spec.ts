@@ -12,7 +12,7 @@ jest.mock('../submitters/submitterManager', () => {
 // Mocked storageManager
 const storageManagerMock = {
   splits: {
-    usesMatcher: () => false
+    usesSegments: () => false
   }
 };
 
@@ -29,9 +29,7 @@ const pollingManagerMock = {
   start: jest.fn(),
   stop: jest.fn(),
   isRunning: jest.fn(),
-  add: jest.fn(() => ({
-    msSyncTask: { isRunning: () => true }
-  })),
+  add: jest.fn(() => { return { isRunning: () => true }; }),
   get: jest.fn()
 };
 

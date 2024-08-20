@@ -52,7 +52,6 @@ export const fullSettings: ISettings = {
     impressionsRefreshRate: 1,
     telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,
-    largeSegmentsRefreshRate: 1,
     offlineRefreshRate: 1,
     eventsPushRate: 1,
     eventsQueueSize: 1,
@@ -63,8 +62,7 @@ export const fullSettings: ISettings = {
     readyTimeout: 1,
     requestTimeoutBeforeReady: 1,
     retriesOnFailureBeforeReady: 1,
-    eventsFirstPushWindow: 1,
-    waitForLargeSegments: false
+    eventsFirstPushWindow: 1
   },
   features: 'path/to/file',
   storage: InMemoryStorageCSFactory,
@@ -82,8 +80,7 @@ export const fullSettings: ISettings = {
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
     enabled: true,
-    flagSpecVersion: '1.1',
-    largeSegmentsEnabled: false
+    flagSpecVersion: '1.2'
   },
   version: 'jest',
   runtime: {

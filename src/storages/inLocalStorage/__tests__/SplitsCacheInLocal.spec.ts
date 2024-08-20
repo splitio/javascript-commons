@@ -4,7 +4,6 @@ import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments,
 import { ISplit } from '../../../dtos/types';
 import { _Set } from '../../../utils/lang/sets';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
-import { IN_SEGMENT } from '../../../utils/constants';
 
 
 test('SPLIT CACHE / LocalStorage', () => {
@@ -142,26 +141,26 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
 
 });
 
-test('SPLIT CACHE / LocalStorage / usesMatcher', () => {
+test('SPLIT CACHE / LocalStorage / usesSegments', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(true); // true initially, until data is synchronized
+  expect(cache.usesSegments()).toBe(true); // true initially, until data is synchronized
   cache.setChangeNumber(1); // to indicate that data has been synced.
 
   cache.addSplits([['split1', splitWithUserTT], ['split2', splitWithAccountTT],]);
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(false); // 0 splits using segments
+  expect(cache.usesSegments()).toBe(false); // 0 splits using segments
 
   cache.addSplit('split3', splitWithAccountTTAndUsesSegments);
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(true); // 1 split using segments
+  expect(cache.usesSegments()).toBe(true); // 1 split using segments
 
   cache.addSplit('split4', splitWithAccountTTAndUsesSegments);
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(true); // 2 splits using segments
+  expect(cache.usesSegments()).toBe(true); // 2 splits using segments
 
   cache.removeSplit('split3');
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(true); // 1 split using segments
+  expect(cache.usesSegments()).toBe(true); // 1 split using segments
 
   cache.removeSplit('split4');
-  expect(cache.usesMatcher(IN_SEGMENT)).toBe(false); // 0 splits using segments
+  expect(cache.usesSegments()).toBe(false); // 0 splits using segments
 });
 
 test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {

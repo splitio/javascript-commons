@@ -32,8 +32,6 @@ export const base = {
     featuresRefreshRate: 60,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
-    // fetch large segments updates each 60 sec
-    largeSegmentsRefreshRate: 60,
     // publish telemetry stats each 3600 secs (1 hour)
     telemetryRefreshRate: 3600,
     // publish evaluations each 300 sec (default value for OPTIMIZED impressions mode)
@@ -87,8 +85,7 @@ export const base = {
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
     enabled: true,
-    flagSpecVersion: FLAG_SPEC_VERSION,
-    largeSegmentsEnabled: false
+    flagSpecVersion: FLAG_SPEC_VERSION
   },
 
   // Logger
@@ -135,7 +132,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
-  scheduler.largeSegmentsRefreshRate = fromSecondsToMillis(scheduler.largeSegmentsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));

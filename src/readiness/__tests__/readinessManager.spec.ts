@@ -7,20 +7,14 @@ import { ISettings } from '../../types';
 const settings = {
   startup: {
     readyTimeout: 0,
-    waitForLargeSegments: false
-  },
-  sync: {
-    largeSegmentEnabled: false
   }
 } as unknown as ISettings;
 
 const settingsWithTimeout = {
-  ...settings,
   startup: {
-    ...settings.startup,
     readyTimeout: 50
   }
-};
+} as unknown as ISettings;
 
 const statusFlagsCount = 5;
 
@@ -278,40 +272,4 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
     done();
   }, settingsWithTimeout.startup.readyTimeout * 1.5);
 
-});
-
-test('READINESS MANAGER / with large segments', () => {
-
-  [true, false].forEach(waitForLargeSegments => {
-
-    const rm = readinessManagerFactory(EventEmitter, {
-      startup: { readyTimeout: 0, waitForLargeSegments },
-      sync: { largeSegmentsEnabled: true }
-    } as unknown as ISettings);
-
-    expect(rm.largeSegments).toBeDefined();
-
-    let counter = 0;
-
-    rm.gate.on(SDK_READY, () => {
-      expect(rm.isReady()).toBe(true);
-      counter++;
-    });
-
-    rm.splits.emit(SDK_SPLITS_ARRIVED);
-    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
-
-    expect(counter).toBe(waitForLargeSegments ? 0 : 1); // should be called if waitForLargeSegments is false
-    rm.largeSegments!.emit(SDK_SEGMENTS_ARRIVED);
-
-    expect(counter).toBe(1); // should be called
-
-    rm.splits.emit(SDK_SPLITS_ARRIVED);
-    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
-    rm.splits.emit(SDK_SPLITS_ARRIVED);
-    rm.segments.emit(SDK_SEGMENTS_ARRIVED);
-    if (rm.largeSegments) rm.largeSegments.emit(SDK_SEGMENTS_ARRIVED);
-
-    expect(counter).toBe(1); // should be called once
-  });
 });

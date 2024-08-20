@@ -204,8 +204,8 @@ export interface ISplitsCacheBase {
   getSplitNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
-  // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === 1) or contains a FF using the given matcher
-  usesMatcher(matcherType: string): MaybeThenable<boolean>,
+  // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === -1) or contains a FF using segments or large segments
+  usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
   checkCache(): MaybeThenable<boolean>,
@@ -223,7 +223,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   getAll(): ISplit[],
   getSplitNames(): string[],
   trafficTypeExists(trafficType: string): boolean,
-  usesMatcher(matcherType: string): boolean,
+  usesSegments(): boolean,
   clear(): void,
   checkCache(): boolean,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
@@ -240,7 +240,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   getAll(): Promise<ISplit[]>,
   getSplitNames(): Promise<string[]>,
   trafficTypeExists(trafficType: string): Promise<boolean>,
-  usesMatcher(matcherType: string): Promise<boolean>,
+  usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
   checkCache(): Promise<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
@@ -270,7 +270,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean
   getChangeNumber(name: string): number
-  resetSegments(names: string[]): boolean // only for Sync Client-Side
+  resetSegments(names: string[], changeNumber?: number): boolean // only for Sync Client-Side
   clear(): void
 }
 
@@ -478,6 +478,7 @@ export interface IStorageSync extends IStorageBase<
   ITelemetryCacheSync,
   IUniqueKeysCacheSync
 > {
+  // Defined in client-side
   largeSegments?: ISegmentsCacheSync,
 }
 

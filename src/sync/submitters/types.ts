@@ -103,7 +103,7 @@ export type DROPPED = 1;
 export type DEDUPED = 2;
 export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
 export type EventDataType = QUEUED | DROPPED;
-export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT | MY_LARGE_SEGMENT;
+export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT;
 
 export type SPLITS = 'sp';
 export type IMPRESSIONS = 'im';
@@ -113,8 +113,7 @@ export type TELEMETRY = 'te';
 export type TOKEN = 'to';
 export type SEGMENT = 'se';
 export type MY_SEGMENT = 'ms';
-export type MY_LARGE_SEGMENT = 'mls';
-export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT | MY_LARGE_SEGMENT;
+export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT;
 
 export type LastSync = Partial<Record<OperationType, number | undefined>>
 export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
@@ -205,7 +204,6 @@ export type RefreshRates = {
   sp: number, // splits
   se?: number, // segments
   ms?: number, // mySegments
-  mls?: number, // myLargeSegments
   im: number, // impressions
   ev: number, // events
   te: number, // telemetry
@@ -231,8 +229,6 @@ export type TelemetryConfigStats = {
 // 'metrics/config' JSON request body
 export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   sE: boolean, // streamingEnabled
-  lsE?: boolean, // largeSegmentsEnabled
-  wls?: boolean, // waitForLargeSegments
   rR: RefreshRates, // refreshRates
   uO: UrlOverrides, // urlOverrides
   iQ: number, // impressionsQueueSize

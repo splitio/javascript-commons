@@ -135,26 +135,3 @@ test('SSEClient / open method: URL, metadata headers and options', () => {
   expect(platform.getEventSource.mock.calls).toEqual([[settings]]);
   expect(platform.getOptions.mock.calls).toEqual([[settings]]);
 });
-
-test('SSEClient / open method: largeSegmentsEnabled true', () => {
-  const authDataWithMyLargeSegmentsChannel = {
-    ...authDataSample,
-    channels: { ...authDataSample.channels, 'NzM2MDI5Mzc0_MzQyODU4NDUyNg==_myLargeSegments': ['subscribe'] },
-  };
-
-  let instance = new SSEClient({
-    ...settings,
-    sync: { largeSegmentsEnabled: false }
-  }, true, { getEventSource: () => EventSourceMock });
-
-  instance.open(authDataWithMyLargeSegmentsChannel);
-  expect(instance.connection.url).toBe(EXPECTED_URL);
-
-  instance = new SSEClient({
-    ...settings,
-    sync: { largeSegmentsEnabled: true }
-  }, true, { getEventSource: () => EventSourceMock });
-
-  instance.open(authDataWithMyLargeSegmentsChannel);
-  expect(instance.connection.url).toBe(EXPECTED_URL.replace('&accessToken', ',NzM2MDI5Mzc0_MzQyODU4NDUyNg%3D%3D_myLargeSegments&accessToken'));
-});

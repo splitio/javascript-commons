@@ -1,5 +1,5 @@
 import { ISplit } from '../../dtos/types';
-import { AbstractSplitsCacheSync, usesMatcher } from '../AbstractSplitsCacheSync';
+import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
@@ -7,7 +7,6 @@ import { LOG_PREFIX } from './constants';
 import { ISet, _Set, setToArray } from '../../utils/lang/sets';
 import { ISettings } from '../../types';
 import { getStorageHash } from '../KeyBuilder';
-import { IN_LARGE_SEGMENT, IN_SEGMENT } from '../../utils/constants';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -51,13 +50,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
         this._decrementCount(ttKey);
 
-        if (usesMatcher(split, IN_SEGMENT)) {
+        if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-          this._decrementCount(segmentsCountKey);
-        }
-
-        if (usesMatcher(split, IN_LARGE_SEGMENT)) {
-          const segmentsCountKey = this.keys.buildSplitsWithLargeSegmentCountKey();
           this._decrementCount(segmentsCountKey);
         }
       }
@@ -73,14 +67,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         // @ts-expect-error
         localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
 
-        if (usesMatcher(split, IN_SEGMENT)) {
+        if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-          // @ts-expect-error
-          localStorage.setItem(segmentsCountKey, toNumber(localStorage.getItem(segmentsCountKey)) + 1);
-        }
-
-        if (usesMatcher(split, IN_LARGE_SEGMENT)) {
-          const segmentsCountKey = this.keys.buildSplitsWithLargeSegmentCountKey();
           // @ts-expect-error
           localStorage.setItem(segmentsCountKey, toNumber(localStorage.getItem(segmentsCountKey)) + 1);
         }
@@ -215,14 +203,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     return isFiniteNumber(ttCount) && ttCount > 0;
   }
 
-  usesMatcher(matcherType: string) {
+  usesSegments() {
     // If cache hasn't been synchronized with the cloud, assume we need them.
     if (!this.hasSync) return true;
 
-    const storedCount = localStorage.getItem(matcherType === IN_SEGMENT ?
-      this.keys.buildSplitsWithSegmentCountKey() :
-      this.keys.buildSplitsWithLargeSegmentCountKey()
-    );
+    const storedCount = localStorage.getItem(this.keys.buildSplitsWithSegmentCountKey());
     const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 
     if (isFiniteNumber(splitsWithSegmentsCount)) {

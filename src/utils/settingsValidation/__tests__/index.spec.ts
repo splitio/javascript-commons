@@ -14,8 +14,7 @@ const minimalSettingsParams = {
       requestTimeoutBeforeReady: 5,
       retriesOnFailureBeforeReady: 1,
       readyTimeout: 10,
-      eventsFirstPushWindow: 10,
-      waitForLargeSegments: false
+      eventsFirstPushWindow: 10
     },
     version: 'javascript-test',
   },
