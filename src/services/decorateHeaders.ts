@@ -3,6 +3,7 @@ import { _Set } from '../utils/lang/sets';
 import { ISettings } from '../types';
 
 const FORBIDDEN_HEADERS = new _Set([
+  'splitsdkclientkey',
   'splitsdkversion',
   'splitsdkmachineip',
   'splitsdkmachinename',
