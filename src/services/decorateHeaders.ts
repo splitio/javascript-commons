@@ -17,7 +17,7 @@ const FORBIDDEN_HEADERS = new _Set([
   'x-fastly-debug'
 ]);
 
-function convertKeysToLowerCase(obj: Record<string, string>) {
+function copyToLowerCase(obj: Record<string, string>) {
   return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
     acc[key.toLowerCase()] = obj[key];
     return acc;
@@ -26,9 +26,9 @@ function convertKeysToLowerCase(obj: Record<string, string>) {
 
 export function decorateHeaders(settings: ISettings, headers: Record<string, string>) {
   if (settings.sync.requestOptions?.getHeaderOverrides) {
-    headers = convertKeysToLowerCase(headers);
+    headers = copyToLowerCase(headers);
     try {
-      const headerOverrides = convertKeysToLowerCase(settings.sync.requestOptions.getHeaderOverrides({ headers: objectAssign({}, headers) }));
+      const headerOverrides = copyToLowerCase(settings.sync.requestOptions.getHeaderOverrides({ headers: objectAssign({}, headers) }));
       Object.keys(headerOverrides)
         .filter(key => !FORBIDDEN_HEADERS.has(key))
         .forEach(key => headers[key] = headerOverrides[key]);

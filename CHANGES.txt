@@ -1,7 +1,5 @@
 1.17.0 (August XXX, 2024)
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance SDK HTTP request Headers for Authorization Frameworks.
-
-1.16.1 (July 10, 2024)
  - Updated some transitive dependencies for vulnerability fixes.
 
 1.16.0 (June 13, 2024)
