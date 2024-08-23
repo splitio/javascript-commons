@@ -1,12 +1,5 @@
 import { ControlType } from '../constants';
-import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MY_LARGE_SEGMENTS_UPDATE } from '../types';
-
-export interface IMySegmentsUpdateData {
-  type: MY_SEGMENTS_UPDATE,
-  changeNumber: number,
-  includesPayload: boolean,
-  segmentList?: string[]
-}
+import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MY_LARGE_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V3 } from '../types';
 
 export enum Compression {
   None = 0,
@@ -26,19 +19,10 @@ export interface KeyList {
   r?: string[], // decimal hash64 of user keys
 }
 
-export interface IMySegmentsUpdateV2Data {
-  type: MY_SEGMENTS_UPDATE_V2,
-  changeNumber: number,
-  segmentName: string,
-  c: Compression,
-  d: string,
-  u: UpdateStrategy,
-}
-
-export interface IMyLargeSegmentsUpdateData {
-  type: MY_LARGE_SEGMENTS_UPDATE,
-  changeNumber: number,
-  largeSegments: string[],
+interface IMySegmentsUpdateData<T extends string> {
+  t: T,
+  cn: number,
+  l: string[],
   c: Compression,
   d: string,
   u: UpdateStrategy,
@@ -46,6 +30,10 @@ export interface IMyLargeSegmentsUpdateData {
   h?: number, // hash function
   s?: number, // seed for hash function
 }
+
+export interface IMySegmentsUpdateV3Data extends IMySegmentsUpdateData<MY_SEGMENTS_UPDATE_V3> { }
+
+export interface IMyLargeSegmentsUpdateData extends IMySegmentsUpdateData<MY_LARGE_SEGMENTS_UPDATE> { }
 
 export interface ISegmentUpdateData {
   type: SEGMENT_UPDATE,
@@ -80,6 +68,6 @@ export interface IOccupancyData {
   }
 }
 
-export type INotificationData = IMySegmentsUpdateData | IMySegmentsUpdateV2Data | IMyLargeSegmentsUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
+export type INotificationData = IMySegmentsUpdateV3Data | IMyLargeSegmentsUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
 export type INotificationError = Event & { parsedData?: any, message?: string }
