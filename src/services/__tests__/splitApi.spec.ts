@@ -33,7 +33,7 @@ describe('splitApi', () => {
     splitApi.fetchMySegments('userKey');
     [url, { headers }] = fetchMock.mock.calls[1];
     assertHeaders(settings, headers);
-    expect(url).toBe('sdk/mySegments/userKey');
+    expect(url).toBe('sdk/memberships/userKey');
 
     splitApi.fetchSegmentChanges(-1, 'segmentName', false, 90);
     [url, { headers }] = fetchMock.mock.calls[2];

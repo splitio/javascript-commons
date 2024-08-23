@@ -51,9 +51,8 @@ export function mySegmentsUpdaterFactory(
       });
     } else {
       // Reset the list of segment names
-      const mySegmentsUpdated = segments.resetSegments(segmentsData.mySegments.map((segment) => segment.name));
-      const myLargeSegmentsUpdated = largeSegments!.resetSegments(segmentsData.myLargeSegments || []/*, segmentsData.till*/);
-      shouldNotifyUpdate = mySegmentsUpdated || myLargeSegmentsUpdated;
+      shouldNotifyUpdate = segments.resetSegments((segmentsData.ms?.k || []).map((segment) => segment.n), segmentsData.ms?.cn);
+      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData.ls?.k || []).map((segment) => segment.n), segmentsData.ls?.cn) || shouldNotifyUpdate;
     }
 
     // Notify update if required
