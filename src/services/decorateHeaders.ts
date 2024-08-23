@@ -18,20 +18,12 @@ const FORBIDDEN_HEADERS = new _Set([
   'x-fastly-debug'
 ]);
 
-function copyToLowerCase(obj: Record<string, string>) {
-  return Object.keys(obj).reduce<Record<string, string>>((acc, key) => {
-    acc[key.toLowerCase()] = obj[key];
-    return acc;
-  }, {});
-}
-
 export function decorateHeaders(settings: ISettings, headers: Record<string, string>) {
   if (settings.sync.requestOptions?.getHeaderOverrides) {
-    headers = copyToLowerCase(headers);
     try {
-      const headerOverrides = copyToLowerCase(settings.sync.requestOptions.getHeaderOverrides({ headers: objectAssign({}, headers) }));
+      const headerOverrides = settings.sync.requestOptions.getHeaderOverrides({ headers: objectAssign({}, headers) });
       Object.keys(headerOverrides)
-        .filter(key => !FORBIDDEN_HEADERS.has(key))
+        .filter(key => !FORBIDDEN_HEADERS.has(key.toLowerCase()))
         .forEach(key => headers[key] = headerOverrides[key]);
     } catch (e) {
       settings.log.error('Problem adding custom headers to request decorator: ' + e);

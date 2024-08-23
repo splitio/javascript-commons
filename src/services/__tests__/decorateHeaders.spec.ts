@@ -2,8 +2,8 @@ import { ISettings } from '../../types';
 import { decorateHeaders } from '../decorateHeaders';
 
 const HEADERS = {
-  'authorization': 'Bearer SDK-KEY',
-  'splitsdkversion': 'JS' // Overriding is forbidden
+  Authorization: 'Bearer SDK-KEY',
+  SplitSDKVersion: 'JS' // Overriding is forbidden
 };
 
 describe('decorateHeaders', () => {
@@ -22,13 +22,13 @@ describe('decorateHeaders', () => {
         requestOptions: {
           getHeaderOverrides: (context: { headers: Record<string, string> }) => {
             context.headers['Authorization'] = 'ignored';
-            return { 'Authorization': 'updated', 'OTHER_HEADER': 'other_value', 'SplitSdkVersion': 'FORBIDDEN' };
+            return { 'Authorization': 'updated', 'OTHER_HEADER': 'other_value', 'SplitSdkVersion': 'FORBIDDEN', 'splitsdkversion': 'FORBIDDEN TOO' };
           }
         }
       }
     };
 
-    expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual({ 'authorization': 'updated', 'other_header': 'other_value', 'splitsdkversion': 'JS' });
+    expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual({ 'Authorization': 'updated', 'OTHER_HEADER': 'other_value', 'SplitSDKVersion': 'JS' });
   });
 
   test('should handle errors when decorating headers', () => {

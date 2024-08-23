@@ -142,16 +142,11 @@ test('SSClient / open method with getHeaderOverrides: custom headers', () => {
     sync: {
       requestOptions: {
         getHeaderOverrides: (context) => {
-          expect(context).toEqual({
-            headers: {
-              splitsdkclientkey: '1234',
-              splitsdkversion: settings.version,
-            }
-          });
+          expect(context).toEqual({ headers: EXPECTED_HEADERS });
           context.headers['otherheader'] = 'customvalue';
           return {
-            splitsdkclientkey: '4321', // will not be overridden
-            customHeader: 'customvalue'
+            SplitSDKClientKey: '4321', // will not be overridden
+            CustomHeader: 'custom-value'
           };
         }
       }
@@ -163,9 +158,8 @@ test('SSClient / open method with getHeaderOverrides: custom headers', () => {
   expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
   expect(instance.connection.__eventSourceInitDict).toEqual({
     headers: {
-      splitsdkclientkey: '1234',
-      splitsdkversion: settings.version,
-      customheader: 'customvalue'
+      ...EXPECTED_HEADERS,
+      CustomHeader: 'custom-value'
     }
   }); // Headers are properly set for streaming connection
 });
