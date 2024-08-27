@@ -54,15 +54,11 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    */
   setChangeNumber(name: string, changeNumber: number): boolean { return true; }
 
-  /**
-   * For server-side synchronizer: get the change number of `name` segment.
-   * For client-side synchronizer: the method is not used.
-   */
-  getChangeNumber(name: string): number { return -1; }
+  abstract getChangeNumber(name: string): number
 
   /**
    * For server-side synchronizer: the method is not used.
    * For client-side synchronizer: reset the cache with the given list of segments.
    */
-  resetSegments(names: string[]): boolean { return true; }
+  resetSegments(names: string[], changeNumber?: number): boolean { return true; }
 }

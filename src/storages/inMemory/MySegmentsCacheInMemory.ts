@@ -7,6 +7,7 @@ import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   private segmentCache: Record<string, boolean> = {};
+  private cn?: number;
 
   clear() {
     this.segmentCache = {};
@@ -35,7 +36,8 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
    * @param {string[]} names list of segment names
    * @returns boolean indicating if the cache was updated (i.e., given list was different from the cached one)
    */
-  resetSegments(names: string[]): boolean {
+  resetSegments(names: string[], changeNumber?: number): boolean {
+    this.cn = changeNumber;
     let isDiff = false;
     let index;
 
@@ -70,6 +72,10 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     }
 
     return isDiff;
+  }
+
+  getChangeNumber() {
+    return this.cn || -1;
   }
 
   getRegisteredSegments() {

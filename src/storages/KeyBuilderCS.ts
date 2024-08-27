@@ -5,6 +5,7 @@ export interface MySegmentsKeyBuilder {
   buildSegmentNameKey(segmentName: string): string;
   extractSegmentName(builtSegmentKeyName: string): string | undefined;
   extractOldSegmentKey(builtSegmentKeyName: string): string | undefined;
+  buildTillKey(): string;
 }
 
 export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
@@ -47,6 +48,10 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   isSplitsCacheKey(key: string) {
     return this.regexSplitsCacheKey.test(key);
   }
+
+  buildTillKey() {
+    return `${this.prefix}.${this.matchingKey}.segments.till`;
+  }
 }
 
 export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): MySegmentsKeyBuilder {
@@ -63,6 +68,10 @@ export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): 
 
     extractOldSegmentKey() {
       return undefined;
+    },
+
+    buildTillKey() {
+      return `${prefix}.${matchingKey}.largeSegments.till`;
     }
   };
 }

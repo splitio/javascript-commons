@@ -1,4 +1,5 @@
 import { ILogger } from '../../logger/types';
+import { isNaNNumber } from '../../utils/lang';
 import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
@@ -58,10 +59,20 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
   /**
    * Reset (update) the cached list of segments with the given list, removing and adding segments if necessary.
    *
-   * @param {string[]} segmentNames list of segment names
+   * @param {string[]} names list of segment names
    * @returns boolean indicating if the cache was updated (i.e., given list was different from the cached one)
    */
-  resetSegments(names: string[]): boolean {
+  resetSegments(names: string[], changeNumber?: number): boolean {
+    try {
+      if (changeNumber) {
+        localStorage.setItem(this.keys.buildTillKey(), changeNumber + '');
+      } else {
+        localStorage.removeItem(this.keys.buildTillKey());
+      }
+    } catch (e) {
+      this.log.error(e);
+    }
+
     let isDiff = false;
     let index;
 
@@ -131,6 +142,19 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
   getKeysCount() {
     return 1;
+  }
+
+  getChangeNumber() {
+    const n = -1;
+    let value: string | number | null = localStorage.getItem(this.keys.buildTillKey());
+
+    if (value !== null) {
+      value = parseInt(value, 10);
+
+      return isNaNNumber(value) ? n : value;
+    }
+
+    return n;
   }
 
 }
