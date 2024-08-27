@@ -50,7 +50,7 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   }
 
   buildTillKey() {
-    return `${this.prefix}.${this.matchingKey}.segment.till`;
+    return `${this.prefix}.${this.matchingKey}.segments.till`;
   }
 }
 
@@ -71,7 +71,7 @@ export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): 
     },
 
     buildTillKey() {
-      return `${prefix}.${matchingKey}.largeSegment.till`;
+      return `${prefix}.${matchingKey}.largeSegments.till`;
     }
   };
 }
