@@ -41,7 +41,7 @@ export function mySegmentsUpdaterFactory(
     let shouldNotifyUpdate;
     if (Array.isArray(segmentsData)) {
       // Add/Delete the segment names
-      (segmentsData as { isLS?: boolean, name: string, add: boolean }[]).forEach(({ isLS, name, add }) => {
+      segmentsData.forEach(({ isLS, name, add }) => {
         const cache = isLS ? largeSegments : segments;
         if (cache!.isInSegment(name) !== add) {
           shouldNotifyUpdate = true;

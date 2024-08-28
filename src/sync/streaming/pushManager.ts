@@ -14,22 +14,12 @@ import { getMatching } from '../../utils/key';
 import { MY_SEGMENTS_UPDATE_V3, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType, MY_LARGE_SEGMENTS_UPDATE } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
 import { IMyLargeSegmentsUpdateData, IMySegmentsUpdateV3Data, KeyList, UpdateStrategy } from './SSEHandler/types';
-import { isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
+import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
-import { hash } from '../../utils/murmur3/murmur3';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-
-export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
-  if (parsedData.h === 0) return 0;
-
-  const interval = parsedData.i || 60000;
-  const seed = parsedData.s || 0;
-
-  return hash(matchingKey, seed) % interval;
-}
 
 /**
  * PushManager factory:
@@ -255,7 +245,7 @@ export function pushManagerFactory(
       case UpdateStrategy.BoundedFetchRequest: {
         let bitmap: Uint8Array;
         try {
-          bitmap = parseBitmap(parsedData.d, parsedData.c);
+          bitmap = parseBitmap(parsedData.d!, parsedData.c!);
         } catch (e) {
           log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['BoundedFetchRequest', e]);
           break;
@@ -271,11 +261,16 @@ export function pushManagerFactory(
       case UpdateStrategy.KeyList: {
         let keyList: KeyList, added: ISet<string>, removed: ISet<string>;
         try {
-          keyList = parseKeyList(parsedData.d, parsedData.c);
+          keyList = parseKeyList(parsedData.d!, parsedData.c!);
           added = new _Set(keyList.a);
           removed = new _Set(keyList.r);
         } catch (e) {
           log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['KeyList', e]);
+          break;
+        }
+
+        if (!parsedData.n || !parsedData.n.length) {
+          log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['KeyList', 'No segment name was provided']);
           break;
         }
 
@@ -284,24 +279,25 @@ export function pushManagerFactory(
           if (add !== undefined) {
             (isLS ? workerLarge : worker).put(parsedData.cn, [{
               isLS,
-              name: parsedData.l[0],
-              add
+              name: parsedData.n![0],
+              add,
             }]);
           }
         });
         return;
       }
       case UpdateStrategy.SegmentRemoval:
-        if (!parsedData.l || parsedData.l.length) {
+        if (!parsedData.n || !parsedData.n.length) {
           log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
           break;
         }
 
         forOwn(clients, ({ worker, workerLarge }) => {
-          (isLS ? workerLarge : worker).put(parsedData.cn, parsedData.l.map(largeSegment => ({
+          (isLS ? workerLarge : worker).put(parsedData.cn, parsedData.n!.map(largeSegment => ({
             isLS,
             name: largeSegment,
-            add: false
+            add: false,
+            cn: parsedData.cn
           })));
         });
         return;

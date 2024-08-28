@@ -67,7 +67,7 @@ export function splitApiFactory(
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
     },
 
-    fetchMySegments(userMatchingKey: string, noCache?: boolean) {
+    fetchMemberships(userMatchingKey: string, noCache?: boolean) {
       /**
        * URI encoding of user keys in order to:
        *  - avoid 400 responses (due to URI malformed). E.g.: '/api/memberships/%'

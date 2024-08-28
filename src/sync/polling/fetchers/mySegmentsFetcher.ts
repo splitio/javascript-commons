@@ -1,26 +1,24 @@
-import { IFetchMySegments, IResponse } from '../../../services/types';
-import { IMySegmentsResponse } from '../../../dtos/types';
+import { IFetchMemberships, IResponse } from '../../../services/types';
+import { IMembershipsResponse } from '../../../dtos/types';
 import { IMySegmentsFetcher } from './types';
 
 /**
  * Factory of MySegments fetcher.
  * MySegments fetcher is a wrapper around `mySegments` API service that parses the response and handle errors.
  */
-export function mySegmentsFetcherFactory(fetchMySegments: IFetchMySegments): IMySegmentsFetcher {
+export function mySegmentsFetcherFactory(fetchMemberships: IFetchMemberships): IMySegmentsFetcher {
 
   return function mySegmentsFetcher(
     userMatchingKey: string,
     noCache?: boolean,
-    // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
+    // Optional decorator for `fetchMemberships` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-  ): Promise<IMySegmentsResponse> {
+  ): Promise<IMembershipsResponse> {
 
-    let mySegmentsPromise = fetchMySegments(userMatchingKey, noCache);
+    let mySegmentsPromise = fetchMemberships(userMatchingKey, noCache);
     if (decorator) mySegmentsPromise = decorator(mySegmentsPromise);
 
-    // Extract segment names
-    return mySegmentsPromise
-      .then(resp => resp.json());
+    return mySegmentsPromise.then(resp => resp.json());
   };
 
 }

@@ -22,9 +22,9 @@ export interface KeyList {
 interface IMySegmentsUpdateData<T extends string> {
   t: T,
   cn: number,
-  l: string[],
-  c: Compression,
-  d: string,
+  n?: string[],
+  c?: Compression,
+  d?: string,
   u: UpdateStrategy,
   i?: number, // time interval in millis
   h?: number, // hash function

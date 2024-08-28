@@ -225,7 +225,7 @@ export interface ISegmentChangesResponse {
 }
 
 /** Interface of the parsed JSON response of `/memberships/{userKey}` */
-export interface IMySegmentsResponse {
+export interface IMembershipsResponse {
   ms?: {
     cn?: number,
     k?: Array<{

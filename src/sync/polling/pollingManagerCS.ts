@@ -55,7 +55,7 @@ export function pollingManagerCSFactory(
   });
 
   function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
-    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMySegments, storage, readiness, settings, matchingKey);
+    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
     // smart ready
     function smartReady() {

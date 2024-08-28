@@ -45,6 +45,6 @@ export interface IPushEventEmitter extends IEventEmitter {
  */
 export interface IPushManager extends ITask, IPushEventEmitter {
   // Methods used in client-side, to support multiple clients
-  add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask, myLargeSegmentsSyncTask?: IMySegmentsSyncTask): void,
+  add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask): void,
   remove(userKey: string): void
 }

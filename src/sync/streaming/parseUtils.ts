@@ -1,6 +1,7 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
-import { Compression, KeyList } from './SSEHandler/types';
+import { hash } from '../../utils/murmur3/murmur3';
+import { Compression, IMyLargeSegmentsUpdateData, KeyList } from './SSEHandler/types';
 import { ISplit } from '../../dtos/types';
 
 const GZIP = 1;
@@ -86,4 +87,15 @@ export function parseFFUpdatePayload(compression: Compression, data: string): IS
   return compression > 0 ?
     parseKeyList(data, compression, false) :
     JSON.parse(decodeFromBase64(data));
+}
+
+const DEFAULT_MAX_INTERVAL = 60000;
+
+export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
+  if (parsedData.h === 0) return 0;
+
+  const interval = parsedData.i || DEFAULT_MAX_INTERVAL;
+  const seed = parsedData.s || 0;
+
+  return hash(matchingKey, seed) % interval;
 }

@@ -1,4 +1,4 @@
-import { ISplitChangesResponse, ISegmentChangesResponse, IMySegmentsResponse } from '../../../dtos/types';
+import { ISplitChangesResponse, ISegmentChangesResponse, IMembershipsResponse } from '../../../dtos/types';
 import { IResponse } from '../../../services/types';
 
 export type ISplitChangesFetcher = (
@@ -20,4 +20,4 @@ export type IMySegmentsFetcher = (
   userMatchingKey: string,
   noCache?: boolean,
   decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-) => Promise<IMySegmentsResponse>
+) => Promise<IMembershipsResponse>
