@@ -65,4 +65,6 @@ test('SEGMENT CACHE / in LocalStorage migration for mysegments keys', () => {
   expect(localStorage.getItem(oldKey2)).toBe(null); // Old keys are removed.
 
   cache.clear();
+  expect(cache.getRegisteredSegments()).toEqual([]);
+  expect(cache.getChangeNumber()).toBe(-1);
 });
