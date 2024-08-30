@@ -28,7 +28,9 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
   /**
    * clear the cache.
    */
-  abstract clear(): void
+  clear() {
+    this.resetSegments([]);
+  }
 
   /**
    * For server-side synchronizer: add the given list of segments to the cache, with an empty list of keys. The segments that already exist are not modified.
@@ -49,16 +51,41 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
   abstract getKeysCount(): number
 
   /**
-   * For server-side synchronizer: set the change number of `name` segment.
-   * For client-side synchronizer: the method is not used.
+   * For server-side synchronizer: change number of `name` segment.
+   * For client-side synchronizer: change number of mySegments.
    */
-  setChangeNumber(name: string, changeNumber: number): boolean { return true; }
-
+  abstract setChangeNumber(name?: string, changeNumber?: number): boolean | void
   abstract getChangeNumber(name: string): number
 
   /**
    * For server-side synchronizer: the method is not used.
-   * For client-side synchronizer: reset the cache with the given list of segments.
+   * For client-side synchronizer: it resets the cache with the given list of segments.
    */
-  resetSegments(names: string[], changeNumber?: number): boolean { return true; }
+  resetSegments(names: string[], changeNumber?: number): boolean {
+    this.setChangeNumber(undefined, changeNumber);
+
+    names = names.sort();
+    const storedSegmentKeys = this.getRegisteredSegments().sort();
+
+    // Extreme fast => everything is empty
+    if (!names.length && !storedSegmentKeys.length) return false;
+
+    let index = 0;
+
+    while (index < names.length && index < storedSegmentKeys.length && names[index] === storedSegmentKeys[index]) index++;
+
+    // Quick path => no changes
+    if (index === names.length && index === storedSegmentKeys.length) return false;
+
+    // Slowest path => add and/or remove segments
+    for (let removeIndex = index; removeIndex < storedSegmentKeys.length; removeIndex++) {
+      this.removeFromSegment(storedSegmentKeys[removeIndex]);
+    }
+
+    for (let addIndex = index; addIndex < names.length; addIndex++) {
+      this.addToSegment(names[addIndex]);
+    }
+
+    return true;
+  }
 }

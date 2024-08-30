@@ -32,7 +32,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     return splits;
   }
 
-  abstract setChangeNumber(changeNumber: number): boolean
+  abstract setChangeNumber(changeNumber: number): boolean | void
 
   abstract getChangeNumber(): number
 
