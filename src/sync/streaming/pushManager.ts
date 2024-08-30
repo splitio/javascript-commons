@@ -277,11 +277,12 @@ export function pushManagerFactory(
         forOwn(clients, ({ hash64, worker, workerLarge }) => {
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
-            (isLS ? workerLarge : worker).put(parsedData.cn, [{
+            (isLS ? workerLarge : worker).put(parsedData.cn, {
               isLS,
-              name: parsedData.n![0],
-              add,
-            }]);
+              cn: parsedData.cn,
+              added: add ? [parsedData.n![0]] : [],
+              removed: add ? [] : [parsedData.n![0]]
+            });
           }
         });
         return;
@@ -293,12 +294,12 @@ export function pushManagerFactory(
         }
 
         forOwn(clients, ({ worker, workerLarge }) => {
-          (isLS ? workerLarge : worker).put(parsedData.cn, parsedData.n!.map(largeSegment => ({
+          (isLS ? workerLarge : worker).put(parsedData.cn, {
             isLS,
-            name: largeSegment,
-            add: false,
-            cn: parsedData.cn
-          })));
+            cn: parsedData.cn,
+            added: [],
+            removed: parsedData.n!
+          });
         });
         return;
     }

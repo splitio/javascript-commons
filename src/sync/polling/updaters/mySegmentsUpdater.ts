@@ -6,8 +6,11 @@ import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
+import { IMembershipsResponse } from '../../../dtos/types';
 
-type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
+type MembershipsData = IMembershipsResponse | MySegmentsData;
+
+type IMySegmentsUpdater = (segmentList?: MembershipsData, noCache?: boolean) => Promise<boolean>
 
 /**
  * factory of MySegments updater, a task that:
@@ -36,23 +39,16 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing pluggable storages, handle async execution
-  function updateSegments(segmentsData: MySegmentsData) {
+  function updateSegments(segmentsData: MembershipsData) {
 
     let shouldNotifyUpdate;
-    if (Array.isArray(segmentsData)) {
-      // Add/Delete the segment names
-      segmentsData.forEach(({ isLS, name, add }) => {
-        const cache = isLS ? largeSegments : segments;
-        if (cache!.isInSegment(name) !== add) {
-          shouldNotifyUpdate = true;
-          if (add) cache!.addToSegment(name);
-          else cache!.removeFromSegment(name);
-        }
-      });
+    if ((segmentsData as MySegmentsData).isLS !== undefined) {
+      shouldNotifyUpdate = (segmentsData as MySegmentsData).isLS ?
+        largeSegments!.resetSegments(segmentsData as MySegmentsData) :
+        segments.resetSegments(segmentsData as MySegmentsData);
     } else {
-      // Reset the list of segment names
-      shouldNotifyUpdate = segments.resetSegments((segmentsData.ms?.k || []).map((segment) => segment.n), segmentsData.ms?.cn);
-      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData.ls?.k || []).map((segment) => segment.n), segmentsData.ls?.cn) || shouldNotifyUpdate;
+      shouldNotifyUpdate = segments.resetSegments((segmentsData as IMembershipsResponse).ms || {});
+      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData as IMembershipsResponse).ls || {}) || shouldNotifyUpdate;
     }
 
     // Notify update if required
@@ -62,7 +58,7 @@ export function mySegmentsUpdaterFactory(
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentsData?: MembershipsData, noCache?: boolean): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentsData ?
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
@@ -98,7 +94,7 @@ export function mySegmentsUpdaterFactory(
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean) {
+  return function mySegmentsUpdater(segmentsData?: MembershipsData, noCache?: boolean) {
     return _mySegmentsUpdater(0, segmentsData, noCache);
   };
 

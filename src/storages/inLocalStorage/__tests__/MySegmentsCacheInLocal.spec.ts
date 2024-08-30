@@ -11,9 +11,9 @@ test('SEGMENT CACHE / in LocalStorage', () => {
   caches.forEach(cache => {
     cache.clear();
 
-    expect(cache.resetSegments(['mocked-segment', 'mocked-segment-2'], 123)).toBe(true);
+    expect(cache.resetSegments({ k: [{ n: 'mocked-segment' }, { n: 'mocked-segment-2' }], cn: 123 })).toBe(true);
     expect(cache.getChangeNumber()).toBe(123);
-    expect(cache.resetSegments(['mocked-segment', 'mocked-segment-2'])).toBe(false);
+    expect(cache.resetSegments({ k: [{ n: 'mocked-segment' }, { n: 'mocked-segment-2' }] })).toBe(false);
     expect(cache.getChangeNumber()).toBe(-1);
 
     expect(cache.isInSegment('mocked-segment')).toBe(true);
@@ -57,7 +57,7 @@ test('SEGMENT CACHE / in LocalStorage migration for mysegments keys', () => {
   localStorage.setItem(oldKey2, '1');
   expect(localStorage.getItem(newKey1)).toBe(null); // control assertion
 
-  cache.resetSegments(['segment1']);
+  cache.resetSegments({ k: [{ n: 'segment1' }] });
 
   expect(localStorage.getItem(newKey1)).toBe('1'); // The segment key for segment1, as is part of the new list, should be migrated.
   expect(localStorage.getItem(newKey2)).toBe(null); // The segment key for segment2 should not be migrated.

@@ -10,12 +10,16 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
   private cn?: number;
 
   addToSegment(name: string): boolean {
+    if (this.segmentCache[name]) return false;
+
     this.segmentCache[name] = true;
 
     return true;
   }
 
   removeFromSegment(name: string): boolean {
+    if (!this.segmentCache[name]) return false;
+
     delete this.segmentCache[name];
 
     return true;
@@ -29,6 +33,7 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
   setChangeNumber(name?: string, changeNumber?: number) {
     this.cn = changeNumber;
   }
+
   getChangeNumber() {
     return this.cn || -1;
   }
