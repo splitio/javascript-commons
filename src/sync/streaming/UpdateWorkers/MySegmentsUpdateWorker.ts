@@ -7,7 +7,7 @@ import { MEMBERSHIPS } from '../../../utils/constants';
 /**
  * MySegmentsUpdateWorker factory
  */
-export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[changeNumber: number, segmentsData?: MySegmentsData, delay?: number]> {
+export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[mySegmentsData?: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number]> {
 
   let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
   let currentChangeNumber = -1;
@@ -59,13 +59,14 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
      * @param segmentsData data for KeyList or SegmentRemoval instant updates
      * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
      */
-    put(changeNumber: number, segmentsData?: MySegmentsData, delay?: number) {
+    put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
+      const { type, cn } = mySegmentsData;
       // Ignore event if it is outdated or if there is a pending fetch request (_delay is set)
-      if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber || _delay) return;
+      if (cn <= currentChangeNumber || cn <= maxChangeNumber || _delay) return;
 
-      maxChangeNumber = changeNumber;
+      maxChangeNumber = cn;
       handleNewEvent = true;
-      _segmentsData = segmentsData;
+      _segmentsData = payload && { type, cn, added: payload.added, removed: payload.removed };
       _delay = delay;
 
       if (backoff.timeoutID || !isHandlingEvent) __handleMySegmentsUpdateCall();

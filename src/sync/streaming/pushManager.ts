@@ -59,7 +59,7 @@ export function pushManagerFactory(
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch update events to the corresponding MySegmentsUpdateWorker
+  // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
@@ -253,7 +253,7 @@ export function pushManagerFactory(
 
         forOwn(clients, ({ hash64, worker, workerLarge }, matchingKey) => {
           if (isInBitmap(bitmap, hash64.hex)) {
-            (isLS ? workerLarge : worker).put(parsedData.cn, undefined, getDelay(parsedData, matchingKey));
+            (isLS ? workerLarge : worker).put(parsedData, undefined, getDelay(parsedData, matchingKey));
           }
         });
         return;
@@ -277,9 +277,7 @@ export function pushManagerFactory(
         forOwn(clients, ({ hash64, worker, workerLarge }) => {
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
-            (isLS ? workerLarge : worker).put(parsedData.cn, {
-              isLS,
-              cn: parsedData.cn,
+            (isLS ? workerLarge : worker).put(parsedData, {
               added: add ? [parsedData.n![0]] : [],
               removed: add ? [] : [parsedData.n![0]]
             });
@@ -294,9 +292,7 @@ export function pushManagerFactory(
         }
 
         forOwn(clients, ({ worker, workerLarge }) => {
-          (isLS ? workerLarge : worker).put(parsedData.cn, {
-            isLS,
-            cn: parsedData.cn,
+          (isLS ? workerLarge : worker).put(parsedData, {
             added: [],
             removed: parsedData.n!
           });
@@ -306,7 +302,7 @@ export function pushManagerFactory(
 
     // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
     forOwn(clients, ({ worker, workerLarge }, matchingKey) => {
-      (isLS ? workerLarge : worker).put(parsedData.cn, undefined, getDelay(parsedData, matchingKey));
+      (isLS ? workerLarge : worker).put(parsedData, undefined, getDelay(parsedData, matchingKey));
     });
   }
 

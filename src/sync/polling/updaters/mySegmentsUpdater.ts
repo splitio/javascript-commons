@@ -7,10 +7,9 @@ import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
+import { MEMBERSHIP_LS_UPDATE } from '../../streaming/constants';
 
-type MembershipsData = IMembershipsResponse | MySegmentsData;
-
-type IMySegmentsUpdater = (segmentList?: MembershipsData, noCache?: boolean) => Promise<boolean>
+type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
 /**
  * factory of MySegments updater, a task that:
@@ -39,11 +38,11 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing pluggable storages, handle async execution
-  function updateSegments(segmentsData: MembershipsData) {
+  function updateSegments(segmentsData: IMembershipsResponse | MySegmentsData) {
 
     let shouldNotifyUpdate;
-    if ((segmentsData as MySegmentsData).isLS !== undefined) {
-      shouldNotifyUpdate = (segmentsData as MySegmentsData).isLS ?
+    if ((segmentsData as MySegmentsData).type !== undefined) {
+      shouldNotifyUpdate = (segmentsData as MySegmentsData).type === MEMBERSHIP_LS_UPDATE ?
         largeSegments!.resetSegments(segmentsData as MySegmentsData) :
         segments.resetSegments(segmentsData as MySegmentsData);
     } else {
@@ -58,7 +57,7 @@ export function mySegmentsUpdaterFactory(
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentsData?: MembershipsData, noCache?: boolean): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentsData ?
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
@@ -94,7 +93,7 @@ export function mySegmentsUpdaterFactory(
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
    */
-  return function mySegmentsUpdater(segmentsData?: MembershipsData, noCache?: boolean) {
+  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean) {
     return _mySegmentsUpdater(0, segmentsData, noCache);
   };
 
