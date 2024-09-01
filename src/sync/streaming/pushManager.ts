@@ -11,9 +11,9 @@ import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { getMatching } from '../../utils/key';
-import { MY_SEGMENTS_UPDATE_V3, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType, MY_LARGE_SEGMENTS_UPDATE } from './constants';
-import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
-import { IMyLargeSegmentsUpdateData, IMySegmentsUpdateV3Data, KeyList, UpdateStrategy } from './SSEHandler/types';
+import { MEMBERSHIP_MS_UPDATE, MEMBERSHIP_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIP_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
+import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
@@ -59,10 +59,10 @@ export function pushManagerFactory(
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
+  // [Only for client-side] map of hashes to user keys, to dispatch update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
-  // Hash64 is used to process MY_SEGMENTS_UPDATE events and dispatch actions to the corresponding MySegmentsUpdateWorker.
+  // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
   const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker>, workerLarge: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
@@ -238,8 +238,8 @@ export function pushManagerFactory(
     splitsUpdateWorker.put(parsedData);
   });
 
-  function handleMySegmentsUpdate(parsedData: IMySegmentsUpdateV3Data | IMyLargeSegmentsUpdateData) {
-    const isLS = parsedData.t === MY_LARGE_SEGMENTS_UPDATE;
+  function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
+    const isLS = parsedData.type === MEMBERSHIP_LS_UPDATE;
 
     switch (parsedData.u) {
       case UpdateStrategy.BoundedFetchRequest: {
@@ -247,7 +247,7 @@ export function pushManagerFactory(
         try {
           bitmap = parseBitmap(parsedData.d!, parsedData.c!);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['BoundedFetchRequest', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['BoundedFetchRequest', e]);
           break;
         }
 
@@ -265,12 +265,12 @@ export function pushManagerFactory(
           added = new _Set(keyList.a);
           removed = new _Set(keyList.r);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['KeyList', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', e]);
           break;
         }
 
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['KeyList', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', 'No segment name was provided']);
           break;
         }
 
@@ -289,7 +289,7 @@ export function pushManagerFactory(
       }
       case UpdateStrategy.SegmentRemoval:
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
           break;
         }
 
@@ -311,8 +311,8 @@ export function pushManagerFactory(
   }
 
   if (userKey) {
-    pushEmitter.on(MY_SEGMENTS_UPDATE_V3, handleMySegmentsUpdate);
-    pushEmitter.on(MY_LARGE_SEGMENTS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIP_MS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIP_LS_UPDATE, handleMySegmentsUpdate);
   } else {
     pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
