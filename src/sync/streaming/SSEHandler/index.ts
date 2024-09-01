@@ -1,9 +1,9 @@
 import { errorParser, messageParser } from './NotificationParser';
 import { notificationKeeperFactory } from './NotificationKeeper';
-import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE_V3, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_LARGE_SEGMENTS_UPDATE } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIP_MS_UPDATE, MEMBERSHIP_LS_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
-import { IControlData, INotificationError, INotificationMessage, IOccupancyData } from './types';
+import { INotificationError, INotificationMessage } from './types';
 import { ILogger } from '../../../logger/types';
 import { STREAMING_PARSING_ERROR_FAILS, ERROR_STREAMING_SSE, STREAMING_PARSING_MESSAGE_FAILS, STREAMING_NEW_MESSAGE } from '../../../logger/constants';
 import { ABLY_ERROR, NON_REQUESTED, SSE_CONNECTION_ERROR } from '../../../utils/constants';
@@ -75,26 +75,24 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
       log.debug(STREAMING_NEW_MESSAGE, [data]);
 
       // we only handle update events if streaming is up
-      // @ts-expect-error
-      const type = parsedData.type || parsedData.t;
-      if (!notificationKeeper.isStreamingUp() && [OCCUPANCY, CONTROL].indexOf(type) === -1) return;
+      if (!notificationKeeper.isStreamingUp() && [OCCUPANCY, CONTROL].indexOf(parsedData.type) === -1) return;
 
-      switch (type) {
+      switch (parsedData.type) {
         /* update events */
         case SPLIT_UPDATE:
         case SEGMENT_UPDATE:
-        case MY_SEGMENTS_UPDATE_V3:
-        case MY_LARGE_SEGMENTS_UPDATE:
+        case MEMBERSHIP_MS_UPDATE:
+        case MEMBERSHIP_LS_UPDATE:
         case SPLIT_KILL:
-          pushEmitter.emit(type, parsedData);
+          pushEmitter.emit(parsedData.type, parsedData);
           break;
 
         /* occupancy & control events, handled by NotificationManagerKeeper */
         case OCCUPANCY:
-          notificationKeeper.handleOccupancyEvent((parsedData as IOccupancyData).metrics.publishers, channel, timestamp);
+          notificationKeeper.handleOccupancyEvent(parsedData.metrics.publishers, channel, timestamp);
           break;
         case CONTROL:
-          notificationKeeper.handleControlEvent((parsedData as IControlData).controlType, channel, timestamp);
+          notificationKeeper.handleControlEvent(parsedData.controlType, channel, timestamp);
           break;
 
         default:

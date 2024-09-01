@@ -1,7 +1,7 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
 import { hash } from '../../utils/murmur3/murmur3';
-import { Compression, IMyLargeSegmentsUpdateData, KeyList } from './SSEHandler/types';
+import { Compression, IMembershipMSUpdateData, KeyList } from './SSEHandler/types';
 import { ISplit } from '../../dtos/types';
 
 const GZIP = 1;
@@ -91,7 +91,7 @@ export function parseFFUpdatePayload(compression: Compression, data: string): IS
 
 const DEFAULT_MAX_INTERVAL = 60000;
 
-export function getDelay(parsedData: Pick<IMyLargeSegmentsUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
+export function getDelay(parsedData: Pick<IMembershipMSUpdateData, 'i' | 'h' | 's'>, matchingKey: string) {
   if (parsedData.h === 0) return 0;
 
   const interval = parsedData.i || DEFAULT_MAX_INTERVAL;

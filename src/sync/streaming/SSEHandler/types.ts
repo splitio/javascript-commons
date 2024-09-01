@@ -1,5 +1,5 @@
 import { ControlType } from '../constants';
-import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MY_LARGE_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V3 } from '../types';
+import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MEMBERSHIP_LS_UPDATE, MEMBERSHIP_MS_UPDATE } from '../types';
 
 export enum Compression {
   None = 0,
@@ -19,8 +19,8 @@ export interface KeyList {
   r?: string[], // decimal hash64 of user keys
 }
 
-interface IMySegmentsUpdateData<T extends string> {
-  t: T,
+interface IMembershipUpdateData<T extends string> {
+  type: T,
   cn: number,
   n?: string[],
   c?: Compression,
@@ -31,9 +31,9 @@ interface IMySegmentsUpdateData<T extends string> {
   s?: number, // seed for hash function
 }
 
-export interface IMySegmentsUpdateV3Data extends IMySegmentsUpdateData<MY_SEGMENTS_UPDATE_V3> { }
+export interface IMembershipMSUpdateData extends IMembershipUpdateData<MEMBERSHIP_MS_UPDATE> { }
 
-export interface IMyLargeSegmentsUpdateData extends IMySegmentsUpdateData<MY_LARGE_SEGMENTS_UPDATE> { }
+export interface IMembershipLSUpdateData extends IMembershipUpdateData<MEMBERSHIP_LS_UPDATE> { }
 
 export interface ISegmentUpdateData {
   type: SEGMENT_UPDATE,
@@ -68,6 +68,6 @@ export interface IOccupancyData {
   }
 }
 
-export type INotificationData = IMySegmentsUpdateV3Data | IMyLargeSegmentsUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
+export type INotificationData = IMembershipMSUpdateData | IMembershipLSUpdateData | ISegmentUpdateData | ISplitUpdateData | ISplitKillData | IControlData | IOccupancyData
 export type INotificationMessage = { parsedData: INotificationData, channel: string, timestamp: number, data: string }
 export type INotificationError = Event & { parsedData?: any, message?: string }

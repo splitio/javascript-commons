@@ -25,11 +25,11 @@ export const PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP';
 export const PUSH_SUBSYSTEM_DOWN = 'PUSH_SUBSYSTEM_DOWN';
 
 // Update-type push notifications, handled by NotificationProcessor
-export const MY_SEGMENTS_UPDATE_V3 = 'MY_SEGMENTS_UPDATE_V3';
+export const MEMBERSHIP_MS_UPDATE = 'MEMBERSHIP_MS_UPDATE';
+export const MEMBERSHIP_LS_UPDATE = 'MEMBERSHIP_LS_UPDATE';
 export const SEGMENT_UPDATE = 'SEGMENT_UPDATE';
 export const SPLIT_KILL = 'SPLIT_KILL';
 export const SPLIT_UPDATE = 'SPLIT_UPDATE';
-export const MY_LARGE_SEGMENTS_UPDATE = 'MY_LARGE_SEGMENTS_UPDATE';
 
 // Control-type push notifications, handled by NotificationKeeper
 export const CONTROL = 'CONTROL';
