@@ -11,11 +11,12 @@ export function mySegmentsFetcherFactory(fetchMemberships: IFetchMemberships): I
   return function mySegmentsFetcher(
     userMatchingKey: string,
     noCache?: boolean,
+    till?: number,
     // Optional decorator for `fetchMemberships` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ): Promise<IMembershipsResponse> {
 
-    let mySegmentsPromise = fetchMemberships(userMatchingKey, noCache);
+    let mySegmentsPromise = fetchMemberships(userMatchingKey, noCache, till);
     if (decorator) mySegmentsPromise = decorator(mySegmentsPromise);
 
     return mySegmentsPromise.then(resp => resp.json());

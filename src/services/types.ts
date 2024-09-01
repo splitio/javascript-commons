@@ -39,7 +39,7 @@ export type IFetchSplitChanges = (since: number, noCache?: boolean, till?: numbe
 
 export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
-export type IFetchMemberships = (userMatchingKey: string, noCache?: boolean) => Promise<IResponse>
+export type IFetchMemberships = (userMatchingKey: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
 export type IPostEventsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 

@@ -9,7 +9,7 @@ import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIP_LS_UPDATE } from '../../streaming/constants';
 
-type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
+type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 
 /**
  * factory of MySegments updater, a task that:
@@ -57,12 +57,12 @@ export function mySegmentsUpdaterFactory(
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean, till?: number): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentsData ?
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
-      mySegmentsFetcher(matchingKey, noCache, _promiseDecorator).then(segments => {
+      mySegmentsFetcher(matchingKey, noCache, till, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
         startingUp = false;
 
@@ -92,9 +92,10 @@ export function mySegmentsUpdaterFactory(
    *  (2) an object with a segment name and action (true: add, or false: delete) to update the storage,
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
+   * @param {boolean | undefined} till query param to bypass CDN requests
    */
-  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean) {
-    return _mySegmentsUpdater(0, segmentsData, noCache);
+  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean, till?: number) {
+    return _mySegmentsUpdater(0, segmentsData, noCache, till);
   };
 
 }

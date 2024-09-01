@@ -30,10 +30,10 @@ describe('splitApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe('auth/v2/auth?s=1.1&users=key1&users=key2');
 
-    splitApi.fetchMemberships('userKey');
+    splitApi.fetchMemberships('userKey', false, 80);
     [url, { headers }] = fetchMock.mock.calls[1];
     assertHeaders(settings, headers);
-    expect(url).toBe('sdk/memberships/userKey');
+    expect(url).toBe('sdk/memberships/userKey?till=80');
 
     splitApi.fetchSegmentChanges(-1, 'segmentName', false, 90);
     [url, { headers }] = fetchMock.mock.calls[2];
