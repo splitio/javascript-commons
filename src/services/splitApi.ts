@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -75,7 +75,7 @@ export function splitApiFactory(
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
       const url = `${urls.sdk}/memberships/${encodeURIComponent(userMatchingKey)}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MY_SEGMENT));
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MEMBERSHIPS));
     },
 
     /**

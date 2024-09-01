@@ -18,7 +18,7 @@ import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList }
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
-import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
@@ -352,8 +352,8 @@ export function pushManagerFactory(
           userKeyHashes[hash] = userKey;
           clients[userKey] = {
             hash64: hash64(userKey),
-            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker, MY_SEGMENT),
-            workerLarge: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker, MY_LARGE_SEGMENT)
+            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker),
+            workerLarge: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker)
           };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 

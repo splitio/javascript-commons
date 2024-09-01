@@ -75,8 +75,7 @@ export const EVENTS = 'ev';
 export const TELEMETRY = 'te';
 export const TOKEN = 'to';
 export const SEGMENT = 'se';
-export const MY_SEGMENT = 'ms';
-export const MY_LARGE_SEGMENT = 'mls';
+export const MEMBERSHIPS = 'ms';
 
 export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
