@@ -270,7 +270,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean | void
-  getChangeNumber(name: string): number
+  getChangeNumber(name?: string): number
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
 }

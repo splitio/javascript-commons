@@ -348,8 +348,8 @@ export function pushManagerFactory(
           userKeyHashes[hash] = userKey;
           clients[userKey] = {
             hash64: hash64(userKey),
-            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker),
-            workerLarge: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker)
+            worker: MySegmentsUpdateWorker(log, storage.segments, mySegmentsSyncTask, telemetryTracker),
+            workerLarge: MySegmentsUpdateWorker(log, storage.largeSegments!, mySegmentsSyncTask, telemetryTracker)
           };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 

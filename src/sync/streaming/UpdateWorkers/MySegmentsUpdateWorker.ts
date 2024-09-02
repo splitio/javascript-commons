@@ -3,16 +3,20 @@ import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
 import { ITelemetryTracker } from '../../../trackers/types';
 import { MEMBERSHIPS } from '../../../utils/constants';
+import { ISegmentsCacheSync } from '../../../storages/types';
+import { ILogger } from '../../../logger/types';
+import { FETCH_BACKOFF_MAX_RETRIES } from './constants';
 
 /**
  * MySegmentsUpdateWorker factory
  */
-export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[mySegmentsData?: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number]> {
+export function MySegmentsUpdateWorker(log: ILogger, mySegmentsCache: ISegmentsCacheSync, mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[mySegmentsData?: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number]> {
 
   let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
   let currentChangeNumber = -1;
   let handleNewEvent = false;
   let isHandlingEvent: boolean;
+  let cdnBypass: boolean;
   let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
   let _delay: undefined | number;
   let _delayTimeoutID: any;
@@ -20,7 +24,7 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
 
   function __handleMySegmentsUpdateCall() {
     isHandlingEvent = true;
-    if (maxChangeNumber > currentChangeNumber) {
+    if (maxChangeNumber > Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber())) {
       handleNewEvent = false;
       const currentMaxChangeNumber = maxChangeNumber;
 
@@ -29,21 +33,45 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
         new Promise(res => {
           _delayTimeoutID = setTimeout(() => {
             _delay = undefined;
-            mySegmentsSyncTask.execute(_segmentsData, true).then(res);
+            mySegmentsSyncTask.execute(_segmentsData, true, cdnBypass ? maxChangeNumber : undefined).then(res);
           }, _delay);
         }) :
-        mySegmentsSyncTask.execute(_segmentsData, true);
+        mySegmentsSyncTask.execute(_segmentsData, true, cdnBypass ? maxChangeNumber : undefined);
 
       syncTask.then((result) => {
         if (!isHandlingEvent) return; // halt if `stop` has been called
-        if (result !== false) { // Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
-          if (_segmentsData) telemetryTracker.trackUpdatesFromSSE(MEMBERSHIPS);
-          currentChangeNumber = Math.max(currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `maxChangeNumber` was updated during fetch.
+        if (result !== false) { // Unlike `Splits|SegmentsUpdateWorker`, `mySegmentsCache.getChangeNumber` can be -1, since `/memberships` change number is optional
+          const storageChangeNumber = mySegmentsCache.getChangeNumber();
+          currentChangeNumber = storageChangeNumber > -1 ?
+            storageChangeNumber :
+            Math.max(currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `maxChangeNumber` was updated during fetch.
         }
         if (handleNewEvent) {
           __handleMySegmentsUpdateCall();
         } else {
-          backoff.scheduleCall();
+          if (_segmentsData) telemetryTracker.trackUpdatesFromSSE(MEMBERSHIPS);
+
+          const attempts = backoff.attempts + 1;
+
+          if (maxChangeNumber <= currentChangeNumber) {
+            log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
+            isHandlingEvent = false;
+            return;
+          }
+
+          if (attempts < FETCH_BACKOFF_MAX_RETRIES) {
+            backoff.scheduleCall();
+            return;
+          }
+
+          if (cdnBypass) {
+            log.debug(`No changes fetched after ${attempts} attempts with CDN bypassed.`);
+            isHandlingEvent = false;
+          } else {
+            backoff.reset();
+            cdnBypass = true;
+            __handleMySegmentsUpdateCall();
+          }
         }
       });
     } else {
@@ -62,10 +90,11 @@ export function MySegmentsUpdateWorker(mySegmentsSyncTask: IMySegmentsSyncTask, 
     put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
       const { type, cn } = mySegmentsData;
       // Ignore event if it is outdated or if there is a pending fetch request (_delay is set)
-      if (cn <= currentChangeNumber || cn <= maxChangeNumber || _delay) return;
+      if (cn <= Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber()) || cn <= maxChangeNumber || _delay) return;
 
       maxChangeNumber = cn;
       handleNewEvent = true;
+      cdnBypass = false;
       _segmentsData = payload && { type, cn, added: payload.added, removed: payload.removed };
       _delay = delay;
 
