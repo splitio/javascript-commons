@@ -1,5 +1,5 @@
 import { ControlType } from '../constants';
-import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MEMBERSHIP_LS_UPDATE, MEMBERSHIP_MS_UPDATE } from '../types';
+import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../types';
 
 export enum Compression {
   None = 0,
@@ -31,9 +31,9 @@ interface IMembershipUpdateData<T extends string> {
   s?: number, // seed for hash function
 }
 
-export interface IMembershipMSUpdateData extends IMembershipUpdateData<MEMBERSHIP_MS_UPDATE> { }
+export interface IMembershipMSUpdateData extends IMembershipUpdateData<MEMBERSHIPS_MS_UPDATE> { }
 
-export interface IMembershipLSUpdateData extends IMembershipUpdateData<MEMBERSHIP_LS_UPDATE> { }
+export interface IMembershipLSUpdateData extends IMembershipUpdateData<MEMBERSHIPS_LS_UPDATE> { }
 
 export interface ISegmentUpdateData {
   type: SEGMENT_UPDATE,

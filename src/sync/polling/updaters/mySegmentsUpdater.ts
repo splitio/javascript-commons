@@ -7,7 +7,7 @@ import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
-import { MEMBERSHIP_LS_UPDATE } from '../../streaming/constants';
+import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
 
 type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
@@ -42,7 +42,7 @@ export function mySegmentsUpdaterFactory(
 
     let shouldNotifyUpdate;
     if ((segmentsData as MySegmentsData).type !== undefined) {
-      shouldNotifyUpdate = (segmentsData as MySegmentsData).type === MEMBERSHIP_LS_UPDATE ?
+      shouldNotifyUpdate = (segmentsData as MySegmentsData).type === MEMBERSHIPS_LS_UPDATE ?
         largeSegments!.resetSegments(segmentsData as MySegmentsData) :
         segments.resetSegments(segmentsData as MySegmentsData);
     } else {
