@@ -6,7 +6,7 @@ import { MEMBERSHIPS } from '../../../utils/constants';
 import { ISegmentsCacheSync, IStorageSync } from '../../../storages/types';
 import { ILogger } from '../../../logger/types';
 import { FETCH_BACKOFF_MAX_RETRIES } from './constants';
-import { MEMBERSHIP_LS_UPDATE, MEMBERSHIP_MS_UPDATE } from '../constants';
+import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../constants';
 
 /**
  * MySegmentsUpdateWorker factory
@@ -115,8 +115,8 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
   }
 
   const updateWorkers = {
-    [MEMBERSHIP_MS_UPDATE]: createUpdateWorker(storage.segments),
-    [MEMBERSHIP_LS_UPDATE]: createUpdateWorker(storage.largeSegments!),
+    [MEMBERSHIPS_MS_UPDATE]: createUpdateWorker(storage.segments),
+    [MEMBERSHIPS_LS_UPDATE]: createUpdateWorker(storage.largeSegments!),
   };
 
   return {
@@ -124,8 +124,8 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
       updateWorkers[mySegmentsData.type].put(mySegmentsData, payload, delay);
     },
     stop() {
-      updateWorkers[MEMBERSHIP_MS_UPDATE].stop();
-      updateWorkers[MEMBERSHIP_LS_UPDATE].stop();
+      updateWorkers[MEMBERSHIPS_MS_UPDATE].stop();
+      updateWorkers[MEMBERSHIPS_LS_UPDATE].stop();
     }
   };
 }
