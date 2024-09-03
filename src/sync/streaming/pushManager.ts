@@ -11,8 +11,8 @@ import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { getMatching } from '../../utils/key';
-import { MEMBERSHIP_MS_UPDATE, MEMBERSHIP_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
-import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIP_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
@@ -242,7 +242,7 @@ export function pushManagerFactory(
         try {
           bitmap = parseBitmap(parsedData.d!, parsedData.c!);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['BoundedFetchRequest', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['BoundedFetchRequest', e]);
           break;
         }
 
@@ -260,12 +260,12 @@ export function pushManagerFactory(
           added = new _Set(keyList.a);
           removed = new _Set(keyList.r);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', e]);
           break;
         }
 
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', 'No segment name was provided']);
           break;
         }
 
@@ -282,7 +282,7 @@ export function pushManagerFactory(
       }
       case UpdateStrategy.SegmentRemoval:
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
           break;
         }
 
@@ -302,8 +302,8 @@ export function pushManagerFactory(
   }
 
   if (userKey) {
-    pushEmitter.on(MEMBERSHIP_MS_UPDATE, handleMySegmentsUpdate);
-    pushEmitter.on(MEMBERSHIP_LS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIPS_MS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIPS_LS_UPDATE, handleMySegmentsUpdate);
   } else {
     pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
