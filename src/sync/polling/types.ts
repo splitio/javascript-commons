@@ -1,4 +1,4 @@
-import { ISplit } from '../../dtos/types';
+import { IMySegmentsResponse, ISplit } from '../../dtos/types';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { ITask, ISyncTask } from '../types';
@@ -7,9 +7,11 @@ export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: nu
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 
-export type MySegmentsData = string[] | {
+export type MySegmentsData = IMySegmentsResponse | {
+  /* segment type */
+  isLS?: boolean
   /* segment name */
-  name: string,
+  name: string
   /* action: `true` for add, and `false` for delete */
   add: boolean
 }[]
@@ -20,14 +22,13 @@ export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
   splitsSyncTask: ISplitsSyncTask
   segmentsSyncTask: ISyncTask
-  largeSegmentsSyncTask?: ISyncTask
 }
 
 /**
  * PollingManager for client-side with support for multiple clients
  */
 export interface IPollingManagerCS extends IPollingManager {
-  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask }
+  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): IMySegmentsSyncTask
   remove(matchingKey: string): void;
-  get(matchingKey: string): { msSyncTask: IMySegmentsSyncTask, mlsSyncTask?: IMySegmentsSyncTask } | undefined
+  get(matchingKey: string): IMySegmentsSyncTask | undefined
 }

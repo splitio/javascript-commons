@@ -43,7 +43,7 @@ export interface IMyLargeSegmentsUpdateData {
   d: string,
   u: UpdateStrategy,
   i?: number, // time interval in millis
-  h?: number, // hash function. 0 for murmur3_32, 1 for murmur3_64
+  h?: number, // hash function
   s?: number, // seed for hash function
 }
 

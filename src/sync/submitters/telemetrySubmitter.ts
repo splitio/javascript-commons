@@ -76,12 +76,10 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
 
       return objectAssign(getTelemetryConfigStats(settings.mode, settings.storage.type), {
         sE: settings.streamingEnabled,
-        lE: isClientSide ? settings.sync.largeSegmentsEnabled : undefined,
         rR: {
           sp: scheduler.featuresRefreshRate / 1000,
           se: isClientSide ? undefined : scheduler.segmentsRefreshRate / 1000,
           ms: isClientSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
-          mls: isClientSide && settings.sync.largeSegmentsEnabled ? scheduler.largeSegmentsRefreshRate / 1000 : undefined,
           im: scheduler.impressionsRefreshRate / 1000,
           ev: scheduler.eventsPushRate / 1000,
           te: scheduler.telemetryRefreshRate / 1000,

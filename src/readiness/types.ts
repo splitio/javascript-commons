@@ -45,7 +45,6 @@ export interface IReadinessManager {
   /** Event emitters */
   splits: ISplitsEventEmitter,
   segments: ISegmentsEventEmitter,
-  largeSegments?: ISegmentsEventEmitter, // Undefined if largeSegmentsEnabled or waitForLargeSegments are false
   gate: IReadinessEventEmitter,
 
   /** Readiness status */

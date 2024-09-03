@@ -62,7 +62,6 @@ export interface ISplitApi {
 	fetchSplitChanges: IFetchSplitChanges
 	fetchSegmentChanges: IFetchSegmentChanges
 	fetchMySegments: IFetchMySegments
-	fetchMyLargeSegments: IFetchMySegments
 	postEventsBulk: IPostEventsBulk
 	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
 	postUniqueKeysBulkSs: IPostUniqueKeysBulkSs

@@ -1,10 +1,11 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
-import { ISegmentsCacheSync } from '../../../storages/types';
+import { IStorageSync } from '../../../storages/types';
+import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
+import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
-import { isObject } from '../../../utils/lang';
 
 type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
@@ -17,13 +18,14 @@ type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => P
 export function mySegmentsUpdaterFactory(
   log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
-  mySegmentsCache: ISegmentsCacheSync,
-  notifyUpdate: () => void,
+  storage: IStorageSync,
+  segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
   matchingKey: string
 ): IMySegmentsUpdater {
 
+  const { splits, segments, largeSegments } = storage;
   let readyOnAlreadyExistentState = true;
   let startingUp = true;
 
@@ -37,24 +39,27 @@ export function mySegmentsUpdaterFactory(
   function updateSegments(segmentsData: MySegmentsData) {
 
     let shouldNotifyUpdate;
-    if (isObject(segmentsData[0])) {
+    if (Array.isArray(segmentsData)) {
       // Add/Delete the segment names
-      (segmentsData as { name: string, add: boolean }[]).forEach(({ name, add }) => {
-        if (mySegmentsCache.isInSegment(name) !== add) {
+      (segmentsData as { isLS?: boolean, name: string, add: boolean }[]).forEach(({ isLS, name, add }) => {
+        const cache = isLS ? largeSegments : segments;
+        if (cache!.isInSegment(name) !== add) {
           shouldNotifyUpdate = true;
-          if (add) mySegmentsCache.addToSegment(name);
-          else mySegmentsCache.removeFromSegment(name);
+          if (add) cache!.addToSegment(name);
+          else cache!.removeFromSegment(name);
         }
       });
     } else {
       // Reset the list of segment names
-      shouldNotifyUpdate = mySegmentsCache.resetSegments(segmentsData as string[]);
+      const mySegmentsUpdated = segments.resetSegments(segmentsData.mySegments.map((segment) => segment.name));
+      const myLargeSegmentsUpdated = largeSegments!.resetSegments(segmentsData.myLargeSegments || []/*, segmentsData.till*/);
+      shouldNotifyUpdate = mySegmentsUpdated || myLargeSegmentsUpdated;
     }
 
     // Notify update if required
-    if (shouldNotifyUpdate || readyOnAlreadyExistentState) {
+    if (splits.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      notifyUpdate();
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }
   }
 

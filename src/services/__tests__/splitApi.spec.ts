@@ -60,12 +60,7 @@ describe('splitApi', () => {
     splitApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
 
-    splitApi.fetchMyLargeSegments('userKey');
-    [url, { headers }] = fetchMock.mock.calls[9];
-    assertHeaders(settings, headers);
-    expect(url).toBe('sdk/myLargeSegments/userKey');
-
-    expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(10);
+    expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(9);
 
     telemetryTrackerMock.trackHttp.mockClear();
     fetchMock.mockClear();

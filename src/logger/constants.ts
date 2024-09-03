@@ -36,6 +36,7 @@ export const IMPRESSION = 102;
 export const IMPRESSION_QUEUEING = 103;
 export const NEW_SHARED_CLIENT = 104;
 export const NEW_FACTORY = 105;
+export const POLLING_SMART_PAUSING = 106;
 export const POLLING_START = 107;
 export const POLLING_STOP = 108;
 export const SYNC_SPLITS_FETCH_RETRY = 109;
