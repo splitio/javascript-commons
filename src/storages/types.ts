@@ -218,7 +218,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   removeSplits(names: string[]): boolean[],
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
-  setChangeNumber(changeNumber: number): boolean,
+  setChangeNumber(changeNumber: number): boolean | void,
   getChangeNumber(): number,
   getAll(): ISplit[],
   getSplitNames(): string[],
@@ -268,7 +268,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  setChangeNumber(name: string, changeNumber: number): boolean
+  setChangeNumber(name: string, changeNumber: number): boolean | void
   getChangeNumber(name: string): number
   resetSegments(names: string[], changeNumber?: number): boolean // only for Sync Client-Side
   clear(): void
