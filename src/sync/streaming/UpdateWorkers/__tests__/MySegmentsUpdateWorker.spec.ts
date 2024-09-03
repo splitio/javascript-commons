@@ -49,14 +49,14 @@ describe('MySegmentsUpdateWorker', () => {
 
     // assert calling `mySegmentsSyncTask.execute` if `isExecuting` is false
     expect(mySegmentsSyncTask.isExecuting()).toBe(false);
-    mySegmentUpdateWorker.put(100);
+    mySegmentUpdateWorker.put({ cn: 100 });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1); // synchronizes MySegments if `isExecuting` is false
 
     // assert queueing changeNumber if `isExecuting` is true
     expect(mySegmentsSyncTask.isExecuting()).toBe(true);
-    mySegmentUpdateWorker.put(105);
-    mySegmentUpdateWorker.put(104);
-    mySegmentUpdateWorker.put(106);
+    mySegmentUpdateWorker.put({ cn: 105 });
+    mySegmentUpdateWorker.put({ cn: 104 });
+    mySegmentUpdateWorker.put({ cn: 106 });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1); // doesn't synchronize MySegments if `isExecuting` is true
 
     // assert calling `mySegmentsSyncTask.execute` if previous call is resolved and a new changeNumber in queue
@@ -79,25 +79,25 @@ describe('MySegmentsUpdateWorker', () => {
     // to validate the special case than the fetch associated to the first event is resolved after a second event with payload arrives
     mySegmentsSyncTask.execute.mockClear();
     expect(mySegmentsSyncTask.isExecuting()).toBe(false);
-    mySegmentUpdateWorker.put(110);
+    mySegmentUpdateWorker.put({ cn: 110 });
     expect(mySegmentsSyncTask.isExecuting()).toBe(true);
-    mySegmentUpdateWorker.put(120, ['some_segment']);
+    mySegmentUpdateWorker.put({ cn: 120 }, { removed: ['some_segment'] });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1); // doesn't synchronize MySegments if `isExecuting` is true, even if payload (segmentList) is included
     expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(undefined, true);
 
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res, 10));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(2); // re-synchronizes MySegments once previous event was handled
-    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(['some_segment'], true); // synchronizes MySegments with given segmentList
+    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith({ cn: 120, removed: ['some_segment'] }, true); // synchronizes MySegments with given segmentList
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res, 10));
 
     // assert handling an event without segmentList after one with segmentList
     mySegmentsSyncTask.execute.mockClear();
-    mySegmentUpdateWorker.put(130, ['other_segment']);
-    mySegmentUpdateWorker.put(140);
+    mySegmentUpdateWorker.put({ cn: 130 }, { removed: ['other_segment'] });
+    mySegmentUpdateWorker.put({ cn: 140 });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1); // synchronizes MySegments once, until event is handled
-    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(['other_segment'], true);
+    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith({ cn: 130, removed: ['other_segment'] }, true);
 
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res));
@@ -116,12 +116,12 @@ describe('MySegmentsUpdateWorker', () => {
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
-    mySegmentUpdateWorker.put(100);
+    mySegmentUpdateWorker.put({ cn: 100 });
     await new Promise(res => setTimeout(res, Backoff.__TEST__BASE_MILLIS * 3 + 100 /* some delay */));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
 
     // if backoff is scheduled and a new event is queued, it must be handled immediately
-    mySegmentUpdateWorker.put(105);
+    mySegmentUpdateWorker.put({ cn: 105 });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(4);
   });
 
@@ -130,13 +130,13 @@ describe('MySegmentsUpdateWorker', () => {
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
-    mySegmentUpdateWorker.put(100);
+    mySegmentUpdateWorker.put({ cn: 100 });
     mySegmentUpdateWorker.stop();
 
     await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after stopping
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
 
-    mySegmentUpdateWorker.put(150, undefined, 10);
+    mySegmentUpdateWorker.put({ cn: 150 }, undefined, 10);
     mySegmentUpdateWorker.stop();
 
     await new Promise(res => setTimeout(res, 20)); // Wait to assert no calls to `execute` after stopping (fetch request with delay is cleared)
@@ -149,8 +149,8 @@ describe('MySegmentsUpdateWorker', () => {
     const mySegmentUpdateWorker = MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker);
 
     // If a delayed fetch request is queued while another fetch request is waiting, it is discarded
-    mySegmentUpdateWorker.put(100, undefined, 50);
-    mySegmentUpdateWorker.put(150, undefined, 100);
+    mySegmentUpdateWorker.put({ cn: 100 }, undefined, 50);
+    mySegmentUpdateWorker.put({ cn: 150 }, undefined, 100);
 
     await new Promise(res => setTimeout(res, 60));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
@@ -161,9 +161,9 @@ describe('MySegmentsUpdateWorker', () => {
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
 
     // If an event with segmentData (i.e., an instant update) is queued while a delayed fetch request is waiting, the instant update is discarded
-    mySegmentUpdateWorker.put(200, undefined, 50);
+    mySegmentUpdateWorker.put({ cn: 200 }, undefined, 50);
     await new Promise(res => setTimeout(res, 10));
-    mySegmentUpdateWorker.put(230, ['some_segment']);
+    mySegmentUpdateWorker.put({ cn: 230 }, { added: ['some_segment'] });
 
     await new Promise(res => setTimeout(res, 60));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(2);
@@ -171,8 +171,8 @@ describe('MySegmentsUpdateWorker', () => {
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res));
 
-    mySegmentUpdateWorker.put(250, ['some_segment']);
+    mySegmentUpdateWorker.put({ cn: 250 }, { added: ['some_segment'] });
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
-    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(['some_segment'], true);
+    expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith({ cn: 250, added: ['some_segment'] }, true);
   });
 });

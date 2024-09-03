@@ -25,8 +25,8 @@ export const PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP';
 export const PUSH_SUBSYSTEM_DOWN = 'PUSH_SUBSYSTEM_DOWN';
 
 // Update-type push notifications, handled by NotificationProcessor
-export const MEMBERSHIP_MS_UPDATE = 'MEMBERSHIP_MS_UPDATE';
-export const MEMBERSHIP_LS_UPDATE = 'MEMBERSHIP_LS_UPDATE';
+export const MEMBERSHIPS_MS_UPDATE = 'MEMBERSHIPS_MS_UPDATE';
+export const MEMBERSHIPS_LS_UPDATE = 'MEMBERSHIPS_LS_UPDATE';
 export const SEGMENT_UPDATE = 'SEGMENT_UPDATE';
 export const SPLIT_KILL = 'SPLIT_KILL';
 export const SPLIT_UPDATE = 'SPLIT_UPDATE';

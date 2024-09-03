@@ -20,6 +20,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
+      if (localStorage.getItem(segmentKey) === DEFINED) return false;
       localStorage.setItem(segmentKey, DEFINED);
       return true;
     } catch (e) {
@@ -32,6 +33,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
+      if (localStorage.getItem(segmentKey) !== DEFINED) return false;
       localStorage.removeItem(segmentKey);
       return true;
     } catch (e) {

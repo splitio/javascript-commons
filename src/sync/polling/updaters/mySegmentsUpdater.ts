@@ -6,6 +6,8 @@ import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
+import { IMembershipsResponse } from '../../../dtos/types';
+import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
 
 type IMySegmentsUpdater = (segmentList?: MySegmentsData, noCache?: boolean) => Promise<boolean>
 
@@ -36,23 +38,16 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing pluggable storages, handle async execution
-  function updateSegments(segmentsData: MySegmentsData) {
+  function updateSegments(segmentsData: IMembershipsResponse | MySegmentsData) {
 
     let shouldNotifyUpdate;
-    if (Array.isArray(segmentsData)) {
-      // Add/Delete the segment names
-      segmentsData.forEach(({ isLS, name, add }) => {
-        const cache = isLS ? largeSegments : segments;
-        if (cache!.isInSegment(name) !== add) {
-          shouldNotifyUpdate = true;
-          if (add) cache!.addToSegment(name);
-          else cache!.removeFromSegment(name);
-        }
-      });
+    if ((segmentsData as MySegmentsData).type !== undefined) {
+      shouldNotifyUpdate = (segmentsData as MySegmentsData).type === MEMBERSHIPS_LS_UPDATE ?
+        largeSegments!.resetSegments(segmentsData as MySegmentsData) :
+        segments.resetSegments(segmentsData as MySegmentsData);
     } else {
-      // Reset the list of segment names
-      shouldNotifyUpdate = segments.resetSegments((segmentsData.ms?.k || []).map((segment) => segment.n), segmentsData.ms?.cn);
-      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData.ls?.k || []).map((segment) => segment.n), segmentsData.ls?.cn) || shouldNotifyUpdate;
+      shouldNotifyUpdate = segments.resetSegments((segmentsData as IMembershipsResponse).ms || {});
+      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData as IMembershipsResponse).ls || {}) || shouldNotifyUpdate;
     }
 
     // Notify update if required

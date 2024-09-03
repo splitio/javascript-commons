@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
+import { IMySegmentsResponse } from '../dtos/types';
+import { MySegmentsData } from '../sync/polling/types';
 import { ISegmentsCacheSync } from './types';
 
 /**
@@ -29,7 +31,7 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    * clear the cache.
    */
   clear() {
-    this.resetSegments([]);
+    this.resetSegments({});
   }
 
   /**
@@ -59,12 +61,28 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
 
   /**
    * For server-side synchronizer: the method is not used.
-   * For client-side synchronizer: it resets the cache with the given list of segments.
+   * For client-side synchronizer: it resets or updates the cache.
    */
-  resetSegments(names: string[], changeNumber?: number): boolean {
-    this.setChangeNumber(undefined, changeNumber);
+  resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean {
+    this.setChangeNumber(undefined, segmentsData.cn);
 
-    names = names.sort();
+    const { added, removed } = segmentsData as MySegmentsData;
+
+    if (added && removed) {
+      let isDiff = false;
+
+      added.forEach(segment => {
+        isDiff = this.addToSegment(segment) || isDiff;
+      });
+
+      removed.forEach(segment => {
+        isDiff = this.removeFromSegment(segment) || isDiff;
+      });
+
+      return isDiff;
+    }
+
+    const names = ((segmentsData as IMySegmentsResponse).k || []).map(s => s.n).sort();
     const storedSegmentKeys = this.getRegisteredSegments().sort();
 
     // Extreme fast => everything is empty

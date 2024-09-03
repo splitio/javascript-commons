@@ -1,4 +1,5 @@
-import { MaybeThenable, ISplit } from '../dtos/types';
+import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
+import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { ISet } from '../utils/lang/sets';
@@ -270,7 +271,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean | void
   getChangeNumber(name: string): number
-  resetSegments(names: string[], changeNumber?: number): boolean // only for Sync Client-Side
+  resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
 }
 

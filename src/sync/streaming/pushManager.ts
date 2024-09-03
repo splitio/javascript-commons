@@ -11,14 +11,14 @@ import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { getMatching } from '../../utils/key';
-import { MEMBERSHIP_MS_UPDATE, MEMBERSHIP_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
-import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIP_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
-import { TOKEN_REFRESH, AUTH_REJECTION, MY_LARGE_SEGMENT, MY_SEGMENT } from '../../utils/constants';
+import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
@@ -59,7 +59,7 @@ export function pushManagerFactory(
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
   const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch update events to the corresponding MySegmentsUpdateWorker
+  // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
@@ -239,7 +239,7 @@ export function pushManagerFactory(
   });
 
   function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
-    const isLS = parsedData.type === MEMBERSHIP_LS_UPDATE;
+    const isLS = parsedData.type === MEMBERSHIPS_LS_UPDATE;
 
     switch (parsedData.u) {
       case UpdateStrategy.BoundedFetchRequest: {
@@ -247,13 +247,13 @@ export function pushManagerFactory(
         try {
           bitmap = parseBitmap(parsedData.d!, parsedData.c!);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['BoundedFetchRequest', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['BoundedFetchRequest', e]);
           break;
         }
 
         forOwn(clients, ({ hash64, worker, workerLarge }, matchingKey) => {
           if (isInBitmap(bitmap, hash64.hex)) {
-            (isLS ? workerLarge : worker).put(parsedData.cn, undefined, getDelay(parsedData, matchingKey));
+            (isLS ? workerLarge : worker).put(parsedData, undefined, getDelay(parsedData, matchingKey));
           }
         });
         return;
@@ -265,53 +265,50 @@ export function pushManagerFactory(
           added = new _Set(keyList.a);
           removed = new _Set(keyList.r);
         } catch (e) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', e]);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', e]);
           break;
         }
 
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['KeyList', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', 'No segment name was provided']);
           break;
         }
 
         forOwn(clients, ({ hash64, worker, workerLarge }) => {
           const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
           if (add !== undefined) {
-            (isLS ? workerLarge : worker).put(parsedData.cn, [{
-              isLS,
-              name: parsedData.n![0],
-              add,
-            }]);
+            (isLS ? workerLarge : worker).put(parsedData, {
+              added: add ? [parsedData.n![0]] : [],
+              removed: add ? [] : [parsedData.n![0]]
+            });
           }
         });
         return;
       }
       case UpdateStrategy.SegmentRemoval:
         if (!parsedData.n || !parsedData.n.length) {
-          log.warn(STREAMING_PARSING_MEMBERSHIP_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
           break;
         }
 
         forOwn(clients, ({ worker, workerLarge }) => {
-          (isLS ? workerLarge : worker).put(parsedData.cn, parsedData.n!.map(largeSegment => ({
-            isLS,
-            name: largeSegment,
-            add: false,
-            cn: parsedData.cn
-          })));
+          (isLS ? workerLarge : worker).put(parsedData, {
+            added: [],
+            removed: parsedData.n!
+          });
         });
         return;
     }
 
     // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
     forOwn(clients, ({ worker, workerLarge }, matchingKey) => {
-      (isLS ? workerLarge : worker).put(parsedData.cn, undefined, getDelay(parsedData, matchingKey));
+      (isLS ? workerLarge : worker).put(parsedData, undefined, getDelay(parsedData, matchingKey));
     });
   }
 
   if (userKey) {
-    pushEmitter.on(MEMBERSHIP_MS_UPDATE, handleMySegmentsUpdate);
-    pushEmitter.on(MEMBERSHIP_LS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIPS_MS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIPS_LS_UPDATE, handleMySegmentsUpdate);
   } else {
     pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
@@ -351,8 +348,8 @@ export function pushManagerFactory(
           userKeyHashes[hash] = userKey;
           clients[userKey] = {
             hash64: hash64(userKey),
-            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker, MY_SEGMENT),
-            workerLarge: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker, MY_LARGE_SEGMENT)
+            worker: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker),
+            workerLarge: MySegmentsUpdateWorker(mySegmentsSyncTask, telemetryTracker)
           };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 
