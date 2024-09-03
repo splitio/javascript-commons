@@ -10,7 +10,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
-  // - `/mySegments` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
+  // - `/memberships` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
   splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });

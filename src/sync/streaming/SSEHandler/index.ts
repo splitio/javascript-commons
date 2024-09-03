@@ -1,6 +1,6 @@
 import { errorParser, messageParser } from './NotificationParser';
 import { notificationKeeperFactory } from './NotificationKeeper';
-import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_LARGE_SEGMENTS_UPDATE } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIP_MS_UPDATE, MEMBERSHIP_LS_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError, INotificationMessage } from './types';
@@ -74,21 +74,17 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
       const { parsedData, data, channel, timestamp } = messageWithParsedData;
       log.debug(STREAMING_NEW_MESSAGE, [data]);
 
-      // we only handle update events if streaming is up.
-      if (!notificationKeeper.isStreamingUp() && [OCCUPANCY, CONTROL].indexOf(parsedData.type) === -1)
-        return;
+      // we only handle update events if streaming is up
+      if (!notificationKeeper.isStreamingUp() && [OCCUPANCY, CONTROL].indexOf(parsedData.type) === -1) return;
 
       switch (parsedData.type) {
         /* update events */
         case SPLIT_UPDATE:
         case SEGMENT_UPDATE:
-        case MY_SEGMENTS_UPDATE_V2:
-        case MY_LARGE_SEGMENTS_UPDATE:
+        case MEMBERSHIP_MS_UPDATE:
+        case MEMBERSHIP_LS_UPDATE:
         case SPLIT_KILL:
           pushEmitter.emit(parsedData.type, parsedData);
-          break;
-        case MY_SEGMENTS_UPDATE:
-          pushEmitter.emit(parsedData.type, parsedData, channel);
           break;
 
         /* occupancy & control events, handled by NotificationManagerKeeper */

@@ -3,7 +3,7 @@ import { fullSettings, fullSettingsServerSide } from '../../../utils/settingsVal
 import { syncTaskFactory } from '../../__tests__/syncTask.mock';
 
 // Test target
-import { pushManagerFactory, getDelay } from '../pushManager';
+import { pushManagerFactory } from '../pushManager';
 import { IPushManager } from '../types';
 
 const paramsMock = {
@@ -191,11 +191,4 @@ describe('pushManager in server-side', () => {
     pushManager.stop();
   });
 
-});
-
-test('getDelay', () => {
-  expect(getDelay({ i: 300, h: 1, s: 0 }, 'nicolas@split.io')).toBe(241);
-  expect(getDelay({ i: 60000, h: 1, s: 1 }, 'emi@split.io')).toBe(14389);
-  expect(getDelay({ i: 60000, h: 1, s: 0 }, 'emi@split.io')).toBe(24593);
-  expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });

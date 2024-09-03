@@ -1,4 +1,4 @@
-import { IMySegmentsResponse, ISplit } from '../../dtos/types';
+import { IMembershipsResponse, ISplit } from '../../dtos/types';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { ITask, ISyncTask } from '../types';
@@ -7,7 +7,7 @@ export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: nu
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 
-export type MySegmentsData = IMySegmentsResponse | {
+export type MySegmentsData = IMembershipsResponse | {
   /* segment type */
   isLS?: boolean
   /* segment name */

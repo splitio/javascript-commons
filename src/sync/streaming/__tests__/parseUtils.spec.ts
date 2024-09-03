@@ -1,7 +1,7 @@
 import { hash64 } from '../../../utils/murmur3/murmur3_64';
 import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
-import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload } from '../parseUtils';
+import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload, getDelay } from '../parseUtils';
 import { _Set } from '../../../utils/lang/sets';
 
 test('parseKeyList', () => {
@@ -59,4 +59,11 @@ test('split notification - parseKeyList', () => {
     expect(parseFFUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
   });
 
+});
+
+test('getDelay', () => {
+  expect(getDelay({ i: 300, h: 1, s: 0 }, 'nicolas@split.io')).toBe(241);
+  expect(getDelay({ i: 60000, h: 1, s: 1 }, 'emi@split.io')).toBe(14389);
+  expect(getDelay({ i: 60000, h: 1, s: 0 }, 'emi@split.io')).toBe(24593);
+  expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });
