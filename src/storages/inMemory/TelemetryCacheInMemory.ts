@@ -51,7 +51,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       spC: this.splits && this.splits.getSplitNames().length,
       seC: this.segments && this.segments.getRegisteredSegments().length,
       skC: this.segments && this.segments.getKeysCount(),
-      lseC: this.largeSegments && this.largeSegments.getRegisteredSegments().length,
+      lsC: this.largeSegments && this.largeSegments.getRegisteredSegments().length,
       lskC: this.largeSegments && this.largeSegments.getKeysCount(),
       sL: this.getSessionLength(),
       eQ: this.getEventStats(QUEUED),
