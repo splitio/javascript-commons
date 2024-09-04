@@ -1,15 +1,24 @@
 import { MySegmentsUpdateWorker } from '../MySegmentsUpdateWorker';
-import { MySegmentsCacheInMemory } from '../../../../storages/inMemory/MySegmentsCacheInMemory';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { syncTaskFactory } from '../../../syncTask';
 import { Backoff } from '../../../../utils/Backoff';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../../constants';
 
-function createStorage() {
+function storageMock() {
   return {
-    segments: new MySegmentsCacheInMemory(),
-    largeSegments: new MySegmentsCacheInMemory(),
+    segments: {
+      _changeNumber: -1,
+      getChangeNumber() {
+        return this._changeNumber;
+      }
+    },
+    largeSegments: {
+      _changeNumber: -1,
+      getChangeNumber() {
+        return this._changeNumber;
+      }
+    },
   };
 }
 
@@ -55,7 +64,7 @@ describe('MySegmentsUpdateWorker', () => {
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock();
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, createStorage(), mySegmentsSyncTask as any, telemetryTracker);
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, storageMock() as any, mySegmentsSyncTask as any, telemetryTracker);
 
     // assert calling `mySegmentsSyncTask.execute` if `isExecuting` is false
     expect(mySegmentsSyncTask.isExecuting()).toBe(false);
@@ -123,7 +132,7 @@ describe('MySegmentsUpdateWorker', () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 50;
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false, false, false]); // fetch fail
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, createStorage(), mySegmentsSyncTask as any, telemetryTracker);
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, storageMock() as any, mySegmentsSyncTask as any, telemetryTracker);
 
     // while fetch fails, should retry with backoff
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_MS_UPDATE, cn: 100 });
@@ -138,7 +147,7 @@ describe('MySegmentsUpdateWorker', () => {
   test('stop', async () => {
     // setup
     const mySegmentsSyncTask = mySegmentsSyncTaskMock([false]);
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, createStorage(), mySegmentsSyncTask as any, telemetryTracker);
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, storageMock() as any, mySegmentsSyncTask as any, telemetryTracker);
 
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 100 });
     mySegmentUpdateWorker.stop();
@@ -153,22 +162,33 @@ describe('MySegmentsUpdateWorker', () => {
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
   });
 
-  test('put with delay', async () => {
+  test('put, with delay and storage change number', async () => {
     // setup
+    Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
     const mySegmentsSyncTask = mySegmentsSyncTaskMock();
-    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, createStorage(), mySegmentsSyncTask as any, telemetryTracker);
+    const storage = storageMock();
+    const mySegmentUpdateWorker = MySegmentsUpdateWorker(loggerMock, storage as any, mySegmentsSyncTask as any, telemetryTracker);
 
-    // If a delayed fetch request is queued while another fetch request is waiting, it is discarded
+    // notification with delay
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 100 }, undefined, 50);
-    mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 150 }, undefined, 100);
+
+    // If a notification is queued while a fetch request is waiting, the notification is discarded but its change number is used to update the target change number
+    mySegmentUpdateWorker.put({ type: MEMBERSHIPS_MS_UPDATE, cn: 150 }, undefined, 100); // target for segments storage is 150
+    mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 120 }); // target for large segments storage is 120
 
     await new Promise(res => setTimeout(res, 60));
     expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
     expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(undefined, true, undefined);
+    storage.largeSegments._changeNumber = 100; // change number update but not the expected one
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
 
     await new Promise(res => setTimeout(res, 60));
-    expect(mySegmentsSyncTask.execute).toBeCalledTimes(1);
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(2); // fetch retry due to target change number mismatch
+
+    storage.largeSegments._changeNumber = 120;
+    mySegmentsSyncTask.__resolveMySegmentsUpdaterCall();
+    await new Promise(res => setTimeout(res, 60));
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(2); // no more fetches since target change number is reached
 
     // If an event with segmentData (i.e., an instant update) is queued while a delayed fetch request is waiting, the instant update is discarded
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 200 }, undefined, 50);
@@ -176,13 +196,19 @@ describe('MySegmentsUpdateWorker', () => {
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 230 }, { added: ['some_segment'], removed: [] });
 
     await new Promise(res => setTimeout(res, 60));
-    expect(mySegmentsSyncTask.execute).toBeCalledTimes(2);
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
     expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith(undefined, true, undefined);
     mySegmentsSyncTask.__resolveMySegmentsUpdaterCall(); // fetch success
     await new Promise(res => setTimeout(res));
 
     mySegmentUpdateWorker.put({ type: MEMBERSHIPS_LS_UPDATE, cn: 250 }, { added: ['some_segment'], removed: [] });
-    expect(mySegmentsSyncTask.execute).toBeCalledTimes(3);
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(4);
     expect(mySegmentsSyncTask.execute).toHaveBeenLastCalledWith({ type: MEMBERSHIPS_LS_UPDATE, cn: 250, added: ['some_segment'], removed: [] }, true, undefined);
+
+    // Stop should clear the delayed fetch request
+    mySegmentUpdateWorker.put({ type: MEMBERSHIPS_MS_UPDATE, cn: 300 }, undefined, 10);
+    mySegmentUpdateWorker.stop();
+    await new Promise(res => setTimeout(res, 20));
+    expect(mySegmentsSyncTask.execute).toBeCalledTimes(4);
   });
 });

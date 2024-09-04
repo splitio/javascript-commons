@@ -13,6 +13,9 @@ import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../constants';
  */
 export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync, 'segments' | 'largeSegments'>, mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[mySegmentsData?: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number]> {
 
+  let _delay: undefined | number;
+  let _delayTimeoutID: any;
+
   function createUpdateWorker(mySegmentsCache: ISegmentsCacheSync) {
 
     let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
@@ -21,8 +24,6 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
     let isHandlingEvent: boolean;
     let cdnBypass: boolean;
     let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
-    let _delay: undefined | number;
-    let _delayTimeoutID: any;
     const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
     function __handleMySegmentsUpdateCall() {
@@ -92,10 +93,11 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
        */
       put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
         const { type, cn } = mySegmentsData;
-        // Ignore event if it is outdated or if there is a pending fetch request (_delay is set)
-        if (cn <= Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber()) || cn <= maxChangeNumber || _delay) return;
-
+        // Discard event if it is outdated or there is a pending fetch request (_delay is set), but update target change number
+        if (cn <= Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber()) || cn <= maxChangeNumber) return;
         maxChangeNumber = cn;
+        if (_delay) return;
+
         handleNewEvent = true;
         cdnBypass = false;
         _segmentsData = payload && { type, cn, added: payload.added, removed: payload.removed };
