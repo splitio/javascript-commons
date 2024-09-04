@@ -221,14 +221,24 @@ test('READINESS MANAGER / Destroy after it was ready but before timedout', () =>
     counter++;
   });
 
+  let lastUpdate = readinessManager.lastUpdate();
+  expect(lastUpdate).toBe(0);
+
   readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // ready state
 
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
+
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // fires an update
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
 
   expect(readinessManager.isDestroyed()).toBe(false);
   readinessManager.destroy(); // Destroy the gate, removing all the listeners and clearing the ready timeout.
   expect(readinessManager.isDestroyed()).toBe(true);
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+
   readinessManager.destroy(); // no-op
   readinessManager.destroy(); // no-op
 

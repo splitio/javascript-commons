@@ -42,6 +42,7 @@ export function readinessManagerFactory(
   let lastUpdate = 0;
   function syncLastUpdate() {
     const dateNow = Date.now();
+    // ensure lastUpdate is always increasing per event, is case Date.now() is mocked or its value is the same
     lastUpdate = dateNow > lastUpdate ? dateNow : lastUpdate + 1;
   }
 
