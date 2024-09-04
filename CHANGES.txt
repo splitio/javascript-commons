@@ -1,4 +1,5 @@
 1.16.1 (July 10, 2024)
+ - Added lastUpdate property to ReadinessManager to keep track of the timestamp of the last SDK event, used on React and Redux SDKs.
  - Updated some transitive dependencies for vulnerability fixes.
 
 1.16.0 (June 13, 2024)

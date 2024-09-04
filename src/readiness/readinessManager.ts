@@ -39,6 +39,12 @@ export function readinessManagerFactory(
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
   const gate: IReadinessEventEmitter = new EventEmitter();
 
+  let lastUpdate = 0;
+  function syncLastUpdate() {
+    const dateNow = Date.now();
+    lastUpdate = dateNow > lastUpdate ? dateNow : lastUpdate + 1;
+  }
+
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
   if (splits.splitsCacheLoaded) isReadyFromCache = true; // ready from cache, but doesn't emit SDK_READY_FROM_CACHE
@@ -50,6 +56,7 @@ export function readinessManagerFactory(
   function timeout() {
     if (hasTimedout) return;
     hasTimedout = true;
+    syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
   }
 
@@ -70,6 +77,7 @@ export function readinessManagerFactory(
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
     if (!isReady) {
       try {
+        syncLastUpdate();
         gate.emit(SDK_READY_FROM_CACHE);
       } catch (e) {
         // throws user callback exceptions in next tick
@@ -81,6 +89,7 @@ export function readinessManagerFactory(
   function checkIsReadyOrUpdate(diff: any) {
     if (isReady) {
       try {
+        syncLastUpdate();
         gate.emit(SDK_UPDATE, diff);
       } catch (e) {
         // throws user callback exceptions in next tick
@@ -91,6 +100,7 @@ export function readinessManagerFactory(
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
+          syncLastUpdate();
           gate.emit(SDK_READY);
         } catch (e) {
           // throws user callback exceptions in next tick
@@ -121,6 +131,7 @@ export function readinessManagerFactory(
 
     destroy() {
       isDestroyed = true;
+      syncLastUpdate();
 
       segments.removeAllListeners();
       gate.removeAllListeners();
@@ -134,7 +145,8 @@ export function readinessManagerFactory(
     hasTimedout() { return hasTimedout; },
     isReadyFromCache() { return isReadyFromCache; },
     isDestroyed() { return isDestroyed; },
-    isOperational() { return (isReady || isReadyFromCache) && !isDestroyed; }
+    isOperational() { return (isReady || isReadyFromCache) && !isDestroyed; },
+    lastUpdate() { return lastUpdate; }
   };
 
 }

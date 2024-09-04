@@ -53,6 +53,7 @@ export interface IReadinessManager {
   hasTimedout(): boolean,
   isDestroyed(): boolean,
   isOperational(): boolean,
+  lastUpdate(): number,
 
   timeout(): void,
   setDestroyed(): void,
