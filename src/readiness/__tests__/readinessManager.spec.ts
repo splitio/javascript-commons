@@ -4,14 +4,16 @@ import { IReadinessManager } from '../types';
 import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
 
 const timeoutMs = 100;
-const statusFlagsCount = 5;
+const statusFlagsCount = 7;
 
 function assertInitialStatus(readinessManager: IReadinessManager) {
   expect(readinessManager.isReady()).toBe(false);
   expect(readinessManager.isReadyFromCache()).toBe(false);
+  expect(readinessManager.isTimedout()).toBe(false);
   expect(readinessManager.hasTimedout()).toBe(false);
   expect(readinessManager.isDestroyed()).toBe(false);
   expect(readinessManager.isOperational()).toBe(false);
+  expect(readinessManager.lastUpdate()).toBe(0);
 }
 
 test('READINESS MANAGER / Share splits but segments (without timeout enabled)', (done) => {
@@ -153,6 +155,7 @@ describe('READINESS MANAGER / Timeout ready event', () => {
     timeoutCounter = 0;
 
     readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      expect(readinessManager.isTimedout()).toBe(true);
       expect(readinessManager.hasTimedout()).toBe(true);
       if (!readinessManager.isReady()) timeoutCounter++;
     });
@@ -166,6 +169,8 @@ describe('READINESS MANAGER / Timeout ready event', () => {
   test('should be fired once', (done) => {
     readinessManager.gate.on(SDK_READY, () => {
       expect(readinessManager.isReady()).toBe(true);
+      expect(readinessManager.isTimedout()).toBe(false);
+      expect(readinessManager.hasTimedout()).toBe(true);
       expect(timeoutCounter).toBe(1);
       done();
     });
