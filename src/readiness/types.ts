@@ -50,6 +50,7 @@ export interface IReadinessManager {
   /** Readiness status */
   isReady(): boolean,
   isReadyFromCache(): boolean,
+  isTimedout(): boolean,
   hasTimedout(): boolean,
   isDestroyed(): boolean,
   isOperational(): boolean,

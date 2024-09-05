@@ -403,6 +403,17 @@ export interface IStatusInterface extends IEventEmitter {
    * @returns {Promise<void>}
    */
   ready(): Promise<void>
+
+  // Expose status for internal purposes only. Not considered part of the public API, and might be updated eventually.
+  __getStatus(): {
+    isReady: boolean;
+    isReadyFromCache: boolean;
+    isTimedout: boolean;
+    hasTimedout: boolean;
+    isDestroyed: boolean;
+    isOperational: boolean;
+    lastUpdate: number;
+  }
 }
 /**
  * Common definitions between clients for different environments interface.
