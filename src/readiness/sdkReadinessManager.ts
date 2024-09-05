@@ -129,6 +129,7 @@ export function sdkReadinessManagerFactory(
             isOperational: readinessManager.isOperational(),
             hasTimedout: readinessManager.hasTimedout(),
             isDestroyed: readinessManager.isDestroyed(),
+            lastUpdate: readinessManager.lastUpdate(),
           };
         },
       }
