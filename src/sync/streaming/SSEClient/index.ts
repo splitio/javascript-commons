@@ -83,12 +83,12 @@ export class SSEClient implements ISSEClient {
     this.connection = new this.eventSource!(
       // For client-side SDKs, metadata is passed as query param to avoid CORS issues and because native EventSource implementations in browsers do not support headers
       isServerSide ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,
-      // For server-side SDKs, metadata is passed via headers. For NodeJS, the SDK uses an EventSource that support headers
+      // For server-side SDKs, metadata is passed via headers
       objectAssign(
         isServerSide ?
           { headers: decorateHeaders(this.settings, this.headers) } :
           this.settings.sync.requestOptions?.getHeaderOverrides ?
-            { headers: decorateHeaders(this.settings, {}) } : // Assuming the user is providing a window.EventSource polyfill that supports headers
+            { headers: decorateHeaders(this.settings, {}) } : // User must provide a window.EventSource polyfill that supports headers
             {},
         this.options
       )
