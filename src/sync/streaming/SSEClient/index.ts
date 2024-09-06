@@ -78,15 +78,20 @@ export class SSEClient implements ISSEClient {
       }
     ).join(',');
     const url = `${this.settings.urls.streaming}/sse?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
-    // use headers in server-side or if getHeaderOverrides is defined
-    const useHeaders = !this.settings.core.key || this.settings.sync.requestOptions?.getHeaderOverrides;
+    const isServerSide = !this.settings.core.key;
 
     this.connection = new this.eventSource!(
-      // For client-side SDKs, SplitSDKClientKey and SplitSDKClientKey metadata is passed as query params,
-      // because native EventSource implementations for browser doesn't support headers.
-      useHeaders ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,
-      // For server-side SDKs, metadata is passed via headers. EventSource must support headers, like 'eventsource' package for Node.
-      objectAssign(useHeaders ? { headers: decorateHeaders(this.settings, this.headers) } : {}, this.options)
+      // For client-side SDKs, metadata is passed as query param to avoid CORS issues and because native EventSource implementations in browsers do not support headers
+      isServerSide ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,
+      // For server-side SDKs, metadata is passed via headers
+      objectAssign(
+        isServerSide ?
+          { headers: decorateHeaders(this.settings, this.headers) } :
+          this.settings.sync.requestOptions?.getHeaderOverrides ?
+            { headers: decorateHeaders(this.settings, {}) } : // User must provide a window.EventSource polyfill that supports headers
+            {},
+        this.options
+      )
     );
 
     if (this.handler) { // no need to check if SSEClient is used only by PushManager
