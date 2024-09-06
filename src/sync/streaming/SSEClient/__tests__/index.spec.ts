@@ -6,15 +6,18 @@ import { url } from '../../../../utils/settingsValidation/url';
 
 import { SSEClient } from '../index';
 
+const EXPECTED_HEADERS = {
+  SplitSDKClientKey: '1234',
+  SplitSDKVersion: settings.version
+};
+
 const EXPECTED_URL = url(settings, '/sse') +
   '?channels=' + channelsQueryParamSample +
   '&accessToken=' + authDataSample.token +
   '&v=1.1&heartbeats=true';
 
-const EXPECTED_HEADERS = {
-  SplitSDKClientKey: '1234',
-  SplitSDKVersion: settings.version
-};
+const EXPECTED_BROWSER_URL = EXPECTED_URL +
+  `&SplitSDKVersion=${settings.version}&SplitSDKClientKey=${EXPECTED_HEADERS.SplitSDKClientKey}`;
 
 test('SSClient / instance creation throws error if EventSource is not provided', () => {
   expect(() => { new SSEClient(settings); }).toThrow(Error);
@@ -80,86 +83,118 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
 });
 
-test('SSClient / open method on client-side: metadata as query params', () => {
+describe('SSClient / open method on client-side', () => {
 
-  const instance = new SSEClient(settings, { getEventSource: () => EventSourceMock });
-  instance.open(authDataSample);
+  test('metadata as query params', () => {
 
-  const EXPECTED_BROWSER_URL = EXPECTED_URL + `&SplitSDKVersion=${settings.version}&SplitSDKClientKey=${EXPECTED_HEADERS.SplitSDKClientKey}`;
+    const instance = new SSEClient(settings, { getEventSource: () => EventSourceMock });
+    instance.open(authDataSample);
 
-  expect(instance.connection.url).toBe(EXPECTED_BROWSER_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toEqual({}); // No headers are passed for streaming connection
-});
+    expect(instance.connection.url).toBe(EXPECTED_BROWSER_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({}); // No headers are passed for streaming connection
+  });
 
-test('SSClient / open method on server-side: metadata as headers', () => {
-
-  const instance = new SSEClient(settingsServerSide, { getEventSource: () => EventSourceMock });
-  instance.open(authDataSample);
-
-  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS }); // Headers are properly set for streaming connection
-});
-
-test('SSClient / open method on server-side: metadata with IP and Hostname as headers', () => {
-
-  const settingsWithRuntime = {
-    ...settingsServerSide,
-    runtime: {
-      ip: 'some ip',
-      hostname: 'some hostname'
-    }
-  };
-  const instance = new SSEClient(settingsWithRuntime, { getEventSource: () => EventSourceMock });
-  instance.open(authDataSample);
-
-  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toEqual({
-    headers: {
-      ...EXPECTED_HEADERS,
-      SplitSDKMachineIP: settingsWithRuntime.runtime.ip,
-      SplitSDKMachineName: settingsWithRuntime.runtime.hostname
-    }
-  }); // Headers are properly set for streaming connection
-});
-
-test('SSClient / open method on server-side: metadata as headers and options', () => {
-  const platform = { getEventSource: jest.fn(() => EventSourceMock), getOptions: jest.fn(() => ({ withCredentials: true })) };
-
-  const instance = new SSEClient(settingsServerSide, platform);
-  instance.open(authDataSample);
-
-  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS, withCredentials: true }); // Headers and options are properly set for streaming connection
-
-  // Assert that getEventSource and getOptions were called once with settings
-  expect(platform.getEventSource.mock.calls).toEqual([[settingsServerSide]]);
-  expect(platform.getOptions.mock.calls).toEqual([[settingsServerSide]]);
-});
-
-test('SSClient / open method with getHeaderOverrides: custom headers', () => {
-  const settingsWithGetHeaderOverrides = {
-    ...settings,
-    sync: {
-      requestOptions: {
-        getHeaderOverrides: (context) => {
-          expect(context).toEqual({ headers: EXPECTED_HEADERS });
-          context.headers['otherheader'] = 'customvalue';
-          return {
-            SplitSDKClientKey: '4321', // will not be overridden
-            CustomHeader: 'custom-value'
-          };
+  test('custom headers', () => {
+    const settingsWithGetHeaderOverrides = {
+      ...settings,
+      sync: {
+        requestOptions: {
+          getHeaderOverrides: (context) => {
+            expect(context).toEqual({ headers: {} });
+            context.headers['otherheader'] = 'customvalue';
+            return {
+              SplitSDKClientKey: '4321', // will not be overridden
+              CustomHeader: 'custom-value'
+            };
+          }
         }
-      }
-    }
-  };
-  const instance = new SSEClient(settingsWithGetHeaderOverrides, { getEventSource: () => EventSourceMock });
-  instance.open(authDataSample);
+      },
+    };
+    const instance = new SSEClient(settingsWithGetHeaderOverrides, { getEventSource: () => EventSourceMock });
+    instance.open(authDataSample);
 
-  expect(instance.connection.url).toBe(EXPECTED_URL); // URL is properly set for streaming connection
-  expect(instance.connection.__eventSourceInitDict).toEqual({
-    headers: {
-      ...EXPECTED_HEADERS,
-      CustomHeader: 'custom-value'
-    }
-  }); // Headers are properly set for streaming connection
+    expect(instance.connection.url).toBe(EXPECTED_BROWSER_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({
+      headers: {
+        CustomHeader: 'custom-value'
+      }
+    }); // Only custom headers are passed for streaming connection
+  });
+
+});
+
+describe('SSClient / open method on server-side', () => {
+
+  test('metadata as headers', () => {
+
+    const instance = new SSEClient(settingsServerSide, { getEventSource: () => EventSourceMock });
+    instance.open(authDataSample);
+
+    expect(instance.connection.url).toBe(EXPECTED_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS });
+  });
+
+  test('metadata with IP and Hostname as headers', () => {
+
+    const settingsWithRuntime = {
+      ...settingsServerSide,
+      runtime: {
+        ip: 'some ip',
+        hostname: 'some hostname'
+      }
+    };
+    const instance = new SSEClient(settingsWithRuntime, { getEventSource: () => EventSourceMock });
+    instance.open(authDataSample);
+
+    expect(instance.connection.url).toBe(EXPECTED_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({
+      headers: {
+        ...EXPECTED_HEADERS,
+        SplitSDKMachineIP: settingsWithRuntime.runtime.ip,
+        SplitSDKMachineName: settingsWithRuntime.runtime.hostname
+      }
+    });
+  });
+
+  test('metadata as headers and custom options', () => {
+    const platform = { getEventSource: jest.fn(() => EventSourceMock), getOptions: jest.fn(() => ({ withCredentials: true })) };
+
+    const instance = new SSEClient(settingsServerSide, platform);
+    instance.open(authDataSample);
+
+    expect(instance.connection.url).toBe(EXPECTED_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({ headers: EXPECTED_HEADERS, withCredentials: true }); // Headers and options are properly set for streaming connection
+
+    // Assert that getEventSource and getOptions were called once with settings
+    expect(platform.getEventSource.mock.calls).toEqual([[settingsServerSide]]);
+    expect(platform.getOptions.mock.calls).toEqual([[settingsServerSide]]);
+  });
+
+  test('custom headers', () => {
+    const settingsWithGetHeaderOverrides = {
+      ...settingsServerSide,
+      sync: {
+        requestOptions: {
+          getHeaderOverrides: (context) => {
+            expect(context).toEqual({ headers: EXPECTED_HEADERS });
+            context.headers['otherheader'] = 'customvalue';
+            return {
+              SplitSDKClientKey: '4321', // will not be overridden
+              CustomHeader: 'custom-value'
+            };
+          }
+        }
+      },
+    };
+    const instance = new SSEClient(settingsWithGetHeaderOverrides, { getEventSource: () => EventSourceMock });
+    instance.open(authDataSample);
+
+    expect(instance.connection.url).toBe(EXPECTED_URL);
+    expect(instance.connection.__eventSourceInitDict).toEqual({
+      headers: {
+        ...EXPECTED_HEADERS,
+        CustomHeader: 'custom-value'
+      }
+    }); // SDK headers and custom headers are passed for streaming connection
+  });
 });
