@@ -119,7 +119,10 @@ export interface ISettings {
     __splitFiltersValidation: ISplitFiltersValidation,
     localhostMode?: SplitIO.LocalhostFactory,
     enabled: boolean,
-    flagSpecVersion: string
+    flagSpecVersion: string,
+    requestOptions?: {
+      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
+    }
   },
   readonly runtime: {
     ip: string | false
@@ -218,7 +221,10 @@ interface ISharedSettings {
      * Enables synchronization.
      * @property {boolean} enabled
      */
-    enabled: boolean
+    enabled?: boolean,
+    requestOptions?: {
+      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
+    },
   }
 }
 /**
@@ -403,6 +409,17 @@ export interface IStatusInterface extends IEventEmitter {
    * @returns {Promise<void>}
    */
   ready(): Promise<void>
+
+  // Expose status for internal purposes only. Not considered part of the public API, and might be updated eventually.
+  __getStatus(): {
+    isReady: boolean;
+    isReadyFromCache: boolean;
+    isTimedout: boolean;
+    hasTimedout: boolean;
+    isDestroyed: boolean;
+    isOperational: boolean;
+    lastUpdate: number;
+  }
 }
 /**
  * Common definitions between clients for different environments interface.

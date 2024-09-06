@@ -3,6 +3,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
 import { IPlatform } from '../sdkFactory/types';
+import { decorateHeaders } from './decorateHeaders';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -21,20 +22,20 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
-  const headers: Record<string, string> = {
+  const commonHeaders: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${authorizationKey}`,
     'SplitSDKVersion': version
   };
 
-  if (ip) headers['SplitSDKMachineIP'] = ip;
-  if (hostname) headers['SplitSDKMachineName'] = hostname;
+  if (ip) commonHeaders['SplitSDKMachineIP'] = ip;
+  if (hostname) commonHeaders['SplitSDKMachineName'] = hostname;
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
-      headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
+      headers: decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {})),
       method: reqOpts.method || 'GET',
       body: reqOpts.body
     }, options);
