@@ -62,8 +62,14 @@ test('split notification - parseKeyList', () => {
 });
 
 test('getDelay', () => {
+  // if h === 0, return 0 (immediate, no delay)
+  expect(getDelay({ i: 300, h: 0, s: 1 }, 'anything')).toBe(0);
+
+  // if h !== 0, calculate delay with provided hash, seed and interval
   expect(getDelay({ i: 300, h: 1, s: 0 }, 'nicolas@split.io')).toBe(241);
   expect(getDelay({ i: 60000, h: 1, s: 1 }, 'emi@split.io')).toBe(14389);
   expect(getDelay({ i: 60000, h: 1, s: 0 }, 'emi@split.io')).toBe(24593);
+
+  // if i, h and s are not provided, use defaults
   expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });
