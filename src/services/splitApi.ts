@@ -67,14 +67,14 @@ export function splitApiFactory(
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
     },
 
-    fetchMemberships(userMatchingKey: string, noCache?: boolean) {
+    fetchMemberships(userMatchingKey: string, noCache?: boolean, till?: number) {
       /**
        * URI encoding of user keys in order to:
        *  - avoid 400 responses (due to URI malformed). E.g.: '/api/memberships/%'
        *  - avoid 404 responses. E.g.: '/api/memberships/foo/bar'
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
-      const url = `${urls.sdk}/memberships/${encodeURIComponent(userMatchingKey)}`;
+      const url = `${urls.sdk}/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MEMBERSHIPS));
     },
 

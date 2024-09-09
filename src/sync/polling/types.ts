@@ -15,7 +15,7 @@ export type MySegmentsData = {
   removed: string[]
 }
 
-export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean], boolean> { }
+export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean, till?: number], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>

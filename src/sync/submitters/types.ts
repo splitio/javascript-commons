@@ -176,7 +176,7 @@ export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   spC?: number, // splitCount
   seC?: number, // segmentCount
   skC?: number, // segmentKeyCount
-  lseC?: number, // largeSegmentCount
+  lsC?: number, // largeSegmentCount
   lskC?: number, // largeSegmentKeyCount
   sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
