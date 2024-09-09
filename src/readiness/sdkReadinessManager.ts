@@ -121,14 +121,15 @@ export function sdkReadinessManagerFactory(
           return readyPromise;
         },
 
-        // Expose status for internal purposes only. Not considered part of the public API, and might be updated eventually.
         __getStatus() {
           return {
             isReady: readinessManager.isReady(),
             isReadyFromCache: readinessManager.isReadyFromCache(),
-            isOperational: readinessManager.isOperational(),
+            isTimedout: readinessManager.isTimedout(),
             hasTimedout: readinessManager.hasTimedout(),
             isDestroyed: readinessManager.isDestroyed(),
+            isOperational: readinessManager.isOperational(),
+            lastUpdate: readinessManager.lastUpdate(),
           };
         },
       }

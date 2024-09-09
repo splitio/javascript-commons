@@ -16,14 +16,16 @@ const settingsWithTimeout = {
   }
 } as unknown as ISettings;
 
-const statusFlagsCount = 5;
+const statusFlagsCount = 7;
 
 function assertInitialStatus(readinessManager: IReadinessManager) {
   expect(readinessManager.isReady()).toBe(false);
   expect(readinessManager.isReadyFromCache()).toBe(false);
+  expect(readinessManager.isTimedout()).toBe(false);
   expect(readinessManager.hasTimedout()).toBe(false);
   expect(readinessManager.isDestroyed()).toBe(false);
   expect(readinessManager.isOperational()).toBe(false);
+  expect(readinessManager.lastUpdate()).toBe(0);
 }
 
 test('READINESS MANAGER / Share splits but segments (without timeout enabled)', (done) => {
@@ -165,6 +167,7 @@ describe('READINESS MANAGER / Timeout ready event', () => {
     timeoutCounter = 0;
 
     readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      expect(readinessManager.isTimedout()).toBe(true);
       expect(readinessManager.hasTimedout()).toBe(true);
       if (!readinessManager.isReady()) timeoutCounter++;
     });
@@ -178,6 +181,8 @@ describe('READINESS MANAGER / Timeout ready event', () => {
   test('should be fired once', (done) => {
     readinessManager.gate.on(SDK_READY, () => {
       expect(readinessManager.isReady()).toBe(true);
+      expect(readinessManager.isTimedout()).toBe(false);
+      expect(readinessManager.hasTimedout()).toBe(true);
       expect(timeoutCounter).toBe(1);
       done();
     });
@@ -233,14 +238,24 @@ test('READINESS MANAGER / Destroy after it was ready but before timedout', () =>
     counter++;
   });
 
+  let lastUpdate = readinessManager.lastUpdate();
+  expect(lastUpdate).toBe(0);
+
   readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // ready state
 
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
+
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // fires an update
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
 
   expect(readinessManager.isDestroyed()).toBe(false);
   readinessManager.destroy(); // Destroy the gate, removing all the listeners and clearing the ready timeout.
   expect(readinessManager.isDestroyed()).toBe(true);
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+
   readinessManager.destroy(); // no-op
   readinessManager.destroy(); // no-op
 
