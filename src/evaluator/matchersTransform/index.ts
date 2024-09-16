@@ -4,7 +4,7 @@ import { segmentTransform } from './segment';
 import { whitelistTransform } from './whitelist';
 import { numericTransform } from './unaryNumeric';
 import { zeroSinceHH, zeroSinceSS } from '../convertions';
-import { IBetweenMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
+import { IBetweenMatcherData, IInLargeSegmentMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
 import { IMatcherDto } from '../types';
 
 /**
@@ -18,6 +18,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       negate,
       keySelector,
       userDefinedSegmentMatcherData,
+      userDefinedLargeSegmentMatcherData,
       whitelistMatcherData, /* whitelistObject, provided by 'WHITELIST', 'IN_LIST_SEMVER', set and string matchers */
       unaryNumericMatcherData,
       betweenMatcherData,
@@ -33,8 +34,10 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
     let dataType = matcherDataTypes.STRING;
     let value = undefined;
 
-    if (type === matcherTypes.IN_SEGMENT || type === matcherTypes.IN_LARGE_SEGMENT) {
+    if (type === matcherTypes.IN_SEGMENT) {
       value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
+    } else if (type === matcherTypes.IN_LARGE_SEGMENT) {
+      value = segmentTransform(userDefinedLargeSegmentMatcherData as IInLargeSegmentMatcherData);
     } else if (type === matcherTypes.EQUAL_TO) {
       value = numericTransform(unaryNumericMatcherData as IUnaryNumericMatcherData);
       dataType = matcherDataTypes.NUMBER;
