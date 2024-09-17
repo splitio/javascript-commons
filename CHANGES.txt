@@ -1,3 +1,6 @@
+1.18.0 (September XX, 2024)
+ - Added `factory.destroy()` method, as a shortcut to destroy all SDK clients created by the factory.
+
 1.17.0 (September 6, 2024)
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance SDK HTTP request Headers for Authorization Frameworks.
  - Added `isTimedout` and `lastUpdate` properties to IStatusInterface to keep track of the timestamp of the last SDK event, used on React and Redux SDKs.

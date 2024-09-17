@@ -459,6 +459,12 @@ interface IBasicSDK {
    * @property Logger
    */
   Logger: ILoggerAPI
+  /**
+   * Destroy all the clients created by this factory.
+   * @function destroy
+   * @returns {Promise<void>}
+   */
+  destroy(): Promise<void>
 }
 /****** Exposed namespace ******/
 /**
