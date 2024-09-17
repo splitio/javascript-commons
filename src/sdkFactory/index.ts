@@ -105,5 +105,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     Logger: createLoggerAPI(log),
 
     settings,
+
+    destroy() {
+      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => {});
+    }
   }, extraProps && extraProps(ctx));
 }

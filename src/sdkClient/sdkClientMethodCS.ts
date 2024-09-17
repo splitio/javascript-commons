@@ -83,6 +83,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clients[instanceId];
+    return clients[instanceId] as SplitIO.ICsClient;
   };
 }
