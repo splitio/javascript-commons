@@ -8,18 +8,14 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, LOG_PREFIX_CLIENT_INSTANTIATION } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
-
-function buildInstanceId(key: SplitIO.SplitKey) {
-  // @ts-ignore
-  return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-`;
-}
+import { buildInstanceId } from './identity';
 
 /**
  * Factory of client method for the client-side API variant where TT is ignored.
  * Therefore, clients don't have a bound TT for the track method.
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
-  const { storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -31,8 +27,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
   const defaultInstanceId = buildInstanceId(parsedDefaultKey);
 
   // Cache instances created per factory.
-  const clientInstances: Record<string, SplitIO.ICsClient> = {};
-  clientInstances[defaultInstanceId] = mainClientInstance;
+  clients[defaultInstanceId] = mainClientInstance;
 
   return function client(key?: SplitIO.SplitKey) {
     if (key === undefined) {
@@ -48,7 +43,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
     const instanceId = buildInstanceId(validKey);
 
-    if (!clientInstances[instanceId]) {
+    if (!clients[instanceId]) {
       const matchingKey = getMatching(validKey);
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
@@ -70,7 +65,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
-      clientInstances[instanceId] = clientCSDecorator(
+      clients[instanceId] = clientCSDecorator(
         log,
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
@@ -88,6 +83,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clientInstances[instanceId];
+    return clients[instanceId];
   };
 }

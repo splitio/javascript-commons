@@ -8,7 +8,7 @@ import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter, IUniqueKeysTracker } from '../trackers/types';
-import { SplitIO, ISettings, IEventEmitter } from '../types';
+import { SplitIO, ISettings, IEventEmitter, IBasicClient } from '../types';
 
 /**
  * Environment related dependencies.
@@ -49,6 +49,7 @@ export interface ISdkFactoryContext {
   signalListener?: ISignalListener
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
+  clients: Record<string, IBasicClient>,
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {

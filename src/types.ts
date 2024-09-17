@@ -426,7 +426,7 @@ export interface IStatusInterface extends IEventEmitter {
  * @interface IBasicClient
  * @extends IStatusInterface
  */
-interface IBasicClient extends IStatusInterface {
+export interface IBasicClient extends IStatusInterface {
   /**
    * Flush data
    * @function flush

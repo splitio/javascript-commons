@@ -10,6 +10,8 @@ export function sdkClientMethodFactory(params: ISdkFactoryContext): () => SplitI
   const log = params.settings.log;
   const clientInstance = sdkClientFactory(params);
 
+  params.clients[''] = clientInstance;
+
   return function client() {
     if (arguments.length > 0) {
       throw new Error('Shared Client not supported by the storage mechanism. Create isolated instances instead.');
