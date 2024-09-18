@@ -71,7 +71,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
           sdkReadinessManager: sharedSdkReadiness,
           storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
-          signalListener: undefined, // only the main client "destroy" method stops the signal listener
         }), true) as SplitIO.IClient,
         validKey
       );
