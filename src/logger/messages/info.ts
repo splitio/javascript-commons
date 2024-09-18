@@ -19,7 +19,6 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.USER_CONSENT_INITIAL, 'Starting the SDK with %s user consent. No data will be sent.'],
 
   // synchronizer
-  [c.POLLING_SMART_PAUSING, c.LOG_PREFIX_SYNC_POLLING + 'Turning segments data polling %s.'],
   [c.POLLING_START, c.LOG_PREFIX_SYNC_POLLING + 'Starting polling'],
   [c.POLLING_STOP, c.LOG_PREFIX_SYNC_POLLING + 'Stopping polling'],
   [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying download of feature flags #%s. Reason: %s'],

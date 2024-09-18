@@ -5,7 +5,7 @@ import type { sdkManagerFactory } from '../sdkManager';
 import type { splitApiFactory } from '../services/splitApi';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
-import { ISyncManager } from '../sync/types';
+import { ISyncManager, ITask } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter, IUniqueKeysTracker } from '../trackers/types';
 import { SplitIO, ISettings, IEventEmitter, IBasicClient } from '../types';
@@ -49,6 +49,7 @@ export interface ISdkFactoryContext {
   signalListener?: ISignalListener
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
+  mySegmentsSyncManager?: ITask,
   clients: Record<string, IBasicClient>,
 }
 

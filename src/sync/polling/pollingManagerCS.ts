@@ -4,9 +4,8 @@ import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { mySegmentsSyncTaskFactory } from './syncTasks/mySegmentsSyncTask';
 import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
-import { getMatching } from '../../utils/key';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
-import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
+import { POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
@@ -25,9 +24,6 @@ export function pollingManagerCSFactory(
   // Map of matching keys to their corresponding MySegmentsSyncTask.
   const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
 
-  const matchingKey = getMatching(settings.core.key);
-  const mySegmentsSyncTask = add(matchingKey, readiness, storage);
-
   function startMySegmentsSyncTasks() {
     forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
       mySegmentsSyncTask.start();
@@ -43,14 +39,11 @@ export function pollingManagerCSFactory(
   // smart pausing
   readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
-    const splitsHaveSegments = storage.splits.usesSegments();
-    if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(POLLING_SMART_PAUSING, [splitsHaveSegments ? 'ON' : 'OFF']);
-      if (splitsHaveSegments) {
-        startMySegmentsSyncTasks();
-      } else {
-        stopMySegmentsSyncTasks();
-      }
+
+    if (storage.splits.usesSegments()) {
+      startMySegmentsSyncTasks();
+    } else {
+      stopMySegmentsSyncTasks();
     }
   });
 
@@ -70,7 +63,6 @@ export function pollingManagerCSFactory(
 
   return {
     splitsSyncTask,
-    segmentsSyncTask: mySegmentsSyncTask,
 
     // Start periodic fetching (polling)
     start() {

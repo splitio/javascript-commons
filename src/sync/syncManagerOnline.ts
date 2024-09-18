@@ -174,8 +174,7 @@ export function syncManagerOnlineFactory(
 
               (pollingManager as IPollingManagerCS).remove(matchingKey);
             }
-          },
-          flush() { return Promise.resolve(); }
+          }
         };
       }
     };

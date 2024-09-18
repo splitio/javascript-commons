@@ -1,7 +1,7 @@
 import { ERROR_EMPTY, ERROR_NULL, ERROR_INVALID, WARN_SDK_KEY } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-import { validateApiKey, validateAndTrackApiKey, releaseApiKey } from '../apiKey';
+import { validateApiKey, validateAndTrackApiKey, releaseApiKey, areAllClientDestroyed } from '../apiKey';
 
 const invalidKeys = [
   { key: '', msg: ERROR_EMPTY },
@@ -113,4 +113,18 @@ describe('validateAndTrackApiKey', () => {
 
     releaseApiKey(validSdkKey); // clean up the cache just in case a new test is added
   });
+});
+
+test('areAllClientDestroyed', () => {
+  // Clients map is empty
+  expect(areAllClientDestroyed({})).toBe(true);
+
+  // Clients map is not empty
+  const destroyedClient = { __getStatus: () => ({ isDestroyed: true }) } as any;
+  const notDestroyedClient = { __getStatus: () => ({ isDestroyed: false }) } as any;
+  expect(areAllClientDestroyed({ '': notDestroyedClient })).toBe(false);
+  expect(areAllClientDestroyed({ '': destroyedClient })).toBe(true);
+  expect(areAllClientDestroyed({ 'main': notDestroyedClient, 'other': notDestroyedClient })).toBe(false);
+  expect(areAllClientDestroyed({ 'main': destroyedClient, 'other': notDestroyedClient })).toBe(false);
+  expect(areAllClientDestroyed({ 'main': destroyedClient, 'other': destroyedClient })).toBe(true);
 });

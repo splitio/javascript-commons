@@ -1,5 +1,6 @@
 import { ERROR_NULL, ERROR_EMPTY, ERROR_INVALID, WARN_SDK_KEY, LOG_PREFIX_INSTANTIATION } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
+import { IBasicClient } from '../../types';
 import { isString } from '../lang';
 
 const item = 'sdk_key';
@@ -49,4 +50,8 @@ export function validateAndTrackApiKey(log: ILogger, maybeSdkKey: any): string |
 export function releaseApiKey(sdkKey: string) {
   if (usedKeysMap[sdkKey]) usedKeysMap[sdkKey]--;
   if (usedKeysMap[sdkKey] === 0) delete usedKeysMap[sdkKey];
+}
+
+export function areAllClientDestroyed(clients: Record<string, IBasicClient>) {
+  return Object.keys(clients).every(key => clients[key].__getStatus().isDestroyed);
 }
