@@ -30,6 +30,10 @@ export interface IInSegmentMatcherData {
   segmentName: string
 }
 
+export interface IInLargeSegmentMatcherData {
+  largeSegmentName: string
+}
+
 export interface IDependencyMatcherData {
   split: string,
   treatments: string[]
@@ -43,6 +47,7 @@ interface ISplitMatcherBase {
     attribute: string | null
   }
   userDefinedSegmentMatcherData?: null | IInSegmentMatcherData
+  userDefinedLargeSegmentMatcherData?: null | IInLargeSegmentMatcherData
   whitelistMatcherData?: null | IWhitelistMatcherData
   unaryNumericMatcherData?: null | IUnaryNumericMatcherData
   betweenMatcherData?: null | IBetweenMatcherData
@@ -63,7 +68,7 @@ interface IInSegmentMatcher extends ISplitMatcherBase {
 
 interface IInLargeSegmentMatcher extends ISplitMatcherBase {
   matcherType: 'IN_LARGE_SEGMENT',
-  userDefinedSegmentMatcherData: IInSegmentMatcherData
+  userDefinedLargeSegmentMatcherData: IInLargeSegmentMatcherData
 }
 
 interface IWhitelistMatcher extends ISplitMatcherBase {
