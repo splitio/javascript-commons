@@ -11,6 +11,18 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
   private segmentCache: Record<string, ISet<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
 
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
+    const keySet = this.segmentCache[name] || new _Set<string>();
+
+    addedKeys.forEach(k => keySet.add(k));
+    removedKeys.forEach(k => keySet.delete(k));
+
+    this.segmentCache[name] = keySet;
+    this.segmentChangeNumber[name] = changeNumber;
+
+    return addedKeys.length > 0 || removedKeys.length > 0;
+  }
+
   addToSegment(name: string, segmentKeys: string[]): boolean {
     const values = this.segmentCache[name];
     const keySet = values ? values : new _Set<string>();

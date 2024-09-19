@@ -39,6 +39,7 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    * For client-side synchronizer: the method is not used.
    */
   registerSegments(names: string[]): boolean { return false; }
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) { return false; }
 
   /**
    * For server-side synchronizer: get the list of segments to fetch changes.

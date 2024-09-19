@@ -23,6 +23,23 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   }
 
   /**
+   * Update the given segment `name` with the lists of `addedKeys`, `removedKeys` and `changeNumber`.
+   * The returned promise is resolved if the operation success, with `true` if the segment was updated (i.e., some key was added or removed),
+   * or rejected if it fails (e.g., wrapper operation fails).
+   */
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
+    const segmentKey = this.keys.buildSegmentNameKey(name);
+
+    return Promise.all<any>([
+      addedKeys.length && this.wrapper.addItems(segmentKey, addedKeys),
+      removedKeys.length && this.wrapper.removeItems(segmentKey, removedKeys),
+      this.wrapper.set(this.keys.buildSegmentTillKey(name), changeNumber + '')
+    ]).then(() => {
+      return addedKeys.length > 0 || removedKeys.length > 0;
+    });
+  }
+
+  /**
    * Add a list of `segmentKeys` to the given segment `name`.
    * The returned promise is resolved when the operation success
    * or rejected if wrapper operation fails.

@@ -1,12 +1,9 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
 import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { MaybeThenable } from '../../../dtos/types';
-import { findIndex } from '../../../utils/lang';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
-import { thenable } from '../../../utils/promise/thenable';
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -30,31 +27,22 @@ export function segmentChangesUpdaterFactory(
 
   let readyOnAlreadyExistentState = true;
 
-  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean) {
+  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean): Promise<boolean> {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
     let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      if (fetchOnlyNew && since !== -1) return -1;
-
-      return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
-        let changeNumber = -1;
-        const results: MaybeThenable<boolean | void>[] = [];
-        changes.forEach(x => {
-          if (x.added.length > 0) results.push(segments.addToSegment(segmentName, x.added));
-          if (x.removed.length > 0) results.push(segments.removeFromSegment(segmentName, x.removed));
-          if (x.added.length > 0 || x.removed.length > 0) {
-            results.push(segments.setChangeNumber(segmentName, x.till));
-            changeNumber = x.till;
-          }
-
-          log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+      return fetchOnlyNew && since !== -1 ?
+        false :
+        segmentChangesFetcher(since, segmentName, noCache, till).then((changes) => {
+          return Promise.all(changes.map(x => {
+            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            return segments.update(x.name, x.added, x.removed, x.till);
+          })).then((updates) => {
+            return updates.some(update => update);
+          });
         });
-        // If at least one storage operation result is a promise, join all in a single promise.
-        if (results.some(result => thenable(result))) return Promise.all(results).then(() => changeNumber);
-        return changeNumber;
-      });
     });
   }
   /**
@@ -75,16 +63,12 @@ export function segmentChangesUpdaterFactory(
     let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
 
     return segmentsPromise.then(segmentNames => {
-      // Async fetchers are collected here.
-      const updaters: Promise<number>[] = [];
-
-      for (let index = 0; index < segmentNames.length; index++) {
-        updaters.push(updateSegment(segmentNames[index], noCache, till, fetchOnlyNew));
-      }
+      // Async fetchers
+      const updaters = segmentNames.map(segmentName => updateSegment(segmentName, noCache, till, fetchOnlyNew));
 
       return Promise.all(updaters).then(shouldUpdateFlags => {
         // if at least one segment fetch succeeded, mark segments ready
-        if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
+        if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
           if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         }
