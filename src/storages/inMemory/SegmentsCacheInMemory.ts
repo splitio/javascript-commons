@@ -1,12 +1,11 @@
-import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { isIntegerNumber } from '../../utils/lang';
+import { ISegmentsCacheSync } from '../types';
 
 /**
- * Default ISplitsCacheSync implementation that stores split definitions in memory.
- * Supported by all JS runtimes.
+ * Default ISplitsCacheSync implementation for server-side that stores segments definitions in memory.
  */
-export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
+export class SegmentsCacheInMemory implements ISegmentsCacheSync {
 
   private segmentCache: Record<string, ISet<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
@@ -21,28 +20,6 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     this.segmentChangeNumber[name] = changeNumber;
 
     return addedKeys.length > 0 || removedKeys.length > 0;
-  }
-
-  addToSegment(name: string, segmentKeys: string[]): boolean {
-    const values = this.segmentCache[name];
-    const keySet = values ? values : new _Set<string>();
-
-    segmentKeys.forEach(k => keySet.add(k));
-
-    this.segmentCache[name] = keySet;
-
-    return true;
-  }
-
-  removeFromSegment(name: string, segmentKeys: string[]): boolean {
-    const values = this.segmentCache[name];
-    const keySet = values ? values : new _Set<string>();
-
-    segmentKeys.forEach(k => keySet.delete(k));
-
-    this.segmentCache[name] = keySet;
-
-    return true;
   }
 
   isInSegment(name: string, key: string): boolean {
@@ -86,16 +63,13 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     }, 0);
   }
 
-  setChangeNumber(name: string, changeNumber: number) {
-    this.segmentChangeNumber[name] = changeNumber;
-
-    return true;
-  }
-
   getChangeNumber(name: string) {
     const value = this.segmentChangeNumber[name];
 
     return isIntegerNumber(value) ? value : -1;
   }
+
+  // No-op. Not used in server-side
+  resetSegments() { return false; }
 
 }

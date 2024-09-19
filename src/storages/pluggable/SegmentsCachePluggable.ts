@@ -40,52 +40,11 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   }
 
   /**
-   * Add a list of `segmentKeys` to the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
-   */
-  addToSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.wrapper.addItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  /**
-   * Remove a list of `segmentKeys` from the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
-   */
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.wrapper.removeItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  /**
    * Returns a promise that resolves with a boolean value indicating if `key` is part of `name` segment.
    * Promise can be rejected if wrapper operation fails.
    */
   isInSegment(name: string, key: string) {
     return this.wrapper.itemContains(this.keys.buildSegmentNameKey(name), key);
-  }
-
-  /**
-   * Set till number for the given segment `name`.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.wrapper.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    );
   }
 
   /**

@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
 import { IMySegmentsResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { ISegmentsCacheSync } from './types';
@@ -8,18 +6,11 @@ import { ISegmentsCacheSync } from './types';
  * This class provides a skeletal implementation of the ISegmentsCacheSync interface
  * to minimize the effort required to implement this interface.
  */
-export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
-  /**
-   * For server-side synchronizer: add `segmentKeys` list of keys to `name` segment.
-   * For client-side synchronizer: add `name` segment to the cache. `segmentKeys` is undefined.
-   */
-  abstract addToSegment(name: string, segmentKeys?: string[]): boolean
+export abstract class AbstractMySegmentsCacheSync implements ISegmentsCacheSync {
 
-  /**
-   * For server-side synchronizer: remove `segmentKeys` list of keys from `name` segment.
-   * For client-side synchronizer: remove `name` segment from the cache. `segmentKeys` is undefined.
-   */
-  abstract removeFromSegment(name: string, segmentKeys?: string[]): boolean
+  protected abstract addSegment(name: string): boolean
+  protected abstract removeSegment(name: string): boolean
+  protected abstract setChangeNumber(changeNumber?: number): boolean | void
 
   /**
    * For server-side synchronizer: check if `key` is in `name` segment.
@@ -34,12 +25,10 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
     this.resetSegments({});
   }
 
-  /**
-   * For server-side synchronizer: add the given list of segments to the cache, with an empty list of keys. The segments that already exist are not modified.
-   * For client-side synchronizer: the method is not used.
-   */
-  registerSegments(names: string[]): boolean { return false; }
-  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) { return false; }
+
+  // No-op. Not used in client-side.
+  registerSegments(): boolean { return false; }
+  update() { return false; }
 
   /**
    * For server-side synchronizer: get the list of segments to fetch changes.
@@ -53,11 +42,6 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    */
   abstract getKeysCount(): number
 
-  /**
-   * For server-side synchronizer: change number of `name` segment.
-   * For client-side synchronizer: change number of mySegments.
-   */
-  abstract setChangeNumber(name?: string, changeNumber?: number): boolean | void
   abstract getChangeNumber(name: string): number
 
   /**
@@ -65,7 +49,7 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    * For client-side synchronizer: it resets or updates the cache.
    */
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean {
-    this.setChangeNumber(undefined, segmentsData.cn);
+    this.setChangeNumber(segmentsData.cn);
 
     const { added, removed } = segmentsData as MySegmentsData;
 
@@ -73,11 +57,11 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
       let isDiff = false;
 
       added.forEach(segment => {
-        isDiff = this.addToSegment(segment) || isDiff;
+        isDiff = this.addSegment(segment) || isDiff;
       });
 
       removed.forEach(segment => {
-        isDiff = this.removeFromSegment(segment) || isDiff;
+        isDiff = this.removeSegment(segment) || isDiff;
       });
 
       return isDiff;
@@ -98,11 +82,11 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
 
     // Slowest path => add and/or remove segments
     for (let removeIndex = index; removeIndex < storedSegmentKeys.length; removeIndex++) {
-      this.removeFromSegment(storedSegmentKeys[removeIndex]);
+      this.removeSegment(storedSegmentKeys[removeIndex]);
     }
 
     for (let addIndex = index; addIndex < names.length; addIndex++) {
-      this.addToSegment(names[addIndex]);
+      this.addSegment(names[addIndex]);
     }
 
     return true;

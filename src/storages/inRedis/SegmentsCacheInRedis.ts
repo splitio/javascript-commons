@@ -34,36 +34,10 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     });
   }
 
-  addToSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.redis.sadd(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.redis.srem(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
   isInSegment(name: string, key: string) {
     return this.redis.sismember(
       this.keys.buildSegmentNameKey(name), key
     ).then(matches => matches !== 0);
-  }
-
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.redis.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    ).then(status => status === 'OK');
   }
 
   getChangeNumber(name: string) {
