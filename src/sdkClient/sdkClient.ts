@@ -66,11 +66,11 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
         syncManager && syncManager.stop();
 
         return __flush().then(() => {
-          // Cleanup event listeners
-          signalListener && signalListener.stop();
-
-          // @TODO stop only if last client is destroyed
-          if (uniqueKeysTracker) uniqueKeysTracker.stop();
+          // For main client, cleanup event listeners and scheduled jobs
+          if (!isSharedClient) {
+            signalListener && signalListener.stop();
+            uniqueKeysTracker && uniqueKeysTracker.stop();
+          }
 
           // Cleanup storage
           return storage.destroy();

@@ -45,7 +45,8 @@ const params = {
   syncManager: syncManagerMock,
   signalListener: { stop: jest.fn() },
   settings: settingsWithKey,
-  telemetryTracker: telemetryTrackerFactory()
+  telemetryTracker: telemetryTrackerFactory(),
+  clients: {}
 };
 
 const invalidAttributes = [
@@ -71,6 +72,7 @@ describe('sdkClientMethodCSFactory', () => {
     partialStorages.length = 0;
     partialSdkReadinessManagers.length = 0;
     partialSyncManagers.length = 0;
+    params.clients = {};
   });
 
   // list of factory functions and their types (whether it ignores TT or not)

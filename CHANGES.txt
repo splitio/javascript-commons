@@ -1,4 +1,5 @@
 2.0.0 (September XX, 2024)
+ - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.
  - Added support for targeting rules based on large segments.
  - BREAKING CHANGES:
    - Updated default flag spec version to 1.2.

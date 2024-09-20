@@ -3,7 +3,7 @@ import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
 import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
-import { SplitIO } from '../types';
+import { IBasicClient, SplitIO } from '../types';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
@@ -48,7 +48,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     },
   });
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
-
+  const clients: Record<string, IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
@@ -73,7 +73,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;
@@ -105,5 +105,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     Logger: createLoggerAPI(log),
 
     settings,
+
+    destroy() {
+      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => {});
+    }
   }, extraProps && extraProps(ctx));
 }

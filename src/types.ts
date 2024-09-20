@@ -426,7 +426,7 @@ export interface IStatusInterface extends IEventEmitter {
  * @interface IBasicClient
  * @extends IStatusInterface
  */
-interface IBasicClient extends IStatusInterface {
+export interface IBasicClient extends IStatusInterface {
   /**
    * Flush data
    * @function flush
@@ -459,6 +459,12 @@ interface IBasicSDK {
    * @property Logger
    */
   Logger: ILoggerAPI
+  /**
+   * Destroy all the clients created by this factory.
+   * @function destroy
+   * @returns {Promise<void>}
+   */
+  destroy(): Promise<void>
 }
 /****** Exposed namespace ******/
 /**
