@@ -6,7 +6,7 @@ import { EventEmitter } from '../../utils/MinEvents';
 
 /** Mocks */
 
-const clientInstance = 'client';
+const clientInstance = { destroy: jest.fn() };
 const managerInstance = 'manager';
 const mockStorage = {
   splits: jest.fn(),
@@ -30,7 +30,7 @@ jest.mock('../../trackers/telemetryTracker', () => {
 const paramsForAsyncSDK = {
   settings: fullSettings,
   storageFactory: jest.fn(() => mockStorage),
-  sdkClientMethodFactory: jest.fn(() => clientInstance),
+  sdkClientMethodFactory: jest.fn(({ clients }) => (key?: string) => { clients[key || ''] = clientInstance; return clientInstance; }),
   sdkManagerFactory: jest.fn(() => managerInstance),
   impressionsObserverFactory: jest.fn(),
   platform: {
@@ -64,6 +64,7 @@ function assertSdkApi(sdk: SplitIO.IAsyncSDK | SplitIO.ISDK | SplitIO.ICsSDK, pa
   expect(sdk.settings).toBe(params.settings);
   expect(sdk.client).toBe(params.sdkClientMethodFactory.mock.results[0].value);
   expect(sdk.manager()).toBe(params.sdkManagerFactory.mock.results[0].value);
+  expect(sdk.destroy()).toBeDefined();
 }
 
 function assertModulesCalled(params: any) {
@@ -92,22 +93,18 @@ describe('sdkFactory', () => {
 
   afterEach(jest.clearAllMocks);
 
-  test('creates IAsyncSDK instance', () => {
+  test.each([paramsForAsyncSDK, fullParamsForSyncSDK])('creates SDK instance', async (params) => {
 
-    const sdk = sdkFactory(paramsForAsyncSDK as unknown as ISdkFactoryParams);
-
-    // should return an object that conforms to SDK interface
-    assertSdkApi(sdk, paramsForAsyncSDK);
-
-    assertModulesCalled(paramsForAsyncSDK);
-  });
-
-  test('creates ISDK instance', () => {
-    const sdk = sdkFactory(fullParamsForSyncSDK as unknown as ISdkFactoryParams);
+    const sdk = sdkFactory(params as unknown as ISdkFactoryParams);
 
     // should return an object that conforms to SDK interface
-    assertSdkApi(sdk, fullParamsForSyncSDK);
+    assertSdkApi(sdk, params);
 
-    assertModulesCalled(fullParamsForSyncSDK);
+    assertModulesCalled(params);
+
+    // Factory destroy should call client destroy
+    expect(sdk.client()).toBe(clientInstance);
+    expect(await sdk.destroy()).toBeUndefined();
+    expect(sdk.client().destroy).toBeCalledTimes(1);
   });
 });
