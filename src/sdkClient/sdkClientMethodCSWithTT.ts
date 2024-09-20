@@ -9,11 +9,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, LOG_PREFIX_CLIENT_INSTANTIATION } from '../logger/constants';
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
-
-function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
-  // @ts-ignore
-  return `${key.matchingKey ? key.matchingKey : key}-${key.bucketingKey ? key.bucketingKey : key}-${trafficType !== undefined ? trafficType : ''}`;
-}
+import { buildInstanceId } from './identity';
 
 /**
  * Factory of client method for the client-side (browser) variant of the Isomorphic JS SDK,
@@ -21,7 +17,7 @@ function buildInstanceId(key: SplitIO.SplitKey, trafficType?: string) {
  * (default client) or the client method (shared clients).
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
-  const { storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, startup: { readyTimeout }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -34,8 +30,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
   const defaultInstanceId = buildInstanceId(parsedDefaultKey, trafficType);
 
   // Cache instances created per factory.
-  const clientInstances: Record<string, SplitIO.ICsClient> = {};
-  clientInstances[defaultInstanceId] = mainClientInstance;
+  clients[defaultInstanceId] = mainClientInstance;
 
   return function client(key?: SplitIO.SplitKey, trafficType?: string) {
     if (key === undefined) {
@@ -58,7 +53,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
     }
     const instanceId = buildInstanceId(validKey, validTrafficType);
 
-    if (!clientInstances[instanceId]) {
+    if (!clients[instanceId]) {
       const matchingKey = getMatching(validKey);
 
       const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
@@ -80,7 +75,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
-      clientInstances[instanceId] = clientCSDecorator(
+      clients[instanceId] = clientCSDecorator(
         log,
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
@@ -98,6 +93,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clientInstances[instanceId];
+    return clients[instanceId] as SplitIO.ICsClient;
   };
 }
