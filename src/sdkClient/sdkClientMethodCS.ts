@@ -9,6 +9,7 @@ import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, L
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { buildInstanceId } from './identity';
+import { IStorageSync } from '../storages/types';
 
 /**
  * Factory of client method for the client-side API variant where TT is ignored.
@@ -19,7 +20,9 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
 
   const mainClientInstance = clientCSDecorator(
     log,
-    sdkClientFactory(params) as SplitIO.IClient,
+    sdkClientFactory(objectAssign({}, params, {
+      mySegmentsSyncManager: syncManager && storage.shared && (syncManager as ISyncManagerCS).shared(getMatching(key), sdkReadinessManager.readinessManager, storage as IStorageSync),
+    })) as SplitIO.IClient,
     key
   );
 
@@ -57,11 +60,11 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       });
 
       // 3 possibilities:
-      // - Standalone mode: both syncManager and sharedSyncManager are defined
-      // - Consumer mode: both syncManager and sharedSyncManager are undefined
-      // - Consumer partial mode: syncManager is defined (only for submitters) but sharedSyncManager is undefined
+      // - Standalone mode: both syncManager and mySegmentsSyncManager are defined
+      // - Consumer mode: both syncManager and mySegmentsSyncManager are undefined
+      // - Consumer partial mode: syncManager is defined (only for submitters) but mySegmentsSyncManager not
       // @ts-ignore
-      const sharedSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
+      const mySegmentsSyncManager = syncManager && sharedStorage && (syncManager as ISyncManagerCS).shared(matchingKey, sharedSdkReadiness.readinessManager, sharedStorage);
 
       // As shared clients reuse all the storage information, we don't need to check here if we
       // will use offline or online mode. We should stick with the original decision.
@@ -70,12 +73,12 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         sdkClientFactory(objectAssign({}, params, {
           sdkReadinessManager: sharedSdkReadiness,
           storage: sharedStorage || storage,
-          syncManager: sharedSyncManager,
-        }), true) as SplitIO.IClient,
+          mySegmentsSyncManager,
+        })) as SplitIO.IClient,
         validKey
       );
 
-      sharedSyncManager && sharedSyncManager.start();
+      mySegmentsSyncManager && mySegmentsSyncManager.start();
 
       log.info(NEW_SHARED_CLIENT);
     } else {

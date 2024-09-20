@@ -14,28 +14,33 @@ const storageMock = {
   })
 };
 
-const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { destroy: jest.Mock } }[] = [];
+function readinessManagerMock() {
+  let isDestroyed = false;
+  return {
+    sdkStatus: { __getStatus: () => ({ isDestroyed }), },
+    readinessManager: { destroy: jest.fn(() => { isDestroyed = true; }) },
+    _undestroy: () => { isDestroyed = false; }
+  };
+}
+
+const partialSdkReadinessManagers: { sdkStatus: any, readinessManager: { destroy: jest.Mock } }[] = [];
 
 const sdkReadinessManagerMock = {
-  sdkStatus: jest.fn(),
-  readinessManager: { destroy: jest.fn() },
+  ...readinessManagerMock(),
   shared: jest.fn(() => {
-    partialSdkReadinessManagers.push({
-      sdkStatus: jest.fn(),
-      readinessManager: { destroy: jest.fn() },
-    });
+    partialSdkReadinessManagers.push(readinessManagerMock());
     return partialSdkReadinessManagers[partialSdkReadinessManagers.length - 1];
   })
 };
 
-const partialSyncManagers: { start: jest.Mock, stop: jest.Mock, flush: jest.Mock }[] = [];
+const mySegmentsSyncManagers: { start: jest.Mock, stop: jest.Mock }[] = [];
 
 const syncManagerMock = {
   stop: jest.fn(),
   flush: jest.fn(() => Promise.resolve()),
   shared: jest.fn(() => {
-    partialSyncManagers.push({ start: jest.fn(), stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) });
-    return partialSyncManagers[partialSyncManagers.length - 1];
+    mySegmentsSyncManagers.push({ start: jest.fn(), stop: jest.fn() });
+    return mySegmentsSyncManagers[mySegmentsSyncManagers.length - 1];
   })
 };
 
@@ -70,8 +75,9 @@ describe('sdkClientMethodCSFactory', () => {
   afterEach(() => {
     jest.clearAllMocks();
     partialStorages.length = 0;
+    sdkReadinessManagerMock._undestroy();
     partialSdkReadinessManagers.length = 0;
-    partialSyncManagers.length = 0;
+    mySegmentsSyncManagers.length = 0;
     params.clients = {};
   });
 
@@ -129,25 +135,30 @@ describe('sdkClientMethodCSFactory', () => {
     // shared methods call once per each new client
     expect(params.storage.shared).toBeCalledTimes(newClients.size);
     expect(params.sdkReadinessManager.shared).toBeCalledTimes(newClients.size);
-    expect(params.syncManager.shared).toBeCalledTimes(newClients.size);
+    expect(params.syncManager.shared).toBeCalledTimes(newClients.size + 1);
 
-    // `client.destroy` of partial clients should stop internal partial components
+    // `client.destroy` should flush and stop partial components
     await Promise.all(Array.from(newClients).map(newClient => newClient.destroy()));
 
     partialSdkReadinessManagers.forEach((partialSdkReadinessManager) => expect(partialSdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1));
     partialStorages.forEach((partialStorage) => expect(partialStorage.destroy).toBeCalledTimes(1));
-    partialSyncManagers.forEach((partialSyncManager) => {
-      expect(partialSyncManager.stop).toBeCalledTimes(1);
-      expect(partialSyncManager.flush).toBeCalledTimes(1);
-    });
+    mySegmentsSyncManagers.slice(1).forEach((mySegmentsSyncManager) => expect(mySegmentsSyncManager.stop).toBeCalledTimes(1));
+    expect(params.syncManager.flush).toBeCalledTimes(newClients.size);
 
-    // `client.destroy` of partial clients shouldn't stop internal main components
+    // `client.destroy` shouldn't stop main components
     expect(params.sdkReadinessManager.readinessManager.destroy).not.toBeCalled();
     expect(params.storage.destroy).not.toBeCalled();
     expect(params.syncManager.stop).not.toBeCalled();
-    expect(params.syncManager.flush).not.toBeCalled();
     expect(params.signalListener.stop).not.toBeCalled();
 
+    // Except the last client is destroyed
+    await sdkClientMethod().destroy();
+
+    expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
+    expect(params.storage.destroy).toBeCalledTimes(1);
+    expect(params.syncManager.stop).toBeCalledTimes(1);
+    expect(params.syncManager.flush).toBeCalledTimes(newClients.size + 1);
+    expect(params.signalListener.stop).toBeCalledTimes(1);
   });
 
   test.each(testTargets)('return main client instance if called with same key', (sdkClientMethodCSFactory) => {
@@ -160,7 +171,7 @@ describe('sdkClientMethodCSFactory', () => {
 
     expect(params.storage.shared).not.toBeCalled();
     expect(params.sdkReadinessManager.shared).not.toBeCalled();
-    expect(params.syncManager.shared).not.toBeCalled();
+    expect(params.syncManager.shared).toBeCalledTimes(1);
   });
 
   test.each(testTargets)('return main client instance if called with same key and TT', (sdkClientMethodCSFactory) => {
@@ -173,7 +184,7 @@ describe('sdkClientMethodCSFactory', () => {
 
     expect(params.storage.shared).not.toBeCalled();
     expect(params.sdkReadinessManager.shared).not.toBeCalled();
-    expect(params.syncManager.shared).not.toBeCalled();
+    expect(params.syncManager.shared).toBeCalledTimes(1);
   });
 
   test.each(testTargets)('return main client instance if called with same key object', (sdkClientMethodCSFactory) => {
@@ -186,7 +197,7 @@ describe('sdkClientMethodCSFactory', () => {
 
     expect(params.storage.shared).not.toBeCalled();
     expect(params.sdkReadinessManager.shared).not.toBeCalled();
-    expect(params.syncManager.shared).not.toBeCalled();
+    expect(params.syncManager.shared).toBeCalledTimes(1);
   });
 
   test.each(testTargets)('return same client instance if called with same key or traffic type (input validation)', (sdkClientMethodCSFactory, ignoresTT) => {
@@ -201,7 +212,7 @@ describe('sdkClientMethodCSFactory', () => {
 
     expect(params.storage.shared).toBeCalledTimes(1);
     expect(params.sdkReadinessManager.shared).toBeCalledTimes(1);
-    expect(params.syncManager.shared).toBeCalledTimes(1);
+    expect(params.syncManager.shared).toBeCalledTimes(2);
 
     expect(sdkClientMethod('KEY', 'tt')).not.toBe(clientInstance); // New client created: key is case-sensitive
     if (!ignoresTT) expect(sdkClientMethod('key', 'TT ')).not.toBe(clientInstance); // New client created: TT is not trimmed
@@ -209,7 +220,7 @@ describe('sdkClientMethodCSFactory', () => {
     const clientCount = ignoresTT ? 2 : 3;
     expect(params.storage.shared).toBeCalledTimes(clientCount);
     expect(params.sdkReadinessManager.shared).toBeCalledTimes(clientCount);
-    expect(params.syncManager.shared).toBeCalledTimes(clientCount);
+    expect(params.syncManager.shared).toBeCalledTimes(clientCount + 1);
   });
 
   test.each(testTargets)('invalid calls throw an error', (sdkClientMethodCSFactory, ignoresTT) => {

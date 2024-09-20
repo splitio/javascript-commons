@@ -19,7 +19,7 @@ export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegment
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
   splitsSyncTask: ISplitsSyncTask
-  segmentsSyncTask: ISyncTask
+  segmentsSyncTask?: ISyncTask
 }
 
 /**
