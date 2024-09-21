@@ -2,24 +2,18 @@ import { SegmentsCacheInMemory } from '../SegmentsCacheInMemory';
 
 describe('SEGMENTS CACHE IN MEMORY', () => {
 
-  test('isInSegment, set/getChangeNumber, add/removeFromSegment, getKeysCount', () => {
+  test('isInSegment, getChangeNumber, update, getKeysCount', () => {
     const cache = new SegmentsCacheInMemory();
 
-    cache.addToSegment('mocked-segment', [
-      'a', 'b', 'c'
-    ]);
-
-    cache.setChangeNumber('mocked-segment', 1);
-
-    cache.removeFromSegment('mocked-segment', ['d']);
+    cache.update('mocked-segment', [ 'a', 'b', 'c'], [], 1);
+    cache.update('mocked-segment', [], ['d'], 1);
 
     expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-    cache.addToSegment('mocked-segment', ['d', 'e']);
+    cache.update('mocked-segment', [ 'd', 'e'], [], 2);
+    cache.update('mocked-segment', [], ['a', 'c'], 2);
 
-    cache.removeFromSegment('mocked-segment', ['a', 'c']);
-
-    expect(cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    expect(cache.getChangeNumber('mocked-segment') === 2).toBe(true);
 
     expect(cache.isInSegment('mocked-segment', 'a')).toBe(false);
     expect(cache.isInSegment('mocked-segment', 'b')).toBe(true); // b
@@ -29,7 +23,7 @@ describe('SEGMENTS CACHE IN MEMORY', () => {
 
     // getKeysCount
     expect(cache.getKeysCount()).toBe(3);
-    cache.addToSegment('mocked-segment-2', ['a', 'b', 'c', 'd', 'e']);
+    cache.update('mocked-segment-2', ['a', 'b', 'c', 'd', 'e'], [], 2);
     expect(cache.getKeysCount()).toBe(8);
     cache.clear();
     expect(cache.getKeysCount()).toBe(0);

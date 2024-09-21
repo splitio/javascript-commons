@@ -5,7 +5,6 @@ import { ISet, _Set } from '../../utils/lang/sets';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
- * Supported by all JS runtimes.
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
