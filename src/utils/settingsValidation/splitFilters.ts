@@ -1,13 +1,20 @@
-import { STANDALONE_MODE } from '../constants';
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import { SplitIO } from '../../types';
 import { ILogger } from '../../logger/types';
-import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS } from '../../logger/constants';
+import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
+import { objectAssign } from '../lang/objectAssign';
+import { find, uniq } from '../lang';
+import { isConsumerMode } from './mode';
 
 // Split filters metadata.
 // Ordered according to their precedency when forming the filter query string: `&names=<values>&prefixes=<values>`
 const FILTERS_METADATA = [
+  {
+    type: 'bySet' as SplitIO.SplitFilterType,
+    maxLength: 50,
+    queryParam: 'sets='
+  },
   {
     type: 'byName' as SplitIO.SplitFilterType,
     maxLength: 400,
@@ -19,6 +26,9 @@ const FILTERS_METADATA = [
     queryParam: 'prefixes='
   }
 ];
+
+const VALID_FLAGSET_REGEX = /^[a-z0-9][_a-z0-9]{0,49}$/;
+const CAPITAL_LETTERS_REGEX = /[A-Z]/;
 
 /**
  * Validates that the given value is a valid filter type
@@ -42,6 +52,11 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
   let result = validateSplits(log, values, LOG_PREFIX_SETTINGS, `${type} filter`, `${type} filter value`);
 
   if (result) {
+
+    if (type === 'bySet') {
+      result = sanitizeFlagSets(log, result, LOG_PREFIX_SETTINGS);
+    }
+
     // check max length
     if (result.length > maxLength) throw new Error(`${maxLength} unique values can be specified at most for '${type}' filter. You passed ${result.length}. Please consider reducing the amount or using other filter.`);
 
@@ -73,6 +88,44 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 }
 
 /**
+ * Sanitizes set names list taking into account:
+ *  - It should be lowercase
+ *  - Must adhere the following regular expression /^[a-z0-9][_a-z0-9]{0,49}$/ that means
+ *   - must start with a letter or number
+ *   - Be in lowercase
+ *   - Be alphanumeric
+ *   - have a max length of 50 characters
+ *
+ * @param {ILogger} log
+ * @param {string[]} flagSets
+ * @param {string} method
+ * @returns sanitized list of set names
+ */
+function sanitizeFlagSets(log: ILogger, flagSets: string[], method: string) {
+  let sanitizedSets = flagSets
+    .map(flagSet => {
+      if (CAPITAL_LETTERS_REGEX.test(flagSet)) {
+        log.warn(WARN_LOWERCASE_FLAGSET, [method, flagSet]);
+        flagSet = flagSet.toLowerCase();
+      }
+      return flagSet;
+    })
+    .filter(flagSet => {
+      if (!VALID_FLAGSET_REGEX.test(flagSet)) {
+        log.warn(WARN_INVALID_FLAGSET, [method, flagSet, VALID_FLAGSET_REGEX, flagSet]);
+        return false;
+      }
+      if (typeof flagSet !== 'string') return false;
+      return true;
+    });
+  return uniq(sanitizedSets);
+}
+
+function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: SplitIO.SplitFilterType) {
+  return find(validFilters, (filter: SplitIO.SplitFilter) => filter.type === filterType && filter.values.length > 0);
+}
+
+/**
  * Validates `splitFilters` configuration object and parses it into a query string for filtering splits on `/splitChanges` fetch.
  *
  * @param {ILogger} log logger
@@ -90,14 +143,14 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
   const res = {
     validFilters: [],
     queryString: null,
-    groupedFilters: { byName: [], byPrefix: [] }
+    groupedFilters: { bySet: [], byName: [], byPrefix: [] },
   } as ISplitFiltersValidation;
 
   // do nothing if `splitFilters` param is not a non-empty array or mode is not STANDALONE
   if (!maybeSplitFilters) return res;
   // Warn depending on the mode
-  if (mode !== STANDALONE_MODE) {
-    log.warn(WARN_SPLITS_FILTER_IGNORED, [STANDALONE_MODE]);
+  if (isConsumerMode(mode)) {
+    log.warn(WARN_SPLITS_FILTER_IGNORED);
     return res;
   }
   // Check collection type
@@ -122,9 +175,32 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
     if (res.groupedFilters[type].length > 0) res.groupedFilters[type] = validateSplitFilter(log, type, res.groupedFilters[type], maxLength);
   });
 
+  const setFilter = configuredFilter(res.validFilters, 'bySet');
+  // Clean all filters if set filter is present
+  if (setFilter) {
+    if (configuredFilter(res.validFilters, 'byName') || configuredFilter(res.validFilters, 'byPrefix')) log.error(ERROR_SETS_FILTER_EXCLUSIVE);
+    objectAssign(res.groupedFilters, { byName: [], byPrefix: [] });
+  }
+
   // build query string
   res.queryString = queryStringBuilder(res.groupedFilters);
   log.debug(SETTINGS_SPLITS_FILTER, [res.queryString]);
 
   return res;
+}
+
+export function validateFlagSets(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] | false {
+  const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
+  let toReturn = sets ? sanitizeFlagSets(log, sets, method) : [];
+  if (flagSetsInConfig.length > 0) {
+    toReturn = toReturn.filter(flagSet => {
+      if (flagSetsInConfig.indexOf(flagSet) > -1) {
+        return true;
+      }
+      log.warn(WARN_FLAGSET_NOT_CONFIGURED, [method, flagSet]);
+      return false;
+    });
+  }
+
+  return toReturn.length ? toReturn : false;
 }

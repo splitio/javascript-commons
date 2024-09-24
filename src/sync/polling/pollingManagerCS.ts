@@ -1,4 +1,4 @@
-import { ISegmentsSyncTask, ISplitsSyncTask, IPollingManagerCS } from './types';
+import { IMySegmentsSyncTask, IPollingManagerCS } from './types';
 import { forOwn } from '../../utils/lang';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
@@ -20,22 +20,22 @@ export function pollingManagerCSFactory(
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
+  const splitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
 
   // Map of matching keys to their corresponding MySegmentsSyncTask.
-  const mySegmentsSyncTasks: Record<string, ISegmentsSyncTask> = {};
+  const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
 
   const matchingKey = getMatching(settings.core.key);
-  const mySegmentsSyncTask: ISegmentsSyncTask = add(matchingKey, readiness, storage);
+  const mySegmentsSyncTask = add(matchingKey, readiness, storage);
 
   function startMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
       mySegmentsSyncTask.start();
     });
   }
 
   function stopMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
       if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
     });
   }
@@ -54,8 +54,8 @@ export function pollingManagerCSFactory(
     }
   });
 
-  function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): ISegmentsSyncTask {
-    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMySegments, storage, readiness, settings, matchingKey);
+  function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
+    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
     // smart ready
     function smartReady() {
@@ -94,7 +94,7 @@ export function pollingManagerCSFactory(
     // fetch splits and segments
     syncAll() {
       const promises = [splitsSyncTask.execute()];
-      forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+      forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
         promises.push(mySegmentsSyncTask.execute());
       });
       return Promise.all(promises);

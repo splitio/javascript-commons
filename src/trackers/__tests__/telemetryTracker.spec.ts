@@ -15,7 +15,7 @@ describe('Telemetry Tracker', () => {
     recordSessionLength: jest.fn(),
     recordStreamingEvents: jest.fn(),
   };
-
+  // @ts-ignore
   const tracker = telemetryTrackerFactory(fakeTelemetryCache, fakeNow);
   const startTimestamp = Date.now();
 

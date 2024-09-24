@@ -7,7 +7,7 @@ import { ISet, setToArray, _Set } from '../../utils/lang/sets';
  * The `_cache` property is the object were items are stored.
  * Intended for testing purposes.
  *
- * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves inmediatelly.
+ * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
  */
 export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>>, _setConnDelay(connDelay: number): void } {
 
@@ -39,25 +39,25 @@ export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWra
     getKeysByPrefix(prefix: string) {
       return Promise.resolve(Object.keys(_cache).filter(key => startsWith(key, prefix)));
     },
-    incr(key: string) {
+    incr(key: string, increment = 1) {
       if (key in _cache) {
-        const count = toNumber(_cache[key]) + 1;
+        const count = toNumber(_cache[key]) + increment;
         if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
         return Promise.resolve(count);
       } else {
-        _cache[key] = '1';
+        _cache[key] = '' + increment;
         return Promise.resolve(1);
       }
     },
-    decr(key: string) {
+    decr(key: string, decrement = 1) {
       if (key in _cache) {
-        const count = toNumber(_cache[key]) - 1;
+        const count = toNumber(_cache[key]) - decrement;
         if (isNaN(count)) return Promise.reject('Given key is not a number');
         _cache[key] = count + '';
         return Promise.resolve(count);
       } else {
-        _cache[key] = '-1';
+        _cache[key] = '-' + decrement;
         return Promise.resolve(-1);
       }
     },

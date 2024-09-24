@@ -2,7 +2,8 @@ import * as c from '../constants';
 
 export const codesError: [number, string][] = [
   // evaluator
-  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid Split, no valid rules found'],
+  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid feature flag, no valid rules or unsupported targeting rule type found'],
+  [c.ENGINE_MATCHER_ERROR, c.LOG_PREFIX_ENGINE_MATCHER + '[%s] %s'],
   // SDK
   [c.ERROR_LOGLEVEL_INVALID, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
   [c.ERROR_CLIENT_CANNOT_GET_READY, 'The SDK will not get ready. Reason: %s'],
@@ -10,7 +11,7 @@ export const codesError: [number, string][] = [
   [c.ERROR_IMPRESSIONS_LISTENER, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Impression listener logImpression method threw: %s.'],
   [c.ERROR_EVENTS_TRACKER, c.LOG_PREFIX_EVENTS_TRACKER + 'Failed to queue %s'],
   // synchronizer
-  [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock Splits data, no changes will be applied to the current cache. %s'],
+  [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock feature flags data. No changes will be applied to the current cache. %s'],
   [c.ERROR_STREAMING_SSE, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to connect or error on streaming connection, with error message: %s'],
   [c.ERROR_STREAMING_AUTH, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to authenticate for streaming. Error: %s.'],
   [c.ERROR_HTTP, 'Response status is not OK. Status: %s. URL: %s. Message: %s'],
@@ -34,4 +35,6 @@ export const codesError: [number, string][] = [
   [c.ERROR_LOCALHOST_MODULE_REQUIRED, c.LOG_PREFIX_SETTINGS + ': an invalid value was received for "sync.localhostMode" config. A valid entity should be provided for localhost mode.'],
   [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': the provided storage is invalid.%s Falling back into default MEMORY storage'],
   [c.ERROR_MIN_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': the provided "%s" config param is lower than allowed. Setting to the minimum value %s seconds'],
+  [c.ERROR_TOO_MANY_SETS, c.LOG_PREFIX_SETTINGS + ': the amount of flag sets provided are big causing uri length error.'],
+  [c.ERROR_SETS_FILTER_EXCLUSIVE, c.LOG_PREFIX_SETTINGS+': the Set filter is exclusive and cannot be used simultaneously with names or prefix filters. Ignoring names and prefixes.'],
 ];

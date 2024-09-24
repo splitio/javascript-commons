@@ -1,9 +1,12 @@
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { ISplit } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { ISet, _Set, setToArray } from '../../utils/lang/sets';
+import { ISettings } from '../../types';
+import { getStorageHash } from '../KeyBuilder';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -11,9 +14,10 @@ import { LOG_PREFIX } from './constants';
 export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
-  private readonly splitFiltersValidation: ISplitFiltersValidation;
+  private readonly log: ILogger;
+  private readonly storageHash: string;
+  private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private cacheReadyButNeedsToFlush: boolean = false;
   private updateNewFilter?: boolean;
 
   /**
@@ -21,10 +25,12 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @param {number | undefined} expirationTimestamp
    * @param {ISplitFiltersValidation} splitFiltersValidation
    */
-  constructor(private readonly log: ILogger, keys: KeyBuilderCS, expirationTimestamp?: number, splitFiltersValidation: ISplitFiltersValidation = { queryString: null, groupedFilters: { byName: [], byPrefix: [] }, validFilters: [] }) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, expirationTimestamp?: number) {
     super();
     this.keys = keys;
-    this.splitFiltersValidation = splitFiltersValidation;
+    this.log = settings.log;
+    this.storageHash = getStorageHash(settings);
+    this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
 
     this._checkExpiration(expirationTimestamp);
 
@@ -38,13 +44,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     else localStorage.removeItem(key);
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: ISplit | null) {
     try {
       if (split) {
-        if (split.trafficTypeName) {
-          const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-          this._decrementCount(ttKey);
-        }
+        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+        this._decrementCount(ttKey);
 
         if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
@@ -59,11 +63,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private _incrementCounts(split: ISplit) {
     try {
       if (split) {
-        if (split.trafficTypeName) {
-          const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-          // @ts-expect-error
-          localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
-        }
+        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+        // @ts-expect-error
+        localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
 
         if (usesSegments(split)) {
           const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
@@ -99,18 +101,19 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  addSplit(name: string, split: string) {
+  addSplit(name: string, split: ISplit) {
     try {
       const splitKey = this.keys.buildSplitKey(name);
       const splitFromLocalStorage = localStorage.getItem(splitKey);
       const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
+
+      localStorage.setItem(splitKey, JSON.stringify(split));
+
+      this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
-      localStorage.setItem(splitKey, split);
-
-      const parsedSplit = split ? JSON.parse(split) : null;
-
-      this._incrementCounts(parsedSplit);
+      if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      this.addToFlagSets(split);
 
       return true;
     } catch (e) {
@@ -124,8 +127,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const split = this.getSplit(name);
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
-      const parsedSplit = JSON.parse(split as string);
-      this._decrementCounts(parsedSplit);
+      this._decrementCounts(split);
+      if (split) this.removeFromFlagSets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -135,24 +138,18 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   getSplit(name: string) {
-    return localStorage.getItem(this.keys.buildSplitKey(name));
+    const item = localStorage.getItem(this.keys.buildSplitKey(name));
+    return item && JSON.parse(item);
   }
 
   setChangeNumber(changeNumber: number): boolean {
-    // when cache is ready but using a new split query, we must clear all split data
-    if (this.cacheReadyButNeedsToFlush) {
-      this.clear();
-      this.cacheReadyButNeedsToFlush = false;
-    }
 
     // when using a new split query, we must update it at the store
     if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'Split filter query was modified. Updating cache.');
-      const queryKey = this.keys.buildSplitsFilterQueryKey();
-      const queryString = this.splitFiltersValidation.queryString;
+      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
+      const storageHashKey = this.keys.buildHashKey();
       try {
-        if (queryString) localStorage.setItem(queryKey, queryString);
-        else localStorage.removeItem(queryKey);
+        localStorage.setItem(storageHashKey, this.storageHash);
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
@@ -184,7 +181,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     return n;
   }
 
-  getSplitNames() {
+  getSplitNames(): string[] {
     const len = localStorage.length;
     const accum = [];
 
@@ -226,12 +223,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * @override
    */
   checkCache(): boolean {
-    return this.getChangeNumber() > -1 || this.cacheReadyButNeedsToFlush;
+    return this.getChangeNumber() > -1;
   }
 
   /**
    * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
-   * Clean operation (clear) also updates `lastUpdated` timestamp with current time.
    *
    * @param {number | undefined} expirationTimestamp if the value is not a number, data will not be cleaned
    */
@@ -243,39 +239,77 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
+  // @TODO eventually remove `_checkFilterQuery`. Cache should be cleared at the storage level, reusing same logic than PluggableStorage
   private _checkFilterQuery() {
-    const { queryString, groupedFilters } = this.splitFiltersValidation;
-    const queryKey = this.keys.buildSplitsFilterQueryKey();
-    const currentQueryString = localStorage.getItem(queryKey);
+    const storageHashKey = this.keys.buildHashKey();
+    const storageHash = localStorage.getItem(storageHashKey);
 
-    if (currentQueryString !== queryString) {
+    if (storageHash !== this.storageHash) {
       try {
         // mark cache to update the new query filter on first successful splits fetch
         this.updateNewFilter = true;
 
-        // if cache is ready:
-        if (this.checkCache()) {
-          // * set change number to -1, to fetch splits with -1 `since` value.
-          localStorage.setItem(this.keys.buildSplitsTillKey(), '-1');
+        // if there is cache, clear it
+        if (this.checkCache()) this.clear();
 
-          // * remove from cache splits that doesn't match with the new filters
-          this.getSplitNames().forEach((splitName) => {
-            if (queryString && (
-              // @TODO consider redefining `groupedFilters` to expose a method like `groupedFilters::filter(splitName): boolean`
-              groupedFilters.byName.indexOf(splitName) > -1 ||
-              groupedFilters.byPrefix.some((prefix: string) => splitName.startsWith(prefix + '__'))
-            )) {
-              // * set `cacheReadyButNeedsToFlush` so that `checkCache` returns true (the storage is ready to be used) and the data is cleared before updating on first successful splits fetch
-              this.cacheReadyButNeedsToFlush = true;
-              return;
-            }
-            this.removeSplit(splitName);
-          });
-        }
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
     }
     // if the filter didn't change, nothing is done
   }
+
+  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
+    return flagSets.map(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+
+      return new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
+    });
+  }
+
+  private addToFlagSets(featureFlag: ISplit) {
+    if (!featureFlag.sets) return;
+
+    featureFlag.sets.forEach(featureFlagSet => {
+
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
+
+      const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
+
+      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+
+      const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
+      flagSetCache.add(featureFlag.name);
+
+      localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+    });
+  }
+
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+    if (!flagSets) return;
+
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
+    });
+  }
+
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
+
+    const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+
+    if (!flagSetFromLocalStorage) return;
+
+    const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+    flagSetCache.delete(featureFlagName);
+
+    if (flagSetCache.size === 0) {
+      localStorage.removeItem(flagSetKey);
+      return;
+    }
+
+    localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+  }
+
 }

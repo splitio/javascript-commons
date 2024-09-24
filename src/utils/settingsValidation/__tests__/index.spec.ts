@@ -222,6 +222,17 @@ describe('settingsValidation', () => {
     expect(integrationsValidatorMock).toBeCalledWith(settings);
   });
 
+  test('ignores key in server-side', () => {
+    const settings = settingsValidation({
+      core: {
+        authorizationKey: 'dummy token',
+        key: 'ignored'
+      }
+    }, minimalSettingsParams);
+
+    expect(settings.core.key).toBe(undefined);
+  });
+
   test('validates and sanitizes key and traffic type in client-side', () => {
     const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
 
@@ -298,13 +309,13 @@ test('SETTINGS / urls should be correctly assigned', () => {
   const baseEventsUrl = 'https://events.split.io/api';
 
   [
-    '/mySegments/nico',
-    '/mySegments/events@split',
-    '/mySegments/metrics@split',
-    '/mySegments/testImpressions@split',
-    '/mySegments/testImpressions',
-    '/mySegments/events',
-    '/mySegments/metrics',
+    '/memberships/nico',
+    '/memberships/events@split',
+    '/memberships/metrics@split',
+    '/memberships/testImpressions@split',
+    '/memberships/testImpressions',
+    '/memberships/events',
+    '/memberships/metrics',
     '/splitChanges?since=-1',
     '/splitChanges?since=100',
     '/segmentChanges/segment1?since=100',

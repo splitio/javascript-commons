@@ -40,7 +40,7 @@ export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
     storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(Object.keys(splitsData).map(splitName => [splitName, splitsData[splitName]]));
+    storage.splits.addSplits(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])));
 
     if (userKey) { // add mySegments data (client-side)
       let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userKey];
@@ -51,7 +51,7 @@ export function DataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
           return userKeys.indexOf(userKey) > -1;
         });
       }
-      storage.segments.resetSegments(mySegmentsData);
+      storage.segments.resetSegments({ k: mySegmentsData.map(s => ({ n: s })) });
     } else { // add segments data (server-side)
       Object.keys(segmentsData).filter(segmentName => {
         const userKeys = segmentsData[segmentName];

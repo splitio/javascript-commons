@@ -35,21 +35,25 @@ export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyT
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 
-export type IFetchSplitChanges = (since: number, noCache?: boolean) => Promise<IResponse>
+export type IFetchSplitChanges = (since: number, noCache?: boolean, till?: number) => Promise<IResponse>
 
-export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean) => Promise<IResponse>
+export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
-export type IFetchMySegments = (userMatchingKey: string, noCache?: boolean) => Promise<IResponse>
+export type IFetchMemberships = (userMatchingKey: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
 export type IPostEventsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
+
+export type IPostUniqueKeysBulkCs = (body: string, headers?: Record<string, string>) => Promise<IResponse>
+
+export type IPostUniqueKeysBulkSs = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export type IPostTestImpressionsBulk = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export type IPostTestImpressionsCount = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostMetricsConfig = (body: string) => Promise<IResponse>
+export type IPostMetricsConfig = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export type IPostMetricsUsage = (body: string) => Promise<IResponse>
+export type IPostMetricsUsage = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
 export interface ISplitApi {
 	getSdkAPIHealthCheck: IHealthCheckAPI
@@ -57,8 +61,10 @@ export interface ISplitApi {
 	fetchAuth: IFetchAuth
 	fetchSplitChanges: IFetchSplitChanges
 	fetchSegmentChanges: IFetchSegmentChanges
-	fetchMySegments: IFetchMySegments
+	fetchMemberships: IFetchMemberships
 	postEventsBulk: IPostEventsBulk
+	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
+	postUniqueKeysBulkSs: IPostUniqueKeysBulkSs
 	postTestImpressionsBulk: IPostTestImpressionsBulk
 	postTestImpressionsCount: IPostTestImpressionsCount
 	postMetricsConfig: IPostMetricsConfig

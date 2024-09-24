@@ -16,22 +16,42 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   const clientGetTreatmentWithConfig = client.getTreatmentWithConfig;
   const clientGetTreatments = client.getTreatments;
   const clientGetTreatmentsWithConfig = client.getTreatmentsWithConfig;
+  const clientGetTreatmentsByFlagSets = client.getTreatmentsByFlagSets;
+  const clientGetTreatmentsWithConfigByFlagSets = client.getTreatmentsWithConfigByFlagSets;
+  const clientGetTreatmentsByFlagSet = client.getTreatmentsByFlagSet;
+  const clientGetTreatmentsWithConfigByFlagSet = client.getTreatmentsWithConfigByFlagSet;
   const clientTrack = client.track;
 
-  function getTreatment(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatment(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
+  function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatment(maybeKey, maybeFeatureFlagName, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeSplit: string, maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentWithConfig(maybeKey, maybeSplit, combineAttributes(maybeAttributes));
+  function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentWithConfig(maybeKey, maybeFeatureFlagName, combineAttributes(maybeAttributes));
   }
 
-  function getTreatments(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatments(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
+  function getTreatments(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatments(maybeKey, maybeFeatureFlagNames, combineAttributes(maybeAttributes));
   }
 
-  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeSplits: string[], maybeAttributes?: SplitIO.Attributes) {
-    return clientGetTreatmentsWithConfig(maybeKey, maybeSplits, combineAttributes(maybeAttributes));
+  function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsWithConfig(maybeKey, maybeFeatureFlagNames, combineAttributes(maybeAttributes));
+  }
+
+  function getTreatmentsByFlagSets(maybeKey: SplitIO.SplitKey, maybeFlagSets: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsByFlagSets(maybeKey, maybeFlagSets, combineAttributes(maybeAttributes));
+  }
+
+  function getTreatmentsWithConfigByFlagSets(maybeKey: SplitIO.SplitKey, maybeFlagSets: string[], maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsWithConfigByFlagSets(maybeKey, maybeFlagSets, combineAttributes(maybeAttributes));
+  }
+
+  function getTreatmentsByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsByFlagSet(maybeKey, maybeFlagSet, combineAttributes(maybeAttributes));
+  }
+
+  function getTreatmentsWithConfigByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes) {
+    return clientGetTreatmentsWithConfigByFlagSet(maybeKey, maybeFlagSet, combineAttributes(maybeAttributes));
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
@@ -51,6 +71,10 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     getTreatmentWithConfig: getTreatmentWithConfig,
     getTreatments: getTreatments,
     getTreatmentsWithConfig: getTreatmentsWithConfig,
+    getTreatmentsByFlagSets: getTreatmentsByFlagSets,
+    getTreatmentsWithConfigByFlagSets: getTreatmentsWithConfigByFlagSets,
+    getTreatmentsByFlagSet: getTreatmentsByFlagSet,
+    getTreatmentsWithConfigByFlagSet: getTreatmentsWithConfigByFlagSet,
     track: track,
 
     /**
@@ -60,7 +84,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
      * @param {string, number, boolean, list} attributeValue Attribute value
      * @returns {boolean} true if the attribute was stored and false otherways
      */
-    setAttribute(attributeName: string, attributeValue: Object) {
+    setAttribute(attributeName: string, attributeValue: SplitIO.AttributeType) {
       const attribute: Record<string, Object> = {};
       attribute[attributeName] = attributeValue;
       if (!validateAttributesDeep(log, attribute, 'setAttribute')) return false;
@@ -69,10 +93,10 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     },
 
     /**
-     * Returns the attribute with the given key
+     * Returns the attribute with the given name
      *
      * @param {string} attributeName Attribute name
-     * @returns {Object} Attribute with the given key
+     * @returns {Object} Attribute with the given name
      */
     getAttribute(attributeName: string) {
       log.debug(`retrieved attribute ${attributeName}`);
@@ -95,12 +119,12 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
      *
      * @returns {Object} returns all the stored attributes
      */
-    getAttributes(): Record<string, Object> {
+    getAttributes() {
       return attributeStorage.getAll();
     },
 
     /**
-     * Removes from client's in memory attributes storage the attribute with the given key
+     * Removes from client's in memory attributes storage the attribute with the given name
      *
      * @param {string} attributeName
      * @returns {boolean} true if attribute was removed and false otherways

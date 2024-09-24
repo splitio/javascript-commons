@@ -13,8 +13,9 @@ const paramMocks = [
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: undefined,
-    settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'api key '} },
-    telemetryTracker: telemetryTrackerFactory()
+    settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
+    telemetryTracker: telemetryTrackerFactory(),
+    clients: {}
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -22,8 +23,9 @@ const paramMocks = [
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: { stop: jest.fn() },
-    settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'api key '} },
-    telemetryTracker: telemetryTrackerFactory()
+    settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
+    telemetryTracker: telemetryTrackerFactory(),
+    clients: {}
   }
 ];
 
@@ -41,23 +43,52 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   // multiple calls should return the same instance
   expect(sdkClientMethod()).toBe(client);
 
-  // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
-  client.destroy().then(() => {
-    expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
-    expect(params.storage.destroy).toBeCalledTimes(1);
-
+  // flush exposed
+  client.flush().then(() => {
     if (params.syncManager) {
-      expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
     }
-    if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
 
-    done();
+    // flush called before cooldown time elapsed
+    client.flush().then(() => {
+      if (params.syncManager) {
+        expect(loggerMock.warn).toBeCalledTimes(1);
+        expect(params.syncManager.flush).toBeCalledTimes(1);
+      }
+
+      // wait for cooldown time (1sec)
+      setTimeout(() => {
+        // flush called after cooldown time should be executed
+        client.flush().then(() => {
+          if (params.syncManager) {
+            expect(loggerMock.warn).toBeCalledTimes(1);
+            expect(params.syncManager.flush).toBeCalledTimes(2);
+          }
+
+          // `client.destroy` method should stop internal components (other client methods are validated in `client.spec.ts`)
+          client.destroy().then(() => {
+            expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
+            expect(params.storage.destroy).toBeCalledTimes(1);
+
+            if (params.syncManager) {
+              expect(params.syncManager.stop).toBeCalledTimes(1);
+              expect(params.syncManager.flush).toBeCalledTimes(3);
+            }
+            if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
+
+            done();
+          });
+        });
+      }, 1000);
+
+    });
   });
 
   // calling the function with parameters should throw an error
   // @ts-expect-error
   expect(() => { sdkClientMethod('some_key'); }).toThrow(errorMessage); // @ts-expect-error
   expect(() => { sdkClientMethod('some_key', 'some_tt'); }).toThrow(errorMessage);
+
+  loggerMock.mockClear();
 
 });

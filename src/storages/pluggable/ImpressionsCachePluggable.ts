@@ -1,8 +1,9 @@
 import { IPluggableStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
-import { ILogger } from '../../logger/types';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
+import { ILogger } from '../../logger/types';
+import { impressionsToJSON } from '../utils';
 
 export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
@@ -27,29 +28,8 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
   track(impressions: ImpressionDTO[]): Promise<void> {
     return this.wrapper.pushItems(
       this.key,
-      this._toJSON(impressions)
+      impressionsToJSON(impressions, this.metadata)
     );
-  }
-
-  private _toJSON(impressions: ImpressionDTO[]): string[] {
-    return impressions.map(impression => {
-      const {
-        keyName, bucketingKey, feature, treatment, label, time, changeNumber
-      } = impression;
-
-      return JSON.stringify({
-        m: this.metadata,
-        i: {
-          k: keyName,
-          b: bucketingKey,
-          f: feature,
-          t: treatment,
-          r: label,
-          c: changeNumber,
-          m: time
-        }
-      } as StoredImpressionWithMetadata);
-    });
   }
 
   /**

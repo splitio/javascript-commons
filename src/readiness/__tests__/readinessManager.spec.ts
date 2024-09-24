@@ -2,22 +2,36 @@ import { readinessManagerFactory } from '../readinessManager';
 import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
 import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
+import { ISettings } from '../../types';
 
-const timeoutMs = 100;
-const statusFlagsCount = 5;
+const settings = {
+  startup: {
+    readyTimeout: 0,
+  }
+} as unknown as ISettings;
+
+const settingsWithTimeout = {
+  startup: {
+    readyTimeout: 50
+  }
+} as unknown as ISettings;
+
+const statusFlagsCount = 7;
 
 function assertInitialStatus(readinessManager: IReadinessManager) {
   expect(readinessManager.isReady()).toBe(false);
   expect(readinessManager.isReadyFromCache()).toBe(false);
+  expect(readinessManager.isTimedout()).toBe(false);
   expect(readinessManager.hasTimedout()).toBe(false);
   expect(readinessManager.isDestroyed()).toBe(false);
   expect(readinessManager.isOperational()).toBe(false);
+  expect(readinessManager.lastUpdate()).toBe(0);
 }
 
 test('READINESS MANAGER / Share splits but segments (without timeout enabled)', (done) => {
   expect.assertions(2 + statusFlagsCount * 2);
 
-  const readinessManager = readinessManagerFactory(EventEmitter);
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
   const readinessManager2 = readinessManager.shared();
 
   assertInitialStatus(readinessManager); // all status flags must be false
@@ -50,7 +64,7 @@ test('READINESS MANAGER / Share splits but segments (without timeout enabled)', 
 });
 
 test('READINESS MANAGER / Ready event should be fired once', () => {
-  const readinessManager = readinessManagerFactory(EventEmitter);
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
   let counter = 0;
 
   readinessManager.gate.on(SDK_READY, () => {
@@ -68,8 +82,8 @@ test('READINESS MANAGER / Ready event should be fired once', () => {
   expect(counter).toBe(1); // should be called once
 });
 
-test('READINESS MANAGER / Ready event should be fired once', (done) => {
-  const readinessManager = readinessManagerFactory(EventEmitter);
+test('READINESS MANAGER / Ready from cache event should be fired once', (done) => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
   let counter = 0;
 
   readinessManager.gate.on(SDK_READY_FROM_CACHE, () => {
@@ -94,7 +108,7 @@ test('READINESS MANAGER / Ready event should be fired once', (done) => {
 });
 
 test('READINESS MANAGER / Update event should be fired after the Ready event', () => {
-  const readinessManager = readinessManagerFactory(EventEmitter);
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
   let isReady = false;
   let counter = 0;
 
@@ -121,7 +135,7 @@ test('READINESS MANAGER / Update event should be fired after the Ready event', (
 test('READINESS MANAGER / Segment updates should not be propagated', (done) => {
   let updateCounter = 0;
 
-  const readinessManager = readinessManagerFactory(EventEmitter);
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
   const readinessManager2 = readinessManager.shared();
 
   readinessManager2.gate.on(SDK_UPDATE, () => {
@@ -143,33 +157,61 @@ test('READINESS MANAGER / Segment updates should not be propagated', (done) => {
   });
 });
 
-test('READINESS MANAGER / Timeout ready event', (done) => {
-  const readinessManager = readinessManagerFactory(EventEmitter, 10);
+describe('READINESS MANAGER / Timeout ready event', () => {
+  let readinessManager: IReadinessManager;
+  let timeoutCounter: number;
 
-  let timeoutCounter = 0;
+  beforeEach(() => {
+    // Schedule timeout to be fired before SDK_READY
+    readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
+    timeoutCounter = 0;
 
-  readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
-    expect(readinessManager.hasTimedout()).toBe(true);
-    if (!readinessManager.isReady()) timeoutCounter++;
+    readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      expect(readinessManager.isTimedout()).toBe(true);
+      expect(readinessManager.hasTimedout()).toBe(true);
+      if (!readinessManager.isReady()) timeoutCounter++;
+    });
+
+    setTimeout(() => {
+      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+    }, settingsWithTimeout.startup.readyTimeout + 20);
   });
 
-  readinessManager.gate.on(SDK_READY, () => {
-    expect(readinessManager.isReady()).toBe(true);
-    expect(timeoutCounter).toBe(1); // Timeout was scheduled to be fired quickly
-    done();
+  test('should be fired once', (done) => {
+    readinessManager.gate.on(SDK_READY, () => {
+      expect(readinessManager.isReady()).toBe(true);
+      expect(readinessManager.isTimedout()).toBe(false);
+      expect(readinessManager.hasTimedout()).toBe(true);
+      expect(timeoutCounter).toBe(1);
+      done();
+    });
+
+    readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
+      // Calling timeout again should not re-trigger the event
+      readinessManager.timeout();
+      setTimeout(readinessManager.timeout);
+    });
   });
 
-  setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
-    readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  }, 50);
+  test('should be fired once if called explicitly', (done) => {
+    readinessManager.gate.on(SDK_READY, () => {
+      expect(readinessManager.isReady()).toBe(true);
+      expect(timeoutCounter).toBe(1);
+      done();
+    });
+
+    // Calling timeout multiple times triggers the event only once
+    readinessManager.timeout();
+    setTimeout(readinessManager.timeout);
+  });
 });
 
 test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {
   let sdkReadyCalled = false;
   let sdkReadyTimedoutCalled = false;
 
-  const readinessManager = readinessManagerFactory(EventEmitter, timeoutMs);
+  const readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
 
   readinessManager.gate.on(SDK_READY_TIMED_OUT, () => { sdkReadyTimedoutCalled = true; });
   readinessManager.gate.once(SDK_READY, () => { sdkReadyCalled = true; });
@@ -179,16 +221,16 @@ test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {
     expect(sdkReadyTimedoutCalled).toBeFalsy();
     expect(sdkReadyCalled).toBeTruthy();
     done();
-  }, timeoutMs * 3);
+  }, settingsWithTimeout.startup.readyTimeout * 3);
 
   setTimeout(() => {
     readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
     readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  }, timeoutMs * 0.8);
+  }, settingsWithTimeout.startup.readyTimeout * 0.8);
 });
 
 test('READINESS MANAGER / Destroy after it was ready but before timedout', () => {
-  const readinessManager = readinessManagerFactory(EventEmitter, timeoutMs);
+  const readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
 
   let counter = 0;
 
@@ -196,14 +238,24 @@ test('READINESS MANAGER / Destroy after it was ready but before timedout', () =>
     counter++;
   });
 
+  let lastUpdate = readinessManager.lastUpdate();
+  expect(lastUpdate).toBe(0);
+
   readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // ready state
 
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
+
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // fires an update
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+  lastUpdate = readinessManager.lastUpdate();
 
   expect(readinessManager.isDestroyed()).toBe(false);
   readinessManager.destroy(); // Destroy the gate, removing all the listeners and clearing the ready timeout.
   expect(readinessManager.isDestroyed()).toBe(true);
+  expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
+
   readinessManager.destroy(); // no-op
   readinessManager.destroy(); // no-op
 
@@ -213,7 +265,7 @@ test('READINESS MANAGER / Destroy after it was ready but before timedout', () =>
 });
 
 test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
-  const readinessManager = readinessManagerFactory(EventEmitter, timeoutMs);
+  const readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
 
   readinessManager.gate.on(SDK_READY, () => {
     throw new Error('SDK_READY should have not been emitted');
@@ -225,7 +277,7 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
 
   setTimeout(() => {
     readinessManager.destroy(); // Destroy the gate, removing all the listeners and clearing the ready timeout.
-  }, timeoutMs * 0.5);
+  }, settingsWithTimeout.startup.readyTimeout * 0.5);
 
   setTimeout(() => {
     readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
@@ -233,6 +285,6 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
 
     expect('Calling destroy should have removed the readyTimeout and the test should end now.');
     done();
-  }, timeoutMs * 1.5);
+  }, settingsWithTimeout.startup.readyTimeout * 1.5);
 
 });

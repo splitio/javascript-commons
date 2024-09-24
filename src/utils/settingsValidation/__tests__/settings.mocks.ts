@@ -77,9 +77,10 @@ export const fullSettings: ISettings = {
     __splitFiltersValidation: {
       validFilters: [],
       queryString: null,
-      groupedFilters: { byName: [], byPrefix: [] }
+      groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
     enabled: true,
+    flagSpecVersion: '1.2',
     onlySubmitters: false
   },
   version: 'jest',
@@ -109,7 +110,7 @@ export const fullSettingsServerSide = {
 
 export const settingsSplitApi = {
   core: {
-    authorizationKey: 'api-key'
+    authorizationKey: 'sdk-key'
   },
   version: 'jest',
   urls: {
@@ -120,7 +121,8 @@ export const settingsSplitApi = {
     telemetry: 'telemetry'
   },
   sync: {
-    impressionsMode: 'DEBUG'
+    impressionsMode: 'DEBUG',
+    flagSpecVersion: '1.1'
   },
   runtime: {
     ip: false,

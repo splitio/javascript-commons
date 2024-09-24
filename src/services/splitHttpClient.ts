@@ -1,7 +1,9 @@
-import { IFetch, IRequestOptions, IResponse, ISplitHttpClient, NetworkError } from './types';
+import { IRequestOptions, IResponse, ISplitHttpClient, NetworkError } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
+import { IPlatform } from '../sdkFactory/types';
+import { decorateHeaders } from './decorateHeaders';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -9,32 +11,31 @@ const messageNoFetch = 'Global fetch API is not available.';
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
  *
  * @param settings SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
- * @param options global request options
- * @param fetch optional http client to use instead of the global Fetch (for environments where Fetch API is not available such as Node)
+ * @param platform object containing environment-specific dependencies
  */
-export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'version' | 'runtime' | 'core'>, getFetch?: () => (IFetch | undefined), getOptions?: () => object): ISplitHttpClient {
+export function splitHttpClientFactory(settings: ISettings, { getOptions, getFetch }: Pick<IPlatform, 'getOptions' | 'getFetch'>): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
-  const options = getOptions && getOptions();
-  const fetch = getFetch && getFetch();
+  const options = getOptions && getOptions(settings);
+  const fetch = getFetch && getFetch(settings);
 
   // if fetch is not available, log Error
   if (!fetch) log.error(ERROR_CLIENT_CANNOT_GET_READY, [messageNoFetch]);
 
-  const headers: Record<string, string> = {
+  const commonHeaders: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${authorizationKey}`,
     'SplitSDKVersion': version
   };
 
-  if (ip) headers['SplitSDKMachineIP'] = ip;
-  if (hostname) headers['SplitSDKMachineName'] = hostname;
+  if (ip) commonHeaders['SplitSDKMachineIP'] = ip;
+  if (hostname) commonHeaders['SplitSDKMachineName'] = hostname;
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 
     const request = objectAssign({
-      headers: reqOpts.headers ? objectAssign({}, headers, reqOpts.headers) : headers,
+      headers: decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {})),
       method: reqOpts.method || 'GET',
       body: reqOpts.body
     }, options);
@@ -55,7 +56,7 @@ export function splitHttpClientFactory(settings: Pick<ISettings, 'log' | 'versio
 
         if (resp) { // An HTTP error
           switch (resp.status) {
-            case 404: msg = 'Invalid API key or resource not found.';
+            case 404: msg = 'Invalid SDK key or resource not found.';
               break;
             // Don't use resp.statusText since reason phrase is removed in HTTP/2
             default: msg = error.message;

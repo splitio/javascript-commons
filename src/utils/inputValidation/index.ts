@@ -8,6 +8,6 @@ export { validateSplit } from './split';
 export { validateSplits } from './splits';
 export { validateTrafficType } from './trafficType';
 export { validateIfNotDestroyed, validateIfOperational } from './isOperational';
-export { validateSplitExistance } from './splitExistance';
-export { validateTrafficTypeExistance } from './trafficTypeExistance';
+export { validateSplitExistence } from './splitExistence';
+export { validateTrafficTypeExistence } from './trafficTypeExistence';
 export { validatePreloadedData } from './preloadedData';

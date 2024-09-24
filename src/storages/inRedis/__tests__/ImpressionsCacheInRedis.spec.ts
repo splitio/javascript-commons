@@ -2,7 +2,7 @@ import { RedisAdapter } from '../RedisAdapter';
 import { ImpressionsCacheInRedis } from '../ImpressionsCacheInRedis';
 import IORedis, { BooleanResponse } from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { fakeMetadata, o1, o2, o3, o1stored, o2stored, o3stored } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
+import { o1, o2, o3, o1stored, o2stored, o3stored, metadata } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
 
 describe('IMPRESSIONS CACHE IN REDIS', () => {
 
@@ -10,7 +10,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     const connection = new RedisAdapter(loggerMock, {});
     const impressionsKey = 'impr_cache_ut.impressions';
 
-    const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
+    const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, metadata);
 
     // cleanup
     await connection.del(impressionsKey);
@@ -44,14 +44,14 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     expect(await c.count()).toBe(0); // storage should be empty after dropping it
 
     await connection.del(impressionsKey);
-    await connection.quit();
+    await connection.disconnect();
   });
 
   test('`track` should not resolve before calling expire', async () => {
     const impressionsKey = 'impr_cache_ut_2.impressions';
     const connection = new RedisAdapter(loggerMock, {});
 
-    const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, fakeMetadata);
+    const c = new ImpressionsCacheInRedis(loggerMock, impressionsKey, connection, metadata);
 
     const i1 = { feature: 'test4', keyName: 'nicolas@split.io', treatment: 'off', time: Date.now(), changeNumber: 1 };
     const i2 = { feature: 'test5', keyName: 'matias@split.io', treatment: 'on', time: Date.now(), changeNumber: 2 };
@@ -76,7 +76,7 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     // @ts-expect-error
     await c.track([i1, i2]).then(() => {
       connection.del(impressionsKey);
-      connection.quit(); // Try to disconnect right away.
+      connection.disconnect(); // Try to disconnect right away.
       expect(spy1).toBeCalled(); // Redis rpush was called once before executing external callback.
       // Following assertion fails if the expire takes place after disconnected and throws unhandledPromiseRejection
       expect(spy2).toBeCalled(); // Redis expire was called once before executing external callback.

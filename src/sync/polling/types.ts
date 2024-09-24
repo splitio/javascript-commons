@@ -1,23 +1,33 @@
+import { ISplit } from '../../dtos/types';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
-import { SegmentsData } from '../streaming/SSEHandler/types';
+import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../streaming/types';
 import { ITask, ISyncTask } from '../types';
 
-export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean], boolean> { }
+export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }], boolean> { }
 
-export interface ISegmentsSyncTask extends ISyncTask<[segmentNames?: SegmentsData, noCache?: boolean, fetchOnlyNew?: boolean], boolean> { }
+export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
+
+export type MySegmentsData = {
+  type: MEMBERSHIPS_MS_UPDATE | MEMBERSHIPS_LS_UPDATE
+  cn: number
+  added: string[]
+  removed: string[]
+}
+
+export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean, till?: number], boolean> { }
 
 export interface IPollingManager extends ITask {
   syncAll(): Promise<any>
   splitsSyncTask: ISplitsSyncTask
-  segmentsSyncTask: ISegmentsSyncTask
+  segmentsSyncTask: ISyncTask
 }
 
 /**
  * PollingManager for client-side with support for multiple clients
  */
 export interface IPollingManagerCS extends IPollingManager {
-  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): ISegmentsSyncTask
+  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): IMySegmentsSyncTask
   remove(matchingKey: string): void;
-  get(matchingKey: string): ISegmentsSyncTask | undefined
+  get(matchingKey: string): IMySegmentsSyncTask | undefined
 }

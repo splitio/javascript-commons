@@ -2,7 +2,7 @@ import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
 import { ISplitsCacheSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
-import { ISplitPartial } from '../../../dtos/types';
+import { ISplit, ISplitPartial } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
@@ -24,7 +24,7 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: [string, string][] = [];
+    const splits: [string, ISplit][] = [];
     let loadError = null;
     let splitsMock: false | Record<string, ISplitPartial> = {};
     try {
@@ -38,9 +38,8 @@ export function fromObjectUpdaterFactory(
       log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
       forOwn(splitsMock, function (val, name) {
-        splits.push([
-          name,
-          JSON.stringify({
+        splits.push([ // @ts-ignore Split changeNumber and seed is undefined in localhost mode
+          name, {
             name,
             status: 'ACTIVE',
             killed: false,
@@ -49,7 +48,7 @@ export function fromObjectUpdaterFactory(
             conditions: val.conditions || [],
             configurations: val.configurations,
             trafficTypeName: val.trafficTypeName
-          })
+          }
         ]);
       });
 

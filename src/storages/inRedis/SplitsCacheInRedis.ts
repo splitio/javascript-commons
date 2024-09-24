@@ -1,10 +1,11 @@
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { Redis } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
+import { ISet, _Set, returnDifference } from '../../utils/lang/sets';
+import type { RedisAdapter } from './RedisAdapter';
 
 /**
  * Discard errors for an answer of multiple operations.
@@ -23,15 +24,17 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private readonly log: ILogger;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
   private redisError?: string;
+  private readonly flagSetsFilter: string[];
 
-  constructor(log: ILogger, keys: KeyBuilderSS, redis: Redis) {
+  constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.redis = redis;
     this.keys = keys;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
 
     // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected and handled by redis storage adapters.
     // But it is done just to avoid getting the ioredis message `Unhandled error event`.
@@ -45,19 +48,33 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   private _decrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.redis.decr(ttKey).then(count => {
-        if (count === 0) return this.redis.del(ttKey);
-      });
-    }
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.redis.decr(ttKey).then(count => {
+      if (count === 0) return this.redis.del(ttKey);
+    });
   }
 
   private _incrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.redis.incr(ttKey);
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.redis.incr(ttKey);
+  }
+
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+    const removeFromFlagSets = returnDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+
+    let addToFlagSets = returnDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    if (this.flagSetsFilter.length > 0) {
+      addToFlagSets = addToFlagSets.filter(flagSet => {
+        return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
+      });
     }
+
+    const items = [featureFlagName];
+
+    return Promise.all([
+      ...removeFromFlagSets.map(flagSetName => this.redis.srem(this.keys.buildFlagSetKey(flagSetName), items)),
+      ...addToFlagSets.map(flagSetName => this.redis.sadd(this.keys.buildFlagSetKey(flagSetName), items))
+    ]);
   }
 
   /**
@@ -65,26 +82,29 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., redis operation fails)
    */
-  addSplit(name: string, split: string): Promise<boolean> {
+  addSplit(name: string, split: ISplit): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then(splitFromStorage => {
 
-      // handling parsing errors
-      let parsedPreviousSplit, parsedSplit;
+      // handling parsing error
+      let parsedPreviousSplit: ISplit, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
-        parsedSplit = JSON.parse(split);
+        stringifiedNewSplit = JSON.stringify(split);
       } catch (e) {
-        throw new Error('Error parsing split definition: ' + e);
+        throw new Error('Error parsing feature flag definition: ' + e);
       }
 
-      return Promise.all([
-        this.redis.set(splitKey, split),
-        this._incrementCounts(parsedSplit),
-        // If it's an update, we decrement the traffic type of the existing split,
-        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
-      ]);
-    }).then(([status]) => status === 'OK');
+      return this.redis.set(splitKey, stringifiedNewSplit).then(() => {
+        // avoid unnecessary increment/decrement operations
+        if (parsedPreviousSplit && parsedPreviousSplit.trafficTypeName === split.trafficTypeName) return;
+
+        // update traffic type counts
+        return this._incrementCounts(split).then(() => {
+          if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
+        });
+      }).then(() => this._updateFlagSets(name, parsedPreviousSplit && parsedPreviousSplit.sets, split.sets));
+    }).then(() => true);
   }
 
   /**
@@ -92,7 +112,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., redis operation fails)
    */
-  addSplits(entries: [string, string][]): Promise<boolean[]> {
+  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
     return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
   }
 
@@ -101,12 +121,12 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success, with 1 or 0 indicating if the split existed or not.
    * or rejected if it fails (e.g., redis operation fails).
    */
-  removeSplit(name: string): Promise<number> {
+  removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        const parsedSplit = JSON.parse(split);
-        this._decrementCounts(parsedSplit);
+        return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
+    }).then(() => {
       return this.redis.del(this.keys.buildSplitKey(name));
     });
   }
@@ -124,14 +144,15 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * Get split definition or null if it's not defined.
    * Returned promise is rejected if redis operation fails.
    */
-  getSplit(name: string): Promise<string | null> {
+  getSplit(name: string): Promise<ISplit | null> {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
       return Promise.reject(this.redisError);
     }
 
-    return this.redis.get(this.keys.buildSplitKey(name));
+    return this.redis.get(this.keys.buildSplitKey(name))
+      .then(maybeSplit => maybeSplit && JSON.parse(maybeSplit));
   }
 
   /**
@@ -169,10 +190,13 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * @TODO we need to benchmark which is the maximun number of commands we could
    *       pipeline without kill redis performance.
    */
-  getAll(): Promise<string[]> {
-    return this.redis.keys(this.keys.searchPatternForSplitKeys()).then(
-      (listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec()
-    ).then(processPipelineAnswer);
+  getAll(): Promise<ISplit[]> {
+    return this.redis.keys(this.keys.searchPatternForSplitKeys())
+      .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
+      .then(processPipelineAnswer)
+      .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
+        return JSON.parse(splitDefinition);
+      }));
   }
 
   /**
@@ -184,6 +208,21 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     return this.redis.keys(this.keys.searchPatternForSplitKeys()).then(
       (listOfKeys) => listOfKeys.map(this.keys.extractKey)
     );
+  }
+
+  /**
+   * Get list of feature flag names related to a given list of flag set names.
+   * The returned promise is resolved with the list of feature flag names per flag set,
+   * or rejected if the pipelined redis operation fails (e.g., timeout).
+  */
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
+    return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
+      .then((results) => results.map(([e, value], index) => {
+        if (e === null) return value;
+
+        this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
+      }))
+      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
   /**
@@ -200,50 +239,47 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
         ttCount = parseInt(ttCount as string, 10);
         if (!isFiniteNumber(ttCount) || ttCount < 0) {
-          this.log.info(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to data corruption of some sorts.`);
+          this.log.info(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to data corruption of some sorts.`);
           return false;
         }
 
         return ttCount > 0;
       })
       .catch(e => {
-        this.log.error(LOG_PREFIX + `Could not validate traffic type existance of ${trafficType} due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
       });
   }
 
-  /**
-   * Delete everything in the current database.
-   *
-   * @NOTE documentation says it never fails.
-   */
+  // @TODO remove or implement. It is not being used.
   clear() {
-    return this.redis.flushdb().then(status => status === 'OK');
+    return Promise.resolve();
   }
 
   /**
    * Fetches multiple splits definitions.
    * Returned promise is rejected if redis operation fails.
    */
-  getSplits(names: string[]): Promise<Record<string, string | null>> {
+  getSplits(names: string[]): Promise<Record<string, ISplit | null>> {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
       return Promise.reject(this.redisError);
     }
 
-    const splits: Record<string, string | null> = {};
+    const splits: Record<string, ISplit | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
       .then(splitDefinitions => {
         names.forEach((name, idx) => {
-          splits[name] = splitDefinitions[idx];
+          const split = splitDefinitions[idx];
+          splits[name] = split && JSON.parse(split);
         });
         return Promise.resolve(splits);
       })
       .catch(e => {
-        this.log.error(LOG_PREFIX + `Could not grab splits due to an error: ${e}.`);
+        this.log.error(LOG_PREFIX + `Could not grab feature flags due to an error: ${e}.`);
         return Promise.reject(e);
       });
   }

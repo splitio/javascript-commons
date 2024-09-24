@@ -1,4 +1,5 @@
-import { KeyBuilder } from '../KeyBuilder';
+import { ISettings } from '../../types';
+import { KeyBuilder, getStorageHash } from '../KeyBuilder';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 
 test('KEYS / splits keys', () => {
@@ -35,9 +36,11 @@ test('KEYS / splits keys with custom prefix', () => {
   // expect(builder.buildSplitsReady() === expectedReady).toBe(true);
 });
 
+const prefix = 'SPLITIO';
+export const metadata = { s: 'js_someversion', i: 'some_ip', n: 'some_hostname' };
+
 test('KEYS / segments keys', () => {
-  // @ts-expect-error
-  const builder = new KeyBuilderSS();
+  const builder = new KeyBuilderSS(prefix, metadata);
 
   const segmentName = 'segment_name__for_testing';
   const expectedKey = `SPLITIO.segment.${segmentName}`;
@@ -65,9 +68,18 @@ test('KEYS / traffic type keys', () => {
 
 });
 
+test('KEYS / flag set keys', () => {
+  const prefix = 'unit_test.SPLITIO';
+  const builder = new KeyBuilder(prefix);
+
+  const flagSetName = 'flagset_x';
+  const expectedKey = `${prefix}.flagSet.${flagSetName}`;
+
+  expect(builder.buildFlagSetKey(flagSetName)).toBe(expectedKey);
+
+});
+
 test('KEYS / impressions', () => {
-  const prefix = 'SPLITIO';
-  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const expectedImpressionKey = `${prefix}.impressions`;
@@ -76,14 +88,12 @@ test('KEYS / impressions', () => {
 });
 
 test('KEYS / events', () => {
-  // @ts-expect-error
-  let builder = new KeyBuilderSS('test-prefix-1');
+  let builder = new KeyBuilderSS('test-prefix-1', metadata);
 
   expect(builder.buildEventsKey()).toBe('test-prefix-1.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
   expect(builder.buildEventsKey()).toBe('test-prefix-1.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
 
-  // @ts-expect-error
-  builder = new KeyBuilderSS('testPrefix2');
+  builder = new KeyBuilderSS('testPrefix2', metadata);
 
   expect(builder.buildEventsKey()).toBe('testPrefix2.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
   expect(builder.buildEventsKey()).toBe('testPrefix2.events'); // Events key should only vary because of the storage prefix and return the same value on multiple invocations.
@@ -91,8 +101,6 @@ test('KEYS / events', () => {
 });
 
 test('KEYS / latency and exception keys (telemetry)', () => {
-  const prefix = 'SPLITIO';
-  const metadata = { s: 'js-1234', i: '10-10-10-10', n: 'UNKNOWN' };
   const builder = new KeyBuilderSS(prefix, metadata);
 
   const methodName = 't'; // treatment
@@ -103,4 +111,21 @@ test('KEYS / latency and exception keys (telemetry)', () => {
 
   const expectedExceptionKey = `${prefix}.telemetry.exceptions::${metadata.s}/${metadata.n}/${metadata.i}/treatment`;
   expect(builder.buildExceptionKey(methodName)).toBe(expectedExceptionKey);
+});
+
+test('getStorageHash', () => {
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: '&names=p1__split,p2__split' }, flagSpecVersion: '1.2' }
+  } as ISettings)).toBe('7ccd6b31');
+
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: '&names=p2__split,p3__split' }, flagSpecVersion: '1.2' }
+  } as ISettings)).toBe('2a25d0e1');
+
+  expect(getStorageHash({
+    core: { authorizationKey: '<fake-token-rfc>' },
+    sync: { __splitFiltersValidation: { queryString: null }, flagSpecVersion: '1.2' }
+  } as ISettings)).toBe('db8943b4');
 });

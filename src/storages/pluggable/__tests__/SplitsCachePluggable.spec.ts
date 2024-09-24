@@ -2,7 +2,9 @@ import { SplitsCachePluggable } from '../SplitsCachePluggable';
 import { KeyBuilder } from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMockFactory } from './wrapper.mock';
-import { splitWithUserTT, splitWithAccountTT } from '../../__tests__/testUtils';
+import { splitWithUserTT, splitWithAccountTT, featureFlagOne, featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
+import { ISplit } from '../../../dtos/types';
+import { _Set } from '../../../utils/lang/sets';
 
 const keysBuilder = new KeyBuilder();
 
@@ -18,26 +20,17 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     ]);
     await cache.addSplit('lol3', splitWithAccountTT);
 
-    // adding malformed or existing splits with the same definitions will not have effects
-    await expect(cache.addSplits([
-      ['lol1', splitWithUserTT],
-      ['lol2', '{ /']
-    ])).rejects.toBeTruthy();
-    await expect(cache.addSplit('lol3', '{ /')).rejects.toBeTruthy();
-
     // Assert getAll
     let values = await cache.getAll();
 
-    expect(values.length).toBe(3);
-    expect(values.indexOf(splitWithUserTT) !== -1).toBe(true);
-    expect(values.indexOf(splitWithAccountTT) !== -1).toBe(true);
+    expect(values).toEqual([splitWithUserTT, splitWithAccountTT, splitWithAccountTT]);
 
     // Assert getSplits
     let valuesObj = await cache.getSplits(['lol2', 'lol3']);
 
     expect(Object.keys(valuesObj).length).toBe(2);
-    expect(valuesObj.lol2).toBe(splitWithAccountTT);
-    expect(valuesObj.lol3).toBe(splitWithAccountTT);
+    expect(valuesObj.lol2).toEqual(splitWithAccountTT);
+    expect(valuesObj.lol3).toEqual(splitWithAccountTT);
 
     // Assert getSplitNames
     let splitNames = await cache.getSplitNames();
@@ -52,8 +45,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     values = await cache.getAll();
     expect(values.length).toBe(2);
-    expect(await cache.getSplit('lol1')).toBe(null);
-    expect(await cache.getSplit('lol2')).toBe(splitWithAccountTT);
+    expect(await cache.getSplit('lol1')).toEqual(null);
+    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
     // Assert removeSplits
     await cache.addSplit('lol1', splitWithUserTT);
@@ -63,8 +56,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(values.length).toBe(1);
     splitNames = await cache.getSplitNames();
     expect(splitNames.length).toBe(1);
-    expect(await cache.getSplit('lol1')).toBe(null);
-    expect(await cache.getSplit('lol2')).toBe(splitWithAccountTT);
+    expect(await cache.getSplit('lol1')).toEqual(null);
+    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
   });
 
@@ -85,7 +78,6 @@ describe('SPLITS CACHE PLUGGABLE', () => {
       ['split1', splitWithUserTT],
       ['split2', splitWithAccountTT],
       ['split3', splitWithUserTT],
-      ['malformed', '{}']
     ]);
     await cache.addSplit('split4', splitWithUserTT);
     await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
@@ -123,7 +115,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   });
 
   test('killLocally', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
+    const wrapper = wrapperMockFactory();
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper);
 
     await cache.addSplit('lol1', splitWithUserTT);
     await cache.addSplit('lol2', splitWithAccountTT);
@@ -138,7 +131,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // kill an existent split
     updated = await cache.killLocally('lol1', 'some_treatment', 100);
-    let lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    let lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -148,12 +141,77 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // not update if changeNumber is old
     updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
-    lol1Split = JSON.parse(await cache.getSplit('lol1') as string);
+    lol1Split = await cache.getSplit('lol1') as ISplit;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
+    // Delete splits and TT keys
+    await cache.removeSplits(['lol1', 'lol2']);
+    expect(await wrapper.getKeysByPrefix('SPLITIO')).toHaveLength(0);
+  });
+
+  test('flag set cache tests', async () => {
+    const wrapper = wrapperMockFactory(); // @ts-ignore
+    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+    const emptySet = new _Set([]);
+
+    await cache.addSplits([
+      [featureFlagOne.name, featureFlagOne],
+      [featureFlagTwo.name, featureFlagTwo],
+      [featureFlagThree.name, featureFlagThree],
+    ]);
+    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_one', 'ff_two'])]);
+    expect(await cache.getNamesByFlagSets(['n'])).toEqual([new _Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['e'])).toEqual([new _Set(['ff_one', 'ff_three'])]);
+    expect(await cache.getNamesByFlagSets(['t'])).toEqual([emptySet]); // 't' not in filter
+    expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
+
+    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['1'] });
+
+    expect(await cache.getNamesByFlagSets(['1'])).toEqual([emptySet]); // '1' not in filter
+    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_two'])]);
+    expect(await cache.getNamesByFlagSets(['n'])).toEqual([emptySet]);
+
+    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['x'] });
+    expect(await cache.getNamesByFlagSets(['x'])).toEqual([new _Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new _Set(['ff_two']), new _Set(['ff_three']), new _Set(['ff_one'])]);
+
+    // Simulate one error in getItems
+    wrapper.getItems.mockImplementationOnce(() => Promise.reject('error'));
+    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new _Set(['ff_three']), new _Set(['ff_one'])]);
+
+    await cache.removeSplit(featureFlagOne.name);
+    expect(await cache.getNamesByFlagSets(['x'])).toEqual([emptySet]);
+
+    await cache.removeSplit(featureFlagOne.name);
+    expect(await cache.getNamesByFlagSets(['y'])).toEqual([emptySet]); // 'y' not in filter
+    expect(await cache.getNamesByFlagSets([])).toEqual([]);
+
+    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithoutFS);
+    expect(await cache.getNamesByFlagSets([])).toEqual([]);
+  });
+
+  // if FlagSets filter is not defined, it should store all FlagSets in memory.
+  test('flag set cache tests without filters', async () => {
+    const cacheWithoutFilters = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
+    const emptySet = new _Set([]);
+
+    await cacheWithoutFilters.addSplits([
+      [featureFlagOne.name, featureFlagOne],
+      [featureFlagTwo.name, featureFlagTwo],
+      [featureFlagThree.name, featureFlagThree],
+    ]);
+    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_one', 'ff_two'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new _Set(['ff_one'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual([new _Set(['ff_one', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new _Set(['ff_two', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
   });
 
 });
-

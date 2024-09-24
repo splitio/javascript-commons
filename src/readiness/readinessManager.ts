@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter } from '../types';
+import { IEventEmitter, ISettings } from '../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
@@ -10,7 +10,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
-  // - `/mySegments` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
+  // - `/memberships` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
   splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });
@@ -33,11 +33,20 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  */
 export function readinessManagerFactory(
   EventEmitter: new () => IEventEmitter,
-  readyTimeout = 0,
+  settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
+
+  const readyTimeout = settings.startup.readyTimeout;
 
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
   const gate: IReadinessEventEmitter = new EventEmitter();
+
+  let lastUpdate = 0;
+  function syncLastUpdate() {
+    const dateNow = Date.now();
+    // ensure lastUpdate is always increasing per event, is case Date.now() is mocked or its value is the same
+    lastUpdate = dateNow > lastUpdate ? dateNow : lastUpdate + 1;
+  }
 
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
@@ -46,12 +55,17 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
+
+  function timeout() {
+    if (hasTimedout) return;
+    hasTimedout = true;
+    syncLastUpdate();
+    gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
+  }
+
   let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(() => {
-      hasTimedout = true;
-      gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
-    }, readyTimeout);
+    readyTimeoutId = setTimeout(timeout, readyTimeout);
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -66,6 +80,7 @@ export function readinessManagerFactory(
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
     if (!isReady) {
       try {
+        syncLastUpdate();
         gate.emit(SDK_READY_FROM_CACHE);
       } catch (e) {
         // throws user callback exceptions in next tick
@@ -77,6 +92,7 @@ export function readinessManagerFactory(
   function checkIsReadyOrUpdate(diff: any) {
     if (isReady) {
       try {
+        syncLastUpdate();
         gate.emit(SDK_UPDATE, diff);
       } catch (e) {
         // throws user callback exceptions in next tick
@@ -87,6 +103,7 @@ export function readinessManagerFactory(
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
+          syncLastUpdate();
           gate.emit(SDK_READY);
         } catch (e) {
           // throws user callback exceptions in next tick
@@ -103,13 +120,21 @@ export function readinessManagerFactory(
     segments,
     gate,
 
-    shared(readyTimeout = 0) {
+    shared() {
       refCount++;
-      return readinessManagerFactory(EventEmitter, readyTimeout, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits);
     },
+
+    // @TODO review/remove next methods when non-recoverable errors are reworked
+    // Called on consumer mode, when storage fails to connect
+    timeout,
+    // Called on 403 error (client-side SDK key on server-side), to set the SDK as destroyed for
+    // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
+    setDestroyed() { isDestroyed = true; },
 
     destroy() {
       isDestroyed = true;
+      syncLastUpdate();
 
       segments.removeAllListeners();
       gate.removeAllListeners();
@@ -120,10 +145,12 @@ export function readinessManagerFactory(
     },
 
     isReady() { return isReady; },
-    hasTimedout() { return hasTimedout; },
     isReadyFromCache() { return isReadyFromCache; },
+    isTimedout() { return hasTimedout && !isReady; },
+    hasTimedout() { return hasTimedout; },
     isDestroyed() { return isDestroyed; },
-    isOperational() { return (isReady || isReadyFromCache) && !isDestroyed; }
+    isOperational() { return (isReady || isReadyFromCache) && !isDestroyed; },
+    lastUpdate() { return lastUpdate; }
   };
 
 }

@@ -4,8 +4,7 @@ import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('MATCHER BETWEEN / should return true ONLY when the value is between 10 and 20', function () {
-  // @ts-ignore
-  let matcher = matcherFactory(loggerMock, {
+  const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.BETWEEN,
     value: {

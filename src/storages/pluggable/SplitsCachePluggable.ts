@@ -2,9 +2,10 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilder } from '../KeyBuilder';
 import { IPluggableStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
+import { ISet, _Set, returnDifference } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -14,6 +15,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   private readonly log: ILogger;
   private readonly keys: KeyBuilder;
   private readonly wrapper: IPluggableStorageWrapper;
+  private readonly flagSetsFilter: string[];
 
   /**
    * Create a SplitsCache that uses a storage wrapper.
@@ -21,27 +23,42 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * @param keys  Key builder.
    * @param wrapper  Adapted wrapper storage.
    */
-  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper) {
+  constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, splitFiltersValidation?: ISplitFiltersValidation) {
     super();
     this.log = log;
     this.keys = keys;
     this.wrapper = wrapper;
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
   private _decrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.wrapper.decr(ttKey).then(count => {
-        if (count === 0) return this.wrapper.del(ttKey);
-      });
-    }
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.wrapper.decr(ttKey).then(count => {
+      if (count === 0) return this.wrapper.del(ttKey);
+    });
   }
 
   private _incrementCounts(split: ISplit) {
-    if (split.trafficTypeName) {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      return this.wrapper.incr(ttKey);
+    const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+    return this.wrapper.incr(ttKey);
+  }
+
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+    const removeFromFlagSets = returnDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
+
+    let addToFlagSets = returnDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
+    if (this.flagSetsFilter.length > 0) {
+      addToFlagSets = addToFlagSets.filter(flagSet => {
+        return this.flagSetsFilter.some(filterFlagSet => filterFlagSet === flagSet);
+      });
     }
+
+    const items = [featureFlagName];
+
+    return Promise.all([
+      ...removeFromFlagSets.map(flagSetName => this.wrapper.removeItems(this.keys.buildFlagSetKey(flagSetName), items)),
+      ...addToFlagSets.map(flagSetName => this.wrapper.addItems(this.keys.buildFlagSetKey(flagSetName), items))
+    ]);
   }
 
   /**
@@ -49,25 +66,28 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplit(name: string, split: string): Promise<boolean> {
+  addSplit(name: string, split: ISplit): Promise<boolean> {
     const splitKey = this.keys.buildSplitKey(name);
     return this.wrapper.get(splitKey).then(splitFromStorage => {
 
       // handling parsing error
-      let parsedPreviousSplit, parsedSplit;
+      let parsedPreviousSplit: ISplit, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
-        parsedSplit = JSON.parse(split);
+        stringifiedNewSplit = JSON.stringify(split);
       } catch (e) {
-        throw new Error('Error parsing split definition: ' + e);
+        throw new Error('Error parsing feature flag definition: ' + e);
       }
 
-      return Promise.all([
-        this.wrapper.set(splitKey, split),
-        this._incrementCounts(parsedSplit),
-        // If it's an update, we decrement the traffic type and segment count of the existing split,
-        parsedPreviousSplit && this._decrementCounts(parsedPreviousSplit)
-      ]);
+      return this.wrapper.set(splitKey, stringifiedNewSplit).then(() => {
+        // avoid unnecessary increment/decrement operations
+        if (parsedPreviousSplit && parsedPreviousSplit.trafficTypeName === split.trafficTypeName) return;
+
+        // update traffic type counts
+        return this._incrementCounts(split).then(() => {
+          if (parsedPreviousSplit) return this._decrementCounts(parsedPreviousSplit);
+        });
+      }).then(() => this._updateFlagSets(name, parsedPreviousSplit && parsedPreviousSplit.sets, split.sets));
     }).then(() => true);
   }
 
@@ -76,7 +96,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplits(entries: [string, string][]): Promise<boolean[]> {
+  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
     return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
   }
 
@@ -88,9 +108,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   removeSplit(name: string) {
     return this.getSplit(name).then((split) => {
       if (split) {
-        const parsedSplit = JSON.parse(split);
-        this._decrementCounts(parsedSplit);
+        return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
+    }).then(() => {
       return this.wrapper.del(this.keys.buildSplitKey(name));
     });
   }
@@ -109,8 +129,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplit(name: string): Promise<string | null> {
-    return this.wrapper.get(this.keys.buildSplitKey(name));
+  getSplit(name: string): Promise<ISplit | null> {
+    return this.wrapper.get(this.keys.buildSplitKey(name))
+      .then(maybeSplit => maybeSplit && JSON.parse(maybeSplit));
   }
 
   /**
@@ -118,13 +139,14 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with a map of split names to their split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplits(names: string[]): Promise<Record<string, string | null>> {
+  getSplits(names: string[]): Promise<Record<string, ISplit | null>> {
     const keys = names.map(name => this.keys.buildSplitKey(name));
 
     return this.wrapper.getMany(keys).then(splitDefinitions => {
-      const splits: Record<string, string | null> = {};
+      const splits: Record<string, ISplit | null> = {};
       names.forEach((name, idx) => {
-        splits[name] = splitDefinitions[idx];
+        const split = splitDefinitions[idx];
+        splits[name] = split && JSON.parse(split);
       });
       return Promise.resolve(splits);
     });
@@ -135,10 +157,12 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of split definitions,
    * or rejected if wrapper operation fails.
    */
-  getAll(): Promise<string[]> {
-    return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
-      (listOfKeys) => Promise.all(listOfKeys.map(this.wrapper.get) as Promise<string>[])
-    );
+  getAll(): Promise<ISplit[]> {
+    return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix())
+      .then((listOfKeys) => this.wrapper.getMany(listOfKeys))
+      .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
+        return JSON.parse(splitDefinition as string);
+      }));
   }
 
   /**
@@ -150,6 +174,18 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix()).then(
       (listOfKeys) => listOfKeys.map(this.keys.extractKey)
     );
+  }
+
+  /**
+   * Get list of feature flag names related to a given list of flag set names.
+   * The returned promise is resolved with the list of feature flag names per flag set.
+   * It never rejects (If there is a wrapper error for some flag set, an empty set is returned for it).
+   */
+  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
+    return Promise.all(flagSets.map(flagSet => {
+      const flagSetKey = this.keys.buildFlagSetKey(flagSet);
+      return this.wrapper.getItems(flagSetKey).catch(() => []);
+    })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
   }
 
   /**

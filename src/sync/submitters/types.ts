@@ -1,5 +1,7 @@
+/* eslint-disable no-use-before-define */
 import { IMetadata } from '../../dtos/types';
 import { SplitIO } from '../../types';
+import { IMap } from '../../utils/lang/maps';
 import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {
@@ -7,7 +9,7 @@ export type ImpressionsPayload = {
   f: string,
   /** Key Impressions */
   i: {
-    /** Key */
+    /** User Key */
     k: string;
     /** Treatment */
     t: string;
@@ -35,6 +37,26 @@ export type ImpressionCountsPayload = {
   }[]
 }
 
+export type UniqueKeysItemSs = {
+  /** Split name */
+  f: string
+  /** keyNames */
+  ks: string[]
+}
+
+export type UniqueKeysPayloadSs = {
+  keys: UniqueKeysItemSs[]
+}
+
+export type UniqueKeysPayloadCs = {
+  keys: {
+    /** keyNames */
+    k: string
+    /** Split name */
+    fs: string[]
+  }[]
+}
+
 export type StoredImpressionWithMetadata = {
   /** Metadata */
   m: IMetadata,
@@ -54,6 +76,8 @@ export type StoredImpressionWithMetadata = {
     c: number,
     /** time */
     m: number
+    /** previous time */
+    pt?: number
   }
 }
 
@@ -64,6 +88,12 @@ export type StoredEventWithMetadata = {
   e: SplitIO.EventData
 }
 
+export type MultiMethodLatencies = IMap<string, MethodLatencies>
+
+export type MultiMethodExceptions = IMap<string, MethodExceptions>
+
+export type MultiConfigs = IMap<string, TelemetryConfigStats>
+
 /**
  * Telemetry usage stats
  */
@@ -73,6 +103,7 @@ export type DROPPED = 1;
 export type DEDUPED = 2;
 export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
 export type EventDataType = QUEUED | DROPPED;
+export type UpdatesFromSSEEnum = SPLITS | MEMBERSHIPS;
 
 export type SPLITS = 'sp';
 export type IMPRESSIONS = 'im';
@@ -81,23 +112,27 @@ export type EVENTS = 'ev';
 export type TELEMETRY = 'te';
 export type TOKEN = 'to';
 export type SEGMENT = 'se';
-export type MY_SEGMENT = 'ms';
-export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT;
+export type MEMBERSHIPS = 'ms';
+export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MEMBERSHIPS;
 
-export type LastSync = Record<OperationType, number | undefined>
-export type HttpErrors = Record<OperationType, { [statusCode: string]: number }>
-export type HttpLatencies = Record<OperationType, Array<number>>
+export type LastSync = Partial<Record<OperationType, number | undefined>>
+export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
+export type HttpLatencies = Partial<Record<OperationType, Array<number>>>
 
 export type TREATMENT = 't';
 export type TREATMENTS = 'ts';
 export type TREATMENT_WITH_CONFIG = 'tc';
 export type TREATMENTS_WITH_CONFIG = 'tcs';
 export type TRACK = 'tr';
-export type Method = TREATMENT | TREATMENTS | TREATMENT_WITH_CONFIG | TREATMENTS_WITH_CONFIG | TRACK;
+export type TREATMENTS_BY_FLAGSET = 'tf'
+export type TREATMENTS_BY_FLAGSETS = 'tfs'
+export type TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf'
+export type TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs'
+export type Method = TREATMENT | TREATMENTS | TREATMENT_WITH_CONFIG | TREATMENTS_WITH_CONFIG | TRACK | TREATMENTS_BY_FLAGSET | TREATMENTS_BY_FLAGSETS | TREATMENTS_WITH_CONFIG_BY_FLAGSET | TREATMENTS_WITH_CONFIG_BY_FLAGSETS;
 
-export type MethodLatencies = Record<Method, Array<number>>;
+export type MethodLatencies = Partial<Record<Method, Array<number>>>;
 
-export type MethodExceptions = Record<Method, number>;
+export type MethodExceptions = Partial<Record<Method, number>>;
 
 export type CONNECTION_ESTABLISHED = 0;
 export type OCCUPANCY_PRI = 10;
@@ -115,11 +150,22 @@ export type StreamingEvent = {
   t: number, // timestamp
 }
 
+// 'telemetry.latencias' and 'telemetry.exceptions' Redis/Pluggable keys
+export type TelemetryUsageStats = {
+  mL?: MethodLatencies, // clientMethodLatencies
+  mE?: MethodExceptions, // methodExceptions
+}
+
+// amount of instant updates that we are doing by avoiding fetching to Split servers
+export type UpdatesFromSSE = {
+  sp?: number, // splits
+  ms?: number, // my segments
+  mls?: number // my large segments
+}
+
 // 'metrics/usage' JSON request body
-export type TelemetryUsageStatsPayload = {
+export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   lS: LastSync, // lastSynchronization
-  mL: MethodLatencies, // clientMethodLatencies
-  mE: MethodExceptions, // methodExceptions
   hE: HttpErrors, // httpErrors
   hL: HttpLatencies, // httpLatencies
   tR: number, // tokenRefreshes
@@ -127,14 +173,17 @@ export type TelemetryUsageStatsPayload = {
   iQ: number, // impressionsQueued
   iDe: number, // impressionsDeduped
   iDr: number, // impressionsDropped
-  spC: number, // splitCount
-  seC: number, // segmentCount
-  skC: number, // segmentKeyCount
+  spC?: number, // splitCount
+  seC?: number, // segmentCount
+  skC?: number, // segmentKeyCount
+  lsC?: number, // largeSegmentCount
+  lskC?: number, // largeSegmentKeyCount
   sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
   eD: number, // eventsDropped
   sE: Array<StreamingEvent>, // streamingEvents
   t?: Array<string>, // tags
+  ufs?: UpdatesFromSSE, // instant updates
 }
 
 /**
@@ -148,7 +197,8 @@ export type OperationMode = STANDALONE_ENUM | CONSUMER_ENUM | CONSUMER_PARTIAL_E
 
 export type OPTIMIZED_ENUM = 0;
 export type DEBUG_ENUM = 1;
-export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM;
+export type NONE_ENUM = 2;
+export type ImpressionsMode = OPTIMIZED_ENUM | DEBUG_ENUM | NONE_ENUM;
 
 export type RefreshRates = {
   sp: number, // splits
@@ -191,6 +241,8 @@ export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
   nR: number, // SDKNotReadyUsage
   i?: Array<string>, // integrations
   uC: number, // userConsent
+  fsT: number, // flagSetsTotal
+  fsI: number, // flagSetsInvalid
 }
 
 export interface ISubmitterManager extends ISyncTask {

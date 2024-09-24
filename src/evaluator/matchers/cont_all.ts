@@ -1,8 +1,6 @@
-import { ENGINE_MATCHER_CONTAINS_ALL } from '../../logger/constants';
-import { ILogger } from '../../logger/types';
 import { findIndex } from '../../utils/lang';
 
-export function containsAllSetMatcherContext(log: ILogger, ruleAttr: string[]) /*: Function */ {
+export function containsAllSetMatcherContext(ruleAttr: string[]) {
   return function containsAllMatcher(runtimeAttr: string[]): boolean {
     let containsAll = true;
 
@@ -14,8 +12,6 @@ export function containsAllSetMatcherContext(log: ILogger, ruleAttr: string[]) /
           containsAll = false;
       }
     }
-
-    log.debug(ENGINE_MATCHER_CONTAINS_ALL, [runtimeAttr, ruleAttr, containsAll]);
 
     return containsAll;
   };

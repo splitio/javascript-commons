@@ -50,14 +50,18 @@ export interface IReadinessManager {
   /** Readiness status */
   isReady(): boolean,
   isReadyFromCache(): boolean,
+  isTimedout(): boolean,
   hasTimedout(): boolean,
   isDestroyed(): boolean,
   isOperational(): boolean,
+  lastUpdate(): number,
 
+  timeout(): void,
+  setDestroyed(): void,
   destroy(): void,
 
   /** for client-side */
-  shared(readyTimeout?: number): IReadinessManager,
+  shared(): IReadinessManager,
 }
 
 /** SDK readiness manager */
@@ -73,5 +77,5 @@ export interface ISdkReadinessManager {
   incInternalReadyCbCount(): void
 
   /** for client-side */
-  shared(readyTimeout?: number): ISdkReadinessManager
+  shared(): ISdkReadinessManager
 }

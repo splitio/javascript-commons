@@ -1,13 +1,15 @@
 import { IMySegmentsFetcher } from '../fetchers/types';
-import { ISegmentsCacheSync, ISplitsCacheSync } from '../../../storages/types';
+import { IStorageSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
-import { SegmentsData } from '../../streaming/SSEHandler/types';
+import { MySegmentsData } from '../types';
+import { IMembershipsResponse } from '../../../dtos/types';
+import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
 
-type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise<boolean>
+type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 
 /**
  * factory of MySegments updater, a task that:
@@ -18,14 +20,14 @@ type IMySegmentsUpdater = (segmentList?: string[], noCache?: boolean) => Promise
 export function mySegmentsUpdaterFactory(
   log: ILogger,
   mySegmentsFetcher: IMySegmentsFetcher,
-  splitsCache: ISplitsCacheSync,
-  mySegmentsCache: ISegmentsCacheSync,
+  storage: IStorageSync,
   segmentsEventEmitter: ISegmentsEventEmitter,
   requestTimeoutBeforeReady: number,
   retriesOnFailureBeforeReady: number,
   matchingKey: string
 ): IMySegmentsUpdater {
 
+  const { splits, segments, largeSegments } = storage;
   let readyOnAlreadyExistentState = true;
   let startingUp = true;
 
@@ -36,37 +38,31 @@ export function mySegmentsUpdaterFactory(
   }
 
   // @TODO if allowing pluggable storages, handle async execution
-  function updateSegments(segmentsData: SegmentsData) {
+  function updateSegments(segmentsData: IMembershipsResponse | MySegmentsData) {
 
     let shouldNotifyUpdate;
-    if (Array.isArray(segmentsData)) {
-      // Update the list of segment names available
-      shouldNotifyUpdate = mySegmentsCache.resetSegments(segmentsData);
+    if ((segmentsData as MySegmentsData).type !== undefined) {
+      shouldNotifyUpdate = (segmentsData as MySegmentsData).type === MEMBERSHIPS_LS_UPDATE ?
+        largeSegments!.resetSegments(segmentsData as MySegmentsData) :
+        segments.resetSegments(segmentsData as MySegmentsData);
     } else {
-      // Add/Delete the segment
-      const { name, add } = segmentsData;
-      if (mySegmentsCache.isInSegment(name) !== add) {
-        shouldNotifyUpdate = true;
-        if (add) mySegmentsCache.addToSegment(name);
-        else mySegmentsCache.removeFromSegment(name);
-      } else {
-        shouldNotifyUpdate = false;
-      }
+      shouldNotifyUpdate = segments.resetSegments((segmentsData as IMembershipsResponse).ms || {});
+      shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData as IMembershipsResponse).ls || {}) || shouldNotifyUpdate;
     }
 
     // Notify update if required
-    if (splitsCache.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if (splits.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
       segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }
   }
 
-  function _mySegmentsUpdater(retry: number, segmentsData?: SegmentsData, noCache?: boolean): Promise<boolean> {
+  function _mySegmentsUpdater(retry: number, segmentsData?: MySegmentsData, noCache?: boolean, till?: number): Promise<boolean> {
     const updaterPromise: Promise<boolean> = segmentsData ?
       // If segmentsData is provided, there is no need to fetch mySegments
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
-      mySegmentsFetcher(matchingKey, noCache, _promiseDecorator).then(segments => {
+      mySegmentsFetcher(matchingKey, noCache, till, _promiseDecorator).then(segments => {
         // Only when we have downloaded segments completely, we should not keep retrying anymore
         startingUp = false;
 
@@ -96,9 +92,10 @@ export function mySegmentsUpdaterFactory(
    *  (2) an object with a segment name and action (true: add, or false: delete) to update the storage,
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
    * @param {boolean | undefined} noCache true to revalidate data to fetch
+   * @param {boolean | undefined} till query param to bypass CDN requests
    */
-  return function mySegmentsUpdater(segmentsData?: SegmentsData, noCache?: boolean) {
-    return _mySegmentsUpdater(0, segmentsData, noCache);
+  return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean, till?: number) {
+    return _mySegmentsUpdater(0, segmentsData, noCache, till);
   };
 
 }

@@ -1,13 +1,13 @@
 import { merge, get } from '../lang';
-import { mode } from './mode';
+import { validateMode } from './mode';
 import { validateSplitFilters } from './splitFilters';
-import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG } from '../constants';
+import { STANDALONE_MODE, OPTIMIZED, LOCALHOST_MODE, DEBUG, FLAG_SPEC_VERSION } from '../constants';
 import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { validateTrafficType } from '../inputValidation/trafficType';
-import { ERROR_MIN_CONFIG_PARAM } from '../../logger/constants';
+import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
 
 // Exported for telemetry
 export const base = {
@@ -28,8 +28,8 @@ export const base = {
   },
 
   scheduler: {
-    // fetch feature updates each 30 sec
-    featuresRefreshRate: 30,
+    // fetch feature updates each 60 sec
+    featuresRefreshRate: 60,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
     // publish telemetry stats each 3600 secs (1 hour)
@@ -51,7 +51,7 @@ export const base = {
   urls: {
     // CDN having all the information for your environment
     sdk: 'https://sdk.split.io/api',
-    // Storage for your SDK events
+    // SDK event and impression endpoints
     events: 'https://events.split.io/api',
     // SDK Auth Server
     auth: 'https://auth.split.io/api',
@@ -61,7 +61,7 @@ export const base = {
     telemetry: 'https://telemetry.split.io/api',
   },
 
-  // Defines which kind of storage we should instanciate.
+  // Defines which kind of storage we should instantiate.
   storage: undefined,
 
   // Defines if the logs are enabled, SDK wide.
@@ -84,7 +84,8 @@ export const base = {
     // impressions collection mode
     impressionsMode: OPTIMIZED,
     localhostMode: undefined,
-    enabled: true
+    enabled: true,
+    flagSpecVersion: FLAG_SPEC_VERSION
   },
 
   // Logger
@@ -97,17 +98,19 @@ function fromSecondsToMillis(n: number) {
 
 /**
  * Validates the given config and use it to build a settings object.
- * NOTE: it doesn't validate the Api Key. Call `validateApikey` or `validateAndTrackApiKey` for that after settings validation.
+ * NOTE: it doesn't validate the SDK Key. Call `validateApiKey` or `validateAndTrackApiKey` for that after settings validation.
  *
  * @param config user defined configuration
  * @param validationParams defaults and fields validators used to validate and creates a settings object from a given config
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, consent } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, localhost, consent, flagSpec } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
+  // Keeps reference to the `features` property
+  withDefaults.features = get(config, 'features');
 
   // ensure a valid logger.
   // First thing to validate, since other validators might use the logger.
@@ -115,7 +118,8 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   withDefaults.log = log;
 
   // ensure a valid impressionsMode
-  withDefaults.sync.impressionsMode = validImpressionsMode(log, withDefaults.sync.impressionsMode);
+  const sync = withDefaults.sync;
+  sync.impressionsMode = validImpressionsMode(log, sync.impressionsMode);
 
   function validateMinValue(paramName: string, actualValue: number, minValue: number) {
     if (actualValue >= minValue) return actualValue;
@@ -133,7 +137,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   scheduler.telemetryRefreshRate = fromSecondsToMillis(validateMinValue('telemetryRefreshRate', scheduler.telemetryRefreshRate, 60));
 
   // Default impressionsRefreshRate for DEBUG mode is 60 secs
-  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && withDefaults.sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
+  if (get(config, 'scheduler.impressionsRefreshRate') === undefined && sync.impressionsMode === DEBUG) scheduler.impressionsRefreshRate = 60;
   scheduler.impressionsRefreshRate = fromSecondsToMillis(scheduler.impressionsRefreshRate);
 
   // Log deprecation for old telemetry param
@@ -146,7 +150,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
 
   // ensure a valid SDK mode
   // @ts-ignore, modify readonly prop
-  withDefaults.mode = mode(withDefaults.core.authorizationKey, withDefaults.mode);
+  withDefaults.mode = validateMode(withDefaults.core.authorizationKey, withDefaults.mode);
   if (withDefaults.sync.onlySubmitters && withDefaults.mode === STANDALONE_MODE && !withDefaults.dataLoader) {
     throw new Error('To use `onlySubmitters` param in standalone mode, DataLoader is required to preload data into the storage');
   }
@@ -156,24 +160,28 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   if (storage) withDefaults.storage = storage(withDefaults);
 
   // Validate key and TT (for client-side)
+  const maybeKey = withDefaults.core.key;
   if (validationParams.acceptKey) {
-    const maybeKey = withDefaults.core.key;
     // Although `key` is required in client-side, it can be omitted in LOCALHOST mode. In that case, the value `localhost_key` is used.
     if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
       withDefaults.core.key = 'localhost_key';
     } else {
       // Keeping same behaviour than JS SDK: if settings key or TT are invalid,
-      // `false` value is used as binded key/TT of the default client, which leads to some issues.
+      // `false` value is used as bound key/TT of the default client, which leads to some issues.
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
-      withDefaults.core.key = validateKey(log, maybeKey, 'Client instantiation');
+      withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
     }
 
     if (validationParams.acceptTT) {
       const maybeTT = withDefaults.core.trafficType;
       if (maybeTT !== undefined) { // @ts-ignore
-        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, 'Client instantiation');
+        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, LOG_PREFIX_CLIENT_INSTANTIATION);
       }
     }
+  } else {
+    // On server-side, key is undefined and used to distinguish from client-side
+    if (maybeKey !== undefined) log.warn('Provided `key` is ignored in server-side SDK.'); // @ts-ignore
+    withDefaults.core.key = undefined;
   }
 
   // Current ip/hostname information
@@ -185,19 +193,19 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
 
-  if (localhost) withDefaults.sync.localhostMode = localhost(withDefaults);
+  if (localhost) sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop
     withDefaults.streamingEnabled = true;
     // Backoff bases.
-    // We are not checking if bases are positive numbers. Thus, we might be reauthenticating immediately (`setTimeout` with NaN or negative number)
+    // We are not checking if bases are positive numbers. Thus, we might be re-authenticating immediately (`setTimeout` with NaN or negative number)
     scheduler.pushRetryBackoffBase = fromSecondsToMillis(scheduler.pushRetryBackoffBase);
   }
 
   // validate sync enabled
-  if (withDefaults.sync.enabled !== false) {
-    withDefaults.sync.enabled = true;
+  if (sync.enabled !== false) {
+    sync.enabled = true;
   }
 
   // validate sync onlySubmitters
@@ -206,13 +214,15 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   }
 
   // validate the `splitFilters` settings and parse splits query
-  const splitFiltersValidation = validateSplitFilters(log, withDefaults.sync.splitFilters, withDefaults.mode);
-  withDefaults.sync.splitFilters = splitFiltersValidation.validFilters;
-  withDefaults.sync.__splitFiltersValidation = splitFiltersValidation;
+  const splitFiltersValidation = validateSplitFilters(log, sync.splitFilters, withDefaults.mode);
+  sync.splitFilters = splitFiltersValidation.validFilters;
+  sync.__splitFiltersValidation = splitFiltersValidation;
 
+  // ensure a valid flag spec version
+  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
-  withDefaults.userConsent = consent(withDefaults);
+  withDefaults.userConsent = consent ? consent(withDefaults) : undefined;
 
   return withDefaults;
 }

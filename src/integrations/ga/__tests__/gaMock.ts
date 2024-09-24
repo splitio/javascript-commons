@@ -1,9 +1,9 @@
 export function modelMock(fieldsObject: UniversalAnalytics.FieldsObject) {
   return {
-    get (fieldName: string) {
+    get(fieldName: string) {
       return fieldsObject[fieldName as keyof UniversalAnalytics.FieldsObject];
     },
-    set (fieldNameOrObject: string | {}, fieldValue?: any) {
+    set(fieldNameOrObject: string | {}, fieldValue?: any) {
       if (typeof fieldNameOrObject === 'object')
         fieldsObject = { ...fieldsObject, ...fieldNameOrObject };
       else
@@ -18,7 +18,9 @@ export function gaMock() {
   const __tasks: Record<string, any> = {
     sendHitTask: __originalSendHitTask
   };
-  const ga = jest.fn(function (command) {
+  const ga = jest.fn(function (command) { // @ts-ignore
+    (ga.q = ga.q || []).push(arguments);
+
     if (command === 'send') {
       const fieldsObject = arguments[1];
       __tasks.sendHitTask(modelMock(fieldsObject));

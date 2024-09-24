@@ -19,6 +19,7 @@ export const SPLIT_EVENT = 'EVENT';
 // Impression collection modes
 export const DEBUG = 'DEBUG';
 export const OPTIMIZED = 'OPTIMIZED';
+export const NONE = 'NONE';
 
 // SDK Modes
 export const LOCALHOST_MODE: SDKMode = 'localhost';
@@ -38,6 +39,22 @@ export const CONSENT_GRANTED = 'GRANTED'; // The user has granted consent for tr
 export const CONSENT_DECLINED = 'DECLINED'; // The user has declined consent for tracking events and impressions
 export const CONSENT_UNKNOWN = 'UNKNOWN'; // The user has neither granted nor declined consent for tracking events and impressions
 
+// Client method names
+export const GET_TREATMENT = 'getTreatment';
+export const GET_TREATMENTS = 'getTreatments';
+export const GET_TREATMENT_WITH_CONFIG = 'getTreatmentWithConfig';
+export const GET_TREATMENTS_WITH_CONFIG = 'getTreatmentsWithConfig';
+export const GET_TREATMENTS_BY_FLAG_SET = 'getTreatmentsByFlagSet';
+export const GET_TREATMENTS_BY_FLAG_SETS = 'getTreatmentsByFlagSets';
+export const GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET = 'getTreatmentsWithConfigByFlagSet';
+export const GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS = 'getTreatmentsWithConfigByFlagSets';
+export const TRACK_FN_LABEL = 'track';
+
+// Manager method names
+export const SPLIT_FN_LABEL = 'split';
+export const SPLITS_FN_LABEL = 'splits';
+export const NAMES_FN_LABEL = 'names';
+
 // Telemetry
 export const QUEUED = 0;
 export const DROPPED = 1;
@@ -49,6 +66,7 @@ export const CONSUMER_PARTIAL_ENUM = 2;
 
 export const OPTIMIZED_ENUM = 0;
 export const DEBUG_ENUM = 1;
+export const NONE_ENUM = 2;
 
 export const SPLITS = 'sp';
 export const IMPRESSIONS = 'im';
@@ -57,12 +75,16 @@ export const EVENTS = 'ev';
 export const TELEMETRY = 'te';
 export const TOKEN = 'to';
 export const SEGMENT = 'se';
-export const MY_SEGMENT = 'ms';
+export const MEMBERSHIPS = 'ms';
 
 export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
 export const TREATMENT_WITH_CONFIG = 'tc';
 export const TREATMENTS_WITH_CONFIG = 'tcs';
+export const TREATMENTS_BY_FLAGSET = 'tf';
+export const TREATMENTS_BY_FLAGSETS = 'tfs';
+export const TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf';
+export const TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs';
 export const TRACK = 'tr';
 
 export const CONNECTION_ESTABLISHED = 0;
@@ -82,3 +104,9 @@ export const NON_REQUESTED = 1;
 export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
+
+export const FLAG_SPEC_VERSION = '1.2';
+
+// Matcher types
+export const IN_SEGMENT = 'IN_SEGMENT';
+export const IN_LARGE_SEGMENT = 'IN_LARGE_SEGMENT';

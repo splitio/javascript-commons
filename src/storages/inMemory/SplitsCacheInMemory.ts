@@ -1,6 +1,7 @@
-import { ISplit } from '../../dtos/types';
+import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
+import { ISet, _Set } from '../../utils/lang/sets';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
@@ -8,48 +9,49 @@ import { isFiniteNumber } from '../../utils/lang';
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
-  private splitsCache: Record<string, string> = {};
+  private flagSetsFilter: string[];
+  private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
-  private splitsWithSegmentsCount: number = 0;
+  private segmentsCount: number = 0;
+  private flagSetsCache: Record<string, ISet<string>> = {};
+
+  constructor(splitFiltersValidation?: ISplitFiltersValidation) {
+    super();
+    this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
+  }
 
   clear() {
     this.splitsCache = {};
     this.ttCache = {};
     this.changeNumber = -1;
-    this.splitsWithSegmentsCount = 0;
+    this.segmentsCount = 0;
   }
 
-  addSplit(name: string, split: string): boolean {
-    const splitFromMemory = this.getSplit(name);
-    if (splitFromMemory) { // We had this Split already
-      const previousSplit: ISplit = JSON.parse(splitFromMemory);
+  addSplit(name: string, split: ISplit): boolean {
+    const previousSplit = this.getSplit(name);
+    if (previousSplit) { // We had this Split already
 
-      if (previousSplit.trafficTypeName) {
-        const previousTtName = previousSplit.trafficTypeName;
-        this.ttCache[previousTtName]--;
-        if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
-      }
+      const previousTtName = previousSplit.trafficTypeName;
+      this.ttCache[previousTtName]--;
+      if (!this.ttCache[previousTtName]) delete this.ttCache[previousTtName];
 
-      if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
-        this.splitsWithSegmentsCount--;
-      }
+      this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+
+      // Subtract from segments count for the previous version of this Split
+      if (usesSegments(previousSplit)) this.segmentsCount--;
     }
 
-    const parsedSplit: ISplit = JSON.parse(split);
-
-    if (parsedSplit) {
+    if (split) {
       // Store the Split.
       this.splitsCache[name] = split;
       // Update TT cache
-      const ttName = parsedSplit.trafficTypeName;
-      if (ttName) { // safeguard
-        if (!this.ttCache[ttName]) this.ttCache[ttName] = 0;
-        this.ttCache[ttName]++;
-      }
+      const ttName = split.trafficTypeName;
+      this.ttCache[ttName] = (this.ttCache[ttName] || 0) + 1;
+      this.addToFlagSets(split);
 
       // Add to segments count for the new version of the Split
-      if (usesSegments(parsedSplit)) this.splitsWithSegmentsCount++;
+      if (usesSegments(split)) this.segmentsCount++;
 
       return true;
     } else {
@@ -63,16 +65,13 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       // Delete the Split
       delete this.splitsCache[name];
 
-      const parsedSplit: ISplit = JSON.parse(split);
-      const ttName = parsedSplit.trafficTypeName;
-
-      if (ttName) { // safeguard
-        this.ttCache[ttName]--; // Update tt cache
-        if (!this.ttCache[ttName]) delete this.ttCache[ttName];
-      }
+      const ttName = split.trafficTypeName;
+      this.ttCache[ttName]--; // Update tt cache
+      if (!this.ttCache[ttName]) delete this.ttCache[ttName];
+      this.removeFromFlagSets(split.name, split.sets);
 
       // Update the segments count.
-      if (usesSegments(parsedSplit)) this.splitsWithSegmentsCount--;
+      if (usesSegments(split)) this.segmentsCount--;
 
       return true;
     } else {
@@ -80,7 +79,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     }
   }
 
-  getSplit(name: string): string | null {
+  getSplit(name: string): ISplit | null {
     return this.splitsCache[name] || null;
   }
 
@@ -102,7 +101,36 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   }
 
   usesSegments(): boolean {
-    return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
+    return this.getChangeNumber() === -1 || this.segmentsCount > 0;
+  }
+
+  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
+    return flagSets.map(flagSet => this.flagSetsCache[flagSet] || new _Set());
+  }
+
+  private addToFlagSets(featureFlag: ISplit) {
+    if (!featureFlag.sets) return;
+    featureFlag.sets.forEach(featureFlagSet => {
+
+      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
+
+      if (!this.flagSetsCache[featureFlagSet]) this.flagSetsCache[featureFlagSet] = new _Set([]);
+
+      this.flagSetsCache[featureFlagSet].add(featureFlag.name);
+    });
+  }
+
+  private removeFromFlagSets(featureFlagName: string, flagSets: string[] | undefined) {
+    if (!flagSets) return;
+    flagSets.forEach(flagSet => {
+      this.removeNames(flagSet, featureFlagName);
+    });
+  }
+
+  private removeNames(flagSetName: string, featureFlagName: string) {
+    if (!this.flagSetsCache[flagSetName]) return;
+    this.flagSetsCache[flagSetName].delete(featureFlagName);
+    if (this.flagSetsCache[flagSetName].size === 0) delete this.flagSetsCache[flagSetName];
   }
 
 }

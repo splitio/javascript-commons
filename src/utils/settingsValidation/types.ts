@@ -25,5 +25,7 @@ export interface ISettingsValidationParams {
   /** Localhost mode validator (`settings.sync.localhostMode`) */
   localhost?: (settings: ISettings) => ISettings['sync']['localhostMode'],
   /** User consent validator (`settings.userConsent`) */
-  consent: (settings: ISettings) => ISettings['userConsent'],
+  consent?: (settings: ISettings) => ISettings['userConsent'],
+  /** Flag spec version validation. Configurable by the JS Synchronizer but not by the SDKs */
+  flagSpec?: (settings: ISettings) => ISettings['sync']['flagSpecVersion']
 }

@@ -17,12 +17,21 @@ export interface IBetweenMatcherData {
   end: number
 }
 
+export interface IBetweenStringMatcherData {
+  start: string
+  end: string
+}
+
 export interface IWhitelistMatcherData {
   whitelist: string[]
 }
 
 export interface IInSegmentMatcherData {
   segmentName: string
+}
+
+export interface IInLargeSegmentMatcherData {
+  largeSegmentName: string
 }
 
 export interface IDependencyMatcherData {
@@ -38,12 +47,14 @@ interface ISplitMatcherBase {
     attribute: string | null
   }
   userDefinedSegmentMatcherData?: null | IInSegmentMatcherData
+  userDefinedLargeSegmentMatcherData?: null | IInLargeSegmentMatcherData
   whitelistMatcherData?: null | IWhitelistMatcherData
   unaryNumericMatcherData?: null | IUnaryNumericMatcherData
   betweenMatcherData?: null | IBetweenMatcherData
   dependencyMatcherData?: null | IDependencyMatcherData
   booleanMatcherData?: null | boolean
   stringMatcherData?: null | string
+  betweenStringMatcherData?: null | IBetweenStringMatcherData
 }
 
 interface IAllKeysMatcher extends ISplitMatcherBase {
@@ -53,6 +64,11 @@ interface IAllKeysMatcher extends ISplitMatcherBase {
 interface IInSegmentMatcher extends ISplitMatcherBase {
   matcherType: 'IN_SEGMENT',
   userDefinedSegmentMatcherData: IInSegmentMatcherData
+}
+
+interface IInLargeSegmentMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_LARGE_SEGMENT',
+  userDefinedLargeSegmentMatcherData: IInLargeSegmentMatcherData
 }
 
 interface IWhitelistMatcher extends ISplitMatcherBase {
@@ -130,9 +146,37 @@ interface IMatchesStringMatcher extends ISplitMatcherBase {
   stringMatcherData: string
 }
 
+interface IEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+interface IGreaterThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'GREATER_THAN_OR_EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+
+interface ILessThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'LESS_THAN_OR_EQUAL_TO_SEMVER',
+  stringMatcherData: string
+}
+
+interface IBetweenSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'BETWEEN_SEMVER'
+  betweenStringMatcherData: IBetweenStringMatcherData
+}
+
+interface IInListSemverMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_LIST_SEMVER',
+  whitelistMatcherData: IWhitelistMatcherData
+}
+
 export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
-  IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher
+  IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
+  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
+  IInLargeSegmentMatcher
 
 /** Split object */
 export interface ISplitPartition {
@@ -163,7 +207,8 @@ export interface ISplit {
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
-  }
+  },
+  sets?: string[]
 }
 
 // Split definition used in offline mode
@@ -184,14 +229,17 @@ export interface ISegmentChangesResponse {
   till: number
 }
 
-export interface IMySegmentsResponseItem {
-  id: string,
-  name: string
+export interface IMySegmentsResponse {
+  cn?: number,
+  k?: {
+    n: string
+  }[]
 }
 
-/** Interface of the parsed JSON response of `/mySegments/{userKey}` */
-export interface IMySegmentsResponse {
-  mySegments: IMySegmentsResponseItem[]
+/** Interface of the parsed JSON response of `/memberships/{userKey}` */
+export interface IMembershipsResponse {
+  ms?: IMySegmentsResponse,
+  ls?: IMySegmentsResponse
 }
 
 /** Metadata internal type for storages */
@@ -208,5 +256,5 @@ export interface IMetadata {
 export type ISplitFiltersValidation = {
   queryString: string | null,
   groupedFilters: Record<SplitIO.SplitFilterType, string[]>,
-  validFilters: SplitIO.SplitFilter[]
+  validFilters: SplitIO.SplitFilter[],
 };

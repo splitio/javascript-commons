@@ -1,4 +1,5 @@
 import { Backoff } from '../Backoff';
+import { nearlyEqual } from '../../__tests__/testUtils';
 
 test('Backoff', (done) => {
 
@@ -11,7 +12,7 @@ test('Backoff', (done) => {
     start += delta;
     const expectedMillis = Math.min(backoff.baseMillis * Math.pow(2, backoff.attempts - 1), backoff.maxMillis);
 
-    expect(delta > expectedMillis - 20 && delta < expectedMillis + 20).toBe(true); // executes callback at expected time
+    expect(nearlyEqual(delta, expectedMillis)).toBe(true); // executes callback at expected time
     if (backoff.attempts <= 3) {
       backoff.scheduleCall();
     } else {

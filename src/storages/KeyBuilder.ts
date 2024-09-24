@@ -1,4 +1,6 @@
+import { ISettings } from '../types';
 import { startsWith } from '../utils/lang';
+import { hash } from '../utils/murmur3/murmur3';
 
 const everythingAtTheEnd = /[^.]+$/;
 
@@ -10,7 +12,7 @@ export function validatePrefix(prefix: unknown) {
 
 export class KeyBuilder {
 
-  protected readonly prefix: string;
+  readonly prefix: string;
 
   constructor(prefix: string = DEFAULT_PREFIX) {
     this.prefix = prefix;
@@ -18,6 +20,10 @@ export class KeyBuilder {
 
   buildTrafficTypeKey(trafficType: string) {
     return `${this.prefix}.trafficType.${trafficType}`;
+  }
+
+  buildFlagSetKey(flagSet: string) {
+    return `${this.prefix}.flagSet.${flagSet}`;
   }
 
   buildSplitKey(splitName: string) {
@@ -69,4 +75,15 @@ export class KeyBuilder {
     }
   }
 
+  buildHashKey() {
+    return `${this.prefix}.hash`;
+  }
+}
+
+/**
+ * Generates a murmur32 hash based on the authorization key, the feature flags filter query, and version of SplitChanges API.
+ * The hash is in hexadecimal format (8 characters max, 32 bits).
+ */
+export function getStorageHash(settings: ISettings) {
+  return hash(`${settings.core.authorizationKey}::${settings.sync.__splitFiltersValidation.queryString}::${settings.sync.flagSpecVersion}`).toString(16);
 }

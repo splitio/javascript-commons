@@ -5,6 +5,7 @@ import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from
 import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const EventEmitterMock = jest.fn(() => ({
   on: jest.fn(),
@@ -40,7 +41,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   test('Providing the gate object to get the SDK status interface that manages events', () => {
     expect(typeof sdkReadinessManagerFactory).toBe('function'); // The module exposes a function.
 
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     expect(typeof sdkReadinessManager).toBe('object'); // The function result contains the readiness manager and a sdkStatus object.
     const gateMock = sdkReadinessManager.readinessManager.gate;
     const sdkStatus = sdkReadinessManager.sdkStatus;
@@ -49,7 +50,11 @@ describe('SDK Readiness Manager - Event emitter', () => {
       expect(sdkStatus[propName]).toBeTruthy(); // The sdkStatus exposes all minimal EventEmitter functionality.
     });
 
-    expect(typeof sdkStatus['ready']).toBe('function'); // The sdkStatus exposes a .ready() function.
+    expect(typeof sdkStatus.ready).toBe('function'); // The sdkStatus exposes a .ready() function.
+    expect(typeof sdkStatus.__getStatus).toBe('function'); // The sdkStatus exposes a .__getStatus() function.
+    expect(sdkStatus.__getStatus()).toEqual({
+      isReady: false, isReadyFromCache: false, isTimedout: false, hasTimedout: false, isDestroyed: false, isOperational: false, lastUpdate: 0
+    });
 
     expect(typeof sdkStatus.Event).toBe('object'); // It also exposes the Event map,
     expect(sdkStatus.Event.SDK_READY).toBe(SDK_READY); // which contains the constants for the events, for backwards compatibility.
@@ -76,7 +81,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 
   test('The event callbacks should work as expected - SDK_READY_FROM_CACHE', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
     const readyFromCacheEventCB = gateMock.once.mock.calls[2][1];
@@ -86,7 +91,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with no callbacks', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     // Get the callbacks
     const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[1][1];
@@ -112,7 +117,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 
   test('The event callbacks should work as expected - SDK_READY emits with callbacks', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     // Get the callbacks
     const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[1][1];
@@ -130,7 +135,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
     // Get the callbacks
@@ -150,7 +155,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 
   test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
     // Get the callbacks
@@ -172,7 +177,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
   test('The event callbacks should work as expected - SDK_READY emits with expected internal callbacks', () => {
     // the sdkReadinessManager expects more than one SDK_READY callback to not log the "No listeners" warning
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     sdkReadinessManager.incInternalReadyCbCount();
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
@@ -197,7 +202,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 describe('SDK Readiness Manager - Ready promise', () => {
 
   test('.ready() promise behaviour for clients', async () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     const ready = sdkReadinessManager.sdkStatus.ready();
     expect(ready instanceof Promise).toBe(true); // It should return a promise.
@@ -226,7 +231,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
     // control assertion. stubs already reset.
     expect(testPassedCount).toBe(2);
 
-    const sdkReadinessManagerForTimedout = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManagerForTimedout = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     const readyForTimeout = sdkReadinessManagerForTimedout.sdkStatus.ready();
 
@@ -265,7 +270,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
   });
 
   test('Full blown ready promise count as a callback and resolves on SDK_READY', (done) => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     const readyPromise = sdkReadinessManager.sdkStatus.ready();
 
     // Get the callback
@@ -287,7 +292,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
   });
 
   test('.ready() rejected promises have a default onRejected handler that just logs the error', (done) => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(loggerMock, EventEmitterMock);
+    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     let readyForTimeout = sdkReadinessManager.sdkStatus.ready();
 
     emitTimeoutEvent(sdkReadinessManager.readinessManager); // make the SDK "timed out"

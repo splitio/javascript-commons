@@ -5,7 +5,7 @@ import { IEventsHandler, IEventTracker } from './types';
 import { ISettings, SplitIO } from '../types';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
 import { CONSENT_DECLINED, DROPPED, QUEUED } from '../utils/constants';
-import { isStorageSync } from './impressionObserver/utils';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
 
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
@@ -20,8 +20,8 @@ export function eventTrackerFactory(
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IEventTracker {
 
-  const log = settings.log;
-  const isSync = isStorageSync(settings);
+  const { log, mode } = settings;
+  const isAsync = isConsumerMode(mode);
 
   function queueEventsCallback(eventData: SplitIO.EventData, tracked: boolean) {
     const { eventTypeId, trafficTypeName, key, value, timestamp, properties } = eventData;
@@ -35,7 +35,7 @@ export function eventTrackerFactory(
         setTimeout(function () {
           // copy of event, to avoid unexpected behaviour if modified by integrations
           const eventDataCopy = objectAssign({}, eventData);
-          if (eventData.properties) eventDataCopy.properties = objectAssign({}, eventData.properties);
+          if (properties) eventDataCopy.properties = objectAssign({}, properties);
           // integrationsManager does not throw errors (they are internally handled by each integration module)
           integrationsManager.handleEvent(eventDataCopy);
         }, 0);
@@ -50,7 +50,7 @@ export function eventTrackerFactory(
   return {
     track(eventData: SplitIO.EventData, size?: number) {
       if (settings.userConsent === CONSENT_DECLINED) {
-        return isSync ? false : Promise.resolve(false);
+        return isAsync ? Promise.resolve(false) : false;
       }
 
       const tracked = eventsCache.track(eventData, size);

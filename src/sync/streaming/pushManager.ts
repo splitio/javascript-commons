@@ -1,6 +1,6 @@
 import { IPushEventEmitter, IPushManager } from './types';
 import { ISSEClient } from './SSEClient/types';
-import { ISegmentsSyncTask, IPollingManager } from '../polling/types';
+import { IMySegmentsSyncTask, IPollingManager, ISegmentsSyncTask } from '../polling/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
@@ -11,10 +11,10 @@ import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { getMatching } from '../../utils/key';
-import { MY_SEGMENTS_UPDATE, MY_SEGMENTS_UPDATE_V2, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
-import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2 } from '../../logger/constants';
-import { KeyList, UpdateStrategy } from './SSEHandler/types';
-import { isInBitmap, parseBitmap, parseKeyList } from './mySegmentsV2utils';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
+import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
+import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
 import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
@@ -41,7 +41,7 @@ export function pushManagerFactory(
   let sseClient: ISSEClient;
   try {
     // `useHeaders` false for client-side, even if the platform EventSource supports headers (e.g., React Native).
-    sseClient = new SSEClient(settings, userKey ? false : true, platform.getEventSource);
+    sseClient = new SSEClient(settings, platform);
   } catch (e) {
     log.warn(STREAMING_FALLBACK, [e]);
     return;
@@ -55,15 +55,15 @@ export function pushManagerFactory(
 
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
-  const segmentsUpdateWorker = userKey ? undefined : new SegmentsUpdateWorker(pollingManager.segmentsSyncTask, storage.segments);
+  const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = new SplitsUpdateWorker(storage.splits, pollingManager.splitsSyncTask, readiness.splits, userKey ? undefined : pollingManager.segmentsSyncTask);
+  const splitsUpdateWorker = SplitsUpdateWorker(log, storage.splits, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch MY_SEGMENTS_UPDATE events to the corresponding MySegmentsUpdateWorker
+  // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
-  // Hash64 is used to process MY_SEGMENTS_UPDATE_V2 events and dispatch actions to the corresponding MySegmentsUpdateWorker.
-  const clients: Record<string, { hash64: Hash64, worker: MySegmentsUpdateWorker }> = {};
+  // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
+  const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
 
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
@@ -138,7 +138,7 @@ export function pushManagerFactory(
 
         log.error(ERROR_STREAMING_AUTH, [error.message]);
 
-        // Handle 4XX HTTP errors: 401 (invalid API Key) or 400 (using incorrect API Key, i.e., client-side API Key on server-side)
+        // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
           telemetryTracker.streamingEvent(AUTH_REJECTION);
           pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
@@ -169,9 +169,9 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.backoff.reset();
-    if (userKey) forOwn(clients, ({ worker }) => worker.backoff.reset());
-    else (segmentsUpdateWorker as SegmentsUpdateWorker).backoff.reset();
+    splitsUpdateWorker.stop();
+    if (userKey) forOwn(clients, ({ worker }) => worker.stop());
+    else segmentsUpdateWorker!.stop();
   }
 
   pushEmitter.on(PUSH_SUBSYSTEM_DOWN, stopWorkers);
@@ -180,7 +180,6 @@ export function pushManagerFactory(
   // Otherwise it is unnecessary (e.g, STREAMING_RESUMED).
   pushEmitter.on(PUSH_SUBSYSTEM_UP, () => {
     connectPushRetryBackoff.reset();
-    stopWorkers();
   });
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
@@ -221,80 +220,92 @@ export function pushManagerFactory(
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
   pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
-  pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
+  pushEmitter.on(SPLIT_UPDATE, (parsedData) => {
+    if (parsedData.d && parsedData.c !== undefined) {
+      try {
+        const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
+        if (payload) {
+          splitsUpdateWorker.put(parsedData, payload);
+          return;
+        }
+      } catch (e) {
+        log.warn(STREAMING_PARSING_SPLIT_UPDATE, [e]);
+      }
+    }
+    splitsUpdateWorker.put(parsedData);
+  });
+
+  function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
+    switch (parsedData.u) {
+      case UpdateStrategy.BoundedFetchRequest: {
+        let bitmap: Uint8Array;
+        try {
+          bitmap = parseBitmap(parsedData.d!, parsedData.c!);
+        } catch (e) {
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['BoundedFetchRequest', e]);
+          break;
+        }
+
+        forOwn(clients, ({ hash64, worker }, matchingKey) => {
+          if (isInBitmap(bitmap, hash64.hex)) {
+            worker.put(parsedData, undefined, getDelay(parsedData, matchingKey));
+          }
+        });
+        return;
+      }
+      case UpdateStrategy.KeyList: {
+        let keyList: KeyList, added: ISet<string>, removed: ISet<string>;
+        try {
+          keyList = parseKeyList(parsedData.d!, parsedData.c!);
+          added = new _Set(keyList.a);
+          removed = new _Set(keyList.r);
+        } catch (e) {
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', e]);
+          break;
+        }
+
+        if (!parsedData.n || !parsedData.n.length) {
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', 'No segment name was provided']);
+          break;
+        }
+
+        forOwn(clients, ({ hash64, worker }) => {
+          const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
+          if (add !== undefined) {
+            worker.put(parsedData, {
+              added: add ? [parsedData.n![0]] : [],
+              removed: add ? [] : [parsedData.n![0]]
+            });
+          }
+        });
+        return;
+      }
+      case UpdateStrategy.SegmentRemoval:
+        if (!parsedData.n || !parsedData.n.length) {
+          log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['SegmentRemoval', 'No segment name was provided']);
+          break;
+        }
+
+        forOwn(clients, ({ worker }) => {
+          worker.put(parsedData, {
+            added: [],
+            removed: parsedData.n!
+          });
+        });
+        return;
+    }
+
+    // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
+    forOwn(clients, ({ worker }, matchingKey) => {
+      worker.put(parsedData, undefined, getDelay(parsedData, matchingKey));
+    });
+  }
 
   if (userKey) {
-    pushEmitter.on(MY_SEGMENTS_UPDATE, function handleMySegmentsUpdate(parsedData, channel) {
-      const userKeyHash = channel.split('_')[2];
-      const userKey = userKeyHashes[userKeyHash];
-      if (userKey && clients[userKey]) { // check existence since it can be undefined if client has been destroyed
-        clients[userKey].worker.put(
-          parsedData.changeNumber,
-          parsedData.includesPayload ? parsedData.segmentList ? parsedData.segmentList : [] : undefined);
-      }
-    });
-    pushEmitter.on(MY_SEGMENTS_UPDATE_V2, function handleMySegmentsUpdate(parsedData) {
-      switch (parsedData.u) {
-        case UpdateStrategy.BoundedFetchRequest: {
-          let bitmap: Uint8Array;
-          try {
-            bitmap = parseBitmap(parsedData.d, parsedData.c);
-          } catch (e) {
-            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['BoundedFetchRequest', e]);
-            break;
-          }
-
-          forOwn(clients, ({ hash64, worker }) => {
-            if (isInBitmap(bitmap, hash64.hex)) {
-              worker.put(parsedData.changeNumber); // fetch mySegments
-            }
-          });
-          return;
-        }
-        case UpdateStrategy.KeyList: {
-          let keyList: KeyList, added: ISet<string>, removed: ISet<string>;
-          try {
-            keyList = parseKeyList(parsedData.d, parsedData.c);
-            added = new _Set(keyList.a);
-            removed = new _Set(keyList.r);
-          } catch (e) {
-            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['KeyList', e]);
-            break;
-          }
-
-          forOwn(clients, ({ hash64, worker }) => {
-            const add = added.has(hash64.dec) ? true : removed.has(hash64.dec) ? false : undefined;
-            if (add !== undefined) {
-              worker.put(parsedData.changeNumber, {
-                name: parsedData.segmentName,
-                add
-              });
-            }
-          });
-          return;
-        }
-        case UpdateStrategy.SegmentRemoval:
-          if (!parsedData.segmentName) {
-            log.warn(STREAMING_PARSING_MY_SEGMENTS_UPDATE_V2, ['SegmentRemoval', 'No segment name was provided']);
-            break;
-          }
-
-          forOwn(clients, ({ worker }) =>
-            worker.put(parsedData.changeNumber, {
-              name: parsedData.segmentName,
-              add: false
-            })
-          );
-          return;
-      }
-
-      // `UpdateStrategy.UnboundedFetchRequest` and fallbacks of other cases
-      forOwn(clients, ({ worker }) => {
-        worker.put(parsedData.changeNumber);
-      });
-    });
+    pushEmitter.on(MEMBERSHIPS_MS_UPDATE, handleMySegmentsUpdate);
+    pushEmitter.on(MEMBERSHIPS_LS_UPDATE, handleMySegmentsUpdate);
   } else {
-    pushEmitter.on(SEGMENT_UPDATE, (segmentsUpdateWorker as SegmentsUpdateWorker).put);
+    pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker!.put);
   }
 
   return objectAssign(
@@ -325,12 +336,15 @@ export function pushManagerFactory(
       },
 
       // [Only for client-side]
-      add(userKey: string, mySegmentsSyncTask: ISegmentsSyncTask) {
+      add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
         const hash = hashUserKey(userKey);
 
         if (!userKeyHashes[hash]) {
           userKeyHashes[hash] = userKey;
-          clients[userKey] = { hash64: hash64(userKey), worker: new MySegmentsUpdateWorker(mySegmentsSyncTask) };
+          clients[userKey] = {
+            hash64: hash64(userKey),
+            worker: MySegmentsUpdateWorker(log, storage, mySegmentsSyncTask, telemetryTracker)
+          };
           connectForNewClient = true; // we must reconnect on start, to listen the channel for the new user key
 
           // Reconnects in case of a new client.

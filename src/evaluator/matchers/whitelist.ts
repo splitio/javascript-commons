@@ -1,12 +1,10 @@
-import { setToArray, ISet } from '../../utils/lang/sets';
-import { ILogger } from '../../logger/types';
-import { ENGINE_MATCHER_WHITELIST } from '../../logger/constants';
+import { _Set } from '../../utils/lang/sets';
 
-export function whitelistMatcherContext(log: ILogger, ruleAttr: ISet<string>) /*: Function */ {
+export function whitelistMatcherContext(ruleAttr: string[]) {
+  const whitelistSet = new _Set(ruleAttr);
+
   return function whitelistMatcher(runtimeAttr: string): boolean {
-    let isInWhitelist = ruleAttr.has(runtimeAttr);
-
-    log.debug(ENGINE_MATCHER_WHITELIST, [runtimeAttr, setToArray(ruleAttr).join(','), isInWhitelist]);
+    const isInWhitelist = whitelistSet.has(runtimeAttr);
 
     return isInWhitelist;
   };

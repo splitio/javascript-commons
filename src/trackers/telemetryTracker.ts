@@ -3,6 +3,7 @@ import { EXCEPTION, SDK_NOT_READY } from '../utils/labels';
 import { ITelemetryTracker } from './types';
 import { timer } from '../utils/timeTracker/timer';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../utils/constants';
+import { UpdatesFromSSEEnum } from '../sync/submitters/types';
 
 export function telemetryTrackerFactory(
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
@@ -48,6 +49,13 @@ export function telemetryTrackerFactory(
           });
           if (e === TOKEN_REFRESH) (telemetryCache as ITelemetryCacheSync).recordTokenRefreshes();
         }
+      },
+      addTag(tag: string) {
+        // @ts-ignore
+        if (telemetryCache.addTag) telemetryCache.addTag(tag);
+      },
+      trackUpdatesFromSSE(type: UpdatesFromSSEEnum) {
+        (telemetryCache as ITelemetryCacheSync).recordUpdatesFromSSE(type);
       }
     };
 
@@ -56,8 +64,10 @@ export function telemetryTrackerFactory(
     return {
       trackEval: noopTrack,
       trackHttp: noopTrack,
-      sessionLength: () => { },
-      streamingEvent: () => { },
+      sessionLength() { },
+      streamingEvent() { },
+      addTag() { },
+      trackUpdatesFromSSE() { },
     };
   }
 }

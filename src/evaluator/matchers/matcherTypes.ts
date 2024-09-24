@@ -1,5 +1,5 @@
 export const matcherTypes: Record<string, number> = {
-  UNDEFINED: 0,
+  UNDEFINED: 0, // Value for unsupported or invalid matchers
   ALL_KEYS: 1,
   IN_SEGMENT: 2,
   WHITELIST: 3,
@@ -16,7 +16,13 @@ export const matcherTypes: Record<string, number> = {
   CONTAINS_STRING: 14,
   IN_SPLIT_TREATMENT: 15,
   EQUAL_TO_BOOLEAN: 16,
-  MATCHES_STRING: 17
+  MATCHES_STRING: 17,
+  EQUAL_TO_SEMVER: 18,
+  GREATER_THAN_OR_EQUAL_TO_SEMVER: 19,
+  LESS_THAN_OR_EQUAL_TO_SEMVER: 20,
+  BETWEEN_SEMVER: 21,
+  IN_LIST_SEMVER: 22,
+  IN_LARGE_SEGMENT: 23,
 };
 
 export const matcherDataTypes = {

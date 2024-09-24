@@ -1,71 +1,133 @@
-import { ISegmentsSyncTask } from '../../polling/types';
+import { IMySegmentsSyncTask, MySegmentsData } from '../../polling/types';
 import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
-import { SegmentsData } from '../SSEHandler/types';
+import { ITelemetryTracker } from '../../../trackers/types';
+import { MEMBERSHIPS } from '../../../utils/constants';
+import { ISegmentsCacheSync, IStorageSync } from '../../../storages/types';
+import { ILogger } from '../../../logger/types';
+import { FETCH_BACKOFF_MAX_RETRIES } from './constants';
+import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../constants';
 
 /**
- * MySegmentsUpdateWorker class
+ * MySegmentsUpdateWorker factory
  */
-export class MySegmentsUpdateWorker implements IUpdateWorker {
+export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync, 'segments' | 'largeSegments'>, mySegmentsSyncTask: IMySegmentsSyncTask, telemetryTracker: ITelemetryTracker): IUpdateWorker<[mySegmentsData?: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number]> {
 
-  private readonly mySegmentsSyncTask: ISegmentsSyncTask;
-  private maxChangeNumber: number;
-  private handleNewEvent: boolean;
-  private segmentsData?: SegmentsData;
-  private currentChangeNumber: number;
-  readonly backoff: Backoff;
+  let _delay: undefined | number;
+  let _delayTimeoutID: any;
 
-  /**
-   * @param {Object} mySegmentsSyncTask task for syncing mySegments data
-   */
-  constructor(mySegmentsSyncTask: ISegmentsSyncTask) {
-    this.mySegmentsSyncTask = mySegmentsSyncTask;
-    this.maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
-    this.handleNewEvent = false;
-    this.segmentsData = undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
-    this.currentChangeNumber = -1; // @TODO: remove once `/mySegments` endpoint provides the changeNumber
-    this.put = this.put.bind(this);
-    this.__handleMySegmentsUpdateCall = this.__handleMySegmentsUpdateCall.bind(this);
-    this.backoff = new Backoff(this.__handleMySegmentsUpdateCall);
-  }
+  function createUpdateWorker(mySegmentsCache: ISegmentsCacheSync) {
 
-  // Private method
-  // Precondition: this.mySegmentsSyncTask.isSynchronizingMySegments === false
-  __handleMySegmentsUpdateCall() {
-    if (this.maxChangeNumber > this.currentChangeNumber) {
-      this.handleNewEvent = false;
-      const currentMaxChangeNumber = this.maxChangeNumber;
+    let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
+    let currentChangeNumber = -1;
+    let handleNewEvent = false;
+    let isHandlingEvent: boolean;
+    let cdnBypass: boolean;
+    let _segmentsData: MySegmentsData | undefined; // keeps the segmentsData (if included in notification payload) from the queued event with maximum changeNumber
+    const backoff = new Backoff(__handleMySegmentsUpdateCall);
 
-      // fetch mySegments revalidating data if cached
-      this.mySegmentsSyncTask.execute(this.segmentsData, true).then((result) => {
-        if (result !== false) // Unlike `Splits|SegmentsUpdateWorker`, we cannot use `mySegmentsCache.getChangeNumber` since `/mySegments` endpoint doesn't provide this value.
-          this.currentChangeNumber = Math.max(this.currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `this.maxChangeNumber` was updated during fetch.
-        if (this.handleNewEvent) {
-          this.__handleMySegmentsUpdateCall();
-        } else {
-          this.backoff.scheduleCall();
-        }
-      });
+    function __handleMySegmentsUpdateCall() {
+      isHandlingEvent = true;
+      if (maxChangeNumber > Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber())) {
+        handleNewEvent = false;
+        const currentMaxChangeNumber = maxChangeNumber;
+
+        // fetch mySegments revalidating data if cached
+        const syncTask = _delay ?
+          new Promise(res => {
+            _delayTimeoutID = setTimeout(() => {
+              _delay = undefined;
+              mySegmentsSyncTask.execute(_segmentsData, true, cdnBypass ? maxChangeNumber : undefined).then(res);
+            }, _delay);
+          }) :
+          mySegmentsSyncTask.execute(_segmentsData, true, cdnBypass ? maxChangeNumber : undefined);
+
+        syncTask.then((result) => {
+          if (!isHandlingEvent) return; // halt if `stop` has been called
+          if (result !== false) { // Unlike `Splits|SegmentsUpdateWorker`, `mySegmentsCache.getChangeNumber` can be -1, since `/memberships` change number is optional
+            const storageChangeNumber = mySegmentsCache.getChangeNumber();
+            currentChangeNumber = storageChangeNumber > -1 ?
+              storageChangeNumber :
+              Math.max(currentChangeNumber, currentMaxChangeNumber); // use `currentMaxChangeNumber`, in case that `maxChangeNumber` was updated during fetch.
+          }
+          if (handleNewEvent) {
+            __handleMySegmentsUpdateCall();
+          } else {
+            if (_segmentsData) telemetryTracker.trackUpdatesFromSSE(MEMBERSHIPS);
+
+            const attempts = backoff.attempts + 1;
+
+            if (maxChangeNumber <= currentChangeNumber) {
+              log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
+              isHandlingEvent = false;
+              return;
+            }
+
+            if (attempts < FETCH_BACKOFF_MAX_RETRIES) {
+              backoff.scheduleCall();
+              return;
+            }
+
+            if (cdnBypass) {
+              log.debug(`No changes fetched after ${attempts} attempts with CDN bypassed.`);
+              isHandlingEvent = false;
+            } else {
+              backoff.reset();
+              cdnBypass = true;
+              __handleMySegmentsUpdateCall();
+            }
+          }
+        });
+      } else {
+        isHandlingEvent = false;
+      }
     }
+
+    return {
+      /**
+       * Invoked by NotificationProcessor on MY_(LARGE)_SEGMENTS_UPDATE notifications
+       *
+       * @param changeNumber change number of the notification
+       * @param segmentsData data for KeyList or SegmentRemoval instant updates
+       * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
+       */
+      put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
+        const { type, cn } = mySegmentsData;
+        // Discard event if it is outdated or there is a pending fetch request (_delay is set), but update target change number
+        if (cn <= Math.max(currentChangeNumber, mySegmentsCache.getChangeNumber()) || cn <= maxChangeNumber) return;
+        maxChangeNumber = cn;
+        if (_delay) return;
+
+        handleNewEvent = true;
+        cdnBypass = false;
+        _segmentsData = payload && { type, cn, added: payload.added, removed: payload.removed };
+        _delay = delay;
+
+        if (backoff.timeoutID || !isHandlingEvent) __handleMySegmentsUpdateCall();
+        backoff.reset();
+      },
+
+      stop() {
+        clearTimeout(_delayTimeoutID);
+        _delay = undefined;
+        isHandlingEvent = false;
+        backoff.reset();
+      }
+    };
   }
 
-  /**
-   * Invoked by NotificationProcessor on MY_SEGMENTS_UPDATE event
-   *
-   * @param {number} changeNumber change number of the MY_SEGMENTS_UPDATE notification
-   * @param {SegmentsData | undefined} segmentsData might be undefined
-   */
-  put(changeNumber: number, segmentsData?: SegmentsData) {
-    if (changeNumber <= this.currentChangeNumber || changeNumber <= this.maxChangeNumber) return;
+  const updateWorkers = {
+    [MEMBERSHIPS_MS_UPDATE]: createUpdateWorker(storage.segments),
+    [MEMBERSHIPS_LS_UPDATE]: createUpdateWorker(storage.largeSegments!),
+  };
 
-    this.maxChangeNumber = changeNumber;
-    this.handleNewEvent = true;
-    this.backoff.reset();
-    this.segmentsData = segmentsData;
-
-    if (this.mySegmentsSyncTask.isExecuting()) return;
-
-    this.__handleMySegmentsUpdateCall();
-  }
-
+  return {
+    put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
+      updateWorkers[mySegmentsData.type].put(mySegmentsData, payload, delay);
+    },
+    stop() {
+      updateWorkers[MEMBERSHIPS_MS_UPDATE].stop();
+      updateWorkers[MEMBERSHIPS_LS_UPDATE].stop();
+    }
+  };
 }

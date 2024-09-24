@@ -1,10 +1,13 @@
+import { IPlatform } from '../../../sdkFactory/types';
+import { decorateHeaders } from '../../../services/decorateHeaders';
 import { IEventSourceConstructor } from '../../../services/types';
 import { ISettings } from '../../../types';
 import { isString } from '../../../utils/lang';
+import { objectAssign } from '../../../utils/lang/objectAssign';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
 
-const VERSION = '1.1';
+const ABLY_API_VERSION = '1.1';
 
 const CONTROL_CHANNEL_REGEX = /^control_/;
 
@@ -34,29 +37,25 @@ function buildSSEHeaders(settings: ISettings) {
 export class SSEClient implements ISSEClient {
   // Instance properties:
   eventSource?: IEventSourceConstructor;
-  streamingUrl: string;
   connection?: InstanceType<IEventSourceConstructor>;
   handler?: ISseEventHandler;
-  useHeaders?: boolean;
   headers: Record<string, string>;
+  options?: object;
 
   /**
    * SSEClient constructor.
    *
    * @param settings Validated settings.
-   * @param useHeaders True to send metadata as headers or false to send as query params. If `true`, the provided EventSource must support headers.
-   * @param getEventSource Function to get the EventSource constructor.
-   * @throws 'EventSource API is not available. ' if EventSource is not available.
+   * @param platform object containing environment-specific dependencies
+   * @throws 'EventSource API is not available.' if EventSource is not available.
    */
-  constructor(settings: ISettings, useHeaders?: boolean, getEventSource?: () => (IEventSourceConstructor | undefined)) {
-    this.eventSource = getEventSource && getEventSource();
+  constructor(private settings: ISettings, { getEventSource, getOptions }: IPlatform) {
+    this.eventSource = getEventSource && getEventSource(settings);
     // if eventSource is not available, throw an exception
-    if (!this.eventSource) throw new Error('EventSource API is not available. ');
+    if (!this.eventSource) throw new Error('EventSource API is not available.');
 
-    this.streamingUrl = settings.urls.streaming + '/sse';
-    // @TODO get `useHeaders` flag from `getEventSource`, to use EventSource headers on client-side SDKs when possible.
-    this.useHeaders = useHeaders;
     this.headers = buildSSEHeaders(settings);
+    this.options = getOptions && getOptions(settings);
   }
 
   setEventHandler(handler: ISseEventHandler) {
@@ -72,20 +71,25 @@ export class SSEClient implements ISSEClient {
   open(authToken: IAuthTokenPushEnabled) {
     this.close(); // it closes connection if previously opened
 
-    const channelsQueryParam = Object.keys(authToken.channels).map(
-      function (channel) {
-        const params = CONTROL_CHANNEL_REGEX.test(channel) ? '[?occupancy=metrics.publishers]' : '';
-        return encodeURIComponent(params + channel);
-      }
-    ).join(',');
-    const url = `${this.streamingUrl}?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
+    const channelsQueryParam = Object.keys(authToken.channels).map((channel) => {
+      const params = CONTROL_CHANNEL_REGEX.test(channel) ? '[?occupancy=metrics.publishers]' : '';
+      return encodeURIComponent(params + channel);
+    }).join(',');
+    const url = `${this.settings.urls.streaming}/sse?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
+    const isServerSide = !this.settings.core.key;
 
     this.connection = new this.eventSource!(
-      // For client-side SDKs, SplitSDKClientKey and SplitSDKClientKey metadata is passed as query params,
-      // because native EventSource implementations for browser doesn't support headers.
-      this.useHeaders ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,
-      // @ts-ignore. For server-side SDKs, metadata is passed via headers. EventSource must support headers, like 'eventsource' package for Node.
-      this.useHeaders ? { headers: this.headers } : undefined
+      // For client-side SDKs, metadata is passed as query param to avoid CORS issues and because native EventSource implementations in browsers do not support headers
+      isServerSide ? url : url + `&SplitSDKVersion=${this.headers.SplitSDKVersion}&SplitSDKClientKey=${this.headers.SplitSDKClientKey}`,
+      // For server-side SDKs, metadata is passed via headers
+      objectAssign(
+        isServerSide ?
+          { headers: decorateHeaders(this.settings, this.headers) } :
+          this.settings.sync.requestOptions?.getHeaderOverrides ?
+            { headers: decorateHeaders(this.settings, {}) } : // User must provide a window.EventSource polyfill that supports headers
+            {},
+        this.options
+      )
     );
 
     if (this.handler) { // no need to check if SSEClient is used only by PushManager

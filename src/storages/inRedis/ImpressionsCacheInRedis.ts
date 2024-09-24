@@ -1,9 +1,10 @@
 import { IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
 import { ImpressionDTO } from '../../types';
-import { Redis } from 'ioredis';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 import { ILogger } from '../../logger/types';
+import { impressionsToJSON } from '../utils';
+import type { RedisAdapter } from './RedisAdapter';
 
 const IMPRESSIONS_TTL_REFRESH = 3600; // 1 hr
 
@@ -11,10 +12,10 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
 
   private readonly log: ILogger;
   private readonly key: string;
-  private readonly redis: Redis;
+  private readonly redis: RedisAdapter;
   private readonly metadata: IMetadata;
 
-  constructor(log: ILogger, key: string, redis: Redis, metadata: IMetadata) {
+  constructor(log: ILogger, key: string, redis: RedisAdapter, metadata: IMetadata) {
     this.log = log;
     this.key = key;
     this.redis = redis;
@@ -24,33 +25,12 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
   track(impressions: ImpressionDTO[]): Promise<void> { // @ts-ignore
     return this.redis.rpush(
       this.key,
-      this._toJSON(impressions)
+      impressionsToJSON(impressions, this.metadata),
     ).then(queuedCount => {
       // If this is the creation of the key on Redis, set the expiration for it in 1hr.
       if (queuedCount === impressions.length) {
         return this.redis.expire(this.key, IMPRESSIONS_TTL_REFRESH);
       }
-    });
-  }
-
-  private _toJSON(impressions: ImpressionDTO[]): string[] {
-    return impressions.map(impression => {
-      const {
-        keyName, bucketingKey, feature, treatment, label, time, changeNumber
-      } = impression;
-
-      return JSON.stringify({
-        m: this.metadata,
-        i: {
-          k: keyName,
-          b: bucketingKey,
-          f: feature,
-          t: treatment,
-          r: label,
-          c: changeNumber,
-          m: time
-        }
-      });
     });
   }
 
