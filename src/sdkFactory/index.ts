@@ -50,7 +50,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
     }
   });
-  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
+
   const clients: Record<string, IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });

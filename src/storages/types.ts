@@ -491,8 +491,6 @@ export interface IStorageAsync extends IStorageBase<
 
 /** StorageFactory */
 
-export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
-
 export interface IStorageFactoryParams {
   settings: ISettings,
   /**
