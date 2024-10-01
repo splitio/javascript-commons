@@ -24,9 +24,7 @@ test('loadData & getSnapshot', () => {
   expect(dataLoader.getSnapshot(clientStorage, [fullSettings.core.key as string])).toEqual(preloadedData);
   expect(preloadedData).toEqual({
     since: 123,
-    splitsData: {
-      split1: { name: 'split1' }
-    },
+    splitsData: [{ name: 'split1' }],
     mySegmentsData: { [fullSettings.core.key as string]: ['segment1'] },
     segmentsData: undefined
   });

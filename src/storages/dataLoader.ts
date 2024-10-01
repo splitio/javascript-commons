@@ -19,7 +19,7 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
   // Do not load data if current preloadedData is empty
   if (Object.keys(preloadedData).length === 0) return;
 
-  const { segmentsData = {}, since = -1, splitsData = {} } = preloadedData;
+  const { segmentsData = {}, since = -1, splitsData = [] } = preloadedData;
 
   if (storage.splits) {
     const storedSince = storage.splits.getChangeNumber();
@@ -32,7 +32,7 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
     storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(Object.keys(splitsData).map(splitName => ([splitName, splitsData[splitName]])));
+    storage.splits.addSplits(splitsData.map(split => ([split.name, split])));
   }
 
   if (userKey) { // add mySegments data (client-side)
@@ -57,8 +57,8 @@ export function getSnapshot(storage: IStorageSync, userKeys?: string[]): SplitIO
   return {
     // lastUpdated: Date.now(),
     // @ts-ignore accessing private prop
-    since: storage.splits.changeNumber, // @ts-ignore accessing private prop
-    splitsData: storage.splits.splitsCache,
+    since: storage.splits.changeNumber,
+    splitsData: storage.splits.getAll(),
     segmentsData: userKeys ?
       undefined : // @ts-ignore accessing private prop
       Object.keys(storage.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop

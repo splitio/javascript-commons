@@ -779,12 +779,10 @@ export namespace SplitIO {
      */
     since: number,
     /**
-     * Map of feature flags to their stringified definitions.
+     * List of feature flag definitions.
      * @TODO rename to flags
      */
-    splitsData: {
-      [splitName: string]: ISplit
-    },
+    splitsData: ISplit[],
     /**
      * Optional map of user keys to their list of segments.
      * @TODO rename to memberships
