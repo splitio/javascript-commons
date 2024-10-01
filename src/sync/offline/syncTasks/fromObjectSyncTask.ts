@@ -7,7 +7,7 @@ import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
 /**
@@ -60,12 +60,8 @@ export function fromObjectUpdaterFactory(
 
         if (startingUp) {
           startingUp = false;
-          Promise.resolve(splitsCache.checkCache()).then(cacheReady => {
-            // Emits SDK_READY_FROM_CACHE
-            if (cacheReady) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
-            // Emits SDK_READY
-            readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
-          });
+          // Emits SDK_READY
+          readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         }
         return true;
       });
