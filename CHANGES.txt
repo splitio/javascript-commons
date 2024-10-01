@@ -1,4 +1,5 @@
 2.0.0 (September XX, 2024)
+ - Updated internal storage factory to emit the SDK_READY_FROM_CACHE event when it corresponds, to clean up the initialization flow.
  - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.
  - Added support for targeting rules based on large segments.
  - BREAKING CHANGES:
