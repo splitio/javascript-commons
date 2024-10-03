@@ -59,6 +59,7 @@ export interface IReadinessManager {
   timeout(): void,
   setDestroyed(): void,
   destroy(): void,
+  init(): void,
 
   /** for client-side */
   shared(): IReadinessManager,

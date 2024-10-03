@@ -14,15 +14,15 @@ const storageMock = {
   })
 };
 
-const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { destroy: jest.Mock } }[] = [];
+const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { init: jest.Mock, destroy: jest.Mock } }[] = [];
 
 const sdkReadinessManagerMock = {
   sdkStatus: jest.fn(),
-  readinessManager: { destroy: jest.fn() },
+  readinessManager: { init: jest.fn(), destroy: jest.fn() },
   shared: jest.fn(() => {
     partialSdkReadinessManagers.push({
       sdkStatus: jest.fn(),
-      readinessManager: { destroy: jest.fn() },
+      readinessManager: { init: jest.fn(), destroy: jest.fn() },
     });
     return partialSdkReadinessManagers[partialSdkReadinessManagers.length - 1];
   })
@@ -46,7 +46,8 @@ const params = {
   signalListener: { stop: jest.fn() },
   settings: settingsWithKey,
   telemetryTracker: telemetryTrackerFactory(),
-  clients: {}
+  clients: {},
+  whenInit: (cb: () => void) => cb()
 };
 
 const invalidAttributes = [

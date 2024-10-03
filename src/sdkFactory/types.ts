@@ -50,6 +50,7 @@ export interface ISdkFactoryContext {
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
   clients: Record<string, IBasicClient>,
+  whenInit(cb: () => void): void
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {
@@ -68,6 +69,8 @@ export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
  * Object parameter with the modules required to create an SDK factory instance
  */
 export interface ISdkFactoryParams {
+  // If true, the `sdkFactory` is pure (no side effects), and the SDK instance includes a `init` method to run initialization side effects
+  isPure?: boolean,
 
   // The settings must be already validated
   settings: ISettings,

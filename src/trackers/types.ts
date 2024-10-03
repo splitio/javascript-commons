@@ -65,6 +65,7 @@ export interface IImpressionSenderAdapter {
 
 /** Unique keys tracker */
 export interface IUniqueKeysTracker {
+  start(): void;
   stop(): void;
   track(key: string, featureName: string): void;
 }

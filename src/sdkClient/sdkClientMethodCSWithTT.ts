@@ -17,7 +17,7 @@ import { buildInstanceId } from './identity';
  * (default client) or the client method (shared clients).
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey, trafficType?: string) => SplitIO.ICsClient {
-  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, log } } = params;
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key, trafficType }, log }, whenInit } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -86,7 +86,10 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         validTrafficType
       );
 
-      sharedSyncManager && sharedSyncManager.start();
+      whenInit(() => {
+        sharedSdkReadiness.readinessManager.init();
+        sharedSyncManager && sharedSyncManager.start();
+      });
 
       log.info(NEW_SHARED_CLIENT);
     } else {

@@ -23,14 +23,20 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
-    filterAdapterFactory } = params;
+    filterAdapterFactory, isPure } = params;
   const { log, sync: { impressionsMode } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
-  // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
-  validateAndTrackApiKey(log, settings.core.authorizationKey);
+  // initialization
+  let isInit = false;
+  const initCallbacks: (() => void)[] = [];
+
+  function whenInit(cb: () => void) {
+    if (isInit) cb();
+    else initCallbacks.push(cb);
+  }
 
   const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, settings);
   const readiness = sdkReadinessManager.readinessManager;
@@ -70,13 +76,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       strategy = strategyDebugFactory(observer);
   }
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
-  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, whenInit, integrationsManager, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform, whenInit };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;
@@ -88,8 +94,24 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const clientMethod = sdkClientMethodFactory(ctx);
   const managerInstance = sdkManagerFactory(settings, storage.splits, sdkReadinessManager);
 
-  syncManager && syncManager.start();
-  signalListener && signalListener.start();
+
+  function init() {
+    if (isInit) return;
+    isInit = true;
+
+    // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
+    validateAndTrackApiKey(log, settings.core.authorizationKey);
+    readiness.init();
+    storage.init && storage.init();
+    uniqueKeysTracker && uniqueKeysTracker.start();
+    syncManager && syncManager.start();
+    signalListener && signalListener.start();
+
+    initCallbacks.forEach((cb) => cb());
+    initCallbacks.length = 0;
+  }
+
+  if (!isPure) init();
 
   log.info(NEW_FACTORY);
 
@@ -110,7 +132,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     settings,
 
     destroy() {
-      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => {});
+      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
-  }, extraProps && extraProps(ctx));
+  }, extraProps && extraProps(ctx), isPure && { init });
 }

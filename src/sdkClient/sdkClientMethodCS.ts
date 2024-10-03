@@ -15,7 +15,7 @@ import { buildInstanceId } from './identity';
  * Therefore, clients don't have a bound TT for the track method.
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
-  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log } } = params;
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log }, whenInit } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -75,7 +75,10 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         validKey
       );
 
-      sharedSyncManager && sharedSyncManager.start();
+      whenInit(() => {
+        sharedSdkReadiness.readinessManager.init();
+        sharedSyncManager && sharedSyncManager.start();
+      });
 
       log.info(NEW_SHARED_CLIENT);
     } else {

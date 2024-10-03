@@ -55,17 +55,13 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
+  let readyTimeoutId: ReturnType<typeof setTimeout>;
 
-  function timeout() {
-    if (hasTimedout) return;
+  function timeout() { // eslint-disable-next-line no-use-before-define
+    if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
-  }
-
-  let readyTimeoutId: ReturnType<typeof setTimeout>;
-  if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(timeout, readyTimeout);
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -131,6 +127,12 @@ export function readinessManagerFactory(
     // Called on 403 error (client-side SDK key on server-side), to set the SDK as destroyed for
     // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
     setDestroyed() { isDestroyed = true; },
+
+    init() {
+      if (readyTimeout > 0) {
+        readyTimeoutId = setTimeout(timeout, readyTimeout);
+      }
+    },
 
     destroy() {
       isDestroyed = true;
