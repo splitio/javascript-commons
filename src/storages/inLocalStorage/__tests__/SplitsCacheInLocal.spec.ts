@@ -31,15 +31,9 @@ test('SPLIT CACHE / LocalStorage', () => {
   expect(cache.getSplit('lol1')).toEqual(null);
   expect(cache.getSplit('lol2')).toEqual(somethingElse);
 
-  expect(cache.checkCache()).toBe(false); // checkCache should return false until localstorage has data.
-
   expect(cache.getChangeNumber() === -1).toBe(true);
 
-  expect(cache.checkCache()).toBe(false); // checkCache should return false until localstorage has data.
-
   cache.setChangeNumber(123);
-
-  expect(cache.checkCache()).toBe(true); // checkCache should return true once localstorage has data.
 
   expect(cache.getChangeNumber() === 123).toBe(true);
 

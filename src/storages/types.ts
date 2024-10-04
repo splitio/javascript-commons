@@ -208,8 +208,6 @@ export interface ISplitsCacheBase {
   // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === -1) or contains a FF using segments or large segments
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
-  // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
-  checkCache(): MaybeThenable<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
   getNamesByFlagSets(flagSets: string[]): MaybeThenable<ISet<string>[]>
 }
@@ -226,7 +224,6 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   trafficTypeExists(trafficType: string): boolean,
   usesSegments(): boolean,
   clear(): void,
-  checkCache(): boolean,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
   getNamesByFlagSets(flagSets: string[]): ISet<string>[]
 }
@@ -243,7 +240,6 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   trafficTypeExists(trafficType: string): Promise<boolean>,
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
-  checkCache(): Promise<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
 }
@@ -504,6 +500,7 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
+  onReadyFromCacheCb: (error?: any) => void,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
