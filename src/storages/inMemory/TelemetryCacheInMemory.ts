@@ -1,4 +1,4 @@
-import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../../sync/submitters/types';
+import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum, UpdatesFromSSE } from '../../sync/submitters/types';
 import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
@@ -25,7 +25,7 @@ export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
-  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync) { }
+  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync, private largeSegments?: ISegmentsCacheSync) { }
 
   // isEmpty flag
   private e = true;
@@ -51,6 +51,8 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       spC: this.splits && this.splits.getSplitNames().length,
       seC: this.segments && this.segments.getRegisteredSegments().length,
       skC: this.segments && this.segments.getKeysCount(),
+      lsC: this.largeSegments && this.largeSegments.getRegisteredSegments().length,
+      lskC: this.largeSegments && this.largeSegments.getKeysCount(),
       sL: this.getSessionLength(),
       eQ: this.getEventStats(QUEUED),
       eD: this.getEventStats(DROPPED),
@@ -245,22 +247,16 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
     this.e = false;
   }
 
-  private updatesFromSSE = {
-    sp: 0,
-    ms: 0
-  };
+  private updatesFromSSE: UpdatesFromSSE = {};
 
   popUpdatesFromSSE() {
     const result = this.updatesFromSSE;
-    this.updatesFromSSE = {
-      sp: 0,
-      ms: 0,
-    };
+    this.updatesFromSSE = {};
     return result;
   }
 
   recordUpdatesFromSSE(type: UpdatesFromSSEEnum) {
-    this.updatesFromSSE[type]++;
+    this.updatesFromSSE[type] = (this.updatesFromSSE[type] || 0) + 1;
     this.e = false;
   }
 

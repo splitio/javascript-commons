@@ -75,7 +75,7 @@ export const EVENTS = 'ev';
 export const TELEMETRY = 'te';
 export const TOKEN = 'to';
 export const SEGMENT = 'se';
-export const MY_SEGMENT = 'ms';
+export const MEMBERSHIPS = 'ms';
 
 export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
@@ -105,7 +105,8 @@ export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
 
-export const FLAG_SPEC_VERSION = '1.1';
+export const FLAG_SPEC_VERSION = '1.2';
 
 // Matcher types
 export const IN_SEGMENT = 'IN_SEGMENT';
+export const IN_LARGE_SEGMENT = 'IN_LARGE_SEGMENT';

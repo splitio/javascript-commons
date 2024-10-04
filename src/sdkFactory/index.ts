@@ -32,7 +32,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
   validateAndTrackApiKey(log, settings.core.authorizationKey);
 
-  const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
+  const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, settings);
   const readiness = sdkReadinessManager.readinessManager;
 
   const storage = storageFactory({

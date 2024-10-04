@@ -29,7 +29,7 @@ const pollingManagerMock = {
   start: jest.fn(),
   stop: jest.fn(),
   isRunning: jest.fn(),
-  add: jest.fn(()=>{return {isrunning: () => true};}),
+  add: jest.fn(() => { return { isRunning: () => true }; }),
   get: jest.fn()
 };
 

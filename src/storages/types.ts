@@ -1,4 +1,5 @@
-import { MaybeThenable, ISplit } from '../dtos/types';
+import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
+import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
 import { ISet } from '../utils/lang/sets';
@@ -204,7 +205,7 @@ export interface ISplitsCacheBase {
   getSplitNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
-  // only for Client-Side
+  // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === -1) or contains a FF using segments or large segments
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
@@ -218,7 +219,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   removeSplits(names: string[]): boolean[],
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
-  setChangeNumber(changeNumber: number): boolean,
+  setChangeNumber(changeNumber: number): boolean | void,
   getChangeNumber(): number,
   getAll(): ISplit[],
   getSplitNames(): string[],
@@ -268,9 +269,9 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  setChangeNumber(name: string, changeNumber: number): boolean
-  getChangeNumber(name: string): number
-  resetSegments(names: string[]): boolean // only for Sync Client-Side
+  setChangeNumber(name: string, changeNumber: number): boolean | void
+  getChangeNumber(name?: string): number
+  resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
 }
 
@@ -477,7 +478,10 @@ export interface IStorageSync extends IStorageBase<
   IEventsCacheSync,
   ITelemetryCacheSync,
   IUniqueKeysCacheSync
-> { }
+> {
+  // Defined in client-side
+  largeSegments?: ISegmentsCacheSync,
+}
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,

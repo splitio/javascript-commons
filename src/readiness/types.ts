@@ -61,7 +61,7 @@ export interface IReadinessManager {
   destroy(): void,
 
   /** for client-side */
-  shared(readyTimeout?: number): IReadinessManager,
+  shared(): IReadinessManager,
 }
 
 /** SDK readiness manager */
@@ -77,5 +77,5 @@ export interface ISdkReadinessManager {
   incInternalReadyCbCount(): void
 
   /** for client-side */
-  shared(readyTimeout?: number): ISdkReadinessManager
+  shared(): ISdkReadinessManager
 }

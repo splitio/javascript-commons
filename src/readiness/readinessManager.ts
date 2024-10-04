@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter } from '../types';
+import { IEventEmitter, ISettings } from '../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
@@ -10,7 +10,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
-  // - `/mySegments` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
+  // - `/memberships` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
   splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });
@@ -33,8 +33,10 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  */
 export function readinessManagerFactory(
   EventEmitter: new () => IEventEmitter,
-  readyTimeout = 0,
+  settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
+
+  const readyTimeout = settings.startup.readyTimeout;
 
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
   const gate: IReadinessEventEmitter = new EventEmitter();
@@ -118,9 +120,9 @@ export function readinessManagerFactory(
     segments,
     gate,
 
-    shared(readyTimeout = 0) {
+    shared() {
       refCount++;
-      return readinessManagerFactory(EventEmitter, readyTimeout, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits);
     },
 
     // @TODO review/remove next methods when non-recoverable errors are reworked

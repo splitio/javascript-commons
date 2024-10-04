@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MY_SEGMENT } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -22,7 +22,7 @@ function userKeyToQueryParam(userKey: string) {
  */
 export function splitApiFactory(
   settings: ISettings,
-  platform: IPlatform,
+  platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
   telemetryTracker: ITelemetryTracker
 ): ISplitApi {
 
@@ -67,15 +67,15 @@ export function splitApiFactory(
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
     },
 
-    fetchMySegments(userMatchingKey: string, noCache?: boolean) {
+    fetchMemberships(userMatchingKey: string, noCache?: boolean, till?: number) {
       /**
        * URI encoding of user keys in order to:
-       *  - avoid 400 responses (due to URI malformed). E.g.: '/api/mySegments/%'
-       *  - avoid 404 responses. E.g.: '/api/mySegments/foo/bar'
+       *  - avoid 400 responses (due to URI malformed). E.g.: '/api/memberships/%'
+       *  - avoid 404 responses. E.g.: '/api/memberships/foo/bar'
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
-      const url = `${urls.sdk}/mySegments/${encodeURIComponent(userMatchingKey)}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MY_SEGMENT));
+      const url = `${urls.sdk}/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MEMBERSHIPS));
     },
 
     /**

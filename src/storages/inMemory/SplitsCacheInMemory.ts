@@ -13,7 +13,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   private splitsCache: Record<string, ISplit> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
-  private splitsWithSegmentsCount: number = 0;
+  private segmentsCount: number = 0;
   private flagSetsCache: Record<string, ISet<string>> = {};
 
   constructor(splitFiltersValidation?: ISplitFiltersValidation) {
@@ -25,7 +25,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.splitsCache = {};
     this.ttCache = {};
     this.changeNumber = -1;
-    this.splitsWithSegmentsCount = 0;
+    this.segmentsCount = 0;
   }
 
   addSplit(name: string, split: ISplit): boolean {
@@ -38,9 +38,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
       this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
 
-      if (usesSegments(previousSplit)) { // Substract from segments count for the previous version of this Split.
-        this.splitsWithSegmentsCount--;
-      }
+      // Subtract from segments count for the previous version of this Split
+      if (usesSegments(previousSplit)) this.segmentsCount--;
     }
 
     if (split) {
@@ -52,7 +51,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.addToFlagSets(split);
 
       // Add to segments count for the new version of the Split
-      if (usesSegments(split)) this.splitsWithSegmentsCount++;
+      if (usesSegments(split)) this.segmentsCount++;
 
       return true;
     } else {
@@ -72,7 +71,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       this.removeFromFlagSets(split.name, split.sets);
 
       // Update the segments count.
-      if (usesSegments(split)) this.splitsWithSegmentsCount--;
+      if (usesSegments(split)) this.segmentsCount--;
 
       return true;
     } else {
@@ -102,7 +101,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   }
 
   usesSegments(): boolean {
-    return this.getChangeNumber() === -1 || this.splitsWithSegmentsCount > 0;
+    return this.getChangeNumber() === -1 || this.segmentsCount > 0;
   }
 
   getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
