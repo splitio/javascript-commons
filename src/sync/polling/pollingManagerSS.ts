@@ -1,7 +1,6 @@
 import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
 import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
-import { thenable } from '../../utils/promise/thenable';
 import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
@@ -29,9 +28,9 @@ export function pollingManagerSSFactory(
       log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();
-      if (thenable(startingUp)) {
+      if (startingUp) {
         startingUp.then(() => {
-          segmentsSyncTask.start();
+          if (splitsSyncTask.isRunning()) segmentsSyncTask.start();
         });
       }
     },
