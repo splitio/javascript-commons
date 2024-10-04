@@ -23,7 +23,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
-    filterAdapterFactory, isPure } = params;
+    filterAdapterFactory, lazyInit } = params;
   const { log, sync: { impressionsMode } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
@@ -111,8 +111,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     initCallbacks.length = 0;
   }
 
-  if (!isPure) init();
-
   log.info(NEW_FACTORY);
 
   // @ts-ignore
@@ -134,5 +132,5 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     destroy() {
       return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
-  }, extraProps && extraProps(ctx), isPure && { init });
+  }, extraProps && extraProps(ctx), lazyInit ? { init } : init());
 }

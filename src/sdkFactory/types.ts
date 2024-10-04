@@ -70,7 +70,7 @@ export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
  */
 export interface ISdkFactoryParams {
   // If true, the `sdkFactory` is pure (no side effects), and the SDK instance includes a `init` method to run initialization side effects
-  isPure?: boolean,
+  lazyInit?: boolean,
 
   // The settings must be already validated
   settings: ISettings,
