@@ -12,6 +12,8 @@ export interface ISplitsEventEmitter extends IEventEmitter {
   once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   splitsArrived: boolean
   splitsCacheLoaded: boolean
+  initialized: boolean,
+  initCallbacks: (() => void)[]
 }
 
 /** Segments data emitter */

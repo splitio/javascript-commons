@@ -7,6 +7,8 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
+    initialized: false,
+    initCallbacks: []
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
@@ -55,13 +57,18 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
-  let readyTimeoutId: ReturnType<typeof setTimeout>;
 
   function timeout() { // eslint-disable-next-line no-use-before-define
     if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
+  }
+
+  let readyTimeoutId: ReturnType<typeof setTimeout>;
+  if (readyTimeout > 0) {
+    if (splits.initialized) readyTimeoutId = setTimeout(timeout, readyTimeout);
+    else splits.initCallbacks.push(() => { readyTimeoutId = setTimeout(timeout, readyTimeout); });
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -129,9 +136,9 @@ export function readinessManagerFactory(
     setDestroyed() { isDestroyed = true; },
 
     init() {
-      if (readyTimeout > 0) {
-        readyTimeoutId = setTimeout(timeout, readyTimeout);
-      }
+      if (splits.initialized) return;
+      splits.initialized = true;
+      splits.initCallbacks.forEach(cb => cb());
     },
 
     destroy() {
