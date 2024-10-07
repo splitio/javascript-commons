@@ -2,7 +2,6 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ILoggerOptions, ILogger } from './types';
 import { find, isObject } from '../utils/lang';
 import { LogLevel } from '../types';
-import { IMap, _Map } from '../utils/lang/maps';
 
 export const LogLevels: { [level: string]: LogLevel } = {
   DEBUG: 'DEBUG',
@@ -47,12 +46,12 @@ const defaultOptions = {
 export class Logger implements ILogger {
 
   private options: Required<ILoggerOptions>;
-  private codes: IMap<number, string>;
+  private codes: Map<number, string>;
   private logLevel: number;
 
-  constructor(options?: ILoggerOptions, codes?: IMap<number, string>) {
+  constructor(options?: ILoggerOptions, codes?: Map<number, string>) {
     this.options = objectAssign({}, defaultOptions, options);
-    this.codes = codes || new _Map();
+    this.codes = codes || new Map();
     this.logLevel = LogLevelIndexes[this.options.logLevel];
   }
 

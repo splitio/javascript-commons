@@ -6,7 +6,6 @@ import { findLatencyIndex } from '../findLatencyIndex';
 import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
 import { CONSUMER_MODE, STORAGE_REDIS } from '../../utils/constants';
 import { isNaNNumber, isString } from '../../utils/lang';
-import { _Map } from '../../utils/lang/maps';
 import { MAX_LATENCY_BUCKET_COUNT, newBuckets } from '../inMemory/TelemetryCacheInMemory';
 import { parseLatencyField, parseExceptionField, parseMetadata } from '../utils';
 import type { RedisAdapter } from './RedisAdapter';
@@ -46,7 +45,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
   popLatencies(): Promise<MultiMethodLatencies> {
     return this.redis.hgetall(this.keys.latencyPrefix).then(latencies => {
 
-      const result: MultiMethodLatencies = new _Map();
+      const result: MultiMethodLatencies = new Map();
 
       Object.keys(latencies).forEach(field => {
 
@@ -86,7 +85,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
   popExceptions(): Promise<MultiMethodExceptions> {
     return this.redis.hgetall(this.keys.exceptionPrefix).then(exceptions => {
 
-      const result: MultiMethodExceptions = new _Map();
+      const result: MultiMethodExceptions = new Map();
 
       Object.keys(exceptions).forEach(field => {
 
@@ -119,7 +118,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
   popConfigs(): Promise<MultiConfigs> {
     return this.redis.hgetall(this.keys.initPrefix).then(configs => {
 
-      const result: MultiConfigs = new _Map();
+      const result: MultiConfigs = new Map();
 
       Object.keys(configs).forEach(field => {
 

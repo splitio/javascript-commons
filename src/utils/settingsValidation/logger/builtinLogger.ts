@@ -3,11 +3,10 @@ import { ILogger } from '../../../logger/types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
 import { codesDebug } from '../../../logger/messages/debug';
-import { _Map } from '../../lang/maps';
 import { getLogLevel } from './commons';
 import { LogLevel } from '../../../types';
 
-const allCodes = new _Map(codesDebug);
+const allCodes = new Map(codesDebug);
 
 // @TODO set default debug setting instead of initialLogLevel when integrating in JS and Node packages
 const LS_KEY = 'splitio_debug';
