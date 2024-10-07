@@ -80,7 +80,7 @@
             "message": "Don't declare const enum, because it is not supported by Babel used for building RN SDK"
           }
         ],
-        "compat/compat": ["error", "defaults, node 14"],
+        "compat/compat": ["error", "defaults, node >=14"],
         "no-throw-literal": "error",
         "import/no-default-export": "error",
         "import/no-self-import": "error"
