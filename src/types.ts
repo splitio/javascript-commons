@@ -390,20 +390,9 @@ export interface IStatusInterface extends IEventEmitter {
    */
   Event: EventConsts,
   /**
-   * Returns a promise that will be resolved once the SDK has finished loading (SDK_READY event emitted) or rejected if the SDK has timedout (SDK_READY_TIMED_OUT event emitted).
-   * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, calling the `ready` method after the
-   * SDK had timed out will return a new promise that should eventually resolve if the SDK gets ready.
-   *
-   * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
-   * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
-   * ```
-   * try {
-   *   await client.ready().catch((e) => { throw e; });
-   *   // SDK is ready
-   * } catch(e) {
-   *   // SDK has timedout
-   * }
-   * ```
+   * Returns a promise that resolves once the SDK has finished loading (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+   * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.
+   * You must handle the promise rejection to avoid an unhandled promise rejection error, or you can set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
    *
    * @function ready
    * @returns {Promise<void>}
