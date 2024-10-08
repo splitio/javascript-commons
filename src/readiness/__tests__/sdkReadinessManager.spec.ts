@@ -24,6 +24,7 @@ function emitReadyEvent(readinessManager: IReadinessManager) {
   readinessManager.segments.once.mock.calls[0][1]();
   readinessManager.segments.on.mock.calls[0][1]();
   readinessManager.gate.once.mock.calls[0][1]();
+  if (readinessManager.gate.once.mock.calls[3]) readinessManager.gate.once.mock.calls[3][1](); // ready promise
 }
 
 const timeoutErrorMessage = 'Split SDK emitted SDK_READY_TIMED_OUT event.';
@@ -32,6 +33,7 @@ const timeoutErrorMessage = 'Split SDK emitted SDK_READY_TIMED_OUT event.';
 function emitTimeoutEvent(readinessManager: IReadinessManager) {
   readinessManager.gate.once.mock.calls[1][1](timeoutErrorMessage);
   readinessManager.hasTimedout = () => true;
+  if (readinessManager.gate.once.mock.calls[4]) readinessManager.gate.once.mock.calls[4][1](timeoutErrorMessage); // ready promise
 }
 
 describe('SDK Readiness Manager - Event emitter', () => {
@@ -245,8 +247,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
       }
     );
 
-    // any subsequent call to .ready() must be a rejected promise
-    await readyForTimeout.then(
+    // any subsequent call to .ready() must be a rejected promise until the SDK is ready
+    await sdkReadinessManagerForTimedout.sdkStatus.ready().then(
       () => { throw new Error('It should be a promise that was rejected on SDK_READY_TIMED_OUT, not resolved.'); },
       () => {
         expect('A subsequent call should be a rejected promise.');
@@ -258,7 +260,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
     emitReadyEvent(sdkReadinessManagerForTimedout.readinessManager);
 
     // once SDK_READY, `.ready()` returns a resolved promise
-    await ready.then(
+    await sdkReadinessManagerForTimedout.sdkStatus.ready().then(
       () => {
         expect('It should be a resolved promise when the SDK is ready, even after an SDK timeout.');
         loggerMock.mockClear();
@@ -270,57 +272,21 @@ describe('SDK Readiness Manager - Ready promise', () => {
   });
 
   test('Full blown ready promise count as a callback and resolves on SDK_READY', (done) => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    const readyPromise = sdkReadinessManager.sdkStatus.ready();
+    let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
-    // Get the callback
-    const readyEventCB = sdkReadinessManager.readinessManager.gate.once.mock.calls[0][1];
-
-    readyEventCB();
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
+    emitReadyEvent(sdkReadinessManager.readinessManager);
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We should get a warning if the SDK get's ready before calling the ready method or attaching a listener to the ready event
     loggerMock.warn.mockClear();
 
-    readyPromise.then(() => {
+    sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
+    sdkReadinessManager.sdkStatus.ready().then(() => {
       expect('The ready promise is resolved when the gate emits SDK_READY.');
       done();
     }, () => {
       throw new Error('This should not be called as the promise is being resolved.');
     });
 
-    readyEventCB();
-    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener there are no warnings.
-  });
-
-  test('.ready() rejected promises have a default onRejected handler that just logs the error', (done) => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    let readyForTimeout = sdkReadinessManager.sdkStatus.ready();
-
-    emitTimeoutEvent(sdkReadinessManager.readinessManager); // make the SDK "timed out"
-
-    readyForTimeout.then(
-      () => { throw new Error('It should be a promise that was rejected on SDK_READY_TIMED_OUT, not resolved.'); }
-    );
-
-    expect(loggerMock.error).not.toBeCalled(); // not called until promise is rejected
-
-    setTimeout(() => {
-      expect(loggerMock.error.mock.calls).toEqual([[timeoutErrorMessage]]); // If we don\'t handle the rejected promise, an error is logged.
-      readyForTimeout = sdkReadinessManager.sdkStatus.ready();
-
-      setTimeout(() => {
-        expect(loggerMock.error).lastCalledWith('Split SDK has emitted SDK_READY_TIMED_OUT event.'); // If we don\'t handle a new .ready() rejected promise, an error is logged.
-        readyForTimeout = sdkReadinessManager.sdkStatus.ready();
-
-        readyForTimeout
-          .then(() => { throw new Error(); })
-          .then(() => { throw new Error(); })
-          .catch((error) => {
-            expect(error instanceof Error).toBe(true);
-            expect(error.message).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
-            expect(loggerMock.error).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
-            done();
-          });
-      }, 0);
-    }, 0);
+    emitReadyEvent(sdkReadinessManager.readinessManager);
+    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener or call the ready method, we get no warnings.
   });
 });
