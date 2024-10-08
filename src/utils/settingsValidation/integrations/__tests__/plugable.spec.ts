@@ -16,8 +16,8 @@ describe('integrations validator for pluggable integrations', () => {
   });
 
   test('Filters invalid integration factories from `integrations` array', () => {
-    const validNoopIntFactory = () => { }; // no-op integration, such as GoogleAnalyticsToSplit
-    const validIntFactory = () => { return { queue() { } }; }; //  integration with queue handler, such as SplitToGoogleAnalytics
+    const validNoopIntFactory = () => { }; // integration with no queue handler, such as 3rdPartyAnalyticsToSplit
+    const validIntFactory = () => { return { queue() { } }; }; //  integration with queue handler, such as SplitTo3rdPartyAnalytics
     const invalid = { queue() { } };
 
     // Integration factories that are invalid objects are removed
