@@ -233,40 +233,32 @@ describe('settingsValidation', () => {
     expect(settings.core.key).toBe(undefined);
   });
 
-  test('validates and sanitizes key and traffic type in client-side', () => {
-    const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true, acceptTT: true };
+  test('validates and sanitizes key in client-side', () => {
+    const clientSideValidationParams = { ...minimalSettingsParams, acceptKey: true };
 
     const samples = [{
       key: '  valid-key  ', settingsKey: 'valid-key', // key string is trimmed
-      trafficType: 'VALID-TT', settingsTrafficType: 'valid-tt', // TT is converted to lowercase
     }, {
       key: undefined, settingsKey: false, // undefined key is not valid in client-side
-      trafficType: undefined, settingsTrafficType: undefined,
     }, {
-      key: null, settingsKey: false,
-      trafficType: null, settingsTrafficType: false,
+      key: {}, settingsKey: false,
     }, {
       key: true, settingsKey: false,
-      trafficType: true, settingsTrafficType: false,
     }, {
       key: 1.5, settingsKey: '1.5', // finite number as key is parsed
-      trafficType: 100, settingsTrafficType: false,
     }, {
       key: { matchingKey: 100, bucketingKey: ' BUCK ' }, settingsKey: { matchingKey: '100', bucketingKey: 'BUCK' },
-      trafficType: {}, settingsTrafficType: false,
     }];
 
-    samples.forEach(({ key, trafficType, settingsKey, settingsTrafficType }) => {
+    samples.forEach(({ key, settingsKey }) => {
       const settings = settingsValidation({
         core: {
           authorizationKey: 'dummy token',
-          key,
-          trafficType
+          key
         }
       }, clientSideValidationParams);
 
       expect(settings.core.key).toEqual(settingsKey);
-      expect(settings.core.trafficType).toEqual(settingsTrafficType);
     });
   });
 
@@ -275,12 +267,11 @@ describe('settingsValidation', () => {
       core: {
         authorizationKey: 'dummy token',
         key: true,
-        trafficType: true
+        trafficType: 'ignored'
       }
     }, { ...minimalSettingsParams, acceptKey: true });
 
     expect(settings.core.key).toEqual(false); // key is validated
-    expect(settings.core.trafficType).toEqual(true); // traffic type is ignored
   });
 
   // Not implemented yet

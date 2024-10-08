@@ -13,17 +13,6 @@ export const settingsWithKey = {
   log: loggerMock
 };
 
-export const settingsWithKeyAndTT = {
-  core: {
-    key: 'some_key',
-    trafficType: 'some_tt'
-  },
-  startup: {
-    readyTimeout: 1,
-  },
-  log: loggerMock
-};
-
 export const settingsWithKeyObject = {
   core: {
     key: {

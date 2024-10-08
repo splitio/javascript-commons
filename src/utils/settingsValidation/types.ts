@@ -12,8 +12,6 @@ export interface ISettingsValidationParams {
   defaults: Partial<ISettings> & { version: string } & { startup: ISettings['startup'] },
   /** If true, validates core.key */
   acceptKey?: boolean,
-  /** If true, validates core.trafficType */
-  acceptTT?: boolean,
   /** Define runtime values (`settings.runtime`) */
   runtime: (settings: ISettings) => ISettings['runtime'],
   /** Storage validator (`settings.storage`) */
