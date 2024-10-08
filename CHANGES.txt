@@ -9,7 +9,7 @@
    - Removed the deprecated `GOOGLE_ANALYTICS_TO_SPLIT` and `SPLIT_TO_GOOGLE_ANALYTICS` integrations.
    - Removed internal ponyfills for `Map`, `Set` and `Array.from` global objects, dropping support for IE and other outdated browsers. The SDK now requires the runtime environment to support these features natively or to provide a polyfill.
    - Removed the migration logic for the old format of MySegments keys in LocalStorage introduced in JavaScript SDK v10.17.3.
-   - Removed the `sdkClientMethodCSWithTTFactory` function, which handled the logic to bound an optional traffic type to SDK clients. Client-side SDK implementations must use `sdkClientMethodCSWithTT` which, unlike the previous function, does not allow passing a traffic type but simplifies the SDK API.
+   - Removed the `sdkClientMethodCSWithTT` function, which handled the logic to bound an optional traffic type to SDK clients. Client-side SDK implementations must use `sdkClientMethodCS` module, which, unlike the previous function, does not allow passing a traffic type but simplifies the SDK API.
 
 1.17.0 (September 6, 2024)
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance SDK HTTP request Headers for Authorization Frameworks.
