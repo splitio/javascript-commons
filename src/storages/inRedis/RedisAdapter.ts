@@ -1,7 +1,6 @@
 import ioredis, { Pipeline } from 'ioredis';
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
-import { _Set, setToArray, ISet } from '../../utils/lang/sets';
 import { thenable } from '../../utils/promise/thenable';
 import { timeout } from '../../utils/promise/timeout';
 
@@ -37,7 +36,7 @@ export class RedisAdapter extends ioredis {
   private readonly log: ILogger;
   private _options: object;
   private _notReadyCommandsQueue?: IRedisCommand[];
-  private _runningCommands: ISet<Promise<any>>;
+  private _runningCommands: Set<Promise<any>>;
 
   constructor(log: ILogger, storageSettings: Record<string, any> = {}) {
     const options = RedisAdapter._defineOptions(storageSettings);
@@ -47,7 +46,7 @@ export class RedisAdapter extends ioredis {
     this.log = log;
     this._options = options;
     this._notReadyCommandsQueue = [];
-    this._runningCommands = new _Set();
+    this._runningCommands = new Set();
     this._listenToEvents();
     this._setTimeoutWrappers();
     this._setDisconnectWrapper();
@@ -150,7 +149,7 @@ export class RedisAdapter extends ioredis {
         if (instance._runningCommands.size > 0) {
           instance.log.info(LOG_PREFIX + `Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
 
-          Promise.all(setToArray(instance._runningCommands))
+          Promise.all(Array.from(instance._runningCommands))
             .then(() => {
               instance.log.debug(LOG_PREFIX + 'Pending commands finished successfully, disconnecting.');
               originalMethod.apply(instance, params);

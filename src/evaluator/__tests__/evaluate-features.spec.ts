@@ -2,7 +2,6 @@
 import { evaluateFeatures, evaluateFeaturesByFlagSets } from '../index';
 import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { _Set } from '../../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../../logger/constants';
 
 const splitsMock = {
@@ -17,8 +16,8 @@ const splitsMock = {
 };
 
 const flagSetsMock = {
-  reg_and_config: new _Set(['regular', 'config']),
-  arch_and_killed: new _Set(['killed', 'archived']),
+  reg_and_config: new Set(['regular', 'config']),
+  arch_and_killed: new Set(['killed', 'archived']),
 };
 
 const mockStorage = {
@@ -38,7 +37,7 @@ const mockStorage = {
       return splits;
     },
     getNamesByFlagSets(flagSets) {
-      return flagSets.map(flagset => flagSetsMock[flagset] || new _Set());
+      return flagSets.map(flagset => flagSetsMock[flagset] || new Set());
     }
   }
 };
@@ -192,7 +191,7 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
     // Should support async storage too
     expect(await getResultsByFlagsets(['inexistent_set1', 'inexistent_set2'], {
       splits: {
-        getNamesByFlagSets(flagSets) { return Promise.resolve(flagSets.map(flagset => flagSetsMock[flagset] || new _Set())); }
+        getNamesByFlagSets(flagSets) { return Promise.resolve(flagSets.map(flagset => flagSetsMock[flagset] || new Set())); }
       }
     })).toEqual({});
     expect(loggerMock.warn.mock.calls).toEqual([

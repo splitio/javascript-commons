@@ -115,7 +115,6 @@ export class BrowserSignalListener implements ISignalListener {
    * Returns true if beacon API was used successfully, false otherwise.
    */
   private _sendBeacon(url: string, data: any, extraMetadata?: {}) {
-    // eslint-disable-next-line compat/compat
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       const json = {
         entries: data,
@@ -130,7 +129,7 @@ export class BrowserSignalListener implements ISignalListener {
       const payload = JSON.stringify(json);
 
       // https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-      try { // eslint-disable-next-line compat/compat
+      try {
         return navigator.sendBeacon(url, payload);
       } catch (e) {
         return false;

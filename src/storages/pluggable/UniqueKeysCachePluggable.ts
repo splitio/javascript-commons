@@ -1,6 +1,5 @@
 import { IPluggableStorageWrapper, IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
-import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE } from '../inRedis/constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
@@ -28,7 +27,7 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
     if (!featureNames.length) return Promise.resolve(false);
 
     const uniqueKeysArray = featureNames.map((featureName) => {
-      const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
+      const featureKeys = Array.from(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys

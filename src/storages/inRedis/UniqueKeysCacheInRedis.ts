@@ -1,6 +1,5 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
-import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
@@ -29,7 +28,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     if (!featureNames.length) return Promise.resolve(false);
 
     const uniqueKeysArray = featureNames.map((featureName) => {
-      const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
+      const featureKeys = Array.from(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys
