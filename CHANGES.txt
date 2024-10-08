@@ -7,7 +7,7 @@
    - Removed `/mySegments` endpoint from SplitAPI module, as it is replaced by `/memberships` endpoint.
    - Removed support for MY_SEGMENTS_UPDATE and MY_SEGMENTS_UPDATE_V2 notification types, as they are replaced by MEMBERSHIPS_MS_UPDATE and MEMBERSHIPS_LS_UPDATE notification types.
    - Removed the deprecated `GOOGLE_ANALYTICS_TO_SPLIT` and `SPLIT_TO_GOOGLE_ANALYTICS` integrations.
-   - Bugfixing - Fixed an issue with the `ready` method that caused the returned promise to hang on async/await syntax if it was rejected. The fix implies that the promise rejection must be handled by the user.
+   - Bugfixing - Fixed an issue with the client `ready` method that was causing the returned promise to hang on async/await syntax if the promise was rejected. The fix implies a breaking change, since the promise rejection must be handled by the user.
 
 1.17.0 (September 6, 2024)
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance SDK HTTP request Headers for Authorization Frameworks.
