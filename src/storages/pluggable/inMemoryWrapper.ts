@@ -1,5 +1,6 @@
 import { IPluggableStorageWrapper } from '../types';
 import { startsWith, toNumber } from '../../utils/lang';
+import { setToArray } from '../../utils/lang/sets';
 
 /**
  * Creates a IPluggableStorageWrapper implementation that stores items in memory.
@@ -107,7 +108,7 @@ export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWra
     getItems(key: string) {
       const set = _cache[key];
       if (!set) return Promise.resolve([]);
-      if (set instanceof Set) return Promise.resolve(Array.from(set));
+      if (set instanceof Set) return Promise.resolve(setToArray(set));
       return Promise.reject('key is not a set');
     },
 

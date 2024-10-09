@@ -6,6 +6,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISettings } from '../../types';
 import { getStorageHash } from '../KeyBuilder';
+import { setToArray } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -281,7 +282,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const flagSetCache = new Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
       flagSetCache.add(featureFlag.name);
 
-      localStorage.setItem(flagSetKey, JSON.stringify(Array.from(flagSetCache)));
+      localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
     });
   }
 
@@ -308,7 +309,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       return;
     }
 
-    localStorage.setItem(flagSetKey, JSON.stringify(Array.from(flagSetCache)));
+    localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
   }
 
 }

@@ -1,6 +1,7 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysPayloadCs } from '../../sync/submitters/types';
 import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
 
@@ -70,7 +71,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
     const userKeys = Object.keys(uniqueKeys);
     for (let k = 0; k < userKeys.length; k++) {
       const userKey = userKeys[k];
-      const featureNames = Array.from(uniqueKeys[userKey]);
+      const featureNames = setToArray(uniqueKeys[userKey]);
       const uniqueKeysPayload = {
         k: userKey,
         fs: featureNames
