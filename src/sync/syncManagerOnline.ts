@@ -143,27 +143,29 @@ export function syncManagerOnlineFactory(
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
 
+        if (running) {
+          if (syncEnabled) {
+            if (pushManager) {
+              if (pollingManager!.isRunning()) {
+                // if doing polling, we must start the periodic fetch of data
+                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              } else {
+                // if not polling, we must execute the sync task for the initial fetch
+                // of segments since `syncAll` was already executed when starting the main client
+                mySegmentsSyncTask.execute();
+              }
+              pushManager.add(matchingKey, mySegmentsSyncTask);
+            } else {
+              if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+            }
+          } else {
+            if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
+          }
+        }
+
         return {
           isRunning: mySegmentsSyncTask.isRunning,
-          start() {
-            if (syncEnabled) {
-              if (pushManager) {
-                if (pollingManager!.isRunning()) {
-                  // if doing polling, we must start the periodic fetch of data
-                  if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
-                } else {
-                  // if not polling, we must execute the sync task for the initial fetch
-                  // of segments since `syncAll` was already executed when starting the main client
-                  mySegmentsSyncTask.execute();
-                }
-                pushManager.add(matchingKey, mySegmentsSyncTask);
-              } else {
-                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
-              }
-            } else {
-              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
-            }
-          },
+
           stop() {
             // check in case `client.destroy()` has been invoked more than once for the same client
             const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);

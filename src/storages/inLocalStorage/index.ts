@@ -45,10 +45,6 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
-    if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
-      Promise.resolve().then(onReadyFromCacheCb);
-    }
-
     return {
       splits,
       segments,
@@ -58,6 +54,12 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
+
+      init() {
+        if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
+          Promise.resolve().then(onReadyFromCacheCb);
+        }
+      },
 
       destroy() {
         this.splits = new SplitsCacheInMemory(__splitFiltersValidation);

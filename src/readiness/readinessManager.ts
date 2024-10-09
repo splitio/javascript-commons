@@ -7,6 +7,8 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
+    initialized: false,
+    initCallbacks: []
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
@@ -56,8 +58,8 @@ export function readinessManagerFactory(
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
 
-  function timeout() {
-    if (hasTimedout) return;
+  function timeout() { // eslint-disable-next-line no-use-before-define
+    if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
@@ -65,7 +67,8 @@ export function readinessManagerFactory(
 
   let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(timeout, readyTimeout);
+    if (splits.initialized) readyTimeoutId = setTimeout(timeout, readyTimeout);
+    else splits.initCallbacks.push(() => { readyTimeoutId = setTimeout(timeout, readyTimeout); });
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -131,6 +134,12 @@ export function readinessManagerFactory(
     // Called on 403 error (client-side SDK key on server-side), to set the SDK as destroyed for
     // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
     setDestroyed() { isDestroyed = true; },
+
+    init() {
+      if (splits.initialized) return;
+      splits.initialized = true;
+      splits.initCallbacks.forEach(cb => cb());
+    },
 
     destroy() {
       isDestroyed = true;

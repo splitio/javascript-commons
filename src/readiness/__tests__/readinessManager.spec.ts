@@ -157,13 +157,14 @@ test('READINESS MANAGER / Segment updates should not be propagated', (done) => {
   });
 });
 
-describe('READINESS MANAGER / Timeout ready event', () => {
+describe('READINESS MANAGER / Timeout event', () => {
   let readinessManager: IReadinessManager;
   let timeoutCounter: number;
 
   beforeEach(() => {
     // Schedule timeout to be fired before SDK_READY
     readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
+    readinessManager.init(); // Start the timeout
     timeoutCounter = 0;
 
     readinessManager.gate.on(SDK_READY_TIMED_OUT, () => {
@@ -212,6 +213,7 @@ test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {
   let sdkReadyTimedoutCalled = false;
 
   const readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
+  readinessManager.init(); // Start the timeout
 
   readinessManager.gate.on(SDK_READY_TIMED_OUT, () => { sdkReadyTimedoutCalled = true; });
   readinessManager.gate.once(SDK_READY, () => { sdkReadyCalled = true; });

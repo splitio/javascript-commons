@@ -86,8 +86,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         validTrafficType
       );
 
-      sharedSyncManager && sharedSyncManager.start();
-
       log.info(NEW_SHARED_CLIENT);
     } else {
       log.debug(RETRIEVE_CLIENT_EXISTING);

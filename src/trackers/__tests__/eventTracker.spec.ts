@@ -29,13 +29,15 @@ const fakeEvent = {
   }
 };
 
+const fakeWhenInit = (cb: () => void) => cb();
+
 /* Tests */
 describe('Event Tracker', () => {
 
   test('Tracker API', () => {
     expect(typeof eventTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
 
-    const instance = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager);
+    const instance = eventTrackerFactory(fullSettings, fakeEventsCache, fakeWhenInit, fakeIntegrationsManager);
 
     expect(typeof instance.track).toBe('function'); // The instance should implement the track method.
   });
@@ -51,7 +53,7 @@ describe('Event Tracker', () => {
       }
     });
     // @ts-ignore
-    const tracker = eventTrackerFactory(fullSettings, fakeEventsCache, fakeIntegrationsManager, fakeTelemetryCache);
+    const tracker = eventTrackerFactory(fullSettings, fakeEventsCache, fakeWhenInit, fakeIntegrationsManager, fakeTelemetryCache);
     const result1 = tracker.track(fakeEvent, 1);
 
     expect(fakeEventsCache.track.mock.calls[0]).toEqual([fakeEvent, 1]); // Should be present in the event cache.
@@ -92,7 +94,7 @@ describe('Event Tracker', () => {
     const settings = { ...fullSettings };
     const fakeEventsCache = { track: jest.fn(() => true) };
 
-    const tracker = eventTrackerFactory(settings, fakeEventsCache);
+    const tracker = eventTrackerFactory(settings, fakeEventsCache, fakeWhenInit);
 
     expect(tracker.track(fakeEvent)).toBe(true);
     expect(fakeEventsCache.track).toBeCalledTimes(1); // event should be tracked if userConsent is undefined
