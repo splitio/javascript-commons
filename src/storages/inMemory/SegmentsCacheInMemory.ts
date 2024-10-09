@@ -1,5 +1,4 @@
 import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
-import { ISet, _Set } from '../../utils/lang/sets';
 import { isIntegerNumber } from '../../utils/lang';
 
 /**
@@ -8,12 +7,12 @@ import { isIntegerNumber } from '../../utils/lang';
  */
 export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
-  private segmentCache: Record<string, ISet<string>> = {};
+  private segmentCache: Record<string, Set<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
 
   addToSegment(name: string, segmentKeys: string[]): boolean {
     const values = this.segmentCache[name];
-    const keySet = values ? values : new _Set<string>();
+    const keySet = values ? values : new Set<string>();
 
     segmentKeys.forEach(k => keySet.add(k));
 
@@ -24,7 +23,7 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   removeFromSegment(name: string, segmentKeys: string[]): boolean {
     const values = this.segmentCache[name];
-    const keySet = values ? values : new _Set<string>();
+    const keySet = values ? values : new Set<string>();
 
     segmentKeys.forEach(k => keySet.delete(k));
 
@@ -50,7 +49,7 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
 
   private _registerSegment(name: string) {
     if (!this.segmentCache[name]) {
-      this.segmentCache[name] = new _Set<string>();
+      this.segmentCache[name] = new Set<string>();
     }
 
     return true;

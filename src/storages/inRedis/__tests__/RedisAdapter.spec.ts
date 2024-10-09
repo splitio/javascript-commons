@@ -2,7 +2,6 @@
 import forEach from 'lodash/forEach';
 import merge from 'lodash/merge';
 import reduce from 'lodash/reduce';
-import { _Set, setToArray } from '../../../utils/lang/sets';
 
 // Mocking sdkLogger
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
@@ -95,7 +94,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(typeof instance._options === 'object').toBe(true); // The instance will have an options object.
     expect(Array.isArray(instance._notReadyCommandsQueue)).toBe(true); // The instance will have an array as the _notReadyCommandsQueue property.
-    expect(instance._runningCommands instanceof _Set).toBe(true); // The instance will have a set as the _runningCommands property.
+    expect(instance._runningCommands instanceof Set).toBe(true); // The instance will have a set as the _runningCommands property.
   });
 
   test('ioredis constructor params and static method _defineLibrarySettings', () => {
@@ -374,7 +373,7 @@ describe('STORAGE Redis Adapter', () => {
       setTimeout(() => { // queued with rejection timeout wrapper
         expect(loggerMock.info.mock.calls).toEqual([[LOG_PREFIX + 'Attempting to disconnect but there are 2 commands still waiting for resolution. Defering disconnection until those finish.']]);
 
-        Promise.all(setToArray(instance._runningCommands)).catch(e => {
+        Promise.all(Array.from(instance._runningCommands)).catch(e => {
           setImmediate(() => { // Allow the callback to execute before checking.
             expect(loggerMock.warn.mock.calls[0]).toEqual([`${LOG_PREFIX}Pending commands finished with error: ${e}. Proceeding with disconnection.`]); // Should warn about the error but tell user that will disconnect anyways.
             expect(ioredisMock.disconnect).toBeCalledTimes(1); // Original method should have been called once, asynchronously
@@ -394,7 +393,7 @@ describe('STORAGE Redis Adapter', () => {
             setTimeout(() => {
               expect(loggerMock.info.mock.calls).toEqual([[LOG_PREFIX + 'Attempting to disconnect but there are 4 commands still waiting for resolution. Defering disconnection until those finish.']]);
 
-              Promise.all(setToArray(instance._runningCommands)).then(() => { // This one will go through success path
+              Promise.all(Array.from(instance._runningCommands)).then(() => { // This one will go through success path
                 setImmediate(() => {
                   expect(loggerMock.debug.mock.calls).toEqual([[LOG_PREFIX + 'Pending commands finished successfully, disconnecting.']]);
                   expect(ioredisMock.disconnect).toBeCalledTimes(1); // Original method should have been called once, asynchronously

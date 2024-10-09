@@ -13,7 +13,6 @@ function Uint8ArrayToString(myUint8Arr: Uint8Array) { // @ts-ignore
 
 function StringToUint8Array(myString: string) {
   const charCodes = myString.split('').map((e) => e.charCodeAt(0));
-  // eslint-disable-next-line compat/compat
   return new Uint8Array(charCodes);
 }
 

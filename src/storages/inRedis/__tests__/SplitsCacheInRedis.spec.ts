@@ -4,7 +4,6 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT, featureFlagOne, featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
 import { metadata } from '../../__tests__/KeyBuilder.spec';
-import { _Set } from '../../../utils/lang/sets';
 import { RedisAdapter } from '../RedisAdapter';
 
 const prefix = 'splits_cache_ut';
@@ -150,7 +149,7 @@ describe('SPLITS CACHE REDIS', () => {
     const connection = new RedisAdapter(loggerMock); // @ts-ignore
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
 
-    const emptySet = new _Set([]);
+    const emptySet = new Set([]);
 
     await cache.addSplits([
       [featureFlagOne.name, featureFlagOne],
@@ -159,27 +158,27 @@ describe('SPLITS CACHE REDIS', () => {
     ]);
     await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
 
-    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_one', 'ff_two'])]);
-    expect(await cache.getNamesByFlagSets(['n'])).toEqual([new _Set(['ff_one'])]);
-    expect(await cache.getNamesByFlagSets(['e'])).toEqual([new _Set(['ff_one', 'ff_three'])]);
+    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
+    expect(await cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
     expect(await cache.getNamesByFlagSets(['t'])).toEqual([emptySet]); // 't' not in filter
-    expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
+    expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
     await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['1'] });
 
     expect(await cache.getNamesByFlagSets(['1'])).toEqual([emptySet]); // '1' not in filter
-    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_two'])]);
+    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_two'])]);
     expect(await cache.getNamesByFlagSets(['n'])).toEqual([emptySet]);
 
     await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['x'] });
-    expect(await cache.getNamesByFlagSets(['x'])).toEqual([new _Set(['ff_one'])]);
-    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new _Set(['ff_two']), new _Set(['ff_three']), new _Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['x'])).toEqual([new Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new Set(['ff_two']), new Set(['ff_three']), new Set(['ff_one'])]);
 
     // @ts-ignore Simulate an error in connection.pipeline().exec()
     jest.spyOn(connection, 'pipeline').mockImplementationOnce(() => {
       return { exec: () => Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]) };
     });
-    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new _Set(['ff_three']), new _Set(['ff_one'])]);
+    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new Set(['ff_three']), new Set(['ff_one'])]);
     (connection.pipeline as jest.Mock).mockRestore();
 
     await cache.removeSplit(featureFlagOne.name);
@@ -203,7 +202,7 @@ describe('SPLITS CACHE REDIS', () => {
     const connection = new RedisAdapter(loggerMock);
     const cacheWithoutFilters = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    const emptySet = new _Set([]);
+    const emptySet = new Set([]);
 
     await cacheWithoutFilters.addSplits([
       [featureFlagOne.name, featureFlagOne],
@@ -212,12 +211,12 @@ describe('SPLITS CACHE REDIS', () => {
     ]);
     await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
 
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new _Set(['ff_one', 'ff_two'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new _Set(['ff_one'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual([new _Set(['ff_one', 'ff_three'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new _Set(['ff_two', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new Set(['ff_two', 'ff_three'])]);
     expect(await cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new _Set(['ff_one', 'ff_two']), new _Set(['ff_one']), new _Set(['ff_one', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
     // Delete splits, TT and flag set keys
     await cacheWithoutFilters.removeSplits([featureFlagThree.name, featureFlagTwo.name, featureFlagOne.name, featureFlagWithEmptyFS.name]);
