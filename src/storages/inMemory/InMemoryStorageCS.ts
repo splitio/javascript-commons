@@ -7,6 +7,8 @@ import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
+import { getMatching } from '../../utils/key';
+import { loadData } from '../dataLoader';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -14,7 +16,7 @@ import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
  * @param params parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation }, preloadedData }, onReadyFromCacheCb } = params;
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const segments = new MySegmentsCacheInMemory();
@@ -42,11 +44,18 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     },
 
     // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
-    shared() {
+    shared(matchingKey: string) {
+      const segments = new MySegmentsCacheInMemory();
+      const largeSegments = new MySegmentsCacheInMemory();
+
+      if (preloadedData) {
+        loadData(preloadedData, { segments, largeSegments }, matchingKey);
+      }
+
       return {
         splits: this.splits,
-        segments: new MySegmentsCacheInMemory(),
-        largeSegments: new MySegmentsCacheInMemory(),
+        segments,
+        largeSegments,
         impressions: this.impressions,
         impressionCounts: this.impressionCounts,
         events: this.events,
@@ -70,6 +79,12 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     storage.events.track = noopTrack;
     if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
     if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+  }
+
+
+  if (preloadedData) {
+    loadData(preloadedData, storage, getMatching(params.settings.core.key));
+    if (splits.getChangeNumber() > -1) onReadyFromCacheCb();
   }
 
   return storage;
