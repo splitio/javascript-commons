@@ -32,8 +32,8 @@ export function eventTrackerFactory(
     if (tracked) {
       log.info(EVENTS_TRACKER_SUCCESS, [msg]);
       if (integrationsManager) {
-        // Wrap in a timeout because we don't want it to be blocking.
         whenInit(() => {
+          // Wrap in a timeout because we don't want it to be blocking.
           setTimeout(() => {
             // copy of event, to avoid unexpected behaviour if modified by integrations
             const eventDataCopy = objectAssign({}, eventData);

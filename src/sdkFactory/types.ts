@@ -50,7 +50,6 @@ export interface ISdkFactoryContext {
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
   clients: Record<string, IBasicClient>,
-  whenInit(cb: () => void): void
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {

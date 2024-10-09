@@ -67,8 +67,8 @@ export function impressionsTrackerFactory(
             sdkLanguageVersion: version
           };
 
-          // Wrap in a timeout because we don't want it to be blocking.
           whenInit(() => {
+            // Wrap in a timeout because we don't want it to be blocking.
             setTimeout(() => {
               // integrationsManager.handleImpression does not throw errors
               if (integrationsManager) integrationsManager.handleImpression(impressionData);

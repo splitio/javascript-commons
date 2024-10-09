@@ -56,7 +56,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
     }
   });
-
+  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
   const clients: Record<string, IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
@@ -82,7 +82,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform, whenInit };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;

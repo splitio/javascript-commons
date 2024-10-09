@@ -47,7 +47,6 @@ const params = {
   settings: settingsWithKey,
   telemetryTracker: telemetryTrackerFactory(),
   clients: {},
-  whenInit: (cb: () => void) => cb()
 };
 
 const invalidAttributes = [
