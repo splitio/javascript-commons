@@ -22,7 +22,11 @@ test('SEGMENT CACHE / in LocalStorage', () => {
   });
 
   caches.forEach(cache => {
-    cache.removeFromSegment('mocked-segment');
+    // @ts-expect-error
+    cache.resetSegments({
+      added: [],
+      removed: ['mocked-segment']
+    });
 
     expect(cache.isInSegment('mocked-segment')).toBe(false);
     expect(cache.getRegisteredSegments()).toEqual(['mocked-segment-2']);

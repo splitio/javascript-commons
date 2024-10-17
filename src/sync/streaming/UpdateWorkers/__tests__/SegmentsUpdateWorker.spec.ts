@@ -12,7 +12,7 @@ function segmentsSyncTaskMock(segmentsStorage: SegmentsCacheInMemory, changeNumb
 
   function __resolveSegmentsUpdaterCall(changeNumber: Record<string, number>) {
     Object.keys(changeNumber).forEach(segmentName => {
-      segmentsStorage.setChangeNumber(segmentName, changeNumber[segmentName]); // update changeNumber in storage
+      segmentsStorage.update(segmentName, [], [], changeNumber[segmentName]); // update changeNumber in storage
     });
     if (__segmentsUpdaterCalls.length) __segmentsUpdaterCalls.shift().res(); // resolve `execute` call
     else changeNumbers.push(changeNumber);

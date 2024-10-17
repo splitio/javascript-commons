@@ -1,15 +1,15 @@
-import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
+import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 
 /**
  * Default MySegmentsCacheInMemory implementation that stores MySegments in memory.
  * Supported by all JS runtimes.
  */
-export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
+export class MySegmentsCacheInMemory extends AbstractMySegmentsCacheSync {
 
   private segmentCache: Record<string, boolean> = {};
   private cn?: number;
 
-  addToSegment(name: string): boolean {
+  protected addSegment(name: string): boolean {
     if (this.segmentCache[name]) return false;
 
     this.segmentCache[name] = true;
@@ -17,7 +17,7 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     return true;
   }
 
-  removeFromSegment(name: string): boolean {
+  protected removeSegment(name: string): boolean {
     if (!this.segmentCache[name]) return false;
 
     delete this.segmentCache[name];
@@ -30,7 +30,7 @@ export class MySegmentsCacheInMemory extends AbstractSegmentsCacheSync {
   }
 
 
-  setChangeNumber(name?: string, changeNumber?: number) {
+  protected setChangeNumber(changeNumber?: number) {
     this.cn = changeNumber;
   }
 
