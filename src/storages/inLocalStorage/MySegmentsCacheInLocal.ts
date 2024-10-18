@@ -1,10 +1,10 @@
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
-import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
+import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
 
-export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
+export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
   private readonly keys: MySegmentsKeyBuilder;
   private readonly log: ILogger;
@@ -16,7 +16,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     // There is not need to flush segments cache like splits cache, since resetSegments receives the up-to-date list of active segments
   }
 
-  addToSegment(name: string): boolean {
+  protected addSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
@@ -29,7 +29,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     }
   }
 
-  removeFromSegment(name: string): boolean {
+  protected removeSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
@@ -61,7 +61,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     return 1;
   }
 
-  setChangeNumber(name?: string, changeNumber?: number) {
+  protected setChangeNumber(changeNumber?: number) {
     try {
       if (changeNumber) localStorage.setItem(this.keys.buildTillKey(), changeNumber + '');
       else localStorage.removeItem(this.keys.buildTillKey());

@@ -75,8 +75,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         validKey
       );
 
-      sharedSyncManager && sharedSyncManager.start();
-
       log.info(NEW_SHARED_CLIENT);
     } else {
       log.debug(RETRIEVE_CLIENT_EXISTING);

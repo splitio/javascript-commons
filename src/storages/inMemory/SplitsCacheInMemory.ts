@@ -4,7 +4,6 @@ import { isFiniteNumber } from '../../utils/lang';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
- * Supported by all JS runtimes.
  */
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 

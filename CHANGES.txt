@@ -1,6 +1,7 @@
 2.0.0 (October XX, 2024)
  - Added support for targeting rules based on large segments.
  - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.
+ - Updated the handling of timers and async operations inside an `init` factory method to enable lazy initialization of the SDK in standalone mode. This update is intended for the React SDK.
  - Bugfixing - Fixed an issue with the server-side polling manager that caused dangling timers when the SDK was destroyed before it was ready.
  - BREAKING CHANGES:
    - Updated default flag spec version to 1.2.

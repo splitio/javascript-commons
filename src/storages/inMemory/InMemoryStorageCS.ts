@@ -63,7 +63,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   };
 
   // @TODO revisit storage logic in localhost mode
-  // No tracking data in localhost mode to avoid memory leaks
+  // No tracking in localhost mode to avoid memory leaks: https://github.com/splitio/javascript-commons/issues/181
   if (params.settings.mode === LOCALHOST_MODE) {
     const noopTrack = () => true;
     storage.impressions.track = noopTrack;
