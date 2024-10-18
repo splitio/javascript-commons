@@ -209,11 +209,12 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   const splitFiltersValidation = validateSplitFilters(log, sync.splitFilters, withDefaults.mode);
   sync.splitFilters = splitFiltersValidation.validFilters;
   sync.__splitFiltersValidation = splitFiltersValidation;
-  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
 
+  // ensure a valid flag spec version
+  sync.flagSpecVersion = flagSpec ? flagSpec(withDefaults) : FLAG_SPEC_VERSION;
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
-  withDefaults.userConsent = consent(withDefaults);
+  withDefaults.userConsent = consent ? consent(withDefaults) : undefined;
 
   return withDefaults;
 }

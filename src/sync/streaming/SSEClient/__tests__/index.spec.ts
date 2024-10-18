@@ -19,18 +19,18 @@ const EXPECTED_URL = url(settings, '/sse') +
 const EXPECTED_BROWSER_URL = EXPECTED_URL +
   `&SplitSDKVersion=${settings.version}&SplitSDKClientKey=${EXPECTED_HEADERS.SplitSDKClientKey}`;
 
-test('SSClient / instance creation throws error if EventSource is not provided', () => {
+test('SSEClient / instance creation throws error if EventSource is not provided', () => {
   expect(() => { new SSEClient(settings); }).toThrow(Error);
   expect(() => { new SSEClient(settings, {}); }).toThrow(Error);
   expect(() => { new SSEClient(settings, { getEventSource: () => undefined }); }).toThrow(Error);
 });
 
-test('SSClient / instance creation success if EventSource is provided', () => {
+test('SSEClient / instance creation success if EventSource is provided', () => {
   const instance = new SSEClient(settings, { getEventSource: () => EventSourceMock });
   expect(instance.eventSource).toBe(EventSourceMock);
 });
 
-test('SSClient / setEventHandler, open and close methods', () => {
+test('SSEClient / setEventHandler, open and close methods', () => {
   // instance event handler
   const handler = {
     handleOpen: jest.fn(),
@@ -83,7 +83,7 @@ test('SSClient / setEventHandler, open and close methods', () => {
 
 });
 
-describe('SSClient / open method on client-side', () => {
+describe('SSEClient / open method on client-side', () => {
 
   test('metadata as query params', () => {
 
@@ -123,7 +123,7 @@ describe('SSClient / open method on client-side', () => {
 
 });
 
-describe('SSClient / open method on server-side', () => {
+describe('SSEClient / open method on server-side', () => {
 
   test('metadata as headers', () => {
 

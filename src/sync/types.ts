@@ -44,5 +44,5 @@ export interface ISyncManager extends ITask {
 }
 
 export interface ISyncManagerCS extends ISyncManager {
-  shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): ISyncManager | undefined
+  shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync): Pick<ISyncManager, 'stop' | 'flush'> | undefined
 }

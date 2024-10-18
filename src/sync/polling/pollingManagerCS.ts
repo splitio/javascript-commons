@@ -29,13 +29,13 @@ export function pollingManagerCSFactory(
   const mySegmentsSyncTask = add(matchingKey, readiness, storage);
 
   function startMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
       mySegmentsSyncTask.start();
     });
   }
 
   function stopMySegmentsSyncTasks() {
-    forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+    forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
       if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
     });
   }
@@ -55,7 +55,7 @@ export function pollingManagerCSFactory(
   });
 
   function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
-    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMySegments, storage, readiness, settings, matchingKey);
+    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
     // smart ready
     function smartReady() {
@@ -94,7 +94,7 @@ export function pollingManagerCSFactory(
     // fetch splits and segments
     syncAll() {
       const promises = [splitsSyncTask.execute()];
-      forOwn(mySegmentsSyncTasks, function (mySegmentsSyncTask) {
+      forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
         promises.push(mySegmentsSyncTask.execute());
       });
       return Promise.all(promises);

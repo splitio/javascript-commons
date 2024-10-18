@@ -2,9 +2,8 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { promiseWrapper } from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
-import { IEventEmitter } from '../types';
+import { IEventEmitter, ISettings } from '../types';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
-import { ILogger } from '../logger/types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
@@ -18,10 +17,11 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export function sdkReadinessManagerFactory(
-  log: ILogger,
   EventEmitter: new () => IEventEmitter,
-  readyTimeout = 0,
-  readinessManager = readinessManagerFactory(EventEmitter, readyTimeout)): ISdkReadinessManager {
+  settings: ISettings,
+  readinessManager = readinessManagerFactory(EventEmitter, settings)): ISdkReadinessManager {
+
+  const log = settings.log;
 
   /** Ready callback warning */
   let internalReadyCbCount = 0;
@@ -72,8 +72,8 @@ export function sdkReadinessManagerFactory(
   return {
     readinessManager,
 
-    shared(readyTimeout = 0) {
-      return sdkReadinessManagerFactory(log, EventEmitter, readyTimeout, readinessManager.shared(readyTimeout));
+    shared() {
+      return sdkReadinessManagerFactory(EventEmitter, settings, readinessManager.shared());
     },
 
     incInternalReadyCbCount() {

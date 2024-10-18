@@ -12,6 +12,8 @@ export interface ISplitsEventEmitter extends IEventEmitter {
   once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   splitsArrived: boolean
   splitsCacheLoaded: boolean
+  initialized: boolean,
+  initCallbacks: (() => void)[]
 }
 
 /** Segments data emitter */
@@ -59,9 +61,10 @@ export interface IReadinessManager {
   timeout(): void,
   setDestroyed(): void,
   destroy(): void,
+  init(): void,
 
   /** for client-side */
-  shared(readyTimeout?: number): IReadinessManager,
+  shared(): IReadinessManager,
 }
 
 /** SDK readiness manager */
@@ -77,5 +80,5 @@ export interface ISdkReadinessManager {
   incInternalReadyCbCount(): void
 
   /** for client-side */
-  shared(readyTimeout?: number): ISdkReadinessManager
+  shared(): ISdkReadinessManager
 }

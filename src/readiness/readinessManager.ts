@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter } from '../types';
+import { IEventEmitter, ISettings } from '../types';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
@@ -7,10 +7,12 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
+    initialized: false,
+    initCallbacks: []
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
-  // - `/mySegments` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
+  // - `/memberships` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
   splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });
@@ -33,8 +35,10 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  */
 export function readinessManagerFactory(
   EventEmitter: new () => IEventEmitter,
-  readyTimeout = 0,
+  settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
+
+  const readyTimeout = settings.startup.readyTimeout;
 
   const segments: ISegmentsEventEmitter = segmentsEventEmitterFactory(EventEmitter);
   const gate: IReadinessEventEmitter = new EventEmitter();
@@ -54,8 +58,8 @@ export function readinessManagerFactory(
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
 
-  function timeout() {
-    if (hasTimedout) return;
+  function timeout() { // eslint-disable-next-line no-use-before-define
+    if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
@@ -63,7 +67,8 @@ export function readinessManagerFactory(
 
   let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(timeout, readyTimeout);
+    if (splits.initialized) readyTimeoutId = setTimeout(timeout, readyTimeout);
+    else splits.initCallbacks.push(() => { readyTimeoutId = setTimeout(timeout, readyTimeout); });
   }
 
   // emit SDK_READY and SDK_UPDATE
@@ -118,9 +123,9 @@ export function readinessManagerFactory(
     segments,
     gate,
 
-    shared(readyTimeout = 0) {
+    shared() {
       refCount++;
-      return readinessManagerFactory(EventEmitter, readyTimeout, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits);
     },
 
     // @TODO review/remove next methods when non-recoverable errors are reworked
@@ -129,6 +134,12 @@ export function readinessManagerFactory(
     // Called on 403 error (client-side SDK key on server-side), to set the SDK as destroyed for
     // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
     setDestroyed() { isDestroyed = true; },
+
+    init() {
+      if (splits.initialized) return;
+      splits.initialized = true;
+      splits.initCallbacks.forEach(cb => cb());
+    },
 
     destroy() {
       isDestroyed = true;

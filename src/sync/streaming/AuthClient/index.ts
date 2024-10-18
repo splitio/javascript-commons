@@ -14,7 +14,7 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
 
   /**
    * Run authentication requests to Auth Server, and returns a promise that resolves with the decoded JTW token.
-   * @param {string[] | undefined} userKeys set of user Keys to track MY_SEGMENTS_CHANGES. It is undefined for server-side API.
+   * @param {string[] | undefined} userKeys set of user Keys to track membership updates. It is undefined for server-side API.
    */
   return function authenticate(userKeys?: string[]): Promise<IAuthToken> {
     return fetchAuth(userKeys)

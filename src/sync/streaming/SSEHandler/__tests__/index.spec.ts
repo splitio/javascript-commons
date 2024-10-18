@@ -1,20 +1,23 @@
 // @ts-nocheck
 import { SSEHandlerFactory } from '..';
-import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, MY_SEGMENTS_UPDATE, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MY_SEGMENTS_UPDATE_V2, ControlType } from '../../constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, ControlType } from '../../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
 import splitUpdateMessage from '../../../../__tests__/mocks/message.SPLIT_UPDATE.1457552620999.json';
 import splitKillMessage from '../../../../__tests__/mocks/message.SPLIT_KILL.1457552650000.json';
 import segmentUpdateMessage from '../../../../__tests__/mocks/message.SEGMENT_UPDATE.1457552640000.json';
-import mySegmentsUpdateMessage from '../../../../__tests__/mocks/message.MY_SEGMENTS_UPDATE.nicolas@split.io.1457552640000.json';
 
-// update messages MY_SEGMENTS_UPDATE_V2
-import unboundedMessage from '../../../../__tests__/mocks/message.V2.UNBOUNDED.1457552650000.json';
-import boundedGzipMessage from '../../../../__tests__/mocks/message.V2.BOUNDED.GZIP.1457552651000.json';
-import keylistGzipMessage from '../../../../__tests__/mocks/message.V2.KEYLIST.GZIP.1457552652000.json';
-import segmentRemovalMessage from '../../../../__tests__/mocks/message.V2.SEGMENT_REMOVAL.1457552653000.json';
+// update messages MEMBERSHIPS_MS_UPDATE
+import unboundedMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_MS_UPDATE.UNBOUNDED.1457552650000.json';
+import boundedGzipMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_MS_UPDATE.BOUNDED.GZIP.1457552651000.json';
+import keylistGzipMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_MS_UPDATE.KEYLIST.GZIP.1457552652000.json';
+import segmentRemovalMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_MS_UPDATE.SEGMENT_REMOVAL.1457552653000.json';
 import { keylists, bitmaps } from '../../__tests__/dataMocks';
+
+// update messages MEMBERSHIPS_LS_UPDATE
+import largeSegmentUnboundedMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_LS_UPDATE.UNBOUNDED.1457552650000.json';
+import largeSegmentRemovalMessage from '../../../../__tests__/mocks/message.MEMBERSHIPS_LS_UPDATE.SEGMENT_REMOVAL.1457552653000.json';
 
 // occupancy messages
 import occupancy1ControlPri from '../../../../__tests__/mocks/message.OCCUPANCY.1.control_pri.1586987434450.json';
@@ -149,25 +152,29 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   sseHandler.handleMessage(segmentUpdateMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SEGMENT_UPDATE, ...expectedParams); // must emit SEGMENT_UPDATE with the message change number and segment name
 
-  expectedParams = [{ type: MY_SEGMENTS_UPDATE, changeNumber: 1457552640000, includesPayload: false }, 'NzM2MDI5Mzc0_NDEzMjQ1MzA0Nw==_NTcwOTc3MDQx_mySegments'];
-  sseHandler.handleMessage(mySegmentsUpdateMessage);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE, ...expectedParams); // must emit MY_SEGMENTS_UPDATE with the message parsed data and channel
-
-  expectedParams = [{ type: 'MY_SEGMENTS_UPDATE_V2', changeNumber: 1457552650000, c: 0, d: '', u: 0, segmentName: '' }];
+  expectedParams = [{ type: 'MEMBERSHIPS_MS_UPDATE', cn: 1457552650000, c: 0, d: '', u: 0, l: [] }];
   sseHandler.handleMessage(unboundedMessage);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_MS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_MS_UPDATE with the message parsed data
 
-  expectedParams = [{ type: 'MY_SEGMENTS_UPDATE_V2', changeNumber: 1457552651000, c: 1, d: bitmaps[0].bitmapDataCompressed, u: 1, segmentName: '' }];
+  expectedParams = [{ type: 'MEMBERSHIPS_MS_UPDATE', cn: 1457552651000, c: 1, d: bitmaps[0].bitmapDataCompressed, u: 1, l: [] }];
   sseHandler.handleMessage(boundedGzipMessage);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_MS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_MS_UPDATE with the message parsed data
 
-  expectedParams = [{ type: 'MY_SEGMENTS_UPDATE_V2', changeNumber: 1457552652000, c: 1, d: keylists[0].keyListDataCompressed, u: 2, segmentName: 'splitters' }];
+  expectedParams = [{ type: 'MEMBERSHIPS_MS_UPDATE', cn: 1457552652000, c: 1, d: keylists[0].keyListDataCompressed, u: 2, l: ['splitters'] }];
   sseHandler.handleMessage(keylistGzipMessage);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_MS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_MS_UPDATE with the message parsed data
 
-  expectedParams = [{ type: 'MY_SEGMENTS_UPDATE_V2', changeNumber: 1457552653000, c: 0, d: '', u: 3, segmentName: 'splitters' }];
+  expectedParams = [{ type: 'MEMBERSHIPS_MS_UPDATE', cn: 1457552653000, c: 0, d: '', u: 3, l: ['splitters'] }];
   sseHandler.handleMessage(segmentRemovalMessage);
-  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MY_SEGMENTS_UPDATE_V2, ...expectedParams); // must emit MY_SEGMENTS_UPDATE_V2 with the message parsed data
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_MS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_MS_UPDATE with the message parsed data
+
+  expectedParams = [{ type: 'MEMBERSHIPS_LS_UPDATE', cn: 1457552650000, c: 0, d: '', u: 0, l: [], i: 300, h: 1, s: 0 }];
+  sseHandler.handleMessage(largeSegmentUnboundedMessage);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_LS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_LS_UPDATE with the message parsed data
+
+  expectedParams = [{ type: 'MEMBERSHIPS_LS_UPDATE', cn: 1457552653000, c: 0, d: '', u: 3, l: ['employees'] }];
+  sseHandler.handleMessage(largeSegmentRemovalMessage);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(MEMBERSHIPS_LS_UPDATE, ...expectedParams); // must emit MEMBERSHIPS_LS_UPDATE with the message parsed data
 
   sseHandler.handleMessage(streamingReset);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(ControlType.STREAMING_RESET); // must emit STREAMING_RESET

@@ -50,6 +50,6 @@ export function dataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoa
         return Array.isArray(userIds) && userIds.indexOf(userId) > -1;
       });
     }
-    storage.segments.resetSegments(mySegmentsData);
+    storage.segments.resetSegments({ k: mySegmentsData.map(s => ({ n: s })) });
   };
 }

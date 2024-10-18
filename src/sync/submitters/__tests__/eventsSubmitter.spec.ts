@@ -31,7 +31,7 @@ describe('Events submitter', () => {
 
     eventsSubmitter.start();
     expect(eventsSubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
-    expect(eventsSubmitter.isExecuting()).toEqual(false); // but not executed immediatelly if there is a push window
+    expect(eventsSubmitter.isExecuting()).toEqual(false); // but not executed immediately if there is a push window
     expect(eventsCacheMock.isEmpty).not.toBeCalled();
 
     // If queue is full, submitter should be executed
@@ -55,7 +55,7 @@ describe('Events submitter', () => {
 
     eventsSubmitter.start();
     expect(eventsSubmitter.isRunning()).toEqual(true); // Submitter should be flagged as running
-    expect(eventsSubmitter.isExecuting()).toEqual(true); // and executes immediatelly if there isn't a push window
+    expect(eventsSubmitter.isExecuting()).toEqual(true); // and executes immediately if there isn't a push window
     expect(eventsCacheMock.isEmpty).toBeCalledTimes(1);
 
     // If queue is full, submitter is executed again after current execution is resolved

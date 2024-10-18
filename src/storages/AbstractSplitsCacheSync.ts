@@ -2,7 +2,7 @@ import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ISet } from '../utils/lang/sets';
-import { IN_SEGMENT } from '../utils/constants';
+import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheSync interface
@@ -32,7 +32,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     return splits;
   }
 
-  abstract setChangeNumber(changeNumber: number): boolean
+  abstract setChangeNumber(changeNumber: number): boolean | void
 
   abstract getChangeNumber(): number
 
@@ -94,7 +94,8 @@ export function usesSegments(split: ISplit) {
     const matchers = conditions[i].matcherGroup.matchers;
 
     for (let j = 0; j < matchers.length; j++) {
-      if (matchers[j].matcherType === IN_SEGMENT) return true;
+      const matcher = matchers[j].matcherType;
+      if (matcher === IN_SEGMENT || matcher === IN_LARGE_SEGMENT) return true;
     }
   }
 
