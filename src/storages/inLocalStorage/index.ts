@@ -12,7 +12,7 @@ import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
@@ -36,7 +36,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       return InMemoryStorageCSFactory(params);
     }
 
-    const { onReadyFromCacheCb, settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
+    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
@@ -54,12 +54,6 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
-
-      init() {
-        if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
-          Promise.resolve().then(onReadyFromCacheCb);
-        }
-      },
 
       destroy() {
         this.splits = new SplitsCacheInMemory(__splitFiltersValidation);

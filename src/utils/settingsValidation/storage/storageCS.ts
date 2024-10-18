@@ -3,6 +3,14 @@ import { ISettings, SDKMode } from '../../../types';
 import { ILogger } from '../../../logger/types';
 import { ERROR_STORAGE_INVALID } from '../../../logger/constants';
 import { LOCALHOST_MODE, STANDALONE_MODE, STORAGE_PLUGGABLE, STORAGE_LOCALSTORAGE, STORAGE_MEMORY } from '../../../utils/constants';
+import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
+
+export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSync {
+  const result = InMemoryStorageCSFactory(params);
+  result.splits.checkCache = () => true; // to emit SDK_READY_FROM_CACHE
+  return result;
+}
+__InLocalStorageMockFactory.type = STORAGE_MEMORY;
 
 /**
  * This function validates `settings.storage` object
@@ -20,6 +28,11 @@ export function validateStorageCS(settings: { log: ILogger, storage?: any, mode:
   if (typeof storage !== 'function' || [STORAGE_MEMORY, STORAGE_LOCALSTORAGE, STORAGE_PLUGGABLE].indexOf(storage.type) === -1) {
     storage = InMemoryStorageCSFactory;
     log.error(ERROR_STORAGE_INVALID);
+  }
+
+  // In localhost mode with InLocalStorage, fallback to a mock InLocalStorage to emit SDK_READY_FROM_CACHE
+  if (mode === LOCALHOST_MODE && storage.type === STORAGE_LOCALSTORAGE) {
+    return __InLocalStorageMockFactory;
   }
 
   if ([LOCALHOST_MODE, STANDALONE_MODE].indexOf(mode) === -1) {

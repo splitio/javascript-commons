@@ -49,6 +49,14 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
   abstract clear(): void
 
   /**
+   * Check if the splits information is already stored in cache. This data can be preloaded.
+   * It is used as condition to emit SDK_SPLITS_CACHE_LOADED, and then SDK_READY_FROM_CACHE.
+   */
+  checkCache(): boolean {
+    return false;
+  }
+
+  /**
    * Kill `name` split and set `defaultTreatment` and `changeNumber`.
    * Used for SPLIT_KILL push notifications.
    *
