@@ -99,7 +99,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
     validateAndTrackApiKey(log, settings.core.authorizationKey);
     readiness.init();
-    storage.init && storage.init();
     uniqueKeysTracker && uniqueKeysTracker.start();
     syncManager && syncManager.start();
     signalListener && signalListener.start();

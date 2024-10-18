@@ -20,7 +20,7 @@ const DEFAULT_OPTIONS = {
 const DEFAULT_LIBRARY_OPTIONS = {
   enableOfflineQueue: false,
   connectTimeout: DEFAULT_OPTIONS.connectionTimeout,
-  lazyConnect: false // @TODO true to avoid side-effects on instantiation.
+  lazyConnect: false
 };
 
 interface IRedisCommand {
