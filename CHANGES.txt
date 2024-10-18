@@ -1,7 +1,6 @@
 2.0.0 (October XX, 2024)
  - Added support for targeting rules based on large segments.
  - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.
- - Updated internal storage factory to emit the SDK_READY_FROM_CACHE event when it corresponds, to clean up the initialization flow.
  - Updated the handling of timers and async operations by moving them into an `init` factory method to enable lazy initialization of the SDK. This update is intended for the React SDK.
  - Bugfixing - Fixed an issue with the server-side polling manager that caused dangling timers when the SDK was destroyed before it was ready.
  - BREAKING CHANGES:
