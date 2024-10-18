@@ -1,7 +1,7 @@
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
@@ -12,7 +12,7 @@ import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
@@ -36,16 +36,16 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       return InMemoryStorageCSFactory(params);
     }
 
-    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
+    const { onReadyFromCacheCb, settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
-    const segments = new MySegmentsCacheInLocal(log, keys);
-    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
+    const splits: ISplitsCacheSync = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const segments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, keys);
+    const largeSegments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
-    return {
+    const storage = {
       splits,
       segments,
       largeSegments,
@@ -54,6 +54,12 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
+
+      init() {
+        if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
+          Promise.resolve().then(onReadyFromCacheCb);
+        }
+      },
 
       destroy() {
         this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
@@ -85,6 +91,18 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
         };
       },
     };
+
+    // @TODO revisit storage logic in localhost mode
+    // No tracking data in localhost mode to avoid memory leaks
+    if (params.settings.mode === LOCALHOST_MODE) {
+      const noopTrack = () => true;
+      storage.impressions.track = noopTrack;
+      storage.events.track = noopTrack;
+      if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
+      if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+    }
+
+    return storage;
   }
 
   InLocalStorageCSFactory.type = STORAGE_LOCALSTORAGE;
