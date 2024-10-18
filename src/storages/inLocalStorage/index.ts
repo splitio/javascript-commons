@@ -36,7 +36,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       return InMemoryStorageCSFactory(params);
     }
 
-    const { onReadyFromCacheCb, settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
+    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
@@ -44,10 +44,6 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const splits: ISplitsCacheSync = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
     const segments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, keys);
     const largeSegments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
-
-    if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
-      Promise.resolve().then(onReadyFromCacheCb);
-    }
 
     const storage = {
       splits,

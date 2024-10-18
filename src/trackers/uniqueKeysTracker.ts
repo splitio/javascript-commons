@@ -25,10 +25,6 @@ export function uniqueKeysTrackerFactory(
 ): IUniqueKeysTracker {
   let intervalId: any;
 
-  if (filterAdapter.refreshRate) {
-    intervalId = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
-  }
-
   return {
 
     track(key: string, featureName: string): void {
@@ -37,6 +33,12 @@ export function uniqueKeysTrackerFactory(
         return;
       }
       uniqueKeysCache.track(key, featureName);
+    },
+
+    start(): void {
+      if (filterAdapter.refreshRate) {
+        intervalId = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
+      }
     },
 
     stop(): void {

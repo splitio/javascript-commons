@@ -29,6 +29,14 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   }
 
   /**
+   * Check if the splits information is already stored in cache.
+   * Noop, just keeping the interface. This is used by client-side implementations only.
+   */
+  checkCache(): Promise<boolean> {
+    return Promise.resolve(false);
+  }
+
+  /**
    * Kill `name` split and set `defaultTreatment` and `changeNumber`.
    * Used for SPLIT_KILL push notifications.
    *

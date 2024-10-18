@@ -208,6 +208,8 @@ export interface ISplitsCacheBase {
   // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === -1) or contains a FF using segments or large segments
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
+  // should never reject or throw an exception. Instead return false by default, to avoid emitting SDK_READY_FROM_CACHE.
+  checkCache(): MaybeThenable<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
   getNamesByFlagSets(flagSets: string[]): MaybeThenable<ISet<string>[]>
 }
@@ -224,6 +226,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   trafficTypeExists(trafficType: string): boolean,
   usesSegments(): boolean,
   clear(): void,
+  checkCache(): boolean,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
   getNamesByFlagSets(flagSets: string[]): ISet<string>[]
 }
@@ -240,6 +243,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   trafficTypeExists(trafficType: string): Promise<boolean>,
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
+  checkCache(): Promise<boolean>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
   getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
 }
@@ -247,38 +251,32 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
 /** Segments cache */
 
 export interface ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
-  removeFromSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
   registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
-  setChangeNumber(name: string, changeNumber: number): MaybeThenable<boolean | void> // only for Server-Side
   getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): MaybeThenable<boolean> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
 }
 
 // Same API for both variants: SegmentsCache and MySegmentsCache (client-side API)
 export interface ISegmentsCacheSync extends ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys?: string[]): boolean
-  removeFromSegment(name: string, segmentKeys?: string[]): boolean
   isInSegment(name: string, key?: string): boolean
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  setChangeNumber(name: string, changeNumber: number): boolean | void
   getChangeNumber(name?: string): number
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): boolean // only for Server-Side
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
 }
 
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
-  removeFromSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
-  setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
   getChangeNumber(name: string): Promise<number>
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): Promise<boolean>
   clear(): Promise<boolean | void>
 }
 
@@ -500,7 +498,6 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
-  onReadyFromCacheCb: (error?: any) => void,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';

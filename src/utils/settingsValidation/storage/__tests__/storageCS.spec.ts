@@ -1,4 +1,4 @@
-import { validateStorageCS } from '../storageCS';
+import { validateStorageCS, __InLocalStorageMockFactory } from '../storageCS';
 import { InMemoryStorageCSFactory } from '../../../../storages/inMemory/InMemoryStorageCS';
 import { loggerMock as log } from '../../../../logger/__tests__/sdkLogger.mock';
 
@@ -29,6 +29,11 @@ describe('storage validator for pluggable storage (client-side)', () => {
 
   test('returns the provided storage factory if it is valid', () => {
     expect(validateStorageCS({ log, mode: 'standalone', storage: mockInLocalStorageFactory })).toBe(mockInLocalStorageFactory);
+    expect(log.error).not.toBeCalled();
+  });
+
+  test('fallbacks to mock InLocalStorage storage if the storage is InLocalStorage and the mode localhost', () => {
+    expect(validateStorageCS({ log, mode: 'localhost', storage: mockInLocalStorageFactory })).toBe(__InLocalStorageMockFactory);
     expect(log.error).not.toBeCalled();
   });
 
