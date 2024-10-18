@@ -1,11 +1,11 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
-import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
 import type { RedisAdapter } from './RedisAdapter';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 

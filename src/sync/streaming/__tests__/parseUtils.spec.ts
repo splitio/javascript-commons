@@ -2,7 +2,6 @@ import { hash64 } from '../../../utils/murmur3/murmur3_64';
 import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
 import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload, getDelay } from '../parseUtils';
-import { _Set } from '../../../utils/lang/sets';
 
 test('parseKeyList', () => {
   keylists.forEach(keylist => {
@@ -10,8 +9,8 @@ test('parseKeyList', () => {
 
     expect(parseKeyList(keyListDataCompressed, compression)).toEqual(keyListData); // decompress KeyList
 
-    const added = new _Set(keyListData.a);
-    const removed = new _Set(keyListData.r);
+    const added = new Set(keyListData.a);
+    const removed = new Set(keyListData.r);
 
     addedUserKeys.forEach(userKey => {
       const hash = hash64(userKey);

@@ -1,6 +1,6 @@
 import { IPluggableStorageWrapper } from '../types';
 import { startsWith, toNumber } from '../../utils/lang';
-import { ISet, setToArray, _Set } from '../../utils/lang/sets';
+import { setToArray } from '../../utils/lang/sets';
 
 /**
  * Creates a IPluggableStorageWrapper implementation that stores items in memory.
@@ -9,9 +9,9 @@ import { ISet, setToArray, _Set } from '../../utils/lang/sets';
  *
  * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
  */
-export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | ISet<string>>, _setConnDelay(connDelay: number): void } {
+export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | Set<string>>, _setConnDelay(connDelay: number): void } {
 
-  let _cache: Record<string, string | string[] | ISet<string>> = {};
+  let _cache: Record<string, string | string[] | Set<string>> = {};
   let _connDelay = connDelay;
 
   return {
@@ -84,22 +84,22 @@ export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWra
     itemContains(key: string, item: string) {
       const set = _cache[key];
       if (!set) return Promise.resolve(false);
-      if (set instanceof _Set) return Promise.resolve(set.has(item));
+      if (set instanceof Set) return Promise.resolve(set.has(item));
       return Promise.reject('key is not a set');
     },
     addItems(key: string, items: string[]) {
-      if (!(key in _cache)) _cache[key] = new _Set();
+      if (!(key in _cache)) _cache[key] = new Set();
       const set = _cache[key];
-      if (set instanceof _Set) {
+      if (set instanceof Set) {
         items.forEach(item => set.add(item));
         return Promise.resolve();
       }
       return Promise.reject('key is not a set');
     },
     removeItems(key: string, items: string[]) {
-      if (!(key in _cache)) _cache[key] = new _Set();
+      if (!(key in _cache)) _cache[key] = new Set();
       const set = _cache[key];
-      if (set instanceof _Set) {
+      if (set instanceof Set) {
         items.forEach(item => set.delete(item));
         return Promise.resolve();
       }
@@ -108,7 +108,7 @@ export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWra
     getItems(key: string) {
       const set = _cache[key];
       if (!set) return Promise.resolve([]);
-      if (set instanceof _Set) return Promise.resolve(setToArray(set));
+      if (set instanceof Set) return Promise.resolve(setToArray(set));
       return Promise.reject('key is not a set');
     },
 
