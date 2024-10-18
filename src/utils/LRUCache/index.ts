@@ -1,14 +1,13 @@
-import { IMap, _Map } from '../lang/maps';
 import { LinkedList, Node } from './LinkedList';
 
 export class LRUCache<K, V> {
   maxLen: number;
-  items: IMap<K, Node<{ key: K, value: V }>>;
+  items: Map<K, Node<{ key: K, value: V }>>;
   lru: LinkedList<{ key: K, value: V }>;
 
   constructor(maxSize?: number) {
     this.maxLen = maxSize || 1;
-    this.items = new _Map();
+    this.items = new Map();
     this.lru = new LinkedList();
   }
 

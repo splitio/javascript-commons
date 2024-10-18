@@ -4,7 +4,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set, returnDifference } from '../../utils/lang/sets';
+import { returnDifference } from '../../utils/lang/sets';
 import type { RedisAdapter } from './RedisAdapter';
 
 /**
@@ -215,14 +215,14 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of feature flag names per flag set,
    * or rejected if the pipelined redis operation fails (e.g., timeout).
   */
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
+  getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
       .then((results) => results.map(([e, value], index) => {
         if (e === null) return value;
 
         this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
       }))
-      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
+      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new Set(namesByFlagSet)));
   }
 
   /**
