@@ -251,38 +251,32 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
 /** Segments cache */
 
 export interface ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
-  removeFromSegment(name: string, segmentKeys: string[]): MaybeThenable<boolean | void> // different signature on Server and Client-Side
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
   registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
-  setChangeNumber(name: string, changeNumber: number): MaybeThenable<boolean | void> // only for Server-Side
   getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): MaybeThenable<boolean> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
 }
 
 // Same API for both variants: SegmentsCache and MySegmentsCache (client-side API)
 export interface ISegmentsCacheSync extends ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys?: string[]): boolean
-  removeFromSegment(name: string, segmentKeys?: string[]): boolean
   isInSegment(name: string, key?: string): boolean
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  setChangeNumber(name: string, changeNumber: number): boolean | void
   getChangeNumber(name?: string): number
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): boolean // only for Server-Side
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
 }
 
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
-  addToSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
-  removeFromSegment(name: string, segmentKeys: string[]): Promise<boolean | void>
   isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
-  setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
   getChangeNumber(name: string): Promise<number>
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): Promise<boolean>
   clear(): Promise<boolean | void>
 }
 
