@@ -3,6 +3,7 @@ import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { thenable } from '../../utils/promise/thenable';
 import { timeout } from '../../utils/promise/timeout';
+import { setToArray } from '../../utils/lang/sets';
 
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
@@ -149,7 +150,7 @@ export class RedisAdapter extends ioredis {
         if (instance._runningCommands.size > 0) {
           instance.log.info(LOG_PREFIX + `Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
 
-          Promise.all(Array.from(instance._runningCommands))
+          Promise.all(setToArray(instance._runningCommands))
             .then(() => {
               instance.log.debug(LOG_PREFIX + 'Pending commands finished successfully, disconnecting.');
               originalMethod.apply(instance, params);

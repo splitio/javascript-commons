@@ -5,6 +5,7 @@ import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
 import type { RedisAdapter } from './RedisAdapter';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -28,7 +29,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     if (!featureNames.length) return Promise.resolve(false);
 
     const uniqueKeysArray = featureNames.map((featureName) => {
-      const featureKeys = Array.from(this.uniqueKeysTracker[featureName]);
+      const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys

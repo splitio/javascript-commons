@@ -8,6 +8,7 @@ import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_SEGMENT } from '../../../utils/constants';
+import { setToArray } from '../../../utils/lang/sets';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
@@ -88,7 +89,7 @@ export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersV
     return accum;
   }, { added: [], removed: [], segments: [] } as ISplitMutations);
 
-  computed.segments = Array.from(segments);
+  computed.segments = setToArray(segments);
 
   return computed;
 }

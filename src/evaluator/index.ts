@@ -7,7 +7,7 @@ import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import { SplitIO } from '../types';
 import { ILogger } from '../logger/types';
-import { returnSetsUnion } from '../utils/lang/sets';
+import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
 const treatmentException = {
@@ -113,7 +113,7 @@ export function evaluateFeaturesByFlagSets(
     }
 
     return featureFlags.size ?
-      evaluateFeatures(log, key, Array.from(featureFlags), attributes, storage) :
+      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage) :
       {};
   }
 
