@@ -1,7 +1,7 @@
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
@@ -41,15 +41,15 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
-    const segments = new MySegmentsCacheInLocal(log, keys);
-    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
+    const splits: ISplitsCacheSync = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const segments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, keys);
+    const largeSegments: ISegmentsCacheSync = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
     if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
       Promise.resolve().then(onReadyFromCacheCb);
     }
 
-    return {
+    const storage = {
       splits,
       segments,
       largeSegments,
@@ -70,7 +70,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       },
 
       // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).
-      shared(matchingKey: string) {
+      shared(matchingKey: string): IStorageSync {
 
         return {
           splits: this.splits,
@@ -89,6 +89,18 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
         };
       },
     };
+
+    // @TODO revisit storage logic in localhost mode
+    // No tracking data in localhost mode to avoid memory leaks
+    if (params.settings.mode === LOCALHOST_MODE) {
+      const noopTrack = () => true;
+      storage.impressions.track = noopTrack;
+      storage.events.track = noopTrack;
+      if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
+      if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+    }
+
+    return storage;
   }
 
   InLocalStorageCSFactory.type = STORAGE_LOCALSTORAGE;
