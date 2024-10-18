@@ -71,7 +71,6 @@ export interface ISettings {
   readonly core: {
     authorizationKey: string,
     key: SplitIO.SplitKey,
-    trafficType?: string,
     labelsEnabled: boolean,
     IPAddressesEnabled: boolean
   },
@@ -925,12 +924,6 @@ export namespace SplitIO {
        */
       key: SplitKey,
       /**
-       * Traffic type associated with the customer identifier. @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
-       * If no provided as a setting it will be required on the client.track() calls.
-       * @property {string} trafficType
-       */
-      trafficType?: string,
-      /**
        * Disable labels from being sent to Split backend. Labels may contain sensitive information.
        * @property {boolean} labelsEnabled
        * @default true
@@ -1038,10 +1031,9 @@ export namespace SplitIO {
      * Returns a shared client of the SDK, with the given key and optional traffic type.
      * @function client
      * @param {SplitKey} key The key for the new client instance.
-     * @param {string=} trafficType The traffic type of the provided key.
      * @returns {ICsClient} The client instance.
      */
-    client(key: SplitKey, trafficType?: string): ICsClient,
+    client(key: SplitKey): ICsClient,
     /**
      * Returns a manager instance of the SDK to explore available information.
      * @function manager

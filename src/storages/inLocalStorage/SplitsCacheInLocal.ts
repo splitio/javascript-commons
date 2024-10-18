@@ -4,9 +4,9 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISet, _Set, setToArray } from '../../utils/lang/sets';
 import { ISettings } from '../../types';
 import { getStorageHash } from '../KeyBuilder';
+import { setToArray } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -218,6 +218,15 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   /**
+   * Check if the splits information is already stored in browser LocalStorage.
+   * In this function we could add more code to check if the data is valid.
+   * @override
+   */
+  checkCache(): boolean {
+    return this.getChangeNumber() > -1;
+  }
+
+  /**
    * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
    *
    * @param {number | undefined} expirationTimestamp if the value is not a number, data will not be cleaned
@@ -241,7 +250,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
         this.updateNewFilter = true;
 
         // if there is cache, clear it
-        if (this.getChangeNumber() > -1) this.clear();
+        if (this.checkCache()) this.clear();
 
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
@@ -250,12 +259,12 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     // if the filter didn't change, nothing is done
   }
 
-  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
+  getNamesByFlagSets(flagSets: string[]): Set<string>[] {
     return flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
       const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      return new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
+      return new Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
     });
   }
 
@@ -270,7 +279,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
+      const flagSetCache = new Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
       flagSetCache.add(featureFlag.name);
 
       localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
@@ -292,7 +301,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     if (!flagSetFromLocalStorage) return;
 
-    const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+    const flagSetCache = new Set(JSON.parse(flagSetFromLocalStorage));
     flagSetCache.delete(featureFlagName);
 
     if (flagSetCache.size === 0) {

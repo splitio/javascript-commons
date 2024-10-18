@@ -1,8 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { _Set } from '../utils/lang/sets';
 import { ISettings } from '../types';
 
-const FORBIDDEN_HEADERS = new _Set([
+const FORBIDDEN_HEADERS = new Set([
   'splitsdkclientkey',
   'splitsdkversion',
   'splitsdkmachineip',

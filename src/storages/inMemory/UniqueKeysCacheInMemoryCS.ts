@@ -1,14 +1,14 @@
 import { IUniqueKeysCacheBase } from '../types';
-import { ISet, setToArray, _Set } from '../../utils/lang/sets';
 import { UniqueKeysPayloadCs } from '../../sync/submitters/types';
 import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
 
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
-  private uniqueKeysTracker: { [userKey: string]: ISet<string> } = {};
+  private uniqueKeysTracker: { [userKey: string]: Set<string> } = {};
 
   /**
    *
@@ -28,7 +28,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
    */
   track(userKey: string, featureName: string) {
 
-    if (!this.uniqueKeysTracker[userKey]) this.uniqueKeysTracker[userKey] = new _Set();
+    if (!this.uniqueKeysTracker[userKey]) this.uniqueKeysTracker[userKey] = new Set();
     const tracker = this.uniqueKeysTracker[userKey];
     if (!tracker.has(featureName)) {
       tracker.add(featureName);
@@ -66,7 +66,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   /**
    * Converts `uniqueKeys` data from cache into request payload.
    */
-  private fromUniqueKeysCollector(uniqueKeys: { [userKey: string]: ISet<string> }): UniqueKeysPayloadCs {
+  private fromUniqueKeysCollector(uniqueKeys: { [userKey: string]: Set<string> }): UniqueKeysPayloadCs {
     const payload = [];
     const userKeys = Object.keys(uniqueKeys);
     for (let k = 0; k < userKeys.length; k++) {

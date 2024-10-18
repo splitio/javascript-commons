@@ -43,7 +43,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.uniqueKeys && this.uniqueKeys.clear();
     },
 
-    // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
+    // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared(matchingKey: string) {
       const segments = new MySegmentsCacheInMemory();
       const largeSegments = new MySegmentsCacheInMemory();
@@ -72,7 +72,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   };
 
   // @TODO revisit storage logic in localhost mode
-  // No tracking data in localhost mode to avoid memory leaks
+  // No tracking in localhost mode to avoid memory leaks: https://github.com/splitio/javascript-commons/issues/181
   if (params.settings.mode === LOCALHOST_MODE) {
     const noopTrack = () => true;
     storage.impressions.track = noopTrack;

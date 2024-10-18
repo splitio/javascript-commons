@@ -1,7 +1,6 @@
 import { ISplitsCacheAsync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ISet } from '../utils/lang/sets';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheAsync interface
@@ -18,7 +17,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   abstract getChangeNumber(): Promise<number>
   abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
-  abstract getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
+  abstract getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
 
@@ -26,6 +25,14 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   // noop, just keeping the interface. This is used by standalone client-side API only, and so only implemented by InMemory and InLocalStorage.
   usesSegments(): Promise<boolean> {
     return Promise.resolve(true);
+  }
+
+  /**
+   * Check if the splits information is already stored in cache.
+   * Noop, just keeping the interface. This is used by client-side implementations only.
+   */
+  checkCache(): Promise<boolean> {
+    return Promise.resolve(false);
   }
 
   /**

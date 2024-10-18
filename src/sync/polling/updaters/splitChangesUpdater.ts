@@ -1,14 +1,14 @@
-import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_SEGMENT } from '../../../utils/constants';
+import { setToArray } from '../../../utils/lang/sets';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
@@ -27,8 +27,8 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Collect segments from a raw split definition.
  * Exported for testing purposes.
  */
-export function parseSegments({ conditions }: ISplit): ISet<string> {
-  let segments = new _Set<string>();
+export function parseSegments({ conditions }: ISplit): Set<string> {
+  let segments = new Set<string>();
 
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
@@ -74,7 +74,7 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
  * Exported for testing purposes.
  */
 export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersValidation): ISplitMutations {
-  const segments = new _Set<string>();
+  const segments = new Set<string>();
   const computed = entries.reduce((accum, split) => {
     if (split.status === 'ACTIVE' && matchFilters(split, filters)) {
       accum.added.push([split.name, split]);
@@ -153,8 +153,7 @@ export function splitChangesUpdaterFactory(
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);
-
-      return Promise.resolve(splitUpdateNotification ?
+      const fetcherPromise = Promise.resolve(splitUpdateNotification ?
         { splits: [splitUpdateNotification.payload], till: splitUpdateNotification.changeNumber } :
         splitChangesFetcher(since, noCache, till, _promiseDecorator)
       )
@@ -201,6 +200,15 @@ export function splitChangesUpdaterFactory(
           }
           return false;
         });
+
+      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
+      // Wrapping in a promise since checkCache can be async.
+      if (splitsEventEmitter && startingUp) {
+        Promise.resolve(splits.checkCache()).then(isCacheReady => {
+          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
+        });
+      }
+      return fetcherPromise;
     }
 
     let sincePromise = Promise.resolve(splits.getChangeNumber()); // `getChangeNumber` never rejects or throws error
