@@ -488,8 +488,6 @@ export interface IStorageAsync extends IStorageBase<
 
 /** StorageFactory */
 
-export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
-
 export interface IStorageFactoryParams {
   settings: ISettings,
   /**
@@ -497,6 +495,10 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
+  /**
+   * It is meant for emitting SDK_READY_FROM_CACHE event in standalone mode with preloaded data
+   */
+  onReadyFromCacheCb: () => void,
 }
 
 export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';

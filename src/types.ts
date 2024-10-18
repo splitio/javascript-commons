@@ -1,4 +1,4 @@
-import { ISplitFiltersValidation } from './dtos/types';
+import { IMembershipsResponse, ISplit, ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 import { ISdkFactoryContext } from './sdkFactory/types';
@@ -97,6 +97,7 @@ export interface ISettings {
     eventsFirstPushWindow: number
   },
   readonly storage: IStorageSyncFactory | IStorageAsyncFactory,
+  readonly preloadedData?: SplitIO.PreloadedData,
   readonly integrations: Array<{
     readonly type: string,
     (params: IIntegrationFactoryParams): IIntegration | void
@@ -770,31 +771,31 @@ export namespace SplitIO {
      * If this value is older than 10 days ago (expiration time policy), the data is not used to update the storage content.
      * @TODO configurable expiration time policy?
      */
-    lastUpdated: number,
+    // lastUpdated: number,
     /**
      * Change number of the preloaded data.
      * If this value is older than the current changeNumber at the storage, the data is not used to update the storage content.
      */
     since: number,
     /**
-     * Map of feature flags to their stringified definitions.
+     * List of feature flag definitions.
+     * @TODO rename to flags
      */
-    splitsData: {
-      [splitName: string]: string
+    splitsData: ISplit[],
+    /**
+     * Optional map of user keys to their memberships.
+     * @TODO rename to memberships
+     */
+    membershipsData?: {
+      [key: string]: IMembershipsResponse
     },
     /**
-     * Optional map of user keys to their list of segments.
-     * @TODO remove when releasing first version
-     */
-    mySegmentsData?: {
-      [key: string]: string[]
-    },
-    /**
-     * Optional map of segments to their stringified definitions.
-     * This property is ignored if `mySegmentsData` was provided.
+     * Optional map of segments to their list of keys.
+     * This property is ignored if `membershipsData` was provided.
+     * @TODO rename to segments
      */
     segmentsData?: {
-      [segmentName: string]: string
+      [segmentName: string]: string[]
     },
   }
   /**
