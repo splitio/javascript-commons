@@ -30,11 +30,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
   // initialization
-  let isInit = false;
+  let hasInit = false;
   const initCallbacks: (() => void)[] = [];
 
   function whenInit(cb: () => void) {
-    if (isInit) cb();
+    if (hasInit) cb();
     else initCallbacks.push(cb);
   }
 
@@ -93,8 +93,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
 
 
   function init() {
-    if (isInit) return;
-    isInit = true;
+    if (hasInit) return;
+    hasInit = true;
 
     // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
     validateAndTrackApiKey(log, settings.core.authorizationKey);
