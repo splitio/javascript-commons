@@ -11,7 +11,7 @@ test('loadData & getSnapshot', () => {
   const serverStorage = InMemoryStorageFactory({ settings: fullSettings });
   serverStorage.splits.setChangeNumber(123); // @ts-expect-error
   serverStorage.splits.addSplits([['split1', { name: 'split1' }]]);
-  serverStorage.segments.addToSegment('segment1', [fullSettings.core.key as string]);
+  serverStorage.segments.update('segment1', [fullSettings.core.key as string], [], 123);
 
   const preloadedData = dataLoader.getSnapshot(serverStorage, [fullSettings.core.key as string]);
 
@@ -25,7 +25,7 @@ test('loadData & getSnapshot', () => {
   expect(preloadedData).toEqual({
     since: 123,
     splitsData: [{ name: 'split1' }],
-    mySegmentsData: { [fullSettings.core.key as string]: ['segment1'] },
+    membershipsData: { [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } } },
     segmentsData: undefined
   });
 });

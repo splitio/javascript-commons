@@ -1,4 +1,4 @@
-import { ISplit, ISplitFiltersValidation } from './dtos/types';
+import { IMembershipsResponse, ISplit, ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
 import { ISdkFactoryContext } from './sdkFactory/types';
@@ -783,15 +783,15 @@ export namespace SplitIO {
      */
     splitsData: ISplit[],
     /**
-     * Optional map of user keys to their list of segments.
+     * Optional map of user keys to their memberships.
      * @TODO rename to memberships
      */
-    mySegmentsData?: {
-      [key: string]: string[]
+    membershipsData?: {
+      [key: string]: IMembershipsResponse
     },
     /**
-     * Optional map of segments to their stringified definitions.
-     * This property is ignored if `mySegmentsData` was provided.
+     * Optional map of segments to their list of keys.
+     * This property is ignored if `membershipsData` was provided.
      * @TODO rename to segments
      */
     segmentsData?: {

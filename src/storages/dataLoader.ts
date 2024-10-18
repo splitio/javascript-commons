@@ -1,7 +1,8 @@
 import { SplitIO } from '../types';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from './types';
-import { setToArray, ISet } from '../utils/lang/sets';
+import { setToArray } from '../utils/lang/sets';
 import { getMatching } from '../utils/key';
+import { IMembershipsResponse, IMySegmentsResponse } from '../dtos/types';
 
 /**
  * Storage-agnostic adaptation of `loadDataIntoLocalStorage` function
@@ -37,19 +38,26 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
   }
 
   if (matchingKey) { // add mySegments data (client-side)
-    let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[matchingKey];
-    if (!mySegmentsData) {
-      // segmentsData in an object where the property is the segment name and the pertaining value is a stringified object that contains the `added` array of userIds
-      mySegmentsData = Object.keys(segmentsData).filter(segmentName => {
-        const matchingKeys = segmentsData[segmentName];
-        return matchingKeys.indexOf(matchingKey) > -1;
-      });
+    let membershipsData = preloadedData.membershipsData && preloadedData.membershipsData[matchingKey];
+    if (!membershipsData && segmentsData) {
+      membershipsData = {
+        ms: {
+          k: Object.keys(segmentsData).filter(segmentName => {
+            const segmentKeys = segmentsData[segmentName];
+            return segmentKeys.indexOf(matchingKey) > -1;
+          }).map(segmentName => ({ n: segmentName }))
+        }
+      };
     }
-    storage.segments.resetSegments({ k: mySegmentsData.map(s => ({ n: s })) });
+    if (membershipsData) {
+      if (membershipsData.ms) storage.segments.resetSegments(membershipsData.ms);
+      if (membershipsData.ls && storage.largeSegments) storage.largeSegments.resetSegments(membershipsData.ls);
+    }
+
   } else { // add segments data (server-side)
-    Object.keys(segmentsData).filter(segmentName => {
-      const matchingKeys = segmentsData[segmentName];
-      storage.segments.addToSegment(segmentName, matchingKeys);
+    Object.keys(segmentsData).forEach(segmentName => {
+      const segmentKeys = segmentsData[segmentName];
+      storage.segments.update(segmentName, segmentKeys, [], -1);
     });
   }
 }
@@ -62,22 +70,43 @@ export function getSnapshot(storage: IStorageSync, userKeys?: SplitIO.SplitKey[]
     segmentsData: userKeys ?
       undefined : // @ts-ignore accessing private prop
       Object.keys(storage.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop
-        prev[cur] = setToArray(storage.segments.segmentCache[cur] as ISet<string>);
+        prev[cur] = setToArray(storage.segments.segmentCache[cur] as Set<string>);
         return prev;
       }, {}),
-    mySegmentsData: userKeys ?
-      userKeys.reduce<Record<string, string[]>>((prev, userKey) => {
-        prev[getMatching(userKey)] = storage.shared ?
+    membershipsData: userKeys ?
+      userKeys.reduce<Record<string, IMembershipsResponse>>((prev, userKey) => {
+        if (storage.shared) {
           // Client-side segments
           // @ts-ignore accessing private prop
-          Object.keys(storage.shared(userKey).segments.segmentCache) :
-          // Server-side segments
-          // @ts-ignore accessing private prop
-          Object.keys(storage.segments.segmentCache).reduce<string[]>((prev, segmentName) => { // @ts-ignore accessing private prop
-            return storage.segments.segmentCache[segmentName].has(userKey) ?
-              prev.concat(segmentName) :
-              prev;
-          }, []);
+          const sharedStorage = storage.shared(userKey);
+          prev[getMatching(userKey)] = {
+            ms: {
+              // @ts-ignore accessing private prop
+              k: Object.keys(sharedStorage.segments.segmentCache).map(segmentName => ({ n: segmentName })),
+              // cn: sharedStorage.segments.getChangeNumber()
+            },
+            ls: sharedStorage.largeSegments ? {
+              // @ts-ignore accessing private prop
+              k: Object.keys(sharedStorage.largeSegments.segmentCache).map(segmentName => ({ n: segmentName })),
+              // cn: sharedStorage.largeSegments.getChangeNumber()
+            } : undefined
+          };
+        } else {
+          prev[getMatching(userKey)] = {
+            ms: {
+              // Server-side segments
+              // @ts-ignore accessing private prop
+              k: Object.keys(storage.segments.segmentCache).reduce<IMySegmentsResponse['k']>((prev, segmentName) => { // @ts-ignore accessing private prop
+                return storage.segments.segmentCache[segmentName].has(userKey) ?
+                  prev!.concat({ n: segmentName }) :
+                  prev;
+              }, [])
+            },
+            ls: {
+              k: []
+            }
+          };
+        }
         return prev;
       }, {}) :
       undefined
