@@ -71,8 +71,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
         this.uniqueKeys?.clear();
       },
 
-      // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).
-      shared(matchingKey: string): IStorageSync {
+      // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
+      shared(matchingKey: string) {
 
         return {
           splits: this.splits,

@@ -1,4 +1,3 @@
-import { _Set, setToArray, ISet } from '../../../utils/lang/sets';
 import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
@@ -9,6 +8,7 @@ import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_SEGMENT } from '../../../utils/constants';
+import { setToArray } from '../../../utils/lang/sets';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
 
@@ -27,8 +27,8 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Collect segments from a raw split definition.
  * Exported for testing purposes.
  */
-export function parseSegments({ conditions }: ISplit): ISet<string> {
-  let segments = new _Set<string>();
+export function parseSegments({ conditions }: ISplit): Set<string> {
+  let segments = new Set<string>();
 
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
@@ -74,7 +74,7 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
  * Exported for testing purposes.
  */
 export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersValidation): ISplitMutations {
-  const segments = new _Set<string>();
+  const segments = new Set<string>();
   const computed = entries.reduce((accum, split) => {
     if (split.status === 'ACTIVE' && matchFilters(split, filters)) {
       accum.added.push([split.name, split]);

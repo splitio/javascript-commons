@@ -1,10 +1,10 @@
 import { IPluggableStorageWrapper, IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
-import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE } from '../inRedis/constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 

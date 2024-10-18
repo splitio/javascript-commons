@@ -1,7 +1,6 @@
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
-import { ISet, _Set } from '../../utils/lang/sets';
 
 /**
  * Default ISplitsCacheSync implementation that stores split definitions in memory.
@@ -13,7 +12,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
   private segmentsCount: number = 0;
-  private flagSetsCache: Record<string, ISet<string>> = {};
+  private flagSetsCache: Record<string, Set<string>> = {};
 
   constructor(splitFiltersValidation?: ISplitFiltersValidation) {
     super();
@@ -103,8 +102,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return this.getChangeNumber() === -1 || this.segmentsCount > 0;
   }
 
-  getNamesByFlagSets(flagSets: string[]): ISet<string>[] {
-    return flagSets.map(flagSet => this.flagSetsCache[flagSet] || new _Set());
+  getNamesByFlagSets(flagSets: string[]): Set<string>[] {
+    return flagSets.map(flagSet => this.flagSetsCache[flagSet] || new Set());
   }
 
   private addToFlagSets(featureFlag: ISplit) {
@@ -113,7 +112,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
       if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
 
-      if (!this.flagSetsCache[featureFlagSet]) this.flagSetsCache[featureFlagSet] = new _Set([]);
+      if (!this.flagSetsCache[featureFlagSet]) this.flagSetsCache[featureFlagSet] = new Set([]);
 
       this.flagSetsCache[featureFlagSet].add(featureFlag.name);
     });

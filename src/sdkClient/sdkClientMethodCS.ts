@@ -35,7 +35,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       return mainClientInstance;
     }
 
-    // Validate the key value. The trafficType (2nd argument) is ignored
+    // Validate the key value
     const validKey = validateKey(log, key, LOG_PREFIX_CLIENT_INSTANTIATION);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');

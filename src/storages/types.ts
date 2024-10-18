@@ -2,7 +2,6 @@ import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { SplitIO, ImpressionDTO, ISettings } from '../types';
-import { ISet } from '../utils/lang/sets';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -209,7 +208,7 @@ export interface ISplitsCacheBase {
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
-  getNamesByFlagSets(flagSets: string[]): MaybeThenable<ISet<string>[]>
+  getNamesByFlagSets(flagSets: string[]): MaybeThenable<Set<string>[]>
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
@@ -225,7 +224,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
   usesSegments(): boolean,
   clear(): void,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
-  getNamesByFlagSets(flagSets: string[]): ISet<string>[]
+  getNamesByFlagSets(flagSets: string[]): Set<string>[]
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
@@ -241,7 +240,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
+  getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
 }
 
 /** Segments cache */
