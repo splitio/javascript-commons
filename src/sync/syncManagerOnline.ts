@@ -164,8 +164,6 @@ export function syncManagerOnlineFactory(
         }
 
         return {
-          isRunning: mySegmentsSyncTask.isRunning,
-
           stop() {
             // check in case `client.destroy()` has been invoked more than once for the same client
             const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);
