@@ -15,7 +15,6 @@ import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, 
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE, STREAMING_PARSING_SPLIT_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseFFUpdatePayload, parseKeyList } from './parseUtils';
-import { ISet, _Set } from '../../utils/lang/sets';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
@@ -254,11 +253,11 @@ export function pushManagerFactory(
         return;
       }
       case UpdateStrategy.KeyList: {
-        let keyList: KeyList, added: ISet<string>, removed: ISet<string>;
+        let keyList: KeyList, added: Set<string>, removed: Set<string>;
         try {
           keyList = parseKeyList(parsedData.d!, parsedData.c!);
-          added = new _Set(keyList.a);
-          removed = new _Set(keyList.r);
+          added = new Set(keyList.a);
+          removed = new Set(keyList.r);
         } catch (e) {
           log.warn(STREAMING_PARSING_MEMBERSHIPS_UPDATE, ['KeyList', e]);
           break;

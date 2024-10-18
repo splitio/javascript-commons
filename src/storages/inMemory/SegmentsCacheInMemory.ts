@@ -1,4 +1,3 @@
-import { ISet, _Set } from '../../utils/lang/sets';
 import { isIntegerNumber } from '../../utils/lang';
 import { ISegmentsCacheSync } from '../types';
 
@@ -7,11 +6,11 @@ import { ISegmentsCacheSync } from '../types';
  */
 export class SegmentsCacheInMemory implements ISegmentsCacheSync {
 
-  private segmentCache: Record<string, ISet<string>> = {};
+  private segmentCache: Record<string, Set<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
 
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
-    const keySet = this.segmentCache[name] || new _Set<string>();
+    const keySet = this.segmentCache[name] || new Set<string>();
 
     addedKeys.forEach(k => keySet.add(k));
     removedKeys.forEach(k => keySet.delete(k));
@@ -39,7 +38,7 @@ export class SegmentsCacheInMemory implements ISegmentsCacheSync {
 
   private _registerSegment(name: string) {
     if (!this.segmentCache[name]) {
-      this.segmentCache[name] = new _Set<string>();
+      this.segmentCache[name] = new Set<string>();
     }
 
     return true;

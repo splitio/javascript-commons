@@ -21,7 +21,7 @@ export class Engine {
 
   constructor(private baseInfo: ISplit, private evaluator: IEvaluator) {
 
-    // in case we don't have a default treatment in the instanciation, use 'control'
+    // in case we don't have a default treatment in the instantiation, use 'control'
     if (typeof this.baseInfo.defaultTreatment !== 'string') {
       this.baseInfo.defaultTreatment = CONTROL;
     }

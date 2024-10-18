@@ -41,7 +41,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.uniqueKeys && this.uniqueKeys.clear();
     },
 
-    // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
+    // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared() {
       return {
         splits: this.splits,

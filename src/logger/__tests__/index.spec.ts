@@ -1,5 +1,4 @@
 import { LogLevel } from '../../types';
-import { _Map } from '../../utils/lang/maps';
 import { Logger, LogLevels, isLogLevelString, _sprintf } from '../index';
 
 // We'll set this only once. These are the constants we will use for
@@ -59,7 +58,7 @@ function testLogLevels(levelToTest: LogLevel) {
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
     const instance = new Logger({ prefix: logCategory, showLevel },
-      useCodes ? new _Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
+      useCodes ? new Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
       const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;

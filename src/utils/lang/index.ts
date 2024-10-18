@@ -122,10 +122,9 @@ export function isBoolean(val: any): boolean {
  */
 export function isFiniteNumber(val: any): boolean {
   if (val instanceof Number) val = val.valueOf();
-  // @TODO remove `isFinite` once `Number.isFinite` is fully supported by targets
-  // eslint-disable-next-line compat/compat
-  if (typeof val === 'number') return Number.isFinite ? Number.isFinite(val) : isFinite(val);
-  return false;
+  return typeof val === 'number' ?
+    Number.isFinite ? Number.isFinite(val) : isFinite(val) :
+    false;
 }
 
 /**
@@ -134,9 +133,9 @@ export function isFiniteNumber(val: any): boolean {
  */
 export function isIntegerNumber(val: any): boolean {
   if (val instanceof Number) val = val.valueOf();
-  // eslint-disable-next-line compat/compat
-  if (typeof val === 'number') return Number.isInteger ? Number.isInteger(val) : isFinite(val) && Math.floor(val) === val;
-  return false;
+  return typeof val === 'number' ?
+    Number.isInteger ? Number.isInteger(val) : isFinite(val) && Math.floor(val) === val :
+    false;
 }
 
 /**

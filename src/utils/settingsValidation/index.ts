@@ -6,7 +6,6 @@ import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
-import { validateTrafficType } from '../inputValidation/trafficType';
 import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
 
 // Exported for telemetry
@@ -19,8 +18,6 @@ export const base = {
     authorizationKey: undefined,
     // key used in your system (only required for browser version)
     key: undefined,
-    // traffic type for the given key (only used on browser version)
-    trafficType: undefined,
     // toggle impressions tracking of labels
     labelsEnabled: true,
     // toggle sendind (true) or not sending (false) IP and Host Name with impressions, events, and telemetries requests (only used on nodejs version)
@@ -167,13 +164,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
       // `false` value is used as bound key/TT of the default client, which leads to some issues.
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
       withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
-    }
-
-    if (validationParams.acceptTT) {
-      const maybeTT = withDefaults.core.trafficType;
-      if (maybeTT !== undefined) { // @ts-ignore
-        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, LOG_PREFIX_CLIENT_INSTANTIATION);
-      }
     }
   } else {
     // On server-side, key is undefined and used to distinguish from client-side

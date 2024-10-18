@@ -5,7 +5,7 @@ import { ILogger } from '../../logger/types';
 import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
-import { ISet, _Set, returnDifference } from '../../utils/lang/sets';
+import { returnDifference } from '../../utils/lang/sets';
 
 /**
  * ISplitsCacheAsync implementation for pluggable storages.
@@ -181,11 +181,11 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of feature flag names per flag set.
    * It never rejects (If there is a wrapper error for some flag set, an empty set is returned for it).
    */
-  getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]> {
+  getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]> {
     return Promise.all(flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
       return this.wrapper.getItems(flagSetKey).catch(() => []);
-    })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new _Set(namesByFlagSet)));
+    })).then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new Set(namesByFlagSet)));
   }
 
   /**

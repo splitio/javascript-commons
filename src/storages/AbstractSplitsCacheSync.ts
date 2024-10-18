@@ -1,7 +1,6 @@
 import { ISplitsCacheSync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ISet } from '../utils/lang/sets';
 import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
 
 /**
@@ -80,7 +79,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     return false;
   }
 
-  abstract getNamesByFlagSets(flagSets: string[]): ISet<string>[]
+  abstract getNamesByFlagSets(flagSets: string[]): Set<string>[]
 
 }
 
