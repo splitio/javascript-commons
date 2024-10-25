@@ -1,6 +1,5 @@
-// Type definitions for JavaScript Browser Split Software SDK
+// Type definitions for Split Software SDKs
 // Project: http://www.split.io/
-// Definitions by: Nico Zelaya <https://github.com/NicoZelaya/>
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -164,14 +163,14 @@ interface IUserConsentAPI {
   }
 }
 /**
- * Common settings between Browser and NodeJS settings interface.
+ * Common settings interface between SDK settings interface.
  * @interface ISharedSettings
  */
 interface ISharedSettings {
   /**
    * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
    * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}
+   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}.
    *
    * Examples:
    * ```typescript
@@ -235,7 +234,7 @@ interface ISharedSettings {
      */
     enabled?: boolean
     /**
-     * Custom options object for HTTP(S) requests in the Browser.
+     * Custom options object for HTTP(S) requests.
      * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
      * This configuration has no effect in "consumer" mode, as no HTTP(S) requests are made by the SDK.
      */
@@ -346,8 +345,7 @@ interface IBasicSDK {
 }
 /****** Exposed namespace ******/
 /**
- * Types and interfaces for @splitsoftware/splitio-browserjs package for usage when integrating javascript browser sdk on typescript apps.
- * For the SDK package information see {@link https://www.npmjs.com/package/@splitsoftware/splitio-browserjs}
+ * Shared types and interfaces for `@splitsoftware` packages for usage when integrating JavaScript SDKs with TypeScript.
  */
 declare namespace SplitIO {
   /**
@@ -445,7 +443,7 @@ declare namespace SplitIO {
    */
   type MockedFeaturesFilePath = string;
   /**
-   * Object with mocked features mapping (for browser). We need to specify the featureName as key, and the mocked treatment as value.
+   * Object with mocked features mapping for client-side (e.g., Browser or React Native). We need to specify the featureName as key, and the mocked treatment as value.
    * @typedef {Object} MockedFeaturesMap
    */
   type MockedFeaturesMap = {
@@ -729,13 +727,14 @@ declare namespace SplitIO {
     setLogLevel(logLevel: LogLevel): void
   }
   /**
-   * Common settings interface for SDK instances created on the browser.
-   * @interface IBrowserBasicSettings
+   * Common settings interface for SDK instances created for client-side.
+   *
+   * @interface IClientSideBasicSettings
    * @extends ISharedSettings
    */
-  interface IBrowserBasicSettings extends ISharedSettings {
+  interface IClientSideBasicSettings extends ISharedSettings {
     /**
-     * SDK Core settings for the browser.
+     * SDK Core settings for client-side.
      * @property {Object} core
      */
     core: {
@@ -767,7 +766,7 @@ declare namespace SplitIO {
     /**
      * Defines an optional list of factory functions used to instantiate SDK integrations.
      *
-     * NOTE: at the moment there are not integrations to plug in Browser SDK.
+     * NOTE: at the moment there are not integrations to plug in.
      *
      * @property {Object} integrations
      */
@@ -785,12 +784,13 @@ declare namespace SplitIO {
     userConsent?: ConsentStatus
   }
   /**
-   * Settings interface for SDK instances created on the browser.
-   * @interface IBrowserSettings
-   * @extends ISharedSettings
+   * Settings interface for SDK instances created for client-side with synchronous storage (e.g., Browser or React Native).
+   *
+   * @interface IClientSideSettings
+   * @extends IClientSideBasicSettings
    * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
    */
-  interface IBrowserSettings extends IBrowserBasicSettings {
+  interface IClientSideSettings extends IClientSideBasicSettings {
     /**
      * The SDK mode. When using the default in memory storage or `InLocalStorage` as storage, the only possible value is "standalone", which is the default.
      * For "localhost" mode, use "localhost" as authorizationKey.
@@ -807,8 +807,10 @@ declare namespace SplitIO {
     /**
      * Defines the factory function to instantiate the storage. If not provided, the default IN MEMORY storage is used.
      *
+     * NOTE: at the moment there are not storages to plug in React Native SDK, only `InLocalStorage` for Browser SDK.
+     *
      * Example:
-     * ```typescript
+     * ```
      * SplitFactory({
      *   ...
      *   storage: InLocalStorage()
@@ -818,7 +820,7 @@ declare namespace SplitIO {
      */
     storage?: StorageSyncFactory,
     /**
-     * SDK Startup settings for the Browser.
+     * SDK Startup settings.
      * @property {Object} startup
      */
     startup?: {
@@ -842,7 +844,7 @@ declare namespace SplitIO {
       retriesOnFailureBeforeReady?: number,
       /**
        * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-       * to better control on browsers. This number defines that window before the first events push.
+       * to better control on browsers or mobile. This number defines that window before the first events push.
        *
        * @property {number} eventsFirstPushWindow
        * @default 10
@@ -915,13 +917,12 @@ declare namespace SplitIO {
     }
   }
   /**
-   * Settings interface with async storage for SDK instances created on the browser.
-   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.IBrowserSettings instead.
-   * @interface IBrowserAsyncSettings
-   * @extends IBrowserBasicSettings
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
+   * Settings interface with async storage for SDK instances created for client-side (e.g., Serverless environments).
+   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.IClientSideSettings instead.
+   * @interface IClientSideAsyncSettings
+   * @extends IClientSideBasicSettings
    */
-  interface IBrowserAsyncSettings extends IBrowserBasicSettings {
+  interface IClientSideAsyncSettings extends IClientSideBasicSettings {
     /**
      * The SDK mode. When using `PluggableStorage` as storage, the possible values are "consumer" and "consumer_partial".
      *
@@ -944,7 +945,7 @@ declare namespace SplitIO {
      */
     storage: StorageAsyncFactory,
     /**
-     * SDK Startup settings for the Browser.
+     * SDK Startup settings.
      * @property {Object} startup
      */
     startup?: {
@@ -956,7 +957,7 @@ declare namespace SplitIO {
       readyTimeout?: number,
       /**
        * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-       * to better control on browsers. This number defines that window before the first events push.
+       * to better control on browsers or mobile. This number defines that window before the first events push.
        *
        * NOTE: this param is ignored in 'consumer' mode.
        * @property {number} eventsFirstPushWindow
@@ -1156,7 +1157,7 @@ declare namespace SplitIO {
   }
   /**
    * This represents the interface for the Client instance with asynchronous storage for server-side SDK, where we don't have only one key.
-   * @interface IAsyncClient
+   * @interface IAsyncClientSS
    * @extends IBasicClient
    */
   interface IAsyncClientSS extends IBasicClient {
