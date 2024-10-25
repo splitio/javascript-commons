@@ -80,7 +80,6 @@ export const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined,
     enabled: true,
     flagSpecVersion: FLAG_SPEC_VERSION
   },
@@ -102,7 +101,7 @@ function fromSecondsToMillis(n: number) {
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, consent, flagSpec } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, consent, flagSpec } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -179,8 +178,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // `integrations` returns an array of valid integration items.
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
-
-  if (localhost) sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop

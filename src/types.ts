@@ -1,11 +1,8 @@
+/* eslint-disable no-use-before-define */
 import { ISplitFiltersValidation } from './dtos/types';
 import { IIntegration, IIntegrationFactoryParams } from './integrations/types';
 import { ILogger } from './logger/types';
-import { ISdkFactoryContext } from './sdkFactory/types';
-/* eslint-disable no-use-before-define */
-
 import { IStorageFactoryParams, IStorageSync, IStorageAsync, IStorageSyncFactory, IStorageAsyncFactory } from './storages/types';
-import { ISyncManagerCS } from './sync/types';
 
 /**
  * Reduced version of NodeJS.EventEmitter interface with the minimal methods used by the SDK
@@ -116,7 +113,6 @@ export interface ISettings {
     splitFilters: SplitIO.SplitFilter[],
     impressionsMode: SplitIO.ImpressionsMode,
     __splitFiltersValidation: ISplitFiltersValidation,
-    localhostMode?: SplitIO.LocalhostFactory,
     enabled: boolean,
     flagSpecVersion: string,
     requestOptions?: {
@@ -666,13 +662,6 @@ export namespace SplitIO {
    * @typedef {Promise<SplitNames>} SplitNamesAsync
    */
   export type SplitNamesAsync = Promise<SplitNames>;
-  /**
-   * Localhost mode factory.
-   */
-  export type LocalhostFactory = {
-    type: 'LocalhostFromObject' | 'LocalhostFromFile'
-    (params: ISdkFactoryContext): ISyncManagerCS
-  }
   /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
