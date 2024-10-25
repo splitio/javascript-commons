@@ -1077,21 +1077,21 @@ declare namespace SplitIO {
      * @property {boolean | LogLevel} debug
      * @default false
      */
-    debug?: boolean | LogLevel,
+    debug?: boolean | LogLevel;
     /**
      * The impression listener, which is optional. Whatever you provide here needs to comply with the SplitIO.IImpressionListener interface,
      * which will check for the logImpression method.
      * @property {IImpressionListener} impressionListener
      * @default undefined
      */
-    impressionListener?: SplitIO.IImpressionListener,
+    impressionListener?: SplitIO.IImpressionListener;
     /**
      * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
      * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
      * @property {boolean} streamingEnabled
      * @default true
      */
-    streamingEnabled?: boolean,
+    streamingEnabled?: boolean;
     /**
      * SDK synchronization settings.
      * @property {Object} sync
@@ -1107,7 +1107,7 @@ declare namespace SplitIO {
        *  ]`
        * @property {SplitIO.SplitFilter[]} splitFilters
        */
-      splitFilters?: SplitIO.SplitFilter[]
+      splitFilters?: SplitIO.SplitFilter[];
       /**
        * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split servers.
        * Possible values are 'DEBUG', 'OPTIMIZED', and 'NONE'.
@@ -1118,7 +1118,7 @@ declare namespace SplitIO {
        * @property {string} impressionsMode
        * @default 'OPTIMIZED'
        */
-      impressionsMode?: SplitIO.ImpressionsMode,
+      impressionsMode?: SplitIO.ImpressionsMode;
       /**
        * Controls the SDK continuous synchronization flags.
        *
@@ -1128,8 +1128,8 @@ declare namespace SplitIO {
        * @property {boolean} enabled
        * @default true
        */
-      enabled?: boolean
-    }
+      enabled?: boolean;
+    };
   }
   /**
    * Common settings interface for SDK instances on NodeJS.
@@ -1147,19 +1147,19 @@ declare namespace SplitIO {
        * @property {number} readyTimeout
        * @default 15
        */
-      readyTimeout?: number,
+      readyTimeout?: number;
       /**
        * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
        * @property {number} requestTimeoutBeforeReady
        * @default 15
        */
-      requestTimeoutBeforeReady?: number,
+      requestTimeoutBeforeReady?: number;
       /**
        * How many quick retries we will do while starting up the SDK.
        * @property {number} retriesOnFailureBeforeReady
        * @default 1
        */
-      retriesOnFailureBeforeReady?: number,
+      retriesOnFailureBeforeReady?: number;
       /**
        * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
        * to better control on browsers. This number defines that window before the first events push.
@@ -1167,8 +1167,8 @@ declare namespace SplitIO {
        * @property {number} eventsFirstPushWindow
        * @default 0
        */
-      eventsFirstPushWindow?: number,
-    },
+      eventsFirstPushWindow?: number;
+    };
     /**
      * SDK scheduler settings.
      * @property {Object} scheduler
@@ -1179,67 +1179,67 @@ declare namespace SplitIO {
        * @property {number} featuresRefreshRate
        * @default 60
        */
-      featuresRefreshRate?: number,
+      featuresRefreshRate?: number;
       /**
        * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
        * @property {number} impressionsRefreshRate
        * @default 300
        */
-      impressionsRefreshRate?: number,
+      impressionsRefreshRate?: number;
       /**
        * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
        * If you use a 0 here, the queue will have no maximum size.
        * @property {number} impressionsQueueSize
        * @default 30000
        */
-      impressionsQueueSize?: number,
+      impressionsQueueSize?: number;
       /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
        * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
        */
-      metricsRefreshRate?: number,
+      metricsRefreshRate?: number;
       /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} telemetryRefreshRate
        * @default 3600
        */
-      telemetryRefreshRate?: number,
+      telemetryRefreshRate?: number;
       /**
        * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
        * @property {number} segmentsRefreshRate
        * @default 60
        */
-      segmentsRefreshRate?: number,
+      segmentsRefreshRate?: number;
       /**
        * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
        * @property {number} eventsPushRate
        * @default 60
        */
-      eventsPushRate?: number,
+      eventsPushRate?: number;
       /**
        * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
        * If you use a 0 here, the queue will have no maximum size.
        * @property {number} eventsQueueSize
        * @default 500
        */
-      eventsQueueSize?: number,
+      eventsQueueSize?: number;
       /**
        * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
        * For more information see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
        * @property {number} offlineRefreshRate
        * @default 15
        */
-      offlineRefreshRate?: number
+      offlineRefreshRate?: number;
       /**
        * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
        * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
        * @property {number} pushRetryBackoffBase
        * @default 1
        */
-      pushRetryBackoffBase?: number,
-    },
+      pushRetryBackoffBase?: number;
+    };
     /**
      * SDK Core settings for NodeJS.
      * @property {Object} core
@@ -1250,20 +1250,20 @@ declare namespace SplitIO {
        * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
        * @property {string} authorizationKey
        */
-      authorizationKey: string,
+      authorizationKey: string;
       /**
        * Disable labels from being sent to Split backend. Labels may contain sensitive information.
        * @property {boolean} labelsEnabled
        * @default true
        */
-      labelsEnabled?: boolean
+      labelsEnabled?: boolean;
       /**
        * Disable machine IP and Name from being sent to Split backend.
        * @property {boolean} IPAddressesEnabled
        * @default true
        */
-      IPAddressesEnabled?: boolean
-    },
+      IPAddressesEnabled?: boolean;
+    };
     /**
      * Defines which kind of storage we should instantiate.
      * @property {Object} storage
@@ -1274,33 +1274,33 @@ declare namespace SplitIO {
        * @property {StorageType} type
        * @default 'MEMORY'
        */
-      type?: StorageType,
+      type?: StorageType;
       /**
        * Options to be passed to the selected storage.
        * @property {Object} options
        */
-      options?: Object,
+      options?: Object;
       /**
        * Optional prefix to prevent any kind of data collision between SDK versions.
        * @property {string} prefix
        * @default 'SPLITIO'
        */
-      prefix?: string
-    },
+      prefix?: string;
+    };
     /**
      * The SDK mode. Possible values are "standalone", which is the default when using a synchronous storage, like 'MEMORY' and 'LOCALSTORAGE',
      * and "consumer", which must be set when using an asynchronous storage, like 'REDIS'. For "localhost" mode, use "localhost" as authorizationKey.
      * @property {SDKMode} mode
      * @default 'standalone'
      */
-    mode?: SDKMode,
+    mode?: SDKMode;
     /**
      * Mocked features file path. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
      * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
      * @property {MockedFeaturesFilePath} features
      * @default '$HOME/.split'
      */
-    features?: SplitIO.MockedFeaturesFilePath,
+    features?: SplitIO.MockedFeaturesFilePath;
   }
   /**
    * Settings interface for SDK instances created on the browser
@@ -1319,19 +1319,19 @@ declare namespace SplitIO {
        * @property {number} readyTimeout
        * @default 1.5
        */
-      readyTimeout?: number,
+      readyTimeout?: number;
       /**
        * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
        * @property {number} requestTimeoutBeforeReady
        * @default 1.5
        */
-      requestTimeoutBeforeReady?: number,
+      requestTimeoutBeforeReady?: number;
       /**
        * How many quick retries we will do while starting up the SDK.
        * @property {number} retriesOnFailureBeforeReady
        * @default 1
        */
-      retriesOnFailureBeforeReady?: number,
+      retriesOnFailureBeforeReady?: number;
       /**
        * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
        * to better control on browsers. This number defines that window before the first events push.
@@ -1339,8 +1339,8 @@ declare namespace SplitIO {
        * @property {number} eventsFirstPushWindow
        * @default 10
        */
-      eventsFirstPushWindow?: number,
-    },
+      eventsFirstPushWindow?: number;
+    };
     /**
      * SDK scheduler settings.
      * @property {Object} scheduler
@@ -1351,67 +1351,67 @@ declare namespace SplitIO {
        * @property {number} featuresRefreshRate
        * @default 60
        */
-      featuresRefreshRate?: number,
+      featuresRefreshRate?: number;
       /**
        * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
        * @property {number} impressionsRefreshRate
        * @default 60
        */
-      impressionsRefreshRate?: number,
+      impressionsRefreshRate?: number;
       /**
        * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
        * If you use a 0 here, the queue will have no maximum size.
        * @property {number} impressionsQueueSize
        * @default 30000
        */
-      impressionsQueueSize?: number,
+      impressionsQueueSize?: number;
       /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} metricsRefreshRate
        * @default 120
        * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
        */
-      metricsRefreshRate?: number,
+      metricsRefreshRate?: number;
       /**
        * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
        * @property {number} telemetryRefreshRate
        * @default 3600
        */
-      telemetryRefreshRate?: number,
+      telemetryRefreshRate?: number;
       /**
        * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
        * @property {number} segmentsRefreshRate
        * @default 60
        */
-      segmentsRefreshRate?: number,
+      segmentsRefreshRate?: number;
       /**
        * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
        * @property {number} eventsPushRate
        * @default 60
        */
-      eventsPushRate?: number,
+      eventsPushRate?: number;
       /**
        * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
        * If you use a 0 here, the queue will have no maximum size.
        * @property {number} eventsQueueSize
        * @default 500
        */
-      eventsQueueSize?: number,
+      eventsQueueSize?: number;
       /**
        * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
        * For more information see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
        * @property {number} offlineRefreshRate
        * @default 15
        */
-      offlineRefreshRate?: number,
+      offlineRefreshRate?: number;
       /**
        * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
        * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
        * @property {number} pushRetryBackoffBase
        * @default 1
        */
-      pushRetryBackoffBase?: number,
-    },
+      pushRetryBackoffBase?: number;
+    };
     /**
      * SDK Core settings for the browser.
      * @property {Object} core
@@ -1422,25 +1422,25 @@ declare namespace SplitIO {
        * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
        * @property {string} authorizationKey
        */
-      authorizationKey: string,
+      authorizationKey: string;
       /**
        * Customer identifier. Whatever this means to you.
        * @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
        * @property {SplitKey} key
        */
-      key: SplitKey,
+      key: SplitKey;
       /**
        * Disable labels from being sent to Split backend. Labels may contain sensitive information.
        * @property {boolean} labelsEnabled
        * @default true
        */
       labelsEnabled?: boolean
-    },
+    };
     /**
      * Mocked features map. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
      * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
      */
-    features?: MockedFeaturesMap,
+    features?: MockedFeaturesMap;
     /**
      * Defines which kind of storage we can instantiate on the browser.
      * Possible storage types are 'MEMORY', which is the default, and 'LOCALSTORAGE'.
@@ -1452,20 +1452,20 @@ declare namespace SplitIO {
        * @property {BrowserStorage} type
        * @default 'MEMORY'
        */
-      type?: BrowserStorage,
+      type?: BrowserStorage;
       /**
        * Optional prefix to prevent any kind of data collision between SDK versions.
        * @property {string} prefix
        * @default 'SPLITIO'
        */
-      prefix?: string
-    },
+      prefix?: string;
+    };
     /**
      * List of URLs that the SDK will use as base for it's synchronization functionalities, applicable only when running as standalone.
      * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
      * @property {Object} urls
      */
-    urls?: UrlSettings,
+    urls?: UrlSettings;
     /**
      * User consent status. Possible values are `'GRANTED'`, which is the default, `'DECLINED'` or `'UNKNOWN'`.
      * - `'GRANTED'`: the user grants consent for tracking events and impressions. The SDK sends them to Split cloud.
@@ -1476,7 +1476,7 @@ declare namespace SplitIO {
      * @typedef {string} userConsent
      * @default 'GRANTED'
      */
-    userConsent?: ConsentStatus,
+    userConsent?: ConsentStatus;
     sync?: ISharedSettings['sync'] & {
       /**
        * Custom options object for HTTP(S) requests in the Browser.
@@ -1507,9 +1507,9 @@ declare namespace SplitIO {
          *   };
          * };
          */
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
-      },
-    }
+        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+      };
+    };
   }
   /**
    * Settings interface for SDK instances created on NodeJS.
@@ -1524,7 +1524,7 @@ declare namespace SplitIO {
      * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
      * @property {Object} urls
      */
-    urls?: UrlSettings,
+    urls?: UrlSettings;
     /**
      * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
      * The only possible storage type is 'MEMORY', which is the default.
@@ -1536,14 +1536,14 @@ declare namespace SplitIO {
        * @property {NodeSyncStorage} type
        * @default 'MEMORY'
        */
-      type?: NodeSyncStorage,
+      type?: NodeSyncStorage;
       /**
        * Optional prefix to prevent any kind of data collision between SDK versions.
        * @property {string} prefix
        * @default 'SPLITIO'
        */
       prefix?: string
-    },
+    };
     /**
      * The SDK mode. When using the default 'MEMORY' storage, the only possible value is "standalone", which is the default.
      * For "localhost" mode, use "localhost" as authorizationKey.
@@ -1606,9 +1606,9 @@ declare namespace SplitIO {
          * @property {http.Agent | https.Agent} agent
          * @default undefined
          */
-        agent?: RequestOptions["agent"]
-      },
-    }
+        agent?: RequestOptions['agent'];
+      };
+    };
   }
   /**
    * Settings interface with async storage for SDK instances created on NodeJS.
@@ -1628,7 +1628,7 @@ declare namespace SplitIO {
        * 'REDIS' storage type to be instantiated by the SDK.
        * @property {NodeAsyncStorage} type
        */
-      type: NodeAsyncStorage,
+      type: NodeAsyncStorage;
       /**
        * Options to be passed to the Redis storage. Use it with storage type: 'REDIS'.
        * @property {Object} options
@@ -1645,44 +1645,44 @@ declare namespace SplitIO {
          * ```
          * @property {string=} url
          */
-        url?: string,
+        url?: string;
         /**
          * Redis host.
          * @property {string=} host
          * @default 'localhost'
          */
-        host?: string,
+        host?: string;
         /**
          * Redis port.
          * @property {number=} port
          * @default 6379
          */
-        port?: number,
+        port?: number;
         /**
          * Redis database to be used.
          * @property {number=} db
          * @default 0
          */
-        db?: number,
+        db?: number;
         /**
          * Redis password. Don't define if no password is used.
          * @property {string=} pass
          * @default undefined
          */
-        pass?: string,
+        pass?: string;
         /**
          * The milliseconds before a timeout occurs during the initial connection to the Redis server.
          * @property {number=} connectionTimeout
          * @default 10000
          */
-        connectionTimeout?: number,
+        connectionTimeout?: number;
         /**
          * The milliseconds before Redis commands are timeout by the SDK.
          * Method calls that involve Redis commands, like `client.getTreatment` or `client.track` calls, are resolved when the commands success or timeout.
          * @property {number=} operationTimeout
          * @default 5000
          */
-        operationTimeout?: number,
+        operationTimeout?: number;
         /**
          * TLS configuration for Redis connection.
          * @see {@link https://www.npmjs.com/package/ioredis#tls-options }
@@ -1690,15 +1690,15 @@ declare namespace SplitIO {
          * @property {Object=} tls
          * @default undefined
          */
-        tls?: RedisOptions['tls'],
-      },
+        tls?: RedisOptions['tls'];
+      };
       /**
        * Optional prefix to prevent any kind of data collision between SDK versions.
        * @property {string} prefix
        * @default 'SPLITIO'
        */
-      prefix?: string
-    },
+      prefix?: string;
+    };
     /**
      * The SDK mode. When using 'REDIS' storage type, the only possible value is "consumer", which is required.
      *
@@ -1706,7 +1706,7 @@ declare namespace SplitIO {
      *
      * @property {'consumer'} mode
      */
-    mode: 'consumer'
+    mode: 'consumer';
   }
   /**
    * This represents the interface for the SDK instance with synchronous storage and client-side API,
