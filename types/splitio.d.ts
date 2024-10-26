@@ -835,7 +835,7 @@ declare namespace SplitIO {
     userConsent?: ConsentStatus;
   }
   /**
-   * Settings interface for SDK instances created for client-side with synchronous storage (e.g., Browser or React Native).
+   * Settings interface for SDK instances created with client-side API and synchronous storage (e.g., Browser or React Native).
    *
    * @interface IClientSideSettings
    * @extends IClientSideBasicSettings
@@ -878,13 +878,13 @@ declare namespace SplitIO {
       /**
        * Maximum amount of time used before notify a timeout.
        * @property {number} readyTimeout
-       * @default 1.5
+       * @default 10
        */
       readyTimeout?: number;
       /**
        * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
        * @property {number} requestTimeoutBeforeReady
-       * @default 1.5
+       * @default 5
        */
       requestTimeoutBeforeReady?: number;
       /**
@@ -968,10 +968,20 @@ declare namespace SplitIO {
     }
   }
   /**
-   * Settings interface with async storage for SDK instances created for client-side (e.g., Serverless environments).
-   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.IClientSideSettings instead.
+   * Settings interface for SDK instances created in React Native, with client-side API and synchronous storage.
+   *
+   * @interface IReactNativeSettings
+   * @extends IClientSideSettings
+   * @see {@link https://help.split.io/hc/en-us/articles/4406066357901-React-Native-SDK#configuration}
+   */
+  interface IReactNativeSettings extends IClientSideSettings { }
+  /**
+   * Settings interface for SDK instances created with client-side API and asynchronous storage (e.g., serverless environments with a persistent storage).
+   * If your storage is synchronous (by default we use memory, which is sync) use SplitIO.IClientSideSettings instead.
+   *
    * @interface IClientSideAsyncSettings
    * @extends IClientSideBasicSettings
+   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#sharing-state-with-a-pluggable-storage}
    */
   interface IClientSideAsyncSettings extends IClientSideBasicSettings {
     /**
@@ -1003,7 +1013,7 @@ declare namespace SplitIO {
       /**
        * Maximum amount of time used before notify a timeout.
        * @property {number} readyTimeout
-       * @default 1.5
+       * @default 5
        */
       readyTimeout?: number;
       /**
@@ -1303,7 +1313,8 @@ declare namespace SplitIO {
     features?: SplitIO.MockedFeaturesFilePath;
   }
   /**
-   * Settings interface for SDK instances created on the browser
+   * Settings interface for JavaScript SDK instances created on the browser, with client-side API and synchronous storage.
+   *
    * @interface IBrowserSettings
    * @extends ISharedSettings
    * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#configuration}
@@ -1317,13 +1328,13 @@ declare namespace SplitIO {
       /**
        * Maximum amount of time used before notify a timeout.
        * @property {number} readyTimeout
-       * @default 1.5
+       * @default 10
        */
       readyTimeout?: number;
       /**
        * Time to wait for a request before the SDK is ready. If this time expires, JS Sdk will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
        * @property {number} requestTimeoutBeforeReady
-       * @default 1.5
+       * @default 5
        */
       requestTimeoutBeforeReady?: number;
       /**
@@ -1512,8 +1523,9 @@ declare namespace SplitIO {
     };
   }
   /**
-   * Settings interface for SDK instances created on NodeJS.
+   * Settings interface for JavaScript SDK instances created on NodeJS, with server-side API and synchronous storage.
    * If your storage is asynchronous (Redis for example) use SplitIO.INodeAsyncSettings instead.
+   *
    * @interface INodeSettings
    * @extends INodeBasicSettings
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
@@ -1542,7 +1554,7 @@ declare namespace SplitIO {
        * @property {string} prefix
        * @default 'SPLITIO'
        */
-      prefix?: string
+      prefix?: string;
     };
     /**
      * The SDK mode. When using the default 'MEMORY' storage, the only possible value is "standalone", which is the default.
@@ -1551,7 +1563,7 @@ declare namespace SplitIO {
      * @property {'standalone'} mode
      * @default 'standalone'
      */
-    mode?: 'standalone'
+    mode?: 'standalone';
     sync?: INodeBasicSettings['sync'] & {
       /**
        * Custom options object for HTTP(S) requests in NodeJS.
@@ -1580,7 +1592,7 @@ declare namespace SplitIO {
          *   };
          * };
          */
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>
+        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
         /**
          * Custom NodeJS HTTP(S) Agent used by the SDK for HTTP(S) requests.
          *
@@ -1611,8 +1623,9 @@ declare namespace SplitIO {
     };
   }
   /**
-   * Settings interface with async storage for SDK instances created on NodeJS.
-   * If your storage is synchronous (by defaut we use memory, which is sync) use SplitIO.INodeSettings instead.
+   * Settings interface for JavaScript SDK instances created on NodeJS, with asynchronous storage like Redis.
+   * If your storage is synchronous (by default we use memory, which is sync) use SplitIO.INodeSettings instead.
+   *
    * @interface INodeAsyncSettings
    * @extends INodeBasicSettings
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
