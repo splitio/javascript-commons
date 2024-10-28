@@ -123,10 +123,11 @@ interface ISettings {
       getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
     };
   };
+  readonly impressionListener?: SplitIO.IImpressionListener;
   /**
    * User consent status if using in client-side. Undefined if using in server-side (NodeJS).
    */
-  readonly userConsent?: SplitIO.ConsentStatus
+  readonly userConsent?: SplitIO.ConsentStatus;
 }
 /**
  * Log levels.
