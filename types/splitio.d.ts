@@ -490,7 +490,7 @@ declare namespace SplitIO {
    * Input parameter details are not part of the public API.
    */
   type StorageSyncFactory = {
-    readonly type: BrowserStorage;
+    readonly type: StorageType;
     (params: any): (StorageSync | undefined);
   }
   /**
@@ -514,7 +514,7 @@ declare namespace SplitIO {
    * Input parameter details are not part of the public API.
    */
   type StorageAsyncFactory = {
-    readonly type: PluggableAsyncStorage;
+    readonly type: StorageType;
     (params: any): StorageAsync;
   }
   /**
@@ -543,11 +543,6 @@ declare namespace SplitIO {
    * @typedef {string} NodeAsyncStorage
    */
   type NodeAsyncStorage = 'REDIS';
-  /**
-   * Asynchronous storages valid types for NodeJS.
-   * @typedef {string} NodeAsyncStorage
-   */
-  type PluggableAsyncStorage = 'PLUGGABLE';
   /**
    * Storage valid types for the browser.
    * @typedef {string} BrowserStorage
