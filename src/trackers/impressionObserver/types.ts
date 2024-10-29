@@ -1,5 +1,5 @@
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 export interface IImpressionObserver {
-  testAndSet(impression: ImpressionDTO): number | undefined
+  testAndSet(impression: SplitIO.ImpressionDTO): number | undefined
 }

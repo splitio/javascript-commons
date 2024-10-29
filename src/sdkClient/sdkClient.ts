@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IStatusInterface, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
@@ -10,7 +10,7 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
+export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.INodeClient | SplitIO.INodeAsyncClient {
   const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, uniqueKeysTracker } = params;
 
   let lastActionTime = 0;
@@ -37,7 +37,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
-    Object.create(sdkReadinessManager.sdkStatus) as IStatusInterface,
+    Object.create(sdkReadinessManager.sdkStatus) as SplitIO.IStatusInterface,
 
     // Client API (getTreatment* & track methods)
     clientInputValidationDecorator(

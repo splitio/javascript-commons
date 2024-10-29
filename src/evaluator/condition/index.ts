@@ -3,7 +3,7 @@ import { thenable } from '../../utils/promise/thenable';
 import { NOT_IN_SPLIT } from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 
 // Build Evaluation object if and only if matchingResult is true

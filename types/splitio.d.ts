@@ -7,270 +7,271 @@ import { RequestOptions } from 'http';
 export as namespace SplitIO;
 export = SplitIO;
 
-/**
- * EventEmitter interface based on a subset of the NodeJS.EventEmitter methods.
- */
-interface IEventEmitter {
-  addListener(event: string, listener: (...args: any[]) => void): this;
-  on(event: string, listener: (...args: any[]) => void): this;
-  once(event: string, listener: (...args: any[]) => void): this;
-  removeListener(event: string, listener: (...args: any[]) => void): this;
-  off(event: string, listener: (...args: any[]) => void): this;
-  removeAllListeners(event?: string): this;
-  emit(event: string, ...args: any[]): boolean;
-}
-/**
- * NodeJS.EventEmitter interface
- * @see {@link https://nodejs.org/api/events.html}
- */
-interface EventEmitter extends IEventEmitter {
-  addListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  on(event: string | symbol, listener: (...args: any[]) => void): this;
-  once(event: string | symbol, listener: (...args: any[]) => void): this;
-  removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  off(event: string | symbol, listener: (...args: any[]) => void): this;
-  removeAllListeners(event?: string | symbol): this;
-  emit(event: string | symbol, ...args: any[]): boolean;
-  setMaxListeners(n: number): this;
-  getMaxListeners(): number;
-  listeners(event: string | symbol): Function[];
-  rawListeners(event: string | symbol): Function[];
-  listenerCount(type: string | symbol): number;
-  // Added in Node 6...
-  prependListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this;
-  eventNames(): Array<string | symbol>;
-}
-/**
- * @typedef {Object} EventConsts
- * @property {string} SDK_READY The ready event.
- * @property {string} SDK_READY_FROM_CACHE The ready event when fired with cached data.
- * @property {string} SDK_READY_TIMED_OUT The timeout event.
- * @property {string} SDK_UPDATE The update event.
- */
-type EventConsts = {
-  SDK_READY: 'init::ready';
-  SDK_READY_FROM_CACHE: 'init::cache-ready';
-  SDK_READY_TIMED_OUT: 'init::timeout';
-  SDK_UPDATE: 'state::update';
-};
-/**
- * SDK Modes.
- * @typedef {string} SDKMode
- */
-type SDKMode = 'standalone' | 'localhost' | 'consumer' | 'consumer_partial';
-/**
- * Storage types.
- * @typedef {string} StorageType
- */
-type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
-/**
- * Settings interface. This is a representation of the settings the SDK expose, that's why
- * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
- * @interface ISettings
- */
-interface ISettings {
-  readonly core: {
-    authorizationKey: string;
-    key: SplitIO.SplitKey;
-    labelsEnabled: boolean;
-    IPAddressesEnabled: boolean;
-  };
-  readonly mode: SDKMode;
-  readonly scheduler: {
-    featuresRefreshRate: number;
-    impressionsRefreshRate: number;
-    impressionsQueueSize: number;
-    /**
-     * @deprecated
-     */
-    metricsRefreshRate?: number;
-    telemetryRefreshRate: number;
-    segmentsRefreshRate: number;
-    offlineRefreshRate: number;
-    eventsPushRate: number;
-    eventsQueueSize: number;
-    pushRetryBackoffBase: number;
-  };
-  readonly startup: {
-    readyTimeout: number;
-    requestTimeoutBeforeReady: number;
-    retriesOnFailureBeforeReady: number;
-    eventsFirstPushWindow: number;
-  };
-  readonly storage: SplitIO.StorageSyncFactory | SplitIO.StorageAsyncFactory | SplitIO.StorageOptions;
-  readonly urls: {
-    events: string;
-    sdk: string;
-    auth: string;
-    streaming: string;
-    telemetry: string;
-  };
-  readonly integrations?: SplitIO.IntegrationFactory[];
-  readonly debug: boolean | LogLevel | SplitIO.ILogger;
-  readonly version: string;
-  /**
-   * Mocked features map if using in client-side, or mocked features file path string if using in server-side (NodeJS).
-   */
-  features: SplitIO.MockedFeaturesMap | SplitIO.MockedFeaturesFilePath;
-  readonly streamingEnabled: boolean;
-  readonly sync: {
-    splitFilters: SplitIO.SplitFilter[];
-    impressionsMode: SplitIO.ImpressionsMode;
-    enabled: boolean;
-    flagSpecVersion: string;
-    requestOptions?: {
-      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
-    };
-  };
-  readonly impressionListener?: SplitIO.IImpressionListener;
-  /**
-   * User consent status if using in client-side. Undefined if using in server-side (NodeJS).
-   */
-  readonly userConsent?: SplitIO.ConsentStatus;
-}
-/**
- * Log levels.
- * @typedef {string} LogLevel
- */
-type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
-/**
- * Logger API
- * @interface ILoggerAPI
- */
-interface ILoggerAPI {
-  /**
-   * Enables SDK logging to the console.
-   * @function enable
-   * @returns {void}
-   */
-  enable(): void;
-  /**
-   * Disables SDK logging.
-   * @function disable
-   * @returns {void}
-   */
-  disable(): void;
-  /**
-   * Sets a log level for the SDK logs.
-   * @function setLogLevel
-   * @returns {void}
-   */
-  setLogLevel(logLevel: LogLevel): void;
-  /**
-   * Log level constants. Use this to pass them to setLogLevel function.
-   */
-  LogLevel: {
-    [level in LogLevel]: LogLevel;
-  };
-}
-/**
- * User consent API
- * @interface IUserConsentAPI
- */
-interface IUserConsentAPI {
-  /**
-   * Sets or updates the user consent status. Possible values are `true` and `false`, which represent user consent `'GRANTED'` and `'DECLINED'` respectively.
-   * - `true ('GRANTED')`: the user has granted consent for tracking events and impressions. The SDK will send them to Split cloud.
-   * - `false ('DECLINED')`: the user has declined consent for tracking events and impressions. The SDK will not send them to Split cloud.
-   *
-   * NOTE: calling this method updates the user consent at a factory level, affecting all clients of the same factory.
-   *
-   * @function setStatus
-   * @param {boolean} userConsent The user consent status, true for 'GRANTED' and false for 'DECLINED'.
-   * @returns {boolean} Whether the provided param is a valid value (i.e., a boolean value) or not.
-   */
-  setStatus(userConsent: boolean): boolean;
-  /**
-   * Gets the user consent status.
-   *
-   * @function getStatus
-   * @returns {ConsentStatus} The user consent status.
-   */
-  getStatus(): SplitIO.ConsentStatus;
-  /**
-   * Consent status constants. Use this to compare with the getStatus function result.
-   */
-  Status: {
-    [status in SplitIO.ConsentStatus]: SplitIO.ConsentStatus;
-  };
-}
-/**
- * Common API for entities that expose status handlers.
- * @interface IStatusInterface
- * @extends EventEmitter
- */
-interface IStatusInterface extends EventEmitter {
-  /**
-   * Constant object containing the SDK events for you to use.
-   * @property {EventConsts} Event
-   */
-  Event: EventConsts;
-  /**
-   * Returns a promise that resolves once the SDK has finished loading (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
-   * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.
-   *
-   * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
-   * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
-   * ```
-   * try {
-   *   await client.ready().catch((e) => { throw e; });
-   *   // SDK is ready
-   * } catch(e) {
-   *   // SDK has timedout
-   * }
-   * ```
-   *
-   * @function ready
-   * @returns {Promise<void>}
-   */
-  ready(): Promise<void>;
-}
-/**
- * Common definitions between clients for different environments interface.
- * @interface IBasicClient
- * @extends IStatusInterface
- */
-interface IBasicClient extends IStatusInterface {
-  /**
-   * Destroys the client instance.
-   *
-   * In 'standalone' and 'partial consumer' modes, this method will flush any pending impressions and events.
-   * In 'standalone' mode, it also stops the synchronization of feature flag definitions with the backend.
-   * In 'consumer' and 'partial consumer' modes, this method also disconnects the SDK from the Pluggable storage.
-   *
-   * @function destroy
-   * @returns {Promise<void>} A promise that resolves once the client is destroyed.
-   */
-  destroy(): Promise<void>;
-}
-/**
- * Common definitions between SDK instances for different environments interface.
- * @interface IBasicSDK
- */
-interface IBasicSDK {
-  /**
-   * Current settings of the SDK instance.
-   * @property settings
-   */
-  settings: ISettings;
-  /**
-   * Logger API.
-   * @property Logger
-   */
-  Logger: ILoggerAPI;
-  /**
-   * Destroys all the clients created by this factory.
-   * @function destroy
-   * @returns {Promise<void>}
-   */
-  destroy(): Promise<void>;
-}
 /****** Exposed namespace ******/
 /**
- * Shared types and interfaces for `@splitsoftware` packages for usage when integrating JavaScript SDKs with TypeScript.
+ * Shared types and interfaces for `@splitsoftware` packages, to support integrating JavaScript SDKs with TypeScript.
  */
 declare namespace SplitIO {
+
+  /**
+   * EventEmitter interface based on a subset of the NodeJS.EventEmitter methods.
+   */
+  interface IEventEmitter {
+    addListener(event: string, listener: (...args: any[]) => void): this;
+    on(event: string, listener: (...args: any[]) => void): this;
+    once(event: string, listener: (...args: any[]) => void): this;
+    removeListener(event: string, listener: (...args: any[]) => void): this;
+    off(event: string, listener: (...args: any[]) => void): this;
+    removeAllListeners(event?: string): this;
+    emit(event: string, ...args: any[]): boolean;
+  }
+  /**
+   * NodeJS.EventEmitter interface
+   * @see {@link https://nodejs.org/api/events.html}
+   */
+  interface EventEmitter extends IEventEmitter {
+    addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    on(event: string | symbol, listener: (...args: any[]) => void): this;
+    once(event: string | symbol, listener: (...args: any[]) => void): this;
+    removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    off(event: string | symbol, listener: (...args: any[]) => void): this;
+    removeAllListeners(event?: string | symbol): this;
+    emit(event: string | symbol, ...args: any[]): boolean;
+    setMaxListeners(n: number): this;
+    getMaxListeners(): number;
+    listeners(event: string | symbol): Function[];
+    rawListeners(event: string | symbol): Function[];
+    listenerCount(type: string | symbol): number;
+    // Added in Node 6...
+    prependListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    eventNames(): Array<string | symbol>;
+  }
+  /**
+   * @typedef {Object} EventConsts
+   * @property {string} SDK_READY The ready event.
+   * @property {string} SDK_READY_FROM_CACHE The ready event when fired with cached data.
+   * @property {string} SDK_READY_TIMED_OUT The timeout event.
+   * @property {string} SDK_UPDATE The update event.
+   */
+  type EventConsts = {
+    SDK_READY: 'init::ready';
+    SDK_READY_FROM_CACHE: 'init::cache-ready';
+    SDK_READY_TIMED_OUT: 'init::timeout';
+    SDK_UPDATE: 'state::update';
+  };
+  /**
+   * SDK Modes.
+   * @typedef {string} SDKMode
+   */
+  type SDKMode = 'standalone' | 'localhost' | 'consumer' | 'consumer_partial';
+  /**
+   * Storage types.
+   * @typedef {string} StorageType
+   */
+  type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
+  /**
+   * Settings interface. This is a representation of the settings the SDK expose, that's why
+   * most of it's props are readonly. Only features should be rewritten when localhost mode is active.
+   * @interface ISettings
+   */
+  interface ISettings {
+    readonly core: {
+      authorizationKey: string;
+      key: SplitIO.SplitKey;
+      labelsEnabled: boolean;
+      IPAddressesEnabled: boolean;
+    };
+    readonly mode: SDKMode;
+    readonly scheduler: {
+      featuresRefreshRate: number;
+      impressionsRefreshRate: number;
+      impressionsQueueSize: number;
+      /**
+       * @deprecated
+       */
+      metricsRefreshRate?: number;
+      telemetryRefreshRate: number;
+      segmentsRefreshRate: number;
+      offlineRefreshRate: number;
+      eventsPushRate: number;
+      eventsQueueSize: number;
+      pushRetryBackoffBase: number;
+    };
+    readonly startup: {
+      readyTimeout: number;
+      requestTimeoutBeforeReady: number;
+      retriesOnFailureBeforeReady: number;
+      eventsFirstPushWindow: number;
+    };
+    readonly storage: SplitIO.StorageSyncFactory | SplitIO.StorageAsyncFactory | SplitIO.StorageOptions;
+    readonly urls: {
+      events: string;
+      sdk: string;
+      auth: string;
+      streaming: string;
+      telemetry: string;
+    };
+    readonly integrations?: SplitIO.IntegrationFactory[];
+    readonly debug: boolean | LogLevel | SplitIO.ILogger;
+    readonly version: string;
+    /**
+     * Mocked features map if using in client-side, or mocked features file path string if using in server-side (NodeJS).
+     */
+    features: SplitIO.MockedFeaturesMap | SplitIO.MockedFeaturesFilePath;
+    readonly streamingEnabled: boolean;
+    readonly sync: {
+      splitFilters: SplitIO.SplitFilter[];
+      impressionsMode: SplitIO.ImpressionsMode;
+      enabled: boolean;
+      flagSpecVersion: string;
+      requestOptions?: {
+        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+      };
+    };
+    readonly impressionListener?: SplitIO.IImpressionListener;
+    /**
+     * User consent status if using in client-side. Undefined if using in server-side (NodeJS).
+     */
+    readonly userConsent?: SplitIO.ConsentStatus;
+  }
+  /**
+   * Log levels.
+   * @typedef {string} LogLevel
+   */
+  type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
+  /**
+   * Logger API
+   * @interface ILoggerAPI
+   */
+  interface ILoggerAPI {
+    /**
+     * Enables SDK logging to the console.
+     * @function enable
+     * @returns {void}
+     */
+    enable(): void;
+    /**
+     * Disables SDK logging.
+     * @function disable
+     * @returns {void}
+     */
+    disable(): void;
+    /**
+     * Sets a log level for the SDK logs.
+     * @function setLogLevel
+     * @returns {void}
+     */
+    setLogLevel(logLevel: LogLevel): void;
+    /**
+     * Log level constants. Use this to pass them to setLogLevel function.
+     */
+    LogLevel: {
+      [level in LogLevel]: LogLevel;
+    };
+  }
+  /**
+   * User consent API
+   * @interface IUserConsentAPI
+   */
+  interface IUserConsentAPI {
+    /**
+     * Sets or updates the user consent status. Possible values are `true` and `false`, which represent user consent `'GRANTED'` and `'DECLINED'` respectively.
+     * - `true ('GRANTED')`: the user has granted consent for tracking events and impressions. The SDK will send them to Split cloud.
+     * - `false ('DECLINED')`: the user has declined consent for tracking events and impressions. The SDK will not send them to Split cloud.
+     *
+     * NOTE: calling this method updates the user consent at a factory level, affecting all clients of the same factory.
+     *
+     * @function setStatus
+     * @param {boolean} userConsent The user consent status, true for 'GRANTED' and false for 'DECLINED'.
+     * @returns {boolean} Whether the provided param is a valid value (i.e., a boolean value) or not.
+     */
+    setStatus(userConsent: boolean): boolean;
+    /**
+     * Gets the user consent status.
+     *
+     * @function getStatus
+     * @returns {ConsentStatus} The user consent status.
+     */
+    getStatus(): SplitIO.ConsentStatus;
+    /**
+     * Consent status constants. Use this to compare with the getStatus function result.
+     */
+    Status: {
+      [status in SplitIO.ConsentStatus]: SplitIO.ConsentStatus;
+    };
+  }
+  /**
+   * Common API for entities that expose status handlers.
+   * @interface IStatusInterface
+   * @extends EventEmitter
+   */
+  interface IStatusInterface extends EventEmitter {
+    /**
+     * Constant object containing the SDK events for you to use.
+     * @property {EventConsts} Event
+     */
+    Event: EventConsts;
+    /**
+     * Returns a promise that resolves once the SDK has finished loading (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.
+     *
+     * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
+     * However, when using async/await syntax, the rejection should be explicitly propagated like in the following example:
+     * ```
+     * try {
+     *   await client.ready().catch((e) => { throw e; });
+     *   // SDK is ready
+     * } catch(e) {
+     *   // SDK has timedout
+     * }
+     * ```
+     *
+     * @function ready
+     * @returns {Promise<void>}
+     */
+    ready(): Promise<void>;
+  }
+  /**
+   * Common definitions between clients for different environments interface.
+   * @interface IBasicClient
+   * @extends IStatusInterface
+   */
+  interface IBasicClient extends IStatusInterface {
+    /**
+     * Destroys the client instance.
+     *
+     * In 'standalone' and 'partial consumer' modes, this method will flush any pending impressions and events.
+     * In 'standalone' mode, it also stops the synchronization of feature flag definitions with the backend.
+     * In 'consumer' and 'partial consumer' modes, this method also disconnects the SDK from the Pluggable storage.
+     *
+     * @function destroy
+     * @returns {Promise<void>} A promise that resolves once the client is destroyed.
+     */
+    destroy(): Promise<void>;
+  }
+  /**
+   * Common definitions between SDK instances for different environments interface.
+   * @interface IBasicSDK
+   */
+  interface IBasicSDK {
+    /**
+     * Current settings of the SDK instance.
+     * @property settings
+     */
+    settings: ISettings;
+    /**
+     * Logger API.
+     * @property Logger
+     */
+    Logger: ILoggerAPI;
+    /**
+     * Destroys all the clients created by this factory.
+     * @function destroy
+     * @returns {Promise<void>}
+     */
+    destroy(): Promise<void>;
+  }
   /**
    * Feature flag treatment value, returned by getTreatment.
    * @typedef {string} Treatment
@@ -381,24 +382,29 @@ declare namespace SplitIO {
     [featureName: string]: string | TreatmentWithConfig;
   };
   /**
+   * Impression DTO generated by the SDK when processing evaluations.
+   * @typedef {Object} ImpressionDTO
+   */
+  type ImpressionDTO = {
+    feature: string;
+    keyName: string;
+    treatment: string;
+    time: number;
+    bucketingKey?: string;
+    label: string;
+    changeNumber: number;
+    pt?: number;
+  }
+  /**
    * Object with information about an impression. It contains the generated impression DTO as well as
    * complementary information around where and how it was generated in that way.
    * @typedef {Object} ImpressionData
    */
   type ImpressionData = {
-    impression: {
-      feature: string;
-      keyName: string;
-      treatment: string;
-      time: number;
-      bucketingKey?: string;
-      label: string;
-      changeNumber: number;
-      pt?: number;
-    };
+    impression: ImpressionDTO;
     attributes?: SplitIO.Attributes;
-    ip: string;
-    hostname: string;
+    ip: string | false;
+    hostname: string | false;
     sdkLanguageVersion: string;
   };
   /**
@@ -451,10 +457,10 @@ declare namespace SplitIO {
     defaultTreatment: string;
   };
   /**
-   * A promise that resolves to a feature flag view.
-   * @typedef {Promise<SplitView>} SplitView
+   * A promise that resolves to a feature flag view or null if the feature flag is not found.
+   * @typedef {Promise<SplitView | null>} SplitViewAsync
    */
-  type SplitViewAsync = Promise<SplitView>;
+  type SplitViewAsync = Promise<SplitView | null>;
   /**
    * An array containing the SplitIO.SplitView elements.
    */
@@ -478,15 +484,14 @@ declare namespace SplitIO {
    * Storage for synchronous (standalone) SDK.
    * Its interface details are not part of the public API.
    */
-  type StorageSync = {};
+  type StorageSync = any;
   /**
    * Storage builder for synchronous (standalone) SDK.
-   * By returning undefined, the SDK will use the default IN MEMORY storage.
    * Input parameter details are not part of the public API.
    */
   type StorageSyncFactory = {
     readonly type: StorageType;
-    (params: {}): (StorageSync | undefined);
+    (params: any): (StorageSync | undefined);
   }
   /**
    * Configuration params for `InLocalStorage`
@@ -503,14 +508,14 @@ declare namespace SplitIO {
    * Storage for asynchronous (consumer) SDK.
    * Its interface details are not part of the public API.
    */
-  type StorageAsync = {}
+  type StorageAsync = any
   /**
    * Storage builder for asynchronous (consumer) SDK.
    * Input parameter details are not part of the public API.
    */
   type StorageAsyncFactory = {
-    readonly type: 'PLUGGABLE';
-    (params: {}): StorageAsync;
+    readonly type: StorageType;
+    (params: any): StorageAsync;
   }
   /**
    * Configuration params for `PluggableStorage`
@@ -564,7 +569,7 @@ declare namespace SplitIO {
    * SDK integration instance.
    * Its interface details are not part of the public API.
    */
-  type Integration = {};
+  type Integration = any;
   /**
    * SDK integration factory.
    * By returning an integration, the SDK will queue events and impressions into it.
@@ -572,7 +577,7 @@ declare namespace SplitIO {
    */
   type IntegrationFactory = {
     readonly type: string;
-    (params: {}): (Integration | void);
+    (params: any): (Integration | void);
   }
   /**
    * A pair of user key and it's trafficType, required for tracking valid Split events.
@@ -594,7 +599,7 @@ declare namespace SplitIO {
     properties?: Properties;
     trafficTypeName?: string;
     key?: string;
-    timestamp?: number;
+    timestamp: number;
   };
   /**
    * Object representing the data sent by Split (events and impressions).

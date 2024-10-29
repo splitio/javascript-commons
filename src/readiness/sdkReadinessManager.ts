@@ -2,7 +2,8 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { promiseWrapper } from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
-import { IEventEmitter, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
@@ -17,7 +18,7 @@ const REMOVE_LISTENER_EVENT = 'removeListener';
  * @param readinessManager optional readinessManager to use. only used internally for `shared` method
  */
 export function sdkReadinessManagerFactory(
-  EventEmitter: new () => IEventEmitter,
+  EventEmitter: new () => SplitIO.IEventEmitter,
   settings: ISettings,
   readinessManager = readinessManagerFactory(EventEmitter, settings)): ISdkReadinessManager {
 

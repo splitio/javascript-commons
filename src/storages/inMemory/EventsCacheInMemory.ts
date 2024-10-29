@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IEventsCacheSync } from '../types';
 
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M

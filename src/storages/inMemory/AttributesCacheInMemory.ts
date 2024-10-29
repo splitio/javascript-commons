@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { objectAssign } from '../../utils/lang/objectAssign';
 
 export class AttributesCacheInMemory {

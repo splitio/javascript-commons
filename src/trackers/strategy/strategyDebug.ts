@@ -1,4 +1,4 @@
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IImpressionObserver } from '../impressionObserver/types';
 import { IStrategy } from '../types';
 
@@ -13,7 +13,7 @@ export function strategyDebugFactory(
 ): IStrategy {
 
   return {
-    process(impressions: ImpressionDTO[]) {
+    process(impressions: SplitIO.ImpressionDTO[]) {
       impressions.forEach((impression) => {
         // Adds previous time if it is enabled
         impression.pt = impressionsObserver.testAndSet(impression);

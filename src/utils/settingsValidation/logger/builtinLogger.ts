@@ -4,7 +4,7 @@ import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
 import { codesDebug } from '../../../logger/messages/debug';
 import { getLogLevel } from './commons';
-import { LogLevel } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 
 const allCodes = new Map(codesDebug);
 
@@ -43,7 +43,7 @@ if (/^(enabled?|on)/i.test(initialState)) {
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
 
-  const logLevel: LogLevel | undefined = debug !== undefined ? getLogLevel(debug) : initialLogLevel;
+  const logLevel: SplitIO.LogLevel | undefined = debug !== undefined ? getLogLevel(debug) : initialLogLevel;
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel }, allCodes);
 

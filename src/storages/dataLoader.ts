@@ -1,4 +1,4 @@
-import { SplitIO } from '../types';
+import { PreloadedData } from '../types';
 import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../utils/constants/browser';
 import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
 
@@ -9,7 +9,7 @@ import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
  * and extended with a `mySegmentsData` property.
  * @returns function to preload the storage
  */
-export function dataLoaderFactory(preloadedData: SplitIO.PreloadedData): DataLoader {
+export function dataLoaderFactory(preloadedData: PreloadedData): DataLoader {
 
   /**
    * Storage-agnostic adaptation of `loadDataIntoLocalStorage` function

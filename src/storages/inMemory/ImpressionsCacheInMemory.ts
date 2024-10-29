@@ -1,11 +1,11 @@
 import { IImpressionsCacheSync } from '../types';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
 
   private onFullQueue?: () => void;
   private readonly maxQueue: number;
-  private queue: ImpressionDTO[];
+  private queue: SplitIO.ImpressionDTO[];
 
   /**
    *
@@ -24,7 +24,7 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
   /**
    * Store impressions in sequential order
    */
-  track(data: ImpressionDTO[]) {
+  track(data: SplitIO.ImpressionDTO[]) {
     this.queue.push(...data);
 
     // Check if the cache queue is full and we need to flush it.
@@ -43,7 +43,7 @@ export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
   /**
    * Pop the collected data, used as payload for posting.
    */
-  pop(toMerge?: ImpressionDTO[]) {
+  pop(toMerge?: SplitIO.ImpressionDTO[]) {
     const data = this.queue;
     this.clear();
     return toMerge ? toMerge.concat(data) : data;

@@ -1,6 +1,6 @@
 import { IPluggableStorageWrapper, IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';

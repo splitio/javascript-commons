@@ -1,5 +1,5 @@
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../utils/constants';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './types';
 
 /**

@@ -1,7 +1,8 @@
+import SplitIO from '../../types/splitio';
 import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -283,7 +284,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
 
 export interface IImpressionsCacheBase {
   // Used by impressions tracker, in DEBUG and OPTIMIZED impression modes, to push impressions into the storage.
-  track(data: ImpressionDTO[]): MaybeThenable<void>
+  track(data: SplitIO.ImpressionDTO[]): MaybeThenable<void>
 }
 
 export interface IEventsCacheBase {
@@ -314,8 +315,8 @@ export interface IRecorderCacheSync<T> {
   pop(toMerge?: T): T
 }
 
-export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<ImpressionDTO[]> {
-  track(data: ImpressionDTO[]): void
+export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<SplitIO.ImpressionDTO[]> {
+  track(data: SplitIO.ImpressionDTO[]): void
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
@@ -348,7 +349,7 @@ export interface IRecorderCacheAsync<T> {
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
   // The result promise can reject.
-  track(data: ImpressionDTO[]): Promise<void>
+  track(data: SplitIO.ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheAsync<StoredEventWithMetadata[]> {
@@ -499,14 +500,13 @@ export interface IStorageFactoryParams {
   onReadyCb: (error?: any) => void,
 }
 
-export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
-export type IStorageSyncFactory = {
-  readonly type: StorageType,
+export type IStorageSyncFactory = SplitIO.StorageSyncFactory & {
+  readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageSync
 }
 
-export type IStorageAsyncFactory = {
-  type: StorageType,
+export type IStorageAsyncFactory = SplitIO.StorageAsyncFactory & {
+  readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageAsync
 }

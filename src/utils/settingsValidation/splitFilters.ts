@@ -1,6 +1,6 @@
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';

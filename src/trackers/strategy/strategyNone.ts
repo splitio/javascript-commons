@@ -1,5 +1,5 @@
 import { IImpressionCountsCacheBase } from '../../storages/types';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IStrategy, IUniqueKeysTracker } from '../types';
 
 /**
@@ -15,7 +15,7 @@ export function strategyNoneFactory(
 ): IStrategy {
 
   return {
-    process(impressions: ImpressionDTO[]) {
+    process(impressions: SplitIO.ImpressionDTO[]) {
       impressions.forEach((impression) => {
         const now = Date.now();
         // Increments impression counter per featureName

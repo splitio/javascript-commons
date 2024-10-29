@@ -1,6 +1,6 @@
 import { ERROR_INVALID_CONFIG_PARAM } from '../../logger/constants';
 import { ILogger } from '../../logger/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { DEBUG, OPTIMIZED, NONE } from '../constants';
 import { stringToUpperCase } from '../lang';
 

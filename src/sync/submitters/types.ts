@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {

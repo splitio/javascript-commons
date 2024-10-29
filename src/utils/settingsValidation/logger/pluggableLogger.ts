@@ -1,6 +1,6 @@
 import { Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
-import { LogLevel } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 import { getLogLevel } from './commons';
 
 function isLogger(log: any): log is ILogger {
@@ -19,7 +19,7 @@ let initialLogLevel = LogLevels.NONE;
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {
   const { debug } = settings;
-  let logLevel: LogLevel | undefined = initialLogLevel;
+  let logLevel: SplitIO.LogLevel | undefined = initialLogLevel;
 
   if (debug !== undefined) {
     if (isLogger(debug)) return debug;

@@ -1,4 +1,4 @@
-import { SplitIO, ImpressionDTO } from '../types';
+import SplitIO from '../../types/splitio';
 import { StreamingEventType, Method, OperationType, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
@@ -18,7 +18,7 @@ export interface IImpressionsHandler {
 }
 
 export interface IImpressionsTracker {
-  track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes): void
+  track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes): void
 }
 
 /** Telemetry tracker */
@@ -71,11 +71,11 @@ export interface IUniqueKeysTracker {
 }
 
 export interface IStrategyResult {
-  impressionsToStore: ImpressionDTO[],
-  impressionsToListener: ImpressionDTO[],
+  impressionsToStore: SplitIO.ImpressionDTO[],
+  impressionsToListener: SplitIO.ImpressionDTO[],
   deduped: number
 }
 
 export interface IStrategy {
-  process(impressions:  ImpressionDTO[]): IStrategyResult
+  process(impressions:  SplitIO.ImpressionDTO[]): IStrategyResult
 }

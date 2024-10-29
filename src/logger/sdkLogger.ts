@@ -1,5 +1,5 @@
 import { LogLevels, isLogLevelString } from './index';
-import { ILoggerAPI } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from './types';
 import { ERROR_LOGLEVEL_INVALID } from './constants';
 
@@ -8,7 +8,7 @@ import { ERROR_LOGLEVEL_INVALID } from './constants';
  *
  * @param log the factory logger instance to handle
  */
-export function createLoggerAPI(log: ILogger): ILoggerAPI {
+export function createLoggerAPI(log: ILogger): SplitIO.ILoggerAPI {
 
   function setLogLevel(logLevel: string) {
     if (isLogLevelString(logLevel)) {
