@@ -9,10 +9,6 @@ export interface ISettings extends SplitIO.ISettings {
   readonly sync: SplitIO.ISettings['sync'] & {
     __splitFiltersValidation: ISplitFiltersValidation;
   };
-  readonly runtime: {
-    ip: string | false;
-    hostname: string | false;
-  };
   readonly log: ILogger;
 }
 
