@@ -7,8 +7,8 @@ import { IStrategy } from '../types';
 /**
  * Optimized strategy for impressions tracker. Wraps impressions to store and adds previousTime if it corresponds
  *
- * @param impressionsObserver impression observer. previous time (pt property) is included in impression instances
- * @param impressionsCounter cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
+ * @param impressionsObserver - impression observer. previous time (pt property) is included in impression instances
+ * @param impressionsCounter - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
  * @returns IStrategyResult
  */
 export function strategyOptimizedFactory(

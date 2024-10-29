@@ -11,8 +11,8 @@
  *  - If the wrapped promise is rejected when using native async/await syntax, the `defaultOnRejected` handler is invoked
  * and neither the catch block nor the remaining try block are executed.
  *
- * @param customPromise promise to wrap
- * @param defaultOnRejected default onRejected function
+ * @param customPromise - promise to wrap
+ * @param defaultOnRejected - default onRejected function
  * @returns a promise that doesn't need to be handled for rejection (except when using async/await syntax) and
  * includes a method named `hasOnFulfilled` that returns true if the promise has attached an onFulfilled handler.
  */

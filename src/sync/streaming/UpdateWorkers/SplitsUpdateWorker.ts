@@ -69,7 +69,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
   /**
    * Invoked by NotificationProcessor on SPLIT_UPDATE event
    *
-   * @param {number} changeNumber change number of the SPLIT_UPDATE notification
+   * @param changeNumber - change number of the SPLIT_UPDATE notification
    */
   function put({ changeNumber, pcn }: ISplitUpdateData, _payload?: ISplit) {
     const currentChangeNumber = splitsCache.getChangeNumber();
@@ -94,9 +94,9 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
     /**
      * Invoked by NotificationProcessor on SPLIT_KILL event
      *
-     * @param {number} changeNumber change number of the SPLIT_UPDATE notification
-     * @param {string} splitName name of split to kill
-     * @param {string} defaultTreatment default treatment value
+     * @param changeNumber - change number of the SPLIT_UPDATE notification
+     * @param splitName - name of split to kill
+     * @param defaultTreatment - default treatment value
      */
     killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
       if (splitsCache.killLocally(splitName, defaultTreatment, changeNumber)) {

@@ -16,9 +16,9 @@ function userKeyToQueryParam(userKey: string) {
 /**
  * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
- * @param settings validated settings object
- * @param platform object containing environment-specific dependencies
- * @param telemetryTracker telemetry tracker
+ * @param settings - validated settings object
+ * @param platform - object containing environment-specific dependencies
+ * @param telemetryTracker - telemetry tracker
  */
 export function splitApiFactory(
   settings: ISettings,
@@ -81,8 +81,8 @@ export function splitApiFactory(
     /**
      * Post events.
      *
-     * @param body  Events bulk payload
-     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     * @param body -  Events bulk payload
+     * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/events/bulk`;
@@ -92,8 +92,8 @@ export function splitApiFactory(
     /**
      * Post impressions.
      *
-     * @param body  Impressions bulk payload
-     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     * @param body -  Impressions bulk payload
+     * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/bulk`;
@@ -106,8 +106,8 @@ export function splitApiFactory(
     /**
      * Post impressions counts.
      *
-     * @param body  Impressions counts payload
-     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     * @param body -  Impressions counts payload
+     * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/testImpressions/count`;
@@ -117,8 +117,8 @@ export function splitApiFactory(
     /**
      * Post unique keys for client side.
      *
-     * @param body  unique keys payload
-     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     * @param body -  unique keys payload
+     * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/keys/cs`;
@@ -128,8 +128,8 @@ export function splitApiFactory(
     /**
      * Post unique keys for server side.
      *
-     * @param body  unique keys payload
-     * @param headers  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
+     * @param body -  unique keys payload
+     * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/keys/ss`;

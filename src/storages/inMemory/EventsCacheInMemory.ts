@@ -12,7 +12,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
 
   /**
    *
-   * @param eventsQueueSize number of queued events to call onFullQueueCb.
+   * @param eventsQueueSize - number of queued events to call onFullQueueCb.
    * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
    */
   constructor(eventsQueueSize: number = 0) {

@@ -21,7 +21,7 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
   /**
    * Push given impressions to the storage.
-   * @param impressions  List of impresions to push.
+   * @param impressions -  List of impresions to push.
    * @returns  A promise that is resolved if the push operation succeeded
    * or rejected if the wrapper operation fails.
    */

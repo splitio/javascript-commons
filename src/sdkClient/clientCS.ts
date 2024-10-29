@@ -7,8 +7,8 @@ import { clientAttributesDecoration } from './clientAttributesDecoration';
 /**
  * Decorator that binds a key to client methods
  *
- * @param client sync client instance
- * @param key validated split key
+ * @param client - sync client instance
+ * @param key - validated split key
  */
 export function clientCSDecorator(log: ILogger, client: SplitIO.INodeClient, key: SplitIO.SplitKey): SplitIO.IClient {
 

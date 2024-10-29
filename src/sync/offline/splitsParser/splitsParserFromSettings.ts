@@ -39,7 +39,7 @@ export function splitsParserFromSettingsFactory() {
 
   /**
    *
-   * @param settings validated object with mocked features mapping.
+   * @param settings - validated object with mocked features mapping.
    */
   return function splitsParserFromSettings(settings: Pick<SplitIO.ISettings, 'features'>): false | Record<string, ISplitPartial> {
     const features = settings.features as SplitIO.MockedFeaturesMap || {};

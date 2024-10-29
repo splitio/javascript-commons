@@ -5,7 +5,7 @@ import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
 /**
  * Factory of client-side storage loader
  *
- * @param preloadedData validated data following the format proposed in https://github.com/godaddy/split-javascript-data-loader
+ * @param preloadedData - validated data following the format proposed in https://github.com/godaddy/split-javascript-data-loader
  * and extended with a `mySegmentsData` property.
  * @returns function to preload the storage
  */
@@ -15,12 +15,11 @@ export function dataLoaderFactory(preloadedData: PreloadedData): DataLoader {
    * Storage-agnostic adaptation of `loadDataIntoLocalStorage` function
    * (https://github.com/godaddy/split-javascript-data-loader/blob/master/src/load-data.js)
    *
-   * @param storage object containing `splits` and `segments` cache (client-side variant)
-   * @param userId user key string of the provided MySegmentsCache
-   *
-   * @TODO extend to support SegmentsCache (server-side variant) by making `userId` optional and adding the corresponding logic.
-   * @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
+   * @param storage - object containing `splits` and `segments` cache (client-side variant)
+   * @param userId - user key string of the provided MySegmentsCache
    */
+  // @TODO extend to support SegmentsCache (server-side variant) by making `userId` optional and adding the corresponding logic.
+  // @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
   return function loadData(storage: { splits: ISplitsCacheSync, segments: ISegmentsCacheSync }, userId: string) {
     // Do not load data if current preloadedData is empty
     if (Object.keys(preloadedData).length === 0) return;

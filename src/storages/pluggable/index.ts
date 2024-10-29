@@ -32,7 +32,7 @@ export interface PluggableStorageOptions {
 /**
  * Validate pluggable storage factory options.
  *
- * @param options user options
+ * @param options - user options
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
 function validatePluggableStorageOptions(options: any) {

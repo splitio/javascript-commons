@@ -10,11 +10,11 @@ import SplitIO from '../../types/splitio';
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
  *
- * @param impressionsCache cache to save impressions
- * @param metadata runtime metadata (ip, hostname and version)
- * @param impressionListener optional impression listener
- * @param integrationsManager optional integrations manager
- * @param strategy strategy for impressions tracking.
+ * @param impressionsCache - cache to save impressions
+ * @param metadata - runtime metadata (ip, hostname and version)
+ * @param impressionListener - optional impression listener
+ * @param integrationsManager - optional integrations manager
+ * @param strategy - strategy for impressions tracking.
  */
 export function impressionsTrackerFactory(
   settings: ISettings,

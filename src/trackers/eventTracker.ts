@@ -11,8 +11,8 @@ import { isConsumerMode } from '../utils/settingsValidation/mode';
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
  *
- * @param eventsCache cache to save events
- * @param integrationsManager optional event handler used for integrations
+ * @param eventsCache - cache to save events
+ * @param integrationsManager - optional event handler used for integrations
  */
 export function eventTrackerFactory(
   settings: ISettings,

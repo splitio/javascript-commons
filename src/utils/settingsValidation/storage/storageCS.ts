@@ -16,9 +16,9 @@ __InLocalStorageMockFactory.type = STORAGE_MEMORY;
 /**
  * This function validates `settings.storage` object
  *
- * @param {any} settings config object provided by the user to initialize the sdk
+ * @param settings - config object provided by the user to initialize the sdk
  *
- * @returns {Object} valid storage factory. Default to `InMemoryStorageCSFactory` if the provided storage is invalid or not compatible with the sdk mode if mode is standalone or localhost
+ * @returns valid storage factory. Default to `InMemoryStorageCSFactory` if the provided storage is invalid or not compatible with the sdk mode if mode is standalone or localhost
  *
  * @throws error if mode is consumer and the provided storage is not compatible
  */

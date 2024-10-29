@@ -14,9 +14,9 @@ import { ISdkFactoryContextSync } from '../sdkFactory/types';
  * Online SyncManager factory.
  * Can be used for server-side API, and client-side API with or without multiple clients.
  *
- * @param pollingManagerFactory allows to specialize the SyncManager for server-side or client-side API by passing
+ * @param pollingManagerFactory - allows to specialize the SyncManager for server-side or client-side API by passing
  * `pollingManagerSSFactory` or `pollingManagerCSFactory` respectively.
- * @param pushManagerFactory optional to build a SyncManager with or without streaming support
+ * @param pushManagerFactory - optional to build a SyncManager with or without streaming support
  */
 export function syncManagerOnlineFactory(
   pollingManagerFactory?: (params: ISdkFactoryContextSync) => IPollingManager,

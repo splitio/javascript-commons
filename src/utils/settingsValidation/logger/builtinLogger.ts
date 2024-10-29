@@ -37,7 +37,7 @@ if (/^(enabled?|on)/i.test(initialState)) {
 /**
  * Validates the `debug` property at config and use it to set the log level.
  *
- * @param settings user config object, with an optional `debug` property of type boolean or string log level.
+ * @param settings - user config object, with an optional `debug` property of type boolean or string log level.
  * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
  */
 export function validateLogger(settings: { debug: unknown }): ILogger {

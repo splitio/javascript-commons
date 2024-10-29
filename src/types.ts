@@ -33,8 +33,8 @@ export interface IStatusInterface extends SplitIO.IStatusInterface {
 export interface IBasicClient extends SplitIO.IBasicClient {
   /**
    * Flush data
-   * @function flush
-   * @return {Promise<void>}
+   *
+   * @returns A promise that is resolved when the flush is completed.
    */
   flush(): Promise<void>;
   // Whether the client implements the client-side API, i.e, with bound key, (true), or the server-side API (false/undefined).
@@ -49,8 +49,8 @@ export interface PreloadedData {
   /**
    * Timestamp of the last moment the data was synchronized with Split servers.
    * If this value is older than 10 days ago (expiration time policy), the data is not used to update the storage content.
-   * @TODO configurable expiration time policy?
    */
+  // @TODO configurable expiration time policy?
   lastUpdated: number;
   /**
    * Change number of the preloaded data.
@@ -65,7 +65,6 @@ export interface PreloadedData {
   };
   /**
    * Optional map of user keys to their list of segments.
-   * @TODO remove when releasing first version
    */
   mySegmentsData?: {
     [key: string]: string[];

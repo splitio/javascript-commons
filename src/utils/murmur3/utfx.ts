@@ -14,10 +14,9 @@ export interface utfx {
 
 /**
  * Encodes UTF8 code points to UTF8 bytes.
- * @param {(!function():number|null) | number} src Code points source, either as a function returning the next code point
+ * @param src - Code points source, either as a function returning the next code point
  *  respectively `null` if there are no more code points left or a single numeric code point.
- * @param {!function(number)} dst Bytes destination as a function successively called with the next byte
- * @expose
+ * @param dst - Bytes destination as a function successively called with the next byte
  */
 function encodeUTF8(src: (() => number | null) | number, dst: (cp: number) => void): void {
   var cp = null;
@@ -38,11 +37,10 @@ function encodeUTF8(src: (() => number | null) | number, dst: (cp: number) => vo
 
 /**
  * Converts UTF16 characters to UTF8 code points.
- * @param {!function():number|null} src Characters source as a function returning the next char code respectively
+ * @param src - Characters source as a function returning the next char code respectively
  *  `null` if there are no more characters left.
- * @param {!function(number)} dst Code points destination as a function successively called with each converted code
+ * @param dst - Code points destination as a function successively called with each converted code
  *  point.
- * @expose
  */
 function UTF16toUTF8(src: () => number | null, dst: (cp: number) => void): void {
   var c1, c2 = null;
@@ -65,10 +63,9 @@ function UTF16toUTF8(src: () => number | null, dst: (cp: number) => void): void 
 
 /**
  * Converts and encodes UTF16 characters to UTF8 bytes.
- * @param {!function():number|null} src Characters source as a function returning the next char code respectively `null`
+ * @param src - Characters source as a function returning the next char code respectively `null`
  *  if there are no more characters left.
- * @param {!function(number)} dst Bytes destination as a function successively called with the next byte.
- * @expose
+ * @param dst - Bytes destination as a function successively called with the next byte.
  */
 export function encodeUTF16toUTF8(src: () => number | null, dst: (...args: number[]) => string | undefined): void {
   UTF16toUTF8(src, function (cp) {
@@ -78,18 +75,15 @@ export function encodeUTF16toUTF8(src: () => number | null, dst: (...args: numbe
 
 /**
  * String.fromCharCode reference for compile time renaming.
- * @type {!function(...[number]):string}
- * @inner
  */
 var stringFromCharCode = String.fromCharCode;
 
 /**
  * Creates a source function for a string.
- * @param {string} s String to read from
- * @returns {!function():number|null} Source function returning the next char code respectively `null` if there are
+ * @param s - String to read from
+ * @returns Source function returning the next char code respectively `null` if there are
  *  no more characters left.
- * @throws {TypeError} If the argument is invalid
- * @expose
+ * @throws If the argument is invalid
  */
 export function stringSource(s: string): () => number | null {
   if (typeof s !== 'string')
@@ -101,9 +95,8 @@ export function stringSource(s: string): () => number | null {
 
 /**
  * Creates a destination function for a string.
- * @returns {function(number=):undefined|string} Destination function successively called with the next char code.
+ * @returns Destination function successively called with the next char code.
  *  Returns the final string when called without arguments.
- * @expose
  */
 export function stringDestination(): (...args: number[]) => string | undefined {
   const cs: number[] = [], ps: string[] = []; return function () {

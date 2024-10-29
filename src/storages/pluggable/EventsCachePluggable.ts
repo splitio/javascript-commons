@@ -21,7 +21,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
 
   /**
    * Push given event to the storage.
-   * @param eventData  Event item to push.
+   * @param eventData -  Event item to push.
    * @returns  A promise that is resolved with a boolean value indicating if the push operation succeeded or failed.
    * Unlike `impressions::track`, The promise will never be rejected.
    */

@@ -13,7 +13,7 @@ let initialLogLevel = LogLevels.NONE;
 /**
  * Validates the `debug` property at config and use it to set the logger.
  *
- * @param settings user config object, with an optional `debug` property of type boolean, string log level or a Logger object.
+ * @param settings - user config object, with an optional `debug` property of type boolean, string log level or a Logger object.
  * @returns a logger instance, that might be: the provided logger at `settings.debug`, or one with the given `debug` log level,
  * or one with NONE log level if `debug` is not defined or invalid.
  */

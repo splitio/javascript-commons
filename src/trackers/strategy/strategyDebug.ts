@@ -5,7 +5,7 @@ import { IStrategy } from '../types';
 /**
  * Debug strategy for impressions tracker. Wraps impressions to store and adds previousTime if it corresponds
  *
- * @param impressionsObserver impression observer. Previous time (pt property) is included in impression instances
+ * @param impressionsObserver - impression observer. Previous time (pt property) is included in impression instances
  * @returns IStrategyResult
  */
 export function strategyDebugFactory(

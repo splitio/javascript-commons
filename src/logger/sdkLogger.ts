@@ -6,7 +6,7 @@ import { ERROR_LOGLEVEL_INVALID } from './constants';
 /**
  * The public Logger utility API exposed via SplitFactory, used to update the log level.
  *
- * @param log the factory logger instance to handle
+ * @param log - the factory logger instance to handle
  */
 export function createLoggerAPI(log: ILogger): SplitIO.ILoggerAPI {
 
@@ -27,7 +27,7 @@ export function createLoggerAPI(log: ILogger): SplitIO.ILoggerAPI {
     },
     /**
      * Sets a custom log Level for the SDK.
-     * @param {string} logLevel - Custom LogLevel value.
+     * @param logLevel - Custom LogLevel value.
      */
     setLogLevel,
     /**
