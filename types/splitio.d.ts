@@ -7,6 +7,335 @@ import { RequestOptions } from 'http';
 export as namespace SplitIO;
 export = SplitIO;
 
+/**
+ * Common settings properties.
+ */
+interface ISharedSettings {
+  /**
+   * The impression listener, which is optional. Whatever you provide here needs to comply with the SplitIO.IImpressionListener interface,
+   * which will check for the logImpression method.
+   *
+   * @defaultValue `undefined`
+   */
+  impressionListener?: SplitIO.IImpressionListener;
+  /**
+   * SDK synchronization settings.
+   */
+  sync?: {
+    /**
+     * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
+     * This configuration is only meaningful when the SDK is working in "standalone" mode.
+     *
+     * Example:
+     * ```
+     *   splitFilter: [
+     *     { type: 'byName', values: ['my_feature_flag_1', 'my_feature_flag_2'] }, // will fetch feature flags named 'my_feature_flag_1' and 'my_feature_flag_2'
+     *   ]
+     * ```
+     */
+    splitFilters?: SplitIO.SplitFilter[];
+    /**
+     * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split servers.
+     * Possible values are 'DEBUG', 'OPTIMIZED', and 'NONE'.
+     * - DEBUG: will send all the impressions generated (recommended only for debugging purposes).
+     * - OPTIMIZED: will send unique impressions to Split servers, avoiding a considerable amount of traffic that duplicated impressions could generate.
+     * - NONE: will send unique keys evaluated per feature to Split servers instead of full blown impressions, avoiding a considerable amount of traffic that impressions could generate.
+     *
+     * @defaultValue `'OPTIMIZED'`
+     */
+    impressionsMode?: SplitIO.ImpressionsMode;
+    /**
+     * Custom options object for HTTP(S) requests.
+     * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
+     * This configuration has no effect in "consumer" mode, as no HTTP(S) requests are made by the SDK.
+     */
+    requestOptions?: {
+      /**
+       * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
+       * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
+       * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
+       * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
+       *
+       * NOTE: to pass custom headers to the streaming connection in Browser, you should polyfill the `window.EventSource` object with a library that supports headers,
+       * like https://www.npmjs.com/package/event-source-polyfill, since native EventSource does not support them and they will be ignored.
+       *
+       * @defaultValue `undefined`
+       *
+       * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
+       * @returns An object representing a set of headers to be merged with the current headers.
+       *
+       * @example
+       * ```
+       * const getHeaderOverrides = (context) => {
+       *   return {
+       *     'Authorization': context.headers['Authorization'] + ', other-value',
+       *     'custom-header': 'custom-value'
+       *   };
+       * };
+       * ```
+       */
+      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+    };
+  };
+  /**
+   * List of URLs that the SDK will use as base for it's synchronization functionalities, applicable only when running as standalone and partial consumer modes.
+   * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
+   */
+  urls?: SplitIO.UrlSettings;
+}
+/**
+ * Common settings properties for SDKs with synchronous API (standalone  and localhost modes).
+ */
+interface ISyncSharedSettings extends ISharedSettings {
+  /**
+   * The SDK mode. When using the default in-memory storage or `InLocalStorage` as storage, the only possible value is "standalone", which is the default.
+   * For "localhost" mode, use "localhost" as authorizationKey.
+   *
+   * @defaultValue `'standalone'`
+   */
+  mode?: 'standalone';
+  /**
+   * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
+   * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
+   *
+   * @defaultValue `true`
+   */
+  streamingEnabled?: boolean;
+  /**
+   * SDK synchronization settings.
+   */
+  sync?: ISharedSettings['sync'] & {
+    /**
+     * Controls the SDK continuous synchronization flags.
+     *
+     * When `true` a running SDK will process rollout plan updates performed on the UI (default).
+     * When false it'll just fetch all data upon init.
+     *
+     * @defaultValue `true`
+     */
+    enabled?: boolean;
+  };
+}
+/**
+ * Common settings properties for SDKs with pluggable configuration.
+ */
+interface IPluggableSettings {
+  /**
+   * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
+   * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
+   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}.
+   *
+   * Examples:
+   * ```
+   * config.debug = true
+   * config.debug = 'WARN'
+   * config.debug = ErrorLogger()
+   * ```
+   *
+   * @defaultValue `false`
+   */
+  debug?: boolean | SplitIO.LogLevel | SplitIO.ILogger;
+  /**
+   * Defines an optional list of factory functions used to instantiate SDK integrations.
+   *
+   * NOTE: at the moment there are not integrations to plug in.
+   */
+  integrations?: SplitIO.IntegrationFactory[];
+}
+/**
+ * Common settings properties for SDKs without pluggable configuration.
+ */
+interface INonPluggableSettings {
+  /**
+   * Boolean value to indicate whether the logger should be enabled or disabled, or a log level string.
+   *
+   * Examples:
+   * ```
+   * config.debug = true
+   * config.debug = 'WARN'
+   * ```
+   *
+   * @defaultValue `false`
+   */
+  debug?: boolean | SplitIO.LogLevel;
+}
+/**
+ * Common settings properties for server-side SDKs.
+ */
+interface IServerSideSharedSettings {
+  /**
+   * SDK Core settings for NodeJS.
+   */
+  core: {
+    /**
+     * Your SDK key.
+     *
+     * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+     */
+    authorizationKey: string;
+    /**
+     * Disable labels from being sent to Split backend. Labels may contain sensitive information.
+     *
+     * @defaultValue `true`
+     */
+    labelsEnabled?: boolean;
+    /**
+     * Disable machine IP and Name from being sent to Split backend.
+     *
+     * @defaultValue `true`
+     */
+    IPAddressesEnabled?: boolean;
+  };
+}
+/**
+ * Common settings properties for client-side SDKs.
+ */
+interface IClientSideSharedSettings {
+  /**
+   * SDK Core settings for client-side.
+   */
+  core: {
+    /**
+     * Your SDK key.
+     *
+     * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+     */
+    authorizationKey: string;
+    /**
+     * Customer identifier. Whatever this means to you.
+     *
+     * @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+     */
+    key: SplitIO.SplitKey;
+    /**
+     * Disable labels from being sent to Split backend. Labels may contain sensitive information.
+     *
+     * @defaultValue `true`
+     */
+    labelsEnabled?: boolean;
+  };
+  /**
+   * User consent status. Possible values are `'GRANTED'`, which is the default, `'DECLINED'` or `'UNKNOWN'`.
+   * - `'GRANTED'`: the user grants consent for tracking events and impressions. The SDK sends them to Split cloud.
+   * - `'DECLINED'`: the user declines consent for tracking events and impressions. The SDK does not send them to Split cloud.
+   * - `'UNKNOWN'`: the user neither grants nor declines consent for tracking events and impressions. The SDK tracks them in its internal storage, and eventually either sends
+   * them or not if the consent status is updated to 'GRANTED' or 'DECLINED' respectively. The status can be updated at any time with the `UserConsent.setStatus` factory method.
+   *
+   * @defaultValue `'GRANTED'`
+   */
+  userConsent?: SplitIO.ConsentStatus;
+}
+/**
+ * Common settings properties for client-side standalone SDKs.
+ */
+interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISyncSharedSettings {
+  /**
+   * Mocked features map. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
+   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
+   */
+  features?: SplitIO.MockedFeaturesMap;
+  /**
+   * SDK Startup settings.
+   */
+  startup?: {
+    /**
+     * Maximum amount of time used before notify a timeout.
+     *
+     * @defaultValue `10`
+     */
+    readyTimeout?: number;
+    /**
+     * Time to wait for a request before the SDK is ready. If this time expires, JS SDK will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
+     *
+     * @defaultValue `5`
+     */
+    requestTimeoutBeforeReady?: number;
+    /**
+     * How many quick retries we will do while starting up the SDK.
+     *
+     * @defaultValue `1`
+     */
+    retriesOnFailureBeforeReady?: number;
+    /**
+     * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
+     * to better control on browsers or mobile. This number defines that window before the first events push.
+     *
+     * @defaultValue `10`
+     */
+    eventsFirstPushWindow?: number;
+  };
+  /**
+   * SDK scheduler settings.
+   */
+  scheduler?: {
+    /**
+     * The SDK polls Split servers for changes to feature flag definitions. This parameter controls this polling period in seconds.
+     *
+     * @defaultValue `60`
+     */
+    featuresRefreshRate?: number;
+    /**
+     * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
+     *
+     * @defaultValue `60`
+     */
+    impressionsRefreshRate?: number;
+    /**
+     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     *
+     * @defaultValue `30000`
+     */
+    impressionsQueueSize?: number;
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     *
+     * @defaultValue `120`
+     * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
+     */
+    metricsRefreshRate?: number;
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     *
+     * @defaultValue `3600`
+     */
+    telemetryRefreshRate?: number;
+    /**
+     * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
+     *
+     * @defaultValue `60`
+     */
+    segmentsRefreshRate?: number;
+    /**
+     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+     *
+     * @defaultValue `60`
+     */
+    eventsPushRate?: number;
+    /**
+     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     *
+     * @defaultValue `500`
+     */
+    eventsQueueSize?: number;
+    /**
+     * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
+     * For more information see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
+     *
+     * @defaultValue `15`
+     */
+    offlineRefreshRate?: number;
+    /**
+     * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
+     * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
+     *
+     * @defaultValue `1`
+     */
+    pushRetryBackoffBase?: number;
+  };
+}
+
 /****** Exposed namespace ******/
 /**
  * Shared types and interfaces for `@splitsoftware` packages, to support integrating JavaScript SDKs with TypeScript.
@@ -654,334 +983,6 @@ declare namespace SplitIO {
    */
   interface ILogger {
     setLogLevel(logLevel: LogLevel): void;
-  }
-  /**
-   * Common settings properties.
-   */
-  interface ISharedSettings {
-    /**
-     * The impression listener, which is optional. Whatever you provide here needs to comply with the SplitIO.IImpressionListener interface,
-     * which will check for the logImpression method.
-     *
-     * @defaultValue `undefined`
-     */
-    impressionListener?: IImpressionListener;
-    /**
-     * SDK synchronization settings.
-     */
-    sync?: {
-      /**
-       * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
-       * This configuration is only meaningful when the SDK is working in "standalone" mode.
-       *
-       * Example:
-       * ```
-       *   splitFilter: [
-       *     { type: 'byName', values: ['my_feature_flag_1', 'my_feature_flag_2'] }, // will fetch feature flags named 'my_feature_flag_1' and 'my_feature_flag_2'
-       *   ]
-       * ```
-       */
-      splitFilters?: SplitFilter[];
-      /**
-       * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split servers.
-       * Possible values are 'DEBUG', 'OPTIMIZED', and 'NONE'.
-       * - DEBUG: will send all the impressions generated (recommended only for debugging purposes).
-       * - OPTIMIZED: will send unique impressions to Split servers, avoiding a considerable amount of traffic that duplicated impressions could generate.
-       * - NONE: will send unique keys evaluated per feature to Split servers instead of full blown impressions, avoiding a considerable amount of traffic that impressions could generate.
-       *
-       * @defaultValue `'OPTIMIZED'`
-       */
-      impressionsMode?: ImpressionsMode;
-      /**
-       * Custom options object for HTTP(S) requests.
-       * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
-       * This configuration has no effect in "consumer" mode, as no HTTP(S) requests are made by the SDK.
-       */
-      requestOptions?: {
-        /**
-         * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
-         * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
-         * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
-         * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
-         *
-         * NOTE: to pass custom headers to the streaming connection in Browser, you should polyfill the `window.EventSource` object with a library that supports headers,
-         * like https://www.npmjs.com/package/event-source-polyfill, since native EventSource does not support them and they will be ignored.
-         *
-         * @defaultValue `undefined`
-         *
-         * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
-         * @returns An object representing a set of headers to be merged with the current headers.
-         *
-         * @example
-         * ```
-         * const getHeaderOverrides = (context) => {
-         *   return {
-         *     'Authorization': context.headers['Authorization'] + ', other-value',
-         *     'custom-header': 'custom-value'
-         *   };
-         * };
-         * ```
-         */
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
-      };
-    };
-    /**
-     * List of URLs that the SDK will use as base for it's synchronization functionalities, applicable only when running as standalone and partial consumer modes.
-     * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
-     */
-    urls?: UrlSettings;
-  }
-  /**
-   * Common settings properties for SDKs with synchronous API (standalone  and localhost modes).
-   */
-  interface ISyncSharedSettings extends ISharedSettings {
-    /**
-     * The SDK mode. When using the default in-memory storage or `InLocalStorage` as storage, the only possible value is "standalone", which is the default.
-     * For "localhost" mode, use "localhost" as authorizationKey.
-     *
-     * @defaultValue `'standalone'`
-     */
-    mode?: 'standalone';
-    /**
-     * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
-     * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
-     *
-     * @defaultValue `true`
-     */
-    streamingEnabled?: boolean;
-    /**
-     * SDK synchronization settings.
-     */
-    sync?: ISharedSettings['sync'] & {
-      /**
-       * Controls the SDK continuous synchronization flags.
-       *
-       * When `true` a running SDK will process rollout plan updates performed on the UI (default).
-       * When false it'll just fetch all data upon init.
-       *
-       * @defaultValue `true`
-       */
-      enabled?: boolean;
-    };
-  }
-  /**
-   * Common settings properties for SDKs with pluggable configuration.
-   */
-  interface IPluggableSettings {
-    /**
-     * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
-     * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
-     * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}.
-     *
-     * Examples:
-     * ```
-     * config.debug = true
-     * config.debug = 'WARN'
-     * config.debug = ErrorLogger()
-     * ```
-     *
-     * @defaultValue `false`
-     */
-    debug?: boolean | LogLevel | ILogger;
-    /**
-     * Defines an optional list of factory functions used to instantiate SDK integrations.
-     *
-     * NOTE: at the moment there are not integrations to plug in.
-     */
-    integrations?: IntegrationFactory[];
-  }
-  /**
-   * Common settings properties for SDKs without pluggable configuration.
-   */
-  interface INonPluggableSettings {
-    /**
-     * Boolean value to indicate whether the logger should be enabled or disabled, or a log level string.
-     *
-     * Examples:
-     * ```
-     * config.debug = true
-     * config.debug = 'WARN'
-     * ```
-     *
-     * @defaultValue `false`
-     */
-    debug?: boolean | LogLevel;
-  }
-  /**
-   * Common settings properties for server-side SDKs.
-   */
-  interface IServerSideSharedSettings {
-    /**
-     * SDK Core settings for NodeJS.
-     */
-    core: {
-      /**
-       * Your SDK key.
-       *
-       * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
-       */
-      authorizationKey: string;
-      /**
-       * Disable labels from being sent to Split backend. Labels may contain sensitive information.
-       *
-       * @defaultValue `true`
-       */
-      labelsEnabled?: boolean;
-      /**
-       * Disable machine IP and Name from being sent to Split backend.
-       *
-       * @defaultValue `true`
-       */
-      IPAddressesEnabled?: boolean;
-    };
-  }
-  /**
-   * Common settings properties for client-side SDKs.
-   */
-  interface IClientSideSharedSettings {
-    /**
-     * SDK Core settings for client-side.
-     */
-    core: {
-      /**
-       * Your SDK key.
-       *
-       * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
-       */
-      authorizationKey: string;
-      /**
-       * Customer identifier. Whatever this means to you.
-       *
-       * @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
-       */
-      key: SplitKey;
-      /**
-       * Disable labels from being sent to Split backend. Labels may contain sensitive information.
-       *
-       * @defaultValue `true`
-       */
-      labelsEnabled?: boolean;
-    };
-    /**
-     * User consent status. Possible values are `'GRANTED'`, which is the default, `'DECLINED'` or `'UNKNOWN'`.
-     * - `'GRANTED'`: the user grants consent for tracking events and impressions. The SDK sends them to Split cloud.
-     * - `'DECLINED'`: the user declines consent for tracking events and impressions. The SDK does not send them to Split cloud.
-     * - `'UNKNOWN'`: the user neither grants nor declines consent for tracking events and impressions. The SDK tracks them in its internal storage, and eventually either sends
-     * them or not if the consent status is updated to 'GRANTED' or 'DECLINED' respectively. The status can be updated at any time with the `UserConsent.setStatus` factory method.
-     *
-     * @defaultValue `'GRANTED'`
-     */
-    userConsent?: ConsentStatus;
-  }
-  /**
-   * Common settings properties for client-side standalone SDKs.
-   */
-  interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISyncSharedSettings {
-    /**
-     * Mocked features map. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
-     * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
-     */
-    features?: MockedFeaturesMap;
-    /**
-     * SDK Startup settings.
-     */
-    startup?: {
-      /**
-       * Maximum amount of time used before notify a timeout.
-       *
-       * @defaultValue `10`
-       */
-      readyTimeout?: number;
-      /**
-       * Time to wait for a request before the SDK is ready. If this time expires, JS SDK will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
-       *
-       * @defaultValue `5`
-       */
-      requestTimeoutBeforeReady?: number;
-      /**
-       * How many quick retries we will do while starting up the SDK.
-       *
-       * @defaultValue `1`
-       */
-      retriesOnFailureBeforeReady?: number;
-      /**
-       * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-       * to better control on browsers or mobile. This number defines that window before the first events push.
-       *
-       * @defaultValue `10`
-       */
-      eventsFirstPushWindow?: number;
-    };
-    /**
-     * SDK scheduler settings.
-     */
-    scheduler?: {
-      /**
-       * The SDK polls Split servers for changes to feature flag definitions. This parameter controls this polling period in seconds.
-       *
-       * @defaultValue `60`
-       */
-      featuresRefreshRate?: number;
-      /**
-       * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
-       *
-       * @defaultValue `60`
-       */
-      impressionsRefreshRate?: number;
-      /**
-       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-       * If you use a 0 here, the queue will have no maximum size.
-       *
-       * @defaultValue `30000`
-       */
-      impressionsQueueSize?: number;
-      /**
-       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-       *
-       * @defaultValue `120`
-       * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
-       */
-      metricsRefreshRate?: number;
-      /**
-       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-       *
-       * @defaultValue `3600`
-       */
-      telemetryRefreshRate?: number;
-      /**
-       * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
-       *
-       * @defaultValue `60`
-       */
-      segmentsRefreshRate?: number;
-      /**
-       * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
-       *
-       * @defaultValue `60`
-       */
-      eventsPushRate?: number;
-      /**
-       * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-       * If you use a 0 here, the queue will have no maximum size.
-       *
-       * @defaultValue `500`
-       */
-      eventsQueueSize?: number;
-      /**
-       * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-       * For more information see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
-       *
-       * @defaultValue `15`
-       */
-      offlineRefreshRate?: number;
-      /**
-       * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
-       * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-       *
-       * @defaultValue `1`
-       */
-      pushRetryBackoffBase?: number;
-    };
   }
   /**
    * Settings interface for Browser SDK instances created with client-side API and synchronous storage (e.g., in-memory or local storage).
