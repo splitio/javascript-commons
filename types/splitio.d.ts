@@ -84,7 +84,7 @@ interface ISharedSettings {
   urls?: SplitIO.UrlSettings;
 }
 /**
- * Common settings properties for SDKs with synchronous API (standalone  and localhost modes).
+ * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
  */
 interface ISyncSharedSettings extends ISharedSettings {
   /**
@@ -117,9 +117,9 @@ interface ISyncSharedSettings extends ISharedSettings {
   };
 }
 /**
- * Common settings properties for SDKs with pluggable configuration.
+ * Common settings properties for SDKs with pluggable options.
  */
-interface IPluggableSettings {
+interface IPluggableSharedSettings {
   /**
    * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
    * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
@@ -143,9 +143,9 @@ interface IPluggableSettings {
   integrations?: SplitIO.IntegrationFactory[];
 }
 /**
- * Common settings properties for SDKs without pluggable configuration.
+ * Common settings properties for SDKs without pluggable options.
  */
-interface INonPluggableSettings {
+interface INonPluggableSharedSettings {
   /**
    * Boolean value to indicate whether the logger should be enabled or disabled, or a log level string.
    *
@@ -160,7 +160,7 @@ interface INonPluggableSettings {
   debug?: boolean | SplitIO.LogLevel;
 }
 /**
- * Common settings properties for server-side SDKs.
+ * Common settings properties for SDKs with server-side API.
  */
 interface IServerSideSharedSettings {
   /**
@@ -295,7 +295,7 @@ interface IServerSideSharedSettings {
   features?: SplitIO.MockedFeaturesFilePath;
 }
 /**
- * Common settings properties for client-side SDKs.
+ * Common settings properties for SDKs with client-side API.
  */
 interface IClientSideSharedSettings {
   /**
@@ -333,7 +333,7 @@ interface IClientSideSharedSettings {
   userConsent?: SplitIO.ConsentStatus;
 }
 /**
- * Common settings properties for client-side standalone SDKs.
+ * Common settings properties for SDKs with client-side and synchronous API (standalone and localhost modes).
  */
 interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISyncSharedSettings {
   /**
@@ -1096,7 +1096,7 @@ declare namespace SplitIO {
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
    */
-  interface IClientSideSettings extends IClientSideSyncSharedSettings, IPluggableSettings {
+  interface IClientSideSettings extends IClientSideSyncSharedSettings, IPluggableSharedSettings {
     /**
      * Defines the factory function to instantiate the storage. If not provided, the default in-memory storage is used.
      *
@@ -1124,7 +1124,7 @@ declare namespace SplitIO {
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#sharing-state-with-a-pluggable-storage}
    */
-  interface IClientSideAsyncSettings extends IClientSideSharedSettings, ISharedSettings, IPluggableSettings {
+  interface IClientSideAsyncSettings extends IClientSideSharedSettings, ISharedSettings, IPluggableSharedSettings {
     /**
      * The SDK mode. When using `PluggableStorage` as storage, the possible values are "consumer" and "consumer_partial".
      *
@@ -1216,7 +1216,7 @@ declare namespace SplitIO {
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#configuration}
    */
-  interface IBrowserSettings extends IClientSideSyncSharedSettings, INonPluggableSettings {
+  interface IBrowserSettings extends IClientSideSyncSharedSettings, INonPluggableSharedSettings {
     /**
      * Defines which kind of storage we can instantiate on the browser.
      * Possible storage types are 'MEMORY', which is the default, and 'LOCALSTORAGE'.
@@ -1242,7 +1242,7 @@ declare namespace SplitIO {
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
    */
-  interface INodeSettings extends IServerSideSharedSettings, ISyncSharedSettings, INonPluggableSettings {
+  interface INodeSettings extends IServerSideSharedSettings, ISyncSharedSettings, INonPluggableSharedSettings {
     /**
      * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
      * The only possible storage type is 'MEMORY', which is the default.
@@ -1324,7 +1324,7 @@ declare namespace SplitIO {
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
    */
-  interface INodeAsyncSettings extends IServerSideSharedSettings, ISharedSettings, INonPluggableSettings {
+  interface INodeAsyncSettings extends IServerSideSharedSettings, ISharedSettings, INonPluggableSharedSettings {
     /**
      * The SDK mode. When using 'REDIS' storage type, the only possible value is "consumer", which is required.
      *
