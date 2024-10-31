@@ -186,6 +186,113 @@ interface IServerSideSharedSettings {
      */
     IPAddressesEnabled?: boolean;
   };
+  /**
+   * SDK Startup settings for NodeJS.
+   */
+  startup?: {
+    /**
+     * Maximum amount of time used before notify a timeout.
+     *
+     * @defaultValue `15`
+     */
+    readyTimeout?: number;
+    /**
+     * Time to wait for a request before the SDK is ready. If this time expires, JS SDK will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
+     *
+     * @defaultValue `15`
+     */
+    requestTimeoutBeforeReady?: number;
+    /**
+     * How many quick retries we will do while starting up the SDK.
+     *
+     * @defaultValue `1`
+     */
+    retriesOnFailureBeforeReady?: number;
+    /**
+     * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
+     * to better control on browsers. This number defines that window before the first events push.
+     *
+     * @defaultValue `0`
+     */
+    eventsFirstPushWindow?: number;
+  };
+  /**
+   * SDK scheduler settings.
+   */
+  scheduler?: {
+    /**
+     * The SDK polls Split servers for changes to feature flag definitions. This parameter controls this polling period in seconds.
+     *
+     * @defaultValue `60`
+     */
+    featuresRefreshRate?: number;
+    /**
+     * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
+     *
+     * @defaultValue `300`
+     */
+    impressionsRefreshRate?: number;
+    /**
+     * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     *
+     * @defaultValue `30000`
+     */
+    impressionsQueueSize?: number;
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     *
+     * @defaultValue `120`
+     * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
+     */
+    metricsRefreshRate?: number;
+    /**
+     * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
+     *
+     * @defaultValue `3600`
+     */
+    telemetryRefreshRate?: number;
+    /**
+     * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
+     *
+     * @defaultValue `60`
+     */
+    segmentsRefreshRate?: number;
+    /**
+     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+     *
+     * @defaultValue `60`
+     */
+    eventsPushRate?: number;
+    /**
+     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     *
+     * @defaultValue `500`
+     */
+    eventsQueueSize?: number;
+    /**
+     * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
+     * For more information see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+     *
+     * @defaultValue `15`
+     */
+    offlineRefreshRate?: number;
+    /**
+     * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
+     * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
+     *
+     * @defaultValue `1`
+     */
+    pushRetryBackoffBase?: number;
+  };
+  /**
+   * Mocked features file path. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
+   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+   *
+   * @defaultValue `'$HOME/.split'`
+   */
+  features?: SplitIO.MockedFeaturesFilePath;
 }
 /**
  * Common settings properties for client-side SDKs.
@@ -1137,113 +1244,6 @@ declare namespace SplitIO {
    */
   interface INodeSettings extends IServerSideSharedSettings, ISyncSharedSettings, INonPluggableSettings {
     /**
-     * SDK Startup settings for NodeJS.
-     */
-    startup?: {
-      /**
-       * Maximum amount of time used before notify a timeout.
-       *
-       * @defaultValue `15`
-       */
-      readyTimeout?: number;
-      /**
-       * Time to wait for a request before the SDK is ready. If this time expires, JS SDK will retry 'retriesOnFailureBeforeReady' times before notifying its failure to be 'ready'.
-       *
-       * @defaultValue `15`
-       */
-      requestTimeoutBeforeReady?: number;
-      /**
-       * How many quick retries we will do while starting up the SDK.
-       *
-       * @defaultValue `1`
-       */
-      retriesOnFailureBeforeReady?: number;
-      /**
-       * For SDK posts the queued events data in bulks with a given rate, but the first push window is defined separately,
-       * to better control on browsers. This number defines that window before the first events push.
-       *
-       * @defaultValue `0`
-       */
-      eventsFirstPushWindow?: number;
-    };
-    /**
-     * SDK scheduler settings.
-     */
-    scheduler?: {
-      /**
-       * The SDK polls Split servers for changes to feature flag definitions. This parameter controls this polling period in seconds.
-       *
-       * @defaultValue `60`
-       */
-      featuresRefreshRate?: number;
-      /**
-       * The SDK sends information on who got what treatment at what time back to Split servers to power analytics. This parameter controls how often this data is sent to Split servers. The parameter should be in seconds.
-       *
-       * @defaultValue `300`
-       */
-      impressionsRefreshRate?: number;
-      /**
-       * The maximum number of impression items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-       * If you use a 0 here, the queue will have no maximum size.
-       *
-       * @defaultValue `30000`
-       */
-      impressionsQueueSize?: number;
-      /**
-       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-       *
-       * @defaultValue `120`
-       * @deprecated This parameter is ignored now. Use `telemetryRefreshRate` instead.
-       */
-      metricsRefreshRate?: number;
-      /**
-       * The SDK sends diagnostic metrics to Split servers. This parameters controls this metric flush period in seconds.
-       *
-       * @defaultValue `3600`
-       */
-      telemetryRefreshRate?: number;
-      /**
-       * The SDK polls Split servers for changes to segment definitions. This parameter controls this polling period in seconds.
-       *
-       * @defaultValue `60`
-       */
-      segmentsRefreshRate?: number;
-      /**
-       * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
-       *
-       * @defaultValue `60`
-       */
-      eventsPushRate?: number;
-      /**
-       * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-       * If you use a 0 here, the queue will have no maximum size.
-       *
-       * @defaultValue `500`
-       */
-      eventsQueueSize?: number;
-      /**
-       * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-       * For more information see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
-       *
-       * @defaultValue `15`
-       */
-      offlineRefreshRate?: number;
-      /**
-       * When using streaming mode, seconds to wait before re attempting to connect for push notifications.
-       * Next attempts follow intervals in power of two: base seconds, base x 2 seconds, base x 4 seconds, ...
-       *
-       * @defaultValue `1`
-       */
-      pushRetryBackoffBase?: number;
-    };
-    /**
-     * Mocked features file path. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
-     * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
-     *
-     * @defaultValue `'$HOME/.split'`
-     */
-    features?: MockedFeaturesFilePath;
-    /**
      * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
      * The only possible storage type is 'MEMORY', which is the default.
      */
@@ -1331,17 +1331,6 @@ declare namespace SplitIO {
      * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#state-sharing-redis-integration}
      */
     mode: 'consumer';
-    /**
-     * SDK Startup settings for NodeJS.
-     */
-    startup?: {
-      /**
-       * Maximum amount of time used before notify a timeout.
-       *
-       * @defaultValue `15`
-       */
-      readyTimeout?: number;
-    };
     /**
      * Defines which kind of async storage we can instantiate on NodeJS for 'consumer' mode.
      * The only possible storage type is 'REDIS'.
