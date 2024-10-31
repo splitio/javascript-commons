@@ -18,7 +18,7 @@ import { NONE, OPTIMIZED } from '../utils/constants';
 /**
  * Modular SDK factory
  */
-export function sdkFactory(params: ISdkFactoryParams): SplitIO.INodeSDK | SplitIO.INodeAsyncSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
+export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,

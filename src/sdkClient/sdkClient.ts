@@ -10,7 +10,7 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
 /**
  * Creates an Sdk client, i.e., a base client with status and destroy interface
  */
-export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.INodeClient | SplitIO.INodeAsyncClient {
+export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, uniqueKeysTracker } = params;
 
   let lastActionTime = 0;

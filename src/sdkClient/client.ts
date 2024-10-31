@@ -25,7 +25,7 @@ function treatmentsNotReady(featureFlagNames: string[]) {
 /**
  * Creator of base client with getTreatments and track methods.
  */
-export function clientFactory(params: ISdkFactoryContext): SplitIO.INodeClient | SplitIO.INodeAsyncClient {
+export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
   const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -199,5 +199,5 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.INodeClient |
     getTreatmentsByFlagSet,
     getTreatmentsWithConfigByFlagSet,
     track,
-  } as SplitIO.INodeClient | SplitIO.INodeAsyncClient;
+  } as SplitIO.IClient | SplitIO.IAsyncClient;
 }

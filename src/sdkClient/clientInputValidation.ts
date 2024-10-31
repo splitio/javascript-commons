@@ -24,7 +24,7 @@ import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator<TClient extends SplitIO.INodeClient | SplitIO.INodeAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
 
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);

@@ -79,7 +79,7 @@ export interface ISdkFactoryParams {
   platform: IPlatform,
 
   // Storage factory. The result storage type implies the type of the SDK:
-  // sync SDK (`ISDK` and `INodeSDK`) with `IStorageSync`, and async SDK (`IAsyncSDK` and `INodeAsyncSDK`) with `IStorageAsync`
+  // sync SDK (`IBrowserSDK` and `ISDK`) with `IStorageSync`, and async SDK (`IBrowserAsyncSDK` and `IAsyncSDK`) with `IStorageAsync`
   storageFactory: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
 
   // Factory of Split Api (HTTP Client Service).
@@ -94,9 +94,9 @@ export interface ISdkFactoryParams {
   // Sdk manager factory
   sdkManagerFactory: typeof sdkManagerFactory,
 
-  // Sdk client method factory (ISDK::client method).
-  // It Allows to distinguish SDK clients with the client-side API (`ISDK` and `IAsyncSDK`) or server-side API (`INodeSDK` and `INodeAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.IClient; (key: SplitIO.SplitKey): SplitIO.IClient; } | (() => SplitIO.INodeClient) | (() => SplitIO.INodeAsyncClient))
+  // Sdk client method factory.
+  // It Allows to distinguish SDK clients with the client-side API (`IBrowserSDK` and `IBrowserAsyncSDK`) or server-side API (`ISDK` and `IAsyncSDK`).
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.IBrowserClient; (key: SplitIO.SplitKey): SplitIO.IBrowserClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
   // Impression observer factory.
   impressionsObserverFactory: () => IImpressionObserver

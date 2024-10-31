@@ -10,7 +10,7 @@ import { clientAttributesDecoration } from './clientAttributesDecoration';
  * @param client - sync client instance
  * @param key - validated split key
  */
-export function clientCSDecorator(log: ILogger, client: SplitIO.INodeClient, key: SplitIO.SplitKey): SplitIO.IClient {
+export function clientCSDecorator(log: ILogger, client: SplitIO.IClient, key: SplitIO.SplitKey): SplitIO.IBrowserClient {
 
   let clientCS = clientAttributesDecoration(log, client);
 
@@ -30,5 +30,5 @@ export function clientCSDecorator(log: ILogger, client: SplitIO.INodeClient, key
     // Not part of the public API. These properties are used to support other modules (e.g., Split Suite)
     isClientSide: true,
     key
-  }) as SplitIO.IClient;
+  }) as SplitIO.IBrowserClient;
 }

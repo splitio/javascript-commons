@@ -1422,19 +1422,19 @@ declare namespace SplitIO {
    * This represents the interface for the SDK instance with synchronous storage and client-side API,
    * i.e., where client instances have a bound user key.
    */
-  interface ISDK extends IBasicSDK {
+  interface IBrowserSDK extends IBasicSDK {
     /**
      * Returns the default client instance of the SDK, associated with the key provided on settings.
      *
      * @returns The client instance.
      */
-    client(): IClient;
+    client(): IBrowserClient;
     /**
      * Returns a shared client of the SDK, associated with the given key.
      * @param key - The key for the new client instance.
      * @returns The client instance.
      */
-    client(key: SplitKey): IClient;
+    client(key: SplitKey): IBrowserClient;
     /**
      * Returns a manager instance of the SDK to explore available information.
      *
@@ -1450,20 +1450,20 @@ declare namespace SplitIO {
    * This represents the interface for the SDK instance with asynchronous storage and client-side API,
    * i.e., where client instances have a bound user key.
    */
-  interface IAsyncSDK extends IBasicSDK {
+  interface IBrowserAsyncSDK extends IBasicSDK {
     /**
      * Returns the default client instance of the SDK, associated with the key provided on settings.
      *
      * @returns The asynchronous client instance.
      */
-    client(): IAsyncClient;
+    client(): IBrowserAsyncClient;
     /**
      * Returns a shared client of the SDK, associated with the given key.
      *
      * @param key - The key for the new client instance.
      * @returns The asynchronous client instance.
      */
-    client(key: SplitKey): IAsyncClient;
+    client(key: SplitKey): IBrowserAsyncClient;
     /**
      * Returns a manager instance of the SDK to explore available information.
      *
@@ -1478,13 +1478,13 @@ declare namespace SplitIO {
   /**
    * This represents the interface for the SDK instance for server-side with synchronous storage.
    */
-  interface INodeSDK extends IBasicSDK {
+  interface ISDK extends IBasicSDK {
     /**
      * Returns the default client instance of the SDK.
      *
      * @returns The client instance.
      */
-    client(): INodeClient;
+    client(): IClient;
     /**
      * Returns a manager instance of the SDK to explore available information.
      *
@@ -1495,13 +1495,13 @@ declare namespace SplitIO {
   /**
    * This represents the interface for the SDK instance for server-side with asynchronous storage.
    */
-  interface INodeAsyncSDK extends IBasicSDK {
+  interface IAsyncSDK extends IBasicSDK {
     /**
      * Returns the default client instance of the SDK.
      *
      * @returns The asynchronous client instance.
      */
-    client(): INodeAsyncClient;
+    client(): IAsyncClient;
     /**
      * Returns a manager instance of the SDK to explore available information.
      *
@@ -1513,7 +1513,7 @@ declare namespace SplitIO {
    * This represents the interface for the Client instance on server-side, where the user key is not bound to the instance and must be provided on each method call.
    * This interface is available in NodeJS, or when importing the 'server' sub-package of JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
    */
-  interface INodeClient extends IBasicClient {
+  interface IClient extends IBasicClient {
     /**
      * Returns a Treatment value, which is the treatment string for the given feature.
      *
@@ -1604,7 +1604,7 @@ declare namespace SplitIO {
    * User key is not bound to the instance and must be provided on each method call, which returns a promise.
    * This interface is available in NodeJS, or when importing the 'server' sub-package in JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
    */
-  interface INodeAsyncClient extends IBasicClient {
+  interface IAsyncClient extends IBasicClient {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      *
@@ -1735,7 +1735,7 @@ declare namespace SplitIO {
   /**
    * This represents the interface for the Client instance on client-side, where the user key is bound to the instance on creation and does not need to be provided on each method call.
    */
-  interface IClient extends IClientWithAttributes {
+  interface IBrowserClient extends IClientWithAttributes {
     /**
      * Returns a Treatment value, which is the treatment string for the given feature.
      *
@@ -1814,7 +1814,7 @@ declare namespace SplitIO {
   /**
    * This represents the interface for the Client instance with asynchronous storage for client-side SDK, where each client has associated a key.
    */
-  interface IAsyncClient extends IClientWithAttributes {
+  interface IBrowserAsyncClient extends IClientWithAttributes {
     /**
      * Returns a Treatment value, which will be (or eventually be) the treatment string for the given feature.
      *

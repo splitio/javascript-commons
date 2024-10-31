@@ -26,7 +26,7 @@ jest.mock('../../trackers/telemetryTracker', () => {
   };
 });
 
-// IAsyncSDK, minimal params
+// IBrowserAsyncSDK, minimal params
 const paramsForAsyncSDK = {
   settings: fullSettings,
   storageFactory: jest.fn(() => mockStorage),
@@ -40,7 +40,7 @@ const paramsForAsyncSDK = {
 
 const SignalListenerInstanceMock = { start: jest.fn() };
 
-// ISDK, full params
+// IBrowserSDK, full params
 const fullParamsForSyncSDK = {
   ...paramsForAsyncSDK,
   syncManagerFactory: jest.fn(),
@@ -59,7 +59,7 @@ const fullParamsForSyncSDK = {
 
 /** End Mocks */
 
-function assertSdkApi(sdk: SplitIO.INodeAsyncSDK | SplitIO.INodeSDK | SplitIO.IAsyncSDK | SplitIO.ISDK, params: any) {
+function assertSdkApi(sdk: SplitIO.IAsyncSDK | SplitIO.ISDK | SplitIO.IBrowserAsyncSDK | SplitIO.IBrowserSDK, params: any) {
   expect(sdk.Logger).toBe(loggerApiMock);
   expect(sdk.settings).toBe(params.settings);
   expect(sdk.client).toBe(params.sdkClientMethodFactory.mock.results[0].value);

@@ -14,12 +14,12 @@ import { buildInstanceId } from './identity';
  * Factory of client method for the client-side API variant where TT is ignored.
  * Therefore, clients don't have a bound TT for the track method.
  */
-export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.IClient {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.IBrowserClient {
   const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
-    sdkClientFactory(params) as SplitIO.INodeClient,
+    sdkClientFactory(params) as SplitIO.IClient,
     key
   );
 
@@ -71,7 +71,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
           sdkReadinessManager: sharedSdkReadiness,
           storage: sharedStorage || storage,
           syncManager: sharedSyncManager,
-        }), true) as SplitIO.INodeClient,
+        }), true) as SplitIO.IClient,
         validKey
       );
 
@@ -80,6 +80,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clients[instanceId] as SplitIO.IClient;
+    return clients[instanceId] as SplitIO.IBrowserClient;
   };
 }

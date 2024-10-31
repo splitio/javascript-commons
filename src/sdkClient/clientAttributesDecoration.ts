@@ -7,7 +7,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 /**
  * Add in memory attributes storage methods and combine them with any attribute received from the getTreatment/s call
  */
-export function clientAttributesDecoration<TClient extends SplitIO.INodeClient | SplitIO.INodeAsyncClient>(log: ILogger, client: TClient) {
+export function clientAttributesDecoration<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(log: ILogger, client: TClient) {
 
   const attributeStorage = new AttributesCacheInMemory();
 

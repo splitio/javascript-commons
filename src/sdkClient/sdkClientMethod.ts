@@ -6,7 +6,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 /**
  * Factory of client method for server-side SDKs
  */
-export function sdkClientMethodFactory(params: ISdkFactoryContext): () => SplitIO.INodeClient | SplitIO.INodeAsyncClient {
+export function sdkClientMethodFactory(params: ISdkFactoryContext): () => SplitIO.IClient | SplitIO.IAsyncClient {
   const log = params.settings.log;
   const clientInstance = sdkClientFactory(params);
 
