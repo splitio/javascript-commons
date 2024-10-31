@@ -83,7 +83,7 @@ declare namespace SplitIO {
   interface ISettings {
     readonly core: {
       authorizationKey: string;
-      key: SplitIO.SplitKey;
+      key: SplitKey;
       labelsEnabled: boolean;
       IPAddressesEnabled: boolean;
     };
@@ -109,7 +109,7 @@ declare namespace SplitIO {
       retriesOnFailureBeforeReady: number;
       eventsFirstPushWindow: number;
     };
-    readonly storage: SplitIO.StorageSyncFactory | SplitIO.StorageAsyncFactory | SplitIO.StorageOptions;
+    readonly storage: StorageSyncFactory | StorageAsyncFactory | StorageOptions;
     readonly urls: {
       events: string;
       sdk: string;
@@ -117,17 +117,17 @@ declare namespace SplitIO {
       streaming: string;
       telemetry: string;
     };
-    readonly integrations?: SplitIO.IntegrationFactory[];
-    readonly debug: boolean | LogLevel | SplitIO.ILogger;
+    readonly integrations?: IntegrationFactory[];
+    readonly debug: boolean | LogLevel | ILogger;
     readonly version: string;
     /**
      * Mocked features map if using in client-side, or mocked features file path string if using in server-side (NodeJS).
      */
-    features: SplitIO.MockedFeaturesMap | SplitIO.MockedFeaturesFilePath;
+    features: MockedFeaturesMap | MockedFeaturesFilePath;
     readonly streamingEnabled: boolean;
     readonly sync: {
-      splitFilters: SplitIO.SplitFilter[];
-      impressionsMode: SplitIO.ImpressionsMode;
+      splitFilters: SplitFilter[];
+      impressionsMode: ImpressionsMode;
       enabled: boolean;
       flagSpecVersion: string;
       requestOptions?: {
@@ -138,11 +138,11 @@ declare namespace SplitIO {
       ip: string | false;
       hostname: string | false;
     };
-    readonly impressionListener?: SplitIO.IImpressionListener;
+    readonly impressionListener?: IImpressionListener;
     /**
      * User consent status if using in client-side. Undefined if using in server-side (NodeJS).
      */
-    readonly userConsent?: SplitIO.ConsentStatus;
+    readonly userConsent?: ConsentStatus;
   }
   /**
    * Log levels.
@@ -191,12 +191,12 @@ declare namespace SplitIO {
      *
      * @returns The user consent status.
      */
-    getStatus(): SplitIO.ConsentStatus;
+    getStatus(): ConsentStatus;
     /**
      * Consent status constants. Use this to compare with the getStatus function result.
      */
     Status: {
-      [status in SplitIO.ConsentStatus]: SplitIO.ConsentStatus;
+      [status in ConsentStatus]: ConsentStatus;
     };
   }
   /**
@@ -382,7 +382,7 @@ declare namespace SplitIO {
    */
   type ImpressionData = {
     impression: ImpressionDTO;
-    attributes?: SplitIO.Attributes;
+    attributes?: Attributes;
     ip: string | false;
     hostname: string | false;
     sdkLanguageVersion: string;
@@ -526,7 +526,7 @@ declare namespace SplitIO {
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#listener}
    */
   interface IImpressionListener {
-    logImpression(data: SplitIO.ImpressionData): void;
+    logImpression(data: ImpressionData): void;
   }
   /**
    * SDK integration instance.
@@ -573,20 +573,20 @@ declare namespace SplitIO {
     /**
      * The type of Split data.
      */
-    type: 'IMPRESSION',
+    type: 'IMPRESSION';
     /**
      * The impression data.
      */
-    payload: SplitIO.ImpressionData
+    payload: ImpressionData;
   } | {
     /**
      * The type of Split data.
      */
-    type: 'EVENT',
+    type: 'EVENT';
     /**
      * The event data.
      */
-    payload: SplitIO.EventData
+    payload: EventData;
   };
   /**
    * Available URL settings for the SDKs.
@@ -665,7 +665,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `undefined`
      */
-    impressionListener?: SplitIO.IImpressionListener;
+    impressionListener?: IImpressionListener;
     /**
      * SDK synchronization settings.
      */
@@ -681,7 +681,7 @@ declare namespace SplitIO {
        *   ]
        * ```
        */
-      splitFilters?: SplitIO.SplitFilter[];
+      splitFilters?: SplitFilter[];
       /**
        * Impressions Collection Mode. Option to determine how impressions are going to be sent to Split servers.
        * Possible values are 'DEBUG', 'OPTIMIZED', and 'NONE'.
@@ -691,7 +691,7 @@ declare namespace SplitIO {
        *
        * @defaultValue `'OPTIMIZED'`
        */
-      impressionsMode?: SplitIO.ImpressionsMode;
+      impressionsMode?: ImpressionsMode;
       /**
        * Custom options object for HTTP(S) requests.
        * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
@@ -782,7 +782,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `false`
      */
-    debug?: boolean | LogLevel | SplitIO.ILogger;
+    debug?: boolean | LogLevel | ILogger;
     /**
      * Defines an optional list of factory functions used to instantiate SDK integrations.
      *
@@ -1241,7 +1241,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `'$HOME/.split'`
      */
-    features?: SplitIO.MockedFeaturesFilePath;
+    features?: MockedFeaturesFilePath;
     /**
      * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
      * The only possible storage type is 'MEMORY', which is the default.
@@ -1597,7 +1597,7 @@ declare namespace SplitIO {
      * @param properties - The properties of this event. Values can be string, number, boolean or null.
      * @returns Whether the event was added to the queue successfully or not.
      */
-    track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
   }
   /**
    * This represents the interface for the Client instance on server-side with asynchronous storage, like REDIS.
@@ -1687,7 +1687,7 @@ declare namespace SplitIO {
      * @param properties - The properties of this event. Values can be string, number, boolean or null.
      * @returns A promise that resolves to a boolean indicating if the event was added to the queue successfully or not.
      */
-    track(key: SplitIO.SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>;
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>;
   }
   interface IClientWithAttributes extends IBasicClient {
     /**
