@@ -6,7 +6,7 @@ import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTy
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
-import { SplitIO, ImpressionDTO } from '../types';
+import SplitIO from '../../types/splitio';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
@@ -34,7 +34,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
-      const queue: ImpressionDTO[] = [];
+      const queue: SplitIO.ImpressionDTO[] = [];
       const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, methodName, queue);
       impressionsTracker.track(queue, attributes);
 
@@ -59,7 +59,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
-      const queue: ImpressionDTO[] = [];
+      const queue: SplitIO.ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       Object.keys(evaluationResults).forEach(featureFlagName => {
         treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
@@ -87,7 +87,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
-      const queue: ImpressionDTO[] = [];
+      const queue: SplitIO.ImpressionDTO[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       const evaluations = evaluationResults;
       Object.keys(evaluations).forEach(featureFlagName => {
@@ -128,7 +128,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     attributes: SplitIO.Attributes | undefined,
     withConfig: boolean,
     invokingMethodName: string,
-    queue: ImpressionDTO[]
+    queue: SplitIO.ImpressionDTO[]
   ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
@@ -199,6 +199,5 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     getTreatmentsByFlagSet,
     getTreatmentsWithConfigByFlagSet,
     track,
-    isClientSide: false
   } as SplitIO.IClient | SplitIO.IAsyncClient;
 }

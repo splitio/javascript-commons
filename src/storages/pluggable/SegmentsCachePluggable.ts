@@ -83,7 +83,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
   }
 
-  /** @TODO implement if required by DataLoader or Producer mode  */
+  // @TODO implement if required by DataLoader or Producer mode
   clear(): Promise<boolean> {
     return Promise.resolve(true);
   }

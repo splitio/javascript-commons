@@ -14,9 +14,9 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
 
   /**
    * Create a Telemetry cache that uses Redis as storage.
-   * @param log  Logger instance.
-   * @param keys  Key builder.
-   * @param redis  Redis client.
+   * @param log -  Logger instance.
+   * @param keys -  Key builder.
+   * @param redis -  Redis client.
    */
   constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly redis: RedisAdapter) { }
 

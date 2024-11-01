@@ -13,9 +13,9 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
   /**
    * Create a Telemetry cache that uses a storage wrapper.
-   * @param log  Logger instance.
-   * @param keys  Key builder.
-   * @param wrapper  Adapted wrapper storage.
+   * @param log -  Logger instance.
+   * @param keys -  Key builder.
+   * @param wrapper -  Adapted wrapper storage.
    */
   constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly wrapper: IPluggableStorageWrapper) { }
 

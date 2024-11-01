@@ -1,7 +1,7 @@
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, ISegmentUpdateData, ISplitUpdateData, ISplitKillData, INotificationData } from './SSEHandler/types';
 import { ITask } from '../types';
 import { IMySegmentsSyncTask } from '../polling/types';
-import { IEventEmitter } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ControlType } from './constants';
 
 // Internal SDK events, subscribed by SyncManager and PushManager
@@ -34,7 +34,7 @@ type IParsedData<T extends IPushEvent> =
  * EventEmitter used as Feedback Loop between the SyncManager and PushManager,
  * where the latter pushes messages and the former consumes it
  */
-export interface IPushEventEmitter extends IEventEmitter {
+export interface IPushEventEmitter extends SplitIO.IEventEmitter {
   once<T extends IPushEvent>(event: T, listener: (parsedData: IParsedData<T>) => void): this;
   on<T extends IPushEvent>(event: T, listener: (parsedData: IParsedData<T>) => void): this;
   emit<T extends IPushEvent>(event: T, parsedData?: IParsedData<T>): boolean;

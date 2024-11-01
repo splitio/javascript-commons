@@ -56,7 +56,7 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
 
   /**
    * Async consumer API, used by synchronizer.
-   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   * @param count - number of items to pop from the queue. If not provided or equal 0, all items will be popped.
    */
   popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
     return Promise.resolve(count || this.wrapper.getItemsCount(this.key))

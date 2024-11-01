@@ -19,9 +19,9 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
 
   /**
    * Create a SplitsCache that uses a storage wrapper.
-   * @param log  Logger instance.
-   * @param keys  Key builder.
-   * @param wrapper  Adapted wrapper storage.
+   * @param log -  Logger instance.
+   * @param keys -  Key builder.
+   * @param wrapper -  Adapted wrapper storage.
    */
   constructor(log: ILogger, keys: KeyBuilder, wrapper: IPluggableStorageWrapper, splitFiltersValidation?: ISplitFiltersValidation) {
     super();

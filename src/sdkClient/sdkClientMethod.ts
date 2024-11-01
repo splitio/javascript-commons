@@ -1,4 +1,4 @@
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { sdkClientFactory } from './sdkClient';
 import { RETRIEVE_CLIENT_DEFAULT } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';

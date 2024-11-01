@@ -7,7 +7,7 @@ const BASE = 1.5;
 /**
  * Calculates buckets from latency in milliseconds
  *
- * @param latencyInMs
+ * @param latencyInMs - latency in milliseconds
  * @returns a bucket index from 0 to 22 inclusive
  */
 export function findLatencyIndex(latencyInMs: number): number {

@@ -1,4 +1,4 @@
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 
 export type MaybeThenable<T> = T | Promise<T>
 

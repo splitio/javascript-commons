@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 const valuesExamples = [
   ['\u0223abc', 'abc\u0223asd', 'abc\u0223', 'abcȣ'],

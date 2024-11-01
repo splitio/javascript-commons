@@ -1,15 +1,15 @@
 
 import { LogLevels, isLogLevelString } from '../../../logger';
-import { LogLevel } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 
 /**
  * Returns the LogLevel for the given debugValue or undefined if it is invalid,
  * i.e., if the debugValue is not a boolean or LogLevel string.
  *
- * @param debugValue debug value at config
+ * @param debugValue - debug value at config
  * @returns LogLevel of the given debugValue or undefined if the provided value is invalid
  */
-export function getLogLevel(debugValue: unknown): LogLevel | undefined {
+export function getLogLevel(debugValue: unknown): SplitIO.LogLevel | undefined {
   if (typeof debugValue === 'boolean') {
     if (debugValue) {
       return LogLevels.DEBUG;

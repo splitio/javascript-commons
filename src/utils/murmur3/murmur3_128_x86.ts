@@ -181,7 +181,7 @@ function hash128x86(key?: string, seed?: number): string {
  * x86 version of Murmur3 for 128bits.
  * Used by hashImpression128 because in JS it is more efficient than the x64 version, no matter the underlying OS/CPU arch.
  *
- * @param {string} str
+ * @param str - The string to hash.
  */
 export function hash128(str: string, seed?: number): string {
   return hash128x86(UTF16ToUTF8(str), (seed as number) >>> 0);

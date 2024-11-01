@@ -3,7 +3,7 @@ import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
 import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
-import { IBasicClient, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
@@ -18,7 +18,7 @@ import { NONE, OPTIMIZED } from '../utils/constants';
 /**
  * Modular SDK factory
  */
-export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
+export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
@@ -54,7 +54,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     },
   });
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
-  const clients: Record<string, IBasicClient> = {};
+  const clients: Record<string, SplitIO.IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 

@@ -20,11 +20,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private hasSync?: boolean;
   private updateNewFilter?: boolean;
 
-  /**
-   * @param {KeyBuilderCS} keys
-   * @param {number | undefined} expirationTimestamp
-   * @param {ISplitFiltersValidation} splitFiltersValidation
-   */
   constructor(settings: ISettings, keys: KeyBuilderCS, expirationTimestamp?: number) {
     super();
     this.keys = keys;
@@ -229,7 +224,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   /**
    * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
    *
-   * @param {number | undefined} expirationTimestamp if the value is not a number, data will not be cleaned
+   * @param expirationTimestamp - if the value is not a number, data will not be cleaned
    */
   private _checkExpiration(expirationTimestamp?: number) {
     let value: string | number | null = localStorage.getItem(this.keys.buildLastUpdatedKey());

@@ -5,7 +5,7 @@ import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';

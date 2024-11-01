@@ -2,18 +2,19 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker, IStrategy } from './types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
+import SplitIO from '../../types/splitio';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
  *
- * @param impressionsCache cache to save impressions
- * @param metadata runtime metadata (ip, hostname and version)
- * @param impressionListener optional impression listener
- * @param integrationsManager optional integrations manager
- * @param strategy strategy for impressions tracking.
+ * @param impressionsCache - cache to save impressions
+ * @param metadata - runtime metadata (ip, hostname and version)
+ * @param impressionListener - optional impression listener
+ * @param integrationsManager - optional integrations manager
+ * @param strategy - strategy for impressions tracking.
  */
 export function impressionsTrackerFactory(
   settings: ISettings,
@@ -27,7 +28,7 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsCount = impressions.length;

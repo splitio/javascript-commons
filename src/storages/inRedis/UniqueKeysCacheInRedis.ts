@@ -63,7 +63,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
 
   /**
    * Async consumer API, used by synchronizer.
-   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   * @param count - number of items to pop from the queue. If not provided or equal 0, all items will be popped.
    */
   popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
     return this.redis.lrange(this.key, 0, count - 1).then(uniqueKeyItems => {
