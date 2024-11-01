@@ -13,7 +13,7 @@ export interface ISplitsEventEmitter extends SplitIO.IEventEmitter {
   once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   splitsArrived: boolean
   splitsCacheLoaded: boolean
-  initialized: boolean,
+  hasInit: boolean,
   initCallbacks: (() => void)[]
 }
 

@@ -8,7 +8,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
-    initialized: false,
+    hasInit: false,
     initCallbacks: []
   });
 
@@ -68,7 +68,7 @@ export function readinessManagerFactory(
 
   let readyTimeoutId: ReturnType<typeof setTimeout>;
   if (readyTimeout > 0) {
-    if (splits.initialized) readyTimeoutId = setTimeout(timeout, readyTimeout);
+    if (splits.hasInit) readyTimeoutId = setTimeout(timeout, readyTimeout);
     else splits.initCallbacks.push(() => { readyTimeoutId = setTimeout(timeout, readyTimeout); });
   }
 
@@ -137,8 +137,8 @@ export function readinessManagerFactory(
     setDestroyed() { isDestroyed = true; },
 
     init() {
-      if (splits.initialized) return;
-      splits.initialized = true;
+      if (splits.hasInit) return;
+      splits.hasInit = true;
       splits.initCallbacks.forEach(cb => cb());
     },
 
