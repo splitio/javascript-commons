@@ -5,7 +5,6 @@ import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { _Set } from '../../utils/lang/sets';
 
 /**
  * ISegmentsCacheAsync implementation for pluggable storages.
@@ -84,7 +83,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
   }
 
-  /** @TODO implement if required by DataLoader or Producer mode  */
+  // @TODO implement if required by DataLoader or Producer mode
   clear(): Promise<boolean> {
     return Promise.resolve(true);
   }

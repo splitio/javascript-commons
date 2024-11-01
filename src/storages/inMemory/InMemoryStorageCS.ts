@@ -11,7 +11,7 @@ import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 /**
  * InMemory storage factory for standalone client-side SplitFactory
  *
- * @param params parameters required by EventsCacheSync
+ * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
@@ -41,7 +41,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
       this.uniqueKeys && this.uniqueKeys.clear();
     },
 
-    // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
+    // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared() {
       return {
         splits: this.splits,

@@ -1,4 +1,4 @@
-import { SplitIO } from '../../../../types';
+import SplitIO from '../../../../../types/splitio';
 import { splitsParserFromSettingsFactory } from '../splitsParserFromSettings';
 
 const FEATURE_ON = { conditions: [{ conditionType: 'ROLLOUT', label: 'default rule', matcherGroup: { combiner: 'AND', matchers: [{ keySelector: null, matcherType: 'ALL_KEYS', negate: false }] }, partitions: [{ size: 100, treatment: 'on' }] }], configurations: {}, trafficTypeName: 'localhost' };

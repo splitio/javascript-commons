@@ -5,10 +5,10 @@ import { ILogger } from '../../../logger/types';
 /**
  * This function validates `settings.integrations` object that consists of a list of configuration items, used by the isomorphic JS SDK.
  *
- * @param {any} settings config object provided by the user to initialize the sdk
- * @param {Array<string>} validIntegrationTypes list of integration types to filter from `settings.integrations`
+ * @param settings - config object provided by the user to initialize the sdk
+ * @param validIntegrationTypes - list of integration types to filter from `settings.integrations`
  *
- * @returns {Array} array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
+ * @returns array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
  */
 export function validateConfigurableIntegrations(settings: { log: ILogger, integrations?: any }, validIntegrationTypes: string[] = []) {
 

@@ -13,16 +13,15 @@ function Uint8ArrayToString(myUint8Arr: Uint8Array) { // @ts-ignore
 
 function StringToUint8Array(myString: string) {
   const charCodes = myString.split('').map((e) => e.charCodeAt(0));
-  // eslint-disable-next-line compat/compat
   return new Uint8Array(charCodes);
 }
 
 /**
  * Decode and decompress 'data' with 'compression' algorithm
  *
- * @param {string} data
- * @param {number} compression 1 GZIP, 2 ZLIB
- * @returns {Uint8Array}
+ * @param data - base64 encoded string
+ * @param compression - 1 GZIP, 2 ZLIB
+ * @returns
  * @throws if data string cannot be decoded, decompressed or the provided compression value is invalid (not 1 or 2)
  */
 function decompress(data: string, compression: Compression) {
@@ -38,10 +37,10 @@ function decompress(data: string, compression: Compression) {
 /**
  * Decode, decompress and parse the provided 'data' into a KeyList object
  *
- * @param {string} data
- * @param {number} compression
- * @param {boolean} avoidPrecisionLoss true as default, set it as false if dont need to avoid precission loss
- * @returns {{a?: string[], r?: string[] }}
+ * @param data - base64 encoded string
+ * @param compression - 1 GZIP, 2 ZLIB
+ * @param avoidPrecisionLoss - true as default, set it as false if dont need to avoid precission loss
+ * @returns keyList
  * @throws if data string cannot be decoded, decompressed or parsed
  */
 export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss = true): KeyList {
@@ -55,9 +54,9 @@ export function parseKeyList(data: string, compression: Compression, avoidPrecis
 /**
  * Decode, decompress and parse the provided 'data' into a Bitmap object
  *
- * @param {string} data
- * @param {number} compression
- * @returns {Uint8Array}
+ * @param data - base64 encoded string
+ * @param compression - 1 GZIP, 2 ZLIB
+ * @returns Bitmap
  * @throws if data string cannot be decoded or decompressed
  */
 export function parseBitmap(data: string, compression: Compression) {
@@ -67,9 +66,9 @@ export function parseBitmap(data: string, compression: Compression) {
 /**
  * Check if the 'bitmap' bit at 'hash64hex' position is 1
  *
- * @param {Uint8Array} bitmap
- * @param {string} hash64hex 16-chars string, representing a number in hexa
- * @returns {boolean}
+ * @param bitmap - Uint8Array bitmap
+ * @param hash64hex - 16-chars string, representing a number in hexa
+ * @returns whether the provided 'hash64hex' index is set in the bitmap
  */
 export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
   // using the lowest 32 bits as index, to avoid losing precision when converting to number

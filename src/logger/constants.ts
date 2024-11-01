@@ -109,7 +109,6 @@ export const ERROR_EMPTY = 319;
 export const ERROR_EMPTY_ARRAY = 320;
 export const ERROR_INVALID_CONFIG_PARAM = 321;
 export const ERROR_HTTP = 322;
-export const ERROR_LOCALHOST_MODULE_REQUIRED = 323;
 export const ERROR_STORAGE_INVALID = 324;
 export const ERROR_NOT_BOOLEAN = 325;
 export const ERROR_MIN_CONFIG_PARAM = 326;

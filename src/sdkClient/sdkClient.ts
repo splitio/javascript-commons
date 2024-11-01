@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IStatusInterface, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
@@ -37,7 +37,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
-    Object.create(sdkReadinessManager.sdkStatus) as IStatusInterface,
+    Object.create(sdkReadinessManager.sdkStatus) as SplitIO.IStatusInterface,
 
     // Client API (getTreatment* & track methods)
     clientInputValidationDecorator(

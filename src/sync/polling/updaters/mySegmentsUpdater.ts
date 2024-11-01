@@ -87,12 +87,12 @@ export function mySegmentsUpdaterFactory(
    * MySegments updater returns a promise that resolves with a `false` boolean value if it fails to fetch mySegments or synchronize them with the storage.
    * Returned promise will not be rejected.
    *
-   * @param {SegmentsData | undefined} segmentsData it can be:
+   * @param segmentsData - it can be:
    *  (1) the list of mySegments names to sync in the storage,
    *  (2) an object with a segment name and action (true: add, or false: delete) to update the storage,
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
-   * @param {boolean | undefined} noCache true to revalidate data to fetch
-   * @param {boolean | undefined} till query param to bypass CDN requests
+   * @param noCache - true to revalidate data to fetch
+   * @param till - query param to bypass CDN requests
    */
   return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean, till?: number) {
     return _mySegmentsUpdater(0, segmentsData, noCache, till);

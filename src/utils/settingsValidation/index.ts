@@ -6,7 +6,6 @@ import { validImpressionsMode } from './impressionsMode';
 import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
-import { validateTrafficType } from '../inputValidation/trafficType';
 import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
 
 // Exported for telemetry
@@ -19,8 +18,6 @@ export const base = {
     authorizationKey: undefined,
     // key used in your system (only required for browser version)
     key: undefined,
-    // traffic type for the given key (only used on browser version)
-    trafficType: undefined,
     // toggle impressions tracking of labels
     labelsEnabled: true,
     // toggle sendind (true) or not sending (false) IP and Host Name with impressions, events, and telemetries requests (only used on nodejs version)
@@ -83,7 +80,6 @@ export const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined,
     enabled: true,
     flagSpecVersion: FLAG_SPEC_VERSION
   },
@@ -100,12 +96,12 @@ function fromSecondsToMillis(n: number) {
  * Validates the given config and use it to build a settings object.
  * NOTE: it doesn't validate the SDK Key. Call `validateApiKey` or `validateAndTrackApiKey` for that after settings validation.
  *
- * @param config user defined configuration
- * @param validationParams defaults and fields validators used to validate and creates a settings object from a given config
+ * @param config - user defined configuration
+ * @param validationParams - defaults and fields validators used to validate and creates a settings object from a given config
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, consent, flagSpec } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, consent, flagSpec } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -168,13 +164,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
       withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
     }
-
-    if (validationParams.acceptTT) {
-      const maybeTT = withDefaults.core.trafficType;
-      if (maybeTT !== undefined) { // @ts-ignore
-        withDefaults.core.trafficType = validateTrafficType(log, maybeTT, LOG_PREFIX_CLIENT_INSTANTIATION);
-      }
-    }
   } else {
     // On server-side, key is undefined and used to distinguish from client-side
     if (maybeKey !== undefined) log.warn('Provided `key` is ignored in server-side SDK.'); // @ts-ignore
@@ -189,8 +178,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // `integrations` returns an array of valid integration items.
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
-
-  if (localhost) sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop

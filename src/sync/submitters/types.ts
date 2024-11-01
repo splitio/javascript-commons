@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
-import { IMap } from '../../utils/lang/maps';
+import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {
@@ -88,11 +87,11 @@ export type StoredEventWithMetadata = {
   e: SplitIO.EventData
 }
 
-export type MultiMethodLatencies = IMap<string, MethodLatencies>
+export type MultiMethodLatencies = Map<string, MethodLatencies>
 
-export type MultiMethodExceptions = IMap<string, MethodExceptions>
+export type MultiMethodExceptions = Map<string, MethodExceptions>
 
-export type MultiConfigs = IMap<string, TelemetryConfigStats>
+export type MultiConfigs = Map<string, TelemetryConfigStats>
 
 /**
  * Telemetry usage stats

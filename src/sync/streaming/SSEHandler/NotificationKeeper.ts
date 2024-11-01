@@ -10,7 +10,7 @@ const STREAMING_EVENT_TYPES: StreamingEventType[] = [OCCUPANCY_PRI, OCCUPANCY_SE
 /**
  * Factory of notification keeper, which process OCCUPANCY and CONTROL notifications and emits the corresponding push events.
  *
- * @param pushEmitter emitter for events related to streaming support
+ * @param pushEmitter - emitter for events related to streaming support
  */
 // @TODO update logic to handle OCCUPANCY for any region and rename according to new spec (e.g.: PUSH_SUBSYSTEM_UP --> PUSH_SUBSYSTEM_UP)
 export function notificationKeeperFactory(pushEmitter: IPushEventEmitter, telemetryTracker: ITelemetryTracker) {

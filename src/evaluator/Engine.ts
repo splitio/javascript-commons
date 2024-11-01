@@ -5,7 +5,7 @@ import { thenable } from '../utils/promise/thenable';
 import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluation, IEvaluationResult, IEvaluator, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
@@ -21,7 +21,7 @@ export class Engine {
 
   constructor(private baseInfo: ISplit, private evaluator: IEvaluator) {
 
-    // in case we don't have a default treatment in the instanciation, use 'control'
+    // in case we don't have a default treatment in the instantiation, use 'control'
     if (typeof this.baseInfo.defaultTreatment !== 'string') {
       this.baseInfo.defaultTreatment = CONTROL;
     }

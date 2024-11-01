@@ -1,5 +1,5 @@
 import { clientCSDecorator } from './clientCS';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { validateKey } from '../utils/inputValidation/key';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
@@ -14,7 +14,7 @@ import { buildInstanceId } from './identity';
  * Factory of client method for the client-side API variant where TT is ignored.
  * Therefore, clients don't have a bound TT for the track method.
  */
-export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.IBrowserClient {
   const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
@@ -35,7 +35,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       return mainClientInstance;
     }
 
-    // Validate the key value. The trafficType (2nd argument) is ignored
+    // Validate the key value
     const validKey = validateKey(log, key, LOG_PREFIX_CLIENT_INSTANTIATION);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
@@ -80,6 +80,6 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clients[instanceId] as SplitIO.ICsClient;
+    return clients[instanceId] as SplitIO.IBrowserClient;
   };
 }

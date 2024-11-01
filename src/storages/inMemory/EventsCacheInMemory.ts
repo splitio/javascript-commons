@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IEventsCacheSync } from '../types';
 
 const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M
@@ -12,7 +12,7 @@ export class EventsCacheInMemory implements IEventsCacheSync {
 
   /**
    *
-   * @param eventsQueueSize number of queued events to call onFullQueueCb.
+   * @param eventsQueueSize - number of queued events to call onFullQueueCb.
    * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
    */
   constructor(eventsQueueSize: number = 0) {

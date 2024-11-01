@@ -87,9 +87,9 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
       /**
        * Invoked by NotificationProcessor on MY_(LARGE)_SEGMENTS_UPDATE notifications
        *
-       * @param changeNumber change number of the notification
-       * @param segmentsData data for KeyList or SegmentRemoval instant updates
-       * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
+       * @param changeNumber - change number of the notification
+       * @param segmentsData - data for KeyList or SegmentRemoval instant updates
+       * @param delay - optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
        */
       put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
         const { type, cn } = mySegmentsData;

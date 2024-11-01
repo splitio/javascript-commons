@@ -1,13 +1,13 @@
 import { SPLIT_IMPRESSION, SPLIT_EVENT } from '../utils/constants';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { IIntegration, IIntegrationManager, IIntegrationFactoryParams } from './types';
 
 /**
  * Factory function for IntegrationsManager with pluggable integrations.
  * The integrations manager instantiates integration, and bypass tracked events and impressions to them.
  *
- * @param integrations validated list of integration factories
- * @param params information of the Sdk factory instance that integrations can access to
+ * @param integrations - validated list of integration factories
+ * @param params - information of the Sdk factory instance that integrations can access to
  *
  * @returns integration manager or undefined if `integrations` are not present in settings.
  */

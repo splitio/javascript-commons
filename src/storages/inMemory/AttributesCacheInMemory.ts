@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { objectAssign } from '../../utils/lang/objectAssign';
 
 export class AttributesCacheInMemory {
@@ -9,9 +9,9 @@ export class AttributesCacheInMemory {
   /**
    * Create or update the value for the given attribute
    *
-   * @param {string} attributeName attribute name
-   * @param {Object} attributeValue attribute value
-   * @returns {boolean} the attribute was stored
+   * @param attributeName - attribute name
+   * @param attributeValue - attribute value
+   * @returns the attribute was stored
    */
   setAttribute(attributeName: string, attributeValue: SplitIO.AttributeType) {
     this.attributesCache[attributeName] = attributeValue;
@@ -21,8 +21,8 @@ export class AttributesCacheInMemory {
   /**
    * Retrieves the value of a given attribute
    *
-   * @param {string} attributeName attribute name
-   * @returns {Object?} stored attribute value
+   * @param attributeName - attribute name
+   * @returns stored attribute value
    */
   getAttribute(attributeName: string) {
     return this.attributesCache[attributeName];
@@ -31,8 +31,8 @@ export class AttributesCacheInMemory {
   /**
    * Create or update all the given attributes
    *
-   * @param {[string, Object]} attributes attributes to create or update
-   * @returns {boolean} attributes were stored
+   * @param attributes - attributes to create or update
+   * @returns attributes were stored
    */
   setAttributes(attributes: Record<string, Object>) {
     this.attributesCache = objectAssign(this.attributesCache, attributes);
@@ -42,7 +42,7 @@ export class AttributesCacheInMemory {
   /**
    * Retrieve the full attributes map
    *
-   * @returns {Map<string, Object>} stored attributes
+   * @returns stored attributes
    */
   getAll() {
     return this.attributesCache;
@@ -51,8 +51,8 @@ export class AttributesCacheInMemory {
   /**
    * Removes a given attribute from the map
    *
-   * @param {string} attributeName attribute to remove
-   * @returns {boolean} attribute removed
+   * @param attributeName - attribute to remove
+   * @returns attribute removed
    */
   removeAttribute(attributeName: string) {
     if (Object.keys(this.attributesCache).indexOf(attributeName) >= 0) {

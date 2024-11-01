@@ -1,9 +1,10 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
-function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISplitsEventEmitter {
+function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISplitsEventEmitter {
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
@@ -20,7 +21,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   return splitsEventEmitter;
 }
 
-function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISegmentsEventEmitter {
+function segmentsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISegmentsEventEmitter {
   const segmentsEventEmitter = objectAssign(new EventEmitter(), {
     segmentsArrived: false
   });
@@ -34,7 +35,7 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  * Factory of readiness manager, which handles the ready / update event propagation.
  */
 export function readinessManagerFactory(
-  EventEmitter: new () => IEventEmitter,
+  EventEmitter: new () => SplitIO.IEventEmitter,
   settings: ISettings,
   splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
 

@@ -7,8 +7,9 @@ import { INotificationMessage, INotificationError } from './types';
  * HTTP errors handled by Ably (e.g., 400 due to invalid token, 401 due to expired token, 500) have the `data` property.
  * Other network and HTTP errors do not have this property.
  *
- * @param {Object} error
- * @throws {SyntaxError} if `error.data` is an invalid JSON string
+ * @param error - The error event to parse
+ * @returns parsed notification error
+ * @throws SyntaxError if `error.data` is an invalid JSON string
  */
 export function errorParser(error: Event): INotificationError {
   // @ts-ignore
@@ -21,10 +22,10 @@ export function errorParser(error: Event): INotificationError {
  * Parses the `data` JSON string of a given SSE message notifications.
  * Also assigns the type OCCUPANCY, if it corresponds, so that all supported messages (e.g., SPLIT_UPDATE, CONTROL) have a type.
  *
- * @param message
+ * @param message - The message event to parse
  * @returns parsed notification message or undefined if the given event data is falsy (e.g, '' or undefined).
  * For example, the EventSource implementation of React-Native for iOS emits a message event with empty data for Ably keepalive comments.
- * @throws {SyntaxError} if `message.data` or `JSON.parse(message.data).data` are invalid JSON strings
+ * @throws SyntaxError if `message.data` or `JSON.parse(message.data).data` are invalid JSON strings
  */
 export function messageParser(message: MessageEvent): INotificationMessage | undefined {
   if (!message.data) return;

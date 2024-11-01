@@ -5,7 +5,8 @@ import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
-import { ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { OPTIMIZED, DEBUG, NONE } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
@@ -22,7 +23,7 @@ const EVENT_NAME = 'for visibilitychange and pagehide events.';
  */
 export class BrowserSignalListener implements ISignalListener {
 
-  private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
+  private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
   constructor(
     private syncManager: ISyncManager | undefined,
@@ -115,7 +116,6 @@ export class BrowserSignalListener implements ISignalListener {
    * Returns true if beacon API was used successfully, false otherwise.
    */
   private _sendBeacon(url: string, data: any, extraMetadata?: {}) {
-    // eslint-disable-next-line compat/compat
     if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
       const json = {
         entries: data,
@@ -130,7 +130,7 @@ export class BrowserSignalListener implements ISignalListener {
       const payload = JSON.stringify(json);
 
       // https://xgwang.me/posts/you-may-not-know-beacon/#it-may-throw-error%2C-be-sure-to-catch
-      try { // eslint-disable-next-line compat/compat
+      try {
         return navigator.sendBeacon(url, payload);
       } catch (e) {
         return false;

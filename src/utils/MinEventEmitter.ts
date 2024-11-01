@@ -1,5 +1,4 @@
-
-import { IEventEmitter } from '../types';
+import SplitIO from '../../types/splitio';
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
@@ -11,7 +10,7 @@ function checkListener(listener: unknown) {
 }
 
 // @TODO implement missing methods, check spec and add UTs
-export class EventEmitter implements IEventEmitter {
+export class EventEmitter implements SplitIO.IEventEmitter {
 
   private listeners: Record<string, Array<[
     (...args: any[]) => void, // the event listener
