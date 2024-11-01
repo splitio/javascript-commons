@@ -1,5 +1,5 @@
 import { groupBy, forOwn } from '../../utils/lang';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { submitterFactory } from './submitter';
 import { ImpressionsPayload } from './types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
@@ -10,7 +10,7 @@ const DATA_NAME = 'impressions';
 /**
  * Converts `impressions` data from cache into request payload.
  */
-export function fromImpressionsCollector(sendLabels: boolean, data: ImpressionDTO[]): ImpressionsPayload {
+export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.ImpressionDTO[]): ImpressionsPayload {
   let groupedByFeature = groupBy(data, 'feature');
   let dto: ImpressionsPayload = [];
 

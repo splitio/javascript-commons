@@ -1,5 +1,5 @@
 import { isObject } from '../lang';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { validateAttribute } from './attribute';
 import { ERROR_NOT_PLAIN_OBJECT } from '../../logger/constants';

@@ -5,7 +5,8 @@ import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
-import { ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { OPTIMIZED, DEBUG, NONE } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
@@ -22,7 +23,7 @@ const EVENT_NAME = 'for visibilitychange and pagehide events.';
  */
 export class BrowserSignalListener implements ISignalListener {
 
-  private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
+  private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
   constructor(
     private syncManager: ISyncManager | undefined,

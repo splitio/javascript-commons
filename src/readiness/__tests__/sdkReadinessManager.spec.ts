@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { IEventEmitter } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
 import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
@@ -15,7 +15,7 @@ const EventEmitterMock = jest.fn(() => ({
   addListener: jest.fn(),
   off: jest.fn(),
   removeListener: jest.fn()
-})) as new () => IEventEmitter;
+})) as new () => SplitIO.IEventEmitter;
 
 // Makes readinessManager emit SDK_READY & update isReady flag
 function emitReadyEvent(readinessManager: IReadinessManager) {

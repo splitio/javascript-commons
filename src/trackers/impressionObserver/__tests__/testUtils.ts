@@ -1,6 +1,6 @@
-import { ImpressionDTO } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 
-export function generateImpressions(count: number): ImpressionDTO[] {
+export function generateImpressions(count: number): SplitIO.ImpressionDTO[] {
   const impressions = [];
   for (let i = 0; i < count; i++) {
     impressions.push({

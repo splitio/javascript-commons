@@ -186,10 +186,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * Get list of all split definitions.
    * The returned promise is resolved with the list of split definitions,
    * or rejected if redis operation fails.
-   *
-   * @TODO we need to benchmark which is the maximun number of commands we could
-   *       pipeline without kill redis performance.
    */
+  // @TODO we need to benchmark which is the maximun number of commands we could pipeline without kill redis performance.
   getAll(): Promise<ISplit[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
       .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())

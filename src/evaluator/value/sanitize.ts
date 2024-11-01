@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IDependencyMatcherValue } from '../types';
 import { ILogger } from '../../logger/types';
 import { isObject, uniq, toString, toNumber } from '../../utils/lang';

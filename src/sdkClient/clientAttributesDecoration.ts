@@ -1,6 +1,6 @@
 import { AttributesCacheInMemory } from '../storages/inMemory/AttributesCacheInMemory';
 import { validateAttributesDeep } from '../utils/inputValidation/attributes';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
@@ -80,9 +80,9 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     /**
      * Add an attribute to client's in memory attributes storage
      *
-     * @param {string} attributeName Attrinute name
-     * @param {string, number, boolean, list} attributeValue Attribute value
-     * @returns {boolean} true if the attribute was stored and false otherways
+     * @param attributeName - Attribute name
+     * @param attributeValue - Attribute value
+     * @returns true if the attribute was stored and false otherways
      */
     setAttribute(attributeName: string, attributeValue: SplitIO.AttributeType) {
       const attribute: Record<string, Object> = {};
@@ -95,8 +95,8 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     /**
      * Returns the attribute with the given name
      *
-     * @param {string} attributeName Attribute name
-     * @returns {Object} Attribute with the given name
+     * @param attributeName - Attribute name
+     * @returns Attribute with the given name
      */
     getAttribute(attributeName: string) {
       log.debug(`retrieved attribute ${attributeName}`);
@@ -106,7 +106,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     /**
      * Add to client's in memory attributes storage the attributes in 'attributes'
      *
-     * @param {Object} attributes Object with attributes to store
+     * @param attributes - Object with attributes to store
      * @returns true if attributes were stored an false otherways
      */
     setAttributes(attributes: Record<string, Object>) {
@@ -117,7 +117,7 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     /**
      * Return all the attributes stored in client's in memory attributes storage
      *
-     * @returns {Object} returns all the stored attributes
+     * @returns returns all the stored attributes
      */
     getAttributes() {
       return attributeStorage.getAll();
@@ -126,8 +126,8 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     /**
      * Removes from client's in memory attributes storage the attribute with the given name
      *
-     * @param {string} attributeName
-     * @returns {boolean} true if attribute was removed and false otherways
+     * @param attributeName - Attribute name
+     * @returns true if attribute was removed and false otherways
      */
     removeAttribute(attributeName: string) {
       log.debug(`removed attribute ${attributeName}`);

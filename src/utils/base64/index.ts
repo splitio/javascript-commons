@@ -22,7 +22,7 @@ const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=
 /**
  * Decode a given string value in Base64 format
  *
- * @param {string} input value to decode
+ * @param input - value to decode
  */
 export function decodeFromBase64(input: string): string {
   const str = (String(input)).replace(/[=]+$/, ''); // #31: ExtendScript bad parse of /=
@@ -48,7 +48,7 @@ export function decodeFromBase64(input: string): string {
 /**
  * Encode a given string value to Base64 format.
  *
- * @param {string} input value to encode
+ * @param input - value to encode
  */
 export function encodeToBase64(input: string): string {
   const str = String(input);

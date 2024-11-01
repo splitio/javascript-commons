@@ -2,7 +2,7 @@ import { impressionsTrackerFactory } from '../impressionsTracker';
 import { ImpressionCountsCacheInMemory } from '../../storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionObserverSSFactory } from '../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { strategyDebugFactory } from '../strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../strategy/strategyOptimized';
@@ -60,13 +60,13 @@ describe('Impressions Tracker', () => {
 
     const imp1 = {
       feature: '10',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const imp2 = {
       feature: '20',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const imp3 = {
       feature: '30',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
@@ -80,10 +80,10 @@ describe('Impressions Tracker', () => {
 
     const fakeImpression = {
       feature: 'impression'
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const fakeImpression2 = {
       feature: 'impression_2'
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const fakeAttributes = {
       fake: 'attributes'
     };
@@ -127,7 +127,7 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
   const impression2 = {
     feature: 'qc_team_2',
     keyName: 'marcio@split.io',
@@ -135,7 +135,7 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
   const impression3 = {
     feature: 'qc_team',
     keyName: 'marcio@split.io',
@@ -143,7 +143,7 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
 
   test('Should track 3 impressions with Previous Time.', () => {
     impression.time = impression2.time = 123456789;

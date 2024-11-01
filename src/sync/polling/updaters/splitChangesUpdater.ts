@@ -51,8 +51,8 @@ interface ISplitMutations {
  * If there are defined filters and one feature flag doesn't match with them, its status is changed to 'ARCHIVE' to avoid storing it
  * If there are set filter defined, names filter is ignored
  *
- * @param featureFlag feature flag to be evaluated
- * @param filters splitFiltersValidation bySet | byName
+ * @param featureFlag - feature flag to be evaluated
+ * @param filters - splitFiltersValidation bySet | byName
  */
 function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
   const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter } = filters.groupedFilters;
@@ -100,13 +100,13 @@ export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersV
  *  - updates `splitsCache`
  *  - uses `splitsEventEmitter` to emit events related to split data updates
  *
- * @param log  Logger instance
- * @param splitChangesFetcher  Fetcher of `/splitChanges`
- * @param splits  Splits storage, with sync or async methods
- * @param segments  Segments storage, with sync or async methods
- * @param splitsEventEmitter  Optional readiness manager. Not required for synchronizer or producer mode.
- * @param requestTimeoutBeforeReady  How long the updater will wait for the request to timeout. Default 0, i.e., never timeout.
- * @param retriesOnFailureBeforeReady  How many retries on `/splitChanges` we the updater do in case of failure or timeout. Default 0, i.e., no retries.
+ * @param log -  Logger instance
+ * @param splitChangesFetcher -  Fetcher of `/splitChanges`
+ * @param splits -  Splits storage, with sync or async methods
+ * @param segments -  Segments storage, with sync or async methods
+ * @param splitsEventEmitter -  Optional readiness manager. Not required for synchronizer or producer mode.
+ * @param requestTimeoutBeforeReady -  How long the updater will wait for the request to timeout. Default 0, i.e., never timeout.
+ * @param retriesOnFailureBeforeReady -  How many retries on `/splitChanges` we the updater do in case of failure or timeout. Default 0, i.e., no retries.
  */
 export function splitChangesUpdaterFactory(
   log: ILogger,
@@ -142,14 +142,14 @@ export function splitChangesUpdaterFactory(
    * SplitChanges updater returns a promise that resolves with a `false` boolean value if it fails to fetch splits or synchronize them with the storage.
    * Returned promise will not be rejected.
    *
-   * @param {boolean | undefined} noCache true to revalidate data to fetch
-   * @param {boolean | undefined} till query param to bypass CDN requests
+   * @param noCache - true to revalidate data to fetch
+   * @param till - query param to bypass CDN requests
    */
   return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) {
 
     /**
-     * @param {number} since current changeNumber at splitsCache
-     * @param {number} retry current number of retry attempts
+     * @param since - current changeNumber at splitsCache
+     * @param retry - current number of retry attempts
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);

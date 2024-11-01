@@ -12,8 +12,8 @@ import { ITelemetryTracker } from '../../../trackers/types';
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
- * @param log factory logger
- * @param pushEmitter emitter for events related to streaming support
+ * @param log - factory logger
+ * @param pushEmitter - emitter for events related to streaming support
  */
 export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, telemetryTracker: ITelemetryTracker): ISseEventHandler {
 

@@ -3,7 +3,7 @@ import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
 import { UNSUPPORTED_MATCHER_TYPE } from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 

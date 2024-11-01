@@ -1,4 +1,4 @@
-import { ImpressionDTO } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 
 export const impression1 = {
   feature: 'qc_team',
@@ -7,7 +7,7 @@ export const impression1 = {
   time: Date.now(),
   bucketingKey: 'impr_bucketing_2',
   label: 'default rule'
-} as ImpressionDTO;
+} as SplitIO.ImpressionDTO;
 export const impression2 = {
   feature: 'qc_team_2',
   keyName: 'emma@split.io',
@@ -15,4 +15,4 @@ export const impression2 = {
   time: Date.now(),
   bucketingKey: 'impr_bucketing_2',
   label: 'default rule'
-} as ImpressionDTO;
+} as SplitIO.ImpressionDTO;
