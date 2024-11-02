@@ -15,7 +15,8 @@ import { startsWith } from '../utils/lang';
 import { CONTROL, CONTROL_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG, TRACK_FN_LABEL } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
 

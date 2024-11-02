@@ -1,5 +1,4 @@
-import { StorageType } from '../../storages/types';
-import { SDKMode } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 // Special treatments
 export const CONTROL = 'control';
@@ -22,17 +21,17 @@ export const OPTIMIZED = 'OPTIMIZED';
 export const NONE = 'NONE';
 
 // SDK Modes
-export const LOCALHOST_MODE: SDKMode = 'localhost';
-export const STANDALONE_MODE: SDKMode = 'standalone';
+export const LOCALHOST_MODE = 'localhost';
+export const STANDALONE_MODE = 'standalone';
 export const PRODUCER_MODE = 'producer';
-export const CONSUMER_MODE: SDKMode = 'consumer';
-export const CONSUMER_PARTIAL_MODE: SDKMode = 'consumer_partial';
+export const CONSUMER_MODE = 'consumer';
+export const CONSUMER_PARTIAL_MODE = 'consumer_partial';
 
 // Storage types
-export const STORAGE_MEMORY: StorageType = 'MEMORY';
-export const STORAGE_LOCALSTORAGE: StorageType = 'LOCALSTORAGE';
-export const STORAGE_REDIS: StorageType = 'REDIS';
-export const STORAGE_PLUGGABLE: StorageType = 'PLUGGABLE';
+export const STORAGE_MEMORY: SplitIO.StorageType = 'MEMORY';
+export const STORAGE_LOCALSTORAGE: SplitIO.StorageType = 'LOCALSTORAGE';
+export const STORAGE_REDIS: SplitIO.StorageType = 'REDIS';
+export const STORAGE_PLUGGABLE: SplitIO.StorageType = 'PLUGGABLE';
 
 // User consent
 export const CONSENT_GRANTED = 'GRANTED'; // The user has granted consent for tracking events and impressions
@@ -75,7 +74,7 @@ export const EVENTS = 'ev';
 export const TELEMETRY = 'te';
 export const TOKEN = 'to';
 export const SEGMENT = 'se';
-export const MY_SEGMENT = 'ms';
+export const MEMBERSHIPS = 'ms';
 
 export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
@@ -105,7 +104,8 @@ export const DISABLED = 0;
 export const ENABLED = 1;
 export const PAUSED = 2;
 
-export const FLAG_SPEC_VERSION = '1.1';
+export const FLAG_SPEC_VERSION = '1.2';
 
 // Matcher types
 export const IN_SEGMENT = 'IN_SEGMENT';
+export const IN_LARGE_SEGMENT = 'IN_LARGE_SEGMENT';

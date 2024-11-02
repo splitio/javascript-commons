@@ -1,10 +1,9 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ILoggerOptions, ILogger } from './types';
 import { find, isObject } from '../utils/lang';
-import { LogLevel } from '../types';
-import { IMap, _Map } from '../utils/lang/maps';
+import SplitIO from '../../types/splitio';
 
-export const LogLevels: { [level: string]: LogLevel } = {
+export const LogLevels: SplitIO.ILoggerAPI['LogLevel'] = {
   DEBUG: 'DEBUG',
   INFO: 'INFO',
   WARN: 'WARN',
@@ -20,7 +19,7 @@ const LogLevelIndexes = {
   NONE: 5
 };
 
-export function isLogLevelString(str: string): str is LogLevel {
+export function isLogLevelString(str: string): str is SplitIO.LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
 
@@ -47,16 +46,16 @@ const defaultOptions = {
 export class Logger implements ILogger {
 
   private options: Required<ILoggerOptions>;
-  private codes: IMap<number, string>;
+  private codes: Map<number, string>;
   private logLevel: number;
 
-  constructor(options?: ILoggerOptions, codes?: IMap<number, string>) {
+  constructor(options?: ILoggerOptions, codes?: Map<number, string>) {
     this.options = objectAssign({}, defaultOptions, options);
-    this.codes = codes || new _Map();
+    this.codes = codes || new Map();
     this.logLevel = LogLevelIndexes[this.options.logLevel];
   }
 
-  setLogLevel(logLevel: LogLevel) {
+  setLogLevel(logLevel: SplitIO.LogLevel) {
     this.options.logLevel = logLevel;
     this.logLevel = LogLevelIndexes[logLevel];
   }
@@ -77,7 +76,7 @@ export class Logger implements ILogger {
     if (this._shouldLog(LogLevelIndexes.ERROR)) this._log(LogLevels.ERROR, msg, args);
   }
 
-  private _log(level: LogLevel, msg: string | number, args?: any[]) {
+  private _log(level: SplitIO.LogLevel, msg: string | number, args?: any[]) {
     if (typeof msg === 'number') {
       const format = this.codes.get(msg);
       msg = format ? _sprintf(format, args) : `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
@@ -90,7 +89,7 @@ export class Logger implements ILogger {
     console.log(formattedText);
   }
 
-  private _generateLogMessage(level: LogLevel, text: string) {
+  private _generateLogMessage(level: SplitIO.LogLevel, text: string) {
     const textPre = ' => ';
     let result = '';
 

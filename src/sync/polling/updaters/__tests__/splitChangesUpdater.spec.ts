@@ -7,7 +7,7 @@ import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
 import { splitChangesUpdaterFactory, parseSegments, computeSplitsMutation } from '../splitChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
-import { settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
+import { fullSettings, settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
@@ -165,7 +165,7 @@ describe('splitChangesUpdater', () => {
 
   const segmentsCache = new SegmentsCacheInMemory();
   const registerSegments = jest.spyOn(segmentsCache, 'registerSegments');
-  const readinessManager = readinessManagerFactory(EventEmitter);
+  const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
   let splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };

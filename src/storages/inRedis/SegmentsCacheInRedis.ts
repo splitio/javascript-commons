@@ -17,36 +17,27 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     this.keys = keys;
   }
 
-  addToSegment(name: string, segmentKeys: string[]) {
+  /**
+   * Update the given segment `name` with the lists of `addedKeys`, `removedKeys` and `changeNumber`.
+   * The returned promise is resolved if the operation success, with `true` if the segment was updated (i.e., some key was added or removed),
+   * or rejected if it fails (e.g., Redis operation fails).
+   */
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    if (segmentKeys.length) {
-      return this.redis.sadd(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.redis.srem(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
+    return Promise.all([
+      addedKeys.length && this.redis.sadd(segmentKey, addedKeys),
+      removedKeys.length && this.redis.srem(segmentKey, removedKeys),
+      this.redis.set(this.keys.buildSegmentTillKey(name), changeNumber + '')
+    ]).then(() => {
+      return addedKeys.length > 0 || removedKeys.length > 0;
+    });
   }
 
   isInSegment(name: string, key: string) {
     return this.redis.sismember(
       this.keys.buildSegmentNameKey(name), key
     ).then(matches => matches !== 0);
-  }
-
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.redis.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    ).then(status => status === 'OK');
   }
 
   getChangeNumber(name: string) {

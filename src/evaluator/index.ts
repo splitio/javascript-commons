@@ -5,9 +5,9 @@ import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
-import { ISet, setToArray, returnSetsUnion, _Set } from '../utils/lang/sets';
+import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
 const treatmentException = {
@@ -97,12 +97,12 @@ export function evaluateFeaturesByFlagSets(
   storage: IStorageSync | IStorageAsync,
   method: string,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
-  let storedFlagNames: MaybeThenable<ISet<string>[]>;
+  let storedFlagNames: MaybeThenable<Set<string>[]>;
 
   function evaluate(
-    featureFlagsByFlagSets: ISet<string>[],
+    featureFlagsByFlagSets: Set<string>[],
   ) {
-    let featureFlags = new _Set();
+    let featureFlags = new Set<string>();
     for (let i = 0; i < flagSets.length; i++) {
       const featureFlagByFlagSet = featureFlagsByFlagSets[i];
       if (featureFlagByFlagSet.size) {

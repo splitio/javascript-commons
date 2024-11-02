@@ -84,7 +84,7 @@ export class Semver {
   /**
    * Precedence comparision between 2 Semver objects.
    *
-   * @return `0` if `this === toCompare`, `-1` if `this < toCompare`, and `1` if `this > toCompare`
+   * @returns `0` if `this === toCompare`, `-1` if `this < toCompare`, and `1` if `this > toCompare`
    */
   public compare(toCompare: Semver): number {
     if (this.version === toCompare.version) return 0;

@@ -2,7 +2,8 @@
 
 import { IMetadata } from '../dtos/types';
 import { Method, StoredImpressionWithMetadata } from '../sync/submitters/types';
-import { ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { UNKNOWN } from '../utils/constants';
 import { MAX_LATENCY_BUCKET_COUNT } from './inMemory/TelemetryCacheInMemory';
 import { METHOD_NAMES } from './KeyBuilderSS';
@@ -16,7 +17,7 @@ export function metadataBuilder(settings: Pick<ISettings, 'version' | 'runtime'>
 }
 
 // Converts impressions to be stored in Redis or pluggable storage.
-export function impressionsToJSON(impressions: ImpressionDTO[], metadata: IMetadata): string[] {
+export function impressionsToJSON(impressions: SplitIO.ImpressionDTO[], metadata: IMetadata): string[] {
   return impressions.map(impression => {
     const impressionWithMetadata: StoredImpressionWithMetadata = {
       m: metadata,

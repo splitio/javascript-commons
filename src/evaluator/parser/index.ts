@@ -9,7 +9,7 @@ import { thenable } from '../../utils/promise/thenable';
 import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
 import { ISplitCondition, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { ENGINE_MATCHER_ERROR, ENGINE_MATCHER_RESULT } from '../../logger/constants';
 

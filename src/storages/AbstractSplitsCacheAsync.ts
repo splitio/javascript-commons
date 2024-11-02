@@ -1,7 +1,6 @@
 import { ISplitsCacheAsync } from './types';
 import { ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { ISet } from '../utils/lang/sets';
 
 /**
  * This class provides a skeletal implementation of the ISplitsCacheAsync interface
@@ -18,7 +17,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   abstract getChangeNumber(): Promise<number>
   abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
-  abstract getNamesByFlagSets(flagSets: string[]): Promise<ISet<string>[]>
+  abstract getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
 
@@ -40,10 +39,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
    * Kill `name` split and set `defaultTreatment` and `changeNumber`.
    * Used for SPLIT_KILL push notifications.
    *
-   * @param {string} name
-   * @param {string} defaultTreatment
-   * @param {number} changeNumber
-   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
+   * @returns a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
    * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
    * The promise will never be rejected.
    */

@@ -3,7 +3,8 @@ import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { TelemetryConfigStatsPayload, TelemetryConfigStats } from './types';
 import { CONSUMER_MODE, CONSUMER_ENUM, STANDALONE_MODE, CONSUMER_PARTIAL_MODE, STANDALONE_ENUM, CONSUMER_PARTIAL_ENUM, OPTIMIZED, DEBUG, NONE, DEBUG_ENUM, OPTIMIZED_ENUM, NONE_ENUM, CONSENT_GRANTED, CONSENT_DECLINED, CONSENT_UNKNOWN } from '../../utils/constants';
 import { SDK_READY, SDK_READY_FROM_CACHE } from '../../readiness/constants';
-import { ConsentStatus, ISettings, SDKMode, SplitIO } from '../../types';
+import { ISettings } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { base } from '../../utils/settingsValidation';
 import { usedKeysMap } from '../../utils/inputValidation/apiKey';
 import { timer } from '../../utils/timeTracker/timer';
@@ -27,7 +28,7 @@ const USER_CONSENT_MAP = {
   [CONSENT_UNKNOWN]: 1,
   [CONSENT_GRANTED]: 2,
   [CONSENT_DECLINED]: 3
-} as Record<ConsentStatus, number>;
+} as Record<SplitIO.ConsentStatus, number>;
 
 function getActiveFactories() {
   return Object.keys(usedKeysMap).length;
@@ -51,7 +52,7 @@ function getTelemetryFlagSetsStats(splitFiltersValidation: ISplitFiltersValidati
   return { flagSetsTotal, flagSetsIgnored };
 }
 
-export function getTelemetryConfigStats(mode: SDKMode, storageType: string): TelemetryConfigStats {
+export function getTelemetryConfigStats(mode: SplitIO.SDKMode, storageType: string): TelemetryConfigStats {
   return {
     oM: OPERATION_MODE_MAP[mode], // @ts-ignore lower case of storage type
     st: storageType.toLowerCase(),

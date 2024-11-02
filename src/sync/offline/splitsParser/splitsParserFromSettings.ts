@@ -1,5 +1,5 @@
 import { ISplitPartial } from '../../../dtos/types';
-import { ISettings, SplitIO } from '../../../types';
+import SplitIO from '../../../../types/splitio';
 import { isObject, forOwn, merge } from '../../../utils/lang';
 import { parseCondition } from './parseCondition';
 
@@ -39,9 +39,9 @@ export function splitsParserFromSettingsFactory() {
 
   /**
    *
-   * @param settings validated object with mocked features mapping.
+   * @param settings - validated object with mocked features mapping.
    */
-  return function splitsParserFromSettings(settings: Pick<ISettings, 'features'>): false | Record<string, ISplitPartial> {
+  return function splitsParserFromSettings(settings: Pick<SplitIO.ISettings, 'features'>): false | Record<string, ISplitPartial> {
     const features = settings.features as SplitIO.MockedFeaturesMap || {};
 
     if (!mockUpdated(features)) return false;

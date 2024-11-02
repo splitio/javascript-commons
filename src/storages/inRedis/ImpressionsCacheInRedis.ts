@@ -1,6 +1,6 @@
 import { IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 import { ILogger } from '../../logger/types';
 import { impressionsToJSON } from '../utils';
@@ -22,7 +22,7 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
     this.metadata = metadata;
   }
 
-  track(impressions: ImpressionDTO[]): Promise<void> { // @ts-ignore
+  track(impressions: SplitIO.ImpressionDTO[]): Promise<void> { // @ts-ignore
     return this.redis.rpush(
       this.key,
       impressionsToJSON(impressions, this.metadata),

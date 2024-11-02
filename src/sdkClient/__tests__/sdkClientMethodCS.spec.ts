@@ -1,8 +1,7 @@
-import { sdkClientMethodCSFactory as sdkClientMethodCSWithTTFactory } from '../sdkClientMethodCSWithTT';
 import { sdkClientMethodCSFactory } from '../sdkClientMethodCS';
 import { assertClientApi } from './testUtils';
 import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
-import { settingsWithKey, settingsWithKeyAndTT, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { settingsWithKey, settingsWithKeyObject } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const partialStorages: { destroy: jest.Mock }[] = [];
 
@@ -14,15 +13,15 @@ const storageMock = {
   })
 };
 
-const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { destroy: jest.Mock } }[] = [];
+const partialSdkReadinessManagers: { sdkStatus: jest.Mock, readinessManager: { init: jest.Mock, destroy: jest.Mock } }[] = [];
 
 const sdkReadinessManagerMock = {
   sdkStatus: jest.fn(),
-  readinessManager: { destroy: jest.fn() },
+  readinessManager: { init: jest.fn(), destroy: jest.fn() },
   shared: jest.fn(() => {
     partialSdkReadinessManagers.push({
       sdkStatus: jest.fn(),
-      readinessManager: { destroy: jest.fn() },
+      readinessManager: { init: jest.fn(), destroy: jest.fn() },
     });
     return partialSdkReadinessManagers[partialSdkReadinessManagers.length - 1];
   })
@@ -46,7 +45,7 @@ const params = {
   signalListener: { stop: jest.fn() },
   settings: settingsWithKey,
   telemetryTracker: telemetryTrackerFactory(),
-  clients: {}
+  clients: {},
 };
 
 const invalidAttributes = [
@@ -75,13 +74,7 @@ describe('sdkClientMethodCSFactory', () => {
     params.clients = {};
   });
 
-  // list of factory functions and their types (whether it ignores TT or not)
-  const testTargets = [
-    [sdkClientMethodCSWithTTFactory, false],
-    [sdkClientMethodCSFactory, true]
-  ];
-
-  test.each(testTargets)('main client', (sdkClientMethodCSFactory) => {
+  test('main client', () => {
     // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
@@ -106,21 +99,20 @@ describe('sdkClientMethodCSFactory', () => {
 
   });
 
-  test.each(testTargets)('multiple clients', async (sdkClientMethodCSFactory, ignoresTT) => {
+  test('multiple clients', async () => {
 
     // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
-    // calling the function with a diferent key than settings, should return a new client instance
+    // calling the function with a different key than settings, should return a new client instance
     const newClients = new Set([
-      sdkClientMethod('other-key'), // new client
-      sdkClientMethod('other-key', 'other-tt'), // new client
-      sdkClientMethod({ matchingKey: 'other-key', bucketingKey: 'buck' }) // new client
+      sdkClientMethod('other-key'), // @ts-expect-error
+      sdkClientMethod('other-key', 'ignored-tt'),
+      sdkClientMethod({ matchingKey: 'other-key', bucketingKey: 'buck' })
     ]);
-    if (ignoresTT) expect(newClients.size).toBe(2);
-    else expect(newClients.size).toBe(3);
+    expect(newClients.size).toBe(2);
 
-    // each new client must follog the Client API
+    // each new client must follow the Client API
     newClients.forEach(newClient => {
       assertClientApi(newClient);
       expect(newClient).not.toBe(sdkClientMethod());
@@ -150,7 +142,7 @@ describe('sdkClientMethodCSFactory', () => {
 
   });
 
-  test.each(testTargets)('return main client instance if called with same key', (sdkClientMethodCSFactory) => {
+  test('returns main client instance if called with same key', () => {
 
     params.settings = settingsWithKey;
     // @ts-expect-error
@@ -163,20 +155,7 @@ describe('sdkClientMethodCSFactory', () => {
     expect(params.syncManager.shared).not.toBeCalled();
   });
 
-  test.each(testTargets)('return main client instance if called with same key and TT', (sdkClientMethodCSFactory) => {
-
-    params.settings = settingsWithKeyAndTT;
-    // @ts-expect-error
-    const sdkClientMethod = sdkClientMethodCSFactory(params);
-
-    expect(sdkClientMethod()).toBe(sdkClientMethod(settingsWithKeyAndTT.core.key, settingsWithKeyAndTT.core.trafficType));
-
-    expect(params.storage.shared).not.toBeCalled();
-    expect(params.sdkReadinessManager.shared).not.toBeCalled();
-    expect(params.syncManager.shared).not.toBeCalled();
-  });
-
-  test.each(testTargets)('return main client instance if called with same key object', (sdkClientMethodCSFactory) => {
+  test('returns main client instance if called with same key object', () => {
     // @ts-expect-error
     params.settings = settingsWithKeyObject;
     // @ts-expect-error
@@ -189,39 +168,37 @@ describe('sdkClientMethodCSFactory', () => {
     expect(params.syncManager.shared).not.toBeCalled();
   });
 
-  test.each(testTargets)('return same client instance if called with same key or traffic type (input validation)', (sdkClientMethodCSFactory, ignoresTT) => {
+  test('returns same client instance if called with same key (input validation)', () => {
     // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 
-    const clientInstance = sdkClientMethod('key', 'tt');
+    const clientInstance = sdkClientMethod('key');
 
-    expect(sdkClientMethod('key', 'tT')).toBe(clientInstance); // No new client created: TT is lowercased / ignored
-    expect(sdkClientMethod(' key ', 'tt')).toBe(clientInstance); // No new client created: key is trimmed
-    expect(sdkClientMethod({ matchingKey: 'key ', bucketingKey: ' key' }, 'TT')).toBe(clientInstance); // No new client created: key object is equivalent to 'key' string
+    expect(sdkClientMethod('key')).toBe(clientInstance); // No new client created: same key
+    expect(sdkClientMethod(' key ')).toBe(clientInstance); // No new client created: key is trimmed
+    expect(sdkClientMethod({ matchingKey: 'key ', bucketingKey: ' key' })).toBe(clientInstance); // No new client created: key object is equivalent to 'key' string
 
     expect(params.storage.shared).toBeCalledTimes(1);
     expect(params.sdkReadinessManager.shared).toBeCalledTimes(1);
     expect(params.syncManager.shared).toBeCalledTimes(1);
 
-    expect(sdkClientMethod('KEY', 'tt')).not.toBe(clientInstance); // New client created: key is case-sensitive
-    if (!ignoresTT) expect(sdkClientMethod('key', 'TT ')).not.toBe(clientInstance); // New client created: TT is not trimmed
+    expect(sdkClientMethod('KEY')).not.toBe(clientInstance); // New client created: key is case-sensitive
 
-    const clientCount = ignoresTT ? 2 : 3;
+    const clientCount =  2;
     expect(params.storage.shared).toBeCalledTimes(clientCount);
     expect(params.sdkReadinessManager.shared).toBeCalledTimes(clientCount);
     expect(params.syncManager.shared).toBeCalledTimes(clientCount);
   });
 
-  test.each(testTargets)('invalid calls throw an error', (sdkClientMethodCSFactory, ignoresTT) => {
+  test('invalid calls throw an error', () => {
     // @ts-expect-error
-    const sdkClientMethod = sdkClientMethodCSFactory(params);
+    const sdkClientMethod = sdkClientMethodCSFactory(params); // @ts-expect-error
     expect(() => sdkClientMethod({ matchingKey: settingsWithKey.core.key, bucketingKey: undefined })).toThrow('Shared Client needs a valid key.');
-    if (!ignoresTT) expect(() => sdkClientMethod('valid-key', ['invalid-TT'])).toThrow('Shared Client needs a valid traffic type or no traffic type at all.');
   });
 
-  test.each(testTargets)('attributes binding - main client', (sdkClientMethodCSFactory) => {
+  test('attributes binding - main client', () => {
     // @ts-expect-error
-    const sdkClientMethod = sdkClientMethodCSFactory(params);
+    const sdkClientMethod = sdkClientMethodCSFactory(params) as any;
 
     // should return a function
     expect(typeof sdkClientMethod).toBe('function');
@@ -273,7 +250,7 @@ describe('sdkClientMethodCSFactory', () => {
   });
 
 
-  test.each(testTargets)('attributes binding - shared clients', (sdkClientMethodCSFactory) => {
+  test('attributes binding - shared clients', () => {
     // @ts-expect-error
     const sdkClientMethod = sdkClientMethodCSFactory(params);
 

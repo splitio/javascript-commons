@@ -9,9 +9,9 @@ const streamingEndpointMatcher = /^\/(sse|event-stream)/;
  * Get URL based on a given target (path).
  * ATM, it is only used for testing purposes.
  *
- * @param settings settings object
- * @param target url path
- * @return complete url
+ * @param settings - settings object
+ * @param target - url path
+ * @returns complete url
  */
 export function url(settings: ISettings, target: string) {
   if (telemetryEndpointMatcher.test(target)) {

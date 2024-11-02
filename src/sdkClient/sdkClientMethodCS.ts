@@ -1,5 +1,5 @@
 import { clientCSDecorator } from './clientCS';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { validateKey } from '../utils/inputValidation/key';
 import { getMatching, keyParser } from '../utils/key';
 import { sdkClientFactory } from './sdkClient';
@@ -14,8 +14,8 @@ import { buildInstanceId } from './identity';
  * Factory of client method for the client-side API variant where TT is ignored.
  * Therefore, clients don't have a bound TT for the track method.
  */
-export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.ICsClient {
-  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, startup: { readyTimeout }, log } } = params;
+export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.IBrowserClient {
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -35,7 +35,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
       return mainClientInstance;
     }
 
-    // Validate the key value. The trafficType (2nd argument) is ignored
+    // Validate the key value
     const validKey = validateKey(log, key, LOG_PREFIX_CLIENT_INSTANTIATION);
     if (validKey === false) {
       throw new Error('Shared Client needs a valid key.');
@@ -46,7 +46,7 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
     if (!clients[instanceId]) {
       const matchingKey = getMatching(validKey);
 
-      const sharedSdkReadiness = sdkReadinessManager.shared(readyTimeout);
+      const sharedSdkReadiness = sdkReadinessManager.shared();
       const sharedStorage = storage.shared && storage.shared(matchingKey, (err) => {
         if (err) {
           sharedSdkReadiness.readinessManager.timeout();
@@ -75,13 +75,11 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         validKey
       );
 
-      sharedSyncManager && sharedSyncManager.start();
-
       log.info(NEW_SHARED_CLIENT);
     } else {
       log.debug(RETRIEVE_CLIENT_EXISTING);
     }
 
-    return clients[instanceId] as SplitIO.ICsClient;
+    return clients[instanceId] as SplitIO.IBrowserClient;
   };
 }

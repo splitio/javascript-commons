@@ -2,23 +2,25 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
 import { IImpressionsHandler, IImpressionsTracker, IStrategy } from './types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
+import SplitIO from '../../types/splitio';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
  *
- * @param impressionsCache cache to save impressions
- * @param metadata runtime metadata (ip, hostname and version)
- * @param impressionListener optional impression listener
- * @param integrationsManager optional integrations manager
- * @param strategy strategy for impressions tracking.
+ * @param impressionsCache - cache to save impressions
+ * @param metadata - runtime metadata (ip, hostname and version)
+ * @param impressionListener - optional impression listener
+ * @param integrationsManager - optional integrations manager
+ * @param strategy - strategy for impressions tracking.
  */
 export function impressionsTrackerFactory(
   settings: ISettings,
   impressionsCache: IImpressionsCacheBase,
   strategy: IStrategy,
+  whenInit: (cb: () => void) => void,
   integrationsManager?: IImpressionsHandler,
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
 ): IImpressionsTracker {
@@ -26,7 +28,7 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsCount = impressions.length;
@@ -66,17 +68,19 @@ export function impressionsTrackerFactory(
             sdkLanguageVersion: version
           };
 
-          // Wrap in a timeout because we don't want it to be blocking.
-          setTimeout(function () {
-            // integrationsManager.handleImpression does not throw errors
-            if (integrationsManager) integrationsManager.handleImpression(impressionData);
+          whenInit(() => {
+            // Wrap in a timeout because we don't want it to be blocking.
+            setTimeout(() => {
+              // integrationsManager.handleImpression does not throw errors
+              if (integrationsManager) integrationsManager.handleImpression(impressionData);
 
-            try { // @ts-ignore. An exception on the listeners should not break the SDK.
-              if (impressionListener) impressionListener.logImpression(impressionData);
-            } catch (err) {
-              log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
-            }
-          }, 0);
+              try { // @ts-ignore. An exception on the listeners should not break the SDK.
+                if (impressionListener) impressionListener.logImpression(impressionData);
+              } catch (err) {
+                log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
+              }
+            });
+          });
         }
       }
     }

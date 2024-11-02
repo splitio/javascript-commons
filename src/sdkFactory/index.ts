@@ -3,7 +3,7 @@ import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
 import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
-import { IBasicClient, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
@@ -18,21 +18,27 @@ import { NONE, OPTIMIZED } from '../utils/constants';
 /**
  * Modular SDK factory
  */
-export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
+export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
-    filterAdapterFactory } = params;
+    filterAdapterFactory, lazyInit } = params;
   const { log, sync: { impressionsMode } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
-  // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
-  validateAndTrackApiKey(log, settings.core.authorizationKey);
+  // initialization
+  let hasInit = false;
+  const initCallbacks: (() => void)[] = [];
 
-  const sdkReadinessManager = sdkReadinessManagerFactory(log, platform.EventEmitter, settings.startup.readyTimeout);
+  function whenInit(cb: () => void) {
+    if (hasInit) cb();
+    else initCallbacks.push(cb);
+  }
+
+  const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, settings);
   const readiness = sdkReadinessManager.readinessManager;
 
   const storage = storageFactory({
@@ -48,7 +54,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     },
   });
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
-  const clients: Record<string, IBasicClient> = {};
+  const clients: Record<string, SplitIO.IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
@@ -67,8 +73,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
       strategy = strategyDebugFactory(observer);
   }
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, integrationsManager, storage.telemetry);
-  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, whenInit, integrationsManager, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
@@ -85,8 +91,21 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
   const clientMethod = sdkClientMethodFactory(ctx);
   const managerInstance = sdkManagerFactory(settings, storage.splits, sdkReadinessManager);
 
-  syncManager && syncManager.start();
-  signalListener && signalListener.start();
+
+  function init() {
+    if (hasInit) return;
+    hasInit = true;
+
+    // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
+    validateAndTrackApiKey(log, settings.core.authorizationKey);
+    readiness.init();
+    uniqueKeysTracker && uniqueKeysTracker.start();
+    syncManager && syncManager.start();
+    signalListener && signalListener.start();
+
+    initCallbacks.forEach((cb) => cb());
+    initCallbacks.length = 0;
+  }
 
   log.info(NEW_FACTORY);
 
@@ -107,7 +126,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     settings,
 
     destroy() {
-      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => {});
+      return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
-  }, extraProps && extraProps(ctx));
+  }, extraProps && extraProps(ctx), lazyInit ? { init } : init());
 }

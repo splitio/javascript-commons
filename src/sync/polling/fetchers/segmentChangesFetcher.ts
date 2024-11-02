@@ -28,7 +28,7 @@ export function segmentChangesFetcherFactory(fetchSegmentChanges: IFetchSegmentC
     segmentName: string,
     noCache?: boolean,
     till?: number,
-    // Optional decorator for `fetchMySegments` promise, such as timeout or time tracker
+    // Optional decorator for `fetchSegmentChanges` promise, such as timeout or time tracker
     decorator?: (promise: Promise<ISegmentChangesResponse[]>) => Promise<ISegmentChangesResponse[]>
   ): Promise<ISegmentChangesResponse[]> {
 

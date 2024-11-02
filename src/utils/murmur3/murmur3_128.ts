@@ -266,7 +266,7 @@ function hash128x64(key?: string, seed?: number) {
 /**
  * x64 version of Murmur3 for 128bits.
  *
- * @param {string} str
+ * @param str - The string to hash.
  */
 export function hash128(str: string, seed?: number): string {
   return hash128x64(UTF16ToUTF8(str), (seed as number) >>> 0);

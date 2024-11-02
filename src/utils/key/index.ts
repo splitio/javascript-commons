@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { isObject } from '../lang';
 
 // function isSplitKeyObject(key: any): key is SplitIO.SplitKeyObject {

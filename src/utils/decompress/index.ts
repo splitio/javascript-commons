@@ -409,8 +409,8 @@ export const algorithms = (function iifeDecompress() {
   return {
     /**
      * Expands GZIP data
-     * @param data The data to decompress
-     * @param out Where to write the data. GZIP already encodes the output size, so providing this doesn't save memory.
+     * @param data - The data to decompress
+     * @param out - Where to write the data. GZIP already encodes the output size, so providing this doesn't save memory.
      * @returns The decompressed version of the data
      */
     gunzipSync(data: Uint8Array, out?: Uint8Array): Uint8Array {
@@ -418,8 +418,8 @@ export const algorithms = (function iifeDecompress() {
     },
     /**
      * Expands Zlib data
-     * @param data The data to decompress
-     * @param out Where to write the data. Saves memory if you know the decompressed size and provide an output buffer of that length.
+     * @param data - The data to decompress
+     * @param out - Where to write the data. Saves memory if you know the decompressed size and provide an output buffer of that length.
      * @returns The decompressed version of the data
      */
     unzlibSync(data: Uint8Array, out?: Uint8Array): Uint8Array {

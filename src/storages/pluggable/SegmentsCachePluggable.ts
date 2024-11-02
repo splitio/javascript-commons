@@ -5,7 +5,6 @@ import { KeyBuilderSS } from '../KeyBuilderSS';
 import { IPluggableStorageWrapper, ISegmentsCacheAsync } from '../types';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { _Set } from '../../utils/lang/sets';
 
 /**
  * ISegmentsCacheAsync implementation for pluggable storages.
@@ -23,33 +22,20 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   }
 
   /**
-   * Add a list of `segmentKeys` to the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
+   * Update the given segment `name` with the lists of `addedKeys`, `removedKeys` and `changeNumber`.
+   * The returned promise is resolved if the operation success, with `true` if the segment was updated (i.e., some key was added or removed),
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
-  addToSegment(name: string, segmentKeys: string[]) {
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    if (segmentKeys.length) {
-      return this.wrapper.addItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  /**
-   * Remove a list of `segmentKeys` from the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
-   */
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.wrapper.removeItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
+    return Promise.all<any>([
+      addedKeys.length && this.wrapper.addItems(segmentKey, addedKeys),
+      removedKeys.length && this.wrapper.removeItems(segmentKey, removedKeys),
+      this.wrapper.set(this.keys.buildSegmentTillKey(name), changeNumber + '')
+    ]).then(() => {
+      return addedKeys.length > 0 || removedKeys.length > 0;
+    });
   }
 
   /**
@@ -58,17 +44,6 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
    */
   isInSegment(name: string, key: string) {
     return this.wrapper.itemContains(this.keys.buildSegmentNameKey(name), key);
-  }
-
-  /**
-   * Set till number for the given segment `name`.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.wrapper.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    );
   }
 
   /**
@@ -108,7 +83,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
   }
 
-  /** @TODO implement if required by DataLoader or Producer mode  */
+  // @TODO implement if required by DataLoader or Producer mode
   clear(): Promise<boolean> {
     return Promise.resolve(true);
   }

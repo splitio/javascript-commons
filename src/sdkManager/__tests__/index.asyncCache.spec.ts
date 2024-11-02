@@ -9,7 +9,7 @@ import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { metadata } from '../../storages/__tests__/KeyBuilder.spec';
 import { RedisAdapter } from '../../storages/inRedis/RedisAdapter';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {

@@ -25,7 +25,7 @@ function hex2dec(s: string): string {
 /**
  * Gets the higher 64 bits of the x64 version of Murmur3 for 128bits, as decimal and hexadecimal number strings.
  * Used for MySegments channel V2 notifications.
- * @param {string} str
+ * @param str - The string to hash
  */
 export function hash64(str: string): Hash64 {
   const hex = hash128(str).slice(0, 16);

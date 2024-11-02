@@ -11,17 +11,19 @@ import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 /**
  * InMemory storage factory for standalone client-side SplitFactory
  *
- * @param params parameters required by EventsCacheSync
+ * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const segments = new MySegmentsCacheInMemory();
+  const largeSegments = new MySegmentsCacheInMemory();
 
   const storage = {
     splits,
     segments,
+    largeSegments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
     impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
     events: new EventsCacheInMemory(eventsQueueSize),
@@ -32,17 +34,19 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     destroy() {
       this.splits.clear();
       this.segments.clear();
+      this.largeSegments.clear();
       this.impressions.clear();
       this.impressionCounts && this.impressionCounts.clear();
       this.events.clear();
       this.uniqueKeys && this.uniqueKeys.clear();
     },
 
-    // When using shared instanciation with MEMORY we reuse everything but segments (they are unique per key)
+    // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared() {
       return {
         splits: this.splits,
         segments: new MySegmentsCacheInMemory(),
+        largeSegments: new MySegmentsCacheInMemory(),
         impressions: this.impressions,
         impressionCounts: this.impressionCounts,
         events: this.events,
@@ -52,13 +56,14 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         destroy() {
           this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
           this.segments.clear();
+          this.largeSegments.clear();
         }
       };
     },
   };
 
   // @TODO revisit storage logic in localhost mode
-  // No tracking data in localhost mode to avoid memory leaks
+  // No tracking in localhost mode to avoid memory leaks: https://github.com/splitio/javascript-commons/issues/181
   if (params.settings.mode === LOCALHOST_MODE) {
     const noopTrack = () => true;
     storage.impressions.track = noopTrack;

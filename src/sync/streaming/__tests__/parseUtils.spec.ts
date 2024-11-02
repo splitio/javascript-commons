@@ -1,8 +1,7 @@
 import { hash64 } from '../../../utils/murmur3/murmur3_64';
 import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
-import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload } from '../parseUtils';
-import { _Set } from '../../../utils/lang/sets';
+import { parseKeyList, parseBitmap, isInBitmap, parseFFUpdatePayload, getDelay } from '../parseUtils';
 
 test('parseKeyList', () => {
   keylists.forEach(keylist => {
@@ -10,8 +9,8 @@ test('parseKeyList', () => {
 
     expect(parseKeyList(keyListDataCompressed, compression)).toEqual(keyListData); // decompress KeyList
 
-    const added = new _Set(keyListData.a);
-    const removed = new _Set(keyListData.r);
+    const added = new Set(keyListData.a);
+    const removed = new Set(keyListData.r);
 
     addedUserKeys.forEach(userKey => {
       const hash = hash64(userKey);
@@ -59,4 +58,17 @@ test('split notification - parseKeyList', () => {
     expect(parseFFUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
   });
 
+});
+
+test('getDelay', () => {
+  // if h === 0, return 0 (immediate, no delay)
+  expect(getDelay({ i: 300, h: 0, s: 1 }, 'anything')).toBe(0);
+
+  // if h !== 0, calculate delay with provided hash, seed and interval
+  expect(getDelay({ i: 300, h: 1, s: 0 }, 'nicolas@split.io')).toBe(241);
+  expect(getDelay({ i: 60000, h: 1, s: 1 }, 'emi@split.io')).toBe(14389);
+  expect(getDelay({ i: 60000, h: 1, s: 0 }, 'emi@split.io')).toBe(24593);
+
+  // if i, h and s are not provided, use defaults
+  expect(getDelay({}, 'emi@split.io')).toBe(24593);
 });
