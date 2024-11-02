@@ -6,7 +6,6 @@ import { findLatencyIndex } from '../findLatencyIndex';
 import { getTelemetryConfigStats } from '../../sync/submitters/telemetrySubmitter';
 import { CONSUMER_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { isString, isNaNNumber } from '../../utils/lang';
-import { _Map } from '../../utils/lang/maps';
 import { MAX_LATENCY_BUCKET_COUNT, newBuckets } from '../inMemory/TelemetryCacheInMemory';
 import { parseLatencyField, parseExceptionField, parseMetadata } from '../utils';
 
@@ -14,9 +13,9 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
 
   /**
    * Create a Telemetry cache that uses a storage wrapper.
-   * @param log  Logger instance.
-   * @param keys  Key builder.
-   * @param wrapper  Adapted wrapper storage.
+   * @param log -  Logger instance.
+   * @param keys -  Key builder.
+   * @param wrapper -  Adapted wrapper storage.
    */
   constructor(private readonly log: ILogger, private readonly keys: KeyBuilderSS, private readonly wrapper: IPluggableStorageWrapper) { }
 
@@ -43,7 +42,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
       return latencyKeys.length ?
         this.wrapper.getMany(latencyKeys).then(latencies => {
 
-          const result: MultiMethodLatencies = new _Map();
+          const result: MultiMethodLatencies = new Map();
 
           for (let i = 0; i < latencyKeys.length; i++) {
             const field = latencyKeys[i].split('::')[1];
@@ -77,7 +76,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           return Promise.all(latencyKeys.map((latencyKey) => this.wrapper.del(latencyKey))).then(() => result);
         }) :
         // If latencyKeys is empty, return an empty map.
-        new _Map();
+        new Map();
     });
   }
 
@@ -90,7 +89,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
       return exceptionKeys.length ?
         this.wrapper.getMany(exceptionKeys).then(exceptions => {
 
-          const result: MultiMethodExceptions = new _Map();
+          const result: MultiMethodExceptions = new Map();
 
           for (let i = 0; i < exceptionKeys.length; i++) {
             const field = exceptionKeys[i].split('::')[1];
@@ -117,7 +116,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           return Promise.all(exceptionKeys.map((exceptionKey) => this.wrapper.del(exceptionKey))).then(() => result);
         }) :
         // If exceptionKeys is empty, return an empty map.
-        new _Map();
+        new Map();
     });
   }
 
@@ -130,7 +129,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
       return configKeys.length ?
         this.wrapper.getMany(configKeys).then(configs => {
 
-          const result: MultiConfigs = new _Map();
+          const result: MultiConfigs = new Map();
 
           for (let i = 0; i < configKeys.length; i++) {
             const field = configKeys[i].split('::')[1];
@@ -154,7 +153,7 @@ export class TelemetryCachePluggable implements ITelemetryCacheAsync {
           return Promise.all(configKeys.map((configKey) => this.wrapper.del(configKey))).then(() => result);
         }) :
         // If configKeys is empty, return an empty map.
-        new _Map();
+        new Map();
     });
   }
 }

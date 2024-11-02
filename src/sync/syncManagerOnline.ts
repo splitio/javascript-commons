@@ -14,9 +14,9 @@ import { ISdkFactoryContextSync } from '../sdkFactory/types';
  * Online SyncManager factory.
  * Can be used for server-side API, and client-side API with or without multiple clients.
  *
- * @param pollingManagerFactory allows to specialize the SyncManager for server-side or client-side API by passing
+ * @param pollingManagerFactory - allows to specialize the SyncManager for server-side or client-side API by passing
  * `pollingManagerSSFactory` or `pollingManagerCSFactory` respectively.
- * @param pushManagerFactory optional to build a SyncManager with or without streaming support
+ * @param pushManagerFactory - optional to build a SyncManager with or without streaming support
  */
 export function syncManagerOnlineFactory(
   pollingManagerFactory?: (params: ISdkFactoryContextSync) => IPollingManager,
@@ -143,27 +143,27 @@ export function syncManagerOnlineFactory(
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
 
-        return {
-          isRunning: mySegmentsSyncTask.isRunning,
-          start() {
-            if (syncEnabled) {
-              if (pushManager) {
-                if (pollingManager!.isRunning()) {
-                  // if doing polling, we must start the periodic fetch of data
-                  if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
-                } else {
-                  // if not polling, we must execute the sync task for the initial fetch
-                  // of segments since `syncAll` was already executed when starting the main client
-                  mySegmentsSyncTask.execute();
-                }
-                pushManager.add(matchingKey, mySegmentsSyncTask);
-              } else {
+        if (running) {
+          if (syncEnabled) {
+            if (pushManager) {
+              if (pollingManager!.isRunning()) {
+                // if doing polling, we must start the periodic fetch of data
                 if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              } else {
+                // if not polling, we must execute the sync task for the initial fetch
+                // of segments since `syncAll` was already executed when starting the main client
+                mySegmentsSyncTask.execute();
               }
+              pushManager.add(matchingKey, mySegmentsSyncTask);
             } else {
-              if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
+              if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
             }
-          },
+          } else {
+            if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
+          }
+        }
+
+        return {
           stop() {
             // check in case `client.destroy()` has been invoked more than once for the same client
             const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);

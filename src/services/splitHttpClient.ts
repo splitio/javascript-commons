@@ -10,10 +10,10 @@ const messageNoFetch = 'Global fetch API is not available.';
 /**
  * Factory of Split HTTP clients, which are HTTP clients with predefined headers for Split endpoints.
  *
- * @param settings SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
- * @param platform object containing environment-specific dependencies
+ * @param settings - SDK settings, used to access authorizationKey, logger instance and metadata (SDK version, ip and hostname) to set additional headers
+ * @param platform - object containing environment-specific dependencies
  */
-export function splitHttpClientFactory(settings: ISettings, { getOptions, getFetch }: IPlatform): ISplitHttpClient {
+export function splitHttpClientFactory(settings: ISettings, { getOptions, getFetch }: Pick<IPlatform, 'getOptions' | 'getFetch'>): ISplitHttpClient {
 
   const { log, core: { authorizationKey }, version, runtime: { ip, hostname } } = settings;
   const options = getOptions && getOptions(settings);

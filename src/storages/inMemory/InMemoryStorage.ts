@@ -11,7 +11,7 @@ import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
 /**
  * InMemory storage factory for standalone server-side SplitFactory
  *
- * @param params parameters required by EventsCacheSync
+ * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;

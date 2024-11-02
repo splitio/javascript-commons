@@ -1,4 +1,4 @@
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 
 export type MaybeThenable<T> = T | Promise<T>
 
@@ -30,6 +30,10 @@ export interface IInSegmentMatcherData {
   segmentName: string
 }
 
+export interface IInLargeSegmentMatcherData {
+  largeSegmentName: string
+}
+
 export interface IDependencyMatcherData {
   split: string,
   treatments: string[]
@@ -43,6 +47,7 @@ interface ISplitMatcherBase {
     attribute: string | null
   }
   userDefinedSegmentMatcherData?: null | IInSegmentMatcherData
+  userDefinedLargeSegmentMatcherData?: null | IInLargeSegmentMatcherData
   whitelistMatcherData?: null | IWhitelistMatcherData
   unaryNumericMatcherData?: null | IUnaryNumericMatcherData
   betweenMatcherData?: null | IBetweenMatcherData
@@ -59,6 +64,11 @@ interface IAllKeysMatcher extends ISplitMatcherBase {
 interface IInSegmentMatcher extends ISplitMatcherBase {
   matcherType: 'IN_SEGMENT',
   userDefinedSegmentMatcherData: IInSegmentMatcherData
+}
+
+interface IInLargeSegmentMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_LARGE_SEGMENT',
+  userDefinedLargeSegmentMatcherData: IInLargeSegmentMatcherData
 }
 
 interface IWhitelistMatcher extends ISplitMatcherBase {
@@ -165,7 +175,8 @@ interface IInListSemverMatcher extends ISplitMatcherBase {
 export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
-  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher
+  IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
+  IInLargeSegmentMatcher
 
 /** Split object */
 export interface ISplitPartition {
@@ -218,14 +229,17 @@ export interface ISegmentChangesResponse {
   till: number
 }
 
-export interface IMySegmentsResponseItem {
-  id: string,
-  name: string
+export interface IMySegmentsResponse {
+  cn?: number,
+  k?: {
+    n: string
+  }[]
 }
 
-/** Interface of the parsed JSON response of `/mySegments/{userKey}` */
-export interface IMySegmentsResponse {
-  mySegments: IMySegmentsResponseItem[]
+/** Interface of the parsed JSON response of `/memberships/{userKey}` */
+export interface IMembershipsResponse {
+  ms?: IMySegmentsResponse,
+  ls?: IMySegmentsResponse
 }
 
 /** Metadata internal type for storages */

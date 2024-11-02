@@ -1,6 +1,6 @@
 import { IPluggableStorageWrapper, IEventsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { StoredEventWithMetadata } from '../../sync/submitters/types';
@@ -21,7 +21,7 @@ export class EventsCachePluggable implements IEventsCacheAsync {
 
   /**
    * Push given event to the storage.
-   * @param eventData  Event item to push.
+   * @param eventData -  Event item to push.
    * @returns  A promise that is resolved with a boolean value indicating if the push operation succeeded or failed.
    * Unlike `impressions::track`, The promise will never be rejected.
    */

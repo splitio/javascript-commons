@@ -1,4 +1,4 @@
-// http://www.wheresrhys.co.uk/fetch-mock/#usageinstallation
+// @TODO upgrade fetch-mock to fix vulnerabilities
 import fetchMockLib from 'fetch-mock';
 
 const fetchMock = fetchMockLib.sandbox();

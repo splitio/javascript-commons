@@ -1,4 +1,4 @@
-import { QUEUED, DROPPED, DEDUPED, EVENTS, IMPRESSIONS, IMPRESSIONS_COUNT, MY_SEGMENT, SEGMENT, SPLITS, TELEMETRY, TOKEN, TRACK, TREATMENT, TREATMENTS, TREATMENTS_WITH_CONFIG, TREATMENT_WITH_CONFIG } from '../../../utils/constants';
+import { QUEUED, DROPPED, DEDUPED, EVENTS, IMPRESSIONS, IMPRESSIONS_COUNT, MEMBERSHIPS, SEGMENT, SPLITS, TELEMETRY, TOKEN, TRACK, TREATMENT, TREATMENTS, TREATMENTS_WITH_CONFIG, TREATMENT_WITH_CONFIG } from '../../../utils/constants';
 import { EventDataType, ImpressionDataType, Method, OperationType, StreamingEvent } from '../../../sync/submitters/types';
 import { TelemetryCacheInMemory } from '../TelemetryCacheInMemory';
 
@@ -14,7 +14,7 @@ const operationTypes: OperationType[] = [
   TELEMETRY,
   TOKEN,
   SEGMENT,
-  MY_SEGMENT
+  MEMBERSHIPS
 ];
 
 const methods: Method[] = [
@@ -88,7 +88,7 @@ describe('TELEMETRY CACHE', () => {
     expect(cache.getLastSynchronization()).toEqual(expectedLastSync);
 
     // Overwrite a single operation
-    cache.recordSuccessfulSync(MY_SEGMENT, 100);
+    cache.recordSuccessfulSync(MEMBERSHIPS, 100);
     expect(cache.getLastSynchronization()).toEqual({ ...expectedLastSync, 'ms': 100 });
   });
 
@@ -106,7 +106,7 @@ describe('TELEMETRY CACHE', () => {
     expect(cache.popHttpErrors()).toEqual({});
 
     // Set a single http error
-    cache.recordHttpError(MY_SEGMENT, 400);
+    cache.recordHttpError(MEMBERSHIPS, 400);
     expect(cache.popHttpErrors()).toEqual({ 'ms': { 400: 1 } });
   });
 
@@ -211,7 +211,7 @@ describe('TELEMETRY CACHE', () => {
   test('"isEmpty" and "pop" methods', () => {
     const cache = new TelemetryCacheInMemory();
     const expectedEmptyPayload = {
-      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: [], ufs:{ sp: 0, ms: 0 }
+      lS: {}, mL: {}, mE: {}, hE: {}, hL: {}, tR: 0, aR: 0, iQ: 0, iDe: 0, iDr: 0, spC: undefined, seC: undefined, skC: undefined, eQ: 0, eD: 0, sE: [], t: [], ufs: {}
     };
 
     // Initially, the cache is empty
@@ -228,20 +228,20 @@ describe('TELEMETRY CACHE', () => {
   });
 
   test('updates from SSE', () => {
-    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    expect(cache.popUpdatesFromSSE()).toEqual({});
     cache.recordUpdatesFromSSE(SPLITS);
     cache.recordUpdatesFromSSE(SPLITS);
     cache.recordUpdatesFromSSE(SPLITS);
-    cache.recordUpdatesFromSSE(MY_SEGMENT);
-    cache.recordUpdatesFromSSE(MY_SEGMENT);
-    expect(cache.popUpdatesFromSSE()).toEqual({sp: 3, ms: 2});
-    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(MEMBERSHIPS);
+    cache.recordUpdatesFromSSE(MEMBERSHIPS);
+    expect(cache.popUpdatesFromSSE()).toEqual({ sp: 3, ms: 2 });
+    expect(cache.popUpdatesFromSSE()).toEqual({});
     cache.recordUpdatesFromSSE(SPLITS);
-    cache.recordUpdatesFromSSE(MY_SEGMENT);
+    cache.recordUpdatesFromSSE(MEMBERSHIPS);
     cache.recordUpdatesFromSSE(SPLITS);
-    cache.recordUpdatesFromSSE(MY_SEGMENT);
-    expect(cache.popUpdatesFromSSE()).toEqual({sp: 2, ms: 2});
-    expect(cache.popUpdatesFromSSE()).toEqual({sp: 0, ms: 0});
+    cache.recordUpdatesFromSSE(MEMBERSHIPS);
+    expect(cache.popUpdatesFromSSE()).toEqual({ sp: 2, ms: 2 });
+    expect(cache.popUpdatesFromSSE()).toEqual({});
   });
 
 });

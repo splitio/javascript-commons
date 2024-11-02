@@ -1,7 +1,6 @@
 /* eslint-disable no-use-before-define */
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
-import { IMap } from '../../utils/lang/maps';
+import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
 
 export type ImpressionsPayload = {
@@ -88,11 +87,11 @@ export type StoredEventWithMetadata = {
   e: SplitIO.EventData
 }
 
-export type MultiMethodLatencies = IMap<string, MethodLatencies>
+export type MultiMethodLatencies = Map<string, MethodLatencies>
 
-export type MultiMethodExceptions = IMap<string, MethodExceptions>
+export type MultiMethodExceptions = Map<string, MethodExceptions>
 
-export type MultiConfigs = IMap<string, TelemetryConfigStats>
+export type MultiConfigs = Map<string, TelemetryConfigStats>
 
 /**
  * Telemetry usage stats
@@ -103,7 +102,7 @@ export type DROPPED = 1;
 export type DEDUPED = 2;
 export type ImpressionDataType = QUEUED | DROPPED | DEDUPED
 export type EventDataType = QUEUED | DROPPED;
-export type UpdatesFromSSEEnum = SPLITS | MY_SEGMENT;
+export type UpdatesFromSSEEnum = SPLITS | MEMBERSHIPS;
 
 export type SPLITS = 'sp';
 export type IMPRESSIONS = 'im';
@@ -112,8 +111,8 @@ export type EVENTS = 'ev';
 export type TELEMETRY = 'te';
 export type TOKEN = 'to';
 export type SEGMENT = 'se';
-export type MY_SEGMENT = 'ms';
-export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MY_SEGMENT;
+export type MEMBERSHIPS = 'ms';
+export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MEMBERSHIPS;
 
 export type LastSync = Partial<Record<OperationType, number | undefined>>
 export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
@@ -158,8 +157,9 @@ export type TelemetryUsageStats = {
 
 // amount of instant updates that we are doing by avoiding fetching to Split servers
 export type UpdatesFromSSE = {
-  sp: number, // splits
+  sp?: number, // splits
   ms?: number, // my segments
+  mls?: number // my large segments
 }
 
 // 'metrics/usage' JSON request body
@@ -175,12 +175,14 @@ export type TelemetryUsageStatsPayload = TelemetryUsageStats & {
   spC?: number, // splitCount
   seC?: number, // segmentCount
   skC?: number, // segmentKeyCount
+  lsC?: number, // largeSegmentCount
+  lskC?: number, // largeSegmentKeyCount
   sL?: number, // sessionLengthMs
   eQ: number, // eventsQueued
   eD: number, // eventsDropped
   sE: Array<StreamingEvent>, // streamingEvents
   t?: Array<string>, // tags
-  ufs?: UpdatesFromSSE, //UpdatesFromSSE
+  ufs?: UpdatesFromSSE, // instant updates
 }
 
 /**

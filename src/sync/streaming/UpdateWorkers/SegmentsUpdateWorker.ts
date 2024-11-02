@@ -9,7 +9,7 @@ import { IUpdateWorker } from './types';
 /**
  * SegmentsUpdateWorker factory
  */
-export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker {
+export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSyncTask, segmentsCache: ISegmentsCacheSync): IUpdateWorker<[ISegmentUpdateData]> {
 
   // Handles retries with CDN bypass per segment name
   function SegmentUpdateWorker(segment: string) {
@@ -84,8 +84,8 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
     /**
      * Invoked by NotificationProcessor on SEGMENT_UPDATE event
      *
-     * @param {number} changeNumber change number of the SEGMENT_UPDATE notification
-     * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
+     * @param changeNumber - change number of the SEGMENT_UPDATE notification
+     * @param segmentName - segment name of the SEGMENT_UPDATE notification
      */
     put({ changeNumber, segmentName }: ISegmentUpdateData) {
       if (!segments[segmentName]) segments[segmentName] = SegmentUpdateWorker(segmentName);

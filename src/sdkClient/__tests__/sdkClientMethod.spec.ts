@@ -3,6 +3,7 @@ import { CONSUMER_MODE, STANDALONE_MODE } from '../../utils/constants';
 import { sdkClientMethodFactory } from '../sdkClientMethod';
 import { assertClientApi } from './testUtils';
 import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
+import { IBasicClient } from '../../types';
 
 const errorMessage = 'Shared Client not supported by the storage mechanism. Create isolated instances instead.';
 
@@ -14,7 +15,8 @@ const paramMocks = [
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: undefined,
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
-    telemetryTracker: telemetryTrackerFactory()
+    telemetryTracker: telemetryTrackerFactory(),
+    clients: {}
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -23,7 +25,8 @@ const paramMocks = [
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
     signalListener: { stop: jest.fn() },
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
-    telemetryTracker: telemetryTrackerFactory()
+    telemetryTracker: telemetryTrackerFactory(),
+    clients: {}
   }
 ];
 
@@ -35,7 +38,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
   expect(typeof sdkClientMethod).toBe('function');
 
   // calling the function should return a client instance
-  const client = sdkClientMethod();
+  const client = sdkClientMethod() as unknown as IBasicClient;
   assertClientApi(client, params.sdkReadinessManager.sdkStatus);
 
   // multiple calls should return the same instance

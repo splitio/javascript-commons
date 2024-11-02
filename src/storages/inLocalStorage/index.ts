@@ -3,7 +3,7 @@ import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCache
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
-import { KeyBuilderCS } from '../KeyBuilderCS';
+import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
@@ -38,15 +38,17 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
     const matchingKey = getMatching(settings.core.key);
-    const keys = new KeyBuilderCS(prefix, matchingKey as string);
+    const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
     const segments = new MySegmentsCacheInLocal(log, keys);
+    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
     return {
       splits,
       segments,
+      largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
       impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
       events: new EventsCacheInMemory(eventsQueueSize),
@@ -56,19 +58,20 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       destroy() {
         this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
         this.segments = new MySegmentsCacheInMemory();
+        this.largeSegments = new MySegmentsCacheInMemory();
         this.impressions.clear();
         this.impressionCounts && this.impressionCounts.clear();
         this.events.clear();
         this.uniqueKeys?.clear();
       },
 
-      // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).
+      // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
       shared(matchingKey: string) {
-        const childKeysBuilder = new KeyBuilderCS(prefix, matchingKey);
 
         return {
           splits: this.splits,
-          segments: new MySegmentsCacheInLocal(log, childKeysBuilder),
+          segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey)),
+          largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey)),
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,
@@ -77,6 +80,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
           destroy() {
             this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
             this.segments = new MySegmentsCacheInMemory();
+            this.largeSegments = new MySegmentsCacheInMemory();
           }
         };
       },

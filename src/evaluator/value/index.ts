@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IMatcherDto } from '../types';
 import { ILogger } from '../../logger/types';
 import { sanitize } from './sanitize';

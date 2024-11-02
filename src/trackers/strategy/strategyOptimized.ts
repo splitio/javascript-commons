@@ -1,5 +1,5 @@
 import { IImpressionCountsCacheBase } from '../../storages/types';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { truncateTimeFrame } from '../../utils/time';
 import { IImpressionObserver } from '../impressionObserver/types';
 import { IStrategy } from '../types';
@@ -7,8 +7,8 @@ import { IStrategy } from '../types';
 /**
  * Optimized strategy for impressions tracker. Wraps impressions to store and adds previousTime if it corresponds
  *
- * @param impressionsObserver impression observer. previous time (pt property) is included in impression instances
- * @param impressionsCounter cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
+ * @param impressionsObserver - impression observer. previous time (pt property) is included in impression instances
+ * @param impressionsCounter - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
  * @returns IStrategyResult
  */
 export function strategyOptimizedFactory(
@@ -17,8 +17,8 @@ export function strategyOptimizedFactory(
 ): IStrategy {
 
   return {
-    process(impressions: ImpressionDTO[]) {
-      const impressionsToStore: ImpressionDTO[] = [];
+    process(impressions: SplitIO.ImpressionDTO[]) {
+      const impressionsToStore: SplitIO.ImpressionDTO[] = [];
       impressions.forEach((impression) => {
         impression.pt = impressionsObserver.testAndSet(impression);
 

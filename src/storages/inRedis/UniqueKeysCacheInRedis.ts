@@ -1,11 +1,11 @@
 import { IUniqueKeysCacheBase } from '../types';
 import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
-import { setToArray } from '../../utils/lang/sets';
 import { DEFAULT_CACHE_SIZE, REFRESH_RATE, TTL_REFRESH } from './constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
 import type { RedisAdapter } from './RedisAdapter';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -63,7 +63,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
 
   /**
    * Async consumer API, used by synchronizer.
-   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   * @param count - number of items to pop from the queue. If not provided or equal 0, all items will be popped.
    */
   popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
     return this.redis.lrange(this.key, 0, count - 1).then(uniqueKeyItems => {

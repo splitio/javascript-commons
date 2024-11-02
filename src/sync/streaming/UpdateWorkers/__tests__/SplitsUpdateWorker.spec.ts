@@ -206,7 +206,7 @@ describe('SplitsUpdateWorker', () => {
 
     splitUpdateWorker.stop();
 
-    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after reseting
+    await new Promise(res => setTimeout(res, 20)); // Wait to assert no more calls to `execute` after resetting
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
   });
 
@@ -219,9 +219,9 @@ describe('SplitsUpdateWorker', () => {
       const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
-      splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
+      splitUpdateWorker.put({ changeNumber, pcn }, payload); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
-      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { changeNumber, payload }]);
     });
   });
 
@@ -265,7 +265,7 @@ describe('SplitsUpdateWorker', () => {
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { payload: notification.decoded, changeNumber }]);
 
   });
 });

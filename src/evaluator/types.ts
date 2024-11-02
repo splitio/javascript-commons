@@ -1,6 +1,6 @@
 import { IBetweenMatcherData, IBetweenStringMatcherData, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 
 export interface IDependencyMatcherValue {

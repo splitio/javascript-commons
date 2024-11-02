@@ -15,10 +15,6 @@ export class Backoff {
 
   /**
    * Schedule function calls with exponential backoff
-   *
-   * @param {function} cb
-   * @param {number} baseMillis
-   * @param {number} maxMillis
    */
   constructor(cb: (...args: any[]) => any, baseMillis?: number, maxMillis?: number) {
     this.baseMillis = Backoff.__TEST__BASE_MILLIS || baseMillis || Backoff.DEFAULT_BASE_MILLIS;

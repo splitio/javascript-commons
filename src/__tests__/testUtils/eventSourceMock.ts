@@ -13,7 +13,7 @@
  */
 
 import { EventEmitter } from '../../utils/MinEvents';
-import { IEventEmitter } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 type ReadyStateType = 0 | 1 | 2;
 
@@ -46,7 +46,7 @@ export default class EventSource {
   static readonly OPEN: ReadyStateType = 1;
   static readonly CLOSED: ReadyStateType = 2;
 
-  private readonly __emitter: IEventEmitter;
+  private readonly __emitter: SplitIO.IEventEmitter;
   private readonly __eventSourceInitDict: EventSourceInitDict;
   onerror?: (evt: MessageEvent) => any;
   onmessage?: (evt: MessageEvent) => any;

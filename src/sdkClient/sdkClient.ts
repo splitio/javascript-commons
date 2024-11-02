@@ -1,5 +1,5 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IStatusInterface, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { releaseApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
@@ -37,7 +37,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
   return objectAssign(
     // Proto-linkage of the readiness Event Emitter
-    Object.create(sdkReadinessManager.sdkStatus) as IStatusInterface,
+    Object.create(sdkReadinessManager.sdkStatus) as SplitIO.IStatusInterface,
 
     // Client API (getTreatment* & track methods)
     clientInputValidationDecorator(
@@ -66,11 +66,11 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
         syncManager && syncManager.stop();
 
         return __flush().then(() => {
-          // Cleanup event listeners
-          signalListener && signalListener.stop();
-
-          // @TODO stop only if last client is destroyed
-          if (uniqueKeysTracker) uniqueKeysTracker.stop();
+          // For main client, cleanup event listeners and scheduled jobs
+          if (!isSharedClient) {
+            signalListener && signalListener.stop();
+            uniqueKeysTracker && uniqueKeysTracker.stop();
+          }
 
           // Cleanup storage
           return storage.destroy();

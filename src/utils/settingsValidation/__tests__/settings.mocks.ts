@@ -1,22 +1,10 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { LocalhostFromObject } from '../../../sync/offline/LocalhostFromObject';
 
 export const settingsWithKey = {
   core: {
     key: 'some_key'
-  },
-  startup: {
-    readyTimeout: 1,
-  },
-  log: loggerMock
-};
-
-export const settingsWithKeyAndTT = {
-  core: {
-    key: 'some_key',
-    trafficType: 'some_tt'
   },
   startup: {
     readyTimeout: 1,
@@ -73,14 +61,13 @@ export const fullSettings: ISettings = {
   sync: {
     splitFilters: [],
     impressionsMode: 'OPTIMIZED',
-    localhostMode: LocalhostFromObject(),
     __splitFiltersValidation: {
       validFilters: [],
       queryString: null,
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
     enabled: true,
-    flagSpecVersion: '1.1'
+    flagSpecVersion: '1.2'
   },
   version: 'jest',
   runtime: {
