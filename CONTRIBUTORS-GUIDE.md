@@ -32,6 +32,8 @@ The project includes unit as well as integration tests for browser environments.
 
 All tests can be run at once with the command `npm run test`.
 
+If you've updated the TypeScript declaration files (`/types`), you should add some lines verifying the updates in `/ts-tests/index.ts` and then run the TypeScript compilation test using the `npm run test-ts-decls` command.
+
 For additional testing scripts or to get more insight on how these work, please refer to our [package.json](package.json) file.
 
 ### Linting and other useful checks
