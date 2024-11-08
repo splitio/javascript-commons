@@ -1,4 +1,4 @@
-// @TODO eventually migrate to JS-Node-SDK package.
+// @TODO eventually migrate to Node.js SDK package.
 import { ISignalListener } from './types';
 import { thenable } from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
@@ -25,7 +25,7 @@ export class NodeSignalListener implements ISignalListener {
     syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
     settings: ISettings
   ) {
-    // @TODO review handler logic when implementing Node SDK
+    // @TODO review handler logic when implementing Node.js SDK
     this.handler = function () {
       if (syncManager) {
         // syncManager.stop();

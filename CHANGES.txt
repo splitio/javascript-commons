@@ -20,7 +20,7 @@
  - Updated some transitive dependencies for vulnerability fixes.
 
 1.16.0 (June 13, 2024)
- - Added the `getOptions` method to the `IPlatform` interface to allow the SDK to pass request options to the `fetch` function and `EventSource` constructor when fetching data from the Split servers. The method is optional and, if provided, it is called twice: first for the `fetch` options and then for the `EventSource` options. Useful for advanced use cases like configuring a proxy or validating HTTPS certificates in NodeJS.
+ - Added the `getOptions` method to the `IPlatform` interface to allow the SDK to pass request options to the `fetch` function and `EventSource` constructor when fetching data from the Split servers. The method is optional and, if provided, it is called twice: first for the `fetch` options and then for the `EventSource` options. Useful for advanced use cases like configuring a proxy or validating HTTPS certificates in Node.js.
  - Updated the Redis storage to lazily import the `ioredis` dependency when the storage is created. This prevents errors when the SDK is imported or bundled in a .mjs file, as `ioredis` is a CommonJS module.
  - Bugfixing - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
  - Bugfixing - Fixed localhost mode to emit SDK_UPDATE when mocked feature flags are updated in the `features` object map of the config object (Related to issue https://github.com/splitio/javascript-browser-client/issues/119).
@@ -57,7 +57,7 @@
    - Added a new optional Split Filter configuration option. This allows the SDK and Split services to only synchronize the flags in the specified flag sets, avoiding unused or unwanted flags from being synced on the SDK instance, bringing all the benefits from a reduced payload.
      - Note: Only applicable when the SDK is in charge of the rollout data synchronization. When not applicable, the SDK will log a warning on init.
    - Added `sets` property to the `SplitView` object returned by the `split` and `splits` methods of the SDK manager to expose flag sets on flag views.
- - Bugfixing - Fixed SDK key validation in NodeJS to ensure the SDK_READY_TIMED_OUT event is emitted when a client-side type SDK key is provided instead of a server-side one (Related to issue https://github.com/splitio/javascript-client/issues/768).
+ - Bugfixing - Fixed SDK key validation in Node.js to ensure the SDK_READY_TIMED_OUT event is emitted when a client-side type SDK key is provided instead of a server-side one (Related to issue https://github.com/splitio/javascript-client/issues/768).
 
 1.10.0 (October 20, 2023)
  - Added `defaultTreatment` property to the `SplitView` object returned by the `split` and `splits` methods of the SDK manager (Related to issue https://github.com/splitio/javascript-commons/issues/225).
@@ -135,7 +135,7 @@
 1.3.0 (April 6, 2022)
  - Added user consent feature to allow delaying or disabling the data tracking from SDK until user consent is explicitly granted or declined. Read more in our docs.
  - Added `scheduler.impressionsQueueSize` property to SDK configuration to limit the amount of impressions tracked in memory. Read more in our docs.
- - Added support to accept TLS configuration options to the Redis storage in NodeJS. Read more in our docs.
+ - Added support to accept TLS configuration options to the Redis storage in Node.js. Read more in our docs.
  - Updated format for MySegments keys in LocalStorage, keeping backwards compatibility (issue https://github.com/splitio/javascript-client/issues/638).
  - Updated some modules due to general polishing and refactors, including updates in some log messages.
  - Updated some dependencies for vulnerability fixes.
