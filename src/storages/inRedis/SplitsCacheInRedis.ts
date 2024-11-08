@@ -19,7 +19,7 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 
 /**
  * ISplitsCacheAsync implementation that stores split definitions in Redis.
- * Supported by Node.
+ * Supported by Node.js
  */
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 

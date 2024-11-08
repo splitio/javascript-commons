@@ -28,7 +28,7 @@ export interface IPlatform {
    */
   getEventSource?: (settings: ISettings) => (IEventSourceConstructor | undefined)
   /**
-   * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
+   * EventEmitter constructor, like Node.js EventEmitter or a polyfill.
    */
   EventEmitter: new () => SplitIO.IEventEmitter,
   /**
@@ -104,7 +104,7 @@ export interface ISdkFactoryParams {
   filterAdapterFactory?: () => IFilterAdapter
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
-  // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
+  // Pass only if `syncManager` (used by NodeSignalListener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
     syncManager: ISyncManager | undefined, // Used by NodeSignalListener to flush data, and by BrowserSignalListener to close streaming connection.
     settings: ISettings, // Used by BrowserSignalListener
