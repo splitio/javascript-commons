@@ -68,8 +68,8 @@ export function syncTaskFactory<Input extends any[], Output = any>(log: ILogger,
     },
 
     stop() {
-      running = false;
-      if (timeoutID) {
+      if (running) {
+        running = false;
         log.debug(SYNC_TASK_STOP, [taskName]);
         clearTimeout(timeoutID);
         timeoutID = undefined;

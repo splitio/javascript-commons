@@ -126,6 +126,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     settings,
 
     destroy() {
+      hasInit = false;
       return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
   }, extraProps && extraProps(ctx), lazyInit ? { init } : init());
