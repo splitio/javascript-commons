@@ -164,7 +164,7 @@ interface INonPluggableSharedSettings {
  */
 interface IServerSideSharedSettings {
   /**
-   * SDK Core settings for NodeJS.
+   * SDK Core settings for Node.js.
    */
   core: {
     /**
@@ -187,7 +187,7 @@ interface IServerSideSharedSettings {
     IPAddressesEnabled?: boolean;
   };
   /**
-   * SDK Startup settings for NodeJS.
+   * SDK Startup settings for Node.js.
    */
   startup?: {
     /**
@@ -450,7 +450,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
 declare namespace SplitIO {
 
   /**
-   * EventEmitter interface based on a subset of the NodeJS.EventEmitter methods.
+   * EventEmitter interface based on a subset of the Node.js EventEmitter methods.
    */
   interface IEventEmitter {
     addListener(event: string, listener: (...args: any[]) => void): this;
@@ -462,7 +462,7 @@ declare namespace SplitIO {
     emit(event: string, ...args: any[]): boolean;
   }
   /**
-   * NodeJS.EventEmitter interface
+   * Node.js EventEmitter interface
    * @see {@link https://nodejs.org/api/events.html}
    */
   interface EventEmitter extends IEventEmitter {
@@ -478,7 +478,7 @@ declare namespace SplitIO {
     listeners(event: string | symbol): Function[];
     rawListeners(event: string | symbol): Function[];
     listenerCount(type: string | symbol): number;
-    // Added in Node 6...
+    // Added in Node.js 6...
     prependListener(event: string | symbol, listener: (...args: any[]) => void): this;
     prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this;
     eventNames(): Array<string | symbol>;
@@ -557,7 +557,7 @@ declare namespace SplitIO {
     readonly debug: boolean | LogLevel | ILogger;
     readonly version: string;
     /**
-     * Mocked features map if using in client-side, or mocked features file path string if using in server-side (NodeJS).
+     * Mocked features map if using in client-side, or mocked features file path string if using in server-side (Node.js).
      */
     features: MockedFeaturesMap | MockedFeaturesFilePath;
     readonly streamingEnabled: boolean;
@@ -576,7 +576,7 @@ declare namespace SplitIO {
     };
     readonly impressionListener?: IImpressionListener;
     /**
-     * User consent status if using in client-side. Undefined if using in server-side (NodeJS).
+     * User consent status if using in client-side. Undefined if using in server-side (Node.js).
      */
     readonly userConsent?: ConsentStatus;
   }
@@ -936,11 +936,11 @@ declare namespace SplitIO {
     wrapper: Object;
   }
   /**
-   * Synchronous storage valid types for NodeJS.
+   * Synchronous storage valid types for Node.js.
    */
   type NodeSyncStorage = 'MEMORY';
   /**
-   * Asynchronous storages valid types for NodeJS.
+   * Asynchronous storages valid types for Node.js.
    */
   type NodeAsyncStorage = 'REDIS';
   /**
@@ -1237,14 +1237,14 @@ declare namespace SplitIO {
     };
   }
   /**
-   * Settings interface for JavaScript SDK instances created on NodeJS, with server-side API and synchronous in-memory storage.
+   * Settings interface for JavaScript SDK instances created on Node.js, with server-side API and synchronous in-memory storage.
    * If your storage is asynchronous (Redis for example) use SplitIO.INodeAsyncSettings instead.
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
    */
   interface INodeSettings extends IServerSideSharedSettings, ISyncSharedSettings, INonPluggableSharedSettings {
     /**
-     * Defines which kind of storage we can instantiate on NodeJS for 'standalone' mode.
+     * Defines which kind of storage we can instantiate on Node.js for 'standalone' mode.
      * The only possible storage type is 'MEMORY', which is the default.
      */
     storage?: {
@@ -1263,7 +1263,7 @@ declare namespace SplitIO {
     };
     sync?: ISyncSharedSettings['sync'] & {
       /**
-       * Custom options object for HTTP(S) requests in NodeJS.
+       * Custom options object for HTTP(S) requests in Node.js.
        * If provided, this object is merged with the options object passed by the SDK for EventSource and Node-Fetch calls.
        * @see {@link https://www.npmjs.com/package/node-fetch#options}
        */
@@ -1291,7 +1291,7 @@ declare namespace SplitIO {
          */
         getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
         /**
-         * Custom NodeJS HTTP(S) Agent used by the SDK for HTTP(S) requests.
+         * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
          *
          * You can use it, for example, for certificate pinning or setting a network proxy:
          *
@@ -1319,7 +1319,7 @@ declare namespace SplitIO {
     };
   }
   /**
-   * Settings interface for JavaScript SDK instances created on NodeJS, with asynchronous storage like Redis.
+   * Settings interface for JavaScript SDK instances created on Node.js, with asynchronous storage like Redis.
    * If your storage is synchronous (by default we use memory, which is sync) use SplitIO.INodeSettings instead.
    *
    * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
@@ -1332,7 +1332,7 @@ declare namespace SplitIO {
      */
     mode: 'consumer';
     /**
-     * Defines which kind of async storage we can instantiate on NodeJS for 'consumer' mode.
+     * Defines which kind of async storage we can instantiate on Node.js for 'consumer' mode.
      * The only possible storage type is 'REDIS'.
      */
     storage: {
@@ -1501,7 +1501,7 @@ declare namespace SplitIO {
   }
   /**
    * This represents the interface for the Client instance on server-side, where the user key is not bound to the instance and must be provided on each method call.
-   * This interface is available in NodeJS, or when importing the 'server' sub-package of JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
+   * This interface is available in Node.js, or when importing the 'server' sub-package of JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
    */
   interface IClient extends IBasicClient {
     /**
@@ -1592,7 +1592,7 @@ declare namespace SplitIO {
   /**
    * This represents the interface for the Client instance on server-side with asynchronous storage, like REDIS.
    * User key is not bound to the instance and must be provided on each method call, which returns a promise.
-   * This interface is available in NodeJS, or when importing the 'server' sub-package in JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
+   * This interface is available in Node.js, or when importing the 'server' sub-package in JS SDK (e.g., `import { SplitFactory } from '@splitsoftware/splitio/server'`).
    */
   interface IAsyncClient extends IBasicClient {
     /**

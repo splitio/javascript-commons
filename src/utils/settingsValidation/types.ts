@@ -2,7 +2,7 @@ import { ISettings } from '../../types';
 
 /**
  * Parameters used to specialize the settings validation for each API variant
- * (client-side, server-side) and environment (Node server, Browser, etc)
+ * (client-side, server-side) and environment (Node.js, Browser, etc)
  */
 export interface ISettingsValidationParams {
   /**

@@ -42,7 +42,7 @@ export abstract class AbstractMySegmentsCacheSync implements ISegmentsCacheSync 
   // @TODO for client-side it should be the number of clients, but it requires a refactor of MySegments caches to simplify the code.
   abstract getKeysCount(): number
 
-  abstract getChangeNumber(name: string): number
+  abstract getChangeNumber(): number
 
   /**
    * For server-side synchronizer: the method is not used.

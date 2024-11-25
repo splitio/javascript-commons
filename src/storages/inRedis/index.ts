@@ -18,7 +18,7 @@ export interface InRedisStorageOptions {
 }
 
 /**
- * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.
+ * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.js
  * @see {@link https://www.npmjs.com/package/ioredis}
  */
 export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
