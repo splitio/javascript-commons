@@ -1,3 +1,6 @@
+2.0.1 (November 26, 2024)
+ - Bugfixing - Fixed an issue with the SDK_UPDATE event on server-side, where it was not being emitted if there was an empty segment and the SDK received a feature flag update notification.
+
 2.0.0 (November 1, 2024)
  - Added support for targeting rules based on large segments.
  - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.

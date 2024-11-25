@@ -19,7 +19,7 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
   let registeredSegments = Promise.resolve(segments.getRegisteredSegments());
   return registeredSegments.then(segmentNames => {
     return Promise.all(segmentNames.map(segmentName => segments.getChangeNumber(segmentName)))
-      .then(changeNumbers => changeNumbers.every(changeNumber => changeNumber !== -1));
+      .then(changeNumbers => changeNumbers.every(changeNumber => changeNumber !== undefined));
   });
 }
 

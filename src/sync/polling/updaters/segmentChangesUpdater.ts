@@ -33,9 +33,9 @@ export function segmentChangesUpdaterFactory(
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      return fetchOnlyNew && since !== -1 ?
+      return fetchOnlyNew && since !== undefined ?
         false :
-        segmentChangesFetcher(since, segmentName, noCache, till).then((changes) => {
+        segmentChangesFetcher(since || -1, segmentName, noCache, till).then((changes) => {
           return Promise.all(changes.map(x => {
             log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             return segments.update(segmentName, x.added, x.removed, x.till);

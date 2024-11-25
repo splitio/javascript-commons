@@ -20,7 +20,7 @@ describe('SEGMENTS CACHE PLUGGABLE', () => {
 
     expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-    expect(await cache.getChangeNumber('inexistent-segment')).toBe(-1); // -1 if the segment doesn't exist
+    expect(await cache.getChangeNumber('inexistent-segment')).toBe(undefined); // -1 if the segment doesn't exist
 
     await cache.update('mocked-segment', ['d', 'e'], [], 2);
 
