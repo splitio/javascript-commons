@@ -3,7 +3,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ERROR_HTTP, ERROR_CLIENT_CANNOT_GET_READY } from '../logger/constants';
 import { ISettings } from '../types';
 import { IPlatform } from '../sdkFactory/types';
-import { decorateHeaders } from './decorateHeaders';
+import { decorateHeaders, removeNonISO88591 } from './decorateHeaders';
 
 const messageNoFetch = 'Global fetch API is not available.';
 
@@ -30,7 +30,7 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
   };
 
   if (ip) commonHeaders['SplitSDKMachineIP'] = ip;
-  if (hostname) commonHeaders['SplitSDKMachineName'] = hostname;
+  if (hostname) commonHeaders['SplitSDKMachineName'] = removeNonISO88591(hostname);
 
   return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
 

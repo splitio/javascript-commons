@@ -1,3 +1,6 @@
+2.0.2 (XXX XX, 2024)
+ - Bugfixing - Sanitize the `SplitSDKMachineName` header value to avoid exceptions on HTTP/S requests when it contains non ISO-8859-1 characters (Related to issue https://github.com/splitio/javascript-client/issues/847).
+
 2.0.1 (November 25, 2024)
  - Bugfixing - Fixed an issue with the SDK_UPDATE event on server-side, where it was not being emitted if there was an empty segment and the SDK received a feature flag update notification.
 
