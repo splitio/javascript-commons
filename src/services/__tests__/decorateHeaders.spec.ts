@@ -1,5 +1,5 @@
 import { ISettings } from '../../types';
-import { decorateHeaders } from '../decorateHeaders';
+import { decorateHeaders, removeNonISO88591 } from '../decorateHeaders';
 
 const HEADERS = {
   Authorization: 'Bearer SDK-KEY',
@@ -47,4 +47,11 @@ describe('decorateHeaders', () => {
     expect(decorateHeaders(settings as unknown as ISettings, headers)).toEqual(HEADERS);
     expect(settings.log.error).toHaveBeenCalledWith('Problem adding custom headers to request decorator: Error: Unexpected error');
   });
+});
+
+test('removeNonISO88591', () => {
+  expect(removeNonISO88591('')).toBe('');
+  expect(removeNonISO88591('This is a test')).toBe('This is a test');
+  expect(removeNonISO88591('This is a test ó \u0FFF 你')).toBe('This is a test ó  ');
+  expect(removeNonISO88591('Emiliano’s-MacBook-Pro')).toBe('Emilianos-MacBook-Pro');
 });

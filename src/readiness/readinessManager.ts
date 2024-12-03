@@ -37,7 +37,9 @@ function segmentsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitt
 export function readinessManagerFactory(
   EventEmitter: new () => SplitIO.IEventEmitter,
   settings: ISettings,
-  splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
+  splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter),
+  isShared?: boolean
+): IReadinessManager {
 
   const readyTimeout = settings.startup.readyTimeout;
 
@@ -66,11 +68,6 @@ export function readinessManagerFactory(
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
   }
 
-  let readyTimeoutId: ReturnType<typeof setTimeout>;
-  if (readyTimeout > 0) {
-    if (splits.hasInit) readyTimeoutId = setTimeout(timeout, readyTimeout);
-    else splits.initCallbacks.push(() => { readyTimeoutId = setTimeout(timeout, readyTimeout); });
-  }
 
   // emit SDK_READY and SDK_UPDATE
   let isReady = false;
@@ -78,11 +75,19 @@ export function readinessManagerFactory(
   segments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
 
   let isDestroyed = false;
+  let readyTimeoutId: ReturnType<typeof setTimeout>;
+  function __init() {
+    isDestroyed = false;
+    if (readyTimeout > 0 && !isReady) readyTimeoutId = setTimeout(timeout, readyTimeout);
+  }
+
+  splits.initCallbacks.push(__init);
+  if (splits.hasInit) __init();
 
   function checkIsReadyFromCache() {
     isReadyFromCache = true;
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
-    if (!isReady) {
+    if (!isReady && !isDestroyed) {
       try {
         syncLastUpdate();
         gate.emit(SDK_READY_FROM_CACHE);
@@ -94,6 +99,7 @@ export function readinessManagerFactory(
   }
 
   function checkIsReadyOrUpdate(diff: any) {
+    if (isDestroyed) return;
     if (isReady) {
       try {
         syncLastUpdate();
@@ -117,16 +123,13 @@ export function readinessManagerFactory(
     }
   }
 
-  let refCount = 1;
-
   return {
     splits,
     segments,
     gate,
 
     shared() {
-      refCount++;
-      return readinessManagerFactory(EventEmitter, settings, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits, true);
     },
 
     // @TODO review/remove next methods when non-recoverable errors are reworked
@@ -145,13 +148,9 @@ export function readinessManagerFactory(
     destroy() {
       isDestroyed = true;
       syncLastUpdate();
-
-      segments.removeAllListeners();
-      gate.removeAllListeners();
       clearTimeout(readyTimeoutId);
 
-      if (refCount > 0) refCount--;
-      if (refCount === 0) splits.removeAllListeners();
+      if (!isShared) splits.hasInit = false;
     },
 
     isReady() { return isReady; },
