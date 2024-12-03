@@ -30,3 +30,8 @@ export function decorateHeaders(settings: ISettings, headers: Record<string, str
   }
   return headers;
 }
+
+export function removeNonISO88591(input: string) {
+  // eslint-disable-next-line no-control-regex
+  return input.replace(/[^\x00-\xFF]/g, '');
+}

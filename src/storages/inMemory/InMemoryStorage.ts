@@ -28,15 +28,7 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
     uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
 
-    // When using MEMORY we should clean all the caches to leave them empty
-    destroy() {
-      this.splits.clear();
-      this.segments.clear();
-      this.impressions.clear();
-      this.impressionCounts && this.impressionCounts.clear();
-      this.events.clear();
-      this.uniqueKeys && this.uniqueKeys.clear();
-    }
+    destroy() { }
   };
 
   // @TODO revisit storage logic in localhost mode

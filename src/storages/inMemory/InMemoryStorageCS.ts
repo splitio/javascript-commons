@@ -30,16 +30,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
     uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
-    // When using MEMORY we should clean all the caches to leave them empty
-    destroy() {
-      this.splits.clear();
-      this.segments.clear();
-      this.largeSegments.clear();
-      this.impressions.clear();
-      this.impressionCounts && this.impressionCounts.clear();
-      this.events.clear();
-      this.uniqueKeys && this.uniqueKeys.clear();
-    },
+    destroy() { },
 
     // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared() {
@@ -52,12 +43,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         events: this.events,
         telemetry: this.telemetry,
 
-        // Set a new splits cache to clean it for the client without affecting other clients
-        destroy() {
-          this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
-          this.segments.clear();
-          this.largeSegments.clear();
-        }
+        destroy() { }
       };
     },
   };
