@@ -237,7 +237,7 @@ export interface ISegmentsCacheBase {
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
   registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
-  getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
+  getChangeNumber(name: string): MaybeThenable<number | undefined> // only for Server-Side
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): MaybeThenable<boolean> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
 }
@@ -248,7 +248,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  getChangeNumber(name?: string): number
+  getChangeNumber(name?: string): number | undefined
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): boolean // only for Server-Side
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
@@ -258,7 +258,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
-  getChangeNumber(name: string): Promise<number>
+  getChangeNumber(name: string): Promise<number | undefined>
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): Promise<boolean>
   clear(): Promise<boolean | void>
 }
