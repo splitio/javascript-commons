@@ -1,4 +1,4 @@
-2.0.2 (XXX XX, 2024)
+2.0.2 (December 3, 2024)
  - Updated the factory `init` and `destroy` methods to support re-initialization after destruction. This update ensures compatibility of the React SDK with React Strict Mode, where the factory's `init` and `destroy` effects are executed an extra time to validate proper resource cleanup.
  - Bugfixing - Sanitize the `SplitSDKMachineName` header value to avoid exceptions on HTTP/S requests when it contains non ISO-8859-1 characters (Related to issue https://github.com/splitio/javascript-client/issues/847).
 
