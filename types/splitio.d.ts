@@ -811,6 +811,7 @@ declare namespace SplitIO {
     label: string;
     changeNumber: number;
     pt?: number;
+    track?: boolean;
   }
   /**
    * Object with information about an impression. It contains the generated impression DTO as well as
