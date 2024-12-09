@@ -70,12 +70,6 @@ export interface IUniqueKeysTracker {
   track(key: string, featureName: string): void;
 }
 
-export interface IStrategyResult {
-  impressionsToStore: SplitIO.ImpressionDTO[],
-  impressionsToListener: SplitIO.ImpressionDTO[],
-  deduped: number
-}
-
 export interface IStrategy {
-  process(impressions:  SplitIO.ImpressionDTO[]): IStrategyResult
+  process(impression:  SplitIO.ImpressionDTO): boolean
 }

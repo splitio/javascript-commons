@@ -13,7 +13,7 @@ import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
-import { NONE, OPTIMIZED } from '../utils/constants';
+import { DEBUG, OPTIMIZED } from '../utils/constants';
 
 /**
  * Modular SDK factory
@@ -61,19 +61,14 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const observer = impressionsObserverFactory();
   const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
 
-  let strategy;
-  switch (impressionsMode) {
-    case OPTIMIZED:
-      strategy = strategyOptimizedFactory(observer, storage.impressionCounts);
-      break;
-    case NONE:
-      strategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
-      break;
-    default:
-      strategy = strategyDebugFactory(observer);
-  }
+  const noneStrategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
+  const strategy = impressionsMode === OPTIMIZED ?
+    strategyOptimizedFactory(observer, storage.impressionCounts) :
+    impressionsMode === DEBUG ?
+      strategyDebugFactory(observer) :
+      noneStrategy;
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, whenInit, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, whenInit, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
