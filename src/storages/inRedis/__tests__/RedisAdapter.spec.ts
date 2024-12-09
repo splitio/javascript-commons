@@ -181,7 +181,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(ioredisMock.once).toBeCalledTimes(2); // If the method was called, it should have called the `once` function twice. If that it the case we can assume that the method was called on creation.
 
-    // Reset stubs again, we'll check the behaviour calling the method directly.
+    // Reset stubs again, we'll check the behavior calling the method directly.
     clearAllMocks();
     expect(ioredisMock.once).not.toBeCalled(); // Control assertion
     expect(ioredisMock[METHODS_TO_PROMISE_WRAP[METHODS_TO_PROMISE_WRAP.length - 1]]).not.toBeCalled(); // Control assertion

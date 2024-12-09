@@ -201,7 +201,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
 describe('SDK Readiness Manager - Ready promise', () => {
 
-  test('.ready() promise behaviour for clients', async () => {
+  test('.ready() promise behavior for clients', async () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     const ready = sdkReadinessManager.sdkStatus.ready();

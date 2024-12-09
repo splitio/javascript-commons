@@ -214,6 +214,8 @@ test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {
 
   const readinessManager = readinessManagerFactory(EventEmitter, settingsWithTimeout);
   readinessManager.init(); // Start the timeout
+  readinessManager.destroy(); // Should cancel the timeout
+  readinessManager.init(); // Start the timeout again
 
   readinessManager.gate.on(SDK_READY_TIMED_OUT, () => { sdkReadyTimedoutCalled = true; });
   readinessManager.gate.once(SDK_READY, () => { sdkReadyCalled = true; });

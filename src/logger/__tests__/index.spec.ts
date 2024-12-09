@@ -97,22 +97,22 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
 
 }
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.debug', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.debug', () => {
   testLogLevels(LogLevels.DEBUG);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.info', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.info', () => {
   testLogLevels(LogLevels.INFO);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.warn', () => {
   testLogLevels(LogLevels.WARN);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
 
 });
