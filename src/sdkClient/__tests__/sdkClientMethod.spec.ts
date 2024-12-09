@@ -16,7 +16,8 @@ const paramMocks = [
     signalListener: undefined,
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
-    clients: {}
+    clients: {},
+    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -26,7 +27,8 @@ const paramMocks = [
     signalListener: { stop: jest.fn() },
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
-    clients: {}
+    clients: {},
+    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
   }
 ];
 
@@ -70,6 +72,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
           client.destroy().then(() => {
             expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
             expect(params.storage.destroy).toBeCalledTimes(1);
+            expect(params.uniqueKeysTracker.stop).toBeCalledTimes(1);
 
             if (params.syncManager) {
               expect(params.syncManager.stop).toBeCalledTimes(1);

@@ -59,15 +59,15 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
   const observer = impressionsObserverFactory();
-  const uniqueKeysTracker = impressionsMode === NONE ? uniqueKeysTrackerFactory(log, storage.uniqueKeys!, filterAdapterFactory && filterAdapterFactory()) : undefined;
+  const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
 
   let strategy;
   switch (impressionsMode) {
     case OPTIMIZED:
-      strategy = strategyOptimizedFactory(observer, storage.impressionCounts!);
+      strategy = strategyOptimizedFactory(observer, storage.impressionCounts);
       break;
     case NONE:
-      strategy = strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!);
+      strategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
       break;
     default:
       strategy = strategyDebugFactory(observer);
@@ -99,7 +99,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
     validateAndTrackApiKey(log, settings.core.authorizationKey);
     readiness.init();
-    uniqueKeysTracker && uniqueKeysTracker.start();
+    uniqueKeysTracker.start();
     syncManager && syncManager.start();
     signalListener && signalListener.start();
 
