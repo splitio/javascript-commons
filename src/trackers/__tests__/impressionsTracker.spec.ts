@@ -75,7 +75,7 @@ describe('Impressions Tracker', () => {
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([imp1, imp2, imp3]);
+    tracker.track([[imp1], [imp2], [imp3]]);
 
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2, imp3]); // Should call the storage track method once we invoke .track() method, passing queued params in a sequence.
   });
@@ -98,7 +98,7 @@ describe('Impressions Tracker', () => {
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
 
     // We signal that we actually want to track the queued impressions.
-    tracker.track([fakeImpression, fakeImpression2], fakeAttributes);
+    tracker.track([[fakeImpression], [fakeImpression2]], fakeAttributes);
 
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression, fakeImpression2]); // Even with a listener, impression should be sent to the cache
     expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
@@ -162,7 +162,7 @@ describe('Impressions Tracker', () => {
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
 
     trackers.forEach(tracker => {
-      tracker.track([impression, impression2, impression3]);
+      tracker.track([[impression], [impression2], [impression3]]);
 
       const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 
@@ -187,7 +187,7 @@ describe('Impressions Tracker', () => {
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([impression, impression2, impression3]);
+    tracker.track([[impression], [impression2], [impression3]]);
 
     const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 
@@ -208,19 +208,19 @@ describe('Impressions Tracker', () => {
 
     const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
 
-    tracker.track([impression]);
+    tracker.track([[impression]]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(1); // impression should be tracked if userConsent is undefined
 
     settings.userConsent = 'UNKNOWN';
-    tracker.track([impression]);
+    tracker.track([[impression]]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(2); // impression should be tracked if userConsent is unknown
 
     settings.userConsent = 'GRANTED';
-    tracker.track([impression]);
+    tracker.track([[impression]]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should be tracked if userConsent is granted
 
     settings.userConsent = 'DECLINED';
-    tracker.track([impression]);
+    tracker.track([[impression]]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should not be tracked if userConsent is declined
   });
 

@@ -23,11 +23,11 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(impressions: [impression: SplitIO.ImpressionDTO, track?: boolean][], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
-      const impressionsToStore = impressions.filter((impression) => {
-        return impression.track === false ?
+      const impressionsToStore = impressions.filter(([impression, track]) => {
+        return track === false ?
           noneStrategy.process(impression) :
           strategy.process(impression);
       });
@@ -36,7 +36,7 @@ export function impressionsTrackerFactory(
       const impressionsToStoreLength = impressionsToStore.length;
 
       if (impressionsToStoreLength) {
-        const res = impressionsCache.track(impressionsToStore);
+        const res = impressionsCache.track(impressionsToStore.map((item) => item[0]));
 
         // If we're on an async storage, handle error and log it.
         if (thenable(res)) {
@@ -60,7 +60,7 @@ export function impressionsTrackerFactory(
         for (let i = 0; i < impressionsLength; i++) {
           const impressionData: SplitIO.ImpressionData = {
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
-            impression: objectAssign({}, impressions[i]),
+            impression: objectAssign({}, impressions[i][0]),
             attributes,
             ip,
             hostname,
