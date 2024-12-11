@@ -28,9 +28,10 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(imps: [impression: SplitIO.ImpressionDTO, track?: boolean][], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
+      const impressions = imps.map((item) => item[0]);
       const impressionsCount = impressions.length;
       const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
 
