@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
-import { IImpressionsHandler, IImpressionsTracker, IStrategy } from './types';
+import { IImpressionsHandler, IImpressionsTracker, ImpressionDecorated, IStrategy } from './types';
 import { ISettings } from '../types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
@@ -23,20 +23,20 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: [impression: SplitIO.ImpressionDTO, track?: boolean][], attributes?: SplitIO.Attributes) {
+    track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
-      const impressionsToStore = impressions.filter(([impression, track]) => {
+      const impressionsToStore = impressions.filter(({ imp, track }) => {
         return track === false ?
-          noneStrategy.process(impression) :
-          strategy.process(impression);
+          noneStrategy.process(imp) :
+          strategy.process(imp);
       });
 
       const impressionsLength = impressions.length;
       const impressionsToStoreLength = impressionsToStore.length;
 
       if (impressionsToStoreLength) {
-        const res = impressionsCache.track(impressionsToStore.map((item) => item[0]));
+        const res = impressionsCache.track(impressionsToStore.map((item) => item.imp));
 
         // If we're on an async storage, handle error and log it.
         if (thenable(res)) {
@@ -60,7 +60,7 @@ export function impressionsTrackerFactory(
         for (let i = 0; i < impressionsLength; i++) {
           const impressionData: SplitIO.ImpressionData = {
             // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
-            impression: objectAssign({}, impressions[i][0]),
+            impression: objectAssign({}, impressions[i].imp),
             attributes,
             ip,
             hostname,

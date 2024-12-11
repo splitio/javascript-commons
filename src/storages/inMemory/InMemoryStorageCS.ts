@@ -55,8 +55,8 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     const noopTrack = () => true;
     storage.impressions.track = noopTrack;
     storage.events.track = noopTrack;
-    if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
-    if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+    storage.impressionCounts.track = noopTrack;
+    storage.uniqueKeys.track = noopTrack;
   }
 
   return storage;
