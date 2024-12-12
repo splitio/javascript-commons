@@ -56,7 +56,7 @@ export class NodeSignalListener implements ISignalListener {
       // Cleaned up, remove handlers.
       this.stop();
 
-      // This handler prevented the default behaviour, start again.
+      // This handler prevented the default behavior, start again.
       // eslint-disable-next-line no-undef
       process.kill(process.pid, SIGTERM);
     };
@@ -72,7 +72,7 @@ export class NodeSignalListener implements ISignalListener {
     }
 
     if (thenable(handlerResult)) {
-      // Always exit, even with errors. The promise is returned for UT purposses.
+      // Always exit, even with errors. The promise is returned for UT purposes.
       return handlerResult.then(wrapUp).catch(wrapUp);
     } else {
       wrapUp();
