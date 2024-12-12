@@ -36,7 +36,6 @@ const fakeSettingsWithListener = {
 };
 const fakeWhenInit = (cb: () => void) => cb();
 
-// @TODO validate logic with `impression.track` false
 const fakeNoneStrategy = {
   process: jest.fn(() => false)
 };
@@ -53,13 +52,6 @@ describe('Impressions Tracker', () => {
 
   const strategy = strategyDebugFactory(impressionObserverCSFactory());
 
-  test('Tracker API', () => {
-    expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
-
-    const instance = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy,strategy, fakeWhenInit);
-    expect(typeof instance.track).toBe('function'); // The instance should implement the track method which will actually track queued impressions.
-  });
-
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
     const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
 
@@ -75,9 +67,9 @@ describe('Impressions Tracker', () => {
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([{ imp: imp1 }, { imp: imp2 }, { imp: imp3 }]);
+    tracker.track([{ imp: imp1 }, { imp: imp2, track: true }, { imp: imp3, track: false }]);
 
-    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2, imp3]); // Should call the storage track method once we invoke .track() method, passing queued params in a sequence.
+    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2]); // Should call the storage track method once we invoke .track() method, passing impressions with `track` enabled
   });
 
   test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
@@ -98,9 +90,9 @@ describe('Impressions Tracker', () => {
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
 
     // We signal that we actually want to track the queued impressions.
-    tracker.track([{ imp: fakeImpression }, { imp: fakeImpression2 }], fakeAttributes);
+    tracker.track([{ imp: fakeImpression }, { imp: fakeImpression2, track: false }], fakeAttributes);
 
-    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression, fakeImpression2]); // Even with a listener, impression should be sent to the cache
+    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression]); // Even with a listener, impressions (with `track` enabled) should be sent to the cache
     expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be executed synchronously.
 
@@ -162,7 +154,7 @@ describe('Impressions Tracker', () => {
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
 
     trackers.forEach(tracker => {
-      tracker.track([{ imp: impression }, { imp: impression2 }, { imp: impression3 }]);
+      tracker.track([{ imp: impression, track: true }, { imp: impression2 }, { imp: impression3 }]);
 
       const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 
