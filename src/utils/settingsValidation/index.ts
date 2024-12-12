@@ -159,7 +159,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
       withDefaults.core.key = 'localhost_key';
     } else {
-      // Keeping same behaviour than JS SDK: if settings key or TT are invalid,
+      // Keeping same behavior than JS SDK: if settings key or TT are invalid,
       // `false` value is used as bound key/TT of the default client, which leads to some issues.
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
       withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
