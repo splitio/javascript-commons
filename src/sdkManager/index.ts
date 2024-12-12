@@ -31,7 +31,8 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     treatments: collectTreatments(splitObject),
     configs: splitObject.configurations || {},
     sets: splitObject.sets || [],
-    defaultTreatment: splitObject.defaultTreatment
+    defaultTreatment: splitObject.defaultTreatment,
+    trackImpressions: splitObject.trackImpressions !== false
   };
 }
 

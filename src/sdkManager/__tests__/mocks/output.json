@@ -8,5 +8,6 @@
     "on": "\"color\": \"green\""
   },
   "sets": ["set_a"],
-  "defaultTreatment": "off"
+  "defaultTreatment": "off",
+  "trackImpressions": true
 }
