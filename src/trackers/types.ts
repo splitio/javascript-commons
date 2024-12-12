@@ -17,8 +17,19 @@ export interface IImpressionsHandler {
   handleImpression(impressionData: SplitIO.ImpressionData): any
 }
 
+export type ImpressionDecorated = {
+  /**
+   * Impression DTO
+   */
+  imp: SplitIO.ImpressionDTO,
+  /**
+   * Whether the impression should be tracked or not
+   */
+  track?: boolean
+};
+
 export interface IImpressionsTracker {
-  track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes): void
+  track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes): void
 }
 
 /** Telemetry tracker */

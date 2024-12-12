@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
-import { IImpressionsHandler, IImpressionsTracker, IStrategy } from './types';
+import { IImpressionsHandler, IImpressionsTracker, ImpressionDecorated, IStrategy } from './types';
 import { ISettings } from '../types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
 import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
@@ -28,9 +28,10 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes) {
+    track(imps: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
+      const impressions = imps.map((item) => item.imp);
       const impressionsCount = impressions.length;
       const { impressionsToStore, impressionsToListener, deduped } = strategy.process(impressions);
 
