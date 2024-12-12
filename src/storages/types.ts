@@ -439,10 +439,10 @@ export interface IStorageBase<
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
-  impressionCounts?: TImpressionsCountCache,
+  impressionCounts: TImpressionsCountCache,
   events: TEventsCache,
   telemetry?: TTelemetryCache,
-  uniqueKeys?: TUniqueKeysCache,
+  uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }

@@ -8,35 +8,25 @@ import { IStrategy } from '../types';
  * Optimized strategy for impressions tracker. Wraps impressions to store and adds previousTime if it corresponds
  *
  * @param impressionsObserver - impression observer. previous time (pt property) is included in impression instances
- * @param impressionsCounter - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
- * @returns IStrategyResult
+ * @param impressionCounts - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
+ * @returns Optimized strategy
  */
 export function strategyOptimizedFactory(
   impressionsObserver: IImpressionObserver,
-  impressionsCounter: IImpressionCountsCacheBase,
+  impressionCounts: IImpressionCountsCacheBase,
 ): IStrategy {
 
   return {
-    process(impressions: SplitIO.ImpressionDTO[]) {
-      const impressionsToStore: SplitIO.ImpressionDTO[] = [];
-      impressions.forEach((impression) => {
-        impression.pt = impressionsObserver.testAndSet(impression);
+    process(impression: SplitIO.ImpressionDTO) {
+      impression.pt = impressionsObserver.testAndSet(impression);
 
-        const now = Date.now();
+      const now = Date.now();
 
-        // Increments impression counter per featureName
-        if (impression.pt) impressionsCounter.track(impression.feature, now, 1);
+      // Increments impression counter per featureName
+      if (impression.pt) impressionCounts.track(impression.feature, now, 1);
 
-        // Checks if the impression should be added in queue to be sent
-        if (!impression.pt || impression.pt < truncateTimeFrame(now)) {
-          impressionsToStore.push(impression);
-        }
-      });
-      return {
-        impressionsToStore: impressionsToStore,
-        impressionsToListener: impressions,
-        deduped: impressions.length - impressionsToStore.length
-      };
+      // Checks if the impression should be added in queue to be sent
+      return (!impression.pt || impression.pt < truncateTimeFrame(now)) ? true : false;
     }
   };
 }

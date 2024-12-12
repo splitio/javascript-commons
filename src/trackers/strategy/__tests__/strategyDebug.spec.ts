@@ -3,29 +3,21 @@ import { impressionObserverCSFactory } from '../../impressionObserver/impression
 import { strategyDebugFactory } from '../strategyDebug';
 import { impression1, impression2 } from './testUtils';
 
-test('strategyDebug', () => {
+test.each([
+  impressionObserverSSFactory(),
+  impressionObserverCSFactory()]
+)('strategyDebug', (impressionObserver) => {
 
-  let augmentedImp1 = { ...impression1, pt: undefined };
-  let augmentedImp12 = { ...impression1, pt: impression1.time };
-  let augmentedImp2 = { ...impression2, pt: undefined };
+  const strategyDebug = strategyDebugFactory(impressionObserver);
 
-  let impressions = [impression1, impression2, {...impression1}];
-  let augmentedImpressions = [augmentedImp1, augmentedImp2, augmentedImp12];
+  const impressions = [{ ...impression1 },  { ...impression2 }, { ...impression1 }];
 
-  const strategyDebugSS = strategyDebugFactory(impressionObserverSSFactory());
+  expect(strategyDebug.process(impressions[0])).toBe(true);
+  expect(impressions[0]).toEqual({ ...impression1, pt: undefined });
 
-  let { impressionsToStore, impressionsToListener, deduped } = strategyDebugSS.process(impressions);
+  expect(strategyDebug.process(impressions[1])).toBe(true);
+  expect(impressions[1]).toEqual({ ...impression2, pt: undefined });
 
-  expect(impressionsToStore).toStrictEqual(augmentedImpressions);
-  expect(impressionsToListener).toStrictEqual(augmentedImpressions);
-  expect(deduped).toStrictEqual(0);
-
-  const strategyDebugCS = strategyDebugFactory(impressionObserverCSFactory());
-
-  ({ impressionsToStore, impressionsToListener, deduped } = strategyDebugCS.process(impressions));
-
-  expect(impressionsToStore).toStrictEqual(augmentedImpressions);
-  expect(impressionsToListener).toStrictEqual(augmentedImpressions);
-  expect(deduped).toStrictEqual(0);
-
+  expect(strategyDebug.process(impressions[2])).toBe(true);
+  expect(impressions[2]).toEqual({ ...impression1, pt: impression1.time });
 });
