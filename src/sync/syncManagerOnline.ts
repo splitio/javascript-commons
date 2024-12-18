@@ -142,11 +142,12 @@ export function syncManagerOnlineFactory(
         if (!pollingManager) return;
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
+        if (syncEnabled && pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
 
         if (running) {
           if (syncEnabled) {
             if (pushManager) {
-              if (pollingManager!.isRunning()) {
+              if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
                 if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
               } else {
@@ -154,7 +155,6 @@ export function syncManagerOnlineFactory(
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
-              pushManager.add(matchingKey, mySegmentsSyncTask);
             } else {
               if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
             }
