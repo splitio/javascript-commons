@@ -7,13 +7,13 @@ import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
 import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
+import { validateCache } from './validateCache';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -37,9 +37,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
-    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const splits = new SplitsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
@@ -53,9 +52,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
-      // @TODO implement
       validateCache() {
-        return splits.getChangeNumber() > -1;
+        return validateCache(settings, keys, splits);
       },
 
       destroy() { },
