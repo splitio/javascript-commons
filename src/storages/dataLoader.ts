@@ -1,6 +1,8 @@
 import { PreloadedData } from '../types';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../utils/constants/browser';
 import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
+
+// This value might be eventually set via a config parameter
+const DEFAULT_CACHE_EXPIRATION_IN_MILLIS = 864000000; // 10 days
 
 /**
  * Factory of client-side storage loader
