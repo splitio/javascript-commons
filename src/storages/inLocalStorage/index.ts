@@ -14,15 +14,12 @@ import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/Telem
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
 import { validateCache } from './validateCache';
-
-export interface InLocalStorageOptions {
-  prefix?: string
-}
+import SplitIO from '../../../types/splitio';
 
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
+export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): IStorageSyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 
@@ -53,7 +50,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
       validateCache() {
-        return validateCache(settings, keys, splits);
+        return validateCache(settings, keys, splits, segments, largeSegments);
       },
 
       destroy() { },

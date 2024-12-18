@@ -4,6 +4,7 @@ import { isNaNNumber } from '../../utils/lang';
 import { getStorageHash } from '../KeyBuilder';
 import { LOG_PREFIX } from './constants';
 import type { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import type { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 
 function validateExpiration(settings: ISettings, keys: KeyBuilderCS) {
@@ -38,10 +39,12 @@ function validateExpiration(settings: ISettings, keys: KeyBuilderCS) {
  * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
  * - hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
  */
-export function validateCache(settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal): boolean {
+export function validateCache(settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
   if (validateExpiration(settings, keys)) {
     splits.clear();
+    segments.clear();
+    largeSegments.clear();
   }
 
   // Check if the cache is ready
