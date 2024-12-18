@@ -6,23 +6,18 @@ import { LOG_PREFIX } from './constants';
 import type { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 
-/**
- * Clean cache if:
- * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
- * - hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
- */
-export function validateCache(settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal): boolean {
+function validateExpiration(settings: ISettings, keys: KeyBuilderCS) {
   const { log } = settings;
 
-  // Check expiration and clear cache if needed
+  // Check expiration
   const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
   let value: string | number | null = localStorage.getItem(keys.buildLastUpdatedKey());
   if (value !== null) {
     value = parseInt(value, 10);
-    if (!isNaNNumber(value) && value < expirationTimestamp) splits.clear();
+    if (!isNaNNumber(value) && value < expirationTimestamp) return true;
   }
 
-  // Check hash and clear cache if needed
+  // Check hash
   const storageHashKey = keys.buildHashKey();
   const storageHash = localStorage.getItem(storageHashKey);
   const currentStorageHash = getStorageHash(settings);
@@ -30,12 +25,23 @@ export function validateCache(settings: ISettings, keys: KeyBuilderCS, splits: S
   if (storageHash !== currentStorageHash) {
     log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
     try {
-      if (splits.getChangeNumber() > -1) splits.clear();
-
       localStorage.setItem(storageHashKey, currentStorageHash);
     } catch (e) {
       log.error(LOG_PREFIX + e);
     }
+    return true;
+  }
+}
+
+/**
+ * Clean cache if:
+ * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
+ * - hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
+ */
+export function validateCache(settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal): boolean {
+
+  if (validateExpiration(settings, keys)) {
+    splits.clear();
   }
 
   // Check if the cache is ready
