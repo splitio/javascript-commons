@@ -1,6 +1,6 @@
 import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
-import { ISplitsCacheSync, IStorageSync } from '../../../storages/types';
+import { IStorageSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
 import { ISplit, ISplitPartial } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
@@ -81,7 +81,7 @@ export function fromObjectUpdaterFactory(
  */
 export function fromObjectSyncTaskFactory(
   splitsParser: ISplitsParser,
-  storage: { splits: ISplitsCacheSync },
+  storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings
 ): ISyncTask<[], boolean> {
