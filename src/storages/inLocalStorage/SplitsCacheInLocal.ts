@@ -18,7 +18,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private readonly storageHash: string;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private updateNewFilter?: boolean;
 
   constructor(settings: ISettings, keys: KeyBuilderCS) {
     super();
@@ -47,13 +46,12 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     const storageHash = localStorage.getItem(storageHashKey);
 
     if (storageHash !== this.storageHash) {
+      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
       try {
-        // mark cache to update the new query filter on first successful splits fetch
-        this.updateNewFilter = true;
-
         // if there is cache, clear it
         if (this.getChangeNumber() > -1) this.clear();
 
+        localStorage.setItem(storageHashKey, this.storageHash);
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }
@@ -169,19 +167,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   setChangeNumber(changeNumber: number): boolean {
-
-    // when using a new split query, we must update it at the store
-    if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
-      const storageHashKey = this.keys.buildHashKey();
-      try {
-        localStorage.setItem(storageHashKey, this.storageHash);
-      } catch (e) {
-        this.log.error(LOG_PREFIX + e);
-      }
-      this.updateNewFilter = false;
-    }
-
     try {
       localStorage.setItem(this.keys.buildSplitsTillKey(), changeNumber + '');
       // update "last updated" timestamp with current time
