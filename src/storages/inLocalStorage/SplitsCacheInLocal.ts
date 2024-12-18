@@ -15,7 +15,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
-  private readonly storageHash: string;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
 
@@ -23,7 +22,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     super();
     this.keys = keys;
     this.log = settings.log;
-    this.storageHash = getStorageHash(settings);
     this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
   }
 
@@ -32,7 +30,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    *
    * @param expirationTimestamp - if the value is not a number, data will not be cleaned
    */
-  public validateCache(expirationTimestamp?: number) {
+  public validateCache(settings: ISettings, expirationTimestamp?: number) {
     // _checkExpiration
     let value: string | number | null = localStorage.getItem(this.keys.buildLastUpdatedKey());
     if (value !== null) {
@@ -44,14 +42,15 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     // _checkFilterQuery
     const storageHashKey = this.keys.buildHashKey();
     const storageHash = localStorage.getItem(storageHashKey);
+    const currentStorageHash = getStorageHash(settings);
 
-    if (storageHash !== this.storageHash) {
+    if (storageHash !== currentStorageHash) {
       this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
       try {
         // if there is cache, clear it
         if (this.getChangeNumber() > -1) this.clear();
 
-        localStorage.setItem(storageHashKey, this.storageHash);
+        localStorage.setItem(storageHashKey, currentStorageHash);
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
       }

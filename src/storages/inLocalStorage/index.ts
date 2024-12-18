@@ -55,7 +55,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
       // @TODO implement
       validateCache() {
-        return splits.validateCache(expirationTimestamp);
+        return splits.validateCache(settings, expirationTimestamp);
       },
 
       destroy() { },

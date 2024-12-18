@@ -7,7 +7,7 @@ import { fullSettings } from '../../../utils/settingsValidation/__tests__/settin
 
 test('SPLIT CACHE / LocalStorage', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   cache.clear();
 
@@ -41,7 +41,7 @@ test('SPLIT CACHE / LocalStorage', () => {
 
 test('SPLIT CACHE / LocalStorage / Get Keys', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   cache.addSplit('lol1', something);
   cache.addSplit('lol2', somethingElse);
@@ -54,7 +54,7 @@ test('SPLIT CACHE / LocalStorage / Get Keys', () => {
 
 test('SPLIT CACHE / LocalStorage / Add Splits', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   cache.addSplits([
     ['lol1', something],
@@ -69,7 +69,7 @@ test('SPLIT CACHE / LocalStorage / Add Splits', () => {
 
 test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   cache.addSplits([ // loop of addSplit
     ['split1', splitWithUserTT],
@@ -108,7 +108,7 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
 
 test('SPLIT CACHE / LocalStorage / killLocally', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   cache.addSplit('lol1', something);
   cache.addSplit('lol2', somethingElse);
@@ -142,7 +142,7 @@ test('SPLIT CACHE / LocalStorage / killLocally', () => {
 
 test('SPLIT CACHE / LocalStorage / usesSegments', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   expect(cache.usesSegments()).toBe(true); // true initially, until data is synchronized
   cache.setChangeNumber(1); // to indicate that data has been synced.
@@ -174,7 +174,7 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
       }
     }
   }, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   const emptySet = new Set([]);
 
@@ -216,7 +216,7 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
 // if FlagSets are not defined, it should store all FlagSets in memory.
 test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
-  cache.validateCache();
+  cache.validateCache(fullSettings);
 
   const emptySet = new Set([]);
 
