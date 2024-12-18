@@ -89,10 +89,8 @@ export function syncManagerOnlineFactory(
         running = true;
 
         if (startFirstTime) {
-          const isCacheLoaded = storage.splits.checkCache();
-          Promise.resolve().then(() => {
-            if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
-          });
+          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
+          if (isCacheLoaded) Promise.resolve().then(() => { readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
         }
 
         // start syncing splits and segments

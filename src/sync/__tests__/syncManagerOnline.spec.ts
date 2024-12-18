@@ -48,7 +48,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
 
   const syncManager = syncManagerOnlineFactory()({
     settings, // @ts-ignore
-    storage: { splits: { checkCache: () => false } },
+    storage: {},
   });
   const submitterManager = syncManager.submitterManager!;
 
@@ -100,7 +100,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
   // Test pushManager for main client
   const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
-    storage: { splits: { checkCache: () => false } },
+    storage: { validateCache: () => false },
   });
 
   expect(pushManagerFactoryMock).not.toBeCalled();
@@ -169,7 +169,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
   // pushManager instantiation control test
   const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
-    storage: { splits: { checkCache: () => false } },
+    storage: { validateCache: () => false },
   });
 
   expect(pushManagerFactoryMock).toBeCalled();
@@ -186,7 +186,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
 test('syncManagerOnline should emit SDK_SPLITS_CACHE_LOADED if validateCache returns true', async () => {
   const params = {
     settings: fullSettings,
-    storage: { splits: { checkCache: () => true } },
+    storage: { validateCache: () => true },
     readiness: { splits: { emit: jest.fn() } }
   }; // @ts-ignore
   const syncManager = syncManagerOnlineFactory()(params);
