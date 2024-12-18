@@ -92,7 +92,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     // Connects to wrapper and emits SDK_READY event on main client
     const connectPromise = wrapper.connect().then(() => {
       if (isSyncronizer) {
-        // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
+        // @TODO reuse InLocalStorage::validateCache logic
+        // In standalone or producer mode, clear storage if SDK key, flags filter criteria or flags spec version was modified
         return wrapper.get(keys.buildHashKey()).then((hash) => {
           const currentHash = getStorageHash(settings);
           if (hash !== currentHash) {

@@ -13,6 +13,7 @@ import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
+import { validateCache } from './validateCache';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -51,9 +52,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
-      // @TODO implement
       validateCache() {
-        return splits.validateCache(settings);
+        return validateCache(settings, keys, splits);
       },
 
       destroy() { },

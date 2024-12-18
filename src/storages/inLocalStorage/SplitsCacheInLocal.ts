@@ -5,9 +5,7 @@ import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISettings } from '../../types';
-import { getStorageHash } from '../KeyBuilder';
 import { setToArray } from '../../utils/lang/sets';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -24,42 +22,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.keys = keys;
     this.log = settings.log;
     this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
-  }
-
-  /**
-   * Clean Splits cache if:
-   * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
-   * - hash has changes, i.e., the SDK key, flags filter criteria or flags spec version was modified
-   */
-  public validateCache(settings: ISettings) {
-    // _checkExpiration
-    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
-    let value: string | number | null = localStorage.getItem(this.keys.buildLastUpdatedKey());
-    if (value !== null) {
-      value = parseInt(value, 10);
-      if (!isNaNNumber(value) && value < expirationTimestamp) this.clear();
-    }
-
-    // @TODO eventually remove `_checkFilterQuery`. Cache should be cleared at the storage level, reusing same logic than PluggableStorage
-    // _checkFilterQuery
-    const storageHashKey = this.keys.buildHashKey();
-    const storageHash = localStorage.getItem(storageHashKey);
-    const currentStorageHash = getStorageHash(settings);
-
-    if (storageHash !== currentStorageHash) {
-      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
-      try {
-        // if there is cache, clear it
-        if (this.getChangeNumber() > -1) this.clear();
-
-        localStorage.setItem(storageHashKey, currentStorageHash);
-      } catch (e) {
-        this.log.error(LOG_PREFIX + e);
-      }
-    }
-    // if the filter didn't change, nothing is done
-
-    return this.getChangeNumber() > -1;
   }
 
   private _decrementCount(key: string) {
