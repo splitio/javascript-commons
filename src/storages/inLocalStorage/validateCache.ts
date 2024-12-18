@@ -39,6 +39,18 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
     }
     return true;
   }
+
+  // Clear on init
+  if (options.clearOnInit) {
+    let value: string | number | null = localStorage.getItem(keys.buildLastClear());
+    if (value !== null) {
+      value = parseInt(value, 10);
+      if (!isNaNNumber(value) && value < Date.now() - MILLIS_IN_A_DAY) {
+        log.info(LOG_PREFIX + 'Clear on init was set and cache was cleared more than a day ago. Cleaning up cache');
+        return true;
+      }
+    }
+  }
 }
 
 /**
@@ -52,8 +64,15 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, settings: 
     splits.clear();
     segments.clear();
     largeSegments.clear();
+
+    // Update last clear timestamp
+    try {
+      localStorage.setItem(keys.buildLastClear(), Date.now() + '');
+    } catch (e) {
+      settings.log.error(LOG_PREFIX + e);
+    }
   }
 
-  // Check if the cache is ready
+  // Check if ready from cache
   return splits.getChangeNumber() > -1;
 }
