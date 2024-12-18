@@ -39,7 +39,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const keys = new KeyBuilderCS(prefix, matchingKey);
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const splits = new SplitsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
@@ -55,7 +55,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
       // @TODO implement
       validateCache() {
-        return splits.getChangeNumber() > -1;
+        return splits.validateCache(expirationTimestamp);
       },
 
       destroy() { },
