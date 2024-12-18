@@ -7,7 +7,6 @@ import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
 import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
@@ -37,7 +36,6 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
-    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     const splits = new SplitsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
@@ -55,7 +53,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
       // @TODO implement
       validateCache() {
-        return splits.validateCache(settings, expirationTimestamp);
+        return splits.validateCache(settings);
       },
 
       destroy() { },

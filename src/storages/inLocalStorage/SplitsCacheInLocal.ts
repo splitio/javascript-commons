@@ -7,6 +7,7 @@ import { LOG_PREFIX } from './constants';
 import { ISettings } from '../../types';
 import { getStorageHash } from '../KeyBuilder';
 import { setToArray } from '../../utils/lang/sets';
+import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -26,16 +27,17 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   /**
-   * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
-   *
-   * @param expirationTimestamp - if the value is not a number, data will not be cleaned
+   * Clean Splits cache if:
+   * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
+   * - hash has changes, i.e., the SDK key, flags filter criteria or flags spec version was modified
    */
-  public validateCache(settings: ISettings, expirationTimestamp?: number) {
+  public validateCache(settings: ISettings) {
     // _checkExpiration
+    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
     let value: string | number | null = localStorage.getItem(this.keys.buildLastUpdatedKey());
     if (value !== null) {
       value = parseInt(value, 10);
-      if (!isNaNNumber(value) && expirationTimestamp && value < expirationTimestamp) this.clear();
+      if (!isNaNNumber(value) && value < expirationTimestamp) this.clear();
     }
 
     // @TODO eventually remove `_checkFilterQuery`. Cache should be cleared at the storage level, reusing same logic than PluggableStorage
