@@ -50,7 +50,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
       validateCache() {
-        return validateCache(settings, keys, splits, segments, largeSegments);
+        return validateCache(options, settings, keys, splits, segments, largeSegments);
       },
 
       destroy() { },
