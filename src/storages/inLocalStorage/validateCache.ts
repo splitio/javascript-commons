@@ -11,16 +11,17 @@ import SplitIO from '../../../types/splitio';
 const DEFAULT_CACHE_EXPIRATION_IN_DAYS = 10;
 const MILLIS_IN_A_DAY = 86400000;
 
-function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS) {
+function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number) {
   const { log } = settings;
 
   // Check expiration
-  const expirationTimestamp = Date.now() - MILLIS_IN_A_DAY * (isFiniteNumber(options.expirationDays) && options.expirationDays >= 1 ? options.expirationDays : DEFAULT_CACHE_EXPIRATION_IN_DAYS);
+  const cacheExpirationInDays = isFiniteNumber(options.expirationDays) && options.expirationDays >= 1 ? options.expirationDays : DEFAULT_CACHE_EXPIRATION_IN_DAYS;
+  const expirationTimestamp = currentTimestamp - MILLIS_IN_A_DAY * cacheExpirationInDays;
   let value: string | number | null = localStorage.getItem(keys.buildLastUpdatedKey());
   if (value !== null) {
     value = parseInt(value, 10);
     if (!isNaNNumber(value) && value < expirationTimestamp) {
-      log.info(LOG_PREFIX + 'Cache expired. Cleaning up cache');
+      log.info(LOG_PREFIX + 'Cache expired more than ' + cacheExpirationInDays + ' days ago. Cleaning up cache');
       return true;
     }
   }
@@ -45,7 +46,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
     let value: string | number | null = localStorage.getItem(keys.buildLastClear());
     if (value !== null) {
       value = parseInt(value, 10);
-      if (!isNaNNumber(value) && value < Date.now() - MILLIS_IN_A_DAY) {
+      if (!isNaNNumber(value) && value < currentTimestamp - MILLIS_IN_A_DAY) {
         log.info(LOG_PREFIX + 'Clear on init was set and cache was cleared more than a day ago. Cleaning up cache');
         return true;
       }
@@ -60,14 +61,16 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  */
 export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
-  if (validateExpiration(options, settings, keys)) {
+  const currentTimestamp = Date.now();
+
+  if (validateExpiration(options, settings, keys, currentTimestamp)) {
     splits.clear();
     segments.clear();
     largeSegments.clear();
 
     // Update last clear timestamp
     try {
-      localStorage.setItem(keys.buildLastClear(), Date.now() + '');
+      localStorage.setItem(keys.buildLastClear(), currentTimestamp + '');
     } catch (e) {
       settings.log.error(LOG_PREFIX + e);
     }
