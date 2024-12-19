@@ -11,7 +11,12 @@ import SplitIO from '../../../types/splitio';
 const DEFAULT_CACHE_EXPIRATION_IN_DAYS = 10;
 const MILLIS_IN_A_DAY = 86400000;
 
-function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number) {
+/**
+ * Validates if cache should be cleared and sets the cache `hash` if needed.
+ *
+ * @returns `true` if cache should be cleared, `false` otherwise
+ */
+function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
   const { log } = settings;
 
   // Check expiration
@@ -31,13 +36,16 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
   const currentStorageHash = getStorageHash(settings);
 
   if (storageHash !== currentStorageHash) {
-    log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version has changed. Cleaning up cache');
     try {
       localStorage.setItem(storageHashKey, currentStorageHash);
     } catch (e) {
       log.error(LOG_PREFIX + e);
     }
-    return true;
+    if (isThereCache) {
+      log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version has changed. Cleaning up cache');
+      return true;
+    }
+    return false; // No cache to clear
   }
 
   // Clear on init
@@ -54,15 +62,17 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
 /**
  * Clean cache if:
  * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
- * - hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
+ * - its hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
+ * - `clearOnInit` was set and cache was not cleared in the last 24 hours
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
 export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
   const currentTimestamp = Date.now();
+  const isThereCache = splits.getChangeNumber() > -1;
 
-  if (validateExpiration(options, settings, keys, currentTimestamp)) {
+  if (validateExpiration(options, settings, keys, currentTimestamp, isThereCache)) {
     splits.clear();
     segments.clear();
     largeSegments.clear();
@@ -73,8 +83,10 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, settings: 
     } catch (e) {
       settings.log.error(LOG_PREFIX + e);
     }
+
+    return false;
   }
 
   // Check if ready from cache
-  return splits.getChangeNumber() > -1;
+  return isThereCache;
 }
