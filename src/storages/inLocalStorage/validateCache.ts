@@ -15,12 +15,11 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
   const { log } = settings;
 
   // Check expiration
-  const cacheExpirationInDays = isFiniteNumber(options.expirationDays) && options.expirationDays >= 1 ? options.expirationDays : DEFAULT_CACHE_EXPIRATION_IN_DAYS;
-  const expirationTimestamp = currentTimestamp - MILLIS_IN_A_DAY * cacheExpirationInDays;
-  let value: string | number | null = localStorage.getItem(keys.buildLastUpdatedKey());
-  if (value !== null) {
-    value = parseInt(value, 10);
-    if (!isNaNNumber(value) && value < expirationTimestamp) {
+  const lastUpdatedTimestamp = parseInt(localStorage.getItem(keys.buildLastUpdatedKey()) as string, 10);
+  if (!isNaNNumber(lastUpdatedTimestamp)) {
+    const cacheExpirationInDays = isFiniteNumber(options.expirationDays) && options.expirationDays >= 1 ? options.expirationDays : DEFAULT_CACHE_EXPIRATION_IN_DAYS;
+    const expirationTimestamp = currentTimestamp - MILLIS_IN_A_DAY * cacheExpirationInDays;
+    if (lastUpdatedTimestamp < expirationTimestamp) {
       log.info(LOG_PREFIX + 'Cache expired more than ' + cacheExpirationInDays + ' days ago. Cleaning up cache');
       return true;
     }
@@ -32,7 +31,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
   const currentStorageHash = getStorageHash(settings);
 
   if (storageHash !== currentStorageHash) {
-    log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Cleaning up cache');
+    log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version has changed. Cleaning up cache');
     try {
       localStorage.setItem(storageHashKey, currentStorageHash);
     } catch (e) {
@@ -43,13 +42,11 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
 
   // Clear on init
   if (options.clearOnInit) {
-    let value: string | number | null = localStorage.getItem(keys.buildLastClear());
-    if (value !== null) {
-      value = parseInt(value, 10);
-      if (!isNaNNumber(value) && value < currentTimestamp - MILLIS_IN_A_DAY) {
-        log.info(LOG_PREFIX + 'Clear on init was set and cache was cleared more than a day ago. Cleaning up cache');
-        return true;
-      }
+    const lastClearTimestamp = parseInt(localStorage.getItem(keys.buildLastClear()) as string, 10);
+
+    if (isNaNNumber(lastClearTimestamp) || lastClearTimestamp < currentTimestamp - MILLIS_IN_A_DAY) {
+      log.info(LOG_PREFIX + 'clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
+      return true;
     }
   }
 }
@@ -58,6 +55,8 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  * Clean cache if:
  * - it has expired, i.e., its `lastUpdated` timestamp is older than the given `expirationTimestamp`
  * - hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
+ *
+ * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
 export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
