@@ -71,8 +71,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * We cannot simply call `localStorage.clear()` since that implies removing user items from the storage.
    */
   clear() {
-    this.log.info(LOG_PREFIX + 'Flushing Splits data from localStorage');
-
     // collect item keys
     const len = localStorage.length;
     const accum = [];
