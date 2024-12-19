@@ -7,7 +7,6 @@ import type { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import SplitIO from '../../../types/splitio';
 
-// milliseconds in a day
 const DEFAULT_CACHE_EXPIRATION_IN_DAYS = 10;
 const MILLIS_IN_A_DAY = 86400000;
 
