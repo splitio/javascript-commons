@@ -79,7 +79,7 @@ describe('validateCache', () => {
 
     expect(validateCache({}, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another' } }, keys, splits, segments, largeSegments)).toBe(false);
 
-    expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria or flags spec version has changed. Cleaning up cache');
+    expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
 
     expect(splits.clear).toHaveBeenCalledTimes(1);
     expect(segments.clear).toHaveBeenCalledTimes(1);

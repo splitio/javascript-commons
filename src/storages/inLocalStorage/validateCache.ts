@@ -41,7 +41,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
       log.error(LOG_PREFIX + e);
     }
     if (isThereCache) {
-      log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version has changed. Cleaning up cache');
+      log.info(LOG_PREFIX + 'SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
       return true;
     }
     return false; // No cache to clear
