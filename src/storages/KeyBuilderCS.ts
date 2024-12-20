@@ -43,6 +43,10 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   buildTillKey() {
     return `${this.prefix}.${this.matchingKey}.segments.till`;
   }
+
+  buildLastClear() {
+    return `${this.prefix}.lastClear`;
+  }
 }
 
 export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): MySegmentsKeyBuilder {
