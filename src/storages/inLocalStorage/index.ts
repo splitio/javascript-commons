@@ -53,6 +53,11 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
 
+      // @TODO implement
+      validateCache() {
+        return splits.getChangeNumber() > -1;
+      },
+
       destroy() { },
 
       // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
