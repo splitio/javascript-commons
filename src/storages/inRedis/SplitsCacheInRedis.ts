@@ -266,10 +266,10 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       return Promise.reject(this.redisError);
     }
 
-    const splits: Record<string, ISplit | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
       .then(splitDefinitions => {
+        const splits: Record<string, ISplit | null> = {};
         names.forEach((name, idx) => {
           const split = splitDefinitions[idx];
           splits[name] = split && JSON.parse(split);
