@@ -134,7 +134,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 
-    const { treatment, label, changeNumber, config = null, track } = evaluation;
+    const { treatment, label, changeNumber, config = null, impressionsDisabled } = evaluation;
     log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
     if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
@@ -149,7 +149,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
           label,
           changeNumber: changeNumber as number,
         },
-        track
+        disabled: impressionsDisabled
       });
     }
 

@@ -67,7 +67,7 @@ describe('Impressions Tracker', () => {
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([{ imp: imp1 }, { imp: imp2, track: true }, { imp: imp3, track: false }]);
+    tracker.track([{ imp: imp1 }, { imp: imp2, disabled: false }, { imp: imp3, disabled: true }]);
 
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2]); // Should call the storage track method once we invoke .track() method, passing impressions with `track` enabled
   });
@@ -90,7 +90,7 @@ describe('Impressions Tracker', () => {
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
 
     // We signal that we actually want to track the queued impressions.
-    tracker.track([{ imp: fakeImpression }, { imp: fakeImpression2, track: false }], fakeAttributes);
+    tracker.track([{ imp: fakeImpression }, { imp: fakeImpression2, disabled: true }], fakeAttributes);
 
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression]); // Even with a listener, impressions (with `track` enabled) should be sent to the cache
     expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
@@ -154,7 +154,7 @@ describe('Impressions Tracker', () => {
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
 
     trackers.forEach(tracker => {
-      tracker.track([{ imp: impression, track: true }, { imp: impression2 }, { imp: impression3 }]);
+      tracker.track([{ imp: impression, disabled: false }, { imp: impression2 }, { imp: impression3 }]);
 
       const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 

@@ -25,7 +25,7 @@ export type ImpressionDecorated = {
   /**
    * Whether the impression should be tracked or not
    */
-  track?: boolean
+  disabled?: boolean
 };
 
 export interface IImpressionsTracker {

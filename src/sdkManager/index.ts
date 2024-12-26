@@ -32,7 +32,7 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     configs: splitObject.configurations || {},
     sets: splitObject.sets || [],
     defaultTreatment: splitObject.defaultTreatment,
-    trackImpressions: splitObject.trackImpressions !== false
+    impressionsDisabled: splitObject.impressionsDisabled === true
   };
 }
 

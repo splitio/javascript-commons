@@ -209,7 +209,7 @@ export interface ISplit {
     [treatmentName: string]: string
   },
   sets?: string[],
-  trackImpressions?: boolean
+  impressionsDisabled?: boolean
 }
 
 // Split definition used in offline mode

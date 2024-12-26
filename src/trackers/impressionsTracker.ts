@@ -26,8 +26,8 @@ export function impressionsTrackerFactory(
     track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
-      const impressionsToStore = impressions.filter(({ imp, track }) => {
-        return track === false ?
+      const impressionsToStore = impressions.filter(({ imp, disabled }) => {
+        return disabled ?
           noneStrategy.process(imp) :
           strategy.process(imp);
       });
