@@ -2,6 +2,7 @@
  - Added two new configuration options for the SDK storage in browsers when using storage type `LOCALSTORAGE`:
     - `storage.expirationDays` to specify the validity period of the rollout cache.
     - `storage.clearOnInit` to clear the rollout cache on SDK initialization.
+ - Bugfixing - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).
 
 2.0.2 (December 3, 2024)
  - Updated the factory `init` and `destroy` methods to support re-initialization after destruction. This update ensures compatibility of the React SDK with React Strict Mode, where the factory's `init` and `destroy` effects are executed an extra time to validate proper resource cleanup.
