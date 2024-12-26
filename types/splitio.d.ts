@@ -1,5 +1,5 @@
 // Type definitions for Split Software SDKs
-// Project: http://www.split.io/
+// Project: https://www.split.io/
 
 import { RedisOptions } from 'ioredis';
 import { RequestOptions } from 'http';
