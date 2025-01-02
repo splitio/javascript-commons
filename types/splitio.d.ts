@@ -863,9 +863,9 @@ declare namespace SplitIO {
      */
     defaultTreatment: string;
     /**
-     * Whether the feature flag has impressions tracking enabled or not.
+     * Whether the feature flag has impressions tracking disabled or not.
      */
-    trackImpressions: boolean;
+    impressionsDisabled: boolean;
   };
   /**
    * A promise that resolves to a feature flag view or null if the feature flag is not found.

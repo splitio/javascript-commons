@@ -9,5 +9,5 @@
   },
   "sets": ["set_a"],
   "defaultTreatment": "off",
-  "trackImpressions": true
+  "impressionsDisabled": false
 }
