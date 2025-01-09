@@ -14,7 +14,7 @@ This library is compatible with JavaScript ES5 and above.
 Please see [Contributors Guide](CONTRIBUTORS-GUIDE.md) to find all you need to submit a Pull Request (PR).
 
 ## License
-Licensed under the Apache License, Version 2.0. See: [Apache License](http://www.apache.org/licenses/).
+Licensed under the Apache License, Version 2.0. See: [Apache License](https://www.apache.org/licenses/).
 
 ## About Split
 
@@ -46,4 +46,4 @@ For a comprehensive list of open source projects visit our [Github page](https:/
 
 **Learn more about Split:**
 
-Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [help.split.io](http://help.split.io) for more detailed information.
+Visit [split.io/product](https://www.split.io/product) for an overview of Split, or visit our documentation at [help.split.io](https://help.split.io) for more detailed information.

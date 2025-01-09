@@ -60,7 +60,7 @@ export function impressionsTrackerFactory(
       if (impressionListener || integrationsManager) {
         for (let i = 0; i < impressionsToListenerCount; i++) {
           const impressionData: SplitIO.ImpressionData = {
-            // copy of impression, to avoid unexpected behaviour if modified by integrations or impressionListener
+            // copy of impression, to avoid unexpected behavior if modified by integrations or impressionListener
             impression: objectAssign({}, impressionsToListener[i]),
             attributes,
             ip,
