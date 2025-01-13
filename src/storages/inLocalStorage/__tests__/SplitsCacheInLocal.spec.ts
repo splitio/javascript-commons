@@ -30,15 +30,9 @@ test('SPLIT CACHE / LocalStorage', () => {
   expect(cache.getSplit('lol1')).toEqual(null);
   expect(cache.getSplit('lol2')).toEqual(somethingElse);
 
-  expect(cache.checkCache()).toBe(false); // checkCache should return false until localstorage has data.
-
   expect(cache.getChangeNumber() === -1).toBe(true);
 
-  expect(cache.checkCache()).toBe(false); // checkCache should return false until localstorage has data.
-
   cache.setChangeNumber(123);
-
-  expect(cache.checkCache()).toBe(true); // checkCache should return true once localstorage has data.
 
   expect(cache.getChangeNumber() === 123).toBe(true);
 
@@ -110,6 +104,7 @@ test('SPLIT CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
 
 test('SPLIT CACHE / LocalStorage / killLocally', () => {
   const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+
   cache.addSplit('lol1', something);
   cache.addSplit('lol2', somethingElse);
   const initialChangeNumber = cache.getChangeNumber();
@@ -173,6 +168,7 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
       }
     }
   }, new KeyBuilderCS('SPLITIO', 'user'));
+
   const emptySet = new Set([]);
 
   cache.addSplits([
@@ -212,25 +208,25 @@ test('SPLIT CACHE / LocalStorage / flag set cache tests', () => {
 
 // if FlagSets are not defined, it should store all FlagSets in memory.
 test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
-  const cacheWithoutFilters = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+
   const emptySet = new Set([]);
 
-  cacheWithoutFilters.addSplits([
+  cache.addSplits([
     [featureFlagOne.name, featureFlagOne],
     [featureFlagTwo.name, featureFlagTwo],
     [featureFlagThree.name, featureFlagThree],
   ]);
-  cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+  cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
 
-  expect(cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
-  expect(cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
-  expect(cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
-  expect(cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new Set(['ff_two', 'ff_three'])]);
-  expect(cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
-  expect(cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
+  expect(cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
+  expect(cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
+  expect(cache.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
+  expect(cache.getNamesByFlagSets(['t'])).toEqual([new Set(['ff_two', 'ff_three'])]);
+  expect(cache.getNamesByFlagSets(['y'])).toEqual([emptySet]);
+  expect(cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
   // Validate that the feature flag cache is cleared when calling `clear` method
-  cacheWithoutFilters.clear();
-  expect(localStorage.length).toBe(1); // only 'SPLITIO.hash' should remain in localStorage
-  expect(localStorage.key(0)).toBe('SPLITIO.hash');
+  cache.clear();
+  expect(localStorage.length).toBe(0);
 });
