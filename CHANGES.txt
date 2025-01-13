@@ -3,6 +3,8 @@
     - `storage.expirationDays` to specify the validity period of the rollout cache.
     - `storage.clearOnInit` to clear the rollout cache on SDK initialization.
  - Updated SDK_READY_FROM_CACHE event when using the `LOCALSTORAGE` storage type to be emitted alongside the SDK_READY event if it has not already been emitted.
+
+2.0.3 (January 9, 2025)
  - Bugfixing - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).
 
 2.0.2 (December 3, 2024)
