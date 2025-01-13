@@ -1,5 +1,5 @@
 2.1.0 (January XX, 2025)
- - Added `trackImpressions` property to SDK Manager's `SplitView` type.
+ - Added `impressionsDisabled` property to SDK Manager's `SplitView` type.
  - Updated implementation of the impressions tracker and strategies to support feature flags with impressions tracking disabled.
 
 2.0.3 (January 9, 2025)
