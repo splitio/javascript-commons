@@ -11,6 +11,7 @@ import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { Method } from '../sync/submitters/types';
+import { ImpressionDecorated } from '../trackers/types';
 
 const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
 
@@ -34,11 +35,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
-      const queue: SplitIO.ImpressionDTO[] = [];
+      const queue: ImpressionDecorated[] = [];
       const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, methodName, queue);
       impressionsTracker.track(queue, attributes);
 
-      stopTelemetryTracker(queue[0] && queue[0].label);
+      stopTelemetryTracker(queue[0] && queue[0].imp.label);
       return treatment;
     };
 
@@ -59,14 +60,14 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
-      const queue: SplitIO.ImpressionDTO[] = [];
+      const queue: ImpressionDecorated[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       Object.keys(evaluationResults).forEach(featureFlagName => {
         treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
       });
       impressionsTracker.track(queue, attributes);
 
-      stopTelemetryTracker(queue[0] && queue[0].label);
+      stopTelemetryTracker(queue[0] && queue[0].imp.label);
       return treatments;
     };
 
@@ -87,7 +88,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
-      const queue: SplitIO.ImpressionDTO[] = [];
+      const queue: ImpressionDecorated[] = [];
       const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
       const evaluations = evaluationResults;
       Object.keys(evaluations).forEach(featureFlagName => {
@@ -95,7 +96,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       });
       impressionsTracker.track(queue, attributes);
 
-      stopTelemetryTracker(queue[0] && queue[0].label);
+      stopTelemetryTracker(queue[0] && queue[0].imp.label);
       return treatments;
     };
 
@@ -128,24 +129,27 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     attributes: SplitIO.Attributes | undefined,
     withConfig: boolean,
     invokingMethodName: string,
-    queue: SplitIO.ImpressionDTO[]
+    queue: ImpressionDecorated[]
   ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 
-    const { treatment, label, changeNumber, config = null } = evaluation;
+    const { treatment, label, changeNumber, config = null, impressionsDisabled } = evaluation;
     log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
     if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
       queue.push({
-        feature: featureFlagName,
-        keyName: matchingKey,
-        treatment,
-        time: Date.now(),
-        bucketingKey,
-        label,
-        changeNumber: changeNumber as number
+        imp: {
+          feature: featureFlagName,
+          keyName: matchingKey,
+          treatment,
+          time: Date.now(),
+          bucketingKey,
+          label,
+          changeNumber: changeNumber as number,
+        },
+        disabled: impressionsDisabled
       });
     }
 

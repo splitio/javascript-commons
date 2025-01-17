@@ -5,30 +5,24 @@ import { IStrategy, IUniqueKeysTracker } from '../types';
 /**
  * None strategy for impressions tracker.
  *
- * @param impressionsCounter - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
+ * @param impressionCounts - cache to save impressions count. impressions will be deduped (OPTIMIZED mode)
  * @param uniqueKeysTracker - unique keys tracker in charge of tracking the unique keys per split.
- * @returns IStrategyResult
+ * @returns None strategy
  */
 export function strategyNoneFactory(
-  impressionsCounter: IImpressionCountsCacheBase,
+  impressionCounts: IImpressionCountsCacheBase,
   uniqueKeysTracker: IUniqueKeysTracker
 ): IStrategy {
 
   return {
-    process(impressions: SplitIO.ImpressionDTO[]) {
-      impressions.forEach((impression) => {
-        const now = Date.now();
-        // Increments impression counter per featureName
-        impressionsCounter.track(impression.feature, now, 1);
-        // Keep track by unique key
-        uniqueKeysTracker.track(impression.keyName, impression.feature);
-      });
-
-      return {
-        impressionsToStore: [],
-        impressionsToListener: impressions,
-        deduped: 0
-      };
+    process(impression: SplitIO.ImpressionDTO) {
+      const now = Date.now();
+      // Increments impression counter per featureName
+      impressionCounts.track(impression.feature, now, 1);
+      // Keep track by unique key
+      uniqueKeysTracker.track(impression.keyName, impression.feature);
+      // Do not store impressions
+      return false;
     }
   };
 }

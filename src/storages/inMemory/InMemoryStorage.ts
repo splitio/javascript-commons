@@ -4,7 +4,7 @@ import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync } from '../types';
 import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
-import { DEBUG, LOCALHOST_MODE, NONE, STORAGE_MEMORY } from '../../utils/constants';
+import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
 
@@ -14,7 +14,7 @@ import { UniqueKeysCacheInMemory } from './UniqueKeysCacheInMemory';
  * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { __splitFiltersValidation } } } = params;
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const segments = new SegmentsCacheInMemory();
@@ -23,10 +23,10 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     splits,
     segments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
-    impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
+    impressionCounts: new ImpressionCountsCacheInMemory(),
     events: new EventsCacheInMemory(eventsQueueSize),
     telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
-    uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemory() : undefined,
+    uniqueKeys: new UniqueKeysCacheInMemory(),
 
     destroy() { }
   };
@@ -37,8 +37,8 @@ export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageS
     const noopTrack = () => true;
     storage.impressions.track = noopTrack;
     storage.events.track = noopTrack;
-    if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
-    if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+    storage.impressionCounts.track = noopTrack;
+    storage.uniqueKeys.track = noopTrack;
   }
 
   return storage;
