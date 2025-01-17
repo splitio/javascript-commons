@@ -8,7 +8,6 @@ import { IResponse, ISplitApi } from '../services/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
-import { OPTIMIZED, DEBUG, NONE } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
@@ -78,10 +77,9 @@ export class BrowserSignalListener implements ISignalListener {
 
     // Flush impressions & events data if there is user consent
     if (isConsentGranted(this.settings)) {
-      const sim = this.settings.sync.impressionsMode;
       const extraMetadata = {
         // sim stands for Sync/Split Impressions Mode
-        sim: sim === OPTIMIZED ? OPTIMIZED : sim === DEBUG ? DEBUG : NONE
+        sim: this.settings.sync.impressionsMode
       };
 
       this._flushData(events + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
