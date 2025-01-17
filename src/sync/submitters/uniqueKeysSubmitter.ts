@@ -19,10 +19,10 @@ export function uniqueKeysSubmitterFactory(params: ISdkFactoryContextSync) {
   const isClientSide = key !== undefined;
   const postUniqueKeysBulk = isClientSide ? postUniqueKeysBulkCs : postUniqueKeysBulkSs;
 
-  const syncTask = submitterFactory(log, postUniqueKeysBulk, uniqueKeys!, UNIQUE_KEYS_RATE, DATA_NAME);
+  const syncTask = submitterFactory(log, postUniqueKeysBulk, uniqueKeys, UNIQUE_KEYS_RATE, DATA_NAME);
 
   // register unique keys submitter to be executed when uniqueKeys cache is full
-  uniqueKeys!.setOnFullQueueCb(() => {
+  uniqueKeys.setOnFullQueueCb(() => {
     if (syncTask.isRunning()) {
       log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
       syncTask.execute();
@@ -33,4 +33,3 @@ export function uniqueKeysSubmitterFactory(params: ISdkFactoryContextSync) {
 
   return syncTask;
 }
-

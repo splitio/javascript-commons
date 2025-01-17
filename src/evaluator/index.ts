@@ -156,12 +156,14 @@ function getEvaluation(
       return evaluation.then(result => {
         result.changeNumber = split.getChangeNumber();
         result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
+        result.impressionsDisabled = splitJSON.impressionsDisabled;
 
         return result;
       });
     } else {
       evaluation.changeNumber = split.getChangeNumber(); // Always sync and optional
       evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
+      evaluation.impressionsDisabled = splitJSON.impressionsDisabled;
     }
   }
 

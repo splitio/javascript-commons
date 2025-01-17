@@ -46,7 +46,7 @@ export interface ISdkFactoryContext {
   eventTracker: IEventTracker,
   telemetryTracker: ITelemetryTracker,
   storage: IStorageSync | IStorageAsync,
-  uniqueKeysTracker?: IUniqueKeysTracker,
+  uniqueKeysTracker: IUniqueKeysTracker,
   signalListener?: ISignalListener
   splitApi?: ISplitApi
   syncManager?: ISyncManager,

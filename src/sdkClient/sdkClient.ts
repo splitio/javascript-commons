@@ -61,7 +61,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           releaseApiKey(settings.core.authorizationKey);
           telemetryTracker.sessionLength();
           signalListener && signalListener.stop();
-          uniqueKeysTracker && uniqueKeysTracker.stop();
+          uniqueKeysTracker.stop();
         }
 
         // Stop background jobs

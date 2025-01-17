@@ -1,7 +1,10 @@
-2.1.0 (January XX, 2025)
+2.2.0 (January XX, 2025)
  - Added two new configuration options for the SDK storage in browsers when using storage type `LOCALSTORAGE`:
     - `storage.expirationDays` to specify the validity period of the rollout cache.
     - `storage.clearOnInit` to clear the rollout cache on SDK initialization.
+
+2.1.0 (January 17, 2025)
+ - Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on `SplitView` type objects. Read more in our docs.
 
 2.0.3 (January 9, 2025)
  - Bugfixing - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).

@@ -17,8 +17,19 @@ export interface IImpressionsHandler {
   handleImpression(impressionData: SplitIO.ImpressionData): any
 }
 
+export type ImpressionDecorated = {
+  /**
+   * Impression DTO
+   */
+  imp: SplitIO.ImpressionDTO,
+  /**
+   * Whether the impression should be tracked or not
+   */
+  disabled?: boolean
+};
+
 export interface IImpressionsTracker {
-  track(impressions: SplitIO.ImpressionDTO[], attributes?: SplitIO.Attributes): void
+  track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes): void
 }
 
 /** Telemetry tracker */
@@ -70,12 +81,6 @@ export interface IUniqueKeysTracker {
   track(key: string, featureName: string): void;
 }
 
-export interface IStrategyResult {
-  impressionsToStore: SplitIO.ImpressionDTO[],
-  impressionsToListener: SplitIO.ImpressionDTO[],
-  deduped: number
-}
-
 export interface IStrategy {
-  process(impressions:  SplitIO.ImpressionDTO[]): IStrategyResult
+  process(impression:  SplitIO.ImpressionDTO): boolean
 }

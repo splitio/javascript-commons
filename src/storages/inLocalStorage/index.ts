@@ -9,7 +9,7 @@ import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
@@ -31,7 +31,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       return InMemoryStorageCSFactory(params);
     }
 
-    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode } } } = params;
+    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
@@ -44,10 +44,10 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       segments,
       largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
-      impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
+      impressionCounts: new ImpressionCountsCacheInMemory(),
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
-      uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
+      uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
         return validateCache(options, settings, keys, splits, segments, largeSegments);
@@ -66,6 +66,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
           impressionCounts: this.impressionCounts,
           events: this.events,
           telemetry: this.telemetry,
+          uniqueKeys: this.uniqueKeys,
 
           destroy() { }
         };

@@ -25,7 +25,7 @@ export interface IEvaluation {
   config?: string | null
 }
 
-export type IEvaluationResult = IEvaluation & { treatment: string }
+export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }
 
 export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
