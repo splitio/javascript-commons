@@ -3,6 +3,7 @@ import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
+import { STORAGE_LOCALSTORAGE } from '../utils/constants';
 
 function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISplitsEventEmitter {
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
@@ -114,6 +115,10 @@ export function readinessManagerFactory(
         isReady = true;
         try {
           syncLastUpdate();
+          if (!isReadyFromCache && settings.storage?.type === STORAGE_LOCALSTORAGE) {
+            isReadyFromCache = true;
+            gate.emit(SDK_READY_FROM_CACHE);
+          }
           gate.emit(SDK_READY);
         } catch (e) {
           // throws user callback exceptions in next tick
