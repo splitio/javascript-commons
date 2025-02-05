@@ -169,7 +169,6 @@ export function splitChangesUpdaterFactory(
           // Write into storage
           // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
-            // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
             splits.setChangeNumber(splitChanges.till),
             splits.addSplits(mutation.added),
             splits.removeSplits(mutation.removed),
