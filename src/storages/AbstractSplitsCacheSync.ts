@@ -9,14 +9,14 @@ import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
  */
 export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
-  protected abstract setChangeNumber(changeNumber: number): boolean | void
   protected abstract addSplit(split: ISplit): boolean
   protected abstract removeSplit(name: string): boolean
+  protected abstract setChangeNumber(changeNumber: number): boolean | void
 
-  update(addedFFs: ISplit[], removedFFs: ISplit[], changeNumber: number): boolean {
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean {
     this.setChangeNumber(changeNumber);
-    const updated = addedFFs.map(addedFF => this.addSplit(addedFF)).some(result => result);
-    return removedFFs.map(removedFF => this.removeSplit(removedFF.name)).some(result => result) || updated;
+    const updated = toAdd.map(addedFF => this.addSplit(addedFF)).some(result => result);
+    return toRemove.map(removedFF => this.removeSplit(removedFF.name)).some(result => result) || updated;
   }
 
   abstract getSplit(name: string): ISplit | null

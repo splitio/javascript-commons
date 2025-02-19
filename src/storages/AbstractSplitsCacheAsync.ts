@@ -8,15 +8,15 @@ import { objectAssign } from '../utils/lang/objectAssign';
  */
 export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
-  protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
   protected abstract addSplit(split: ISplit): Promise<boolean>
   protected abstract removeSplit(name: string): Promise<boolean>
+  protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
 
-  update(addedFFs: ISplit[], removedFFs: ISplit[], changeNumber: number): Promise<boolean> {
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
-      Promise.all(addedFFs.map(addedFF => this.addSplit(addedFF))),
-      Promise.all(removedFFs.map(removedFF => this.removeSplit(removedFF.name)))
+      Promise.all(toAdd.map(addedFF => this.addSplit(addedFF))),
+      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF.name)))
     ]).then(([, added, removed]) => {
       return added.some(result => result) || removed.some(result => result);
     });

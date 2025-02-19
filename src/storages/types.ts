@@ -177,7 +177,7 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  update(addedFFs: ISplit[], removedFFs: ISplit[], changeNumber: number): MaybeThenable<boolean>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): MaybeThenable<boolean>,
   getSplit(name: string): MaybeThenable<ISplit | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
@@ -196,7 +196,7 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  update(addedFFs: ISplit[], removedFFs: ISplit[], changeNumber: number): boolean,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean,
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
   getChangeNumber(): number,
@@ -211,7 +211,7 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  update(addedFFs: ISplit[], removedFFs: ISplit[], changeNumber: number): Promise<boolean>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean>,
   getSplit(name: string): Promise<ISplit | null>,
   getSplits(names: string[]): Promise<Record<string, ISplit | null>>,
   getChangeNumber(): Promise<number>,
