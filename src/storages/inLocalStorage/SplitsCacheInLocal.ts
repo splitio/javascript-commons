@@ -96,8 +96,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  addSplit(name: string, split: ISplit) {
+  addSplit(split: ISplit) {
     try {
+      const name = split.name;
       const splitKey = this.keys.buildSplitKey(name);
       const splitFromLocalStorage = localStorage.getItem(splitKey);
       const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;

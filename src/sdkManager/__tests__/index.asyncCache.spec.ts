@@ -33,7 +33,7 @@ describe('Manager with async cache', () => {
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
     const manager = sdkManagerFactory({ mode: 'consumer', log: loggerMock }, cache, sdkReadinessManagerMock);
     await cache.clear();
-    await cache.addSplit(splitObject.name, splitObject as any);
+    await cache.addSplit(splitObject as any);
 
     /** List all splits */
     const views = await manager.splits();

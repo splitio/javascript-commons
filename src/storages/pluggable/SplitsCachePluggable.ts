@@ -66,7 +66,8 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplit(name: string, split: ISplit): Promise<boolean> {
+  addSplit(split: ISplit): Promise<boolean> {
+    const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     return this.wrapper.get(splitKey).then(splitFromStorage => {
 
@@ -92,15 +93,6 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Add a list of splits.
-   * The returned promise is resolved when the operation success
-   * or rejected if it fails (e.g., wrapper operation fails)
-   */
-  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
-    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
-  }
-
-  /**
    * Remove a given split.
    * The returned promise is resolved when the operation success, with a boolean indicating if the split existed or not.
    * or rejected if it fails (e.g., wrapper operation fails).
@@ -113,15 +105,6 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     }).then(() => {
       return this.wrapper.del(this.keys.buildSplitKey(name));
     });
-  }
-
-  /**
-   * Remove a list of splits.
-   * The returned promise is resolved when the operation success, with a boolean array indicating if the splits existed or not.
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  removeSplits(names: string[]): Promise<void> { // @ts-ignore
-    return Promise.all(names.map(name => this.removeSplit(name)));
   }
 
   /**

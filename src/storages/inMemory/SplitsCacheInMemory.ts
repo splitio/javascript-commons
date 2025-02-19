@@ -26,7 +26,8 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.segmentsCount = 0;
   }
 
-  addSplit(name: string, split: ISplit): boolean {
+  addSplit(split: ISplit): boolean {
+    const name = split.name;
     const previousSplit = this.getSplit(name);
     if (previousSplit) { // We had this Split already
 

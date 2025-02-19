@@ -5,7 +5,7 @@ import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SYNC_SPLITS_FETCH, SYNC_SPLITS_NEW, SYNC_SPLITS_REMOVED, SYNC_SPLITS_SEGMENTS, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
@@ -42,8 +42,8 @@ export function parseSegments({ conditions }: ISplit): Set<string> {
 }
 
 interface ISplitMutations {
-  added: [string, ISplit][],
-  removed: string[],
+  added: ISplit[],
+  removed: ISplit[],
   segments: string[]
 }
 
@@ -77,13 +77,13 @@ export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersV
   const segments = new Set<string>();
   const computed = entries.reduce((accum, split) => {
     if (split.status === 'ACTIVE' && matchFilters(split, filters)) {
-      accum.added.push([split.name, split]);
+      accum.added.push(split);
 
       parseSegments(split).forEach((segmentName: string) => {
         segments.add(segmentName);
       });
     } else {
-      accum.removed.push(split.name);
+      accum.removed.push(split);
     }
 
     return accum;
@@ -128,16 +128,6 @@ export function splitChangesUpdaterFactory(
     return promise;
   }
 
-  /** Returns true if at least one split was updated */
-  function isThereUpdate(flagsChange: [boolean | void, void | boolean[], void | boolean[], boolean | void] | [any, any, any]) {
-    const [, added, removed] = flagsChange;
-    // There is at least one added or modified feature flag
-    if (added && added.some((update: boolean) => update)) return true;
-    // There is at least one removed feature flag
-    if (removed && removed.some((update: boolean) => update)) return true;
-    return false;
-  }
-
   /**
    * SplitChanges updater returns a promise that resolves with a `false` boolean value if it fails to fetch splits or synchronize them with the storage.
    * Returned promise will not be rejected.
@@ -162,22 +152,17 @@ export function splitChangesUpdaterFactory(
 
           const mutation = computeSplitsMutation(splitChanges.splits, splitFiltersValidation);
 
-          log.debug(SYNC_SPLITS_NEW, [mutation.added.length]);
-          log.debug(SYNC_SPLITS_REMOVED, [mutation.removed.length]);
-          log.debug(SYNC_SPLITS_SEGMENTS, [mutation.segments.length]);
+          log.debug(SYNC_SPLITS_UPDATE, [mutation.added.length, mutation.removed.length, mutation.segments.length]);
 
           // Write into storage
           // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
-            // calling first `setChangenumber` method, to perform cache flush if split filter queryString changed
-            splits.setChangeNumber(splitChanges.till),
-            splits.addSplits(mutation.added),
-            splits.removeSplits(mutation.removed),
+            splits.update(mutation.added, mutation.removed, splitChanges.till),
             segments.registerSegments(mutation.segments)
-          ]).then((flagsChange) => {
+          ]).then(([isThereUpdate]) => {
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && isThereUpdate(flagsChange) && (isClientSide || checkAllSegmentsExist(segments))))
+              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && isThereUpdate && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
