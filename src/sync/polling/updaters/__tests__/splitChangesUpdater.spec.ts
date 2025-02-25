@@ -158,17 +158,20 @@ describe('splitChangesUpdater', () => {
   const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges');
   const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
 
-  const splitsCache = new SplitsCacheInMemory();
-  const updateSplits = jest.spyOn(splitsCache, 'update');
+  const splits = new SplitsCacheInMemory();
+  const updateSplits = jest.spyOn(splits, 'update');
 
-  const segmentsCache = new SegmentsCacheInMemory();
-  const registerSegments = jest.spyOn(segmentsCache, 'registerSegments');
+  const segments = new SegmentsCacheInMemory();
+  const registerSegments = jest.spyOn(segments, 'registerSegments');
+
+  const storage = { splits, segments };
+
   const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
 
   let splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
 
-  let splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, splitsCache, segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1);
+  let splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -206,7 +209,7 @@ describe('splitChangesUpdater', () => {
     }
   });
 
-  test('flag sets splits-arrived emition', async () => {
+  test('flag sets splits-arrived emission', async () => {
     const payload = splitNotifications[3].decoded as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
     const setMocks = [
       { sets: [], shouldEmit: false }, /* should not emit if flag does not have any set */
@@ -217,7 +220,7 @@ describe('splitChangesUpdater', () => {
       { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is back in configured sets */
     ];
 
-    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, new SplitsCacheInMemory(), segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
 
     let index = 0;
     let calls = 0;
@@ -230,7 +233,8 @@ describe('splitChangesUpdater', () => {
 
     // @ts-ignore
     splitFiltersValidation = { queryString: null, groupedFilters: { bySet: ['set_a'], byName: [], byPrefix: [] }, validFilters: [] };
-    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, new SplitsCacheInMemory(), segmentsCache, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    storage.splits.clear();
+    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {

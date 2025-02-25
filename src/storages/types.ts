@@ -422,13 +422,13 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
  */
 
 export interface IStorageBase<
-  TSplitsCache extends ISplitsCacheBase,
-  TSegmentsCache extends ISegmentsCacheBase,
-  TImpressionsCache extends IImpressionsCacheBase,
-  TImpressionsCountCache extends IImpressionCountsCacheBase,
-  TEventsCache extends IEventsCacheBase,
-  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
-  TUniqueKeysCache extends IUniqueKeysCacheBase
+  TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
+  TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
+  TImpressionsCountCache extends IImpressionCountsCacheBase = IImpressionCountsCacheBase,
+  TEventsCache extends IEventsCacheBase = IEventsCacheBase,
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync = ITelemetryCacheSync | ITelemetryCacheAsync,
+  TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
   splits: TSplitsCache,
   segments: TSegmentsCache,

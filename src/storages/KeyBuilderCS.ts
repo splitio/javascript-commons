@@ -28,8 +28,7 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   extractSegmentName(builtSegmentKeyName: string) {
     const prefix = `${this.prefix}.${this.matchingKey}.segment.`;
 
-    if (startsWith(builtSegmentKeyName, prefix))
-      return builtSegmentKeyName.substr(prefix.length);
+    if (startsWith(builtSegmentKeyName, prefix)) return builtSegmentKeyName.slice(prefix.length);
   }
 
   buildLastUpdatedKey() {
@@ -54,7 +53,7 @@ export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): 
     extractSegmentName(builtSegmentKeyName: string) {
       const p = `${prefix}.${matchingKey}.largeSegment.`;
 
-      if (startsWith(builtSegmentKeyName, p)) return builtSegmentKeyName.substr(p.length);
+      if (startsWith(builtSegmentKeyName, p)) return builtSegmentKeyName.slice(p.length);
     },
 
     buildTillKey() {

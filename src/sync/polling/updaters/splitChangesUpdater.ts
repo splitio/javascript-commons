@@ -1,4 +1,4 @@
-import { ISegmentsCacheBase, ISplitsCacheBase } from '../../../storages/types';
+import { ISegmentsCacheBase, IStorageBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
@@ -111,14 +111,14 @@ export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersV
 export function splitChangesUpdaterFactory(
   log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
-  splits: ISplitsCacheBase,
-  segments: ISegmentsCacheBase,
+  storage: Pick<IStorageBase, 'splits' | 'segments'>,
   splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
   isClientSide?: boolean
 ): ISplitChangesUpdater {
+  const { splits, segments } = storage;
 
   let startingUp = true;
 
