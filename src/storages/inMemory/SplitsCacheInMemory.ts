@@ -41,41 +41,35 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
       if (usesSegments(previousSplit)) this.segmentsCount--;
     }
 
-    if (split) {
-      // Store the Split.
-      this.splitsCache[name] = split;
-      // Update TT cache
-      const ttName = split.trafficTypeName;
-      this.ttCache[ttName] = (this.ttCache[ttName] || 0) + 1;
-      this.addToFlagSets(split);
+    // Store the Split.
+    this.splitsCache[name] = split;
+    // Update TT cache
+    const ttName = split.trafficTypeName;
+    this.ttCache[ttName] = (this.ttCache[ttName] || 0) + 1;
+    this.addToFlagSets(split);
 
-      // Add to segments count for the new version of the Split
-      if (usesSegments(split)) this.segmentsCount++;
+    // Add to segments count for the new version of the Split
+    if (usesSegments(split)) this.segmentsCount++;
 
-      return true;
-    } else {
-      return false;
-    }
+    return true;
   }
 
   removeSplit(name: string): boolean {
     const split = this.getSplit(name);
-    if (split) {
-      // Delete the Split
-      delete this.splitsCache[name];
+    if (!split) return false;
 
-      const ttName = split.trafficTypeName;
-      this.ttCache[ttName]--; // Update tt cache
-      if (!this.ttCache[ttName]) delete this.ttCache[ttName];
-      this.removeFromFlagSets(split.name, split.sets);
+    // Delete the Split
+    delete this.splitsCache[name];
 
-      // Update the segments count.
-      if (usesSegments(split)) this.segmentsCount--;
+    const ttName = split.trafficTypeName;
+    this.ttCache[ttName]--; // Update tt cache
+    if (!this.ttCache[ttName]) delete this.ttCache[ttName];
+    this.removeFromFlagSets(split.name, split.sets);
 
-      return true;
-    } else {
-      return false;
-    }
+    // Update the segments count.
+    if (usesSegments(split)) this.segmentsCount--;
+
+    return true;
   }
 
   getSplit(name: string): ISplit | null {

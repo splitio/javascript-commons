@@ -121,6 +121,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   removeSplit(name: string): boolean {
     try {
       const split = this.getSplit(name);
+      if (!split) return false;
+
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
@@ -133,7 +135,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
-  getSplit(name: string) {
+  getSplit(name: string): ISplit | null {
     const item = localStorage.getItem(this.keys.buildSplitKey(name));
     return item && JSON.parse(item);
   }
