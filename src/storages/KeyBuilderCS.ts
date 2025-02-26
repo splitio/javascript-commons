@@ -42,6 +42,14 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   buildTillKey() {
     return `${this.prefix}.${this.matchingKey}.segments.till`;
   }
+
+  isSplitKey(key: string) {
+    return startsWith(key, `${this.prefix}.split.`);
+  }
+
+  buildSplitsWithSegmentCountKey() {
+    return `${this.prefix}.splits.usingSegments`;
+  }
 }
 
 export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): MySegmentsKeyBuilder {
