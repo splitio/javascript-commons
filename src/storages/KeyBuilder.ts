@@ -41,7 +41,7 @@ export class KeyBuilder {
     return `${this.prefix}.rbsegment.${splitName}`;
   }
 
-  buildRBSegmentTillKey() {
+  buildRBSegmentsTillKey() {
     return `${this.prefix}.rbsegments.till`;
   }
 

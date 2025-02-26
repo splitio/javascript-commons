@@ -57,16 +57,14 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private _incrementCounts(split: ISplit) {
     try {
-      if (split) {
-        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-        // @ts-expect-error
-        localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
+      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+      // @ts-expect-error
+      localStorage.setItem(ttKey, toNumber(localStorage.getItem(ttKey)) + 1);
 
-        if (usesSegments(split)) {
-          const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-          // @ts-expect-error
-          localStorage.setItem(segmentsCountKey, toNumber(localStorage.getItem(segmentsCountKey)) + 1);
-        }
+      if (usesSegments(split)) {
+        const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
+        // @ts-expect-error
+        localStorage.setItem(segmentsCountKey, toNumber(localStorage.getItem(segmentsCountKey)) + 1);
       }
     } catch (e) {
       this.log.error(LOG_PREFIX + e);

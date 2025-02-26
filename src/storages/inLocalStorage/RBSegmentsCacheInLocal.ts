@@ -20,8 +20,9 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   clear() {
+    this.getNames().forEach(name => this.remove(name));
+    localStorage.removeItem(this.keys.buildRBSegmentsTillKey());
     this.hasSync = false;
-    // SplitsCacheInLocal.clear() does the rest of the job
   }
 
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean {
@@ -32,7 +33,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private setChangeNumber(changeNumber: number) {
     try {
-      localStorage.setItem(this.keys.buildSplitsTillKey(), changeNumber + '');
+      localStorage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
       localStorage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
       this.hasSync = true;
     } catch (e) {
@@ -42,7 +43,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private updateSegmentCount(diff: number){
     const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-    const count = toNumber(localStorage.getItem(segmentsCountKey)) - diff;
+    const count = toNumber(localStorage.getItem(segmentsCountKey)) + diff;
     // @ts-expect-error
     if (count > 0) localStorage.setItem(segmentsCountKey, count);
     else localStorage.removeItem(segmentsCountKey);
@@ -79,7 +80,6 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
       if (usesSegments(rbSegment)) this.updateSegmentCount(-1);
 
       return true;
-
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
       return false;
@@ -116,7 +116,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   getChangeNumber(): number {
     const n = -1;
-    let value: string | number | null = localStorage.getItem(this.keys.buildRBSegmentTillKey());
+    let value: string | number | null = localStorage.getItem(this.keys.buildRBSegmentsTillKey());
 
     if (value !== null) {
       value = parseInt(value, 10);
