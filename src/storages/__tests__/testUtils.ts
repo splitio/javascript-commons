@@ -1,4 +1,4 @@
-import { ISplit } from '../../dtos/types';
+import { IRBSegment, ISplit } from '../../dtos/types';
 import { IStorageSync, IStorageAsync, IImpressionsCacheSync, IEventsCacheSync } from '../types';
 
 // Assert that instances created by storage factories have the expected interface
@@ -45,3 +45,9 @@ export const featureFlagTwo: ISplit = { name: 'ff_two', sets: ['t','w','o'] };
 export const featureFlagThree: ISplit = { name: 'ff_three', sets: ['t','h','r','e'] };
 //@ts-ignore
 export const featureFlagWithoutFS: ISplit = { name: 'ff_four' };
+
+// Rule-based segments
+//@ts-ignore
+export const rbSegment: IRBSegment = { name: 'rb_segment', conditions: [{ matcherGroup: { matchers: [{ matcherType: 'EQUAL_TO', unaryNumericMatcherData: { value: 10 } }] } }] };
+//@ts-ignore
+export const rbSegmentWithInSegmentMatcher: IRBSegment = { name: 'rb_segment_with_in_segment_matcher', conditions: [{ matcherGroup: { matchers: [{ matcherType: 'IN_SEGMENT', userDefinedSegmentMatcherData: { segmentName: 'employees' } }] } }] };

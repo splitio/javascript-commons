@@ -55,13 +55,13 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
   }
 
   setChangeNumber(changeNumber: number) {
-    return this.redis.set(this.keys.buildRBSegmentTillKey(), changeNumber + '').then(
+    return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
       status => status === 'OK'
     );
   }
 
   getChangeNumber(): Promise<number> {
-    return this.redis.get(this.keys.buildRBSegmentTillKey()).then((value: string | null) => {
+    return this.redis.get(this.keys.buildRBSegmentsTillKey()).then((value: string | null) => {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
