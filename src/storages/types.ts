@@ -177,11 +177,9 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): MaybeThenable<boolean[] | void>,
-  removeSplits(names: string[]): MaybeThenable<boolean[] | void>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): MaybeThenable<boolean>,
   getSplit(name: string): MaybeThenable<ISplit | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
-  setChangeNumber(changeNumber: number): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
   getChangeNumber(): MaybeThenable<number>,
   getAll(): MaybeThenable<ISplit[]>,
@@ -198,11 +196,9 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): boolean[],
-  removeSplits(names: string[]): boolean[],
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean,
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
-  setChangeNumber(changeNumber: number): boolean | void,
   getChangeNumber(): number,
   getAll(): ISplit[],
   getSplitNames(): string[],
@@ -215,11 +211,9 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>,
-  removeSplits(names: string[]): Promise<boolean[] | void>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean>,
   getSplit(name: string): Promise<ISplit | null>,
   getSplits(names: string[]): Promise<Record<string, ISplit | null>>,
-  setChangeNumber(changeNumber: number): Promise<boolean | void>,
   getChangeNumber(): Promise<number>,
   getAll(): Promise<ISplit[]>,
   getSplitNames(): Promise<string[]>,
@@ -428,13 +422,13 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
  */
 
 export interface IStorageBase<
-  TSplitsCache extends ISplitsCacheBase,
-  TSegmentsCache extends ISegmentsCacheBase,
-  TImpressionsCache extends IImpressionsCacheBase,
-  TImpressionsCountCache extends IImpressionCountsCacheBase,
-  TEventsCache extends IEventsCacheBase,
-  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
-  TUniqueKeysCache extends IUniqueKeysCacheBase
+  TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
+  TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
+  TImpressionsCountCache extends IImpressionCountsCacheBase = IImpressionCountsCacheBase,
+  TEventsCache extends IEventsCacheBase = IEventsCacheBase,
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync = ITelemetryCacheSync | ITelemetryCacheAsync,
+  TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
   splits: TSplitsCache,
   segments: TSegmentsCache,

@@ -9,14 +9,9 @@ test('KEYS / splits keys', () => {
   const expectedKey = `SPLITIO.split.${splitName}`;
   const expectedTill = 'SPLITIO.splits.till';
 
-  expect(builder.isSplitKey(expectedKey)).toBe(true);
-  expect(builder.buildSplitKey(splitName) === expectedKey).toBe(true);
-  expect(builder.buildSplitsTillKey() === expectedTill).toBe(true);
-  expect(builder.extractKey(builder.buildSplitKey(splitName)) === splitName).toBe(true);
-
-  // NOT USED
-  // const expectedReady = 'SPLITIO.splits.ready';
-  // expect(builder.buildSplitsReady() === expectedReady).toBe(true);
+  expect(builder.buildSplitKey(splitName)).toBe(expectedKey);
+  expect(builder.buildSplitsTillKey()).toBe(expectedTill);
+  expect(builder.extractKey(builder.buildSplitKey(splitName))).toBe(splitName);
 });
 
 test('KEYS / splits keys with custom prefix', () => {
@@ -27,13 +22,8 @@ test('KEYS / splits keys with custom prefix', () => {
   const expectedKey = `${prefix}.split.${splitName}`;
   const expectedTill = `${prefix}.splits.till`;
 
-  expect(builder.isSplitKey(expectedKey)).toBe(true);
   expect(builder.buildSplitKey(splitName)).toBe(expectedKey);
   expect(builder.buildSplitsTillKey() === expectedTill).toBe(true);
-
-  // NOT USED
-  // const expectedReady = `${prefix}.SPLITIO.splits.ready`;
-  // expect(builder.buildSplitsReady() === expectedReady).toBe(true);
 });
 
 const prefix = 'SPLITIO';
