@@ -24,7 +24,7 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: [string, ISplit][] = [];
+    const splits: ISplit[] = [];
     let loadError = null;
     let splitsMock: false | Record<string, ISplitPartial> = {};
     try {
@@ -37,24 +37,23 @@ export function fromObjectUpdaterFactory(
     if (!loadError && splitsMock) {
       log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
 
-      forOwn(splitsMock, function (val, name) {
-        splits.push([ // @ts-ignore Split changeNumber and seed is undefined in localhost mode
-          name, {
-            name,
-            status: 'ACTIVE',
-            killed: false,
-            trafficAllocation: 100,
-            defaultTreatment: CONTROL,
-            conditions: val.conditions || [],
-            configurations: val.configurations,
-            trafficTypeName: val.trafficTypeName
-          }
-        ]);
+      forOwn(splitsMock, (val, name) => {
+        // @ts-ignore Split changeNumber and seed is undefined in localhost mode
+        splits.push({
+          name,
+          status: 'ACTIVE',
+          killed: false,
+          trafficAllocation: 100,
+          defaultTreatment: CONTROL,
+          conditions: val.conditions || [],
+          configurations: val.configurations,
+          trafficTypeName: val.trafficTypeName
+        });
       });
 
       return Promise.all([
         splitsCache.clear(), // required to sync removed splits from mock
-        splitsCache.addSplits(splits)
+        splitsCache.update(splits, [], Date.now())
       ]).then(() => {
         readiness.splits.emit(SDK_SPLITS_ARRIVED);
 

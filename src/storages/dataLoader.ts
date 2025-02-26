@@ -37,10 +37,9 @@ export function dataLoaderFactory(preloadedData: PreloadedData): DataLoader {
 
     // cleaning up the localStorage data, since some cached splits might need be part of the preloaded data
     storage.splits.clear();
-    storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])));
+    storage.splits.update(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])), [], since);
 
     // add mySegments data
     let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userId];

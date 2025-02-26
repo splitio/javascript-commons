@@ -82,7 +82,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., redis operation fails)
    */
-  addSplit(name: string, split: ISplit): Promise<boolean> {
+  addSplit(split: ISplit): Promise<boolean> {
+    const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then(splitFromStorage => {
 
@@ -108,17 +109,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Add a list of splits.
-   * The returned promise is resolved when the operation success
-   * or rejected if it fails (e.g., redis operation fails)
-   */
-  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
-    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
-  }
-
-  /**
    * Remove a given split.
-   * The returned promise is resolved when the operation success, with 1 or 0 indicating if the split existed or not.
+   * The returned promise is resolved when the operation success, with true or false indicating if the split existed (and was removed) or not.
    * or rejected if it fails (e.g., redis operation fails).
    */
   removeSplit(name: string) {
@@ -127,17 +119,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
     }).then(() => {
-      return this.redis.del(this.keys.buildSplitKey(name));
+      return this.redis.del(this.keys.buildSplitKey(name)).then(status => status === 1);
     });
-  }
-
-  /**
-   * Remove a list of splits.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., redis operation fails).
-   */
-  removeSplits(names: string[]): Promise<any> {
-    return Promise.all(names.map(name => this.removeSplit(name)));
   }
 
   /**

@@ -12,74 +12,59 @@ describe('SPLITS CACHE PLUGGABLE', () => {
   test('add/remove/get splits', async () => {
     const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
 
-    // Assert addSplit and addSplits
-    await cache.addSplits([
-      ['lol1', splitWithUserTT],
-      ['lol2', splitWithAccountTT]
-    ]);
-    await cache.addSplit('lol3', splitWithAccountTT);
+    await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
 
-    // Assert getAll
     let values = await cache.getAll();
 
-    expect(values).toEqual([splitWithUserTT, splitWithAccountTT, splitWithAccountTT]);
+    expect(values).toEqual([splitWithUserTT, splitWithAccountTT]);
 
     // Assert getSplits
-    let valuesObj = await cache.getSplits(['lol2', 'lol3']);
-
-    expect(Object.keys(valuesObj).length).toBe(2);
-    expect(valuesObj.lol2).toEqual(splitWithAccountTT);
-    expect(valuesObj.lol3).toEqual(splitWithAccountTT);
+    let valuesObj = await cache.getSplits([splitWithUserTT.name, splitWithAccountTT.name]);
+    expect(valuesObj).toEqual(values.reduce<Record<string, ISplit>>((acc, split) => {
+      acc[split.name] = split;
+      return acc;
+    }, {}));
 
     // Assert getSplitNames
     let splitNames = await cache.getSplitNames();
 
-    expect(splitNames.length).toBe(3);
-    expect(splitNames.indexOf('lol1') !== -1).toBe(true);
-    expect(splitNames.indexOf('lol2') !== -1).toBe(true);
-    expect(splitNames.indexOf('lol3') !== -1).toBe(true);
+    expect(splitNames.length).toBe(2);
+    expect(splitNames.indexOf('user_ff') !== -1).toBe(true);
+    expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
 
-    // Assert removeSplit
-    await cache.removeSplit('lol1');
+    await cache.removeSplit('user_ff');
 
     values = await cache.getAll();
-    expect(values.length).toBe(2);
-    expect(await cache.getSplit('lol1')).toEqual(null);
-    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
 
-    // Assert removeSplits
-    await cache.addSplit('lol1', splitWithUserTT);
-    await cache.removeSplits(['lol1', 'lol3']);
+    expect(values).toEqual([splitWithAccountTT]);
 
-    values = await cache.getAll();
-    expect(values.length).toBe(1);
-    splitNames = await cache.getSplitNames();
-    expect(splitNames.length).toBe(1);
-    expect(await cache.getSplit('lol1')).toEqual(null);
-    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
+    expect(await cache.getSplit('user_ff')).toEqual(null);
+    expect(await cache.getSplit('account_ff')).toEqual(splitWithAccountTT);
 
-  });
-
-  test('set/get change number', async () => {
-    const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
-
-    expect(await cache.getChangeNumber()).toBe(-1); // if not set yet, changeNumber is -1
     await cache.setChangeNumber(123);
     expect(await cache.getChangeNumber()).toBe(123);
 
+    splitNames = await cache.getSplitNames();
+
+    expect(splitNames.indexOf('user_ff') === -1).toBe(true);
+    expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
+
+    const splits = await cache.getSplits(['user_ff', 'account_ff']);
+    expect(splits['user_ff']).toEqual(null);
+    expect(splits['account_ff']).toEqual(splitWithAccountTT);
   });
 
   test('trafficTypeExists', async () => {
     const wrapper = wrapperMockFactory();
     const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper);
 
-    await cache.addSplits([
-      ['split1', splitWithUserTT],
-      ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT],
-    ]);
-    await cache.addSplit('split4', splitWithUserTT);
-    await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
+    await cache.update([
+      { ...splitWithUserTT, name: 'split1' },
+      { ...splitWithAccountTT, name: 'split2' },
+      { ...splitWithUserTT, name: 'split3' },
+    ], [], -1);
+    await cache.addSplit({ ...splitWithUserTT, name: 'split4' });
+    await cache.addSplit({ ...splitWithUserTT, name: 'split4' }); // trying to add the same definition for an already added split will not have effect
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
@@ -92,7 +77,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     expect(await wrapper.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
 
-    await cache.removeSplits(['split3', 'split2']); // it'll invoke a loop of removeSplit
+    await cache.removeSplit('split3');
+    await cache.removeSplit('split2');
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
@@ -104,21 +90,19 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
 
-    await cache.addSplit('split1', splitWithUserTT);
+    await cache.addSplit({ ...splitWithUserTT, name: 'split1' });
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
 
-    await cache.addSplit('split1', splitWithAccountTT);
+    await cache.addSplit({ ...splitWithAccountTT, name: 'split1' });
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
-
   });
 
   test('killLocally', async () => {
     const wrapper = wrapperMockFactory();
     const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper);
 
-    await cache.addSplit('lol1', splitWithUserTT);
-    await cache.addSplit('lol2', splitWithAccountTT);
+    await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
     const initialChangeNumber = await cache.getChangeNumber();
 
     // kill an non-existent split
@@ -129,8 +113,8 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
 
     // kill an existent split
-    updated = await cache.killLocally('lol1', 'some_treatment', 100);
-    let lol1Split = await cache.getSplit('lol1') as ISplit;
+    updated = await cache.killLocally('user_ff', 'some_treatment', 100);
+    let lol1Split = await cache.getSplit('user_ff') as ISplit;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -139,14 +123,15 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.getChangeNumber()).toBe(initialChangeNumber); // cache changeNumber is not changed
 
     // not update if changeNumber is old
-    updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
-    lol1Split = await cache.getSplit('lol1') as ISplit;
+    updated = await cache.killLocally('user_ff', 'some_treatment_2', 90);
+    lol1Split = await cache.getSplit('user_ff') as ISplit;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
     // Delete splits and TT keys
-    await cache.removeSplits(['lol1', 'lol2']);
+    await cache.update([], [splitWithUserTT, splitWithAccountTT], -1);
+    await wrapper.del(keysBuilder.buildSplitsTillKey());
     expect(await wrapper.getKeysByPrefix('SPLITIO')).toHaveLength(0);
   });
 
@@ -155,12 +140,12 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     const cache = new SplitsCachePluggable(loggerMock, keysBuilder, wrapper, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
     const emptySet = new Set([]);
 
-    await cache.addSplits([
-      [featureFlagOne.name, featureFlagOne],
-      [featureFlagTwo.name, featureFlagTwo],
-      [featureFlagThree.name, featureFlagThree],
-    ]);
-    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+    await cache.update([
+      featureFlagOne,
+      featureFlagTwo,
+      featureFlagThree,
+    ], [], -1);
+    await cache.addSplit(featureFlagWithEmptyFS);
 
     expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
     expect(await cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
@@ -168,13 +153,13 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.getNamesByFlagSets(['t'])).toEqual([emptySet]); // 't' not in filter
     expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
-    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['1'] });
+    await cache.addSplit({ ...featureFlagOne, sets: ['1'] });
 
     expect(await cache.getNamesByFlagSets(['1'])).toEqual([emptySet]); // '1' not in filter
     expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_two'])]);
     expect(await cache.getNamesByFlagSets(['n'])).toEqual([emptySet]);
 
-    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['x'] });
+    await cache.addSplit({ ...featureFlagOne, sets: ['x'] });
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([new Set(['ff_one'])]);
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new Set(['ff_two']), new Set(['ff_three']), new Set(['ff_one'])]);
 
@@ -189,7 +174,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(await cache.getNamesByFlagSets(['y'])).toEqual([emptySet]); // 'y' not in filter
     expect(await cache.getNamesByFlagSets([])).toEqual([]);
 
-    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithoutFS);
+    await cache.addSplit({ ...featureFlagWithoutFS, name: featureFlagWithEmptyFS.name });
     expect(await cache.getNamesByFlagSets([])).toEqual([]);
   });
 
@@ -198,12 +183,12 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     const cacheWithoutFilters = new SplitsCachePluggable(loggerMock, keysBuilder, wrapperMockFactory());
     const emptySet = new Set([]);
 
-    await cacheWithoutFilters.addSplits([
-      [featureFlagOne.name, featureFlagOne],
-      [featureFlagTwo.name, featureFlagTwo],
-      [featureFlagThree.name, featureFlagThree],
-    ]);
-    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+    await cacheWithoutFilters.update([
+      featureFlagOne,
+      featureFlagTwo,
+      featureFlagThree
+    ], [], -1);
+    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS);
 
     expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
     expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
