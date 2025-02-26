@@ -194,6 +194,17 @@ export interface ISplitCondition {
   conditionType: 'ROLLOUT' | 'WHITELIST'
 }
 
+export interface IRBSegment {
+  name: string,
+  changeNumber: number,
+  status: 'ACTIVE' | 'ARCHIVED',
+  excluded: {
+    keys: string[],
+    segments: string[]
+  },
+  conditions: ISplitCondition[],
+}
+
 export interface ISplit {
   name: string,
   changeNumber: number,
