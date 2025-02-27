@@ -165,7 +165,6 @@ describe('splitChangesUpdater', () => {
   const updateSplits = jest.spyOn(splits, 'update');
 
   const rbSegments = new RBSegmentsCacheInMemory();
-  // @TODO spy on rbSegments
 
   const segments = new SegmentsCacheInMemory();
   const registerSegments = jest.spyOn(segments, 'registerSegments');
@@ -186,7 +185,7 @@ describe('splitChangesUpdater', () => {
   test('test without payload', async () => {
     const result = await splitChangesUpdater();
     expect(updateSplits).toBeCalledTimes(1);
-    expect(updateSplits).lastCalledWith(splitChangesMock1.splits, [], splitChangesMock1.till);
+    expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
     expect(registerSegments).toBeCalledTimes(1);
     expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
     expect(result).toBe(true);
