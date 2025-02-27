@@ -1,4 +1,4 @@
-import { ISplit } from '../../../../dtos/types';
+import { IRBSegment, ISplit } from '../../../../dtos/types';
 import { readinessManagerFactory } from '../../../../readiness/readinessManager';
 import { splitApiFactory } from '../../../../services/splitApi';
 import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
@@ -165,6 +165,7 @@ describe('splitChangesUpdater', () => {
   const updateSplits = jest.spyOn(splits, 'update');
 
   const rbSegments = new RBSegmentsCacheInMemory();
+  const updateRbSegments = jest.spyOn(rbSegments, 'update');
 
   const segments = new SegmentsCacheInMemory();
   const registerSegments = jest.spyOn(segments, 'registerSegments');
@@ -184,22 +185,29 @@ describe('splitChangesUpdater', () => {
 
   test('test without payload', async () => {
     const result = await splitChangesUpdater();
+
+    expect(fetchSplitChanges).toBeCalledTimes(1);
+    expect(fetchSplitChanges).lastCalledWith(-1, undefined, undefined, -1);
     expect(updateSplits).toBeCalledTimes(1);
     expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
+    expect(updateRbSegments).toBeCalledTimes(0); // no rbSegments to update
     expect(registerSegments).toBeCalledTimes(1);
     expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
     expect(result).toBe(true);
   });
 
-  test('test with payload', async () => {
+  test('test with ff payload', async () => {
     let index = 0;
     for (const notification of splitNotifications) {
       const payload = notification.decoded as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
       const changeNumber = payload.changeNumber;
 
       await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber })).resolves.toBe(true);
-      // fetch not being called
+
+      // fetch and RBSegments.update not being called
       expect(fetchSplitChanges).toBeCalledTimes(0);
+      expect(updateRbSegments).toBeCalledTimes(0);
+
       expect(updateSplits).toBeCalledTimes(index + 1);
       // Change number being updated
       expect(updateSplits.mock.calls[index][2]).toEqual(changeNumber);
@@ -212,6 +220,23 @@ describe('splitChangesUpdater', () => {
       expect(registerSegments.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [] : ['maur-2']);
       index++;
     }
+  });
+
+  test('test with rbsegment payload', async () => {
+    const payload = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
+    const changeNumber = payload.changeNumber;
+
+    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber })).resolves.toBe(true);
+
+    // fetch and Splits.update not being called
+    expect(fetchSplitChanges).toBeCalledTimes(0);
+    expect(updateSplits).toBeCalledTimes(0);
+
+    expect(updateRbSegments).toBeCalledTimes(1);
+    expect(updateRbSegments).toBeCalledWith([payload], [], changeNumber);
+
+    expect(registerSegments).toBeCalledTimes(1);
+    expect(registerSegments).toBeCalledWith([]);
   });
 
   test('flag sets splits-arrived emission', async () => {

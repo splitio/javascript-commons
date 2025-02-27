@@ -10,7 +10,7 @@ import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 
-type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
+type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }) => Promise<boolean>
 
 // Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
 // Returns a promise that could be rejected.
@@ -134,7 +134,7 @@ export function splitChangesUpdaterFactory(
    * @param noCache - true to revalidate data to fetch
    * @param till - query param to bypass CDN requests
    */
-  return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }) {
+  return function splitChangesUpdater(noCache?: boolean, till?: number, updateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }) {
 
     /**
      * @param since - current changeNumber at splitsCache
@@ -144,15 +144,15 @@ export function splitChangesUpdaterFactory(
       const [since, rbSince] = sinces;
       log.debug(SYNC_SPLITS_FETCH, sinces);
       const fetcherPromise = Promise.resolve(
-        splitUpdateNotification ?
-          isFF(splitUpdateNotification.payload) ?
+        updateNotification ?
+          isFF(updateNotification.payload) ?
             // IFFU edge case: a change to a flag that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
-            Promise.resolve(rbSegments.contains(parseSegments(splitUpdateNotification.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
+            Promise.resolve(rbSegments.contains(parseSegments(updateNotification.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
               return contains ?
-                { ff: { d: [splitUpdateNotification.payload as ISplit], t: splitUpdateNotification.changeNumber } } :
+                { ff: { d: [updateNotification.payload as ISplit], t: updateNotification.changeNumber } } :
                 splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
             }) :
-            { rbs: { d: [splitUpdateNotification.payload as IRBSegment], t: splitUpdateNotification.changeNumber } } :
+            { rbs: { d: [updateNotification.payload as IRBSegment], t: updateNotification.changeNumber } } :
           splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
         .then((splitChanges: ISplitChangesResponse) => {
