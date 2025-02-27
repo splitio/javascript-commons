@@ -1,14 +1,14 @@
-import { RBSegmentsCacheInMemory } from '../RBSegmentsCacheInMemory';
-import { RBSegmentsCacheInLocal } from '../../inLocalStorage/RBSegmentsCacheInLocal';
-import { KeyBuilderCS } from '../../KeyBuilderCS';
-import { rbSegment, rbSegmentWithInSegmentMatcher } from '../../__tests__/testUtils';
-import { IRBSegmentsCacheSync } from '../../types';
-import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+import { RBSegmentsCacheInMemory } from '../inMemory/RBSegmentsCacheInMemory';
+import { RBSegmentsCacheInLocal } from '../inLocalStorage/RBSegmentsCacheInLocal';
+import { KeyBuilderCS } from '../KeyBuilderCS';
+import { rbSegment, rbSegmentWithInSegmentMatcher } from '../__tests__/testUtils';
+import { IRBSegmentsCacheSync } from '../types';
+import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const cacheInMemory = new RBSegmentsCacheInMemory();
 const cacheInLocal = new RBSegmentsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
 
-describe.each([cacheInMemory, cacheInLocal])('RB SEGMENTS CACHE', (cache: IRBSegmentsCacheSync) => {
+describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Memory & LocalStorage)', (cache: IRBSegmentsCacheSync) => {
 
   beforeEach(() => {
     cache.clear();
@@ -26,18 +26,26 @@ describe.each([cacheInMemory, cacheInLocal])('RB SEGMENTS CACHE', (cache: IRBSeg
 
   test('update should add and remove segments correctly', () => {
     // Add segments
-    const updated1 = cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1);
-    expect(updated1).toBe(true);
+    expect(cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1)).toBe(true);
     expect(cache.get(rbSegment.name)).toEqual(rbSegment);
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(cache.getChangeNumber()).toBe(1);
 
-    // Remove segments
-    const updated2 = cache.update([], [rbSegment], 2);
-    expect(updated2).toBe(true);
+    // Remove a segment
+    expect(cache.update([], [rbSegment], 2)).toBe(true);
     expect(cache.get(rbSegment.name)).toBeNull();
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(cache.getChangeNumber()).toBe(2);
+
+    // Remove remaining segment
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher], 3)).toBe(true);
+    expect(cache.get(rbSegment.name)).toBeNull();
+    expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toBeNull();
+    expect(cache.getChangeNumber()).toBe(3);
+
+    // No changes
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher], 4)).toBe(false);
+    expect(cache.getChangeNumber()).toBe(4);
   });
 
   test('contains should check for segment existence correctly', () => {
@@ -47,6 +55,8 @@ describe.each([cacheInMemory, cacheInLocal])('RB SEGMENTS CACHE', (cache: IRBSeg
     expect(cache.contains(new Set([rbSegment.name, rbSegmentWithInSegmentMatcher.name]))).toBe(true);
     expect(cache.contains(new Set(['nonexistent']))).toBe(false);
     expect(cache.contains(new Set([rbSegment.name, 'nonexistent']))).toBe(false);
+
+    cache.update([], [rbSegment, rbSegmentWithInSegmentMatcher], 2);
   });
 
   test('usesSegments should track segments usage correctly', () => {
