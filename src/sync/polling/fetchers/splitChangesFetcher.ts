@@ -11,11 +11,12 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
     since: number,
     noCache?: boolean,
     till?: number,
+    rbSince?: number,
     // Optional decorator for `fetchSplitChanges` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ) {
 
-    let splitsPromise = fetchSplitChanges(since, noCache, till);
+    let splitsPromise = fetchSplitChanges(since, noCache, till, rbSince);
     if (decorator) splitsPromise = decorator(splitsPromise);
 
     return splitsPromise.then(resp => resp.json());

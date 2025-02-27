@@ -1,13 +1,13 @@
 import { ISegmentsCacheBase, IStorageBase } from '../../../storages/types';
 import { ISplitChangesFetcher } from '../fetchers/types';
-import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
+import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
+import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
-import { IN_SEGMENT } from '../../../utils/constants';
+import { IN_RULE_BASED_SEGMENT, IN_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 
 type ISplitChangesUpdater = (noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) => Promise<boolean>
@@ -27,24 +27,23 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Collect segments from a raw split definition.
  * Exported for testing purposes.
  */
-export function parseSegments({ conditions }: ISplit): Set<string> {
+export function parseSegments({ conditions }: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
   let segments = new Set<string>();
 
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
 
     matchers.forEach(matcher => {
-      if (matcher.matcherType === IN_SEGMENT) segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
+      if (matcher.matcherType === matcherType) segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
     });
   }
 
   return segments;
 }
 
-interface ISplitMutations {
-  added: ISplit[],
-  removed: ISplit[],
-  segments: string[]
+interface ISplitMutations<T extends ISplit | IRBSegment> {
+  added: T[],
+  removed: T[]
 }
 
 /**
@@ -68,30 +67,30 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
   return matchNames || matchPrefix;
 }
 
+function isFF(ruleBasedEntity: IRBSegment | ISplit): ruleBasedEntity is ISplit {
+  return (ruleBasedEntity as ISplit).defaultTreatment !== undefined;
+}
+
 /**
  * Given the list of splits from /splitChanges endpoint, it returns the mutations,
  * i.e., an object with added splits, removed splits and used segments.
  * Exported for testing purposes.
  */
-export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersValidation): ISplitMutations {
-  const segments = new Set<string>();
-  const computed = entries.reduce((accum, split) => {
-    if (split.status === 'ACTIVE' && matchFilters(split, filters)) {
-      accum.added.push(split);
+export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, segments: Set<string>, filters?: ISplitFiltersValidation): ISplitMutations<T> {
 
-      parseSegments(split).forEach((segmentName: string) => {
+  return rules.reduce((accum, ruleBasedEntity) => {
+    if (ruleBasedEntity.status === 'ACTIVE' && (!filters || matchFilters(ruleBasedEntity as ISplit, filters))) {
+      accum.added.push(ruleBasedEntity);
+
+      parseSegments(ruleBasedEntity).forEach((segmentName: string) => {
         segments.add(segmentName);
       });
     } else {
-      accum.removed.push(split);
+      accum.removed.push(ruleBasedEntity);
     }
 
     return accum;
-  }, { added: [], removed: [], segments: [] } as ISplitMutations);
-
-  computed.segments = setToArray(segments);
-
-  return computed;
+  }, { added: [], removed: [] } as ISplitMutations<T>);
 }
 
 /**
@@ -111,14 +110,14 @@ export function computeSplitsMutation(entries: ISplit[], filters: ISplitFiltersV
 export function splitChangesUpdaterFactory(
   log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
-  storage: Pick<IStorageBase, 'splits' | 'segments'>,
+  storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments'>,
   splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
   retriesOnFailureBeforeReady: number = 0,
   isClientSide?: boolean
 ): ISplitChangesUpdater {
-  const { splits, segments } = storage;
+  const { splits, rbSegments, segments } = storage;
 
   let startingUp = true;
 
@@ -135,35 +134,60 @@ export function splitChangesUpdaterFactory(
    * @param noCache - true to revalidate data to fetch
    * @param till - query param to bypass CDN requests
    */
-  return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }) {
+  return function splitChangesUpdater(noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }) {
 
     /**
      * @param since - current changeNumber at splitsCache
      * @param retry - current number of retry attempts
      */
-    function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
-      log.debug(SYNC_SPLITS_FETCH, [since]);
-      const fetcherPromise = Promise.resolve(splitUpdateNotification ?
-        { splits: [splitUpdateNotification.payload], till: splitUpdateNotification.changeNumber } :
-        splitChangesFetcher(since, noCache, till, _promiseDecorator)
+    function _splitChangesUpdater(sinces: [number, number], retry = 0): Promise<boolean> {
+      const [since, rbSince] = sinces;
+      log.debug(SYNC_SPLITS_FETCH, sinces);
+      const fetcherPromise = Promise.resolve(
+        splitUpdateNotification ?
+          isFF(splitUpdateNotification.payload) ?
+            // IFFU edge case: a change to a flag that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
+            Promise.resolve(rbSegments.contains(parseSegments(splitUpdateNotification.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
+              return contains ?
+                { ff: { d: [splitUpdateNotification.payload as ISplit], t: splitUpdateNotification.changeNumber } } :
+                splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
+            }) :
+            { rbs: { d: [splitUpdateNotification.payload as IRBSegment], t: splitUpdateNotification.changeNumber } } :
+          splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
         .then((splitChanges: ISplitChangesResponse) => {
           startingUp = false;
 
-          const mutation = computeSplitsMutation(splitChanges.splits, splitFiltersValidation);
+          const usedSegments = new Set<string>();
 
-          log.debug(SYNC_SPLITS_UPDATE, [mutation.added.length, mutation.removed.length, mutation.segments.length]);
+          let ffUpdate: MaybeThenable<boolean> = false;
+          if (splitChanges.ff) {
+            const { added, removed } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            log.debug(SYNC_SPLITS_UPDATE, [added.length, removed.length]);
+            ffUpdate = splits.update(added, removed, splitChanges.ff.t);
+          }
 
-          // Write into storage
-          // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
-          return Promise.all([
-            splits.update(mutation.added, mutation.removed, splitChanges.till),
-            segments.registerSegments(mutation.segments)
-          ]).then(([isThereUpdate]) => {
+          let rbsUpdate: MaybeThenable<boolean> = false;
+          if (splitChanges.rbs) {
+            const { added, removed } = computeMutation(splitChanges.rbs.d, usedSegments);
+            log.debug(SYNC_RBS_UPDATE, [added.length, removed.length]);
+            rbsUpdate = rbSegments.update(added, removed, splitChanges.rbs.t);
+          }
+
+          return Promise.all([ffUpdate, rbsUpdate,
+            // @TODO if at least 1 segment fetch fails due to 404 and other segments are updated in the storage, SDK_UPDATE is not emitted
+            segments.registerSegments(setToArray(usedSegments))
+          ]).then(([ffChanged, rbsChanged]) => {
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || (since !== splitChanges.till && isThereUpdate && (isClientSide || checkAllSegmentsExist(segments))))
-                .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
+              return Promise.resolve(!splitsEventEmitter.splitsArrived ||
+                (
+                  (!splitChanges.ff || since !== splitChanges.ff.t) &&
+                  (!splitChanges.rbs || rbSince !== splitChanges.rbs.t) &&
+                  (ffChanged || rbsChanged) &&
+                  (isClientSide || checkAllSegmentsExist(segments))
+                )
+              )
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
                   if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
@@ -179,7 +203,7 @@ export function splitChangesUpdaterFactory(
           if (startingUp && retriesOnFailureBeforeReady > retry) {
             retry += 1;
             log.info(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
-            return _splitChangesUpdater(since, retry);
+            return _splitChangesUpdater(sinces, retry);
           } else {
             startingUp = false;
           }
@@ -196,7 +220,7 @@ export function splitChangesUpdaterFactory(
       return fetcherPromise;
     }
 
-    let sincePromise = Promise.resolve(splits.getChangeNumber()); // `getChangeNumber` never rejects or throws error
-    return sincePromise.then(_splitChangesUpdater);
+    // `getChangeNumber` never rejects or throws error
+    return Promise.all([splits.getChangeNumber(), rbSegments.getChangeNumber()]).then(_splitChangesUpdater);
   };
 }

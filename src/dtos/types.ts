@@ -228,8 +228,16 @@ export type ISplitPartial = Pick<ISplit, 'conditions' | 'configurations' | 'traf
 
 /** Interface of the parsed JSON response of `/splitChanges` */
 export interface ISplitChangesResponse {
-  till: number,
-  splits: ISplit[]
+  ff?: {
+    t: number,
+    s?: number,
+    d: ISplit[]
+  },
+  rbs?: {
+    t: number,
+    s?: number,
+    d: IRBSegment[]
+  }
 }
 
 /** Interface of the parsed JSON response of `/segmentChanges/{segmentName}` */
