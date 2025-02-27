@@ -70,7 +70,7 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
 
   // @TODO implement if required by DataLoader or producer mode
   clear() {
-    return Promise.resolve(true);
+    return Promise.resolve();
   }
 
 }
