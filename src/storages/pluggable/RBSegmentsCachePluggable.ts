@@ -54,11 +54,11 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
   }
 
   setChangeNumber(changeNumber: number) {
-    return this.wrapper.set(this.keys.buildRBSegmentTillKey(), changeNumber + '');
+    return this.wrapper.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
   }
 
   getChangeNumber(): Promise<number> {
-    return this.wrapper.get(this.keys.buildRBSegmentTillKey()).then((value) => {
+    return this.wrapper.get(this.keys.buildRBSegmentsTillKey()).then((value) => {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
@@ -70,7 +70,7 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
 
   // @TODO implement if required by DataLoader or producer mode
   clear() {
-    return Promise.resolve(true);
+    return Promise.resolve();
   }
 
 }
