@@ -14,6 +14,7 @@ import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
+import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 
 export interface InLocalStorageOptions {
   prefix?: string
@@ -40,11 +41,13 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
     const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const rbSegments = new RBSegmentsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
     return {
       splits,
+      rbSegments,
       segments,
       largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
@@ -60,6 +63,7 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
 
         return {
           splits: this.splits,
+          rbSegments: this.rbSegments,
           segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey)),
           largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey)),
           impressions: this.impressions,

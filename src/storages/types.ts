@@ -451,6 +451,7 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
 
 export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TRBSegmentsCache extends IRBSegmentsCacheBase = IRBSegmentsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
   TImpressionsCountCache extends IImpressionCountsCacheBase = IImpressionCountsCacheBase,
@@ -459,6 +460,7 @@ export interface IStorageBase<
   TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
   splits: TSplitsCache,
+  rbSegments: TRBSegmentsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts: TImpressionsCountCache,
@@ -471,6 +473,7 @@ export interface IStorageBase<
 
 export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
+  IRBSegmentsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
   IImpressionCountsCacheSync,
@@ -484,6 +487,7 @@ export interface IStorageSync extends IStorageBase<
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
+  IRBSegmentsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IImpressionCountsCacheBase,
