@@ -49,6 +49,7 @@ describe.each([{ cache: cacheInRedis, wrapper: redisClient }, { cache: cachePlug
   test('contains should check for segment existence correctly', async () => {
     await cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1);
 
+    expect(await cache.contains(new Set())).toBe(true);
     expect(await cache.contains(new Set([rbSegment.name]))).toBe(true);
     expect(await cache.contains(new Set([rbSegment.name, rbSegmentWithInSegmentMatcher.name]))).toBe(true);
     expect(await cache.contains(new Set(['nonexistent']))).toBe(false);

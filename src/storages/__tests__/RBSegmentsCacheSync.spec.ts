@@ -51,6 +51,7 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
   test('contains should check for segment existence correctly', () => {
     cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1);
 
+    expect(cache.contains(new Set())).toBe(true);
     expect(cache.contains(new Set([rbSegment.name]))).toBe(true);
     expect(cache.contains(new Set([rbSegment.name, rbSegmentWithInSegmentMatcher.name]))).toBe(true);
     expect(cache.contains(new Set(['nonexistent']))).toBe(false);
