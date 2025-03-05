@@ -4,7 +4,7 @@ import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 
 export interface IDependencyMatcherValue {
-  key: SplitIO.SplitKeyObject,
+  key: SplitIO.SplitKey,
   attributes?: SplitIO.Attributes
 }
 

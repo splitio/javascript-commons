@@ -41,7 +41,7 @@ function sanitizeBoolean(val: any): boolean | undefined {
   return undefined;
 }
 
-function dependencyProcessor(sanitizedValue: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes): IDependencyMatcherValue {
+function dependencyProcessor(sanitizedValue: SplitIO.SplitKey, attributes?: SplitIO.Attributes): IDependencyMatcherValue {
   return {
     key: sanitizedValue,
     attributes
