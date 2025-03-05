@@ -219,7 +219,7 @@ describe('SplitsUpdateWorker', () => {
       const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
-      splitUpdateWorker.put({ changeNumber, pcn }, payload); // queued
+      splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression }); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
       expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { changeNumber, payload }]);
     });
@@ -237,7 +237,7 @@ describe('SplitsUpdateWorker', () => {
 
     let splitsSyncTask = splitsSyncTaskMock(cache);
     let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
@@ -250,7 +250,7 @@ describe('SplitsUpdateWorker', () => {
 
     splitsSyncTask = splitsSyncTaskMock(cache);
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
@@ -263,7 +263,7 @@ describe('SplitsUpdateWorker', () => {
 
     splitsSyncTask = splitsSyncTaskMock(cache);
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { payload: notification.decoded, changeNumber }]);
 

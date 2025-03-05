@@ -30,6 +30,7 @@ export const MEMBERSHIPS_LS_UPDATE = 'MEMBERSHIPS_LS_UPDATE';
 export const SEGMENT_UPDATE = 'SEGMENT_UPDATE';
 export const SPLIT_KILL = 'SPLIT_KILL';
 export const SPLIT_UPDATE = 'SPLIT_UPDATE';
+export const RBSEGMENT_UPDATE = 'RBSEGMENT_UPDATE';
 
 // Control-type push notifications, handled by NotificationKeeper
 export const CONTROL = 'CONTROL';
