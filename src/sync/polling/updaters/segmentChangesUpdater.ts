@@ -51,7 +51,7 @@ export function segmentChangesUpdaterFactory(
    * Returned promise will not be rejected.
    *
    * @param fetchOnlyNew - if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
-   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE or RBSEGMENT_UPDATE notifications.
+   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE or RB_SEGMENT_UPDATE notifications.
    * @param segmentName - segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
    * @param noCache - true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
    * @param till - till target for the provided segmentName, for CDN bypass.

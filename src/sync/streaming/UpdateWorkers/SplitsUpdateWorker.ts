@@ -8,7 +8,7 @@ import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
-import { RBSEGMENT_UPDATE } from '../constants';
+import { RB_SEGMENT_UPDATE } from '../constants';
 import { parseFFUpdatePayload } from '../parseUtils';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
 import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT, FETCH_BACKOFF_MAX_RETRIES } from './constants';
@@ -72,7 +72,7 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
 
     return {
       /**
-       * Invoked by NotificationProcessor on SPLIT_UPDATE or RBSEGMENT_UPDATE event
+       * Invoked by NotificationProcessor on SPLIT_UPDATE or RB_SEGMENT_UPDATE event
        *
        * @param changeNumber - change number of the notification
        */
@@ -109,14 +109,14 @@ export function SplitsUpdateWorker(log: ILogger, splitsCache: ISplitsCacheSync, 
         try {
           const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
           if (payload) {
-            (parsedData.type === RBSEGMENT_UPDATE ? rbs : ff).put(parsedData, payload);
+            (parsedData.type === RB_SEGMENT_UPDATE ? rbs : ff).put(parsedData, payload);
             return;
           }
         } catch (e) {
           log.warn(STREAMING_PARSING_SPLIT_UPDATE, [parsedData.type, e]);
         }
       }
-      (parsedData.type === RBSEGMENT_UPDATE ? rbs : ff).put(parsedData);
+      (parsedData.type === RB_SEGMENT_UPDATE ? rbs : ff).put(parsedData);
     },
     /**
      * Invoked by NotificationProcessor on SPLIT_KILL event
