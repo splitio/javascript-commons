@@ -65,7 +65,7 @@ describe('SplitsUpdateWorker', () => {
     const splitsSyncTask = splitsSyncTaskMock(cache);
 
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
 
     // assert calling `splitsSyncTask.execute` if `isExecuting` is false
     expect(splitsSyncTask.isExecuting()).toBe(false);
@@ -104,7 +104,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__BASE_MILLIS = 50;
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [90, 90, 90]);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
     splitUpdateWorker.put({ changeNumber: 100 });
@@ -123,7 +123,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -148,7 +148,7 @@ describe('SplitsUpdateWorker', () => {
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -169,11 +169,11 @@ describe('SplitsUpdateWorker', () => {
   test('killSplit', async () => {
     // setup
     const cache = new SplitsCacheInMemory();
-    cache.addSplit({ name: 'something'});
-    cache.addSplit({ name: 'something else'});
+    cache.addSplit({ name: 'something' });
+    cache.addSplit({ name: 'something else' });
 
     const splitsSyncTask = splitsSyncTaskMock(cache);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
     splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'something', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
@@ -200,7 +200,7 @@ describe('SplitsUpdateWorker', () => {
     const cache = new SplitsCacheInMemory();
     const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
     Backoff.__TEST__BASE_MILLIS = 1;
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 });
 
@@ -216,7 +216,7 @@ describe('SplitsUpdateWorker', () => {
     splitNotifications.forEach(notification => {
       const pcn = cache.getChangeNumber();
       const splitsSyncTask = splitsSyncTaskMock(cache);
-      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
       splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression }); // queued
@@ -236,7 +236,7 @@ describe('SplitsUpdateWorker', () => {
     const notification = splitNotifications[0];
 
     let splitsSyncTask = splitsSyncTaskMock(cache);
-    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
@@ -249,7 +249,7 @@ describe('SplitsUpdateWorker', () => {
     cache.setChangeNumber(ccn);
 
     splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
@@ -262,7 +262,7 @@ describe('SplitsUpdateWorker', () => {
     cache.setChangeNumber(ccn);
 
     splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, { splits: cache }, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { payload: notification.decoded, changeNumber }]);

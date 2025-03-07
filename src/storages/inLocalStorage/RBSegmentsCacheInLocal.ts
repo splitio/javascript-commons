@@ -12,7 +12,6 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
-  private hasSync?: boolean;
 
   constructor(settings: ISettings, keys: KeyBuilderCS) {
     this.keys = keys;
@@ -22,7 +21,6 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   clear() {
     this.getNames().forEach(name => this.remove(name));
     localStorage.removeItem(this.keys.buildRBSegmentsTillKey());
-    this.hasSync = false;
   }
 
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean {
@@ -35,7 +33,6 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     try {
       localStorage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
       localStorage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
-      this.hasSync = true;
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
     }
@@ -128,9 +125,6 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   usesSegments(): boolean {
-    // If cache hasn't been synchronized, assume we need segments
-    if (!this.hasSync) return true;
-
     const storedCount = localStorage.getItem(this.keys.buildSplitsWithSegmentCountKey());
     const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 

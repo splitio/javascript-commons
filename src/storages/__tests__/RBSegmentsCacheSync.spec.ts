@@ -61,7 +61,7 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
   });
 
   test('usesSegments should track segments usage correctly', () => {
-    expect(cache.usesSegments()).toBe(true); // Initially true when changeNumber is -1
+    expect(cache.usesSegments()).toBe(false); // No rbSegments, so false
 
     cache.update([rbSegment], [], 1); // rbSegment doesn't have IN_SEGMENT matcher
     expect(cache.usesSegments()).toBe(false);
@@ -70,6 +70,6 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
     expect(cache.usesSegments()).toBe(true);
 
     cache.clear();
-    expect(cache.usesSegments()).toBe(true); // True after clear since changeNumber is -1
+    expect(cache.usesSegments()).toBe(false); // False after clear since there are no rbSegments
   });
 });
