@@ -64,5 +64,5 @@ export function matcherFactory(log: ILogger, matcherDto: IMatcherDto, storage?: 
   let matcherFn;
   // @ts-ignore
   if (matchers[type]) matcherFn = matchers[type](value, storage, log); // There is no index-out-of-bound exception in JavaScript
-  return matcherFn;
+  return matcherFn as IMatcher;
 }

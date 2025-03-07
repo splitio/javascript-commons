@@ -66,6 +66,11 @@ interface IInSegmentMatcher extends ISplitMatcherBase {
   userDefinedSegmentMatcherData: IInSegmentMatcherData
 }
 
+interface IInRBSegmentMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_RULE_BASED_SEGMENT',
+  userDefinedSegmentMatcherData: IInSegmentMatcherData
+}
+
 interface IInLargeSegmentMatcher extends ISplitMatcherBase {
   matcherType: 'IN_LARGE_SEGMENT',
   userDefinedLargeSegmentMatcherData: IInLargeSegmentMatcherData
@@ -176,7 +181,7 @@ export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatc
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
   IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
-  IInLargeSegmentMatcher
+  IInLargeSegmentMatcher | IInRBSegmentMatcher
 
 /** Split object */
 export interface ISplitPartition {
@@ -189,30 +194,30 @@ export interface ISplitCondition {
     combiner: 'AND',
     matchers: ISplitMatcher[]
   }
-  partitions: ISplitPartition[]
-  label: string
-  conditionType: 'ROLLOUT' | 'WHITELIST'
+  partitions?: ISplitPartition[]
+  label?: string
+  conditionType?: 'ROLLOUT' | 'WHITELIST'
 }
 
 export interface IRBSegment {
   name: string,
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
+  conditions: ISplitCondition[],
   excluded: {
     keys: string[],
     segments: string[]
-  },
-  conditions: ISplitCondition[],
+  }
 }
 
 export interface ISplit {
   name: string,
   changeNumber: number,
+  status: 'ACTIVE' | 'ARCHIVED',
+  conditions: ISplitCondition[],
   killed: boolean,
   defaultTreatment: string,
   trafficTypeName: string,
-  conditions: ISplitCondition[],
-  status: 'ACTIVE' | 'ARCHIVED',
   seed: number,
   trafficAllocation?: number,
   trafficAllocationSeed?: number

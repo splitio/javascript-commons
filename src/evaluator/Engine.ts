@@ -73,7 +73,7 @@ export class Engine {
         trafficAllocationSeed,
         attributes,
         splitEvaluator
-      );
+      ) as MaybeThenable<IEvaluation>;
 
       // Evaluation could be async, so we should handle that case checking for a
       // thenable object
