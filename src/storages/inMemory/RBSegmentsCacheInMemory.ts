@@ -62,7 +62,7 @@ export class RBSegmentsCacheInMemory implements IRBSegmentsCacheSync {
   }
 
   usesSegments(): boolean {
-    return this.getChangeNumber() === -1 || this.segmentsCount > 0;
+    return this.segmentsCount > 0;
   }
 
 }

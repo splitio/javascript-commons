@@ -1,10 +1,10 @@
-import { ISplit } from '../../dtos/types';
+import { IRBSegment, ISplit } from '../../dtos/types';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../streaming/types';
 import { ITask, ISyncTask } from '../types';
 
-export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit, changeNumber: number }], boolean> { }
+export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 
