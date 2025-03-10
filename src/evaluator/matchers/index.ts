@@ -24,6 +24,7 @@ import { inListSemverMatcherContext } from './semver_inlist';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { IMatcher, IMatcherDto } from '../types';
 import { ILogger } from '../../logger/types';
+import { ruleBasedSegmentMatcherContext } from './rbsegment';
 
 const matchers = [
   undefined, // UNDEFINED: 0
@@ -50,6 +51,7 @@ const matchers = [
   betweenSemverMatcherContext, // BETWEEN_SEMVER: 21
   inListSemverMatcherContext, // IN_LIST_SEMVER: 22
   largeSegmentMatcherContext, // IN_LARGE_SEGMENT: 23
+  ruleBasedSegmentMatcherContext // IN_RULE_BASED_SEGMENT: 24
 ];
 
 /**

@@ -23,6 +23,7 @@ export const matcherTypes: Record<string, number> = {
   BETWEEN_SEMVER: 21,
   IN_LIST_SEMVER: 22,
   IN_LARGE_SEGMENT: 23,
+  IN_RULE_BASED_SEGMENT: 24,
 };
 
 export const matcherDataTypes = {

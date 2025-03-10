@@ -60,6 +60,7 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
     case matcherTypes.BETWEEN:
       return dataType === 'DATETIME' ? zeroSinceSS : undefined;
     case matcherTypes.IN_SPLIT_TREATMENT:
+    case matcherTypes.IN_RULE_BASED_SEGMENT:
       return dependencyProcessor;
     default:
       return undefined;
