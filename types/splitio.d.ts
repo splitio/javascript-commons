@@ -842,7 +842,7 @@ declare namespace SplitIO {
     /**
      * The list of treatments available for the feature flag.
      */
-    treatments: Array<string>;
+    treatments: string[];
     /**
      * Current change number of the feature flag.
      */
@@ -866,6 +866,10 @@ declare namespace SplitIO {
      * Whether the feature flag has impressions tracking disabled or not.
      */
     impressionsDisabled: boolean;
+    /**
+     * Prerequisites for the feature flag.
+     */
+    prerequisites: Array<{ flagName: string, treatments: string[] }>;
   };
   /**
    * A promise that resolves to a feature flag view or null if the feature flag is not found.

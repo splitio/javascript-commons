@@ -32,7 +32,8 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     configs: splitObject.configurations || {},
     sets: splitObject.sets || [],
     defaultTreatment: splitObject.defaultTreatment,
-    impressionsDisabled: splitObject.impressionsDisabled === true
+    impressionsDisabled: splitObject.impressionsDisabled === true,
+    prerequisites: (splitObject.prerequisites || []).map(p => ({ flagName: p.n, treatments: p.ts })),
   };
 }
 
