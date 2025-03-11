@@ -18,7 +18,7 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
 }
 
 export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync) {
-  const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions } = split;
+  const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions, prerequisites } = split;
 
   const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
 
@@ -30,6 +30,19 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
 
       const parsedKey = keyParser(key);
 
+      function evaluate(matchPrerequisites: boolean) {
+        if (!matchPrerequisites) return {
+          treatment: defaultTreatment,
+          label: NO_CONDITION_MATCH
+        };
+
+        const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
+
+        return thenable(evaluation) ?
+          evaluation.then(result => evaluationResult(result, defaultTreatment)) :
+          evaluationResult(evaluation, defaultTreatment);
+      }
+
       if (status === 'ARCHIVED') return {
         treatment: CONTROL,
         label: SPLIT_ARCHIVED
@@ -40,11 +53,18 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
         label: SPLIT_KILLED
       };
 
-      const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
+      const matchPrerequisites = prerequisites && prerequisites.length ?
+        prerequisites.map(prerequisite => {
+          const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage);
+          return thenable(evaluation) ?
+            evaluation.then(evaluation => prerequisite.ts.indexOf(evaluation.treatment!) === -1) :
+            prerequisite.ts.indexOf(evaluation.treatment!) === -1;
+        }) :
+        true;
 
-      return thenable(evaluation) ?
-        evaluation.then(result => evaluationResult(result, defaultTreatment)) :
-        evaluationResult(evaluation, defaultTreatment);
+      return thenable(matchPrerequisites) ?
+        matchPrerequisites.then(evaluate) :
+        evaluate(matchPrerequisites as boolean);
     }
   };
 
