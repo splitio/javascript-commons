@@ -10,6 +10,7 @@ import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
 import { ENGINE_DEFAULT } from '../logger/constants';
+import { prerequisitesMatcherContext } from './matchers/prerequisites';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -24,6 +25,7 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
   const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
 
   const evaluator = parser(log, conditions, storage);
+  const prerequisiteMatcher = prerequisitesMatcherContext(prerequisites, storage, log);
 
   return {
 
@@ -31,8 +33,8 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
 
       const parsedKey = keyParser(key);
 
-      function evaluate(matchPrerequisites: boolean) {
-        if (!matchPrerequisites) {
+      function evaluate(prerequisitesMet: boolean) {
+        if (!prerequisitesMet) {
           log.debug(ENGINE_DEFAULT, ['Prerequisite not met']);
           return {
             treatment: defaultTreatment,
@@ -60,18 +62,11 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
         };
       }
 
-      const matchPrerequisites = prerequisites && prerequisites.length ?
-        prerequisites.map(prerequisite => {
-          const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage);
-          return thenable(evaluation) ?
-            evaluation.then(evaluation => prerequisite.ts.indexOf(evaluation.treatment!) === -1) :
-            prerequisite.ts.indexOf(evaluation.treatment!) === -1;
-        }) :
-        true;
+      const prerequisitesMet = prerequisiteMatcher(key, attributes, splitEvaluator);
 
-      return thenable(matchPrerequisites) ?
-        matchPrerequisites.then(evaluate) :
-        evaluate(matchPrerequisites as boolean);
+      return thenable(prerequisitesMet) ?
+        prerequisitesMet.then(evaluate) :
+        evaluate(prerequisitesMet);
     }
   };
 
