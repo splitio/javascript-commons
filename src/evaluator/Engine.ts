@@ -9,6 +9,7 @@ import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
+import { ENGINE_DEFAULT } from '../logger/constants';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -31,10 +32,13 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
       const parsedKey = keyParser(key);
 
       function evaluate(matchPrerequisites: boolean) {
-        if (!matchPrerequisites) return {
-          treatment: defaultTreatment,
-          label: NO_CONDITION_MATCH
-        };
+        if (!matchPrerequisites) {
+          log.debug(ENGINE_DEFAULT, ['Prerequisite not met']);
+          return {
+            treatment: defaultTreatment,
+            label: NO_CONDITION_MATCH
+          };
+        }
 
         const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
 
@@ -48,10 +52,13 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
         label: SPLIT_ARCHIVED
       };
 
-      if (killed) return {
-        treatment: defaultTreatment,
-        label: SPLIT_KILLED
-      };
+      if (killed) {
+        log.debug(ENGINE_DEFAULT, ['Flag is killed']);
+        return {
+          treatment: defaultTreatment,
+          label: SPLIT_KILLED
+        };
+      }
 
       const matchPrerequisites = prerequisites && prerequisites.length ?
         prerequisites.map(prerequisite => {
