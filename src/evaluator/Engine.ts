@@ -1,13 +1,13 @@
-import { get } from '../utils/lang';
+import { get, isString } from '../utils/lang';
 import { parser } from './parser';
 import { keyParser } from '../utils/key';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED } from '../utils/labels';
+import { NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluation, IEvaluationResult, IEvaluator, ISplitEvaluator } from './types';
+import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
@@ -17,84 +17,35 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
   };
 }
 
-export class Engine {
+export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync) {
+  const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions } = split;
 
-  constructor(private baseInfo: ISplit, private evaluator: IEvaluator) {
+  const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
 
-    // in case we don't have a default treatment in the instantiation, use 'control'
-    if (typeof this.baseInfo.defaultTreatment !== 'string') {
-      this.baseInfo.defaultTreatment = CONTROL;
-    }
-  }
+  const evaluator = parser(log, conditions, storage);
 
-  static parse(log: ILogger, splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync) {
-    const conditions = splitFlatStructure.conditions;
-    const evaluator = parser(log, conditions, storage);
+  return {
 
-    return new Engine(splitFlatStructure, evaluator);
-  }
+    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
 
-  getKey() {
-    return this.baseInfo.name;
-  }
+      const parsedKey = keyParser(key);
 
-  getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
-    const {
-      killed,
-      seed,
-      defaultTreatment,
-      trafficAllocation,
-      trafficAllocationSeed
-    } = this.baseInfo;
-    let parsedKey;
-    let treatment;
-    let label;
-
-    try {
-      parsedKey = keyParser(key);
-    } catch (err) {
-      return {
+      if (status === 'ARCHIVED') return {
         treatment: CONTROL,
-        label: EXCEPTION
+        label: SPLIT_ARCHIVED
       };
+
+      if (killed) return {
+        treatment: defaultTreatment,
+        label: SPLIT_KILLED
+      };
+
+      const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
+
+      return thenable(evaluation) ?
+        evaluation.then(result => evaluationResult(result, defaultTreatment)) :
+        evaluationResult(evaluation, defaultTreatment);
     }
+  };
 
-    if (this.isGarbage()) {
-      treatment = CONTROL;
-      label = SPLIT_ARCHIVED;
-    } else if (killed) {
-      treatment = defaultTreatment;
-      label = SPLIT_KILLED;
-    } else {
-      const evaluation = this.evaluator(
-        parsedKey,
-        seed,
-        trafficAllocation,
-        trafficAllocationSeed,
-        attributes,
-        splitEvaluator
-      ) as MaybeThenable<IEvaluation>;
-
-      // Evaluation could be async, so we should handle that case checking for a
-      // thenable object
-      if (thenable(evaluation)) {
-        return evaluation.then(result => evaluationResult(result, defaultTreatment));
-      } else {
-        return evaluationResult(evaluation, defaultTreatment);
-      }
-    }
-
-    return {
-      treatment,
-      label
-    };
-  }
-
-  isGarbage() {
-    return this.baseInfo.status === 'ARCHIVED';
-  }
-
-  getChangeNumber() {
-    return this.baseInfo.changeNumber;
-  }
 }
