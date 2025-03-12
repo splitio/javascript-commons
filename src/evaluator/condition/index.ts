@@ -7,14 +7,14 @@ import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 
 // Build Evaluation object if and only if matchingResult is true
-function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed: number | undefined, treatments: { getTreatmentFor: (x: number) => string }, label: string): IEvaluation | undefined {
+function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed?: number, treatments?: { getTreatmentFor: (x: number) => string }, label?: string): IEvaluation | boolean | undefined {
   if (matchingResult) {
-    const treatment = getTreatment(log, bucketingKey as string, seed, treatments);
-
-    return {
-      treatment,
-      label
-    };
+    return treatments ? // Feature flag
+      {
+        treatment: getTreatment(log, bucketingKey as string, seed, treatments),
+        label: label!
+      } : // Rule-based segment
+      true;
   }
 
   // else we should notify the engine to continue evaluating
@@ -22,12 +22,12 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 }
 
 // Condition factory
-export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) => MaybeThenable<boolean>, treatments: { getTreatmentFor: (x: number) => string }, label: string, conditionType: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
+export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
-  return function conditionEvaluator(key: SplitIO.SplitKey, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  return function conditionEvaluator(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
 
     // Whitelisting has more priority than traffic allocation, so we don't apply this filtering to those conditions.
-    if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation as number, (key as SplitIO.SplitKeyObject).bucketingKey as string, trafficAllocationSeed as number)) {
+    if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation!, key.bucketingKey, trafficAllocationSeed!)) {
       return {
         treatment: undefined, // treatment value is assigned later
         label: NOT_IN_SPLIT
@@ -41,10 +41,10 @@ export function conditionContext(log: ILogger, matcherEvaluator: (...args: any) 
     const matches = matcherEvaluator(key, attributes, splitEvaluator);
 
     if (thenable(matches)) {
-      return matches.then(result => match(log, result, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label));
+      return matches.then(result => match(log, result, key.bucketingKey, seed, treatments, label));
     }
 
-    return match(log, matches, (key as SplitIO.SplitKeyObject).bucketingKey, seed, treatments, label);
+    return match(log, matches, key.bucketingKey, seed, treatments, label);
   };
 
 }

@@ -29,8 +29,8 @@ test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined i
     }
   } as IStorageSync) as IMatcher;
 
-  expect(await matcherTrue()).toBe(true); // segment found in mySegments list
-  expect(await matcherFalse()).toBe(false); // segment not found in mySegments list
+  expect(await matcherTrue('key')).toBe(true); // segment found in mySegments list
+  expect(await matcherFalse('key')).toBe(false); // segment not found in mySegments list
 });
 
 test('MATCHER IN_LARGE_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async function () {
@@ -54,6 +54,6 @@ test('MATCHER IN_LARGE_SEGMENT / should return true ONLY when the segment is def
     largeSegments: undefined
   } as IStorageSync) as IMatcher;
 
-  expect(await matcherTrue()).toBe(true); // large segment found in mySegments list
-  expect(await matcherFalse()).toBe(false); // large segment storage is not defined
+  expect(await matcherTrue('key')).toBe(true); // large segment found in mySegments list
+  expect(await matcherFalse('key')).toBe(false); // large segment storage is not defined
 });

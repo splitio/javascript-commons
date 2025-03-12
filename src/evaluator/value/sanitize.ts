@@ -69,9 +69,9 @@ function getProcessingFunction(matcherTypeID: number, dataType: string) {
 /**
  * Sanitize matcher value
  */
-export function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | undefined, dataType: string, attributes?: SplitIO.Attributes) {
+export function sanitize(log: ILogger, matcherTypeID: number, value: string | number | boolean | Array<string | number> | SplitIO.SplitKey | undefined, dataType: string, attributes?: SplitIO.Attributes) {
   const processor = getProcessingFunction(matcherTypeID, dataType);
-  let sanitizedValue: string | number | boolean | Array<string | number> | IDependencyMatcherValue | undefined;
+  let sanitizedValue: string | number | boolean | Array<string> | IDependencyMatcherValue | undefined;
 
   switch (dataType) {
     case matcherDataTypes.NUMBER:
@@ -88,7 +88,7 @@ export function sanitize(log: ILogger, matcherTypeID: number, value: string | nu
       sanitizedValue = sanitizeBoolean(value);
       break;
     case matcherDataTypes.NOT_SPECIFIED:
-      sanitizedValue = value;
+      sanitizedValue = value as any;
       break;
     default:
       sanitizedValue = undefined;

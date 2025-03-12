@@ -111,7 +111,7 @@ export function groupBy<T extends Record<string, any>>(source: T[], prop: string
 /**
  * Checks if a given value is a boolean.
  */
-export function isBoolean(val: any): boolean {
+export function isBoolean(val: any): val is boolean {
   return val === true || val === false;
 }
 

@@ -17,7 +17,7 @@ function collectTreatments(splitObject: ISplit) {
   // Localstorage mode could fall into a no rollout conditions state. Take the first condition in that case.
   if (!allTreatmentsCondition) allTreatmentsCondition = conditions[0];
   // Then extract the treatments from the partitions
-  return allTreatmentsCondition ? allTreatmentsCondition.partitions.map(v => v.treatment) : [];
+  return allTreatmentsCondition ? allTreatmentsCondition.partitions!.map(v => v.treatment) : [];
 }
 
 function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
