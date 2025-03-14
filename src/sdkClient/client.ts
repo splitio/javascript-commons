@@ -56,7 +56,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return getTreatment(key, featureFlagName, attributes, true, GET_TREATMENT_WITH_CONFIG);
   }
 
-  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, methodName = GET_TREATMENTS) {
+  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENTS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
@@ -65,7 +65,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       Object.keys(evaluationResults).forEach(featureFlagName => {
         treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
       });
-      impressionsTracker.track(queue, attributes);
+      impressionsTracker.track(queue, attributes, options);
 
       stopTelemetryTracker(queue[0] && queue[0].imp.label);
       return treatments;
@@ -80,11 +80,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
-  function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatments(key, featureFlagNames, attributes, true, GET_TREATMENTS_WITH_CONFIG);
+  function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatments(key, featureFlagNames, attributes, options, true, GET_TREATMENTS_WITH_CONFIG);
   }
 
-  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
+  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, options: SplitIO.EvaluationOptions | undefined, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
@@ -94,7 +94,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       Object.keys(evaluations).forEach(featureFlagName => {
         treatments[featureFlagName] = processEvaluation(evaluations[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
       });
-      impressionsTracker.track(queue, attributes);
+      impressionsTracker.track(queue, attributes, options);
 
       stopTelemetryTracker(queue[0] && queue[0].imp.label);
       return treatments;
@@ -109,16 +109,16 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
-  function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, flagSetNames, attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+  function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, flagSetNames, attributes, options, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
   }
 
-  function getTreatmentsByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, false, TREATMENTS_BY_FLAGSET, GET_TREATMENTS_BY_FLAG_SET);
+  function getTreatmentsByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, options, false, TREATMENTS_BY_FLAGSET, GET_TREATMENTS_BY_FLAG_SET);
   }
 
-  function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+  function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, options, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
   }
 
   // Internal function

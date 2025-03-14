@@ -66,3 +66,11 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
 
   return output;
 }
+
+export function validateEvaluationOptions(log: ILogger, maybeOptions: any, method: string): SplitIO.EvaluationOptions | undefined {
+  if (isObject(maybeOptions)) {
+    const properties = validateEventProperties(log, maybeOptions.properties, method).properties;
+    return properties ? { properties } : undefined;
+  }
+  return undefined;
+}

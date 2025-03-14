@@ -14,7 +14,8 @@ export function impressionsTrackerFactory(
   settings: ISettings,
   impressionsCache: IImpressionsCacheBase,
   noneStrategy: IStrategy,
-  strategy: IStrategy,
+  debugStrategy: IStrategy,
+  defaultStrategy: IStrategy,
   whenInit: (cb: () => void) => void,
   integrationsManager?: IImpressionsHandler,
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
@@ -23,13 +24,15 @@ export function impressionsTrackerFactory(
   const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
 
   return {
-    track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
+    track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsToStore = impressions.filter(({ imp, disabled }) => {
         return disabled ?
           noneStrategy.process(imp) :
-          strategy.process(imp);
+          options && options.properties ?
+            (imp.properties = options.properties) && debugStrategy.process(imp) :
+            defaultStrategy.process(imp);
       });
 
       const impressionsLength = impressions.length;

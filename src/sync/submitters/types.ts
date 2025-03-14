@@ -22,6 +22,8 @@ export type ImpressionsPayload = {
     b?: string;
     /** Previous time */
     pt?: number;
+    /** Stringified JSON object with properties */
+    properties?: string;
   }[]
 }[]
 
