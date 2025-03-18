@@ -112,7 +112,6 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
         try {
           const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
           if (payload) {
-            console.log('payload ', JSON.stringify(payload));
             (parsedData.type === RB_SEGMENT_UPDATE ? rbs : ff).put(parsedData, payload);
             return;
           }
