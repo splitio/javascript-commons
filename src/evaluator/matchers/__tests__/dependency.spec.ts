@@ -18,7 +18,7 @@ const mockStorage = {
   }
 };
 
-test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split returns one of the expected treatments', function () {
+test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split returns one of the expected treatments', () => {
   const matcherTrueAlwaysOn = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
@@ -57,7 +57,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
   expect(matcherFalseAlwaysOff({ key: 'a-key' }, evaluateFeature)).toBe(false); // Parent split returns treatment "on", but we are expecting ["off", "v1"], so the matcher returns false
 });
 
-test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
+test('MATCHER IN_SPLIT_TREATMENT / Edge cases', () => {
   const matcherParentNotExist = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {

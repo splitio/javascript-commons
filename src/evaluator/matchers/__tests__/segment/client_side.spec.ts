@@ -4,7 +4,7 @@ import { IMatcher, IMatcherDto } from '../../../types';
 import { IStorageSync } from '../../../../storages/types';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async function () {
+test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async () => {
   const segment = 'employees';
 
   const matcherTrue = matcherFactory(loggerMock, {
@@ -33,7 +33,7 @@ test('MATCHER IN_SEGMENT / should return true ONLY when the segment is defined i
   expect(await matcherFalse('key')).toBe(false); // segment not found in mySegments list
 });
 
-test('MATCHER IN_LARGE_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async function () {
+test('MATCHER IN_LARGE_SEGMENT / should return true ONLY when the segment is defined inside the segment storage', async () => {
   const segment = 'employees';
 
   const matcherTrue = matcherFactory(loggerMock, {

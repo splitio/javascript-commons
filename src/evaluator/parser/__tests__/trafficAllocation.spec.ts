@@ -5,7 +5,7 @@ import { ISplitCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', async function () {
+test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', async () => {
 
   const evaluator = parser(loggerMock, [{
     conditionType: 'ROLLOUT',
@@ -32,7 +32,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', a
   expect(evaluation.label).toBe('not in split'); // label should be fixed string
 });
 
-test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% with bucket below 99', async function () {
+test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% with bucket below 99', async () => {
 
   const evaluator = parser(loggerMock, [{
     conditionType: 'ROLLOUT',
@@ -59,7 +59,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% wi
   expect(evaluation.label).toBe('in segment all'); // in segment all
 });
 
-test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% and bucket returns 100', async function () {
+test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% and bucket returns 100', async () => {
 
   const evaluator = parser(loggerMock, [{
     conditionType: 'ROLLOUT',
@@ -86,7 +86,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% an
   expect(evaluation.label).toBe('not in split'); // label should be fixed string
 });
 
-test('PARSER / if user is whitelisted and in segment all 100%:off with trafficAllocation as 0%', async function () {
+test('PARSER / if user is whitelisted and in segment all 100%:off with trafficAllocation as 0%', async () => {
 
   const evaluator = parser(loggerMock, [{
     conditionType: 'WHITELIST',
