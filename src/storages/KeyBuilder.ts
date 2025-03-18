@@ -37,8 +37,8 @@ export class KeyBuilder {
     return `${this.prefix}.split.`;
   }
 
-  buildRBSegmentKey(splitName: string) {
-    return `${this.prefix}.rbsegment.${splitName}`;
+  buildRBSegmentKey(rbsegmentName: string) {
+    return `${this.prefix}.rbsegment.${rbsegmentName}`;
   }
 
   buildRBSegmentsTillKey() {
