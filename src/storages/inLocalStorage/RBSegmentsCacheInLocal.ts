@@ -38,7 +38,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     }
   }
 
-  private updateSegmentCount(diff: number){
+  private updateSegmentCount(diff: number) {
     const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
     const count = toNumber(localStorage.getItem(segmentsCountKey)) + diff;
     // @ts-expect-error
@@ -128,11 +128,9 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     const storedCount = localStorage.getItem(this.keys.buildSplitsWithSegmentCountKey());
     const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 
-    if (isFiniteNumber(splitsWithSegmentsCount)) {
-      return splitsWithSegmentsCount > 0;
-    } else {
-      return true;
-    }
+    return isFiniteNumber(splitsWithSegmentsCount) ?
+      splitsWithSegmentsCount > 0 :
+      true;
   }
 
 }

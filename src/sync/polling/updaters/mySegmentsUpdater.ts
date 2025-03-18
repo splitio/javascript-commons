@@ -27,7 +27,7 @@ export function mySegmentsUpdaterFactory(
   matchingKey: string
 ): IMySegmentsUpdater {
 
-  const { splits, segments, largeSegments } = storage;
+  const { splits, rbSegments, segments, largeSegments } = storage;
   let readyOnAlreadyExistentState = true;
   let startingUp = true;
 
@@ -51,7 +51,7 @@ export function mySegmentsUpdaterFactory(
     }
 
     // Notify update if required
-    if (splits.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if ((splits.usesSegments() || rbSegments.usesSegments()) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
       segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }

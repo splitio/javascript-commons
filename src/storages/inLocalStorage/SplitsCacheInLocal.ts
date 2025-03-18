@@ -206,11 +206,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     const storedCount = localStorage.getItem(this.keys.buildSplitsWithSegmentCountKey());
     const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 
-    if (isFiniteNumber(splitsWithSegmentsCount)) {
-      return splitsWithSegmentsCount > 0;
-    } else {
-      return true;
-    }
+    return isFiniteNumber(splitsWithSegmentsCount) ?
+      splitsWithSegmentsCount > 0 :
+      true;
   }
 
   /**

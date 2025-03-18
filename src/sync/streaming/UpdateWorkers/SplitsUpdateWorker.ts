@@ -8,6 +8,7 @@ import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
 import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
+import { InstantUpdate } from '../../polling/updaters/splitChangesUpdater';
 import { RB_SEGMENT_UPDATE } from '../constants';
 import { parseFFUpdatePayload } from '../parseUtils';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
@@ -24,26 +25,26 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
     let handleNewEvent = false;
     let isHandlingEvent: boolean;
     let cdnBypass: boolean;
-    let payload: ISplit | IRBSegment | undefined;
+    let instantUpdate: InstantUpdate | undefined;
     const backoff = new Backoff(__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
     function __handleSplitUpdateCall() {
       isHandlingEvent = true;
       if (maxChangeNumber > cache.getChangeNumber()) {
         handleNewEvent = false;
-        const splitUpdateNotification = payload ? { payload, changeNumber: maxChangeNumber } : undefined;
         // fetch splits revalidating data if cached
-        splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, splitUpdateNotification).then(() => {
+        splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, instantUpdate).then(() => {
           if (!isHandlingEvent) return; // halt if `stop` has been called
           if (handleNewEvent) {
             __handleSplitUpdateCall();
           } else {
-            if (splitUpdateNotification) telemetryTracker.trackUpdatesFromSSE(SPLITS);
+            if (instantUpdate) telemetryTracker.trackUpdatesFromSSE(SPLITS);
             // fetch new registered segments for server-side API. Not retrying on error
             if (segmentsSyncTask) segmentsSyncTask.execute(true);
 
             const attempts = backoff.attempts + 1;
 
+            // @TODO and with RBS and FF
             if (maxChangeNumber <= cache.getChangeNumber()) {
               log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
               isHandlingEvent = false;
@@ -76,7 +77,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
        *
        * @param changeNumber - change number of the notification
        */
-      put({ changeNumber, pcn }: ISplitUpdateData, _payload?: ISplit | IRBSegment) {
+      put({ changeNumber, pcn, type }: ISplitUpdateData, payload?: ISplit | IRBSegment) {
         const currentChangeNumber = cache.getChangeNumber();
 
         if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
@@ -84,10 +85,10 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
         maxChangeNumber = changeNumber;
         handleNewEvent = true;
         cdnBypass = false;
-        payload = undefined;
+        instantUpdate = undefined;
 
-        if (_payload && currentChangeNumber === pcn) {
-          payload = _payload;
+        if (payload && currentChangeNumber === pcn) {
+          instantUpdate = { payload, changeNumber, type };
         }
 
         if (backoff.timeoutID || !isHandlingEvent) __handleSplitUpdateCall();
