@@ -2,7 +2,6 @@
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
-import { bucket } from '../../../utils/murmur3/murmur3';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / if user is in segment all 100%:on', async () => {
