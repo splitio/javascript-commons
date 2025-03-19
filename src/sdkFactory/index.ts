@@ -62,12 +62,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
 
   const noneStrategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
-  const debugStrategy = strategyDebugFactory(observer);
-  const defaultStrategy = impressionsMode === OPTIMIZED ?
+  const strategy = impressionsMode === OPTIMIZED ?
     strategyOptimizedFactory(observer, storage.impressionCounts) :
-    impressionsMode === DEBUG ? debugStrategy : noneStrategy;
+    impressionsMode === DEBUG ?
+      strategyDebugFactory(observer) :
+      noneStrategy;
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, debugStrategy, defaultStrategy, whenInit, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, whenInit, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener

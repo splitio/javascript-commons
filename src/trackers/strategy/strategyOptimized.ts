@@ -20,6 +20,9 @@ export function strategyOptimizedFactory(
     process(impression: SplitIO.ImpressionDTO) {
       impression.pt = impressionsObserver.testAndSet(impression);
 
+      // DEBUG mode for impressions with properties
+      if (impression.properties) return true;
+
       const now = Date.now();
 
       // Increments impression counter per featureName

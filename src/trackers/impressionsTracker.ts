@@ -14,8 +14,7 @@ export function impressionsTrackerFactory(
   settings: ISettings,
   impressionsCache: IImpressionsCacheBase,
   noneStrategy: IStrategy,
-  debugStrategy: IStrategy,
-  defaultStrategy: IStrategy,
+  strategy: IStrategy,
   whenInit: (cb: () => void) => void,
   integrationsManager?: IImpressionsHandler,
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
@@ -28,11 +27,11 @@ export function impressionsTrackerFactory(
       if (settings.userConsent === CONSENT_DECLINED) return;
 
       const impressionsToStore = impressions.filter(({ imp, disabled }) => {
+        if (options && options.properties) imp.properties = options.properties;
+
         return disabled ?
           noneStrategy.process(imp) :
-          options && options.properties ?
-            (imp.properties = options.properties) && debugStrategy.process(imp) :
-            defaultStrategy.process(imp);
+          strategy.process(imp);
       });
 
       const impressionsLength = impressions.length;
