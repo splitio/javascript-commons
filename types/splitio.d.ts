@@ -817,7 +817,10 @@ declare namespace SplitIO {
     label: string;
     changeNumber: number;
     pt?: number;
-    properties?: Properties;
+    /**
+     * JSON stringified version of the impression properties.
+     */
+    properties?: string;
   }
   /**
    * Object with information about an impression. It contains the generated impression DTO as well as

@@ -18,10 +18,10 @@ export function strategyOptimizedFactory(
 
   return {
     process(impression: SplitIO.ImpressionDTO) {
-      impression.pt = impressionsObserver.testAndSet(impression);
-
-      // DEBUG mode for impressions with properties
+      // DEBUG mode without previous time, for impressions with properties
       if (impression.properties) return true;
+
+      impression.pt = impressionsObserver.testAndSet(impression);
 
       const now = Date.now();
 
