@@ -20,7 +20,6 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
   const clientGetTreatmentsWithConfigByFlagSets = client.getTreatmentsWithConfigByFlagSets;
   const clientGetTreatmentsByFlagSet = client.getTreatmentsByFlagSet;
   const clientGetTreatmentsWithConfigByFlagSet = client.getTreatmentsWithConfigByFlagSet;
-  const clientTrack = client.track;
 
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     return clientGetTreatment(maybeKey, maybeFeatureFlagName, combineAttributes(maybeAttributes), maybeOptions);
@@ -54,10 +53,6 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     return clientGetTreatmentsWithConfigByFlagSet(maybeKey, maybeFlagSet, combineAttributes(maybeAttributes), maybeOptions);
   }
 
-  function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
-    return clientTrack(maybeKey, maybeTT, maybeEvent, maybeEventValue, maybeProperties);
-  }
-
   function combineAttributes(maybeAttributes: SplitIO.Attributes | undefined): SplitIO.Attributes | undefined {
     const storedAttributes = attributeStorage.getAll();
     return Object.keys(storedAttributes).length > 0 ?
@@ -74,7 +69,6 @@ export function clientAttributesDecoration<TClient extends SplitIO.IClient | Spl
     getTreatmentsWithConfigByFlagSets: getTreatmentsWithConfigByFlagSets,
     getTreatmentsByFlagSet: getTreatmentsByFlagSet,
     getTreatmentsWithConfigByFlagSet: getTreatmentsWithConfigByFlagSet,
-    track: track,
 
     /**
      * Add an attribute to client's in memory attributes storage
