@@ -1548,6 +1548,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The treatment string.
      */
     getTreatment(key: SplitKey, featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): Treatment;
@@ -1557,8 +1558,8 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
-     * @returns The TreatmentWithConfig, the object containing the treatment string and the
-     *                                configuration stringified JSON (or null if there was no config for that treatment).
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
+     * @returns The TreatmentWithConfig object that contains the treatment string and the configuration stringified JSON (or null if there was no config for that treatment).
      */
     getTreatmentWithConfig(key: SplitKey, featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): TreatmentWithConfig;
     /**
@@ -1567,6 +1568,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The treatments object map.
      */
     getTreatments(key: SplitKey, featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1576,6 +1578,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfig(key: SplitKey, featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1585,6 +1588,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the Treatment objects
      */
     getTreatmentsByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1594,6 +1598,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfigByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1603,6 +1608,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the Treatment objects
      */
     getTreatmentsByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1612,6 +1618,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfigByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1639,6 +1646,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatment promise that resolves to the treatment string.
      */
     getTreatment(key: SplitKey, featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatment;
@@ -1648,6 +1656,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentWithConfig promise that resolves to the TreatmentWithConfig object.
      */
     getTreatmentWithConfig(key: SplitKey, featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentWithConfig;
@@ -1657,6 +1666,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatments(key: SplitKey, featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1666,6 +1676,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the map of TreatmentsWithConfig objects.
      */
     getTreatmentsWithConfig(key: SplitKey, featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
@@ -1675,6 +1686,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatmentsByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1684,6 +1696,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the map of TreatmentsWithConfig objects.
      */
     getTreatmentsWithConfigByFlagSet(key: SplitKey, flagSet: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
@@ -1693,6 +1706,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatmentsByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1702,6 +1716,7 @@ declare namespace SplitIO {
      * @param key - The string key representing the consumer.
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the map of TreatmentsWithConfig objects.
      */
     getTreatmentsWithConfigByFlagSets(key: SplitKey, flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
@@ -1769,6 +1784,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The treatment string.
      */
     getTreatment(featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): Treatment;
@@ -1777,7 +1793,8 @@ declare namespace SplitIO {
      *
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
-     * @returns The map containing the treatment and the configuration stringified JSON (or null if there was no config for that treatment).
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
+     * @returns The TreatmentWithConfig object that contains the treatment string and the configuration stringified JSON (or null if there was no config for that treatment).
      */
     getTreatmentWithConfig(featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): TreatmentWithConfig;
     /**
@@ -1785,6 +1802,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The treatments object map.
      */
     getTreatments(featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1793,6 +1811,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfig(featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1801,6 +1820,7 @@ declare namespace SplitIO {
      *
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the Treatments objects
      */
     getTreatmentsByFlagSet(flagSet: string, attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1809,6 +1829,7 @@ declare namespace SplitIO {
      *
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfigByFlagSet(flagSet: string, attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1817,6 +1838,7 @@ declare namespace SplitIO {
      *
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the Treatments objects
      */
     getTreatmentsByFlagSets(flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): Treatments;
@@ -1825,6 +1847,7 @@ declare namespace SplitIO {
      *
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The map with all the TreatmentWithConfig objects
      */
     getTreatmentsWithConfigByFlagSets(flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): TreatmentsWithConfig;
@@ -1848,6 +1871,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatment promise that resolves to the treatment string.
      */
     getTreatment(featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatment;
@@ -1856,6 +1880,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagName - The string that represents the feature flag we want to get the treatment.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentWithConfig promise that resolves to the TreatmentWithConfig object.
      */
     getTreatmentWithConfig(featureFlagName: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentWithConfig;
@@ -1864,6 +1889,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatments(featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1872,6 +1898,7 @@ declare namespace SplitIO {
      *
      * @param featureFlagNames - An array of the feature flag names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the TreatmentsWithConfig object.
      */
     getTreatmentsWithConfig(featureFlagNames: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
@@ -1880,6 +1907,7 @@ declare namespace SplitIO {
      *
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatmentsByFlagSet(flagSet: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1888,6 +1916,7 @@ declare namespace SplitIO {
      *
      * @param flagSet - The flag set name we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the TreatmentsWithConfig object.
      */
     getTreatmentsWithConfigByFlagSet(flagSet: string, attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
@@ -1896,6 +1925,7 @@ declare namespace SplitIO {
      *
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns Treatments promise that resolves to the treatments object map.
      */
     getTreatmentsByFlagSets(flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatments;
@@ -1904,6 +1934,7 @@ declare namespace SplitIO {
      *
      * @param flagSets - An array of the flag set names we want to get the treatments.
      * @param attributes - An object of type Attributes defining the attributes for the given key.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns TreatmentsWithConfig promise that resolves to the TreatmentsWithConfig object.
      */
     getTreatmentsWithConfigByFlagSets(flagSets: string[], attributes?: Attributes, options?: EvaluationOptions): AsyncTreatmentsWithConfig;
