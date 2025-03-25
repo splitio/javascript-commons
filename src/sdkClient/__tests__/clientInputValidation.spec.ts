@@ -94,4 +94,14 @@ describe('clientInputValidationDecorator', () => {
     expect(logSpy).toHaveBeenLastCalledWith('[WARN]  splitio => getTreatment: Property "toSanitize" is of invalid type. Setting value to null.');
     expect(client.getTreatment).toBeCalledWith('key', 'ff', undefined, { properties: { toSanitize: null, correct: 100 }});
   });
+
+  test('should ignore the properties in the 4th argument if an empty object is passed', () => {
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { properties: {} })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { properties: undefined })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(logSpy).not.toBeCalled();
+  });
 });
