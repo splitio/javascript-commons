@@ -24,7 +24,11 @@ function treatmentsNotReady(featureFlagNames: string[]) {
 }
 
 function stringify(options?: SplitIO.EvaluationOptions) {
-  return options && options.properties ? JSON.stringify(options.properties) : undefined;
+  if (options && options.properties) {
+    try {
+      return JSON.stringify(options.properties);
+    } catch { /* JSON.stringify should never throw with validated options, but handling just in case */ }
+  }
 }
 
 /**
