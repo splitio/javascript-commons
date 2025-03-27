@@ -782,6 +782,9 @@ declare namespace SplitIO {
    * Evaluation options object for getTreatment methods.
    */
   type EvaluationOptions = {
+    /**
+     * Optional properties to append to the generated impression object sent to Split backend.
+     */
     properties?: Properties;
   }
   /**
