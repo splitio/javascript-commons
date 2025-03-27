@@ -27,7 +27,7 @@ export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.Impr
           r: sendLabels ? entry.label : undefined, // Rule
           b: entry.bucketingKey, // Bucketing Key
           pt: entry.pt, // Previous time
-          properties: entry.properties && JSON.stringify(entry.properties) // Properties
+          properties: entry.properties // Properties
         };
 
         return keyImpression;
