@@ -20,8 +20,11 @@ import { IUpdateWorker } from './types';
  */
 export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killSplit(event: ISplitKillData): void } {
 
+  const ff = SplitsUpdateWorker(storage.splits);
+  const rbs = SplitsUpdateWorker(storage.rbSegments);
+
   function SplitsUpdateWorker(cache: ISplitsCacheSync | IRBSegmentsCacheSync) {
-    let maxChangeNumber = 0;
+    let maxChangeNumber = -1;
     let handleNewEvent = false;
     let isHandlingEvent: boolean;
     let cdnBypass: boolean;
@@ -44,8 +47,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
 
             const attempts = backoff.attempts + 1;
 
-            // @TODO and with RBS and FF
-            if (maxChangeNumber <= cache.getChangeNumber()) {
+            if (ff.isSync() && rbs.isSync()) {
               log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
               isHandlingEvent = false;
               return;
@@ -97,12 +99,12 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
       stop() {
         isHandlingEvent = false;
         backoff.reset();
+      },
+      isSync() {
+        return maxChangeNumber <= cache.getChangeNumber();
       }
     };
   }
-
-  const ff = SplitsUpdateWorker(storage.splits);
-  const rbs = SplitsUpdateWorker(storage.rbSegments);
 
   return {
     put(parsedData) {
