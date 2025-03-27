@@ -5,9 +5,7 @@ import { IMatcher, IMatcherDto } from '../../types';
 import { IStorageSync } from '../../../storages/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { ISplit } from '../../../dtos/types';
-
-const ALWAYS_ON_SPLIT = { 'trafficTypeName': 'user', 'name': 'always-on', 'trafficAllocation': 100, 'trafficAllocationSeed': 1012950810, 'seed': -725161385, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'changeNumber': 1494364996459, 'algo': 2, 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': null }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': null, 'whitelistMatcherData': null, 'unaryNumericMatcherData': null, 'betweenMatcherData': null }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }], 'sets':[] } as ISplit;
-const ALWAYS_OFF_SPLIT = { 'trafficTypeName': 'user', 'name': 'always-off', 'trafficAllocation': 100, 'trafficAllocationSeed': -331690370, 'seed': 403891040, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'on', 'changeNumber': 1494365020316, 'algo': 2, 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': null }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': null, 'whitelistMatcherData': null, 'unaryNumericMatcherData': null, 'betweenMatcherData': null }] }, 'partitions': [{ 'treatment': 'on', 'size': 0 }, { 'treatment': 'off', 'size': 100 }], 'label': 'in segment all' }], 'sets':[] } as ISplit;
+import { ALWAYS_ON_SPLIT, ALWAYS_OFF_SPLIT } from '../../../storages/__tests__/testUtils';
 
 const STORED_SPLITS: Record<string, ISplit> = {
   'always-on': ALWAYS_ON_SPLIT,
@@ -20,7 +18,7 @@ const mockStorage = {
   }
 };
 
-test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split returns one of the expected treatments', function () {
+test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split returns one of the expected treatments', () => {
   const matcherTrueAlwaysOn = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {
@@ -59,7 +57,7 @@ test('MATCHER IN_SPLIT_TREATMENT / should return true ONLY when parent split ret
   expect(matcherFalseAlwaysOff({ key: 'a-key' }, evaluateFeature)).toBe(false); // Parent split returns treatment "on", but we are expecting ["off", "v1"], so the matcher returns false
 });
 
-test('MATCHER IN_SPLIT_TREATMENT / Edge cases', function () {
+test('MATCHER IN_SPLIT_TREATMENT / Edge cases', () => {
   const matcherParentNotExist = matcherFactory(loggerMock, {
     type: matcherTypes.IN_SPLIT_TREATMENT,
     value: {

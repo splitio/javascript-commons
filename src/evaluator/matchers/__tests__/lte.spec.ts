@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER LESS THAN OR EQUAL / should return true ONLY when the value is less than or equal to 10', function () {
+test('MATCHER LESS THAN OR EQUAL / should return true ONLY when the value is less than or equal to 10', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.LESS_THAN_OR_EQUAL_TO,

@@ -13,6 +13,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
+import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -202,7 +203,7 @@ describe('splitChangesUpdater', () => {
       const payload = notification.decoded as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
       const changeNumber = payload.changeNumber;
 
-      await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber })).resolves.toBe(true);
+      await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
       // fetch and RBSegments.update not being called
       expect(fetchSplitChanges).toBeCalledTimes(0);
@@ -226,7 +227,7 @@ describe('splitChangesUpdater', () => {
     const payload = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
     const changeNumber = payload.changeNumber;
 
-    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber })).resolves.toBe(true);
+    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: RB_SEGMENT_UPDATE })).resolves.toBe(true);
 
     // fetch and Splits.update not being called
     expect(fetchSplitChanges).toBeCalledTimes(0);
@@ -256,7 +257,7 @@ describe('splitChangesUpdater', () => {
     let calls = 0;
     // emit always if not configured sets
     for (const setMock of setMocks) {
-      await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index })).resolves.toBe(true);
+      await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       expect(splitsEmitSpy.mock.calls[index][0]).toBe('state::splits-arrived');
       index++;
     }
@@ -268,7 +269,7 @@ describe('splitChangesUpdater', () => {
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {
-      await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index })).resolves.toBe(true);
+      await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       if (setMock.shouldEmit) calls++;
       expect(splitsEmitSpy.mock.calls.length).toBe(calls);
       index++;
