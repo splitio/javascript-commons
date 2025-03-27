@@ -9,5 +9,9 @@
   },
   "sets": ["set_a"],
   "defaultTreatment": "off",
-  "impressionsDisabled": false
+  "impressionsDisabled": false,
+  "prerequisites": [{
+    "flagName": "some_flag",
+    "treatments": ["on"]
+  }]
 }
