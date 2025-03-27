@@ -67,7 +67,7 @@ export const fullSettings: ISettings = {
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
     enabled: true,
-    flagSpecVersion: '1.2'
+    flagSpecVersion: '1.3'
   },
   version: 'jest',
   runtime: {

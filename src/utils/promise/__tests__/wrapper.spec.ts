@@ -120,7 +120,7 @@ test('Promise utils / promise wrapper', function (done) {
 
 });
 
-test('Promise utils / promise wrapper: async/await', async function () {
+test('Promise utils / promise wrapper: async/await', async () => {
 
   expect.assertions(8); // number of passHandler, passHandlerWithThrow and passHandlerFinally
 

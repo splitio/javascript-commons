@@ -53,8 +53,8 @@ export function splitApiFactory(
       return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
 
-    fetchSplitChanges(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/splitChanges?s=${flagSpecVersion}&since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+    fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
+      const url = `${urls.sdk}/splitChanges?s=${flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);

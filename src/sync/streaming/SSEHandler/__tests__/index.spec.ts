@@ -1,10 +1,11 @@
 // @ts-nocheck
 import { SSEHandlerFactory } from '..';
-import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, ControlType } from '../../constants';
+import { PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, PUSH_RETRYABLE_ERROR, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, ControlType } from '../../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 
 // update messages
 import splitUpdateMessage from '../../../../__tests__/mocks/message.SPLIT_UPDATE.1457552620999.json';
+import rbsegmentUpdateMessage from '../../../../__tests__/mocks/message.RB_SEGMENT_UPDATE.1457552620999.json';
 import splitKillMessage from '../../../../__tests__/mocks/message.SPLIT_KILL.1457552650000.json';
 import segmentUpdateMessage from '../../../../__tests__/mocks/message.SEGMENT_UPDATE.1457552640000.json';
 
@@ -143,6 +144,10 @@ test('`handlerMessage` for update notifications (NotificationProcessor) and stre
   let expectedParams = [{ type: 'SPLIT_UPDATE', changeNumber: 1457552620999 }];
   sseHandler.handleMessage(splitUpdateMessage);
   expect(pushEmitter.emit).toHaveBeenLastCalledWith(SPLIT_UPDATE, ...expectedParams); // must emit SPLIT_UPDATE with the message change number
+
+  expectedParams = [{ type: 'RB_SEGMENT_UPDATE', changeNumber: 1457552620999 }];
+  sseHandler.handleMessage(rbsegmentUpdateMessage);
+  expect(pushEmitter.emit).toHaveBeenLastCalledWith(RB_SEGMENT_UPDATE, ...expectedParams); // must emit RB_SEGMENT_UPDATE with the message change number
 
   expectedParams = [{ type: 'SPLIT_KILL', changeNumber: 1457552650000, splitName: 'whitelist', defaultTreatment: 'not_allowed' }];
   sseHandler.handleMessage(splitKillMessage);

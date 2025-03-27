@@ -3,7 +3,7 @@ import { parser } from '..';
 import { ISplitCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('PARSER / handle invalid matcher as control', async function () {
+test('PARSER / handle invalid matcher as control', async () => {
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
@@ -32,7 +32,7 @@ test('PARSER / handle invalid matcher as control', async function () {
   expect(evaluation.label).toBe('targeting rule type unsupported by sdk'); // track invalid as targeting rule type unsupported by sdk
 });
 
-test('PARSER / handle invalid matcher as control (complex example)', async function () {
+test('PARSER / handle invalid matcher as control (complex example)', async () => {
   const evaluator = parser(loggerMock, [
     {
       'conditionType': 'WHITELIST',
@@ -132,7 +132,7 @@ test('PARSER / handle invalid matcher as control (complex example)', async funct
   }
 });
 
-test('PARSER / handle invalid matcher as control (complex example mixing invalid and valid matchers)', async function () {
+test('PARSER / handle invalid matcher as control (complex example mixing invalid and valid matchers)', async () => {
   const evaluator = parser(loggerMock, [
     {
       'conditionType': 'WHITELIST',
