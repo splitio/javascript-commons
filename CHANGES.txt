@@ -2,6 +2,7 @@
  - Added two new configuration options for the SDK storage in browsers when using storage type `LOCALSTORAGE`:
     - `storage.expirationDays` to specify the validity period of the rollout cache.
     - `storage.clearOnInit` to clear the rollout cache on SDK initialization.
+ - Updated SDK_READY_FROM_CACHE event when using the `LOCALSTORAGE` storage type to be emitted alongside the SDK_READY event if it has not already been emitted.
 
 2.1.0 (January 17, 2025)
  - Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on `SplitView` type objects. Read more in our docs.
