@@ -9,16 +9,14 @@ import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
  */
 export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
-  abstract addSplit(name: string, split: ISplit): boolean
+  protected abstract addSplit(split: ISplit): boolean
+  protected abstract removeSplit(name: string): boolean
+  protected abstract setChangeNumber(changeNumber: number): boolean | void
 
-  addSplits(entries: [string, ISplit][]): boolean[] {
-    return entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1]));
-  }
-
-  abstract removeSplit(name: string): boolean
-
-  removeSplits(names: string[]): boolean[] {
-    return names.map(name => this.removeSplit(name));
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean {
+    this.setChangeNumber(changeNumber);
+    const updated = toAdd.map(addedFF => this.addSplit(addedFF)).some(result => result);
+    return toRemove.map(removedFF => this.removeSplit(removedFF.name)).some(result => result) || updated;
   }
 
   abstract getSplit(name: string): ISplit | null
@@ -30,8 +28,6 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
     });
     return splits;
   }
-
-  abstract setChangeNumber(changeNumber: number): boolean | void
 
   abstract getChangeNumber(): number
 
@@ -46,14 +42,6 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
   abstract usesSegments(): boolean
 
   abstract clear(): void
-
-  /**
-   * Check if the splits information is already stored in cache. This data can be preloaded.
-   * It is used as condition to emit SDK_SPLITS_CACHE_LOADED, and then SDK_READY_FROM_CACHE.
-   */
-  checkCache(): boolean {
-    return false;
-  }
 
   /**
    * Kill `name` split and set `defaultTreatment` and `changeNumber`.
@@ -71,7 +59,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
       newSplit.defaultTreatment = defaultTreatment;
       newSplit.changeNumber = changeNumber;
 
-      return this.addSplit(name, newSplit);
+      return this.addSplit(newSplit);
     }
     return false;
   }

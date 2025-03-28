@@ -1,6 +1,8 @@
 import { PreloadedData } from '../types';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../utils/constants/browser';
 import { DataLoader, ISegmentsCacheSync, ISplitsCacheSync } from './types';
+
+// This value might be eventually set via a config parameter
+const DEFAULT_CACHE_EXPIRATION_IN_MILLIS = 864000000; // 10 days
 
 /**
  * Factory of client-side storage loader
@@ -35,10 +37,9 @@ export function dataLoaderFactory(preloadedData: PreloadedData): DataLoader {
 
     // cleaning up the localStorage data, since some cached splits might need be part of the preloaded data
     storage.splits.clear();
-    storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])));
+    storage.splits.update(Object.keys(splitsData).map(splitName => JSON.parse(splitsData[splitName])), [], since);
 
     // add mySegments data
     let mySegmentsData = preloadedData.mySegmentsData && preloadedData.mySegmentsData[userId];

@@ -22,8 +22,7 @@ export function splitsSyncTaskFactory(
     splitChangesUpdaterFactory(
       settings.log,
       splitChangesFetcherFactory(fetchSplitChanges),
-      storage.splits,
-      storage.segments,
+      storage,
       settings.sync.__splitFiltersValidation,
       readiness.splits,
       settings.startup.requestTimeoutBeforeReady,

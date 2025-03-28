@@ -23,9 +23,9 @@ export function assertSyncRecorderCacheInterface(cache: IEventsCacheSync | IImpr
 // Split mocks
 
 //@ts-ignore
-export const splitWithUserTT: ISplit = { trafficTypeName: 'user_tt', conditions: [] };
+export const splitWithUserTT: ISplit = { name: 'user_ff', trafficTypeName: 'user_tt', conditions: [] };
 //@ts-ignore
-export const splitWithAccountTT: ISplit = { trafficTypeName: 'account_tt', conditions: [] };
+export const splitWithAccountTT: ISplit = { name: 'account_ff', trafficTypeName: 'account_tt', conditions: [] };
 //@ts-ignore
 export const splitWithAccountTTAndUsesSegments: ISplit = { trafficTypeName: 'account_tt', conditions: [{ matcherGroup: { matchers: [{ matcherType: 'IN_SEGMENT', userDefinedSegmentMatcherData: { segmentName: 'employees' } }] } }] };
 //@ts-ignore

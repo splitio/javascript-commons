@@ -120,7 +120,7 @@ export function isBoolean(val: any): boolean {
  * Unlike `Number.isFinite`, it also tests Number object instances.
  * Unlike global `isFinite`, it returns false if the value is not a number or Number object instance.
  */
-export function isFiniteNumber(val: any): boolean {
+export function isFiniteNumber(val: any): val is number {
   if (val instanceof Number) val = val.valueOf();
   return typeof val === 'number' ?
     Number.isFinite ? Number.isFinite(val) : isFinite(val) :
