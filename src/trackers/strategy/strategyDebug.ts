@@ -14,6 +14,8 @@ export function strategyDebugFactory(
 
   return {
     process(impression: SplitIO.ImpressionDTO) {
+      if (impression.properties) return true;
+
       impression.pt = impressionsObserver.testAndSet(impression);
       return true;
     }

@@ -23,6 +23,14 @@ function treatmentsNotReady(featureFlagNames: string[]) {
   return evaluations;
 }
 
+function stringify(options?: SplitIO.EvaluationOptions) {
+  if (options && options.properties) {
+    try {
+      return JSON.stringify(options.properties);
+    } catch { /* JSON.stringify should never throw with validated options, but handling just in case */ }
+  }
+}
+
 /**
  * Creator of base client with getTreatments and track methods.
  */
@@ -31,12 +39,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
-  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined, withConfig = false, methodName = GET_TREATMENT) {
+  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
       const queue: ImpressionDecorated[] = [];
-      const treatment = processEvaluation(evaluationResult, featureFlagName, key, attributes, withConfig, methodName, queue);
+      const treatment = processEvaluation(evaluationResult, featureFlagName, key, stringify(options), withConfig, methodName, queue);
       impressionsTracker.track(queue, attributes);
 
       stopTelemetryTracker(queue[0] && queue[0].imp.label);
@@ -52,18 +60,19 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluation) ? evaluation.then((res) => wrapUp(res)) : wrapUp(evaluation);
   }
 
-  function getTreatmentWithConfig(key: SplitIO.SplitKey, featureFlagName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatment(key, featureFlagName, attributes, true, GET_TREATMENT_WITH_CONFIG);
+  function getTreatmentWithConfig(key: SplitIO.SplitKey, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatment(key, featureFlagName, attributes, options, true, GET_TREATMENT_WITH_CONFIG);
   }
 
-  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, methodName = GET_TREATMENTS) {
+  function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENTS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDecorated[] = [];
-      const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
+      const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
+      const properties = stringify(options);
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -80,19 +89,19 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
-  function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatments(key, featureFlagNames, attributes, true, GET_TREATMENTS_WITH_CONFIG);
+  function getTreatmentsWithConfig(key: SplitIO.SplitKey, featureFlagNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatments(key, featureFlagNames, attributes, options, true, GET_TREATMENTS_WITH_CONFIG);
   }
 
-  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
+  function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
     const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
       const queue: ImpressionDecorated[] = [];
-      const treatments: Record<string, SplitIO.Treatment | SplitIO.TreatmentWithConfig> = {};
-      const evaluations = evaluationResults;
-      Object.keys(evaluations).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluations[featureFlagName], featureFlagName, key, attributes, withConfig, methodName, queue);
+      const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
+      const properties = stringify(options);
+      Object.keys(evaluationResults).forEach(featureFlagName => {
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -109,16 +118,16 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return thenable(evaluations) ? evaluations.then((res) => wrapUp(res)) : wrapUp(evaluations);
   }
 
-  function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, flagSetNames, attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
+  function getTreatmentsWithConfigByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, flagSetNames, attributes, options, true, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS);
   }
 
-  function getTreatmentsByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, false, TREATMENTS_BY_FLAGSET, GET_TREATMENTS_BY_FLAG_SET);
+  function getTreatmentsByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, options, false, TREATMENTS_BY_FLAGSET, GET_TREATMENTS_BY_FLAG_SET);
   }
 
-  function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes: SplitIO.Attributes | undefined) {
-    return getTreatmentsByFlagSets(key, [flagSetName], attributes, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
+  function getTreatmentsWithConfigByFlagSet(key: SplitIO.SplitKey, flagSetName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions) {
+    return getTreatmentsByFlagSets(key, [flagSetName], attributes, options, true, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET);
   }
 
   // Internal function
@@ -126,7 +135,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     evaluation: IEvaluationResult,
     featureFlagName: string,
     key: SplitIO.SplitKey,
-    attributes: SplitIO.Attributes | undefined,
+    properties: string | undefined,
     withConfig: boolean,
     invokingMethodName: string,
     queue: ImpressionDecorated[]
@@ -148,6 +157,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
           bucketingKey,
           label,
           changeNumber: changeNumber as number,
+          properties
         },
         disabled: impressionsDisabled
       });

@@ -21,7 +21,7 @@ export const codesError: [number, string][] = [
   // input validation
   [c.ERROR_EVENT_TYPE_FORMAT, '%s: you passed "%s", event_type must adhere to the regular expression /^[a-zA-Z0-9][-_.:a-zA-Z0-9]{0,79}$/g. This means an event_type must be alphanumeric, cannot be more than 80 characters long, and can only include a dash, underscore, period, or colon as separators of alphanumeric characters.'],
   [c.ERROR_NOT_PLAIN_OBJECT, '%s: %s must be a plain object.'],
-  [c.ERROR_SIZE_EXCEEDED, '%s: the maximum size allowed for the properties is 32768 bytes, which was exceeded. Event not queued.'],
+  [c.ERROR_SIZE_EXCEEDED, '%s: the maximum size allowed for the properties is 32768 bytes, which was exceeded.'],
   [c.ERROR_NOT_FINITE, '%s: value must be a finite number.'],
   [c.ERROR_NULL, '%s: you passed a null or undefined %s. It must be a non-empty string.'],
   [c.ERROR_TOO_LONG, '%s: %s too long. It must have 250 characters or less.'],
