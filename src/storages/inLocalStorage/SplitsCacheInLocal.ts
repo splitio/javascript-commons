@@ -31,16 +31,14 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     else localStorage.removeItem(key);
   }
 
-  private _decrementCounts(split: ISplit | null) {
+  private _decrementCounts(split: ISplit) {
     try {
-      if (split) {
-        const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-        this._decrementCount(ttKey);
+      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
+      this._decrementCount(ttKey);
 
-        if (usesSegments(split)) {
-          const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-          this._decrementCount(segmentsCountKey);
-        }
+      if (usesSegments(split)) {
+        const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
+        this._decrementCount(segmentsCountKey);
       }
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
@@ -93,12 +91,14 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const splitFromLocalStorage = localStorage.getItem(splitKey);
       const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
 
+      if (previousSplit) {
+        this._decrementCounts(previousSplit);
+        this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      }
+
       localStorage.setItem(splitKey, JSON.stringify(split));
 
       this._incrementCounts(split);
-      this._decrementCounts(previousSplit);
-
-      if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
       this.addToFlagSets(split);
 
       return true;
@@ -116,7 +116,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
-      if (split) this.removeFromFlagSets(split.name, split.sets);
+      this.removeFromFlagSets(split.name, split.sets);
 
       return true;
     } catch (e) {
