@@ -947,6 +947,18 @@ declare namespace SplitIO {
      * @defaultValue `'SPLITIO'`
      */
     prefix?: string;
+    /**
+     * Number of days before cached data expires if it was not updated. If cache expires, it is cleared on initialization.
+     *
+     * @defaultValue `10`
+     */
+    expirationDays?: number;
+    /**
+     * Optional settings to clear the cache. If set to `true`, the SDK clears the cached data on initialization, unless the cache was cleared within the last 24 hours.
+     *
+     * @defaultValue `false`
+     */
+    clearOnInit?: boolean;
   }
   /**
    * Storage for asynchronous (consumer) SDK.
@@ -1270,11 +1282,23 @@ declare namespace SplitIO {
        */
       type?: BrowserStorage;
       /**
-       * Optional prefix to prevent any kind of data collision between SDK versions.
+       * Optional prefix to prevent any kind of data collision between SDK versions when using 'LOCALSTORAGE'.
        *
        * @defaultValue `'SPLITIO'`
        */
       prefix?: string;
+      /**
+       * Optional settings for the 'LOCALSTORAGE' storage type. It specifies the number of days before cached data expires if it was not updated. If cache expires, it is cleared on initialization.
+       *
+       * @defaultValue `10`
+       */
+      expirationDays?: number;
+      /**
+       * Optional settings for the 'LOCALSTORAGE' storage type. If set to `true`, the SDK clears the cached data on initialization, unless the cache was cleared within the last 24 hours.
+       *
+       * @defaultValue `false`
+       */
+      clearOnInit?: boolean;
     };
   }
   /**

@@ -5,7 +5,6 @@ import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISettings } from '../../types';
-import { getStorageHash } from '../KeyBuilder';
 import { setToArray } from '../../utils/lang/sets';
 
 /**
@@ -15,21 +14,14 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
-  private readonly storageHash: string;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private updateNewFilter?: boolean;
 
-  constructor(settings: ISettings, keys: KeyBuilderCS, expirationTimestamp?: number) {
+  constructor(settings: ISettings, keys: KeyBuilderCS) {
     super();
     this.keys = keys;
     this.log = settings.log;
-    this.storageHash = getStorageHash(settings);
     this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
-
-    this._checkExpiration(expirationTimestamp);
-
-    this._checkFilterQuery();
   }
 
   private _decrementCount(key: string) {
@@ -79,8 +71,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
    * We cannot simply call `localStorage.clear()` since that implies removing user items from the storage.
    */
   clear() {
-    this.log.info(LOG_PREFIX + 'Flushing Splits data from localStorage');
-
     // collect item keys
     const len = localStorage.length;
     const accum = [];
@@ -141,19 +131,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   setChangeNumber(changeNumber: number): boolean {
-
-    // when using a new split query, we must update it at the store
-    if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
-      const storageHashKey = this.keys.buildHashKey();
-      try {
-        localStorage.setItem(storageHashKey, this.storageHash);
-      } catch (e) {
-        this.log.error(LOG_PREFIX + e);
-      }
-      this.updateNewFilter = false;
-    }
-
     try {
       localStorage.setItem(this.keys.buildSplitsTillKey(), changeNumber + '');
       // update "last updated" timestamp with current time
@@ -213,48 +190,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     } else {
       return true;
     }
-  }
-
-  /**
-   * Check if the splits information is already stored in browser LocalStorage.
-   * In this function we could add more code to check if the data is valid.
-   * @override
-   */
-  checkCache(): boolean {
-    return this.getChangeNumber() > -1;
-  }
-
-  /**
-   * Clean Splits cache if its `lastUpdated` timestamp is older than the given `expirationTimestamp`,
-   *
-   * @param expirationTimestamp - if the value is not a number, data will not be cleaned
-   */
-  private _checkExpiration(expirationTimestamp?: number) {
-    let value: string | number | null = localStorage.getItem(this.keys.buildLastUpdatedKey());
-    if (value !== null) {
-      value = parseInt(value, 10);
-      if (!isNaNNumber(value) && expirationTimestamp && value < expirationTimestamp) this.clear();
-    }
-  }
-
-  // @TODO eventually remove `_checkFilterQuery`. Cache should be cleared at the storage level, reusing same logic than PluggableStorage
-  private _checkFilterQuery() {
-    const storageHashKey = this.keys.buildHashKey();
-    const storageHash = localStorage.getItem(storageHashKey);
-
-    if (storageHash !== this.storageHash) {
-      try {
-        // mark cache to update the new query filter on first successful splits fetch
-        this.updateNewFilter = true;
-
-        // if there is cache, clear it
-        if (this.checkCache()) this.clear();
-
-      } catch (e) {
-        this.log.error(LOG_PREFIX + e);
-      }
-    }
-    // if the filter didn't change, nothing is done
   }
 
   getNamesByFlagSets(flagSets: string[]): Set<string>[] {

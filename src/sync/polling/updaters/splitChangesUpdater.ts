@@ -3,7 +3,7 @@ import { ISplitChangesFetcher } from '../fetchers/types';
 import { ISplit, ISplitChangesResponse, ISplitFiltersValidation } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
@@ -143,7 +143,7 @@ export function splitChangesUpdaterFactory(
      */
     function _splitChangesUpdater(since: number, retry = 0): Promise<boolean> {
       log.debug(SYNC_SPLITS_FETCH, [since]);
-      const fetcherPromise = Promise.resolve(splitUpdateNotification ?
+      return Promise.resolve(splitUpdateNotification ?
         { splits: [splitUpdateNotification.payload], till: splitUpdateNotification.changeNumber } :
         splitChangesFetcher(since, noCache, till, _promiseDecorator)
       )
@@ -154,8 +154,6 @@ export function splitChangesUpdaterFactory(
 
           log.debug(SYNC_SPLITS_UPDATE, [mutation.added.length, mutation.removed.length, mutation.segments.length]);
 
-          // Write into storage
-          // @TODO call `setChangeNumber` only if the other storage operations have succeeded, in order to keep storage consistency
           return Promise.all([
             splits.update(mutation.added, mutation.removed, splitChanges.till),
             segments.registerSegments(mutation.segments)
@@ -185,15 +183,6 @@ export function splitChangesUpdaterFactory(
           }
           return false;
         });
-
-      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
-      // Wrapping in a promise since checkCache can be async.
-      if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splits.checkCache()).then(isCacheReady => {
-          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
-        });
-      }
-      return fetcherPromise;
     }
 
     let sincePromise = Promise.resolve(splits.getChangeNumber()); // `getChangeNumber` never rejects or throws error

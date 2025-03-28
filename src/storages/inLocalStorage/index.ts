@@ -7,22 +7,19 @@ import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
 import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
-
-export interface InLocalStorageOptions {
-  prefix?: string
-}
+import { validateCache } from './validateCache';
+import SplitIO from '../../../types/splitio';
 
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
+export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): IStorageSyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 
@@ -37,9 +34,8 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
-    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
+    const splits = new SplitsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
@@ -52,6 +48,10 @@ export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyn
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
+
+      validateCache() {
+        return validateCache(options, settings, keys, splits, segments, largeSegments);
+      },
 
       destroy() { },
 

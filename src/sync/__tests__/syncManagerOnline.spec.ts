@@ -2,6 +2,7 @@ import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.
 import { syncTaskFactory } from './syncTask.mock';
 import { syncManagerOnlineFactory } from '../syncManagerOnline';
 import { IReadinessManager } from '../../readiness/types';
+import { SDK_SPLITS_CACHE_LOADED } from '../../readiness/constants';
 
 jest.mock('../submitters/submitterManager', () => {
   return {
@@ -45,8 +46,10 @@ const pushManagerFactoryMock = jest.fn(() => pushManagerMock);
 test('syncManagerOnline should start or not the submitter depending on user consent status', () => {
   const settings = { ...fullSettings };
 
-  // @ts-ignore
-  const syncManager = syncManagerOnlineFactory()({ settings });
+  const syncManager = syncManagerOnlineFactory()({
+    settings, // @ts-ignore
+    storage: {},
+  });
   const submitterManager = syncManager.submitterManager!;
 
   syncManager.start();
@@ -95,7 +98,10 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
 
   // @ts-ignore
   // Test pushManager for main client
-  const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({ settings });
+  const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
+    settings, // @ts-ignore
+    storage: { validateCache: () => false },
+  });
 
   expect(pushManagerFactoryMock).not.toBeCalled();
 
@@ -161,7 +167,10 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
   settings.sync.enabled = true;
   // @ts-ignore
   // pushManager instantiation control test
-  const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({ settings });
+  const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
+    settings, // @ts-ignore
+    storage: { validateCache: () => false },
+  });
 
   expect(pushManagerFactoryMock).toBeCalled();
 
@@ -172,4 +181,19 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
 
   testSyncManager.stop();
 
+});
+
+test('syncManagerOnline should emit SDK_SPLITS_CACHE_LOADED if validateCache returns true', async () => {
+  const params = {
+    settings: fullSettings,
+    storage: { validateCache: () => true },
+    readiness: { splits: { emit: jest.fn() } }
+  }; // @ts-ignore
+  const syncManager = syncManagerOnlineFactory()(params);
+
+  await syncManager.start();
+
+  expect(params.readiness.splits.emit).toBeCalledWith(SDK_SPLITS_CACHE_LOADED);
+
+  syncManager.stop();
 });
