@@ -6,7 +6,7 @@ import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
 import { nearlyEqual } from '../../../__tests__/testUtils';
 import { MySegmentsCacheInLocal } from '../MySegmentsCacheInLocal';
 
-const FULL_SETTINGS_HASH = '404832b3';
+const FULL_SETTINGS_HASH = 'dc1f9817';
 
 describe('validateCache', () => {
   const keys = new KeyBuilderCS('SPLITIO', 'user');
@@ -77,7 +77,7 @@ describe('validateCache', () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(validateCache({}, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another' } }, keys, splits, segments, largeSegments)).toBe(false);
+    expect(validateCache({}, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
 
@@ -85,7 +85,7 @@ describe('validateCache', () => {
     expect(segments.clear).toHaveBeenCalledTimes(1);
     expect(largeSegments.clear).toHaveBeenCalledTimes(1);
 
-    expect(localStorage.getItem(keys.buildHashKey())).toBe('aa4877c2');
+    expect(localStorage.getItem(keys.buildHashKey())).toBe('45c6ba5d');
     expect(nearlyEqual(parseInt(localStorage.getItem(keys.buildLastClear()) as string), Date.now())).toBe(true);
   });
 

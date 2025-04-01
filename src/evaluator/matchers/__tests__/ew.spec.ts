@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["a", "b", "c"]', function () {
+test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["a", "b", "c"]', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.ENDS_WITH,
@@ -17,7 +17,7 @@ test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["a",
   expect(matcher('manager')).toBe(false); // manager doesn't end with ["a", "b", "c"]
 });
 
-test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["demo.test.org"]', function () {
+test('MATCHER ENDS_WITH / should return true ONLY when the value ends with ["demo.test.org"]', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.ENDS_WITH,

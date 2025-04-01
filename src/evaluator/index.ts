@@ -43,8 +43,8 @@ export function evaluateFeature(
   if (thenable(parsedSplit)) {
     return parsedSplit.then((split) => getEvaluation(
       log,
-      split,
       key,
+      split,
       attributes,
       storage,
     )).catch(
@@ -56,8 +56,8 @@ export function evaluateFeature(
 
   return getEvaluation(
     log,
-    parsedSplit,
     key,
+    parsedSplit,
     attributes,
     storage,
   );
@@ -80,13 +80,13 @@ export function evaluateFeatures(
   }
 
   return thenable(parsedSplits) ?
-    parsedSplits.then(splits => getEvaluations(log, splitNames, splits, key, attributes, storage))
+    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage))
       .catch(() => {
         // Exception on async `getSplits` storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         return treatmentsException(splitNames);
       }) :
-    getEvaluations(log, splitNames, parsedSplits, key, attributes, storage);
+    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage);
 }
 
 export function evaluateFeaturesByFlagSets(
@@ -136,8 +136,8 @@ export function evaluateFeaturesByFlagSets(
 
 function getEvaluation(
   log: ILogger,
-  splitJSON: ISplit | null,
   key: SplitIO.SplitKey,
+  splitJSON: ISplit | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
@@ -172,9 +172,9 @@ function getEvaluation(
 
 function getEvaluations(
   log: ILogger,
+  key: SplitIO.SplitKey,
   splitNames: string[],
   splits: Record<string, ISplit | null>,
-  key: SplitIO.SplitKey,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
@@ -183,8 +183,8 @@ function getEvaluations(
   splitNames.forEach(splitName => {
     const evaluation = getEvaluation(
       log,
-      splits[splitName],
       key,
+      splits[splitName],
       attributes,
       storage
     );

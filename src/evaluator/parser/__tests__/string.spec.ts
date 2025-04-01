@@ -7,7 +7,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 //
 // STARTS WITH
 //
-test('PARSER / if user.email starts with ["nico"] then split 100:on', async function () {
+test('PARSER / if user.email starts with ["nico"] then split 100:on', async () => {
   const label = 'email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -41,7 +41,7 @@ test('PARSER / if user.email starts with ["nico"] then split 100:on', async func
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should match', async function () {
+test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should match', async () => {
   const label = 'email starts with ["1"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -75,7 +75,7 @@ test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should m
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async function () {
+test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async () => {
   const label = 'email starts with ["nico", "marcio", "facu"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -109,7 +109,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async function () {
+test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 100:on', async () => {
   const label = 'email starts with ["nico", "marcio", "facu"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -143,7 +143,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email does not start with ["nico"] then not match', async function () {
+test('PARSER / if user.email does not start with ["nico"] then not match', async () => {
   // const label = 'email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -175,7 +175,7 @@ test('PARSER / if user.email does not start with ["nico"] then not match', async
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not match', async function () {
+test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not match', async () => {
   // const label = 'email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -205,7 +205,7 @@ test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is not a string, start with ["nico"] should not match', async function () {
+test('PARSER / if user.email is not a string, start with ["nico"] should not match', async () => {
   // const label = 'email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -238,7 +238,7 @@ test('PARSER / if user.email is not a string, start with ["nico"] should not mat
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so not match', async function () {
+test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so not match', async () => {
   const label = 'not email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -271,7 +271,7 @@ test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email does not start with ["nico"] should not match, then match', async function () {
+test('PARSER / NEGATED if user.email does not start with ["nico"] should not match, then match', async () => {
   const label = 'not email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -305,7 +305,7 @@ test('PARSER / NEGATED if user.email does not start with ["nico"] should not mat
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] should not match, so negation should', async () => {
   const label = 'not email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -337,7 +337,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] sho
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should not match, so negation should', async () => {
   const label = 'not email starts with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -376,7 +376,7 @@ test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should
 //
 // ENDS WITH
 //
-test('PARSER / if user.email ends with ["split.io"] then split 100:on', async function () {
+test('PARSER / if user.email ends with ["split.io"] then split 100:on', async () => {
   const label = 'email ends with ["split.io"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -410,7 +410,7 @@ test('PARSER / if user.email ends with ["split.io"] then split 100:on', async fu
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should match', async function () {
+test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should match', async () => {
   const label = 'email starts with ["3"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -443,7 +443,7 @@ test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should mat
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async function () {
+test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async () => {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -477,7 +477,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async function () {
+test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] then split 100:on', async () => {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -511,7 +511,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] but attribute is "" then split 100:on', async function () {
+test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] but attribute is "" then split 100:on', async () => {
   const label = 'email ends with ["gmail.com", "split.io", "hotmail.com"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -544,7 +544,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email does not end with ["split.io"] then not match', async function () {
+test('PARSER / if user.email does not end with ["split.io"] then not match', async () => {
   const label = 'email ends with ["split.io"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -577,7 +577,7 @@ test('PARSER / if user.email does not end with ["split.io"] then not match', asy
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not match', async function () {
+test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not match', async () => {
   // const label = 'email ends with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -607,7 +607,7 @@ test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not ma
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is not a string, end with ["nico"] should not match', async function () {
+test('PARSER / if user.email is not a string, end with ["nico"] should not match', async () => {
   // const label = 'email ends with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -642,7 +642,7 @@ test('PARSER / if user.email is not a string, end with ["nico"] should not match
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, so not match', async function () {
+test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, so not match', async () => {
   const label = 'not email ends with ["split.io"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -674,7 +674,7 @@ test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, s
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email does not end with ["split.io"] then no match, so match', async function () {
+test('PARSER / NEGATED if user.email does not end with ["split.io"] then no match, so match', async () => {
   const label = 'not email ends with ["split.io"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -707,7 +707,7 @@ test('PARSER / NEGATED if user.email does not end with ["split.io"] then no matc
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] should not match, so negation should', async () => {
   const label = 'not email ends with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -739,7 +739,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] shoul
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should not match, so negation should', async () => {
   const label = 'not email ends with ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -778,7 +778,7 @@ test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should n
 //
 // CONTAINS STRING
 //
-test('PARSER / if user.email contains ["@split"] then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split"] then split 100:on', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -812,7 +812,7 @@ test('PARSER / if user.email contains ["@split"] then split 100:on', async funct
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email = 123, contains ["2"] then split 100:on should match', async function () {
+test('PARSER / if user.email = 123, contains ["2"] then split 100:on should match', async () => {
   const label = 'email contains ["2"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -846,7 +846,7 @@ test('PARSER / if user.email = 123, contains ["2"] then split 100:on should matc
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -880,7 +880,7 @@ test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on',
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -914,7 +914,7 @@ test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email contains ["@split"] (whole string matches) then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split"] (whole string matches) then split 100:on', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -948,7 +948,7 @@ test('PARSER / if user.email contains ["@split"] (whole string matches) then spl
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async () => {
   const label = 'email contains ["@split", "@gmail", "@hotmail"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -982,7 +982,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async function () {
+test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then split 100:on', async () => {
   const label = 'email contains ["@split", "@gmail", "@hotmail"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1016,7 +1016,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / if user.email does not contain ["@split"] then not match', async function () {
+test('PARSER / if user.email does not contain ["@split"] then not match', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1049,7 +1049,7 @@ test('PARSER / if user.email does not contain ["@split"] then not match', async 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not match', async function () {
+test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not match', async () => {
   // const label = 'email contains ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1079,7 +1079,7 @@ test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not ma
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.email is not a string, contains ["nico"] should not match', async function () {
+test('PARSER / if user.email is not a string, contains ["nico"] should not match', async () => {
   // const label = 'email contains ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1114,7 +1114,7 @@ test('PARSER / if user.email is not a string, contains ["nico"] should not match
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then no match', async function () {
+test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then no match', async () => {
   const label = 'not email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1147,7 +1147,7 @@ test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.email does not contain ["@split"] then not match, so match', async function () {
+test('PARSER / NEGATED if user.email does not contain ["@split"] then not match, so match', async () => {
   const label = 'email contains ["@split"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1180,7 +1180,7 @@ test('PARSER / NEGATED if user.email does not contain ["@split"] then not match,
   expect(evaluation.label).toBe(label); //
 });
 
-test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] should not match, so negation should', async () => {
   const label = 'not email contains ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1212,7 +1212,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] shoul
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if user.email is not a string, contains ["nico"] should not match, so negation should', async function () {
+test('PARSER / NEGATED if user.email is not a string, contains ["nico"] should not match, so negation should', async () => {
   const label = 'not email contains ["nico"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
