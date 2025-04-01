@@ -25,8 +25,9 @@ export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.Impr
           m: entry.time, // Timestamp
           c: entry.changeNumber, // ChangeNumber
           r: sendLabels ? entry.label : undefined, // Rule
-          b: entry.bucketingKey ? entry.bucketingKey : undefined, // Bucketing Key
-          pt: entry.pt ? entry.pt : undefined // Previous time
+          b: entry.bucketingKey, // Bucketing Key
+          pt: entry.pt, // Previous time
+          properties: entry.properties // Properties
         };
 
         return keyImpression;

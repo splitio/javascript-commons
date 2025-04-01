@@ -54,6 +54,10 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   buildSplitsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }
+
+  buildLastClear() {
+    return `${this.prefix}.lastClear`;
+  }
 }
 
 export function myLargeSegmentsKeyBuilder(prefix: string, matchingKey: string): MySegmentsKeyBuilder {

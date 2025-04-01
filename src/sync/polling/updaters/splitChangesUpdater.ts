@@ -3,7 +3,7 @@ import { ISplitChangesFetcher } from '../fetchers/types';
 import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
@@ -142,7 +142,7 @@ export function splitChangesUpdaterFactory(
     function _splitChangesUpdater(sinces: [number, number], retry = 0): Promise<boolean> {
       const [since, rbSince] = sinces;
       log.debug(SYNC_SPLITS_FETCH, sinces);
-      const fetcherPromise = Promise.resolve(
+      return Promise.resolve(
         instantUpdate ?
           instantUpdate.type === SPLIT_UPDATE ?
             // IFFU edge case: a change to a flag that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
@@ -202,15 +202,6 @@ export function splitChangesUpdaterFactory(
           }
           return false;
         });
-
-      // After triggering the requests, if we have cached splits information let's notify that to emit SDK_READY_FROM_CACHE.
-      // Wrapping in a promise since checkCache can be async.
-      if (splitsEventEmitter && startingUp) {
-        Promise.resolve(splits.checkCache()).then(isCacheReady => {
-          if (isCacheReady) splitsEventEmitter.emit(SDK_SPLITS_CACHE_LOADED);
-        });
-      }
-      return fetcherPromise;
     }
 
     // `getChangeNumber` never rejects or throws error
