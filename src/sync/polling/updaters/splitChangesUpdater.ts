@@ -30,7 +30,7 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Exported for testing purposes.
  */
 export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
-  const { conditions, excluded } = ruleEntity as IRBSegment;
+  const { conditions = [], excluded } = ruleEntity as IRBSegment;
   const segments = new Set<string>(excluded && excluded.segments);
 
   for (let i = 0; i < conditions.length; i++) {
