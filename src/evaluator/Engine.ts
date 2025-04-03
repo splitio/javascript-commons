@@ -62,7 +62,7 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
         };
       }
 
-      const prerequisitesMet = prerequisiteMatcher(key, attributes, splitEvaluator);
+      const prerequisitesMet = prerequisiteMatcher({ key, attributes }, splitEvaluator);
 
       return thenable(prerequisitesMet) ?
         prerequisitesMet.then(evaluate) :
