@@ -203,10 +203,10 @@ export interface IRBSegment {
   name: string,
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
-  conditions: ISplitCondition[],
-  excluded: {
-    keys: string[],
-    segments: string[]
+  conditions?: ISplitCondition[],
+  excluded?: {
+    keys?: string[],
+    segments?: string[]
   }
 }
 

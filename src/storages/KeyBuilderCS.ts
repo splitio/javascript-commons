@@ -15,7 +15,7 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
   constructor(prefix: string, matchingKey: string) {
     super(prefix);
     this.matchingKey = matchingKey;
-    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet|rbsegment)\\.`);
+    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet)\\.`);
   }
 
   /**

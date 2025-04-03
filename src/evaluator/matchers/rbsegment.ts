@@ -12,7 +12,7 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
   return function ruleBasedSegmentMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
 
     function matchConditions(rbsegment: IRBSegment) {
-      const conditions = rbsegment.conditions;
+      const conditions = rbsegment.conditions || [];
       const evaluator = parser(log, conditions, storage);
 
       const evaluation = evaluator(
@@ -31,10 +31,11 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
 
     function isExcluded(rbSegment: IRBSegment) {
       const matchingKey = getMatching(key);
+      const excluded = rbSegment.excluded || {};
 
-      if (rbSegment.excluded.keys.indexOf(matchingKey) !== -1) return true;
+      if (excluded.keys && excluded.keys.indexOf(matchingKey) !== -1) return true;
 
-      const isInSegment = rbSegment.excluded.segments.map(segmentName => {
+      const isInSegment = (excluded.segments || []).map(segmentName => {
         return storage.segments.isInSegment(segmentName, matchingKey);
       });
 
