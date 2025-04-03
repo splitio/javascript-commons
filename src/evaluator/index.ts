@@ -1,4 +1,4 @@
-import { Engine } from './Engine';
+import { engineParser } from './Engine';
 import { thenable } from '../utils/promise/thenable';
 import { EXCEPTION, SPLIT_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
@@ -99,9 +99,7 @@ export function evaluateFeaturesByFlagSets(
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let storedFlagNames: MaybeThenable<Set<string>[]>;
 
-  function evaluate(
-    featureFlagsByFlagSets: Set<string>[],
-  ) {
+  function evaluate(featureFlagsByFlagSets: Set<string>[]) {
     let featureFlags = new Set<string>();
     for (let i = 0; i < flagSets.length; i++) {
       const featureFlagByFlagSet = featureFlagsByFlagSets[i];
@@ -148,20 +146,20 @@ function getEvaluation(
   };
 
   if (splitJSON) {
-    const split = Engine.parse(log, splitJSON, storage);
+    const split = engineParser(log, splitJSON, storage);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
-        result.changeNumber = split.getChangeNumber();
+        result.changeNumber = splitJSON.changeNumber;
         result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
         result.impressionsDisabled = splitJSON.impressionsDisabled;
 
         return result;
       });
     } else {
-      evaluation.changeNumber = split.getChangeNumber(); // Always sync and optional
+      evaluation.changeNumber = splitJSON.changeNumber;
       evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
       evaluation.impressionsDisabled = splitJSON.impressionsDisabled;
     }

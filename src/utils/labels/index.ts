@@ -6,3 +6,4 @@ export const EXCEPTION = 'exception';
 export const SPLIT_ARCHIVED = 'archived';
 export const NOT_IN_SPLIT = 'not in split';
 export const UNSUPPORTED_MATCHER_TYPE = 'targeting rule type unsupported by sdk';
+export const PREREQUISITES_NOT_MET = 'prerequisites not met';

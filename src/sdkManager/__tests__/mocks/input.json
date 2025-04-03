@@ -41,5 +41,15 @@
   "configurations": {
     "on": "\"color\": \"green\""
   },
-  "sets": ["set_a"]
+  "sets": [
+    "set_a"
+  ],
+  "prerequisites": [
+    {
+      "n": "some_flag",
+      "ts": [
+        "on"
+      ]
+    }
+  ]
 }
