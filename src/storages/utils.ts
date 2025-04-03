@@ -30,6 +30,7 @@ export function impressionsToJSON(impressions: SplitIO.ImpressionDTO[], metadata
         c: impression.changeNumber,
         m: impression.time,
         pt: impression.pt,
+        properties: impression.properties
       }
     };
 

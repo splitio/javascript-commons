@@ -1,6 +1,6 @@
 import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
-import { ISplitsCacheSync } from '../../../storages/types';
+import { IStorageSync } from '../../../storages/types';
 import { ISplitsParser } from '../splitsParser/types';
 import { ISplit, ISplitPartial } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
@@ -15,7 +15,7 @@ import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/c
  */
 export function fromObjectUpdaterFactory(
   splitsParser: ISplitsParser,
-  storage: { splits: ISplitsCacheSync },
+  storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings,
 ): () => Promise<boolean> {
@@ -59,9 +59,10 @@ export function fromObjectUpdaterFactory(
 
         if (startingUp) {
           startingUp = false;
-          Promise.resolve(splitsCache.checkCache()).then(cacheReady => {
+          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
+          Promise.resolve().then(() => {
             // Emits SDK_READY_FROM_CACHE
-            if (cacheReady) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+            if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
             // Emits SDK_READY
             readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
           });
@@ -79,7 +80,7 @@ export function fromObjectUpdaterFactory(
  */
 export function fromObjectSyncTaskFactory(
   splitsParser: ISplitsParser,
-  storage: { splits: ISplitsCacheSync },
+  storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings
 ): ISyncTask<[], boolean> {

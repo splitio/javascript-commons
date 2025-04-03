@@ -105,17 +105,22 @@ test('KEYS / latency and exception keys (telemetry)', () => {
 
 test('getStorageHash', () => {
   expect(getStorageHash({
-    core: { authorizationKey: '<fake-token-rfc>' },
+    core: { authorizationKey: 'sdk-key' },
     sync: { __splitFiltersValidation: { queryString: '&names=p1__split,p2__split' }, flagSpecVersion: '1.3' }
-  } as ISettings)).toBe('2ce5cc38');
+  } as ISettings)).toBe('d700da23');
 
   expect(getStorageHash({
-    core: { authorizationKey: '<fake-token-rfc>' },
+    core: { authorizationKey: 'sdk-key' },
     sync: { __splitFiltersValidation: { queryString: '&names=p2__split,p3__split' }, flagSpecVersion: '1.3' }
-  } as ISettings)).toBe('e65079c6');
+  } as ISettings)).toBe('8c8a8789');
 
   expect(getStorageHash({
-    core: { authorizationKey: '<fake-token-rfc>' },
+    core: { authorizationKey: 'aaaabbbbcccc1234' },
     sync: { __splitFiltersValidation: { queryString: null }, flagSpecVersion: '1.3' }
-  } as ISettings)).toBe('193e6f3f');
+  } as ISettings)).toBe('dc1f9817');
+
+  expect(getStorageHash({
+    core: { authorizationKey: 'another-sdk-key' },
+    sync: { __splitFiltersValidation: { queryString: null }, flagSpecVersion: '1.3' }
+  } as ISettings)).toBe('45c6ba5d');
 });

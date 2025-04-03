@@ -66,3 +66,13 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
 
   return output;
 }
+
+export function validateEvaluationOptions(log: ILogger, maybeOptions: any, method: string): SplitIO.EvaluationOptions | undefined {
+  if (isObject(maybeOptions)) {
+    const properties = validateEventProperties(log, maybeOptions.properties, method).properties;
+    return properties && Object.keys(properties).length > 0 ? { properties } : undefined;
+  } else if (maybeOptions) {
+    log.error(ERROR_NOT_PLAIN_OBJECT, [method, 'evaluation options']);
+  }
+  return undefined;
+}
