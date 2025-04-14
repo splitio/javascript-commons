@@ -1,3 +1,6 @@
+2.3.0 (April XXX, 2025)
+ - Added support for targeting rules based on rule-based segments.
+
 2.2.0 (March 28, 2025)
  - Added a new optional argument to the client `getTreatment` methods to allow passing additional evaluation options, such as a map of properties to append to the generated impressions sent to Split backend. Read more in our docs.
  - Added two new configuration options for the SDK storage in browsers when using storage type `LOCALSTORAGE`:
