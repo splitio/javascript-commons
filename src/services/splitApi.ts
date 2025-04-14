@@ -29,7 +29,6 @@ export function splitApiFactory(
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const flagSpecVersion = settings.sync.flagSpecVersion;
   const splitHttpClient = splitHttpClientFactory(settings, platform);
 
   return {
@@ -45,7 +44,7 @@ export function splitApiFactory(
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth?s=${flagSpecVersion}`;
+      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
       if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
         if (queryParams) url += '&' + queryParams;
@@ -54,7 +53,7 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
-      const url = `${urls.sdk}/splitChanges?s=${flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+      const url = `${urls.sdk}/splitChanges?s=${settings.sync.flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);
