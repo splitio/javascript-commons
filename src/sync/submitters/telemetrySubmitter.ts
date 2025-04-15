@@ -11,6 +11,7 @@ import { timer } from '../../utils/timeTracker/timer';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { objectAssign } from '../../utils/lang/objectAssign';
 import { ISplitFiltersValidation } from '../../dtos/types';
+import { checkIfServerSide } from '../../utils/key';
 
 const OPERATION_MODE_MAP = {
   [STANDALONE_MODE]: STANDALONE_ENUM,
@@ -71,7 +72,7 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
 
     pop(): TelemetryConfigStatsPayload {
       const { urls, scheduler } = settings;
-      const isClientSide = settings.core.key !== undefined;
+      const isServerSide = checkIfServerSide(settings);
 
       const { flagSetsTotal, flagSetsIgnored } = getTelemetryFlagSetsStats(settings.sync.__splitFiltersValidation);
 
@@ -79,8 +80,8 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate / 1000,
-          se: isClientSide ? undefined : scheduler.segmentsRefreshRate / 1000,
-          ms: isClientSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
+          se: isServerSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
+          ms: isServerSide ? undefined : scheduler.segmentsRefreshRate / 1000,
           im: scheduler.impressionsRefreshRate / 1000,
           ev: scheduler.eventsPushRate / 1000,
           te: scheduler.telemetryRefreshRate / 1000,
