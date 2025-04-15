@@ -1,10 +1,11 @@
-import { ISettings } from '../../../../types/splitio';
+import { ISettings } from '../../../types';
 import { ISplitChangesResponse } from '../../../dtos/types';
 import { IFetchSplitChanges, IResponse } from '../../../services/types';
 import { IStorageBase } from '../../../storages/types';
 import { FLAG_SPEC_VERSION } from '../../../utils/constants';
 import { base } from '../../../utils/settingsValidation';
 import { ISplitChangesFetcher } from './types';
+import { LOG_PREFIX_SYNC_SPLITS } from '../../../logger/constants';
 
 const PROXY_CHECK_INTERVAL_MILLIS_CS = 60 * 60 * 1000; // 1 hour in Client Side
 const PROXY_CHECK_INTERVAL_MILLIS_SS = 24 * PROXY_CHECK_INTERVAL_MILLIS_CS; // 24 hours in Server Side
@@ -20,6 +21,7 @@ function sdkEndpointOverriden(settings: ISettings) {
 // @TODO breaking: drop support for Split Proxy below v5.10.0 and simplify the implementation
 export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
 
+  const log = settings.log;
   const PROXY_CHECK_INTERVAL_MILLIS = settings.core.key !== undefined ? PROXY_CHECK_INTERVAL_MILLIS_CS : PROXY_CHECK_INTERVAL_MILLIS_SS;
   let lastProxyCheckTimestamp: number | undefined;
 
@@ -41,6 +43,7 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
       // Handle proxy error with spec 1.3
       .catch((err) => {
         if (err.statusCode === 400 && sdkEndpointOverriden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
+          log.error(LOG_PREFIX_SYNC_SPLITS + 'Proxy error detected. If you are using Split Proxy, please upgrade to latest version');
           lastProxyCheckTimestamp = Date.now();
           settings.sync.flagSpecVersion = '1.2'; // fallback to 1.2 spec
           return fetchSplitChanges(since, noCache, till); // retry request without rbSince
@@ -66,6 +69,7 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
 
         // Proxy recovery
         if (lastProxyCheckTimestamp) {
+          log.info(LOG_PREFIX_SYNC_SPLITS + 'Proxy error recovered');
           lastProxyCheckTimestamp = undefined;
           return Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
             .then(() => splitChangesFetcher(storage.splits.getChangeNumber() as number, undefined, undefined, storage.rbSegments.getChangeNumber() as number));
