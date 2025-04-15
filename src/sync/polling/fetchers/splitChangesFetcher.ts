@@ -17,10 +17,11 @@ function sdkEndpointOverriden(settings: ISettings) {
  * Factory of SplitChanges fetcher.
  * SplitChanges fetcher is a wrapper around `splitChanges` API service that parses the response and handle errors.
  */
+// @TODO breaking: drop support for Split Proxy below v5.10.0 and simplify the implementation
 export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
 
   const PROXY_CHECK_INTERVAL_MILLIS = settings.core.key !== undefined ? PROXY_CHECK_INTERVAL_MILLIS_CS : PROXY_CHECK_INTERVAL_MILLIS_SS;
-  let _lastProxyCheckTimestamp: number | undefined;
+  let lastProxyCheckTimestamp: number | undefined;
 
   return function splitChangesFetcher(
     since: number,
@@ -31,15 +32,16 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
   ): Promise<ISplitChangesResponse> {
 
-    if (_lastProxyCheckTimestamp && (Date.now() - _lastProxyCheckTimestamp) > PROXY_CHECK_INTERVAL_MILLIS) {
+    // Recheck proxy
+    if (lastProxyCheckTimestamp && (Date.now() - lastProxyCheckTimestamp) > PROXY_CHECK_INTERVAL_MILLIS) {
       settings.sync.flagSpecVersion = FLAG_SPEC_VERSION;
     }
 
-    let splitsPromise = fetchSplitChanges(since, noCache, till, rbSince)
-      // Handle proxy errors with spec 1.3
+    let splitsPromise = fetchSplitChanges(since, noCache, till, settings.sync.flagSpecVersion === FLAG_SPEC_VERSION ? rbSince : undefined)
+      // Handle proxy error with spec 1.3
       .catch((err) => {
         if (err.statusCode === 400 && sdkEndpointOverriden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
-          _lastProxyCheckTimestamp = Date.now();
+          lastProxyCheckTimestamp = Date.now();
           settings.sync.flagSpecVersion = '1.2'; // fallback to 1.2 spec
           return fetchSplitChanges(since, noCache, till); // retry request without rbSince
         }
@@ -63,10 +65,10 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
         }
 
         // Proxy recovery
-        if (_lastProxyCheckTimestamp) {
-          _lastProxyCheckTimestamp = undefined;
+        if (lastProxyCheckTimestamp) {
+          lastProxyCheckTimestamp = undefined;
           return Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
-            .then(() => splitChangesFetcher(-1, undefined, undefined, -1));
+            .then(() => splitChangesFetcher(storage.splits.getChangeNumber() as number, undefined, undefined, storage.rbSegments.getChangeNumber() as number));
         }
 
         return data;
