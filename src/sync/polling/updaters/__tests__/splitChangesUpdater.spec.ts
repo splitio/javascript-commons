@@ -156,12 +156,6 @@ test('splitChangesUpdater / compute splits mutation with filters', () => {
 });
 
 describe('splitChangesUpdater', () => {
-
-  fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
-  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
-  const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges');
-  const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges);
-
   const splits = new SplitsCacheInMemory();
   const updateSplits = jest.spyOn(splits, 'update');
 
@@ -172,6 +166,11 @@ describe('splitChangesUpdater', () => {
   const registerSegments = jest.spyOn(segments, 'registerSegments');
 
   const storage = { splits, rbSegments, segments };
+
+  fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
+  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
+  const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges');
+  const splitChangesFetcher = splitChangesFetcherFactory(splitApi.fetchSplitChanges, fullSettings, storage);
 
   const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
   const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
