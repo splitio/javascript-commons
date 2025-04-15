@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER EQUAL / should return true ONLY when the value is equal to 10', function () {
+test('MATCHER EQUAL / should return true ONLY when the value is equal to 10', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.EQUAL_TO,

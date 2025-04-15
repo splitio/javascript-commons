@@ -1,5 +1,5 @@
 import { ISplitsCacheSync } from './types';
-import { ISplit } from '../dtos/types';
+import { IRBSegment, ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
 
@@ -72,8 +72,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
  * Given a parsed split, it returns a boolean flagging if its conditions use segments matchers (rules & whitelists).
  * This util is intended to simplify the implementation of `splitsCache::usesSegments` method
  */
-export function usesSegments(split: ISplit) {
-  const conditions = split.conditions || [];
+export function usesSegments(ruleEntity: ISplit | IRBSegment) {
+  const conditions = ruleEntity.conditions || [];
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
 
@@ -82,6 +82,9 @@ export function usesSegments(split: ISplit) {
       if (matcher === IN_SEGMENT || matcher === IN_LARGE_SEGMENT) return true;
     }
   }
+
+  const excluded = (ruleEntity as IRBSegment).excluded;
+  if (excluded && excluded.segments && excluded.segments.length > 0) return true;
 
   return false;
 }

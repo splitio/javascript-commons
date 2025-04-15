@@ -11,6 +11,7 @@ import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
 import { metadataBuilder } from '../utils';
+import { RBSegmentsCacheInRedis } from './RBSegmentsCacheInRedis';
 
 export interface InRedisStorageOptions {
   prefix?: string
@@ -50,6 +51,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
 
     return {
       splits: new SplitsCacheInRedis(log, keys, redisClient, settings.sync.__splitFiltersValidation),
+      rbSegments: new RBSegmentsCacheInRedis(log, keys, redisClient),
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
       impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),
       impressionCounts: impressionCountsCache,

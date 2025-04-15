@@ -43,10 +43,10 @@ export function pollingManagerCSFactory(
   // smart pausing
   readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
     if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
-    const splitsHaveSegments = storage.splits.usesSegments();
-    if (splitsHaveSegments !== mySegmentsSyncTask.isRunning()) {
-      log.info(POLLING_SMART_PAUSING, [splitsHaveSegments ? 'ON' : 'OFF']);
-      if (splitsHaveSegments) {
+    const usingSegments = storage.splits.usesSegments() || storage.rbSegments.usesSegments();
+    if (usingSegments !== mySegmentsSyncTask.isRunning()) {
+      log.info(POLLING_SMART_PAUSING, [usingSegments ? 'ON' : 'OFF']);
+      if (usingSegments) {
         startMySegmentsSyncTasks();
       } else {
         stopMySegmentsSyncTasks();
@@ -59,9 +59,9 @@ export function pollingManagerCSFactory(
 
     // smart ready
     function smartReady() {
-      if (!readiness.isReady() && !storage.splits.usesSegments()) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+      if (!readiness.isReady() && !storage.splits.usesSegments() && !storage.rbSegments.usesSegments()) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     }
-    if (!storage.splits.usesSegments()) setTimeout(smartReady, 0);
+    if (!storage.splits.usesSegments() && !storage.rbSegments.usesSegments()) setTimeout(smartReady, 0);
     else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
 
     mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
@@ -77,7 +77,7 @@ export function pollingManagerCSFactory(
       log.info(POLLING_START);
 
       splitsSyncTask.start();
-      if (storage.splits.usesSegments()) startMySegmentsSyncTasks();
+      if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) startMySegmentsSyncTasks();
     },
 
     // Stop periodic fetching (polling)

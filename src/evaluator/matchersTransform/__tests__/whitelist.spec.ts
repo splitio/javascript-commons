@@ -1,6 +1,6 @@
 import { whitelistTransform } from '../whitelist';
 
-test('TRANSFORMS / the whitelist array should be extracted', function () {
+test('TRANSFORMS / the whitelist array should be extracted', () => {
   let sample = {
     whitelist: [
       'u1',

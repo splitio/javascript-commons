@@ -4,7 +4,7 @@ import { ISplitCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('PARSER / if user.boolean is true then split 100%:on', async function () {
+test('PARSER / if user.boolean is true then split 100%:on', async () => {
 
   // @ts-ignore
   const evaluator = parser(loggerMock, [{
