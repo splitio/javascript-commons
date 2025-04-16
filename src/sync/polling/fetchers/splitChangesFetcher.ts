@@ -6,6 +6,7 @@ import { FLAG_SPEC_VERSION } from '../../../utils/constants';
 import { base } from '../../../utils/settingsValidation';
 import { ISplitChangesFetcher } from './types';
 import { LOG_PREFIX_SYNC_SPLITS } from '../../../logger/constants';
+import { checkIfServerSide } from '../../../utils/key';
 
 const PROXY_CHECK_INTERVAL_MILLIS_CS = 60 * 60 * 1000; // 1 hour in Client Side
 const PROXY_CHECK_INTERVAL_MILLIS_SS = 24 * PROXY_CHECK_INTERVAL_MILLIS_CS; // 24 hours in Server Side
@@ -22,7 +23,7 @@ function sdkEndpointOverriden(settings: ISettings) {
 export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
 
   const log = settings.log;
-  const PROXY_CHECK_INTERVAL_MILLIS = settings.core.key !== undefined ? PROXY_CHECK_INTERVAL_MILLIS_CS : PROXY_CHECK_INTERVAL_MILLIS_SS;
+  const PROXY_CHECK_INTERVAL_MILLIS = checkIfServerSide(settings) ? PROXY_CHECK_INTERVAL_MILLIS_SS : PROXY_CHECK_INTERVAL_MILLIS_CS;
   let lastProxyCheckTimestamp: number | undefined;
 
   return function splitChangesFetcher(
