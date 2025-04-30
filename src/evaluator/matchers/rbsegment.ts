@@ -35,8 +35,8 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
 
       if (excluded.keys && excluded.keys.indexOf(matchingKey) !== -1) return true;
 
-      const isInSegment = (excluded.segments || []).map(segmentName => {
-        return storage.segments.isInSegment(segmentName, matchingKey);
+      const isInSegment = (excluded.segments || []).map(segment => {
+        return storage.segments.isInSegment(segment.name, matchingKey);
       });
 
       return isInSegment.length && thenable(isInSegment[0]) ?

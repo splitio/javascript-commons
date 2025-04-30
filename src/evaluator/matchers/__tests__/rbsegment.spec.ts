@@ -24,7 +24,9 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
     status: 'ACTIVE',
     excluded: {
       keys: ['mauro@split.io', 'gaston@split.io'],
-      segments: ['segment_test']
+      segments: [
+        { type: 'regular', name: 'segment_test' }
+      ]
     },
     conditions: [
       {
