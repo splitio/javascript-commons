@@ -33,7 +33,7 @@ export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: type
   const { conditions = [], excluded } = ruleEntity as IRBSegment;
 
   const segments = new Set<string>(
-    excluded?.segments?.map(segment => segment.name) || []
+    excluded && excluded.segments ? excluded.segments.map(segment => segment.name) : []
   );
 
   for (let i = 0; i < conditions.length; i++) {
