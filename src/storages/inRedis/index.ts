@@ -34,7 +34,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
   const prefix = validatePrefix(options.prefix);
 
   function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
-    if (!RD) throw new Error('Redis storage is not available. Runtime environment must support CommonJS (`require`) to import the ioredis dependency.');
+    if (!RD) throw new Error('The SDK Redis storage is not available. Your runtime environment must support CommonJS (`require`) to import the ioredis dependency.');
 
     const { onReadyCb, settings, settings: { log } } = params;
     const metadata = metadataBuilder(settings);
