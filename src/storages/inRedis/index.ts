@@ -17,23 +17,29 @@ export interface InRedisStorageOptions {
   options?: Record<string, any>
 }
 
+let RD: typeof RedisAdapter | undefined;
+
+try {
+  // Using `require` to prevent error when bundling or importing the SDK in a .mjs file, since ioredis is a CommonJS module.
+  // Redis storage is not supported with .mjs files.
+  RD = require('./RedisAdapter').RedisAdapter;
+} catch (error) { /* empty */ }
+
 /**
  * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.js
  * @see {@link https://www.npmjs.com/package/ioredis}
  */
 export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
 
-  // Lazy loading to prevent error when bundling or importing the SDK in a .mjs file, since ioredis is a CommonJS module.
-  // Redis storage is not supported with .mjs files.
-  const RD = require('./RedisAdapter').RedisAdapter;
-
   const prefix = validatePrefix(options.prefix);
 
   function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+    if (!RD) throw new Error('Redis storage is not available. Runtime environment must support CommonJS (`require`) to import the ioredis dependency.');
+
     const { onReadyCb, settings, settings: { log } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
-    const redisClient: RedisAdapter = new RD(log, options.options || {});
+    const redisClient = new RD(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
     const impressionCountsCache = new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient);
     const uniqueKeysCache = new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient);
