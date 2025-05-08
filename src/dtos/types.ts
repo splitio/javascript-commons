@@ -200,7 +200,7 @@ export interface ISplitCondition {
 }
 
 export interface IExcludedSegments {
-  type: string,
+  type: 'standard' | 'large' | 'rule-based',
   name: string,
 }
 
