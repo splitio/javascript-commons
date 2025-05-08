@@ -15,7 +15,7 @@ const ConsentStatus = {
  * The public user consent API exposed via SplitFactory, used to control if the SDK tracks and sends impressions and events or not.
  */
 export function createUserConsentAPI(params: ISdkFactoryContext) {
-  const { settings, settings: { log }, syncManager, storage: { events, impressions, impressionCounts } } = params;
+  const { settings, settings: { log }, syncManager, storage: { events, impressions, impressionCounts, uniqueKeys } } = params;
 
   if (!isConsentGranted(settings)) log.info(USER_CONSENT_INITIAL, [settings.userConsent]);
 
@@ -41,7 +41,8 @@ export function createUserConsentAPI(params: ISdkFactoryContext) {
           // @ts-ignore, clear method is present in storage for standalone and partial consumer mode
           if (events.clear) events.clear(); // @ts-ignore
           if (impressions.clear) impressions.clear(); // @ts-ignore
-          if (impressionCounts && impressionCounts.clear) impressionCounts.clear();
+          if (impressionCounts.clear) impressionCounts.clear(); // @ts-ignore
+          if (uniqueKeys.clear) uniqueKeys.clear();
         }
       } else {
         log.info(USER_CONSENT_NOT_UPDATED, [newConsentStatus]);
