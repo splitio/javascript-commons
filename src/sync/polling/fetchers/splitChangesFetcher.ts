@@ -71,8 +71,11 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
         if (lastProxyCheckTimestamp) {
           log.info(LOG_PREFIX_SYNC_SPLITS + 'Proxy error recovered');
           lastProxyCheckTimestamp = undefined;
-          return Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
-            .then(() => splitChangesFetcher(storage.splits.getChangeNumber() as number, undefined, undefined, storage.rbSegments.getChangeNumber() as number));
+          return splitChangesFetcher(-1, undefined, undefined, -1)
+            .then((splitChangesResponse: ISplitChangesResponse) =>
+              Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
+                .then(() => splitChangesResponse)
+            );
         }
 
         return data;
