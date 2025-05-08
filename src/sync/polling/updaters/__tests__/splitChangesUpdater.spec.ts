@@ -14,6 +14,7 @@ import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
+import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -84,13 +85,31 @@ const testFFEmptySet: ISplit =
   conditions: [],
   sets: []
 };
+// @ts-ignore
+const rbsWithExcludedSegment: IRBSegment = {
+  name: 'rbs',
+  status: 'ACTIVE',
+  conditions: [],
+  excluded: {
+    segments: [{
+      type: 'standard',
+      name: 'C'
+    }, {
+      type: 'rule-based',
+      name: 'D'
+    }]
+  }
+};
 
 test('splitChangesUpdater / segments parser', () => {
+  let segments = parseSegments(activeSplitWithSegments as ISplit);
+  expect(segments).toEqual(new Set(['A', 'B']));
 
-  const segments = parseSegments(activeSplitWithSegments as ISplit);
+  segments = parseSegments(rbsWithExcludedSegment);
+  expect(segments).toEqual(new Set(['C']));
 
-  expect(segments.has('A')).toBe(true);
-  expect(segments.has('B')).toBe(true);
+  segments = parseSegments(rbsWithExcludedSegment, IN_RULE_BASED_SEGMENT);
+  expect(segments).toEqual(new Set(['D']));
 });
 
 test('splitChangesUpdater / compute splits mutation', () => {

@@ -35,8 +35,14 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
 
       if (excluded.keys && excluded.keys.indexOf(matchingKey) !== -1) return true;
 
-      const isInSegment = (excluded.segments || []).map(segmentName => {
-        return storage.segments.isInSegment(segmentName, matchingKey);
+      const isInSegment = (excluded.segments || []).map(({ type, name }) => {
+        return type === 'standard' ?
+          storage.segments.isInSegment(name, matchingKey) :
+          type === 'rule-based' ?
+            ruleBasedSegmentMatcherContext(name, storage, log)({ key, attributes }, splitEvaluator) :
+            type === 'large' && (storage as IStorageSync).largeSegments ?
+              (storage as IStorageSync).largeSegments!.isInSegment(name, matchingKey) :
+              false;
       });
 
       return isInSegment.length && thenable(isInSegment[0]) ?

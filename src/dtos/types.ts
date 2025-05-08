@@ -199,6 +199,11 @@ export interface ISplitCondition {
   conditionType?: 'ROLLOUT' | 'WHITELIST'
 }
 
+export interface IExcludedSegments {
+  type: 'standard' | 'large' | 'rule-based',
+  name: string,
+}
+
 export interface IRBSegment {
   name: string,
   changeNumber: number,
@@ -206,7 +211,7 @@ export interface IRBSegment {
   conditions?: ISplitCondition[],
   excluded?: {
     keys?: string[],
-    segments?: string[]
+    segments?: IExcludedSegments[]
   }
 }
 

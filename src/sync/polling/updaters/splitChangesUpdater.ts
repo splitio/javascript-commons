@@ -26,12 +26,20 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
 }
 
 /**
- * Collect segments from a raw split definition.
+ * Collect segments from a raw FF or RBS definition.
  * Exported for testing purposes.
  */
 export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
   const { conditions = [], excluded } = ruleEntity as IRBSegment;
-  const segments = new Set<string>(excluded && excluded.segments);
+
+  const segments = new Set<string>();
+  if (excluded && excluded.segments) {
+    excluded.segments.forEach(({ type, name }) => {
+      if ((type === 'standard' && matcherType === IN_SEGMENT) || (type === 'rule-based' && matcherType === IN_RULE_BASED_SEGMENT)) {
+        segments.add(name);
+      }
+    });
+  }
 
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
