@@ -1,5 +1,4 @@
 import { BrowserSignalListener } from '../browser';
-import { IEventsCacheSync, IImpressionCountsCacheSync, IImpressionsCacheSync, IStorageSync, ITelemetryCacheSync, IUniqueKeysCacheBase } from '../../storages/types';
 import { ISplitApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
@@ -30,42 +29,48 @@ const fakeUniqueKeys = {
 };
 
 // Storage with impressionsCount and telemetry cache
-const fakeStorageOptimized = { // @ts-expect-error
+const fakeStorageOptimized = {
   impressions: {
     isEmpty: jest.fn(),
     pop() {
       return [fakeImpression];
     }
-  } as IImpressionsCacheSync, // @ts-expect-error
+  },
   events: {
     isEmpty: jest.fn(),
     pop() {
       return [fakeEvent];
     }
-  } as IEventsCacheSync, // @ts-expect-error
+  },
   impressionCounts: {
     isEmpty: jest.fn(),
     pop() {
       return fakeImpressionCounts;
     }
-  } as IImpressionCountsCacheSync, // @ts-expect-error
+  },
   uniqueKeys: {
     isEmpty: jest.fn(),
     pop() {
       return fakeUniqueKeys;
     }
-  } as IUniqueKeysCacheBase, // @ts-expect-error
+  },
   telemetry: {
     isEmpty: jest.fn(),
     pop() {
       return 'fake telemetry';
     }
-  } as ITelemetryCacheSync
+  }
 };
 
 const fakeStorageDebug = {
   impressions: fakeStorageOptimized.impressions,
-  events: fakeStorageOptimized.events
+  events: fakeStorageOptimized.events,
+  impressionCounts: {
+    isEmpty: jest.fn(() => true)
+  },
+  uniqueKeys: {
+    isEmpty: jest.fn(() => true)
+  }
 };
 
 // @ts-expect-error
@@ -155,7 +160,8 @@ function assertStop(listener: BrowserSignalListener) {
 
 test('Browser JS listener / consumer mode', () => {
   // No SyncManager ==> consumer mode
-  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+  // @ts-expect-error
+  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized, fakeSplitApi);
 
   listener.start();
   assertStart(listener);
@@ -180,7 +186,7 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized, fakeSplitApi);
 
   listener.start();
   assertStart(listener);
@@ -205,7 +211,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageDebug, fakeSplitApi);
 
   listener.start();
   assertStart(listener);
@@ -234,7 +240,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
 test('Browser JS listener / standalone mode / Fallback to regular Fetch transport', () => {
 
   function runBrowserListener() { // @ts-expect-error
-    const listener = new BrowserSignalListener({}, fullSettings, fakeStorageDebug as IStorageSync, fakeSplitApi);
+    const listener = new BrowserSignalListener({}, fullSettings, fakeStorageDebug, fakeSplitApi);
     listener.start();
     // Trigger data flush
     triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
@@ -270,7 +276,7 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   const settings = { ...fullSettings };
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, settings, fakeStorageOptimized as IStorageSync, fakeSplitApi);
+  const listener = new BrowserSignalListener(syncManagerMock, settings, fakeStorageOptimized, fakeSplitApi);
 
   listener.start();
 
