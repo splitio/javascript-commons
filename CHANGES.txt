@@ -1,4 +1,4 @@
-2.3.0 (May XXX, 2025)
+2.3.0 (May 12, 2025)
  - Added support for targeting rules based on rule-based segments.
  - Updated the Redis storage to:
     - Avoid lazy require of the `ioredis` dependency when the SDK is initialized, and
