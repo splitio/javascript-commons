@@ -5,6 +5,7 @@ import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
 import { thenable } from '../../utils/promise/thenable';
 import { getMatching, keyParser } from '../../utils/key';
 import { parser } from '../parser';
+import { STANDARD_SEGMENT, RULE_BASED_SEGMENT, LARGE_SEGMENT } from '../../utils/constants';
 
 
 export function ruleBasedSegmentMatcherContext(segmentName: string, storage: IStorageSync | IStorageAsync, log: ILogger) {
@@ -36,11 +37,11 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
       if (excluded.keys && excluded.keys.indexOf(matchingKey) !== -1) return true;
 
       const isInSegment = (excluded.segments || []).map(({ type, name }) => {
-        return type === 'standard' ?
+        return type === STANDARD_SEGMENT ?
           storage.segments.isInSegment(name, matchingKey) :
-          type === 'rule-based' ?
+          type === RULE_BASED_SEGMENT ?
             ruleBasedSegmentMatcherContext(name, storage, log)({ key, attributes }, splitEvaluator) :
-            type === 'large' && (storage as IStorageSync).largeSegments ?
+            type === LARGE_SEGMENT && (storage as IStorageSync).largeSegments ?
               (storage as IStorageSync).largeSegments!.isInSegment(name, matchingKey) :
               false;
       });
