@@ -24,6 +24,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.ttCache = {};
     this.changeNumber = -1;
     this.segmentsCount = 0;
+    this.flagSetsCache = {};
   }
 
   addSplit(split: ISplit): boolean {

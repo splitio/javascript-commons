@@ -6,6 +6,7 @@ import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
@@ -36,11 +37,13 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
     const splits = new SplitsCacheInLocal(settings, keys);
+    const rbSegments = new RBSegmentsCacheInLocal(settings, keys);
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
     return {
       splits,
+      rbSegments,
       segments,
       largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
@@ -50,7 +53,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
-        return validateCache(options, settings, keys, splits, segments, largeSegments);
+        return validateCache(options, settings, keys, splits, rbSegments, segments, largeSegments);
       },
 
       destroy() { },
@@ -60,6 +63,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
 
         return {
           splits: this.splits,
+          rbSegments: this.rbSegments,
           segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey)),
           largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey)),
           impressions: this.impressions,

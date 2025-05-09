@@ -40,10 +40,10 @@ describe('splitApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe('sdk/segmentChanges/segmentName?since=-1&till=90');
 
-    splitApi.fetchSplitChanges(-1, false, 100);
+    splitApi.fetchSplitChanges(-1, false, 100, -1);
     [url, { headers }] = fetchMock.mock.calls[3];
     assertHeaders(settings, headers);
-    expect(url).toBe(expecteFlagsUrl(-1, 100, settings.validateFilters || false, settings));
+    expect(url).toBe(expectedFlagsUrl(-1, 100, settings.validateFilters || false, settings, -1));
 
     splitApi.postEventsBulk('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[4][1].headers);
@@ -66,9 +66,9 @@ describe('splitApi', () => {
     fetchMock.mockClear();
 
 
-    function expecteFlagsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings) {
+    function expectedFlagsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings, rbSince?: number) {
       const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
-      return `sdk/splitChanges?s=1.1&since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+      return `sdk/splitChanges?s=1.1&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
   });
 

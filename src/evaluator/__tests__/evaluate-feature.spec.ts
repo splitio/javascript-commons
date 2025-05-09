@@ -25,7 +25,7 @@ const mockStorage = {
   }
 };
 
-test('EVALUATOR / should return label exception, treatment control and config null on error', async function () {
+test('EVALUATOR / should return label exception, treatment control and config null on error', async () => {
   const expectedOutput = {
     treatment: 'control',
     label: EXCEPTION,
@@ -46,7 +46,7 @@ test('EVALUATOR / should return label exception, treatment control and config nu
 });
 
 
-test('EVALUATOR / should return right label, treatment and config if storage returns without errors.', async function () {
+test('EVALUATOR / should return right label, treatment and config if storage returns without errors.', async () => {
   const expectedOutput = {
     treatment: 'on', label: 'in segment all',
     config: '{color:\'black\'}', changeNumber: 1487277320548

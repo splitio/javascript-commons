@@ -95,6 +95,9 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       type === matcherTypes.LESS_THAN_OR_EQUAL_TO_SEMVER
     ) {
       value = stringMatcherData;
+    } else if (type === matcherTypes.IN_RULE_BASED_SEGMENT) {
+      value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
+      dataType = matcherDataTypes.NOT_SPECIFIED;
     }
 
     return {
