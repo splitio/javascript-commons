@@ -34,7 +34,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
   const prefix = validatePrefix(options.prefix);
 
   function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
-    if (!RD) throw new Error('The SDK Redis storage is not available. Your runtime environment must support CommonJS (`require`) to import the ioredis dependency.');
+    if (!RD) throw new Error('The SDK Redis storage is unavailable. Make sure your runtime environment supports CommonJS (`require`) so the `ioredis` dependency can be imported.');
 
     const { onReadyFromCacheCb, onReadyCb, settings, settings: { log } } = params;
     const metadata = metadataBuilder(settings);
@@ -44,10 +44,10 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
     const impressionCountsCache = new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient);
     const uniqueKeysCache = new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient);
 
-    // RedisAdapter queues operations before connection
+    // RedisAdapter lets queue operations before connected
     onReadyFromCacheCb();
 
-    // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
+    // Subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
       onReadyCb();
       impressionCountsCache.start();
