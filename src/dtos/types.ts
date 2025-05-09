@@ -210,8 +210,8 @@ export interface IRBSegment {
   status: 'ACTIVE' | 'ARCHIVED',
   conditions?: ISplitCondition[],
   excluded?: {
-    keys?: string[],
-    segments?: IExcludedSegment[]
+    keys?: string[] | null,
+    segments?: IExcludedSegment[] | null
   }
 }
 
