@@ -10,7 +10,7 @@ import { LOG_PREFIX_SYNC_SPLITS } from '../../../logger/constants';
 const PROXY_CHECK_INTERVAL_MILLIS_CS = 60 * 60 * 1000; // 1 hour in Client Side
 const PROXY_CHECK_INTERVAL_MILLIS_SS = 24 * PROXY_CHECK_INTERVAL_MILLIS_CS; // 24 hours in Server Side
 
-function sdkEndpointOverriden(settings: ISettings) {
+function sdkEndpointOverridden(settings: ISettings) {
   return settings.urls.sdk !== base.urls.sdk;
 }
 
@@ -42,8 +42,8 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
     let splitsPromise = fetchSplitChanges(since, noCache, till, settings.sync.flagSpecVersion === FLAG_SPEC_VERSION ? rbSince : undefined)
       // Handle proxy error with spec 1.3
       .catch((err) => {
-        if (err.statusCode === 400 && sdkEndpointOverriden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
-          log.error(LOG_PREFIX_SYNC_SPLITS + 'Proxy error detected. If you are using Split Proxy, please upgrade to latest version');
+        if (err.statusCode === 400 && sdkEndpointOverridden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
+          log.error(LOG_PREFIX_SYNC_SPLITS + 'Proxy error detected. Retrying with spec 1.2. If you are using Split Proxy, please upgrade to latest version');
           lastProxyCheckTimestamp = Date.now();
           settings.sync.flagSpecVersion = '1.2'; // fallback to 1.2 spec
           return fetchSplitChanges(since, noCache, till); // retry request without rbSince

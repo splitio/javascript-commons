@@ -15,6 +15,9 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
 
     function matchConditions(rbsegment: IRBSegment) {
       const conditions = rbsegment.conditions || [];
+
+      if (!conditions.length) return false;
+
       const evaluator = parser(log, conditions, storage);
 
       const evaluation = evaluator(

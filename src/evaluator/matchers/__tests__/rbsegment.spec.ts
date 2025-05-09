@@ -95,8 +95,8 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
     changeNumber: 123,
     status: 'ACTIVE',
     excluded: {
-      keys: [],
-      segments: []
+      keys: null,
+      segments: null,
     },
     conditions: [{
       matcherGroup: {
@@ -167,6 +167,12 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
         }
       }
     ],
+  },
+  'rule_based_segment_without_conditions': {
+    name: 'rule_based_segment_without_conditions',
+    changeNumber: 123,
+    status: 'ACTIVE',
+    conditions: []
   }
 };
 
@@ -291,6 +297,14 @@ describe.each([
 
     // should support feature flag dependency matcher
     expect(await matcherTrueAlwaysOn({ key: 'a-key' }, evaluateFeature)).toBe(true); // Parent split returns one of the expected treatments, so the matcher returns true
+
+    const matcherTrueRuleBasedSegmentWithoutConditions = matcherFactory(loggerMock, {
+      type: matcherTypes.IN_RULE_BASED_SEGMENT,
+      value: 'rule_based_segment_without_conditions'
+    } as IMatcherDto, mockStorageSync)!;
+
+    // should support rule-based segment without conditions
+    expect(await matcherTrueRuleBasedSegmentWithoutConditions({ key: 'a-key' }, evaluateFeature)).toBe(false);
   });
 
 });
