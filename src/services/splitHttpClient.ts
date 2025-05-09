@@ -46,7 +46,7 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
       // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#Checking_that_the_fetch_was_successful
       .then(response => {
         if (!response.ok) {
-          // `text()` promise might not settle in some implementations and cases (e.g. no content)
+          // timeout after 100ms because `text()` promise doesn't settle in some implementations and cases (e.g. no content)
           return timeout(100, response.text()).then(message => Promise.reject({ response, message }), () => Promise.reject({ response }));
         }
         latencyTracker();

@@ -95,8 +95,8 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
     changeNumber: 123,
     status: 'ACTIVE',
     excluded: { // @ts-ignore
-      keys: null,
-      segments: []
+      keys: null, // @ts-ignore
+      segments: null,
     },
     conditions: [{
       matcherGroup: {
