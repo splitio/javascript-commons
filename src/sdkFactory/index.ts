@@ -7,7 +7,7 @@ import SplitIO from '../../types/splitio';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
+import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
@@ -52,6 +52,9 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
       readiness.splits.emit(SDK_SPLITS_ARRIVED);
       readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
+    onReadyFromCacheCb: () => {
+      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+    }
   });
   // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
   const clients: Record<string, SplitIO.IBasicClient> = {};
