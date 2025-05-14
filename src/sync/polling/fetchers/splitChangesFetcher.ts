@@ -56,7 +56,7 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
     return splitsPromise
       .then(resp => resp.json())
       .then(data => {
-        // Using flag spec version 1.2
+        // Using flag spec version 1.2 or below
         if (data.splits) {
           return {
             ff: {
