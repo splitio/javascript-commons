@@ -6,6 +6,7 @@ import { IPlatform } from '../sdkFactory/types';
 import { decorateHeaders, removeNonISO88591 } from './decorateHeaders';
 import { timeout } from '../utils/promise/timeout';
 
+const PENDING_FETCH_ERROR_TIMEOUT = 100;
 const messageNoFetch = 'Global fetch API is not available.';
 
 /**
@@ -47,7 +48,7 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
       .then(response => {
         if (!response.ok) {
           // `text()` promise might not settle in some fetch implementations and cases (e.g. no content)
-          return timeout(100, response.text()).then(message => Promise.reject({ response, message }), () => Promise.reject({ response }));
+          return timeout(PENDING_FETCH_ERROR_TIMEOUT, response.text()).then(message => Promise.reject({ response, message }), () => Promise.reject({ response }));
         }
         latencyTracker();
         return response;

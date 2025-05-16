@@ -1,4 +1,4 @@
-2.3.0 (May 15, 2025)
+2.3.0 (May 16, 2025)
  - Updated the Redis storage to:
     - Avoid lazy require of the `ioredis` dependency when the SDK is initialized, and
     - Flag the SDK as ready from cache immediately to allow queueing feature flag evaluations before SDK_READY event is emitted (Reverted in v1.7.0).
