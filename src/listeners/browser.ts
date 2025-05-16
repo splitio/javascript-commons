@@ -84,9 +84,8 @@ export class BrowserSignalListener implements ISignalListener {
 
       this._flushData(events + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
       this._flushData(events + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
-      if (this.storage.impressionCounts) this._flushData(events + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
-      // @ts-ignore
-      if (this.storage.uniqueKeys) this._flushData(telemetry + '/v1/keys/cs/beacon', this.storage.uniqueKeys, this.serviceApi.postUniqueKeysBulkCs);
+      this._flushData(events + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+      this._flushData(telemetry + '/v1/keys/cs/beacon', this.storage.uniqueKeys, this.serviceApi.postUniqueKeysBulkCs);
     }
 
     // Flush telemetry data

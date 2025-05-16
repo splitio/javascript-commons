@@ -1,3 +1,9 @@
+2.3.0 (May 16, 2025)
+ - Updated the Redis storage to:
+    - Avoid lazy require of the `ioredis` dependency when the SDK is initialized, and
+    - Flag the SDK as ready from cache immediately to allow queueing feature flag evaluations before SDK_READY event is emitted (Reverted in v1.7.0).
+ - Bugfix - Enhanced HTTP client module to implement timeouts for failing requests that might otherwise remain pending indefinitely on some Fetch API implementations.
+
 2.2.0 (March 28, 2025)
  - Added a new optional argument to the client `getTreatment` methods to allow passing additional evaluation options, such as a map of properties to append to the generated impressions sent to Split backend. Read more in our docs.
  - Added two new configuration options for the SDK storage in browsers when using storage type `LOCALSTORAGE`:
@@ -9,21 +15,21 @@
  - Added support for the new impressions tracking toggle available on feature flags, both respecting the setting and including the new field being returned on `SplitView` type objects. Read more in our docs.
 
 2.0.3 (January 9, 2025)
- - Bugfixing - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).
+ - Bugfix - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).
 
 2.0.2 (December 3, 2024)
  - Updated the factory `init` and `destroy` methods to support re-initialization after destruction. This update ensures compatibility of the React SDK with React Strict Mode, where the factory's `init` and `destroy` effects are executed an extra time to validate proper resource cleanup.
- - Bugfixing - Sanitize the `SplitSDKMachineName` header value to avoid exceptions on HTTP/S requests when it contains non ISO-8859-1 characters (Related to issue https://github.com/splitio/javascript-client/issues/847).
+ - Bugfix - Sanitize the `SplitSDKMachineName` header value to avoid exceptions on HTTP/S requests when it contains non ISO-8859-1 characters (Related to issue https://github.com/splitio/javascript-client/issues/847).
 
 2.0.1 (November 25, 2024)
- - Bugfixing - Fixed an issue with the SDK_UPDATE event on server-side, where it was not being emitted if there was an empty segment and the SDK received a feature flag update notification.
+ - Bugfix - Fixed an issue with the SDK_UPDATE event on server-side, where it was not being emitted if there was an empty segment and the SDK received a feature flag update notification.
 
 2.0.0 (November 1, 2024)
  - Added support for targeting rules based on large segments.
  - Added `factory.destroy()` method, which invokes the `destroy` method on all SDK clients created by the factory.
  - Added `SplitIO` namespace with the public TypeScript definitions to be reused by the SDKs.
  - Updated the handling of timers and async operations inside an `init` factory method to enable lazy initialization of the SDK in standalone mode. This update is intended for the React SDK.
- - Bugfixing - Fixed an issue with the server-side polling manager that caused dangling timers when the SDK was destroyed before it was ready.
+ - Bugfix - Fixed an issue with the server-side polling manager that caused dangling timers when the SDK was destroyed before it was ready.
  - BREAKING CHANGES:
    - Updated default flag spec version to 1.2, which requires Split Proxy v5.9.0 or higher.
    - Removed `/mySegments` endpoint from SplitAPI module, as it is replaced by `/memberships` endpoint.
@@ -42,8 +48,8 @@
 1.16.0 (June 13, 2024)
  - Added the `getOptions` method to the `IPlatform` interface to allow the SDK to pass request options to the `fetch` function and `EventSource` constructor when fetching data from the Split servers. The method is optional and, if provided, it is called twice: first for the `fetch` options and then for the `EventSource` options. Useful for advanced use cases like configuring a proxy or validating HTTPS certificates in Node.js.
  - Updated the Redis storage to lazily import the `ioredis` dependency when the storage is created. This prevents errors when the SDK is imported or bundled in a .mjs file, as `ioredis` is a CommonJS module.
- - Bugfixing - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
- - Bugfixing - Fixed localhost mode to emit SDK_UPDATE when mocked feature flags are updated in the `features` object map of the config object (Related to issue https://github.com/splitio/javascript-browser-client/issues/119).
+ - Bugfix - Restored some input validation error logs that were removed in version 1.12.0. The logs inform the user when the `getTreatment(s)` methods are called with an invalid value as feature flag name or flag set name.
+ - Bugfix - Fixed localhost mode to emit SDK_UPDATE when mocked feature flags are updated in the `features` object map of the config object (Related to issue https://github.com/splitio/javascript-browser-client/issues/119).
 
 1.15.0 (May 13, 2024)
  - Added an optional settings validation parameter to let overwrite the default flag spec version, used by the JS Synchronizer.
@@ -61,13 +67,13 @@
 
 1.12.1 (December 12, 2023)
  - Updated PluggableStorage, for producer mode, and LocalStorage, for standalone mode, to clear the storage before initiating the synchronization process if it was previously synchronized with a different SDK key (i.e., a different environment) or different Split Filter criteria.
- - Bugfixing - Fixed an issue when tracking telemetry latencies for the new `getTreatmentsByFlagSet(s)` methods in Redis and Pluggable storages, which was causing the SDK to not track those stats.
+ - Bugfix - Fixed an issue when tracking telemetry latencies for the new `getTreatmentsByFlagSet(s)` methods in Redis and Pluggable storages, which was causing the SDK to not track those stats.
 
 1.12.0 (December 4, 2023)
  - Added support for Flag Sets in "consumer" and "partial consumer" modes for Pluggable and Redis storages.
  - Updated evaluation flow to log a warning when using flag sets that don't contain cached feature flags.
  - Updated Redis adapter to handle timeouts and queueing of some missing commands: 'hincrby', 'popNRaw', and 'pipeline.exec'.
- - Bugfixing - Fixed manager methods in consumer modes to return results in a promise when the SDK is not operational (not ready or destroyed).
+ - Bugfix - Fixed manager methods in consumer modes to return results in a promise when the SDK is not operational (not ready or destroyed).
 
 1.11.0 (November 3, 2023)
  - Added support for Flag Sets on the SDK, which enables grouping feature flags and interacting with the group rather than individually (more details in our documentation):
@@ -77,7 +83,7 @@
    - Added a new optional Split Filter configuration option. This allows the SDK and Split services to only synchronize the flags in the specified flag sets, avoiding unused or unwanted flags from being synced on the SDK instance, bringing all the benefits from a reduced payload.
      - Note: Only applicable when the SDK is in charge of the rollout data synchronization. When not applicable, the SDK will log a warning on init.
    - Added `sets` property to the `SplitView` object returned by the `split` and `splits` methods of the SDK manager to expose flag sets on flag views.
- - Bugfixing - Fixed SDK key validation in Node.js to ensure the SDK_READY_TIMED_OUT event is emitted when a client-side type SDK key is provided instead of a server-side one (Related to issue https://github.com/splitio/javascript-client/issues/768).
+ - Bugfix - Fixed SDK key validation in Node.js to ensure the SDK_READY_TIMED_OUT event is emitted when a client-side type SDK key is provided instead of a server-side one (Related to issue https://github.com/splitio/javascript-client/issues/768).
 
 1.10.0 (October 20, 2023)
  - Added `defaultTreatment` property to the `SplitView` object returned by the `split` and `splits` methods of the SDK manager (Related to issue https://github.com/splitio/javascript-commons/issues/225).
@@ -96,7 +102,7 @@
 1.8.3 (June 29, 2023)
  - Updated some transitive dependencies for vulnerability fixes.
  - Updated SDK_READY_TIMED_OUT event to be emitted immediately when a connection error occurs using pluggable storage (i.e., when the wrapper `connect` promise is rejected) in consumer and partial consumer modes.
- - Bugfixing - The `destroy` method has been updated to immediately flag the SDK client as destroyed, to prevent unexpected behaviours when `getTreatment` and `track` methods are called synchronously after `destroy` method is called.
+ - Bugfix - The `destroy` method has been updated to immediately flag the SDK client as destroyed, to prevent unexpected behaviours when `getTreatment` and `track` methods are called synchronously after `destroy` method is called.
 
 1.8.2 (May 15, 2023)
  - Updated terminology on the SDKs codebase to be more aligned with current standard without causing a breaking change. The core change is the term split for feature flag on things like logs and IntelliSense comments.
@@ -112,10 +118,10 @@
 1.7.3 (December 16, 2022)
  - Updated unique keys cache for Redis and Pluggable storages to optimize the usage of the underlying storage.
  - Updated some transitive dependencies for vulnerability fixes.
- - Bugfixing - Updated events and impressions cache in localhost mode in order to avoid memory leaks (Related to issue https://github.com/splitio/javascript-commons/issues/181).
+ - Bugfix - Updated events and impressions cache in localhost mode in order to avoid memory leaks (Related to issue https://github.com/splitio/javascript-commons/issues/181).
 
 1.7.2 (October 14, 2022)
- - Bugfixing - Handle `Navigator.sendBeacon` API exceptions in the browser, and fallback to regular Fetch/XHR transport in case of error.
+ - Bugfix - Handle `Navigator.sendBeacon` API exceptions in the browser, and fallback to regular Fetch/XHR transport in case of error.
 
 1.7.1 (October 5, 2022)
  - Updated default value of `scheduler.featuresRefreshRate` config parameter to 60 seconds.
@@ -133,7 +139,7 @@
  - Added `autoRequire` configuration option to the Google Analytics to Split integration, which takes care of requiring the splitTracker plugin on trackers dynamically created by Google tag managers (See https://help.split.io/hc/en-us/articles/360040838752#set-up-with-gtm-and-gtag.js).
  - Updated browser listener to push remaining impressions and events on 'visibilitychange' and 'pagehide' DOM events, instead of 'unload', which is not reliable in modern mobile and desktop Web browsers.
  - Updated the synchronization flow to be more reliable in the event of an edge case generating delay in cache purge propagation, keeping the SDK cache properly synced.
- - Bugfixing - Removed js-yaml dependency to avoid resolution to an incompatible version on certain npm versions when installing third-party dependencies that also define js-yaml as transitive dependency (Related to issue https://github.com/splitio/javascript-client/issues/662).
+ - Bugfix - Removed js-yaml dependency to avoid resolution to an incompatible version on certain npm versions when installing third-party dependencies that also define js-yaml as transitive dependency (Related to issue https://github.com/splitio/javascript-client/issues/662).
 
 1.5.0 (June 29, 2022)
  - Added a new config option to control the tasks that listen or poll for updates on feature flags and segments, via the new config `sync.enabled`. Running online, Split SDK will always pull the most recent updates upon initialization, this only affects updates fetching on a running instance. Useful when a consistent session experience is a must or to save resources when updates are not being used.
@@ -141,16 +147,16 @@
  - Updated submitters logic, to avoid duplicating the post of impressions to Split cloud when the SDK is destroyed while its periodic post of impressions is running.
 
 1.4.1 (June 13, 2022)
- - Bugfixing - Updated submitters logic, to avoid dropping impressions and events that are being tracked while POST request is pending.
+ - Bugfix - Updated submitters logic, to avoid dropping impressions and events that are being tracked while POST request is pending.
 
 1.4.0 (May 24, 2022)
  - Added `scheduler.telemetryRefreshRate` property to SDK configuration, and deprecated `scheduler.metricsRefreshRate` property.
  - Updated SDK telemetry storage, metrics and updater to be more effective and send less often.
- - Bugfixing - Updated default values for `scheduler.impressionsRefreshRate` config parameter: 300s for OPTIMIZED impression mode and 60s for DEBUG impression mode.
+ - Bugfix - Updated default values for `scheduler.impressionsRefreshRate` config parameter: 300s for OPTIMIZED impression mode and 60s for DEBUG impression mode.
 
 1.3.1 (April 19, 2022)
- - Bugfixing - Added peer dependencies to avoid issues when requiring some third-party dependencies used by modules of the package (Related to issue https://github.com/splitio/javascript-client/issues/662).
- - Bugfixing - Updated `ready` method to rejects the promise with an Error object instead of a string value (Related to issue https://github.com/splitio/javascript-client/issues/654).
+ - Bugfix - Added peer dependencies to avoid issues when requiring some third-party dependencies used by modules of the package (Related to issue https://github.com/splitio/javascript-client/issues/662).
+ - Bugfix - Updated `ready` method to rejects the promise with an Error object instead of a string value (Related to issue https://github.com/splitio/javascript-client/issues/654).
 
 1.3.0 (April 6, 2022)
  - Added user consent feature to allow delaying or disabling the data tracking from SDK until user consent is explicitly granted or declined. Read more in our docs.
@@ -159,12 +165,12 @@
  - Updated format for MySegments keys in LocalStorage, keeping backwards compatibility (issue https://github.com/splitio/javascript-client/issues/638).
  - Updated some modules due to general polishing and refactors, including updates in some log messages.
  - Updated some dependencies for vulnerability fixes.
- - Bugfixing - Updated internal isObject utility function, to avoid unexpected behaviors on frameworks and libraries that uses multiple VM contexts, like NuxtJS dev server.
- - Bugfixing - Fixed validation of `core.key` SDK configuration param, to parse it into a string and log a warning when passing a number (Related to issue https://github.com/splitio/react-native-client/issues/19).
- - Bugfixing - Fixed validation of `sync.impressionsMode` SDK configuration param, to avoid an exception on SplitFactory instantiation when passing a non-string value.
- - Bugfixing - Fixed an issue with `connectionTimeout` options params of Redis storage, that was being ignored and not passed down to the underlying ioredis client.
- - Bugfixing - Fixed streaming synchronization issue with multiple clients.
- - Bugfixing - Fixed issue with internal Map ponyfill that results in logger not working properly on IE11 browser.
+ - Bugfix - Updated internal isObject utility function, to avoid unexpected behaviors on frameworks and libraries that uses multiple VM contexts, like NuxtJS dev server.
+ - Bugfix - Fixed validation of `core.key` SDK configuration param, to parse it into a string and log a warning when passing a number (Related to issue https://github.com/splitio/react-native-client/issues/19).
+ - Bugfix - Fixed validation of `sync.impressionsMode` SDK configuration param, to avoid an exception on SplitFactory instantiation when passing a non-string value.
+ - Bugfix - Fixed an issue with `connectionTimeout` options params of Redis storage, that was being ignored and not passed down to the underlying ioredis client.
+ - Bugfix - Fixed streaming synchronization issue with multiple clients.
+ - Bugfix - Fixed issue with internal Map ponyfill that results in logger not working properly on IE11 browser.
 
 1.2.0 (January 19, 2022)
  - Added support to SDK clients on browser to optionally bind attributes to the client, keeping these loaded within the SDK along with the user ID, for easier usage when requesting flag.
@@ -174,7 +180,7 @@
   customers to implement this caching with any storage technology of choice and connect it to the SDK instance to be used instead of its default in-memory storage.
  - Updated multiple modules due to general polishing and improvements, including the replacement of default exports with named exports, to avoid runtime errors with some particular configurations of Webpack projects.
  - Updated ioredis dependency for vulnerability fixes.
- - Bugfixing - Fixed issue returning dynamic configs if treatment name contains a dot (".").
+ - Bugfix - Fixed issue returning dynamic configs if treatment name contains a dot (".").
 
 1.0.0 (October 20, 2021)
  - BREAKING CHANGE on multiple modules due to general polishing, improvements and bug fixes. In most cases the change is to use named exports. This affected mostly modules related with synchronization and storages.
