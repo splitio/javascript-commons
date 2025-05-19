@@ -504,6 +504,7 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
+  onReadyFromCacheCb: () => void,
 }
 
 

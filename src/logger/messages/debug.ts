@@ -22,8 +22,8 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   // synchronizer
   [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Feature flags data: \n%s'],
   [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up feature flags update using since = %s and rbSince = %s.'],
-  [c.SYNC_SPLITS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New feature flags %s. Removed feature flags %s.'],
-  [c.SYNC_RBS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New rule-based segments %s. Removed rule-based segments %s.'],
+  [c.SYNC_SPLITS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New feature flags: %s. Removed feature flags: %s.'],
+  [c.SYNC_RBS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New rule-based segments: %s. Removed rule-based segments: %s.'],
   [c.STREAMING_NEW_MESSAGE, c.LOG_PREFIX_SYNC_STREAMING + 'New SSE message received, with data: %s.'],
   [c.SYNC_TASK_START, c.LOG_PREFIX_SYNC + ': Starting %s. Running each %s millis'],
   [c.SYNC_TASK_EXECUTE, c.LOG_PREFIX_SYNC + ': Running %s'],

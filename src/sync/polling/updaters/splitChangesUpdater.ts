@@ -7,7 +7,7 @@ import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
-import { IN_RULE_BASED_SEGMENT, IN_SEGMENT } from '../../../utils/constants';
+import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 
@@ -26,12 +26,20 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
 }
 
 /**
- * Collect segments from a raw split definition.
+ * Collect segments from a raw FF or RBS definition.
  * Exported for testing purposes.
  */
 export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
   const { conditions = [], excluded } = ruleEntity as IRBSegment;
-  const segments = new Set<string>(excluded && excluded.segments);
+
+  const segments = new Set<string>();
+  if (excluded && excluded.segments) {
+    excluded.segments.forEach(({ type, name }) => {
+      if ((type === STANDARD_SEGMENT && matcherType === IN_SEGMENT) || (type === RULE_BASED_SEGMENT && matcherType === IN_RULE_BASED_SEGMENT)) {
+        segments.add(name);
+      }
+    });
+  }
 
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;
