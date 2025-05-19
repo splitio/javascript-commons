@@ -458,6 +458,7 @@ export interface IStorageBase<
   splits: TSplitsCache,
   rbSegments: TRBSegmentsCache,
   segments: TSegmentsCache,
+  largeSegments?: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts: TImpressionsCountCache,
   events: TEventsCache,
