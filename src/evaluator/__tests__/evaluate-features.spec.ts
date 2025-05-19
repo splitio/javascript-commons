@@ -42,7 +42,7 @@ const mockStorage = {
   }
 };
 
-test('EVALUATOR - Multiple evaluations at once  / should return label exception, treatment control and config null on error', async function () {
+test('EVALUATOR - Multiple evaluations at once  / should return label exception, treatment control and config null on error', async () => {
   const expectedOutput = {
     throw_exception: {
       treatment: 'control',
@@ -65,7 +65,7 @@ test('EVALUATOR - Multiple evaluations at once  / should return label exception,
 });
 
 
-test('EVALUATOR - Multiple evaluations at once / should return right labels, treatments and configs if storage returns without errors.', async function () {
+test('EVALUATOR - Multiple evaluations at once / should return right labels, treatments and configs if storage returns without errors.', async () => {
   const expectedOutput = {
     config: {
       treatment: 'on', label: 'in segment all',

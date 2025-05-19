@@ -3,6 +3,7 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { getStorageHash } from '../KeyBuilder';
 import { LOG_PREFIX } from './constants';
 import type { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import type { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import type { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import SplitIO from '../../../types/splitio';
@@ -66,13 +67,14 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
+export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
   const currentTimestamp = Date.now();
   const isThereCache = splits.getChangeNumber() > -1;
 
   if (validateExpiration(options, settings, keys, currentTimestamp, isThereCache)) {
     splits.clear();
+    rbSegments.clear();
     segments.clear();
     largeSegments.clear();
 

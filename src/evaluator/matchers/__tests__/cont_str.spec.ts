@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER CONTAINS_STRING / should return true ONLY when the value is contained in ["roni", "bad", "ar"]', function () {
+test('MATCHER CONTAINS_STRING / should return true ONLY when the value is contained in ["roni", "bad", "ar"]', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.CONTAINS_STRING,

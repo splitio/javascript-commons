@@ -161,6 +161,9 @@ test('SPLITS CACHE / In Memory / flag set cache tests', () => {
 
   cache.addSplit(featureFlagWithoutFS);
   expect(cache.getNamesByFlagSets([])).toEqual([]);
+
+  cache.clear();
+  expect(cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, emptySet, emptySet]);
 });
 
 // if FlagSets are not defined, it should store all FlagSets in memory.

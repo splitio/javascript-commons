@@ -7,6 +7,7 @@ import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
+import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 
 /**
  * InMemory storage factory for standalone client-side SplitFactory
@@ -17,11 +18,13 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation } } } = params;
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
+  const rbSegments = new RBSegmentsCacheInMemory();
   const segments = new MySegmentsCacheInMemory();
   const largeSegments = new MySegmentsCacheInMemory();
 
   const storage = {
     splits,
+    rbSegments,
     segments,
     largeSegments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
@@ -36,6 +39,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     shared() {
       return {
         splits: this.splits,
+        rbSegments: this.rbSegments,
         segments: new MySegmentsCacheInMemory(),
         largeSegments: new MySegmentsCacheInMemory(),
         impressions: this.impressions,

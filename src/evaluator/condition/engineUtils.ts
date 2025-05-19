@@ -5,7 +5,7 @@ import { bucket } from '../../utils/murmur3/murmur3';
 /**
  * Get the treatment name given a key, a seed, and the percentage of each treatment.
  */
-export function getTreatment(log: ILogger, key: string, seed: number, treatments: { getTreatmentFor: (x: number) => string }) {
+export function getTreatment(log: ILogger, key: string, seed: number | undefined, treatments: { getTreatmentFor: (x: number) => string }) {
   const _bucket = bucket(key, seed);
 
   const treatment = treatments.getTreatmentFor(_bucket);

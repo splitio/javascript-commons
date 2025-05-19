@@ -155,14 +155,14 @@ export function syncManagerOnlineFactory(
             if (pushManager) {
               if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
-                if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+                if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
               } else {
                 // if not polling, we must execute the sync task for the initial fetch
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
             } else {
-              if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
+              if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
             }
           } else {
             if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
