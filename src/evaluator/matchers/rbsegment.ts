@@ -39,8 +39,8 @@ export function ruleBasedSegmentMatcherContext(segmentName: string, storage: ISt
         storage.segments.isInSegment(name, matchingKey) :
         type === RULE_BASED_SEGMENT ?
           ruleBasedSegmentMatcherContext(name, storage, log)({ key, attributes }, splitEvaluator) :
-          type === LARGE_SEGMENT && (storage as IStorageSync).largeSegments ?
-            (storage as IStorageSync).largeSegments!.isInSegment(name, matchingKey) :
+          type === LARGE_SEGMENT && storage.largeSegments ?
+            storage.largeSegments.isInSegment(name, matchingKey) :
             false;
     }
 
