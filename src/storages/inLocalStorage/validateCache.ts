@@ -16,11 +16,12 @@ const MILLIS_IN_A_DAY = 86400000;
  *
  * @returns `true` if cache should be cleared, `false` otherwise
  */
-function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
+function validateExpiration(options: SplitIO.InLocalStorageOptions & { storage: SplitIO.Storage }, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
   const { log } = settings;
+  const { storage } = options;
 
   // Check expiration
-  const lastUpdatedTimestamp = parseInt(localStorage.getItem(keys.buildLastUpdatedKey()) as string, 10);
+  const lastUpdatedTimestamp = parseInt(storage.getItem(keys.buildLastUpdatedKey()) as string, 10);
   if (!isNaNNumber(lastUpdatedTimestamp)) {
     const cacheExpirationInDays = isFiniteNumber(options.expirationDays) && options.expirationDays >= 1 ? options.expirationDays : DEFAULT_CACHE_EXPIRATION_IN_DAYS;
     const expirationTimestamp = currentTimestamp - MILLIS_IN_A_DAY * cacheExpirationInDays;
@@ -32,12 +33,12 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
 
   // Check hash
   const storageHashKey = keys.buildHashKey();
-  const storageHash = localStorage.getItem(storageHashKey);
+  const storageHash = storage.getItem(storageHashKey);
   const currentStorageHash = getStorageHash(settings);
 
   if (storageHash !== currentStorageHash) {
     try {
-      localStorage.setItem(storageHashKey, currentStorageHash);
+      storage.setItem(storageHashKey, currentStorageHash);
     } catch (e) {
       log.error(LOG_PREFIX + e);
     }
@@ -50,7 +51,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
 
   // Clear on init
   if (options.clearOnInit) {
-    const lastClearTimestamp = parseInt(localStorage.getItem(keys.buildLastClear()) as string, 10);
+    const lastClearTimestamp = parseInt(storage.getItem(keys.buildLastClear()) as string, 10);
 
     if (isNaNNumber(lastClearTimestamp) || lastClearTimestamp < currentTimestamp - MILLIS_IN_A_DAY) {
       log.info(LOG_PREFIX + 'clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
@@ -67,7 +68,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
+export function validateCache(options: SplitIO.InLocalStorageOptions & { storage: SplitIO.Storage }, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
 
   const currentTimestamp = Date.now();
   const isThereCache = splits.getChangeNumber() > -1;
@@ -80,7 +81,7 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, settings: 
 
     // Update last clear timestamp
     try {
-      localStorage.setItem(keys.buildLastClear(), currentTimestamp + '');
+      options.storage.setItem(keys.buildLastClear(), currentTimestamp + '');
     } catch (e) {
       settings.log.error(LOG_PREFIX + e);
     }

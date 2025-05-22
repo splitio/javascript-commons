@@ -6,7 +6,7 @@ import { fullSettings } from '../../../utils/settingsValidation/__tests__/settin
 
 
 test('SPLITS CACHE / LocalStorage', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   cache.clear();
 
@@ -37,7 +37,7 @@ test('SPLITS CACHE / LocalStorage', () => {
 });
 
 test('SPLITS CACHE / LocalStorage / Get Keys', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   cache.update([something, somethingElse], [], 1);
 
@@ -48,7 +48,7 @@ test('SPLITS CACHE / LocalStorage / Get Keys', () => {
 });
 
 test('SPLITS CACHE / LocalStorage / Update Splits', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   cache.update([something, somethingElse], [], 1);
 
@@ -59,7 +59,7 @@ test('SPLITS CACHE / LocalStorage / Update Splits', () => {
 });
 
 test('SPLITS CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   cache.update([
     { ...splitWithUserTT, name: 'split1' },
@@ -98,7 +98,7 @@ test('SPLITS CACHE / LocalStorage / trafficTypeExists and ttcache tests', () => 
 });
 
 test('SPLITS CACHE / LocalStorage / killLocally', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   cache.addSplit(something);
   cache.addSplit(somethingElse);
@@ -131,7 +131,7 @@ test('SPLITS CACHE / LocalStorage / killLocally', () => {
 });
 
 test('SPLITS CACHE / LocalStorage / usesSegments', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   expect(cache.usesSegments()).toBe(true); // true initially, until data is synchronized
   cache.setChangeNumber(1); // to indicate that data has been synced.
@@ -162,7 +162,7 @@ test('SPLITS CACHE / LocalStorage / flag set cache tests', () => {
         queryString: '&sets=e,n,o,x',
       }
     }
-  }, new KeyBuilderCS('SPLITIO', 'user'));
+  }, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   const emptySet = new Set([]);
 
@@ -203,7 +203,7 @@ test('SPLITS CACHE / LocalStorage / flag set cache tests', () => {
 
 // if FlagSets are not defined, it should store all FlagSets in memory.
 test('SPLIT CACHE / LocalStorage / flag set cache tests without filters', () => {
-  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+  const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
   const emptySet = new Set([]);
 

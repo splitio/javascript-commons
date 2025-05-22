@@ -4,8 +4,8 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('SEGMENT CACHE / in LocalStorage', () => {
   const caches = [
-    new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user')),
-    new MySegmentsCacheInLocal(loggerMock, myLargeSegmentsKeyBuilder('SPLITIO', 'user'))
+    new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'), localStorage),
+    new MySegmentsCacheInLocal(loggerMock, myLargeSegmentsKeyBuilder('SPLITIO', 'user'), localStorage)
   ];
 
   caches.forEach(cache => {
