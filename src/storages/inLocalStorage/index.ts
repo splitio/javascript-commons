@@ -9,7 +9,7 @@ import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { LOCALHOST_MODE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
@@ -31,7 +31,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       return InMemoryStorageCSFactory(params);
     }
 
-    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
+    const { onReadyFromCacheCb, settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
@@ -39,7 +39,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const segments = new MySegmentsCacheInLocal(log, keys);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
 
-    return {
+    const storage = {
       splits,
       segments,
       largeSegments,
@@ -48,6 +48,12 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
+
+      init() {
+        if (settings.mode === LOCALHOST_MODE || splits.getChangeNumber() > -1) {
+          Promise.resolve().then(onReadyFromCacheCb);
+        }
+      },
 
       validateCache() {
         return validateCache(options, settings, keys, splits, segments, largeSegments);
@@ -72,6 +78,18 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
         };
       },
     };
+
+    // @TODO revisit storage logic in localhost mode
+    // No tracking data in localhost mode to avoid memory leaks
+    if (params.settings.mode === LOCALHOST_MODE) {
+      const noopTrack = () => true;
+      storage.impressions.track = noopTrack;
+      storage.events.track = noopTrack;
+      if (storage.impressionCounts) storage.impressionCounts.track = noopTrack;
+      if (storage.uniqueKeys) storage.uniqueKeys.track = noopTrack;
+    }
+
+    return storage;
   }
 
   InLocalStorageCSFactory.type = STORAGE_LOCALSTORAGE;

@@ -433,6 +433,7 @@ export interface IStorageBase<
   events: TEventsCache,
   telemetry?: TTelemetryCache,
   uniqueKeys: TUniqueKeysCache,
+  init?: () => void | Promise<void>,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
 }
@@ -472,7 +473,7 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
-  onReadyFromCacheCb: () => void,
+  onReadyFromCacheCb: (error?: any) => void,
 }
 
 

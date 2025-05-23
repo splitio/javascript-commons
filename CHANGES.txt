@@ -1,3 +1,6 @@
+2.3.1 (May 23, 2025)
+ - Updated internal storage factory to emit the SDK_READY_FROM_CACHE event when it corresponds, to clean up the initialization flow.
+
 2.3.0 (May 16, 2025)
  - Updated the Redis storage to:
     - Avoid lazy require of the `ioredis` dependency when the SDK is initialized, and
