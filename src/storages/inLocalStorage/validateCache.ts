@@ -67,27 +67,28 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): boolean {
+export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
+  return new Promise<boolean>((resolve) => {
+    const currentTimestamp = Date.now();
+    const isThereCache = splits.getChangeNumber() > -1;
 
-  const currentTimestamp = Date.now();
-  const isThereCache = splits.getChangeNumber() > -1;
+    if (validateExpiration(options, settings, keys, currentTimestamp, isThereCache)) {
+      splits.clear();
+      rbSegments.clear();
+      segments.clear();
+      largeSegments.clear();
 
-  if (validateExpiration(options, settings, keys, currentTimestamp, isThereCache)) {
-    splits.clear();
-    rbSegments.clear();
-    segments.clear();
-    largeSegments.clear();
+      // Update last clear timestamp
+      try {
+        localStorage.setItem(keys.buildLastClear(), currentTimestamp + '');
+      } catch (e) {
+        settings.log.error(LOG_PREFIX + e);
+      }
 
-    // Update last clear timestamp
-    try {
-      localStorage.setItem(keys.buildLastClear(), currentTimestamp + '');
-    } catch (e) {
-      settings.log.error(LOG_PREFIX + e);
+      resolve(false);
     }
 
-    return false;
-  }
-
-  // Check if ready from cache
-  return isThereCache;
+    // Check if ready from cache
+    resolve(isThereCache);
+  });
 }
