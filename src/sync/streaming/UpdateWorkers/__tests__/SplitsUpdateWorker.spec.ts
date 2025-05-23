@@ -169,30 +169,30 @@ describe('SplitsUpdateWorker', () => {
   test('killSplit', async () => {
     // setup
     const cache = new SplitsCacheInMemory();
-    cache.addSplit('lol1', '{ "name": "something"}');
-    cache.addSplit('lol2', '{ "name": "something else"}');
+    cache.addSplit({ name: 'something'});
+    cache.addSplit({ name: 'something else'});
 
     const splitsSyncTask = splitsSyncTaskMock(cache);
     const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
-    splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'lol1', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
+    splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'something', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // synchronizes splits if `isExecuting` is false
     expect(splitsEventEmitterMock.emit.mock.calls).toEqual([[SDK_SPLITS_ARRIVED, true]]); // emits `SDK_SPLITS_ARRIVED` with `isSplitKill` flag in true, if split kill resolves with update
-    assertKilledSplit(cache, 100, 'lol1', 'off');
+    assertKilledSplit(cache, 100, 'something', 'off');
 
     // assert not killing split locally, not emitting SDK_SPLITS_ARRIVED event, and not synchronizes splits, if changeNumber is old
     splitsSyncTask.__resolveSplitsUpdaterCall(100);
     await new Promise(res => setTimeout(res));
     splitsSyncTask.execute.mockClear();
     splitsEventEmitterMock.emit.mockClear();
-    splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'lol1', defaultTreatment: 'on' });
+    splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'something', defaultTreatment: 'on' });
 
     await new Promise(res => setTimeout(res));
     expect(splitsSyncTask.execute).toBeCalledTimes(0); // doesn't synchronize splits if killLocally resolved without update
     expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
 
-    assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+    assertKilledSplit(cache, 100, 'something', 'off'); // calling `killLocally` with an old changeNumber made no effect
   });
 
   test('stop', async () => {
@@ -219,9 +219,9 @@ describe('SplitsUpdateWorker', () => {
       const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
-      splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
+      splitUpdateWorker.put({ changeNumber, pcn }, payload); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
-      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { changeNumber, payload }]);
     });
   });
 
@@ -265,7 +265,7 @@ describe('SplitsUpdateWorker', () => {
     splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
     splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { payload: notification.decoded, changeNumber }]);
 
   });
 });

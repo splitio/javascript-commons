@@ -7,7 +7,7 @@ import { setToArray } from '../../utils/lang/sets';
  * The `_cache` property is the object were items are stored.
  * Intended for testing purposes.
  *
- * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
+ * @param connDelay - delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
  */
 export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | Set<string>>, _setConnDelay(connDelay: number): void } {
 

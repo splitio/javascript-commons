@@ -10,11 +10,6 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
   private uniqueTrackerSize = 0;
   private uniqueKeysTracker: { [userKey: string]: Set<string> } = {};
 
-  /**
-   *
-   * @param impressionsQueueSize number of queued impressions to call onFullQueueCb.
-   * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
-   */
   constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
   }

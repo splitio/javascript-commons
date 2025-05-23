@@ -1,7 +1,6 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { LocalhostFromObject } from '../../../sync/offline/LocalhostFromObject';
 
 export const settingsWithKey = {
   core: {
@@ -62,7 +61,6 @@ export const fullSettings: ISettings = {
   sync: {
     splitFilters: [],
     impressionsMode: 'OPTIMIZED',
-    localhostMode: LocalhostFromObject(),
     __splitFiltersValidation: {
       validFilters: [],
       queryString: null,

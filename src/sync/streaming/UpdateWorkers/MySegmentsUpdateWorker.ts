@@ -3,10 +3,11 @@ import { Backoff } from '../../../utils/Backoff';
 import { IUpdateWorker } from './types';
 import { ITelemetryTracker } from '../../../trackers/types';
 import { MEMBERSHIPS } from '../../../utils/constants';
-import { ISegmentsCacheSync, IStorageSync } from '../../../storages/types';
+import { IStorageSync } from '../../../storages/types';
 import { ILogger } from '../../../logger/types';
 import { FETCH_BACKOFF_MAX_RETRIES } from './constants';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../constants';
+import { AbstractMySegmentsCacheSync } from '../../../storages/AbstractMySegmentsCacheSync';
 
 /**
  * MySegmentsUpdateWorker factory
@@ -16,7 +17,7 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
   let _delay: undefined | number;
   let _delayTimeoutID: any;
 
-  function createUpdateWorker(mySegmentsCache: ISegmentsCacheSync) {
+  function createUpdateWorker(mySegmentsCache: AbstractMySegmentsCacheSync) {
 
     let maxChangeNumber = 0; // keeps the maximum changeNumber among queued events
     let currentChangeNumber = -1;
@@ -87,9 +88,9 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
       /**
        * Invoked by NotificationProcessor on MY_(LARGE)_SEGMENTS_UPDATE notifications
        *
-       * @param changeNumber change number of the notification
-       * @param segmentsData data for KeyList or SegmentRemoval instant updates
-       * @param delay optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
+       * @param changeNumber - change number of the notification
+       * @param segmentsData - data for KeyList or SegmentRemoval instant updates
+       * @param delay - optional time to wait for BoundedFetchRequest or BoundedFetchRequest updates
        */
       put(mySegmentsData: Pick<MySegmentsData, 'type' | 'cn'>, payload?: Pick<MySegmentsData, 'added' | 'removed'>, delay?: number) {
         const { type, cn } = mySegmentsData;
@@ -117,8 +118,8 @@ export function MySegmentsUpdateWorker(log: ILogger, storage: Pick<IStorageSync,
   }
 
   const updateWorkers = {
-    [MEMBERSHIPS_MS_UPDATE]: createUpdateWorker(storage.segments),
-    [MEMBERSHIPS_LS_UPDATE]: createUpdateWorker(storage.largeSegments!),
+    [MEMBERSHIPS_MS_UPDATE]: createUpdateWorker(storage.segments as AbstractMySegmentsCacheSync),
+    [MEMBERSHIPS_LS_UPDATE]: createUpdateWorker(storage.largeSegments as AbstractMySegmentsCacheSync),
   };
 
   return {

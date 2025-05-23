@@ -1,5 +1,4 @@
-// @TODO upgrade fetch-mock when fetch-mock-jest vulnerabilities are fixed
-// https://www.wheresrhys.co.uk/fetch-mock/docs/fetch-mock/Usage/cheatsheet#local-fetch-with-jest
+// @TODO upgrade fetch-mock to fix vulnerabilities
 import fetchMockLib from 'fetch-mock';
 
 const fetchMock = fetchMockLib.sandbox();

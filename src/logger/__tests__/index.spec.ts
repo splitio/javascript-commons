@@ -1,4 +1,4 @@
-import { LogLevel } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { Logger, LogLevels, isLogLevelString, _sprintf } from '../index';
 
 // We'll set this only once. These are the constants we will use for
@@ -36,9 +36,9 @@ test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof logger.setLogLevel).toBe('function'); // instance.setLogLevel should be a method.
 });
 
-const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
+const LOG_LEVELS_IN_ORDER: SplitIO.LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
 /* Utility function to avoid repeating too much code */
-function testLogLevels(levelToTest: LogLevel) {
+function testLogLevels(levelToTest: SplitIO.LogLevel) {
   // Builds the expected message.
   const buildExpectedMessage = (lvl: string, category: string, msg: string, showLevel?: boolean) => {
     let res = '';
@@ -97,22 +97,22 @@ function testLogLevels(levelToTest: LogLevel) {
 
 }
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.debug', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.debug', () => {
   testLogLevels(LogLevels.DEBUG);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.info', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.info', () => {
   testLogLevels(LogLevels.INFO);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.warn', () => {
   testLogLevels(LogLevels.WARN);
 
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
 
 });

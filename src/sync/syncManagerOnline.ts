@@ -9,14 +9,15 @@ import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '..
 import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
+import { SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
 
 /**
  * Online SyncManager factory.
  * Can be used for server-side API, and client-side API with or without multiple clients.
  *
- * @param pollingManagerFactory allows to specialize the SyncManager for server-side or client-side API by passing
+ * @param pollingManagerFactory - allows to specialize the SyncManager for server-side or client-side API by passing
  * `pollingManagerSSFactory` or `pollingManagerCSFactory` respectively.
- * @param pushManagerFactory optional to build a SyncManager with or without streaming support
+ * @param pushManagerFactory - optional to build a SyncManager with or without streaming support
  */
 export function syncManagerOnlineFactory(
   pollingManagerFactory?: (params: ISdkFactoryContextSync) => IPollingManager,
@@ -28,7 +29,7 @@ export function syncManagerOnlineFactory(
    */
   return function (params: ISdkFactoryContextSync): ISyncManagerCS {
 
-    const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled } },  telemetryTracker } = params;
+    const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled } }, telemetryTracker, storage, readiness } = params;
 
     /** Polling Manager */
     const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
@@ -87,6 +88,11 @@ export function syncManagerOnlineFactory(
       start() {
         running = true;
 
+        if (startFirstTime) {
+          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
+          if (isCacheLoaded) Promise.resolve().then(() => { readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
+        }
+
         // start syncing splits and segments
         if (pollingManager) {
 
@@ -96,7 +102,6 @@ export function syncManagerOnlineFactory(
               // Doesn't call `syncAll` when the syncManager is resuming
               if (startFirstTime) {
                 pollingManager.syncAll();
-                startFirstTime = false;
               }
               pushManager.start();
             } else {
@@ -105,13 +110,14 @@ export function syncManagerOnlineFactory(
           } else {
             if (startFirstTime) {
               pollingManager.syncAll();
-              startFirstTime = false;
             }
           }
         }
 
         // start periodic data recording (events, impressions, telemetry).
         submitterManager.start(!isConsentGranted(settings));
+
+        startFirstTime = false;
       },
 
       /**
@@ -142,11 +148,12 @@ export function syncManagerOnlineFactory(
         if (!pollingManager) return;
 
         const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
+        if (syncEnabled && pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
 
         if (running) {
           if (syncEnabled) {
             if (pushManager) {
-              if (pollingManager!.isRunning()) {
+              if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
                 if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
               } else {
@@ -154,7 +161,6 @@ export function syncManagerOnlineFactory(
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
-              pushManager.add(matchingKey, mySegmentsSyncTask);
             } else {
               if (storage.splits.usesSegments()) mySegmentsSyncTask.start();
             }

@@ -64,7 +64,7 @@ export const base = {
   // Defines if the logs are enabled, SDK wide.
   debug: undefined,
 
-  // Defines the impression listener, but will only be used on NodeJS.
+  // Defines the impression listener.
   impressionListener: undefined,
 
   // Instance version.
@@ -80,7 +80,6 @@ export const base = {
     splitFilters: undefined,
     // impressions collection mode
     impressionsMode: OPTIMIZED,
-    localhostMode: undefined,
     enabled: true,
     flagSpecVersion: FLAG_SPEC_VERSION
   },
@@ -97,12 +96,12 @@ function fromSecondsToMillis(n: number) {
  * Validates the given config and use it to build a settings object.
  * NOTE: it doesn't validate the SDK Key. Call `validateApiKey` or `validateAndTrackApiKey` for that after settings validation.
  *
- * @param config user defined configuration
- * @param validationParams defaults and fields validators used to validate and creates a settings object from a given config
+ * @param config - user defined configuration
+ * @param validationParams - defaults and fields validators used to validate and creates a settings object from a given config
  */
 export function settingsValidation(config: unknown, validationParams: ISettingsValidationParams) {
 
-  const { defaults, runtime, storage, integrations, logger, localhost, consent, flagSpec } = validationParams;
+  const { defaults, runtime, storage, integrations, logger, consent, flagSpec } = validationParams;
 
   // creates a settings object merging base, defaults and config objects.
   const withDefaults = merge({}, base, defaults, config) as ISettings;
@@ -160,7 +159,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
     if (withDefaults.mode === LOCALHOST_MODE && maybeKey === undefined) {
       withDefaults.core.key = 'localhost_key';
     } else {
-      // Keeping same behaviour than JS SDK: if settings key or TT are invalid,
+      // Keeping same behavior than JS SDK: if settings key or TT are invalid,
       // `false` value is used as bound key/TT of the default client, which leads to some issues.
       // @ts-ignore, @TODO handle invalid keys as a non-recoverable error?
       withDefaults.core.key = validateKey(log, maybeKey, LOG_PREFIX_CLIENT_INSTANTIATION);
@@ -179,8 +178,6 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // `integrations` returns an array of valid integration items.
   // @ts-ignore, modify readonly prop
   if (integrations) withDefaults.integrations = integrations(withDefaults);
-
-  if (localhost) sync.localhostMode = localhost(withDefaults);
 
   // validate push options
   if (withDefaults.streamingEnabled !== false) { // @ts-ignore, modify readonly prop

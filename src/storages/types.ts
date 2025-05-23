@@ -1,7 +1,8 @@
+import SplitIO from '../../types/splitio';
 import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
-import { SplitIO, ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
 
 /**
  * Interface of a pluggable storage wrapper.
@@ -13,56 +14,50 @@ export interface IPluggableStorageWrapper {
   /**
    * Get the value of given `key`.
    *
-   * @function get
-   * @param {string} key Item to retrieve
-   * @returns {Promise<string | null>} A promise that resolves with the element value associated with the specified `key`,
+   * @param key - Item to retrieve
+   * @returns A promise that resolves with the element value associated with the specified `key`,
    * or null if the key does not exist. The promise rejects if the operation fails.
    */
   get: (key: string) => Promise<string | null>
   /**
    * Add or update an item with a specified `key` and `value`.
    *
-   * @function set
-   * @param {string} key Item to update
-   * @param {string} value Value to set
-   * @returns {Promise<void>} A promise that resolves if the operation success, whether the key was added or updated.
+   * @param key - Item to update
+   * @param value - Value to set
+   * @returns A promise that resolves if the operation success, whether the key was added or updated.
    * The promise rejects if the operation fails.
    */
   set: (key: string, value: string) => Promise<boolean | void>
   /**
    * Add or update an item with a specified `key` and `value`.
    *
-   * @function getAndSet
-   * @param {string} key Item to update
-   * @param {string} value Value to set
-   * @returns {Promise<string | null>} A promise that resolves with the previous value associated to the given `key`, or null if not set.
+   * @param key - Item to update
+   * @param value - Value to set
+   * @returns A promise that resolves with the previous value associated to the given `key`, or null if not set.
    * The promise rejects if the operation fails.
    */
   getAndSet: (key: string, value: string) => Promise<string | null>
   /**
    * Removes the specified item by `key`.
    *
-   * @function del
-   * @param {string} key Item to delete
-   * @returns {Promise<boolean>} A promise that resolves if the operation success, whether the key existed and was removed (resolves with true) or it didn't exist (resolves with false).
+   * @param key - Item to delete
+   * @returns A promise that resolves if the operation success, whether the key existed and was removed (resolves with true) or it didn't exist (resolves with false).
    * The promise rejects if the operation fails, for example, if there is a connection error.
    */
   del: (key: string) => Promise<boolean>
   /**
    * Returns all keys matching the given prefix.
    *
-   * @function getKeysByPrefix
-   * @param {string} prefix String prefix to match
-   * @returns {Promise<string[]>} A promise that resolves with the list of keys that match the given `prefix`.
+   * @param prefix - String prefix to match
+   * @returns A promise that resolves with the list of keys that match the given `prefix`.
    * The promise rejects if the operation fails.
    */
   getKeysByPrefix: (prefix: string) => Promise<string[]>
   /**
    * Returns the values of all given `keys`.
    *
-   * @function getMany
-   * @param {string[]} keys List of keys to retrieve
-   * @returns {Promise<(string | null)[]>} A promise that resolves with the list of items associated with the specified list of `keys`.
+   * @param keys - List of keys to retrieve
+   * @returns A promise that resolves with the list of items associated with the specified list of `keys`.
    * For every key that does not hold a string value or does not exist, null is returned. The promise rejects if the operation fails.
    */
   getMany: (keys: string[]) => Promise<(string | null)[]>
@@ -72,20 +67,18 @@ export interface IPluggableStorageWrapper {
   /**
    * Increments the number stored at `key` by `increment`, or set it to `increment` if the value doesn't exist.
    *
-   * @function incr
-   * @param {string} key Key to increment
-   * @param {number} increment Value to increment by. Defaults to 1.
-   * @returns {Promise<number>} A promise that resolves with the value of key after the increment. The promise rejects if the operation fails,
+   * @param key - Key to increment
+   * @param increment - Value to increment by. Defaults to 1.
+   * @returns A promise that resolves with the value of key after the increment. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
   incr: (key: string, increment?: number) => Promise<number>
   /**
    * Decrements the number stored at `key` by `decrement`, or set it to minus `decrement` if the value doesn't exist.
    *
-   * @function decr
-   * @param {string} key Key to decrement
-   * @param {number} decrement Value to decrement by. Defaults to 1.
-   * @returns {Promise<number>} A promise that resolves with the value of key after the decrement. The promise rejects if the operation fails,
+   * @param key - Key to decrement
+   * @param decrement - Value to decrement by. Defaults to 1.
+   * @returns A promise that resolves with the value of key after the decrement. The promise rejects if the operation fails,
    * for example, if there is a connection error or the key contains a string that can not be represented as integer.
    */
   decr: (key: string, decrement?: number) => Promise<number>
@@ -95,29 +88,26 @@ export interface IPluggableStorageWrapper {
   /**
    * Inserts given items at the tail of `key` list. If `key` does not exist, an empty list is created before pushing the items.
    *
-   * @function pushItems
-   * @param {string} key List key
-   * @param {string[]} items List of items to push
-   * @returns {Promise<void>} A promise that resolves if the operation success.
+   * @param key - List key
+   * @param items - List of items to push
+   * @returns A promise that resolves if the operation success.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a list.
    */
   pushItems: (key: string, items: string[]) => Promise<void>
   /**
    * Removes and returns the first `count` items from a list. If `key` does not exist, an empty list is items is returned.
    *
-   * @function popItems
-   * @param {string} key List key
-   * @param {number} count Number of items to pop
-   * @returns {Promise<string[]>} A promise that resolves with the list of removed items from the list, or an empty array when key does not exist.
+   * @param key - List key
+   * @param count - Number of items to pop
+   * @returns A promise that resolves with the list of removed items from the list, or an empty array when key does not exist.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a list.
    */
   popItems: (key: string, count: number) => Promise<string[]>
   /**
    * Returns the count of items in a list, or 0 if `key` does not exist.
    *
-   * @function getItemsCount
-   * @param {string} key List key
-   * @returns {Promise<number>} A promise that resolves with the number of items at the `key` list, or 0 when `key` does not exist.
+   * @param key - List key
+   * @returns A promise that resolves with the number of items at the `key` list, or 0 when `key` does not exist.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a list.
    */
   getItemsCount: (key: string) => Promise<number>
@@ -127,10 +117,9 @@ export interface IPluggableStorageWrapper {
   /**
    * Returns if item is a member of a set.
    *
-   * @function itemContains
-   * @param {string} key Set key
-   * @param {string} item Item value
-   * @returns {Promise<boolean>} A promise that resolves with true boolean value if `item` is a member of the set stored at `key`,
+   * @param key - Set key
+   * @param item - Item value
+   * @returns A promise that resolves with true boolean value if `item` is a member of the set stored at `key`,
    * or false if it is not a member or `key` set does not exist. The promise rejects if the operation fails, for example,
    * if there is a connection error or the key holds a value that is not a set.
    */
@@ -139,29 +128,26 @@ export interface IPluggableStorageWrapper {
    * Add the specified `items` to the set stored at `key`. Those items that are already part of the set are ignored.
    * If key does not exist, an empty set is created before adding the items.
    *
-   * @function addItems
-   * @param {string} key Set key
-   * @param {string} items Items to add
-   * @returns {Promise<boolean | void>} A promise that resolves if the operation success.
+   * @param key - Set key
+   * @param items - Items to add
+   * @returns A promise that resolves if the operation success.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
   addItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Remove the specified `items` from the set stored at `key`. Those items that are not part of the set are ignored.
    *
-   * @function removeItems
-   * @param {string} key Set key
-   * @param {string} items Items to remove
-   * @returns {Promise<boolean | void>} A promise that resolves if the operation success. If key does not exist, the promise also resolves.
+   * @param key - Set key
+   * @param items - Items to remove
+   * @returns A promise that resolves if the operation success. If key does not exist, the promise also resolves.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
   removeItems: (key: string, items: string[]) => Promise<boolean | void>
   /**
    * Returns all the items of the `key` set.
    *
-   * @function getItems
-   * @param {string} key Set key
-   * @returns {Promise<string[]>} A promise that resolves with the list of items. If key does not exist, the result is an empty list.
+   * @param key - Set key
+   * @returns A promise that resolves with the list of items. If key does not exist, the result is an empty list.
    * The promise rejects if the operation fails, for example, if there is a connection error or the key holds a value that is not a set.
    */
   getItems: (key: string) => Promise<string[]>
@@ -173,8 +159,7 @@ export interface IPluggableStorageWrapper {
    * It is meant for storages that requires to be connected to some database or server. Otherwise it can just return a resolved promise.
    * Note: will be called once on SplitFactory instantiation and once per each shared client instantiation.
    *
-   * @function connect
-   * @returns {Promise<void>} A promise that resolves when the wrapper successfully connect to the underlying storage.
+   * @returns A promise that resolves when the wrapper successfully connect to the underlying storage.
    * The promise rejects with the corresponding error if the wrapper fails to connect.
    */
   connect: () => Promise<void>
@@ -183,8 +168,7 @@ export interface IPluggableStorageWrapper {
    * It is meant for storages that requires to be closed, in order to release resources. Otherwise it can just return a resolved promise.
    * Note: will be called once on SplitFactory main client destroy.
    *
-   * @function disconnect
-   * @returns {Promise<void>} A promise that resolves when the operation ends.
+   * @returns A promise that resolves when the operation ends.
    * The promise never rejects.
    */
   disconnect: () => Promise<void>
@@ -193,11 +177,9 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): MaybeThenable<boolean[] | void>,
-  removeSplits(names: string[]): MaybeThenable<boolean[] | void>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): MaybeThenable<boolean>,
   getSplit(name: string): MaybeThenable<ISplit | null>,
   getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
-  setChangeNumber(changeNumber: number): MaybeThenable<boolean | void>,
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
   getChangeNumber(): MaybeThenable<number>,
   getAll(): MaybeThenable<ISplit[]>,
@@ -212,11 +194,9 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): boolean[],
-  removeSplits(names: string[]): boolean[],
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean,
   getSplit(name: string): ISplit | null,
   getSplits(names: string[]): Record<string, ISplit | null>,
-  setChangeNumber(changeNumber: number): boolean | void,
   getChangeNumber(): number,
   getAll(): ISplit[],
   getSplitNames(): string[],
@@ -228,11 +208,9 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>,
-  removeSplits(names: string[]): Promise<boolean[] | void>,
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean>,
   getSplit(name: string): Promise<ISplit | null>,
   getSplits(names: string[]): Promise<Record<string, ISplit | null>>,
-  setChangeNumber(changeNumber: number): Promise<boolean | void>,
   getChangeNumber(): Promise<number>,
   getAll(): Promise<ISplit[]>,
   getSplitNames(): Promise<string[]>,
@@ -249,7 +227,7 @@ export interface ISegmentsCacheBase {
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
   registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
-  getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
+  getChangeNumber(name: string): MaybeThenable<number | undefined> // only for Server-Side
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): MaybeThenable<boolean> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
 }
@@ -260,7 +238,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   registerSegments(names: string[]): boolean
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
-  getChangeNumber(name?: string): number
+  getChangeNumber(name?: string): number | undefined
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): boolean // only for Server-Side
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
@@ -270,7 +248,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   isInSegment(name: string, key: string): Promise<boolean>
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
-  getChangeNumber(name: string): Promise<number>
+  getChangeNumber(name: string): Promise<number | undefined>
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): Promise<boolean>
   clear(): Promise<boolean | void>
 }
@@ -279,7 +257,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
 
 export interface IImpressionsCacheBase {
   // Used by impressions tracker, in DEBUG and OPTIMIZED impression modes, to push impressions into the storage.
-  track(data: ImpressionDTO[]): MaybeThenable<void>
+  track(data: SplitIO.ImpressionDTO[]): MaybeThenable<void>
 }
 
 export interface IEventsCacheBase {
@@ -310,8 +288,8 @@ export interface IRecorderCacheSync<T> {
   pop(toMerge?: T): T
 }
 
-export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<ImpressionDTO[]> {
-  track(data: ImpressionDTO[]): void
+export interface IImpressionsCacheSync extends IImpressionsCacheBase, IRecorderCacheSync<SplitIO.ImpressionDTO[]> {
+  track(data: SplitIO.ImpressionDTO[]): void
   /* Registers callback for full queue */
   setOnFullQueueCb(cb: () => void): void
 }
@@ -344,7 +322,7 @@ export interface IRecorderCacheAsync<T> {
 export interface IImpressionsCacheAsync extends IImpressionsCacheBase, IRecorderCacheAsync<StoredImpressionWithMetadata[]> {
   // Consumer API method, used by impressions tracker (in standalone and consumer modes) to push data into.
   // The result promise can reject.
-  track(data: ImpressionDTO[]): Promise<void>
+  track(data: SplitIO.ImpressionDTO[]): Promise<void>
 }
 
 export interface IEventsCacheAsync extends IEventsCacheBase, IRecorderCacheAsync<StoredEventWithMetadata[]> {
@@ -440,21 +418,21 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
  */
 
 export interface IStorageBase<
-  TSplitsCache extends ISplitsCacheBase,
-  TSegmentsCache extends ISegmentsCacheBase,
-  TImpressionsCache extends IImpressionsCacheBase,
-  TImpressionsCountCache extends IImpressionCountsCacheBase,
-  TEventsCache extends IEventsCacheBase,
-  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync,
-  TUniqueKeysCache extends IUniqueKeysCacheBase
+  TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
+  TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
+  TImpressionsCountCache extends IImpressionCountsCacheBase = IImpressionCountsCacheBase,
+  TEventsCache extends IEventsCacheBase = IEventsCacheBase,
+  TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync = ITelemetryCacheSync | ITelemetryCacheAsync,
+  TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
   splits: TSplitsCache,
   segments: TSegmentsCache,
   impressions: TImpressionsCache,
-  impressionCounts?: TImpressionsCountCache,
+  impressionCounts: TImpressionsCountCache,
   events: TEventsCache,
   telemetry?: TTelemetryCache,
-  uniqueKeys?: TUniqueKeysCache,
+  uniqueKeys: TUniqueKeysCache,
   init?: () => void | Promise<void>,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
@@ -470,6 +448,7 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
+  validateCache?: () => boolean, // @TODO support async
   largeSegments?: ISegmentsCacheSync,
 }
 
@@ -497,14 +476,13 @@ export interface IStorageFactoryParams {
   onReadyFromCacheCb: (error?: any) => void,
 }
 
-export type StorageType = 'MEMORY' | 'LOCALSTORAGE' | 'REDIS' | 'PLUGGABLE';
 
-export type IStorageSyncFactory = {
-  readonly type: StorageType,
+export type IStorageSyncFactory = SplitIO.StorageSyncFactory & {
+  readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageSync
 }
 
-export type IStorageAsyncFactory = {
-  type: StorageType,
+export type IStorageAsyncFactory = SplitIO.StorageAsyncFactory & {
+  readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageAsync
 }

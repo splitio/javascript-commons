@@ -9,7 +9,7 @@ import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { metadata } from '../../storages/__tests__/KeyBuilder.spec';
 import { RedisAdapter } from '../../storages/inRedis/RedisAdapter';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 // @ts-expect-error
 const sdkReadinessManagerMock = {
@@ -33,7 +33,7 @@ describe('Manager with async cache', () => {
     const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
     const manager = sdkManagerFactory({ mode: 'consumer', log: loggerMock }, cache, sdkReadinessManagerMock);
     await cache.clear();
-    await cache.addSplit(splitObject.name, splitObject as any);
+    await cache.addSplit(splitObject as any);
 
     /** List all splits */
     const views = await manager.splits();

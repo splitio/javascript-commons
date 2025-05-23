@@ -8,12 +8,22 @@ import { objectAssign } from '../utils/lang/objectAssign';
  */
 export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
-  abstract addSplit(name: string, split: ISplit): Promise<boolean>
-  abstract addSplits(entries: [string, ISplit][]): Promise<boolean[] | void>
-  abstract removeSplits(names: string[]): Promise<boolean[] | void>
+  protected abstract addSplit(split: ISplit): Promise<boolean>
+  protected abstract removeSplit(name: string): Promise<boolean>
+  protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
+
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean> {
+    return Promise.all([
+      this.setChangeNumber(changeNumber),
+      Promise.all(toAdd.map(addedFF => this.addSplit(addedFF))),
+      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF.name)))
+    ]).then(([, added, removed]) => {
+      return added.some(result => result) || removed.some(result => result);
+    });
+  }
+
   abstract getSplit(name: string): Promise<ISplit | null>
   abstract getSplits(names: string[]): Promise<Record<string, ISplit | null>>
-  abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
   abstract getChangeNumber(): Promise<number>
   abstract getAll(): Promise<ISplit[]>
   abstract getSplitNames(): Promise<string[]>
@@ -31,10 +41,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
    * Kill `name` split and set `defaultTreatment` and `changeNumber`.
    * Used for SPLIT_KILL push notifications.
    *
-   * @param {string} name
-   * @param {string} defaultTreatment
-   * @param {number} changeNumber
-   * @returns {Promise} a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
+   * @returns a promise that is resolved once the split kill operation is performed. The fulfillment value is a boolean: `true` if the operation successed updating the split or `false` if no split is updated,
    * for instance, if the `changeNumber` is old, or if the split is not found (e.g., `/splitchanges` hasn't been fetched yet), or if the storage fails to apply the update.
    * The promise will never be rejected.
    */
@@ -47,7 +54,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
         newSplit.defaultTreatment = defaultTreatment;
         newSplit.changeNumber = changeNumber;
 
-        return this.addSplit(name, newSplit);
+        return this.addSplit(newSplit);
       }
       return false;
     }).catch(() => false);

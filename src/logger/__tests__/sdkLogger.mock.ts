@@ -1,4 +1,4 @@
-import { LogLevel } from '../../types';
+import SplitIO from '../../../types/splitio';
 
 export const loggerMock = {
   warn: jest.fn(),
@@ -16,6 +16,6 @@ export const loggerMock = {
   }
 };
 
-export function getLoggerLogLevel(logger: any): LogLevel | undefined {
+export function getLoggerLogLevel(logger: any): SplitIO.LogLevel | undefined {
   if (logger) return logger.options.logLevel;
 }

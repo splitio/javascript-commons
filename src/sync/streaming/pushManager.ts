@@ -349,12 +349,14 @@ export function pushManagerFactory(
           // Reconnects in case of a new client.
           // Run in next event-loop cycle to save authentication calls
           // in case multiple clients are created in the current cycle.
-          setTimeout(function checkForReconnect() {
-            if (connectForNewClient) {
-              connectForNewClient = false;
-              connectPush();
-            }
-          }, 0);
+          if (this.isRunning()) {
+            setTimeout(function checkForReconnect() {
+              if (connectForNewClient) {
+                connectForNewClient = false;
+                connectPush();
+              }
+            }, 0);
+          }
         }
       },
       // [Only for client-side]

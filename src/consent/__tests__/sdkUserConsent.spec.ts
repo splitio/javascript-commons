@@ -7,7 +7,9 @@ test('createUserConsentAPI', () => {
   const syncManager = { submitterManager: syncTaskFactory() };
   const storage = {
     events: { clear: jest.fn() },
-    impressions: { clear: jest.fn() }
+    impressions: { clear: jest.fn() },
+    impressionCounts: { clear: jest.fn() },
+    uniqueKeys: { clear: jest.fn() }
   };
 
   // @ts-ignore

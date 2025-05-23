@@ -18,7 +18,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],
   // input validation
   [c.WARN_SETTING_NULL, '%s: Property "%s" is of invalid type. Setting value to null.'],
-  [c.WARN_TRIMMING_PROPERTIES, '%s: Event has more than 300 properties. Some of them will be trimmed when processed.'],
+  [c.WARN_TRIMMING_PROPERTIES, '%s: more than 300 properties were provided. Some of them will be trimmed when processed.'],
   [c.WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [c.WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
   [c.WARN_NOT_EXISTENT_SPLIT, '%s: feature flag "%s" does not exist in this environment. Please double check what feature flags exist in the Split user interface.'],

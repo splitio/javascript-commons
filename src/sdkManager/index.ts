@@ -5,7 +5,8 @@ import { validateSplit, validateSplitExistence, validateIfNotDestroyed, validate
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
@@ -30,7 +31,8 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     treatments: collectTreatments(splitObject),
     configs: splitObject.configurations || {},
     sets: splitObject.sets || [],
-    defaultTreatment: splitObject.defaultTreatment
+    defaultTreatment: splitObject.defaultTreatment,
+    impressionsDisabled: splitObject.impressionsDisabled === true
   };
 }
 

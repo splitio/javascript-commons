@@ -2,7 +2,7 @@ import { ISettings } from '../../types';
 
 /**
  * Parameters used to specialize the settings validation for each API variant
- * (client-side, server-side) and environment (Node server, Browser, etc)
+ * (client-side, server-side) and environment (Node.js, Browser, etc)
  */
 export interface ISettingsValidationParams {
   /**
@@ -20,8 +20,6 @@ export interface ISettingsValidationParams {
   integrations?: (settings: ISettings) => ISettings['integrations'],
   /** Logger validator (`settings.debug`) */
   logger: (settings: ISettings) => ISettings['log'],
-  /** Localhost mode validator (`settings.sync.localhostMode`) */
-  localhost?: (settings: ISettings) => ISettings['sync']['localhostMode'],
   /** User consent validator (`settings.userConsent`) */
   consent?: (settings: ISettings) => ISettings['userConsent'],
   /** Flag spec version validation. Configurable by the JS Synchronizer but not by the SDKs */

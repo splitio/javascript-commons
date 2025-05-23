@@ -1,28 +1,32 @@
 /* eslint-disable no-use-before-define */
 import { IMetadata } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
+
+type ImpressionPayload = {
+  /** Matching Key */
+  k: string;
+  /** Bucketing Key */
+  b?: string;
+  /** Treatment */
+  t: string;
+  /** Timestamp */
+  m: number;
+  /** Change number */
+  c: number;
+  /** Rule label */
+  r?: string;
+  /** Previous time */
+  pt?: number;
+  /** Stringified JSON object with properties */
+  properties?: string;
+};
 
 export type ImpressionsPayload = {
   /** Split name */
   f: string,
   /** Key Impressions */
-  i: {
-    /** User Key */
-    k: string;
-    /** Treatment */
-    t: string;
-    /** Timestamp */
-    m: number;
-    /** ChangeNumber */
-    c: number;
-    /** Rule label */
-    r?: string;
-    /** Bucketing Key */
-    b?: string;
-    /** Previous time */
-    pt?: number;
-  }[]
+  i: ImpressionPayload[]
 }[]
 
 export type ImpressionCountsPayload = {
@@ -60,23 +64,9 @@ export type StoredImpressionWithMetadata = {
   /** Metadata */
   m: IMetadata,
   /** Stored impression */
-  i: {
-    /** keyName */
-    k: string,
-    /** bucketingKey */
-    b?: string,
-    /** Split name */
-    f: string,
-    /** treatment */
-    t: string,
-    /** label */
-    r: string,
-    /** changeNumber */
-    c: number,
-    /** time */
-    m: number
-    /** previous time */
-    pt?: number
+  i: ImpressionPayload & {
+    /** Feature flag name */
+    f: string
   }
 }
 

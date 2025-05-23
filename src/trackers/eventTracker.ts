@@ -2,7 +2,8 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { IEventsCacheBase, ITelemetryCacheAsync, ITelemetryCacheSync } from '../storages/types';
 import { IEventsHandler, IEventTracker } from './types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { EVENTS_TRACKER_SUCCESS, ERROR_EVENTS_TRACKER } from '../logger/constants';
 import { CONSENT_DECLINED, DROPPED, QUEUED } from '../utils/constants';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
@@ -10,8 +11,8 @@ import { isConsumerMode } from '../utils/settingsValidation/mode';
 /**
  * Event tracker stores events in cache and pass them to the integrations manager if provided.
  *
- * @param eventsCache cache to save events
- * @param integrationsManager optional event handler used for integrations
+ * @param eventsCache - cache to save events
+ * @param integrationsManager - optional event handler used for integrations
  */
 export function eventTrackerFactory(
   settings: ISettings,
@@ -35,7 +36,7 @@ export function eventTrackerFactory(
         whenInit(() => {
           // Wrap in a timeout because we don't want it to be blocking.
           setTimeout(() => {
-            // copy of event, to avoid unexpected behaviour if modified by integrations
+            // copy of event, to avoid unexpected behavior if modified by integrations
             const eventDataCopy = objectAssign({}, eventData);
             if (properties) eventDataCopy.properties = objectAssign({}, properties);
             // integrationsManager does not throw errors (they are internally handled by each integration module)

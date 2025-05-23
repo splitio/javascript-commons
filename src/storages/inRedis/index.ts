@@ -6,7 +6,7 @@ import { SplitsCacheInRedis } from './SplitsCacheInRedis';
 import { SegmentsCacheInRedis } from './SegmentsCacheInRedis';
 import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
-import { DEBUG, NONE, STORAGE_REDIS } from '../../utils/constants';
+import { STORAGE_REDIS } from '../../utils/constants';
 import { TelemetryCacheInRedis } from './TelemetryCacheInRedis';
 import { UniqueKeysCacheInRedis } from './UniqueKeysCacheInRedis';
 import { ImpressionCountsCacheInRedis } from './ImpressionCountsCacheInRedis';
@@ -17,32 +17,41 @@ export interface InRedisStorageOptions {
   options?: Record<string, any>
 }
 
+let RD: typeof RedisAdapter | undefined;
+
+try {
+  // Using `require` to prevent error when bundling or importing the SDK in a .mjs file, since ioredis is a CommonJS module.
+  // Redis storage is not supported with .mjs files.
+  RD = require('./RedisAdapter').RedisAdapter;
+} catch (error) { /* empty */ }
+
 /**
- * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.
+ * InRedis storage factory for consumer server-side SplitFactory, that uses `Ioredis` Redis client for Node.js
  * @see {@link https://www.npmjs.com/package/ioredis}
  */
 export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsyncFactory {
 
-  // Lazy loading to prevent error when bundling or importing the SDK in a .mjs file, since ioredis is a CommonJS module.
-  // Redis storage is not supported with .mjs files.
-  const RD = require('./RedisAdapter').RedisAdapter;
-
   const prefix = validatePrefix(options.prefix);
 
   function InRedisStorageFactory(params: IStorageFactoryParams): IStorageAsync {
-    const { onReadyCb, settings, settings: { log, sync: { impressionsMode } } } = params;
+    if (!RD) throw new Error('The SDK Redis storage is unavailable. Make sure your runtime environment supports CommonJS (`require`) so the `ioredis` dependency can be imported.');
+
+    const { onReadyFromCacheCb, onReadyCb, settings, settings: { log } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
-    const redisClient: RedisAdapter = new RD(log, options.options || {});
+    const redisClient = new RD(log, options.options || {});
     const telemetry = new TelemetryCacheInRedis(log, keys, redisClient);
-    const impressionCountsCache = impressionsMode !== DEBUG ? new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient) : undefined;
-    const uniqueKeysCache = impressionsMode === NONE ? new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient) : undefined;
+    const impressionCountsCache = new ImpressionCountsCacheInRedis(log, keys.buildImpressionsCountKey(), redisClient);
+    const uniqueKeysCache = new UniqueKeysCacheInRedis(log, keys.buildUniqueKeysKey(), redisClient);
 
-    // subscription to Redis connect event in order to emit SDK_READY event on consumer mode
+    // RedisAdapter lets queue operations before connected
+    onReadyFromCacheCb();
+
+    // Subscription to Redis connect event in order to emit SDK_READY event on consumer mode
     redisClient.on('connect', () => {
       onReadyCb();
-      if (impressionCountsCache) impressionCountsCache.start();
-      if (uniqueKeysCache) uniqueKeysCache.start();
+      impressionCountsCache.start();
+      uniqueKeysCache.start();
 
       // Synchronize config
       telemetry.recordConfig();
@@ -60,10 +69,10 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
       // When using REDIS we should:
       // 1- Disconnect from the storage
       destroy(): Promise<void> {
-        let promises = [];
-        if (impressionCountsCache) promises.push(impressionCountsCache.stop());
-        if (uniqueKeysCache) promises.push(uniqueKeysCache.stop());
-        return Promise.all(promises).then(() => { redisClient.disconnect(); });
+        return Promise.all([
+          impressionCountsCache.stop(),
+          uniqueKeysCache.stop()
+        ]).then(() => { redisClient.disconnect(); });
         // @TODO check that caches works as expected when redisClient is disconnected
       }
     };

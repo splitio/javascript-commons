@@ -8,7 +8,7 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { getStorageHash, validatePrefix } from '../KeyBuilder';
-import { CONSUMER_PARTIAL_MODE, DEBUG, NONE, STORAGE_PLUGGABLE } from '../../utils/constants';
+import { CONSUMER_PARTIAL_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
@@ -32,7 +32,7 @@ export interface PluggableStorageOptions {
 /**
  * Validate pluggable storage factory options.
  *
- * @param options user options
+ * @param options - user options
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
 function validatePluggableStorageOptions(options: any) {
@@ -63,32 +63,28 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
   const prefix = validatePrefix(options.prefix);
 
   function PluggableStorageFactory(params: IStorageFactoryParams) {
-    const { onReadyCb, settings, settings: { log, mode, sync: { impressionsMode }, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
+    const { onReadyCb, settings, settings: { log, mode, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
     let connectPromise: Promise<void>;
 
-    const isSyncronizer = mode === undefined; // If mode is not defined, the synchronizer is running
+    const isSynchronizer = mode === undefined; // If mode is not defined, the synchronizer is running
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
 
-    const telemetry = shouldRecordTelemetry(params) || isSyncronizer ?
+    const telemetry = shouldRecordTelemetry(params) || isSynchronizer ?
       isPartialConsumer ?
         new TelemetryCacheInMemory() :
         new TelemetryCachePluggable(log, keys, wrapper) :
       undefined;
 
-    const impressionCountsCache = impressionsMode !== DEBUG || isSyncronizer ?
-      isPartialConsumer ?
-        new ImpressionCountsCacheInMemory() :
-        new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper) :
-      undefined;
+    const impressionCountsCache = isPartialConsumer ?
+      new ImpressionCountsCacheInMemory() :
+      new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper);
 
-    const uniqueKeysCache = impressionsMode === NONE || isSyncronizer ?
-      isPartialConsumer ?
-        settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
-        new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper) :
-      undefined;
+    const uniqueKeysCache = isPartialConsumer ?
+      settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
+      new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper);
 
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
@@ -104,8 +100,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
         // Connects to wrapper and emits SDK_READY event on main client
         return connectPromise = wrapper.connect().then(() => {
-          if (isSyncronizer) {
-            // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
+          if (isSynchronizer) {
+            // @TODO reuse InLocalStorage::validateCache logic
+            // In standalone or producer mode, clear storage if SDK key, flags filter criteria or flags spec version was modified
             return wrapper.get(keys.buildHashKey()).then((hash) => {
               const currentHash = getStorageHash(settings);
               if (hash !== currentHash) {
@@ -119,8 +116,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
             });
           } else {
             // Start periodic flush of async storages if not running synchronizer (producer mode)
-            if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
-            if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
+            if ((impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
+            if ((uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
             if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
 
             onReadyCb();
@@ -134,9 +131,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
       // Stop periodic flush and disconnect the underlying storage
       destroy() {
-        return Promise.all(isSyncronizer ? [] : [
-          impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).stop && (impressionCountsCache as ImpressionCountsCachePluggable).stop(),
-          uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).stop && (uniqueKeysCache as UniqueKeysCachePluggable).stop(),
+        return Promise.all(isSynchronizer ? [] : [
+          (impressionCountsCache as ImpressionCountsCachePluggable).stop && (impressionCountsCache as ImpressionCountsCachePluggable).stop(),
+          (uniqueKeysCache as UniqueKeysCachePluggable).stop && (uniqueKeysCache as UniqueKeysCachePluggable).stop(),
         ]).then(() => wrapper.disconnect());
       },
 

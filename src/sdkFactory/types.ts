@@ -8,7 +8,8 @@ import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter, IUniqueKeysTracker } from '../trackers/types';
-import { SplitIO, ISettings, IEventEmitter, IBasicClient } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 
 /**
  * Environment related dependencies.
@@ -21,15 +22,15 @@ export interface IPlatform {
   /**
    * If provided, it is used to pass additional options to fetch and eventsource calls.
    */
-  getOptions?: (settings: ISettings) => object
+  getOptions?: (settings: ISettings) => (object | undefined)
   /**
    * If provided, it is used to retrieve the EventSource constructor for streaming support.
    */
   getEventSource?: (settings: ISettings) => (IEventSourceConstructor | undefined)
   /**
-   * EventEmitter constructor, like NodeJS.EventEmitter or a polyfill.
+   * EventEmitter constructor, like Node.js EventEmitter or a polyfill.
    */
-  EventEmitter: new () => IEventEmitter,
+  EventEmitter: new () => SplitIO.IEventEmitter,
   /**
    * Function used to track latencies for telemetry.
    */
@@ -45,11 +46,11 @@ export interface ISdkFactoryContext {
   eventTracker: IEventTracker,
   telemetryTracker: ITelemetryTracker,
   storage: IStorageSync | IStorageAsync,
-  uniqueKeysTracker?: IUniqueKeysTracker,
+  uniqueKeysTracker: IUniqueKeysTracker,
   signalListener?: ISignalListener
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
-  clients: Record<string, IBasicClient>,
+  clients: Record<string, SplitIO.IBasicClient>,
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {
@@ -78,7 +79,7 @@ export interface ISdkFactoryParams {
   platform: IPlatform,
 
   // Storage factory. The result storage type implies the type of the SDK:
-  // sync SDK (`ISDK` or `ICsSDK`) with `IStorageSync`, and async SDK (`IAsyncSDK`) with `IStorageAsync`
+  // sync SDK (`IBrowserSDK` and `ISDK`) with `IStorageSync`, and async SDK (`IBrowserAsyncSDK` and `IAsyncSDK`) with `IStorageAsync`
   storageFactory: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
 
   // Factory of Split Api (HTTP Client Service).
@@ -93,9 +94,9 @@ export interface ISdkFactoryParams {
   // Sdk manager factory
   sdkManagerFactory: typeof sdkManagerFactory,
 
-  // Sdk client method factory (ISDK::client method).
-  // It Allows to distinguish SDK clients with the client-side API (`ICsSDK`) or server-side API (`ISDK` or `IAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.ICsClient; (key: SplitIO.SplitKey): SplitIO.ICsClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
+  // Sdk client method factory.
+  // It Allows to distinguish SDK clients with the client-side API (`IBrowserSDK` and `IBrowserAsyncSDK`) or server-side API (`ISDK` and `IAsyncSDK`).
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.IBrowserClient; (key: SplitIO.SplitKey): SplitIO.IBrowserClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
 
   // Impression observer factory.
   impressionsObserverFactory: () => IImpressionObserver
@@ -103,7 +104,7 @@ export interface ISdkFactoryParams {
   filterAdapterFactory?: () => IFilterAdapter
 
   // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
-  // Pass only if `syncManager` (used by Node listener) and `splitApi` (used by Browser listener) are passed.
+  // Pass only if `syncManager` (used by NodeSignalListener) and `splitApi` (used by Browser listener) are passed.
   SignalListener?: new (
     syncManager: ISyncManager | undefined, // Used by NodeSignalListener to flush data, and by BrowserSignalListener to close streaming connection.
     settings: ISettings, // Used by BrowserSignalListener
