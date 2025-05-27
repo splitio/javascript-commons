@@ -49,6 +49,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
     const segments = new MySegmentsCacheInLocal(log, keys, storage);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
+    let validateCachePromise: Promise<boolean> | undefined;
 
     return {
       splits,
@@ -62,10 +63,13 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
-        return validateCache({ ...options, storage }, settings, keys, splits, rbSegments, segments, largeSegments);
+        return validateCachePromise || (validateCachePromise = validateCache({ ...options, storage }, settings, keys, splits, rbSegments, segments, largeSegments));
       },
 
-      destroy() { },
+      destroy() {
+        // @TODO return `storageWrapper.disconnect()`
+        return Promise.resolve();
+      },
 
       // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
       shared(matchingKey: string) {

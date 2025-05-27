@@ -28,8 +28,8 @@ describe('validateCache', () => {
     localStorage.clear();
   });
 
-  test('if there is no cache, it should return false', () => {
-    expect(validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+  test('if there is no cache, it should return false', async () => {
+    expect(await validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -43,11 +43,11 @@ describe('validateCache', () => {
     expect(localStorage.getItem(keys.buildLastClear())).toBeNull();
   });
 
-  test('if there is cache and it must not be cleared, it should return true', () => {
+  test('if there is cache and it must not be cleared, it should return true', async () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    expect(await validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -61,12 +61,12 @@ describe('validateCache', () => {
     expect(localStorage.getItem(keys.buildLastClear())).toBeNull();
   });
 
-  test('if there is cache and it has expired, it should clear cache and return false', () => {
+  test('if there is cache and it has expired, it should clear cache and return false', async () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     localStorage.setItem(keys.buildLastUpdatedKey(), Date.now() - 1000 * 60 * 60 * 24 * 2 + ''); // 2 days ago
 
-    expect(validateCache({ expirationDays: 1, storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ storage: localStorage, expirationDays: 1 }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: Cache expired more than 1 days ago. Cleaning up cache');
 
@@ -79,11 +79,11 @@ describe('validateCache', () => {
     expect(nearlyEqual(parseInt(localStorage.getItem(keys.buildLastClear()) as string), Date.now())).toBe(true);
   });
 
-  test('if there is cache and its hash has changed, it should clear cache and return false', () => {
+  test('if there is cache and its hash has changed, it should clear cache and return false', async () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(validateCache({ storage: localStorage }, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ storage: localStorage }, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
 
@@ -96,12 +96,12 @@ describe('validateCache', () => {
     expect(nearlyEqual(parseInt(localStorage.getItem(keys.buildLastClear()) as string), Date.now())).toBe(true);
   });
 
-  test('if there is cache and clearOnInit is true, it should clear cache and return false', () => {
+  test('if there is cache and clearOnInit is true, it should clear cache and return false', async () => {
     // Older cache version (without last clear)
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(validateCache({ clearOnInit: true, storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
 
@@ -117,13 +117,13 @@ describe('validateCache', () => {
     // If cache is cleared, it should not clear again until a day has passed
     logSpy.mockClear();
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
-    expect(validateCache({ clearOnInit: true, storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
     expect(logSpy).not.toHaveBeenCalled();
     expect(localStorage.getItem(keys.buildLastClear())).toBe(lastClear); // Last clear should not have changed
 
     // If a day has passed, it should clear again
     localStorage.setItem(keys.buildLastClear(), (Date.now() - 1000 * 60 * 60 * 24 - 1) + '');
-    expect(validateCache({ clearOnInit: true, storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
     expect(splits.clear).toHaveBeenCalledTimes(2);
     expect(rbSegments.clear).toHaveBeenCalledTimes(2);

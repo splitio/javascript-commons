@@ -43,7 +43,7 @@ const pushManagerMock = {
 // Mocked pushManager
 const pushManagerFactoryMock = jest.fn(() => pushManagerMock);
 
-test('syncManagerOnline should start or not the submitter depending on user consent status', () => {
+test('syncManagerOnline should start or not the submitter depending on user consent status', async () => {
   const settings = { ...fullSettings };
 
   const syncManager = syncManagerOnlineFactory()({
@@ -52,14 +52,14 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   });
   const submitterManager = syncManager.submitterManager!;
 
-  syncManager.start();
+  await syncManager.start();
   expect(submitterManager.start).toBeCalledTimes(1);
   expect(submitterManager.start).lastCalledWith(false); // SubmitterManager should start all submitters, if userConsent is undefined
   syncManager.stop();
   expect(submitterManager.stop).toBeCalledTimes(1);
 
   settings.userConsent = 'UNKNOWN';
-  syncManager.start();
+  await syncManager.start();
   expect(submitterManager.start).toBeCalledTimes(2);
   expect(submitterManager.start).lastCalledWith(true); // SubmitterManager should start only telemetry submitter, if userConsent is unknown
   syncManager.stop();
@@ -69,7 +69,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   expect(submitterManager.execute).lastCalledWith(true); // SubmitterManager should flush only telemetry, if userConsent is unknown
 
   settings.userConsent = 'GRANTED';
-  syncManager.start();
+  await syncManager.start();
   expect(submitterManager.start).toBeCalledTimes(3);
   expect(submitterManager.start).lastCalledWith(false); // SubmitterManager should start all submitters, if userConsent is granted
   syncManager.stop();
@@ -79,7 +79,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   expect(submitterManager.execute).lastCalledWith(false); // SubmitterManager should flush all submitters, if userConsent is granted
 
   settings.userConsent = 'DECLINED';
-  syncManager.start();
+  await syncManager.start();
   expect(submitterManager.start).toBeCalledTimes(4);
   expect(submitterManager.start).lastCalledWith(true); // SubmitterManager should start only telemetry submitter, if userConsent is declined
   syncManager.stop();
@@ -90,7 +90,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
 
 });
 
-test('syncManagerOnline should syncAll a single time when sync is disabled', () => {
+test('syncManagerOnline should syncAll a single time when sync is disabled', async () => {
   const settings = { ...fullSettings };
 
   // disable sync
@@ -106,19 +106,19 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
   expect(pushManagerFactoryMock).not.toBeCalled();
 
   // Test pollingManager for Main client
-  syncManager.start();
+  await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
 
   syncManager.stop();
-  syncManager.start();
+  await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
 
   syncManager.stop();
-  syncManager.start();
+  await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
@@ -139,12 +139,12 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
 
   pollingSyncManagerShared.stop();
 
-  syncManager.start();
+  await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
 
   syncManager.stop();
-  syncManager.start();
+  await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
 
@@ -175,7 +175,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', () 
   expect(pushManagerFactoryMock).toBeCalled();
 
   // Test pollingManager for Main client
-  testSyncManager.start();
+  await testSyncManager.start();
 
   expect(pushManagerMock.start).toBeCalled();
 

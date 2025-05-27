@@ -88,36 +88,41 @@ export function syncManagerOnlineFactory(
       start() {
         running = true;
 
-        if (startFirstTime) {
-          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
-          if (isCacheLoaded) Promise.resolve().then(() => { readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
-        }
+        // @TODO call after `validateCache` promise once there are InLocal versions for event, impression and telemetry storages
+        submitterManager.start(!isConsentGranted(settings));
 
-        // start syncing splits and segments
-        if (pollingManager) {
+        return Promise.resolve(storage.validateCache ? storage.validateCache() : false).then((isCacheLoaded) => {
+          if (!running) return;
 
-          // If synchronization is disabled pushManager and pollingManager should not start
-          if (syncEnabled) {
-            if (pushManager) {
-              // Doesn't call `syncAll` when the syncManager is resuming
+          if (startFirstTime) {
+            // Emits SDK_READY_FROM_CACHE
+            if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+
+          }
+
+          // start syncing splits and segments
+          if (pollingManager) {
+
+            // If synchronization is disabled pushManager and pollingManager should not start
+            if (syncEnabled) {
+              if (pushManager) {
+                // Doesn't call `syncAll` when the syncManager is resuming
+                if (startFirstTime) {
+                  pollingManager.syncAll();
+                }
+                pushManager.start();
+              } else {
+                pollingManager.start();
+              }
+            } else {
               if (startFirstTime) {
                 pollingManager.syncAll();
               }
-              pushManager.start();
-            } else {
-              pollingManager.start();
-            }
-          } else {
-            if (startFirstTime) {
-              pollingManager.syncAll();
             }
           }
-        }
 
-        // start periodic data recording (events, impressions, telemetry).
-        submitterManager.start(!isConsentGranted(settings));
-
-        startFirstTime = false;
+          startFirstTime = false;
+        });
       },
 
       /**

@@ -479,7 +479,8 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
-  validateCache?: () => boolean, // @TODO support async
+  // https://github.com/splitio/javascript-commons/pull/352
+  validateCache?: () => Promise<boolean>, // or connect?
   largeSegments?: ISegmentsCacheSync,
 }
 
