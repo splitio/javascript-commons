@@ -16,9 +16,8 @@ const MILLIS_IN_A_DAY = 86400000;
  *
  * @returns `true` if cache should be cleared, `false` otherwise
  */
-function validateExpiration(options: SplitIO.InLocalStorageOptions & { storage: SplitIO.Storage }, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
+function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: SplitIO.Storage, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
   const { log } = settings;
-  const { storage } = options;
 
   // Check expiration
   const lastUpdatedTimestamp = parseInt(storage.getItem(keys.buildLastUpdatedKey()) as string, 10);
@@ -68,12 +67,13 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions & { storage: 
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions & { storage: SplitIO.Storage }, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
-  return new Promise<boolean>((resolve) => {
+export function validateCache(options: SplitIO.InLocalStorageOptions, storage: SplitIO.Storage, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
+
+  return Promise.resolve().then(() => {
     const currentTimestamp = Date.now();
     const isThereCache = splits.getChangeNumber() > -1;
 
-    if (validateExpiration(options, settings, keys, currentTimestamp, isThereCache)) {
+    if (validateExpiration(options, storage, settings, keys, currentTimestamp, isThereCache)) {
       splits.clear();
       rbSegments.clear();
       segments.clear();
@@ -81,15 +81,15 @@ export function validateCache(options: SplitIO.InLocalStorageOptions & { storage
 
       // Update last clear timestamp
       try {
-        options.storage.setItem(keys.buildLastClear(), currentTimestamp + '');
+        storage.setItem(keys.buildLastClear(), currentTimestamp + '');
       } catch (e) {
         settings.log.error(LOG_PREFIX + e);
       }
 
-      resolve(false);
+      return false;
     }
 
     // Check if ready from cache
-    resolve(isThereCache);
+    return isThereCache;
   });
 }

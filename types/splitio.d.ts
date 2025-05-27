@@ -1012,7 +1012,7 @@ declare namespace SplitIO {
      */
     clearOnInit?: boolean;
     /**
-     * Optional storage API to use. If not provided, the SDK will use the default localStorage Web API.
+     * Optional storage API to persist rollout plan related data. If not provided, the SDK will use the default localStorage Web API.
      *
      * @defaultValue `window.localStorage`
      */

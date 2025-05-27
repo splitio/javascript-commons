@@ -63,7 +63,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
-        return validateCachePromise || (validateCachePromise = validateCache({ ...options, storage }, settings, keys, splits, rbSegments, segments, largeSegments));
+        return validateCachePromise || (validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments));
       },
 
       destroy() {

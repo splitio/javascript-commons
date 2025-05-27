@@ -29,7 +29,7 @@ describe('validateCache', () => {
   });
 
   test('if there is no cache, it should return false', async () => {
-    expect(await validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({}, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -47,7 +47,7 @@ describe('validateCache', () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(await validateCache({ storage: localStorage }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    expect(await validateCache({}, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -66,7 +66,7 @@ describe('validateCache', () => {
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     localStorage.setItem(keys.buildLastUpdatedKey(), Date.now() - 1000 * 60 * 60 * 24 * 2 + ''); // 2 days ago
 
-    expect(await validateCache({ storage: localStorage, expirationDays: 1 }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ expirationDays: 1 }, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: Cache expired more than 1 days ago. Cleaning up cache');
 
@@ -83,7 +83,7 @@ describe('validateCache', () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(await validateCache({ storage: localStorage }, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({}, localStorage, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
 
@@ -101,7 +101,7 @@ describe('validateCache', () => {
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
     localStorage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
 
-    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ clearOnInit: true }, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
 
@@ -117,13 +117,13 @@ describe('validateCache', () => {
     // If cache is cleared, it should not clear again until a day has passed
     logSpy.mockClear();
     localStorage.setItem(keys.buildSplitsTillKey(), '1');
-    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    expect(await validateCache({ clearOnInit: true }, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
     expect(logSpy).not.toHaveBeenCalled();
     expect(localStorage.getItem(keys.buildLastClear())).toBe(lastClear); // Last clear should not have changed
 
     // If a day has passed, it should clear again
     localStorage.setItem(keys.buildLastClear(), (Date.now() - 1000 * 60 * 60 * 24 - 1) + '');
-    expect(await validateCache({ storage: localStorage, clearOnInit: true }, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    expect(await validateCache({ clearOnInit: true }, localStorage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
     expect(splits.clear).toHaveBeenCalledTimes(2);
     expect(rbSegments.clear).toHaveBeenCalledTimes(2);
