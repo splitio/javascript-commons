@@ -220,6 +220,10 @@ export interface ISplit {
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
   conditions: ISplitCondition[],
+  prerequisites?: {
+    n: string,
+    ts: string[]
+  }[]
   killed: boolean,
   defaultTreatment: string,
   trafficTypeName: string,

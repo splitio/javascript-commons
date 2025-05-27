@@ -12,6 +12,7 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.ENGINE_VALUE, c.LOG_PREFIX_ENGINE_VALUE + 'Extracted attribute `%s`. %s will be used for matching.'],
   [c.ENGINE_SANITIZE, c.LOG_PREFIX_ENGINE + ':sanitize: Attempted to sanitize %s which should be of type %s. Sanitized and processed value => %s'],
   [c.ENGINE_MATCHER_RESULT, c.LOG_PREFIX_ENGINE_MATCHER + '[%s] Result: %s. Rule value: %s. Evaluation value: %s'],
+  [c.ENGINE_DEFAULT, c.LOG_PREFIX_ENGINE + 'Evaluates to default treatment. %s'],
   // SDK
   [c.CLEANUP_REGISTERING, c.LOG_PREFIX_CLEANUP + 'Registering cleanup handler %s'],
   [c.CLEANUP_DEREGISTERING, c.LOG_PREFIX_CLEANUP + 'Deregistering cleanup handler %s'],

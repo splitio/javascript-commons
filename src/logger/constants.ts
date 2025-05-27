@@ -28,6 +28,7 @@ export const SYNC_TASK_EXECUTE = 37;
 export const SYNC_TASK_STOP = 38;
 export const SETTINGS_SPLITS_FILTER = 39;
 export const ENGINE_MATCHER_RESULT = 40;
+export const ENGINE_DEFAULT = 41;
 
 export const CLIENT_READY_FROM_CACHE = 100;
 export const CLIENT_READY = 101;
