@@ -18,9 +18,67 @@ import { validateCache } from './validateCache';
 import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 
-function validateStorage(log: ILogger, storage?: SplitIO.Storage) {
+export interface StorageAdapter {
+  // Methods to support async storages
+  load?: () => Promise<void>;
+  save?: () => Promise<void>;
+  // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
+  readonly length: number;
+  getItem(key: string): string | null;
+  key(index: number): string | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: string): void;
+}
+
+function isTillKey(key: string) {
+  return key.endsWith('.till');
+}
+
+function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.Storage): StorageAdapter {
+  let cache: Record<string, string> = {};
+
+  let connectPromise: Promise<void> | undefined;
+  let disconnectPromise = Promise.resolve();
+
+  return {
+    load() {
+      return connectPromise || (connectPromise = storage.getItem(prefix).then((storedCache) => {
+        cache = JSON.parse(storedCache || '{}');
+      }).catch((e) => {
+        log.error(LOG_PREFIX + 'Rejected promise calling storage getItem, with error: ' + e);
+      }));
+    },
+    save() {
+      return disconnectPromise = disconnectPromise.then(() => {
+        return storage.setItem(prefix, JSON.stringify(cache)).catch((e) => {
+          log.error(LOG_PREFIX + 'Rejected promise calling storage setItem, with error: ' + e);
+        });
+      });
+    },
+
+    get length() {
+      return Object.keys(cache).length;
+    },
+    getItem(key: string) {
+      return cache[key] || null;
+    },
+    key(index: number) {
+      return Object.keys(cache)[index] || null;
+    },
+    removeItem(key: string) {
+      delete cache[key];
+      if (isTillKey(key)) this.save!();
+    },
+    setItem(key: string, value: string) {
+      cache[key] = value;
+      if (isTillKey(key)) this.save!();
+    }
+  };
+}
+
+function validateStorage(log: ILogger, prefix: string, storage?: SplitIO.Storage): StorageAdapter | undefined {
   if (storage) {
-    if (isStorageValid(storage)) return storage;
+    if (isStorageValid(storage)) return storageAdapter(log, prefix, storage);
     log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
   }
 
@@ -39,7 +97,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
 
-    const storage = validateStorage(log, options.storage);
+    const storage = validateStorage(log, prefix, options.storage);
     if (!storage) return InMemoryStorageCSFactory(params);
 
     const matchingKey = getMatching(settings.core.key);
@@ -67,8 +125,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       },
 
       destroy() {
-        // @TODO return `storageWrapper.disconnect()`
-        return Promise.resolve();
+        return storage.save && storage.save();
       },
 
       // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).

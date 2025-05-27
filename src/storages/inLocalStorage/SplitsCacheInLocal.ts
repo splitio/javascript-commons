@@ -6,7 +6,7 @@ import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
 import { ISettings } from '../../types';
 import { setToArray } from '../../utils/lang/sets';
-import SplitIO from '../../../types/splitio';
+import { StorageAdapter } from '.';
 
 /**
  * ISplitsCacheSync implementation that stores split definitions in browser LocalStorage.
@@ -17,9 +17,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private readonly log: ILogger;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private readonly localStorage: SplitIO.Storage;
+  private readonly localStorage: StorageAdapter;
 
-  constructor(settings: ISettings, keys: KeyBuilderCS, localStorage: SplitIO.Storage) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, localStorage: StorageAdapter) {
     super();
     this.keys = keys;
     this.log = settings.log;

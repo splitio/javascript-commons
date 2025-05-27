@@ -7,15 +7,15 @@ import { usesSegments } from '../AbstractSplitsCacheSync';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { IRBSegmentsCacheSync } from '../types';
 import { LOG_PREFIX } from './constants';
-import SplitIO from '../../../types/splitio';
+import { StorageAdapter } from '.';
 
 export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
-  private readonly localStorage: SplitIO.Storage;
+  private readonly localStorage: StorageAdapter;
 
-  constructor(settings: ISettings, keys: KeyBuilderCS, localStorage: SplitIO.Storage) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, localStorage: StorageAdapter) {
     this.keys = keys;
     this.log = settings.log;
     this.localStorage = localStorage;

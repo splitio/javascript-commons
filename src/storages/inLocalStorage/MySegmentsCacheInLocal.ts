@@ -1,17 +1,17 @@
+import { StorageAdapter } from '.';
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
 import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
-import SplitIO from '../../../types/splitio';
 
 export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
   private readonly keys: MySegmentsKeyBuilder;
   private readonly log: ILogger;
-  private readonly localStorage: SplitIO.Storage;
+  private readonly localStorage: StorageAdapter;
 
-  constructor(log: ILogger, keys: MySegmentsKeyBuilder, localStorage: SplitIO.Storage) {
+  constructor(log: ILogger, keys: MySegmentsKeyBuilder, localStorage: StorageAdapter) {
     super();
     this.log = log;
     this.keys = keys;

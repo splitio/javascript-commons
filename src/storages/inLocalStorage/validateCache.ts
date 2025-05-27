@@ -7,6 +7,7 @@ import type { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import type { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import SplitIO from '../../../types/splitio';
+import { StorageAdapter } from '.';
 
 const DEFAULT_CACHE_EXPIRATION_IN_DAYS = 10;
 const MILLIS_IN_A_DAY = 86400000;
@@ -16,7 +17,7 @@ const MILLIS_IN_A_DAY = 86400000;
  *
  * @returns `true` if cache should be cleared, `false` otherwise
  */
-function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: SplitIO.Storage, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
+function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
   const { log } = settings;
 
   // Check expiration
@@ -67,9 +68,9 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: Spl
  *
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, storage: SplitIO.Storage, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
+export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
 
-  return Promise.resolve().then(() => {
+  return Promise.resolve(storage.load && storage.load()).then(() => {
     const currentTimestamp = Date.now();
     const isThereCache = splits.getChangeNumber() > -1;
 
