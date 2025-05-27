@@ -2,7 +2,7 @@ import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
 import { hash } from '../../utils/murmur3/murmur3';
 import { Compression, IMembershipMSUpdateData, KeyList } from './SSEHandler/types';
-import { ISplit } from '../../dtos/types';
+import { IRBSegment, ISplit } from '../../dtos/types';
 
 const GZIP = 1;
 const ZLIB = 2;
@@ -82,7 +82,7 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
 /**
  * Parse feature flags notifications for instant feature flag updates
  */
-export function parseFFUpdatePayload(compression: Compression, data: string): ISplit | undefined {
+export function parseFFUpdatePayload(compression: Compression, data: string): ISplit | IRBSegment | undefined {
   return compression > 0 ?
     parseKeyList(data, compression, false) :
     JSON.parse(decodeFromBase64(data));

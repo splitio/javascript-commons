@@ -29,6 +29,6 @@ export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDi
 
 export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
-export type IEvaluator = (key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | undefined>
+export type IEvaluator = (key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | boolean | undefined>
 
-export type IMatcher = (...args: any) => MaybeThenable<boolean>
+export type IMatcher = (value: string | number | boolean | string[] | IDependencyMatcherValue, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>

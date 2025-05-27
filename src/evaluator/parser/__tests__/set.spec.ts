@@ -7,7 +7,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 //
 // EQUAL_TO_SET
 //
-test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on', async () => {
   const label = 'permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -42,7 +42,7 @@ test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "writ
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "write"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "write"] then split 100:on', async () => {
   const label = 'permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -77,7 +77,7 @@ test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "writ
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 100:on', async () => {
   const label = 'permissions = ["1", "2"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -112,7 +112,7 @@ test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 1
   expect(evaluation.label).toBe(label); // label should be correct
 });
 
-test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["read", "write"] then not match', async function () {
+test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["read", "write"] then not match', async () => {
   const label = 'permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -146,7 +146,7 @@ test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["re
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then not match', async function () {
+test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then not match', async () => {
   const label = 'permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -180,7 +180,7 @@ test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "write"] then not match', async function () {
+test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "write"] then not match', async () => {
   const label = 'permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -214,7 +214,7 @@ test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "wri
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argentina"] then split 100:on', async function () {
+test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argentina"] then split 100:on', async () => {
   const label = 'countries = ["usa","argentina"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -248,7 +248,7 @@ test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argen
   expect(evaluation.label).toBe(label); // label should match
 });
 
-test('PARSER / if attribute is not an array we should not match equal to set', async function () {
+test('PARSER / if attribute is not an array we should not match equal to set', async () => {
   const label = 'countries = ["usa","argentina"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -283,7 +283,7 @@ test('PARSER / if attribute is not an array we should not match equal to set', a
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if attribute is an EMPTY array we should not match equal to set', async function () {
+test('PARSER / if attribute is an EMPTY array we should not match equal to set', async () => {
   const label = 'countries = ["usa","argentina"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -316,7 +316,7 @@ test('PARSER / if attribute is an EMPTY array we should not match equal to set',
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on should not match', async function () {
+test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read", "write"] then split 100:on should not match', async () => {
   const label = 'not permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -349,7 +349,7 @@ test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write"] false, then match', async function () {
+test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write"] false, then match', async () => {
   const label = 'not permissions = ["read", "write"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -383,7 +383,7 @@ test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is not an array we should not match equal to set, so match', async function () {
+test('PARSER / NEGATED if attribute is not an array we should not match equal to set, so match', async () => {
   const label = 'countries = ["usa","argentina"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -420,7 +420,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match equal to
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal to set, so match', async function () {
+test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal to set, so match', async () => {
   const label = 'countries = ["usa","argentina"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -457,7 +457,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal 
 //
 // CONTAINS_ALL_OF_SET
 //
-test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -492,7 +492,7 @@ test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of se
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of set ["read", "edit"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of set ["read", "edit"] then split 100:on', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -527,7 +527,7 @@ test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of se
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1", "edit"] then split 100:on', async function () {
+test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1", "edit"] then split 100:on', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -562,7 +562,7 @@ test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"] then not match', async function () {
+test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"] then not match', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -596,7 +596,7 @@ test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"]
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of set ["read", "edit"] then not match', async function () {
+test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of set ["read", "edit"] then not match', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -630,7 +630,7 @@ test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of 
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if attribute is not an array we should not match contains all', async function () {
+test('PARSER / if attribute is not an array we should not match contains all', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -665,7 +665,7 @@ test('PARSER / if attribute is not an array we should not match contains all', a
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if attribute is an EMPTY array we should not match contains all', async function () {
+test('PARSER / if attribute is an EMPTY array we should not match contains all', async () => {
   const label = 'permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -698,7 +698,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains all',
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on should not match', async function () {
+test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains all of set ["read", "edit"] then split 100:on should not match', async () => {
   const label = 'not permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -731,7 +731,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains a
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read", "edit"] false, so match', async function () {
+test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read", "edit"] false, so match', async () => {
   const label = 'not permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -765,7 +765,7 @@ test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read",
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is not an array we should not match contains all, so match', async function () {
+test('PARSER / NEGATED if attribute is not an array we should not match contains all, so match', async () => {
   const label = 'not permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -802,7 +802,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains all, so match', async function () {
+test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains all, so match', async () => {
   const label = 'not permissions contains ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -839,7 +839,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match contai
 //
 // PART_OF_SET
 //
-test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on', async () => {
   const label = 'permissions part of ["read", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -874,7 +874,7 @@ test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edi
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edit", "delete"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edit", "delete"] then split 100:on', async () => {
   const label = 'permissions part of ["read", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -909,7 +909,7 @@ test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edi
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "delete"] then split 100:on', async function () {
+test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "delete"] then split 100:on', async () => {
   const label = 'permissions part of ["1", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -944,7 +944,7 @@ test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "del
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "edit"] then not match', async function () {
+test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "edit"] then not match', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -978,7 +978,7 @@ test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "e
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if attribute is not an array we should not match part of', async function () {
+test('PARSER / if attribute is not an array we should not match part of', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1013,7 +1013,7 @@ test('PARSER / if attribute is not an array we should not match part of', async 
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if attribute is an EMPTY array we should not match part of', async function () {
+test('PARSER / if attribute is an EMPTY array we should not match part of', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1046,7 +1046,7 @@ test('PARSER / if attribute is an EMPTY array we should not match part of', asyn
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on should not match', async function () {
+test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["read", "edit", "delete"] then split 100:on should not match', async () => {
   const label = 'not permissions part of ["read", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1079,7 +1079,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["rea
   expect(evaluation).toBe(undefined); // evaluation should return treatment undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["read", "edit"] false, then match', async function () {
+test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["read", "edit"] false, then match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1113,7 +1113,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["r
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is not an array we should not match part of, so match', async function () {
+test('PARSER / NEGATED if attribute is not an array we should not match part of, so match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1150,7 +1150,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match part of,
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is an EMPTY array we should not match part of, so match', async function () {
+test('PARSER / NEGATED if attribute is an EMPTY array we should not match part of, so match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1187,7 +1187,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match part o
 //
 // CONTAINS_ANY_OF_SET
 //
-test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on', async () => {
   const label = 'permissions part of ["read", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1222,7 +1222,7 @@ test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read"
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1", "delete"] then split 100:on', async function () {
+test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1", "delete"] then split 100:on', async () => {
   const label = 'permissions part of ["read", "1", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1257,7 +1257,7 @@ test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1"
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] then not match', async function () {
+test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] then not match', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1291,7 +1291,7 @@ test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if attribute is not an array we should not match contains any', async function () {
+test('PARSER / if attribute is not an array we should not match contains any', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1326,7 +1326,7 @@ test('PARSER / if attribute is not an array we should not match contains any', a
   expect(evaluation).toBe(undefined); // evaluator should not match
 });
 
-test('PARSER / if attribute is an EMPTY array we should not match contains any', async function () {
+test('PARSER / if attribute is an EMPTY array we should not match contains any', async () => {
   const label = 'permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1359,7 +1359,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains any',
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on should not match', async function () {
+test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set ["read", "edit", "delete"] then split 100:on should not match', async () => {
   const label = 'not permissions part of ["read", "edit", "delete"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1392,7 +1392,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] false, then should match', async function () {
+test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of set ["read", "edit"] false, then should match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1426,7 +1426,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of se
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is not an array we should not match contains any, then should match', async function () {
+test('PARSER / NEGATED if attribute is not an array we should not match contains any, then should match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -1458,7 +1458,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
   expect(evaluation.label).toBe(label); // evaluator should return correct label
 });
 
-test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains any, then should match', async function () {
+test('PARSER / NEGATED if attribute is an EMPTY array we should not match contains any, then should match', async () => {
   const label = 'not permissions part of ["read", "edit"]';
   const evaluator = parser(loggerMock, [{
     matcherGroup: {

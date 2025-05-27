@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER ALL_KEYS / should always return true', function () {
+test('MATCHER ALL_KEYS / should always return true', () => {
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.ALL_KEYS,
     value: undefined

@@ -1,6 +1,7 @@
 import { InMemoryStorageCSFactory } from '../../../storages/inMemory/InMemoryStorageCS';
 import { ISettings } from '../../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { FLAG_SPEC_VERSION } from '../../constants';
 
 export const settingsWithKey = {
   core: {
@@ -67,7 +68,7 @@ export const fullSettings: ISettings = {
       groupedFilters: { bySet: [], byName: [], byPrefix: [] },
     },
     enabled: true,
-    flagSpecVersion: '1.2'
+    flagSpecVersion: FLAG_SPEC_VERSION
   },
   version: 'jest',
   runtime: {
