@@ -4,7 +4,7 @@ import { keyParser } from '../../../utils/key';
 import { ISplitCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('PARSER / if user is in segment all 100%:on', async function () {
+test('PARSER / if user is in segment all 100%:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -30,7 +30,7 @@ test('PARSER / if user is in segment all 100%:on', async function () {
   expect(evaluation.label).toBe('in segment all'); // in segment all
 });
 
-test('PARSER / if user is in segment all 100%:off', async function () {
+test('PARSER / if user is in segment all 100%:off', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -58,7 +58,7 @@ test('PARSER / if user is in segment all 100%:off', async function () {
   expect(evaluation.label === 'in segment all').toBe(true); // in segment all
 });
 
-test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async function () {
+test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -83,7 +83,7 @@ test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async 
   expect(evaluation).toBe(undefined); // evaluator should return undefined
 });
 
-test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on', async function () {
+test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -122,7 +122,7 @@ test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on
   expect(evaluation.label === 'whitelisted').toBe(true); // whitelisted
 });
 
-test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on, negated results', async function () {
+test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -161,7 +161,7 @@ test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split
   expect(evaluation).toBe(undefined); // evaluation should throw undefined
 });
 
-test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on', async function () {
+test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -207,7 +207,7 @@ test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on',
   expect(evaluation === undefined).toBe(true); // v4 is not defined inside the whitelist
 });
 
-test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 100:on, negated results', async function () {
+test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 100:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -254,7 +254,7 @@ test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 
   expect(evaluation.label === 'whitelisted').toBe(true); // label should be "whitelisted"
 });
 
-test('PARSER / if user.account is in segment all then split 100:on', async function () {
+test('PARSER / if user.account is in segment all then split 100:on', async () => {
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',
@@ -279,7 +279,7 @@ test('PARSER / if user.account is in segment all then split 100:on', async funct
   expect(evaluation.treatment === 'on').toBe(true); // ALL_KEYS always matches
 });
 
-test('PARSER / if user.attr is between 10 and 20 then split 100:on', async function () {
+test('PARSER / if user.attr is between 10 and 20 then split 100:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -320,7 +320,7 @@ test('PARSER / if user.attr is between 10 and 20 then split 100:on', async funct
   expect(await evaluator(keyParser('test@split.io'), 31, 100, 31)).toBe(undefined); // undefined is not between 10 and 20
 });
 
-test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, negated results', async function () {
+test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -362,7 +362,7 @@ test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, nega
   expect(evaluation.treatment === 'on').toBe(true); // undefined is not between 10 and 20
 });
 
-test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async function () {
+test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -407,7 +407,7 @@ test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async 
   expect(await evaluator(keyParser('test@split.io'), 31, 100, 31)).toBe(undefined); // missing attributes in the parameters list
 });
 
-test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on, negated results', async function () {
+test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -453,7 +453,7 @@ test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on,
   expect(evaluation.treatment === 'on').toBe(true); // missing attributes in the parameters list
 });
 
-test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async function () {
+test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -498,7 +498,7 @@ test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async 
   expect(await evaluator(keyParser('test@split.io'), 31, 100, 31)).toBe(undefined); // missing attributes in the parameters list
 });
 
-test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on, negated results', async function () {
+test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -544,7 +544,7 @@ test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on,
   expect(evaluation.treatment === 'on').toBe(true); // missing attributes in the parameters list
 });
 
-test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async function () {
+test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -589,7 +589,7 @@ test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async f
   expect(await evaluator(keyParser('test@split.io'), 31, 100, 31)).toBe(undefined); // missing attributes should be evaluated to false
 });
 
-test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, negated results', async function () {
+test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, negated results', async () => {
 
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
@@ -635,7 +635,7 @@ test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, 
   expect(evaluation.treatment).toBe('on'); // missing attributes should be evaluated to false
 });
 
-test('PARSER / if user is in segment all then split 20%:A,20%:B,60%:A', async function () {
+test('PARSER / if user is in segment all then split 20%:A,20%:B,60%:A', async () => {
   const evaluator = parser(loggerMock, [{
     matcherGroup: {
       combiner: 'AND',

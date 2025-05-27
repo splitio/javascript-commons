@@ -21,12 +21,14 @@ export const RETRIEVE_MANAGER = 29;
 export const SYNC_OFFLINE_DATA = 30;
 export const SYNC_SPLITS_FETCH = 31;
 export const SYNC_SPLITS_UPDATE = 32;
+export const SYNC_RBS_UPDATE = 33;
 export const STREAMING_NEW_MESSAGE = 35;
 export const SYNC_TASK_START = 36;
 export const SYNC_TASK_EXECUTE = 37;
 export const SYNC_TASK_STOP = 38;
 export const SETTINGS_SPLITS_FILTER = 39;
 export const ENGINE_MATCHER_RESULT = 40;
+export const ENGINE_DEFAULT = 41;
 
 export const CLIENT_READY_FROM_CACHE = 100;
 export const CLIENT_READY = 101;

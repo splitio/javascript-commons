@@ -37,7 +37,7 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
       }
 
       // Evaluator function.
-      return (key: string, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator) => {
+      return (key: SplitIO.SplitKey, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
         let result: MaybeThenable<boolean> = false;
 
@@ -71,12 +71,12 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
     predicates.push(conditionContext(
       log,
       andCombinerContext(log, expressions),
-      Treatments.parse(partitions),
+      partitions && Treatments.parse(partitions),
       label,
       conditionType
     ));
   }
 
-  // Instanciate evaluator given the set of conditions using if else if logic
+  // Instantiate evaluator given the set of conditions using if else if logic
   return ifElseIfCombinerContext(log, predicates);
 }

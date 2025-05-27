@@ -1,5 +1,5 @@
 import SplitIO from '../../types/splitio';
-import { MaybeThenable, ISplit, IMySegmentsResponse } from '../dtos/types';
+import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { ISettings } from '../types';
@@ -221,6 +221,34 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
   getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
 }
 
+/** Rule-Based Segments cache */
+
+export interface IRBSegmentsCacheBase {
+  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): MaybeThenable<boolean>,
+  get(name: string): MaybeThenable<IRBSegment | null>,
+  getChangeNumber(): MaybeThenable<number>,
+  clear(): MaybeThenable<boolean | void>,
+  contains(names: Set<string>): MaybeThenable<boolean>,
+}
+
+export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
+  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean,
+  get(name: string): IRBSegment | null,
+  getChangeNumber(): number,
+  clear(): void,
+  contains(names: Set<string>): boolean,
+  // Used only for smart pausing in client-side standalone. Returns true if the storage contains a RBSegment using segments or large segments matchers
+  usesSegments(): boolean,
+}
+
+export interface IRBSegmentsCacheAsync extends IRBSegmentsCacheBase {
+  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): Promise<boolean>,
+  get(name: string): Promise<IRBSegment | null>,
+  getChangeNumber(): Promise<number>,
+  clear(): Promise<boolean | void>,
+  contains(names: Set<string>): Promise<boolean>,
+}
+
 /** Segments cache */
 
 export interface ISegmentsCacheBase {
@@ -419,6 +447,7 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
 
 export interface IStorageBase<
   TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TRBSegmentsCache extends IRBSegmentsCacheBase = IRBSegmentsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
   TImpressionsCountCache extends IImpressionCountsCacheBase = IImpressionCountsCacheBase,
@@ -427,7 +456,9 @@ export interface IStorageBase<
   TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
   splits: TSplitsCache,
+  rbSegments: TRBSegmentsCache,
   segments: TSegmentsCache,
+  largeSegments?: TSegmentsCache,
   impressions: TImpressionsCache,
   impressionCounts: TImpressionsCountCache,
   events: TEventsCache,
@@ -439,6 +470,7 @@ export interface IStorageBase<
 
 export interface IStorageSync extends IStorageBase<
   ISplitsCacheSync,
+  IRBSegmentsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
   IImpressionCountsCacheSync,
@@ -453,6 +485,7 @@ export interface IStorageSync extends IStorageBase<
 
 export interface IStorageAsync extends IStorageBase<
   ISplitsCacheAsync,
+  IRBSegmentsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,
   IImpressionCountsCacheBase,
