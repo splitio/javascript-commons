@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER BOOLEAN / should return true ONLY when the value is true', function () {
+test('MATCHER BOOLEAN / should return true ONLY when the value is true', () => {
   const matcher = matcherFactory(loggerMock, {
     type: matcherTypes.EQUAL_TO_BOOLEAN,
     value: true

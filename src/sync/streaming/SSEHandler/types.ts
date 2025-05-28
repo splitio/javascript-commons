@@ -1,5 +1,5 @@
 import { ControlType } from '../constants';
-import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../types';
+import { SEGMENT_UPDATE, SPLIT_UPDATE, SPLIT_KILL, CONTROL, OCCUPANCY, MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE, RB_SEGMENT_UPDATE } from '../types';
 
 export enum Compression {
   None = 0,
@@ -42,7 +42,7 @@ export interface ISegmentUpdateData {
 }
 
 export interface ISplitUpdateData {
-  type: SPLIT_UPDATE,
+  type: SPLIT_UPDATE | RB_SEGMENT_UPDATE,
   changeNumber: number,
   pcn?: number,
   d?: string,

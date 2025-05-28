@@ -3,7 +3,7 @@ import { matcherFactory } from '..';
 import { IMatcher, IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('MATCHER CONTAINS_ANY_OF_SET / should return true ONLY when value contains any of set ["update", "add"]', function () {
+test('MATCHER CONTAINS_ANY_OF_SET / should return true ONLY when value contains any of set ["update", "add"]', () => {
   const matcher = matcherFactory(loggerMock, {
     negate: false,
     type: matcherTypes.CONTAINS_ANY_OF_SET,

@@ -47,6 +47,10 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
     return startsWith(key, `${this.prefix}.split.`);
   }
 
+  isRBSegmentKey(key: string) {
+    return startsWith(key, `${this.prefix}.rbsegment.`);
+  }
+
   buildSplitsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }

@@ -20,6 +20,7 @@ import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { metadataBuilder } from '../utils';
 import { LOG_PREFIX } from '../pluggable/constants';
+import { RBSegmentsCachePluggable } from './RBSegmentsCachePluggable';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -88,6 +89,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
+      rbSegments: new RBSegmentsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: impressionCountsCache,
