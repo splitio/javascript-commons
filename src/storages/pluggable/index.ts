@@ -1,4 +1,4 @@
-import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams, ITelemetryCacheAsync } from '../types';
+import { IPluggableStorageWrapper, IStorageAsyncFactory, IStorageFactoryParams, ITelemetryCacheAsync } from '../types';
 
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { SplitsCachePluggable } from './SplitsCachePluggable';
@@ -63,11 +63,12 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
   const prefix = validatePrefix(options.prefix);
 
-  function PluggableStorageFactory(params: IStorageFactoryParams): IStorageAsync {
+  function PluggableStorageFactory(params: IStorageFactoryParams) {
     const { onReadyCb, settings, settings: { log, mode, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
+    let connectPromise: Promise<void>;
 
     const isSynchronizer = mode === undefined; // If mode is not defined, the synchronizer is running
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
@@ -86,36 +87,6 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
       new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper);
 
-    // Connects to wrapper and emits SDK_READY event on main client
-    const connectPromise = wrapper.connect().then(() => {
-      if (isSynchronizer) {
-        // @TODO reuse InLocalStorage::validateCache logic
-        // In standalone or producer mode, clear storage if SDK key, flags filter criteria or flags spec version was modified
-        return wrapper.get(keys.buildHashKey()).then((hash) => {
-          const currentHash = getStorageHash(settings);
-          if (hash !== currentHash) {
-            log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key, flags filter criteria or flags spec version was modified). Clearing cache');
-            return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
-              return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
-            }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
-          }
-        }).then(() => {
-          onReadyCb();
-        });
-      } else {
-        // Start periodic flush of async storages if not running synchronizer (producer mode)
-        if ((impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
-        if ((uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
-        if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
-
-        onReadyCb();
-      }
-    }).catch((e) => {
-      e = e || new Error('Error connecting wrapper');
-      onReadyCb(e);
-      return e; // Propagate error for shared clients
-    });
-
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
       rbSegments: new RBSegmentsCachePluggable(log, keys, wrapper),
@@ -126,6 +97,40 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       telemetry,
       uniqueKeys: uniqueKeysCache,
 
+      init() {
+        if (connectPromise) return connectPromise;
+
+        // Connects to wrapper and emits SDK_READY event on main client
+        return connectPromise = wrapper.connect().then(() => {
+          if (isSynchronizer) {
+            // @TODO reuse InLocalStorage::validateCache logic
+            // In standalone or producer mode, clear storage if SDK key, flags filter criteria or flags spec version was modified
+            return wrapper.get(keys.buildHashKey()).then((hash) => {
+              const currentHash = getStorageHash(settings);
+              if (hash !== currentHash) {
+                log.info(LOG_PREFIX + 'Storage HASH has changed (SDK key, flags filter criteria or flags spec version was modified). Clearing cache');
+                return wrapper.getKeysByPrefix(`${keys.prefix}.`).then(storageKeys => {
+                  return Promise.all(storageKeys.map(storageKey => wrapper.del(storageKey)));
+                }).then(() => wrapper.set(keys.buildHashKey(), currentHash));
+              }
+            }).then(() => {
+              onReadyCb();
+            });
+          } else {
+            // Start periodic flush of async storages if not running synchronizer (producer mode)
+            if ((impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
+            if ((uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
+            if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
+
+            onReadyCb();
+          }
+        }).catch((e) => {
+          e = e || new Error('Error connecting wrapper');
+          onReadyCb(e);
+          return e; // Propagate error for shared clients
+        });
+      },
+
       // Stop periodic flush and disconnect the underlying storage
       destroy() {
         return Promise.all(isSynchronizer ? [] : [
@@ -135,8 +140,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       },
 
       // emits SDK_READY event on shared clients and returns a reference to the storage
-      shared(_, onReadyCb) {
-        connectPromise.then(onReadyCb);
+      shared(_: string, onReadyCb: (error?: any) => void) {
+        this.init().then(onReadyCb);
 
         return {
           ...this,

@@ -28,6 +28,7 @@ describe('PLUGGABLE STORAGE', () => {
   test('creates a storage instance', async () => {
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
     const storage = storageFactory(internalSdkParams);
+    storage.init();
 
     assertStorageInterface(storage); // the instance must implement the storage interface
     expect(wrapperMock.connect).toBeCalledTimes(1); // wrapper connect method should be called once when storage is created
@@ -74,6 +75,7 @@ describe('PLUGGABLE STORAGE', () => {
   test('creates a storage instance for partial consumer mode (events and impressions cache in memory)', async () => {
     const storageFactory = PluggableStorage({ prefix, wrapper: wrapperMock });
     const storage = storageFactory({ ...internalSdkParams, settings: { ...internalSdkParams.settings, mode: CONSUMER_PARTIAL_MODE } });
+    storage.init();
 
     assertStorageInterface(storage);
     expect(wrapperMock.connect).toBeCalledTimes(1);
@@ -102,6 +104,7 @@ describe('PLUGGABLE STORAGE', () => {
     // Create storage instance. Wrapper is pollute but doesn't have filter query key, so it should clear the cache
     await new Promise(resolve => {
       storage = storageFactory({ onReadyCb: resolve, settings: { ...fullSettings, mode: undefined } });
+      storage.init();
     });
 
     // Assert that expected caches are present
@@ -121,6 +124,7 @@ describe('PLUGGABLE STORAGE', () => {
     // Create storage instance. This time the wrapper has the current filter query key, so it should not clear the cache
     await new Promise(resolve => {
       storage = storageFactory({ onReadyCb: resolve, settings: { ...fullSettings, mode: undefined } });
+      storage.init();
     });
 
     // Assert that cache was not cleared
