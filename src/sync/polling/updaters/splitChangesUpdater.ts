@@ -18,8 +18,7 @@ type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: In
 // Returns a promise that could be rejected.
 // @TODO review together with Segments and MySegments storage APIs
 function checkAllSegmentsExist(storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments'>): Promise<boolean> {
-  let registeredSegments = Promise.resolve(getRegisteredSegments(storage));
-  return registeredSegments.then(segmentNames => {
+  return getRegisteredSegments(storage).then(segmentNames => {
     return Promise.all(segmentNames.map(segmentName => storage.segments.getChangeNumber(segmentName)))
       .then(changeNumbers => changeNumbers.every(changeNumber => changeNumber !== undefined));
   });
