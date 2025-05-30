@@ -36,24 +36,8 @@ export class SegmentsCacheInMemory implements ISegmentsCacheSync {
     this.segmentChangeNumber = {};
   }
 
-  private _registerSegment(name: string) {
-    if (!this.segmentCache[name]) {
-      this.segmentCache[name] = new Set<string>();
-    }
-
-    return true;
-  }
-
-  registerSegments(names: string[]) {
-    for (let i = 0; i < names.length; i++) {
-      this._registerSegment(names[i]);
-    }
-
-    return true;
-  }
-
-  getRegisteredSegments() {
-    return Object.keys(this.segmentCache);
+  getSegmentsCount() {
+    return Object.keys(this.segmentCache).length;
   }
 
   getKeysCount() {

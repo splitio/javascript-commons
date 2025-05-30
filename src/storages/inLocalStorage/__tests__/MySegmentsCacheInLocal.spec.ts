@@ -17,7 +17,6 @@ test('SEGMENT CACHE / in LocalStorage', () => {
     expect(cache.getChangeNumber()).toBe(-1);
 
     expect(cache.isInSegment('mocked-segment')).toBe(true);
-    expect(cache.getRegisteredSegments()).toEqual(['mocked-segment', 'mocked-segment-2']);
     expect(cache.getKeysCount()).toBe(1);
   });
 
@@ -29,7 +28,6 @@ test('SEGMENT CACHE / in LocalStorage', () => {
     });
 
     expect(cache.isInSegment('mocked-segment')).toBe(false);
-    expect(cache.getRegisteredSegments()).toEqual(['mocked-segment-2']);
     expect(cache.getKeysCount()).toBe(1);
   });
 

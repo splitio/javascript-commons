@@ -21,7 +21,7 @@ export function segmentsSyncTaskFactory(
     segmentChangesUpdaterFactory(
       settings.log,
       segmentChangesFetcherFactory(fetchSegmentChanges),
-      storage.segments,
+      storage,
       readiness,
     ),
     settings.scheduler.segmentsRefreshRate,

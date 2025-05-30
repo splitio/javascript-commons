@@ -29,10 +29,6 @@ export class KeyBuilderSS extends KeyBuilder {
     this.versionablePrefix = `${metadata.s}/${metadata.n}/${metadata.i}`;
   }
 
-  buildRegisteredSegmentsKey() {
-    return `${this.prefix}.segments.registered`;
-  }
-
   buildImpressionsKey() {
     return `${this.prefix}.impressions`;
   }

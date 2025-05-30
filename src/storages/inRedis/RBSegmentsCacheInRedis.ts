@@ -30,6 +30,12 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
     );
   }
 
+  getAll(): Promise<IRBSegment[]> {
+    return this.getNames().then(names => {
+      return Promise.all(names.map(name => this.get(name) as Promise<IRBSegment>));
+    });
+  }
+
   contains(names: Set<string>): Promise<boolean> {
     const namesArray = setToArray(names);
     return this.getNames().then(namesInStorage => {
