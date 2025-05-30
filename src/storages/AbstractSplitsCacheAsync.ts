@@ -31,7 +31,7 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   abstract trafficTypeExists(trafficType: string): Promise<boolean>
   abstract clear(): Promise<boolean | void>
 
-  // @TODO revisit segment-related methods ('usesSegments', 'getRegisteredSegments', 'registerSegments')
+  // @TODO revisit segment-related methods ('usesSegments')
   // noop, just keeping the interface. This is used by standalone client-side API only, and so only implemented by InMemory and InLocalStorage.
   usesSegments(): Promise<boolean> {
     return Promise.resolve(true);

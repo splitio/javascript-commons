@@ -62,26 +62,6 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     });
   }
 
-  /**
-   * Add the given segment names to the set of registered segments.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  registerSegments(segments: string[]) {
-    if (segments.length) {
-      return this.wrapper.addItems(this.keys.buildRegisteredSegmentsKey(), segments);
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  /**
-   * Returns a promise that resolves with the set of registered segments in a list,
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  getRegisteredSegments() {
-    return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
-  }
 
   // @TODO implement if required by DataLoader or Producer mode
   clear(): Promise<boolean> {

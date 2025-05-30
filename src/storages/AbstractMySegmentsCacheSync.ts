@@ -11,6 +11,7 @@ export abstract class AbstractMySegmentsCacheSync implements ISegmentsCacheSync 
   protected abstract addSegment(name: string): boolean
   protected abstract removeSegment(name: string): boolean
   protected abstract setChangeNumber(changeNumber?: number): boolean | void
+  protected abstract getSegments(): string[]
 
   /**
    * For server-side synchronizer: check if `key` is in `name` segment.
@@ -27,14 +28,14 @@ export abstract class AbstractMySegmentsCacheSync implements ISegmentsCacheSync 
 
 
   // No-op. Not used in client-side.
-  registerSegments(): boolean { return false; }
   update() { return false; }
 
   /**
-   * For server-side synchronizer: get the list of segments to fetch changes.
-   * Also used for the `seC` (segment count) telemetry stat.
+   * Used for the `seC` (segment count) telemetry stat.
    */
-  abstract getRegisteredSegments(): string[]
+  getSegmentsCount() {
+    return this.getSegments().length;
+  }
 
   /**
    * Only used for the `skC`(segment keys count) telemetry stat: 1 for client-side, and total count of keys in server-side.
@@ -68,7 +69,7 @@ export abstract class AbstractMySegmentsCacheSync implements ISegmentsCacheSync 
     }
 
     const names = ((segmentsData as IMySegmentsResponse).k || []).map(s => s.n).sort();
-    const storedSegmentKeys = this.getRegisteredSegments().sort();
+    const storedSegmentKeys = this.getSegments().sort();
 
     // Extreme fast => everything is empty
     if (!names.length && !storedSegmentKeys.length) return false;

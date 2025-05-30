@@ -38,7 +38,7 @@ export class MySegmentsCacheInMemory extends AbstractMySegmentsCacheSync {
     return this.cn || -1;
   }
 
-  getRegisteredSegments() {
+  protected getSegments() {
     return Object.keys(this.segmentCache);
   }
 

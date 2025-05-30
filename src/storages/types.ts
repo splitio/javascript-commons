@@ -229,6 +229,7 @@ export interface IRBSegmentsCacheBase {
   getChangeNumber(): MaybeThenable<number>,
   clear(): MaybeThenable<boolean | void>,
   contains(names: Set<string>): MaybeThenable<boolean>,
+  getAll(): MaybeThenable<IRBSegment[]>,
 }
 
 export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
@@ -237,6 +238,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
   getChangeNumber(): number,
   clear(): void,
   contains(names: Set<string>): boolean,
+  getAll(): IRBSegment[],
   // Used only for smart pausing in client-side standalone. Returns true if the storage contains a RBSegment using segments or large segments matchers
   usesSegments(): boolean,
 }
@@ -247,14 +249,13 @@ export interface IRBSegmentsCacheAsync extends IRBSegmentsCacheBase {
   getChangeNumber(): Promise<number>,
   clear(): Promise<boolean | void>,
   contains(names: Set<string>): Promise<boolean>,
+  getAll(): Promise<IRBSegment[]>,
 }
 
 /** Segments cache */
 
 export interface ISegmentsCacheBase {
   isInSegment(name: string, key?: string): MaybeThenable<boolean> // different signature on Server and Client-Side
-  registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
-  getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
   getChangeNumber(name: string): MaybeThenable<number | undefined> // only for Server-Side
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): MaybeThenable<boolean> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
@@ -263,19 +264,17 @@ export interface ISegmentsCacheBase {
 // Same API for both variants: SegmentsCache and MySegmentsCache (client-side API)
 export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   isInSegment(name: string, key?: string): boolean
-  registerSegments(names: string[]): boolean
-  getRegisteredSegments(): string[]
-  getKeysCount(): number // only used for telemetry
   getChangeNumber(name?: string): number | undefined
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): boolean // only for Server-Side
   resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse): boolean // only for Sync Client-Side
   clear(): void
+  // only used for telemetry:
+  getKeysCount(): number
+  getSegmentsCount(): number
 }
 
 export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   isInSegment(name: string, key: string): Promise<boolean>
-  registerSegments(names: string[]): Promise<boolean | void>
-  getRegisteredSegments(): Promise<string[]>
   getChangeNumber(name: string): Promise<number | undefined>
   update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number): Promise<boolean>
   clear(): Promise<boolean | void>

@@ -46,7 +46,7 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
     return localStorage.getItem(this.keys.buildSegmentNameKey(name)) === DEFINED;
   }
 
-  getRegisteredSegments(): string[] {
+  protected getSegments(): string[] {
     // Scan current values from localStorage
     return Object.keys(localStorage).reduce((accum, key) => {
       let segmentName = this.keys.extractSegmentName(key);

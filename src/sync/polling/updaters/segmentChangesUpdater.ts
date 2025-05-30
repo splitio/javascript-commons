@@ -1,9 +1,10 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
-import { ISegmentsCacheBase } from '../../../storages/types';
+import { IStorageBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
+import { getRegisteredSegments } from './splitChangesUpdater';
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -21,9 +22,10 @@ type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noC
 export function segmentChangesUpdaterFactory(
   log: ILogger,
   segmentChangesFetcher: ISegmentChangesFetcher,
-  segments: ISegmentsCacheBase,
+  storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments'>,
   readiness?: IReadinessManager,
 ): ISegmentChangesUpdater {
+  const { segments } = storage;
 
   let readyOnAlreadyExistentState = true;
 
@@ -60,7 +62,7 @@ export function segmentChangesUpdaterFactory(
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
-    let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
+    let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : getRegisteredSegments(storage));
 
     return segmentsPromise.then(segmentNames => {
       // Async fetchers

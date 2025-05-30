@@ -37,16 +37,4 @@ describe('SEGMENTS CACHE PLUGGABLE', () => {
     expect(await cache.isInSegment('inexistent-segment', 'a')).toBe(false);
   });
 
-  test('registerSegment / getRegisteredSegments', async () => {
-    const cache = new SegmentsCachePluggable(loggerMock, keyBuilder, wrapperMock);
-
-    await cache.registerSegments(['s1']);
-    await cache.registerSegments(['s2']);
-    await cache.registerSegments(['s2', 's3', 's4']);
-
-    const segments = await cache.getRegisteredSegments();
-
-    ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
-  });
-
 });

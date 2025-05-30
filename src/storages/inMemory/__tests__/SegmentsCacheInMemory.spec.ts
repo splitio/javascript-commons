@@ -29,16 +29,4 @@ describe('SEGMENTS CACHE IN MEMORY', () => {
     expect(cache.getKeysCount()).toBe(0);
   });
 
-  test('registerSegment / getRegisteredSegments', async () => {
-    const cache = new SegmentsCacheInMemory();
-
-    await cache.registerSegments(['s1']);
-    await cache.registerSegments(['s2']);
-    await cache.registerSegments(['s2', 's3', 's4']);
-
-    const segments = cache.getRegisteredSegments();
-
-    ['s1', 's2', 's3', 's4'].forEach(s => expect(segments.indexOf(s) !== -1).toBe(true));
-  });
-
 });

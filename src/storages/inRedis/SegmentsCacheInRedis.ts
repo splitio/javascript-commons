@@ -51,18 +51,6 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     });
   }
 
-  registerSegments(segments: string[]) {
-    if (segments.length) {
-      return this.redis.sadd(this.keys.buildRegisteredSegmentsKey(), segments).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
-  getRegisteredSegments() {
-    return this.redis.smembers(this.keys.buildRegisteredSegmentsKey());
-  }
-
   // @TODO remove or implement. It is not being used.
   clear() {
     return Promise.resolve();
