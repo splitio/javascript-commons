@@ -34,7 +34,7 @@ function isTillKey(key: string) {
   return key.endsWith('.till');
 }
 
-function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.Storage): StorageAdapter {
+export function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.Storage): StorageAdapter {
   let cache: Record<string, string> = {};
 
   let connectPromise: Promise<void> | undefined;

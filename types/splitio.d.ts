@@ -457,11 +457,11 @@ declare namespace SplitIO {
     /**
      * Returns a promise that resolves when the value of the pair identified by key is set to value, creating a new key/value pair if none existed for key previously.
      */
-    setItem(key: string, value: string): Promise<void>;
-    // /**
-    //  * Returns a promise that resolves when the key/value pair with the given key is removed, if a key/value pair with the given key exists.
-    //  */
-    // removeItem(key: string): Promise<void>;
+    setItem(key: string, value: string): Promise<any>;
+    /**
+     * Returns a promise that resolves when the key/value pair with the given key is removed, if a key/value pair with the given key exists.
+     */
+    removeItem(key: string): Promise<any>;
   }
 
   /**
