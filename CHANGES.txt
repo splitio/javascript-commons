@@ -1,5 +1,5 @@
 2.4.1 (June 3, 2025)
- - Bugfix - Enhanced the Proxy fallback to flag spec version 1.2 to support some Fetch API implementations that might fail to handle Proxy 400 responses.
+ - Bugfix - Improved the Proxy fallback to flag spec version 1.2 to handle cases where the Proxy does not return an end-of-stream marker in 400 status code responses.
 
 2.4.0 (May 27, 2025)
  - Added support for rule-based segments. These segments determine membership at runtime by evaluating their configured rules against the user attributes provided to the SDK.
