@@ -107,8 +107,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   log.info(NEW_FACTORY);
 
-  // @ts-ignore
-  return objectAssign({
+  const factory = objectAssign({
     // Split evaluation and event tracking engine
     client: clientMethod,
 
@@ -126,6 +125,17 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     destroy() {
       hasInit = false;
       return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
-    }
+    },
+
+    __ctx: ctx
   }, extraProps && extraProps(ctx), lazyInit ? { init } : init());
+
+  // append factory to global
+  if (typeof window === 'object') { // @ts-ignore
+    // eslint-disable-next-line no-undef
+    (window.__HARNESS_FME__ = window.__HARNESS_FME__ || []).push(factory);
+  }
+
+  // @ts-ignore
+  return factory;
 }

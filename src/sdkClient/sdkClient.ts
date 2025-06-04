@@ -48,6 +48,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
 
     // Sdk destroy
     {
+      __ctx: params,
       flush() {
         // @TODO define cooldown time
         return __cooldown(__flush, COOLDOWN_TIME_IN_MILLIS);
