@@ -20,7 +20,7 @@ export function impressionsTrackerFactory(
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
 ): IImpressionsTracker {
 
-  const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
+  const { log, runtime: { ip, hostname }, version } = settings;
 
   return {
     track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
@@ -56,7 +56,7 @@ export function impressionsTrackerFactory(
       }
 
       // @TODO next block might be handled by the integration manager. In that case, the metadata object doesn't need to be passed in the constructor
-      if (impressionListener || integrationsManager) {
+      if (settings.impressionListener || integrationsManager) {
         for (let i = 0; i < impressionsLength; i++) {
           const impressionData: SplitIO.ImpressionData = {
             // copy of impression, to avoid unexpected behavior if modified by integrations or impressionListener
@@ -74,7 +74,7 @@ export function impressionsTrackerFactory(
               if (integrationsManager) integrationsManager.handleImpression(impressionData);
 
               try { // @ts-ignore. An exception on the listeners should not break the SDK.
-                if (impressionListener) impressionListener.logImpression(impressionData);
+                if (settings.impressionListener) settings.impressionListener.logImpression(impressionData);
               } catch (err) {
                 log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
               }
