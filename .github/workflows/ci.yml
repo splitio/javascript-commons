@@ -33,6 +33,9 @@ jobs:
       - name: npm Check
         run: npm run check
 
+      - name: npm ts tests
+        run: npm run test-ts-decls
+
       - name: npm Test
         run: npm run test
 
