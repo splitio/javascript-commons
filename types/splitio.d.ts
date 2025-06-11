@@ -66,12 +66,17 @@ interface ISharedSettings {
        *
        * @example
        * ```
-       * const getHeaderOverrides = (context) => {
-       *   return {
-       *     'Authorization': context.headers['Authorization'] + ', other-value',
-       *     'custom-header': 'custom-value'
-       *   };
-       * };
+       * const factory = SplitFactory({
+       *   ...
+       *   sync: {
+       *     getHeaderOverrides(context) {
+       *       return {
+       *         'Authorization': context.headers['Authorization'] + ', other-value',
+       *         'custom-header': 'custom-value'
+       *       };
+       *     }
+       *   }
+       * });
        * ```
        */
       getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
@@ -952,7 +957,7 @@ declare namespace SplitIO {
      */
     prefix?: string;
     /**
-     * Number of days before cached data expires if it was not updated. If cache expires, it is cleared on initialization.
+     * Number of days before cached data expires if it was not successfully synchronized (i.e., last SDK_READY or SDK_UPDATE event emitted). If cache expires, it is cleared on initialization.
      *
      * @defaultValue `10`
      */
@@ -1292,7 +1297,7 @@ declare namespace SplitIO {
        */
       prefix?: string;
       /**
-       * Optional settings for the 'LOCALSTORAGE' storage type. It specifies the number of days before cached data expires if it was not updated. If cache expires, it is cleared on initialization.
+       * Optional settings for the 'LOCALSTORAGE' storage type. It specifies the number of days before cached data expires if it was not successfully synchronized (i.e., last SDK_READY or SDK_UPDATE event emitted). If cache expires, it is cleared on initialization.
        *
        * @defaultValue `10`
        */
@@ -1350,12 +1355,17 @@ declare namespace SplitIO {
          *
          * @example
          * ```
-         * const getHeaderOverrides = (context) => {
-         *   return {
-         *     'Authorization': context.headers['Authorization'] + ', other-value',
-         *     'custom-header': 'custom-value'
-         *   };
-         * };
+         * const factory = SplitFactory({
+         *   ...
+         *   sync: {
+         *     getHeaderOverrides(context) {
+         *       return {
+         *         'Authorization': context.headers['Authorization'] + ', other-value',
+         *         'custom-header': 'custom-value'
+         *       };
+         *     }
+         *   }
+         * });
          * ```
          */
         getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
