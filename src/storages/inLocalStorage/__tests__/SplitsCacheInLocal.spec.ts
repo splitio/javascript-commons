@@ -173,6 +173,9 @@ test('SPLITS CACHE / LocalStorage / flag set cache tests', () => {
   ], [], -1);
   cache.addSplit(featureFlagWithEmptyFS);
 
+  // Adding an existing FF should not affect the cache
+  cache.update([featureFlagTwo], [], -1);
+
   expect(cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
   expect(cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
   expect(cache.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
