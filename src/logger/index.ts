@@ -41,6 +41,7 @@ const defaultOptions = {
   prefix: 'splitio',
   logLevel: LogLevels.NONE,
   showLevel: true,
+  logger(formattedMsg: string) { console.log(formattedMsg); }
 };
 
 export class Logger implements ILogger {
@@ -53,6 +54,10 @@ export class Logger implements ILogger {
     this.options = objectAssign({}, defaultOptions, options);
     this.codes = codes || new Map();
     this.logLevel = LogLevelIndexes[this.options.logLevel];
+  }
+
+  setLogger(logger: (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void) {
+    this.options.logger = logger;
   }
 
   setLogLevel(logLevel: SplitIO.LogLevel) {
@@ -86,7 +91,7 @@ export class Logger implements ILogger {
 
     const formattedText = this._generateLogMessage(level, msg);
 
-    console.log(formattedText);
+    this.options.logger(formattedText, level, msg);
   }
 
   private _generateLogMessage(level: SplitIO.LogLevel, text: string) {

@@ -6,6 +6,7 @@ export const loggerMock = {
   debug: jest.fn(),
   info: jest.fn(),
   setLogLevel: jest.fn(),
+  setLogger: jest.fn(),
 
   mockClear() {
     this.warn.mockClear();

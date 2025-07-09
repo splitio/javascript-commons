@@ -87,6 +87,7 @@ interface ISharedSettings {
    * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
    */
   urls?: SplitIO.UrlSettings;
+  logger?: (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void;
 }
 /**
  * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
@@ -559,6 +560,7 @@ declare namespace SplitIO {
       telemetry: string;
     };
     readonly integrations?: IntegrationFactory[];
+    readonly logger?: (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void;
     readonly debug: boolean | LogLevel | ILogger;
     readonly version: string;
     /**
