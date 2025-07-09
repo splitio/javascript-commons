@@ -70,7 +70,7 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
         }
 
         if (!resp || resp.status !== 403) { // 403's log we'll be handled somewhere else.
-          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? resp.status : 'NO_STATUS', url, msg]);
+          log[logErrorsAsInfo ? 'info' : 'error'](ERROR_HTTP, [resp ? 'status code ' + resp.status : 'no status code', url, msg]);
         }
 
         const networkError: NetworkError = new Error(msg);
