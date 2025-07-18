@@ -4,7 +4,7 @@ import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
-import { isLocalStorageAvailable, isStorageValid } from '../../utils/env/isLocalStorageAvailable';
+import { isLocalStorageAvailable, isStorageWrapperValid } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
@@ -34,7 +34,7 @@ function isTillKey(key: string) {
   return key.endsWith('.till');
 }
 
-export function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.Storage): StorageAdapter {
+export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): StorageAdapter {
   let cache: Record<string, string> = {};
 
   let connectPromise: Promise<void> | undefined;
@@ -42,7 +42,7 @@ export function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.St
 
   return {
     load() {
-      return connectPromise || (connectPromise = storage.getItem(prefix).then((storedCache) => {
+      return connectPromise || (connectPromise = wrapper.getItem(prefix).then((storedCache) => {
         cache = JSON.parse(storedCache || '{}');
       }).catch((e) => {
         log.error(LOG_PREFIX + 'Rejected promise calling storage getItem, with error: ' + e);
@@ -50,7 +50,7 @@ export function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.St
     },
     save() {
       return disconnectPromise = disconnectPromise.then(() => {
-        return storage.setItem(prefix, JSON.stringify(cache)).catch((e) => {
+        return wrapper.setItem(prefix, JSON.stringify(cache)).catch((e) => {
           log.error(LOG_PREFIX + 'Rejected promise calling storage setItem, with error: ' + e);
         });
       });
@@ -76,9 +76,9 @@ export function storageAdapter(log: ILogger, prefix: string, storage: SplitIO.St
   };
 }
 
-function validateStorage(log: ILogger, prefix: string, storage?: SplitIO.Storage): StorageAdapter | undefined {
-  if (storage) {
-    if (isStorageValid(storage)) return storageAdapter(log, prefix, storage);
+function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
+  if (wrapper) {
+    if (isStorageWrapperValid(wrapper)) return storageAdapter(log, prefix, wrapper);
     log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
   }
 
@@ -97,7 +97,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
 
-    const storage = validateStorage(log, prefix, options.storage);
+    const storage = validateStorage(log, prefix, options.wrapper);
     if (!storage) return InMemoryStorageCSFactory(params);
 
     const matchingKey = getMatching(settings.core.key);

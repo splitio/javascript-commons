@@ -35,12 +35,12 @@ describe('IN LOCAL STORAGE', () => {
     expect(storage).toBe(fakeInMemoryStorage);
 
     // @ts-expect-error Provided storage is invalid
-    storageFactory = InLocalStorage({ prefix: 'prefix', storage: {} });
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: {} });
     storage = storageFactory(internalSdkParams);
     expect(storage).toBe(fakeInMemoryStorage);
 
     // Provided storage is valid
-    storageFactory = InLocalStorage({ prefix: 'prefix', storage: { getItem: () => Promise.resolve(null), setItem: () => Promise.resolve(), removeItem: () => Promise.resolve() } });
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: { getItem: () => Promise.resolve(null), setItem: () => Promise.resolve(), removeItem: () => Promise.resolve() } });
     storage = storageFactory(internalSdkParams);
     expect(storage).not.toBe(fakeInMemoryStorage);
 

@@ -1,18 +1,18 @@
 export function isLocalStorageAvailable(): boolean {
   try {
     // eslint-disable-next-line no-undef
-    return isStorageValid(localStorage);
+    return isStorageWrapperValid(localStorage);
   } catch (e) {
     return false;
   }
 }
 
-export function isStorageValid(storage: any): boolean {
+export function isStorageWrapperValid(wrapper: any): boolean {
   var mod = '__SPLITSOFTWARE__';
   try {
-    storage.setItem(mod, mod);
-    storage.getItem(mod);
-    storage.removeItem(mod);
+    wrapper.setItem(mod, mod);
+    wrapper.getItem(mod);
+    wrapper.removeItem(mod);
     return true;
   } catch (e) {
     return false;

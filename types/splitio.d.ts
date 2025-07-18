@@ -449,7 +449,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
  */
 declare namespace SplitIO {
 
-  interface Storage {
+  interface StorageWrapper {
     /**
      * Returns a promise that resolves to the current value associated with the given key, or null if the given key does not exist.
      */
@@ -979,11 +979,11 @@ declare namespace SplitIO {
      */
     clearOnInit?: boolean;
     /**
-     * Optional storage API to persist rollout plan related data. If not provided, the SDK will use the default localStorage Web API.
+     * Optional storage wrapper to persist rollout plan related data. If not provided, the SDK will use the default localStorage Web API.
      *
      * @defaultValue `window.localStorage`
      */
-    storage?: Storage;
+    wrapper?: StorageWrapper;
   }
   /**
    * Storage for asynchronous (consumer) SDK.
@@ -1325,11 +1325,11 @@ declare namespace SplitIO {
        */
       clearOnInit?: boolean;
       /**
-       * Optional storage API to persist rollout plan related data. If not provided, the SDK will use the default localStorage Web API.
+       * Optional storage wrapper to persist rollout plan related data. If not provided, the SDK will use the default localStorage Web API.
        *
        * @defaultValue `window.localStorage`
        */
-      storage?: Storage;
+      wrapper?: StorageWrapper;
     };
   }
   /**
