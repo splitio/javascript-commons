@@ -1,5 +1,6 @@
 1.17.1 (July 25, 2025)
  - Updated the Redis storage to avoid lazy require of the `ioredis` dependency when the SDK is initialized.
+ - Updated some transitive dependencies for vulnerability fixes.
  - Bugfix - Enhanced HTTP client module to implement timeouts for failing requests that might otherwise remain pending indefinitely on some Fetch API implementations, pausing the SDK synchronization process.
  - Bugfix - Properly handle rejected promises when using targeting rules with segment matchers in consumer modes (e.g., Redis and Pluggable storages).
  - Bugfix - Sanitize the `SplitSDKMachineName` header value to avoid exceptions on HTTP/S requests when it contains non ISO-8859-1 characters (Related to issue https://github.com/splitio/javascript-client/issues/847).
