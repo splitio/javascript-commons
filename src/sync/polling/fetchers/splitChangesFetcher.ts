@@ -40,9 +40,9 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges
     }
 
     let splitsPromise = fetchSplitChanges(since, noCache, till, settings.sync.flagSpecVersion === FLAG_SPEC_VERSION ? rbSince : undefined)
-      // Handle proxy error with spec 1.3
       .catch((err) => {
-        if (err.statusCode === 400 && sdkEndpointOverridden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
+        // Handle proxy error with spec 1.3
+        if ((!err.statusCode || err.statusCode === 400) && sdkEndpointOverridden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
           log.error(LOG_PREFIX_SYNC_SPLITS + 'Proxy error detected. Retrying with spec 1.2. If you are using Split Proxy, please upgrade to latest version');
           lastProxyCheckTimestamp = Date.now();
           settings.sync.flagSpecVersion = '1.2'; // fallback to 1.2 spec
