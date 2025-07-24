@@ -1,3 +1,6 @@
+1.17.1 (July 25, 2025)
+ - Bugfix - Enhanced HTTP client module to implement timeouts for failing requests that might otherwise remain pending indefinitely on some Fetch API implementations, pausing the SDK synchronization process.
+
 1.17.0 (September 6, 2024)
  - Added `sync.requestOptions.getHeaderOverrides` configuration option to enhance SDK HTTP request Headers for Authorization Frameworks.
  - Added `isTimedout` and `lastUpdate` properties to IStatusInterface to keep track of the timestamp of the last SDK event, used on React and Redux SDKs.
