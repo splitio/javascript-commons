@@ -36,9 +36,9 @@ export function segmentChangesUpdaterFactory(
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      if (fetchOnlyNew && since !== -1) return -1;
+      if (fetchOnlyNew && since !== undefined) return -1;
 
-      return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
+      return segmentChangesFetcher(since || -1, segmentName, noCache, till).then(function (changes) {
         let changeNumber = -1;
         const results: MaybeThenable<boolean | void>[] = [];
         changes.forEach(x => {
