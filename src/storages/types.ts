@@ -256,7 +256,7 @@ export interface ISegmentsCacheBase {
   registerSegments(names: string[]): MaybeThenable<boolean | void> // only for Server-Side
   getRegisteredSegments(): MaybeThenable<string[]> // only for Server-Side
   setChangeNumber(name: string, changeNumber: number): MaybeThenable<boolean | void> // only for Server-Side
-  getChangeNumber(name: string): MaybeThenable<number> // only for Server-Side
+  getChangeNumber(name: string): MaybeThenable<number | undefined> // only for Server-Side
   clear(): MaybeThenable<boolean | void>
 }
 
@@ -269,7 +269,7 @@ export interface ISegmentsCacheSync extends ISegmentsCacheBase {
   getRegisteredSegments(): string[]
   getKeysCount(): number // only used for telemetry
   setChangeNumber(name: string, changeNumber: number): boolean
-  getChangeNumber(name: string): number
+  getChangeNumber(name: string): number | undefined
   resetSegments(names: string[]): boolean // only for Sync Client-Side
   clear(): void
 }
@@ -281,7 +281,7 @@ export interface ISegmentsCacheAsync extends ISegmentsCacheBase {
   registerSegments(names: string[]): Promise<boolean | void>
   getRegisteredSegments(): Promise<string[]>
   setChangeNumber(name: string, changeNumber: number): Promise<boolean | void>
-  getChangeNumber(name: string): Promise<number>
+  getChangeNumber(name: string): Promise<number | undefined>
   clear(): Promise<boolean | void>
 }
 

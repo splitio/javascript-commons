@@ -83,7 +83,7 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
   getChangeNumber(name: string) {
     const value = this.segmentChangeNumber[name];
 
-    return isIntegerNumber(value) ? value : -1;
+    return isIntegerNumber(value) ? value : undefined;
   }
 
 }

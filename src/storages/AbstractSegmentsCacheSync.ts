@@ -58,7 +58,7 @@ export abstract class AbstractSegmentsCacheSync implements ISegmentsCacheSync {
    * For server-side synchronizer: get the change number of `name` segment.
    * For client-side synchronizer: the method is not used.
    */
-  getChangeNumber(name: string): number { return -1; }
+  getChangeNumber(name: string): number | undefined { return -1; }
 
   /**
    * For server-side synchronizer: the method is not used.

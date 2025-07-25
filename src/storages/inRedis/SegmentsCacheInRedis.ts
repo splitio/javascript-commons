@@ -53,10 +53,10 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     return this.redis.get(this.keys.buildSegmentTillKey(name)).then((value: string | null) => {
       const i = parseInt(value as string, 10);
 
-      return isNaNNumber(i) ? -1 : i;
+      return isNaNNumber(i) ? undefined : i;
     }).catch((e) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
-      return -1;
+      return undefined;
     });
   }
 

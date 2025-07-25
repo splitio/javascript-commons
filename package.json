@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "1.17.0",
+  "version": "1.17.1",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -26,7 +26,7 @@
     "test:coverage": "jest --coverage",
     "all": "npm run check && npm run build && npm run test",
     "publish:rc": "npm run check && npm run test && npm run build && npm publish --tag rc",
-    "publish:stable": "npm run check && npm run test && npm run build && npm publish"
+    "publish:stable": "npm run check && npm run test && npm run build && npm publish --tag release-1.x"
   },
   "repository": {
     "type": "git",
