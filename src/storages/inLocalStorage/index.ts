@@ -4,7 +4,7 @@ import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
-import { isLocalStorageAvailable, isStorageValid } from '../../utils/env/isLocalStorageAvailable';
+import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
@@ -18,12 +18,7 @@ import { validateCache } from './validateCache';
 import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 
-function validateStorage(log: ILogger, storage?: SplitIO.Storage) {
-  if (storage) {
-    if (isStorageValid(storage)) return storage;
-    log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
-  }
-
+function validateStorage(log: ILogger) {
   if (isLocalStorageAvailable()) return localStorage;
 
   log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
@@ -39,7 +34,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
 
-    const storage = validateStorage(log, options.storage);
+    const storage = validateStorage(log);
     if (!storage) return InMemoryStorageCSFactory(params);
 
     const matchingKey = getMatching(settings.core.key);

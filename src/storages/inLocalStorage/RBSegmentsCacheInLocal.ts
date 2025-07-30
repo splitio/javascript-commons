@@ -5,25 +5,24 @@ import { isFiniteNumber, isNaNNumber, toNumber } from '../../utils/lang';
 import { setToArray } from '../../utils/lang/sets';
 import { usesSegments } from '../AbstractSplitsCacheSync';
 import { KeyBuilderCS } from '../KeyBuilderCS';
-import { IRBSegmentsCacheSync } from '../types';
+import { IRBSegmentsCacheSync, StorageAdapter } from '../types';
 import { LOG_PREFIX } from './constants';
-import SplitIO from '../../../types/splitio';
 
 export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
-  private readonly localStorage: SplitIO.Storage;
+  private readonly storage: StorageAdapter;
 
-  constructor(settings: ISettings, keys: KeyBuilderCS, localStorage: SplitIO.Storage) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, storage: StorageAdapter) {
     this.keys = keys;
     this.log = settings.log;
-    this.localStorage = localStorage;
+    this.storage = storage;
   }
 
   clear() {
     this.getNames().forEach(name => this.remove(name));
-    this.localStorage.removeItem(this.keys.buildRBSegmentsTillKey());
+    this.storage.removeItem(this.keys.buildRBSegmentsTillKey());
   }
 
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean {
@@ -35,8 +34,8 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private setChangeNumber(changeNumber: number) {
     try {
-      this.localStorage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
-      this.localStorage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
+      this.storage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
+      this.storage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
     }
@@ -44,20 +43,19 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   private updateSegmentCount(diff: number) {
     const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-    const count = toNumber(this.localStorage.getItem(segmentsCountKey)) + diff;
-    // @ts-expect-error
-    if (count > 0) this.localStorage.setItem(segmentsCountKey, count);
-    else this.localStorage.removeItem(segmentsCountKey);
+    const count = toNumber(this.storage.getItem(segmentsCountKey)) + diff;
+    if (count > 0) this.storage.setItem(segmentsCountKey, count + '');
+    else this.storage.removeItem(segmentsCountKey);
   }
 
   private add(rbSegment: IRBSegment): boolean {
     try {
       const name = rbSegment.name;
       const rbSegmentKey = this.keys.buildRBSegmentKey(name);
-      const rbSegmentFromLocalStorage = this.localStorage.getItem(rbSegmentKey);
-      const previous = rbSegmentFromLocalStorage ? JSON.parse(rbSegmentFromLocalStorage) : null;
+      const rbSegmentFromStorage = this.storage.getItem(rbSegmentKey);
+      const previous = rbSegmentFromStorage ? JSON.parse(rbSegmentFromStorage) : null;
 
-      this.localStorage.setItem(rbSegmentKey, JSON.stringify(rbSegment));
+      this.storage.setItem(rbSegmentKey, JSON.stringify(rbSegment));
 
       let usesSegmentsDiff = 0;
       if (previous && usesSegments(previous)) usesSegmentsDiff--;
@@ -76,7 +74,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
       const rbSegment = this.get(name);
       if (!rbSegment) return false;
 
-      this.localStorage.removeItem(this.keys.buildRBSegmentKey(name));
+      this.storage.removeItem(this.keys.buildRBSegmentKey(name));
 
       if (usesSegments(rbSegment)) this.updateSegmentCount(-1);
 
@@ -88,13 +86,13 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   private getNames(): string[] {
-    const len = this.localStorage.length;
+    const len = this.storage.length;
     const accum = [];
 
     let cur = 0;
 
     while (cur < len) {
-      const key = this.localStorage.key(cur);
+      const key = this.storage.key(cur);
 
       if (key != null && this.keys.isRBSegmentKey(key)) accum.push(this.keys.extractKey(key));
 
@@ -105,7 +103,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   get(name: string): IRBSegment | null {
-    const item = this.localStorage.getItem(this.keys.buildRBSegmentKey(name));
+    const item = this.storage.getItem(this.keys.buildRBSegmentKey(name));
     return item && JSON.parse(item);
   }
 
@@ -117,7 +115,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
 
   getChangeNumber(): number {
     const n = -1;
-    let value: string | number | null = this.localStorage.getItem(this.keys.buildRBSegmentsTillKey());
+    let value: string | number | null = this.storage.getItem(this.keys.buildRBSegmentsTillKey());
 
     if (value !== null) {
       value = parseInt(value, 10);
@@ -129,7 +127,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   usesSegments(): boolean {
-    const storedCount = this.localStorage.getItem(this.keys.buildSplitsWithSegmentCountKey());
+    const storedCount = this.storage.getItem(this.keys.buildSplitsWithSegmentCountKey());
     const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 
     return isFiniteNumber(splitsWithSegmentsCount) ?
