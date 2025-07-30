@@ -18,3 +18,15 @@ export function isValidStorageWrapper(wrapper: any): boolean {
     return false;
   }
 }
+
+export function isWebStorage(wrapper: any): boolean {
+  if (typeof wrapper.length === 'number') {
+    try {
+      wrapper.key(0);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+}

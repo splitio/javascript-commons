@@ -4,7 +4,7 @@ import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory, StorageAdapter } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
-import { isLocalStorageAvailable, isValidStorageWrapper } from '../../utils/env/isLocalStorageAvailable';
+import { isLocalStorageAvailable, isValidStorageWrapper, isWebStorage } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
@@ -66,7 +66,11 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
 
 function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
   if (wrapper) {
-    if (isValidStorageWrapper(wrapper)) return storageAdapter(log, prefix, wrapper);
+    if (isValidStorageWrapper(wrapper)) {
+      return isWebStorage(wrapper) ?
+        wrapper as StorageAdapter: // localStorage and sessionStorage don't need adapter
+        storageAdapter(log, prefix, wrapper);
+    }
     log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
   }
 
