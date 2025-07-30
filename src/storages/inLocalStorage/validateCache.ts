@@ -68,7 +68,8 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
  * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
  */
 export function validateCache(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
-  return new Promise<boolean>((resolve) => {
+
+  return Promise.resolve().then(() => {
     const currentTimestamp = Date.now();
     const isThereCache = splits.getChangeNumber() > -1;
 
@@ -85,10 +86,10 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, settings: 
         settings.log.error(LOG_PREFIX + e);
       }
 
-      resolve(false);
+      return false;
     }
 
     // Check if ready from cache
-    resolve(isThereCache);
+    return isThereCache;
   });
 }
