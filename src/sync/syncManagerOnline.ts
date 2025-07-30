@@ -89,7 +89,7 @@ export function syncManagerOnlineFactory(
       start() {
         running = true;
 
-        // @TODO call after `validateCache` promise once there are InLocal versions for event, impression and telemetry storages
+        // @TODO once event, impression and telemetry storages support persistence, call when `validateCache` promise is resolved
         submitterManager.start(!isConsentGranted(settings));
 
         return Promise.resolve(storage.validateCache ? storage.validateCache() : false).then((isCacheLoaded) => {
