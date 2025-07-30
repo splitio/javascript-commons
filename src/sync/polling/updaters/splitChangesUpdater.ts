@@ -59,7 +59,7 @@ interface ISplitMutations<T extends ISplit | IRBSegment> {
 
 /**
  * If there are defined filters and one feature flag doesn't match with them, its status is changed to 'ARCHIVE' to avoid storing it
- * If there are set filter defined, names filter is ignored
+ * If there is `bySet` filter, `byName` and `byPrefix` filters are ignored
  *
  * @param featureFlag - feature flag to be evaluated
  * @param filters - splitFiltersValidation bySet | byName
