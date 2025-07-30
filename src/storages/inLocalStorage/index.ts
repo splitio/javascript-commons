@@ -67,7 +67,6 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       },
 
       destroy() {
-        // @TODO return `storageWrapper.disconnect()`
         return Promise.resolve();
       },
 
