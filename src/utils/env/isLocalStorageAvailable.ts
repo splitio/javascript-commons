@@ -1,13 +1,13 @@
 export function isLocalStorageAvailable(): boolean {
   try {
     // eslint-disable-next-line no-undef
-    return isStorageWrapperValid(localStorage);
+    return isValidStorageWrapper(localStorage);
   } catch (e) {
     return false;
   }
 }
 
-export function isStorageWrapperValid(wrapper: any): boolean {
+export function isValidStorageWrapper(wrapper: any): boolean {
   var mod = '__SPLITSOFTWARE__';
   try {
     wrapper.setItem(mod, mod);

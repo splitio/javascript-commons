@@ -5,6 +5,22 @@ import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync,
 import { ISettings } from '../types';
 
 /**
+ * Internal interface based on a subset of the Web Storage API interface
+ * (https://developer.mozilla.org/en-US/docs/Web/API/Storage) used by the SDK
+ */
+export interface StorageAdapter {
+  // Methods to support async storages
+  load?: () => Promise<void>;
+  save?: () => Promise<void>;
+  // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
+  readonly length: number;
+  getItem(key: string): string | null;
+  key(index: number): string | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: string): void;
+}
+
+/**
  * Interface of a pluggable storage wrapper.
  */
 export interface IPluggableStorageWrapper {

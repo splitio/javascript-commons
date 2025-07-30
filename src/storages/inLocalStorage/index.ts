@@ -1,10 +1,10 @@
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory, StorageAdapter } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
-import { isLocalStorageAvailable, isStorageWrapperValid } from '../../utils/env/isLocalStorageAvailable';
+import { isLocalStorageAvailable, isValidStorageWrapper } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
 import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
@@ -18,18 +18,6 @@ import { validateCache } from './validateCache';
 import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 
-export interface StorageAdapter {
-  // Methods to support async storages
-  load?: () => Promise<void>;
-  save?: () => Promise<void>;
-  // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
-  readonly length: number;
-  getItem(key: string): string | null;
-  key(index: number): string | null;
-  removeItem(key: string): void;
-  setItem(key: string, value: string): void;
-}
-
 function isTillKey(key: string) {
   return key.endsWith('.till');
 }
@@ -42,7 +30,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
 
   return {
     load() {
-      return connectPromise || (connectPromise = wrapper.getItem(prefix).then((storedCache) => {
+      return connectPromise || (connectPromise = Promise.resolve(wrapper.getItem(prefix)).then((storedCache) => {
         cache = JSON.parse(storedCache || '{}');
       }).catch((e) => {
         log.error(LOG_PREFIX + 'Rejected promise calling storage getItem, with error: ' + e);
@@ -50,7 +38,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
     },
     save() {
       return disconnectPromise = disconnectPromise.then(() => {
-        return wrapper.setItem(prefix, JSON.stringify(cache)).catch((e) => {
+        return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache))).catch((e) => {
           log.error(LOG_PREFIX + 'Rejected promise calling storage setItem, with error: ' + e);
         });
       });
@@ -78,7 +66,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
 
 function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
   if (wrapper) {
-    if (isStorageWrapperValid(wrapper)) return storageAdapter(log, prefix, wrapper);
+    if (isValidStorageWrapper(wrapper)) return storageAdapter(log, prefix, wrapper);
     log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
   }
 
