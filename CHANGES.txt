@@ -1,3 +1,6 @@
+2.5.0 (August XX, 2025)
+ - Added `storage.wrapper` configuration option to allow the SDK to use a custom storage wrapper for the storage type `LOCALSTORAGE`. Default value is `window.localStorage`.
+
 2.4.1 (June 3, 2025)
  - Bugfix - Improved the Proxy fallback to flag spec version 1.2 to handle cases where the Proxy does not return an end-of-stream marker in 400 status code responses.
 
