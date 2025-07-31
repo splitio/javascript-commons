@@ -1,4 +1,4 @@
-import { storageAdapter } from '..';
+import { storageAdapter } from '../storageAdapter';
 import SplitIO from '../../../../types/splitio';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
