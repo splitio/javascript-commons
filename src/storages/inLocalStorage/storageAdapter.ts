@@ -10,23 +10,29 @@ function isTillKey(key: string) {
 export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): StorageAdapter {
   let cache: Record<string, string> = {};
 
-  let connectPromise: Promise<void> | undefined;
-  let disconnectPromise = Promise.resolve();
+  let loadPromise: Promise<void> | undefined;
+  let savePromise = Promise.resolve();
+
+  function _save() {
+    return savePromise = savePromise.then(() => {
+      return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
+    }).catch((e) => {
+      log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
+    });
+  }
 
   return {
     load() {
-      return connectPromise || (connectPromise = Promise.resolve(wrapper.getItem(prefix)).then((storedCache) => {
+      return loadPromise || (loadPromise = Promise.resolve().then(() => {
+        return wrapper.getItem(prefix);
+      }).then((storedCache) => {
         cache = JSON.parse(storedCache || '{}');
       }).catch((e) => {
-        log.error(LOG_PREFIX + 'Rejected promise calling storage getItem, with error: ' + e);
+        log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
       }));
     },
     save() {
-      return disconnectPromise = disconnectPromise.then(() => {
-        return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache))).catch((e) => {
-          log.error(LOG_PREFIX + 'Rejected promise calling storage setItem, with error: ' + e);
-        });
-      });
+      return savePromise;
     },
 
     get length() {
@@ -40,11 +46,11 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
     },
     removeItem(key: string) {
       delete cache[key];
-      if (isTillKey(key)) this.save!();
+      if (isTillKey(key)) _save();
     },
     setItem(key: string, value: string) {
       cache[key] = value;
-      if (isTillKey(key)) this.save!();
+      if (isTillKey(key)) _save();
     }
   };
 }
