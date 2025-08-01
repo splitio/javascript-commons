@@ -8,13 +8,18 @@ function isTillKey(key: string) {
 }
 
 export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): StorageAdapter {
-  let cache: Record<string, string> = {};
+  let keys: string[] = [];
+  let values: string[] = [];
 
   let loadPromise: Promise<void> | undefined;
   let savePromise = Promise.resolve();
 
   function _save() {
     return savePromise = savePromise.then(() => {
+      const cache = keys.reduce((acc, key, index) => {
+        acc[key] = values[index];
+        return acc;
+      }, {} as Record<string, string>);
       return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
     }).catch((e) => {
       log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
@@ -26,7 +31,9 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
       return loadPromise || (loadPromise = Promise.resolve().then(() => {
         return wrapper.getItem(prefix);
       }).then((storedCache) => {
-        cache = JSON.parse(storedCache || '{}');
+        const cache = JSON.parse(storedCache || '{}');
+        keys = Object.keys(cache);
+        values = keys.map(key => cache[key]);
       }).catch((e) => {
         log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
       }));
@@ -36,20 +43,29 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
     },
 
     get length() {
-      return Object.keys(cache).length;
+      return keys.length;
     },
     getItem(key: string) {
-      return cache[key] || null;
+      const index = keys.indexOf(key);
+      if (index === -1) return null;
+      return values[index];
     },
     key(index: number) {
-      return Object.keys(cache)[index] || null;
+      return keys[index] || null;
     },
     removeItem(key: string) {
-      delete cache[key];
+      const index = keys.indexOf(key);
+      if (index === -1) return;
+      keys.splice(index, 1);
+      values.splice(index, 1);
+
       if (isTillKey(key)) _save();
     },
     setItem(key: string, value: string) {
-      cache[key] = value;
+      let index = keys.indexOf(key);
+      if (index === -1) index = keys.push(key) - 1;
+      values[index] = value;
+
       if (isTillKey(key)) _save();
     }
   };
