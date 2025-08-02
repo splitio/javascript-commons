@@ -21,38 +21,45 @@ test.each([
 
   const storage = storageAdapter(loggerMock, 'prefix', wrapper);
 
-  await storage.load!();
+  expect(storage.length).toBe(0);
+
+  // Load cache from storage wrapper
+  await storage.load();
 
   expect(wrapper.getItem).toHaveBeenCalledWith('prefix');
-
   expect(storage.length).toBe(1);
   expect(storage.key(0)).toBe('key1');
   expect(storage.getItem('key1')).toBe('value1');
 
+  // Set item
   storage.setItem('key2', 'value2');
   expect(storage.getItem('key2')).toBe('value2');
   expect(storage.length).toBe(2);
 
+  // Remove item
   storage.removeItem('key1');
   expect(storage.getItem('key1')).toBe(null);
   expect(storage.length).toBe(1);
 
-  await storage.save!();
+  // Until a till key is set/removed, changes should not be saved/persisted
+  await storage.whenSaved();
   expect(wrapper.setItem).not.toHaveBeenCalled();
 
+  // When setting a till key, changes should be saved/persisted immediately
   storage.setItem('.till', '1');
   expect(storage.length).toBe(2);
   expect(storage.key(0)).toBe('key2');
   expect(storage.key(1)).toBe('.till');
 
-  await storage.save!();
+  await storage.whenSaved();
   expect(wrapper.setItem).toHaveBeenCalledWith('prefix', JSON.stringify({ key2: 'value2', '.till': '1' }));
 
+  // When removing a till key, changes should be saved/persisted immediately
   storage.removeItem('.till');
 
-  await storage.save!();
+  await storage.whenSaved();
   expect(wrapper.setItem).toHaveBeenCalledWith('prefix', JSON.stringify({ key2: 'value2' }));
 
-  await storage.save!();
+  await storage.whenSaved();
   expect(wrapper.setItem).toHaveBeenCalledTimes(2);
 });

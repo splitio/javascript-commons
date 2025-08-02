@@ -68,7 +68,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       },
 
       destroy() {
-        return storage.save && storage.save();
+        return storage.whenSaved && storage.whenSaved();
       },
 
       // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).

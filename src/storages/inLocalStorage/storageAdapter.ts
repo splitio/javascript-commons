@@ -7,7 +7,7 @@ function isTillKey(key: string) {
   return key.endsWith('.till');
 }
 
-export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): StorageAdapter {
+export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): Required<StorageAdapter> {
   let keys: string[] = [];
   let values: string[] = [];
 
@@ -38,7 +38,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
         log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
       }));
     },
-    save() {
+    whenSaved() {
       return savePromise;
     },
 
