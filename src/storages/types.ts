@@ -11,11 +11,11 @@ import { ISettings } from '../types';
 export interface StorageAdapter {
   // Methods to support async storages
   load?: () => Promise<void>;
-  save?: () => Promise<void>;
+  whenSaved?: () => Promise<void>;
   // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
   readonly length: number;
-  getItem(key: string): string | null;
   key(index: number): string | null;
+  getItem(key: string): string | null;
   removeItem(key: string): void;
   setItem(key: string, value: string): void;
 }

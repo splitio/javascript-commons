@@ -7,44 +7,58 @@ function isTillKey(key: string) {
   return key.endsWith('.till');
 }
 
-export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): StorageAdapter {
+export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): Required<StorageAdapter> {
+  let keys: string[] = [];
   let cache: Record<string, string> = {};
 
-  let connectPromise: Promise<void> | undefined;
-  let disconnectPromise = Promise.resolve();
+  let loadPromise: Promise<void> | undefined;
+  let savePromise = Promise.resolve();
+
+  function _save() {
+    return savePromise = savePromise.then(() => {
+      return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
+    }).catch((e) => {
+      log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
+    });
+  }
 
   return {
     load() {
-      return connectPromise || (connectPromise = Promise.resolve(wrapper.getItem(prefix)).then((storedCache) => {
+      return loadPromise || (loadPromise = Promise.resolve().then(() => {
+        return wrapper.getItem(prefix);
+      }).then((storedCache) => {
         cache = JSON.parse(storedCache || '{}');
+        keys = Object.keys(cache);
       }).catch((e) => {
-        log.error(LOG_PREFIX + 'Rejected promise calling storage getItem, with error: ' + e);
+        log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
       }));
     },
-    save() {
-      return disconnectPromise = disconnectPromise.then(() => {
-        return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache))).catch((e) => {
-          log.error(LOG_PREFIX + 'Rejected promise calling storage setItem, with error: ' + e);
-        });
-      });
+    whenSaved() {
+      return savePromise;
     },
 
     get length() {
-      return Object.keys(cache).length;
+      return keys.length;
     },
     getItem(key: string) {
       return cache[key] || null;
     },
     key(index: number) {
-      return Object.keys(cache)[index] || null;
+      return keys[index] || null;
     },
     removeItem(key: string) {
+      const index = keys.indexOf(key);
+      if (index === -1) return;
+      keys.splice(index, 1);
       delete cache[key];
-      if (isTillKey(key)) this.save!();
+
+      if (isTillKey(key)) _save();
     },
     setItem(key: string, value: string) {
+      if (keys.indexOf(key) === -1) keys.push(key);
       cache[key] = value;
-      if (isTillKey(key)) this.save!();
+
+      if (isTillKey(key)) _save();
     }
   };
 }

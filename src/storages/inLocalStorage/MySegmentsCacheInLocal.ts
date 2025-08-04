@@ -51,7 +51,7 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
   getRegisteredSegments(): string[] {
     const registeredSegments: string[] = [];
-    for (let i = 0; i < this.storage.length; i++) {
+    for (let i = 0, len = this.storage.length; i < len; i++) {
       const segmentName = this.keys.extractSegmentName(this.storage.key(i)!);
       if (segmentName) registeredSegments.push(segmentName);
     }

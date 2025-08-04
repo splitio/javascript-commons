@@ -19,7 +19,7 @@ import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 import { storageAdapter } from './storageAdapter';
 
-function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
+function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): StorageAdapter | undefined {
   if (wrapper) {
     if (isValidStorageWrapper(wrapper)) {
       return isWebStorage(wrapper) ?
@@ -72,7 +72,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       },
 
       destroy() {
-        return storage.save && storage.save();
+        return storage.whenSaved && storage.whenSaved();
       },
 
       // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
