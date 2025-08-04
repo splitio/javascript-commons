@@ -458,19 +458,34 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
  */
 declare namespace SplitIO {
 
-  interface StorageWrapper {
+  interface SyncStorageWrapper {
     /**
-     * Returns a promise that resolves to the current value associated with the given key, or null if the given key does not exist.
+     * Returns the value associated with the given key, or null if the key does not exist.
      */
-    getItem(key: string): Promise<string | null> | string | null;
+    getItem(key: string): string | null;
     /**
-     * Returns a promise that resolves when the value of the pair identified by key is set to value, creating a new key/value pair if none existed for key previously.
+     * Sets the value for the given key, creating a new key/value pair if key does not exist.
      */
-    setItem(key: string, value: string): Promise<void> | void;
+    setItem(key: string, value: string): void;
     /**
-     * Returns a promise that resolves when the key/value pair with the given key is removed, if a key/value pair with the given key exists.
+     * Removes the key/value pair for the given key, if the key exists.
      */
-    removeItem(key: string): Promise<void> | void;
+    removeItem(key: string): void;
+  }
+
+  interface AsyncStorageWrapper {
+    /**
+     * Returns a promise that resolves to the value associated with the given key, or null if the key does not exist.
+     */
+    getItem(key: string): Promise<string | null>;
+    /**
+     * Returns a promise that resolves when the value of the pair identified by key is set to value, creating a new key/value pair if key does not exist.
+     */
+    setItem(key: string, value: string): Promise<void>;
+    /**
+     * Returns a promise that resolves when the key/value pair for the given key is removed, if the key exists.
+     */
+    removeItem(key: string): Promise<void>;
   }
 
   /**
@@ -992,7 +1007,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `window.localStorage`
      */
-    wrapper?: StorageWrapper;
+    wrapper?: SyncStorageWrapper | AsyncStorageWrapper;
   }
   /**
    * Storage for asynchronous (consumer) SDK.
@@ -1338,7 +1353,7 @@ declare namespace SplitIO {
        *
        * @defaultValue `window.localStorage`
        */
-      wrapper?: StorageWrapper;
+      wrapper?: SyncStorageWrapper | AsyncStorageWrapper;
     };
   }
   /**

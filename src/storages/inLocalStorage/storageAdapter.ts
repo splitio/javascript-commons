@@ -7,7 +7,7 @@ function isTillKey(key: string) {
   return key.endsWith('.till');
 }
 
-export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): Required<StorageAdapter> {
+export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): Required<StorageAdapter> {
   let keys: string[] = [];
   let cache: Record<string, string> = {};
 

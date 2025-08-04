@@ -19,7 +19,7 @@ import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 import { storageAdapter } from './storageAdapter';
 
-function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
+function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): StorageAdapter | undefined {
   if (wrapper) {
     if (isValidStorageWrapper(wrapper)) return storageAdapter(log, prefix, wrapper);
     log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
