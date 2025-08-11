@@ -87,6 +87,9 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
         settings.log.error(LOG_PREFIX + e);
       }
 
+      // Persist clear
+      if (storage.save) storage.save();
+
       return false;
     }
 

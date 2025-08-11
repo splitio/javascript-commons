@@ -3,9 +3,6 @@ import SplitIO from '../../../types/splitio';
 import { LOG_PREFIX } from './constants';
 import { StorageAdapter } from '../types';
 
-function isTillKey(key: string) {
-  return key.endsWith('.till');
-}
 
 export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): Required<StorageAdapter> {
   let keys: string[] = [];
@@ -13,14 +10,6 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.Sy
 
   let loadPromise: Promise<void> | undefined;
   let savePromise = Promise.resolve();
-
-  function _save() {
-    return savePromise = savePromise.then(() => {
-      return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
-    }).catch((e) => {
-      log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
-    });
-  }
 
   return {
     load() {
@@ -33,6 +22,15 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.Sy
         log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
       }));
     },
+
+    save() {
+      return savePromise = savePromise.then(() => {
+        return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
+      }).catch((e) => {
+        log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
+      });
+    },
+
     whenSaved() {
       return savePromise;
     },
@@ -40,25 +38,25 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.Sy
     get length() {
       return keys.length;
     },
+
     getItem(key: string) {
       return cache[key] || null;
     },
+
     key(index: number) {
       return keys[index] || null;
     },
+
     removeItem(key: string) {
       const index = keys.indexOf(key);
       if (index === -1) return;
       keys.splice(index, 1);
       delete cache[key];
-
-      if (isTillKey(key)) _save();
     },
+
     setItem(key: string, value: string) {
       if (keys.indexOf(key) === -1) keys.push(key);
       cache[key] = value;
-
-      if (isTillKey(key)) _save();
     }
   };
 }
