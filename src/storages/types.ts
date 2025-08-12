@@ -479,7 +479,7 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
-  validateCache?: () => boolean, // @TODO support async
+  validateCache?: () => Promise<boolean>,
   largeSegments?: ISegmentsCacheSync,
 }
 
