@@ -27,7 +27,7 @@ describe('IN LOCAL STORAGE', () => {
     fakeInMemoryStorageFactory.mockClear();
   });
 
-  test('calls InMemoryStorage factory if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
+  test('fallback to InMemoryStorage if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
     // Delete global localStorage property
     const originalLocalStorage = Object.getOwnPropertyDescriptor(global, 'localStorage');
     Object.defineProperty(global, 'localStorage', {});
@@ -52,7 +52,7 @@ describe('IN LOCAL STORAGE', () => {
     Object.defineProperty(global, 'localStorage', originalLocalStorage as PropertyDescriptor);
   });
 
-  test('calls its own storage factory if LocalStorage API is available', () => {
+  test('calls InLocalStorage if LocalStorage API is available', () => {
 
     const storageFactory = InLocalStorage({ prefix: 'prefix' });
     const storage = storageFactory(internalSdkParams);
@@ -61,7 +61,7 @@ describe('IN LOCAL STORAGE', () => {
     expect(fakeInMemoryStorageFactory).not.toBeCalled(); // doesn't call InMemoryStorage factory
   });
 
-  test('calls its own storage factory if the provided storage wrapper is valid', () => {
+  test('calls InLocalStorage if the provided storage wrapper is valid', () => {
     storageAdapterSpy.mockClear();
 
     // Web Storages should not use the storageAdapter
