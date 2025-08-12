@@ -67,6 +67,10 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
         return validateCachePromise || (validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments));
       },
 
+      save() {
+        return storage.save && storage.save();
+      },
+
       destroy() {
         return storage.whenSaved && storage.whenSaved();
       },

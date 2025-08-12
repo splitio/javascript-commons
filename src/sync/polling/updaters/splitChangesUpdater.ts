@@ -117,7 +117,7 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
 export function splitChangesUpdaterFactory(
   log: ILogger,
   splitChangesFetcher: ISplitChangesFetcher,
-  storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments'>,
+  storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments' | 'save'>,
   splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
   requestTimeoutBeforeReady: number = 0,
@@ -185,6 +185,8 @@ export function splitChangesUpdaterFactory(
             // @TODO if at least 1 segment fetch fails due to 404 and other segments are updated in the storage, SDK_UPDATE is not emitted
             segments.registerSegments(setToArray(usedSegments))
           ]).then(([ffChanged, rbsChanged]) => {
+            if (storage.save) storage.save();
+
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
               return Promise.resolve(!splitsEventEmitter.splitsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))

@@ -483,6 +483,7 @@ export interface IStorageBase<
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
+  save?: () => void | Promise<void>,
 }
 
 export interface IStorageSync extends IStorageBase<
