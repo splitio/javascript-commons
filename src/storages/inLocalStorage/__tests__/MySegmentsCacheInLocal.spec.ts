@@ -2,6 +2,7 @@ import { MySegmentsCacheInLocal } from '../MySegmentsCacheInLocal';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { storages, PREFIX } from './wrapper.mock';
+import { IMySegmentsResponse } from '../../../dtos/types';
 
 test.each(storages)('SEGMENT CACHE / in LocalStorage', (storage) => {
   const caches = [
@@ -23,11 +24,10 @@ test.each(storages)('SEGMENT CACHE / in LocalStorage', (storage) => {
   });
 
   caches.forEach(cache => {
-    // @ts-expect-error
     cache.resetSegments({
       added: [],
       removed: ['mocked-segment']
-    });
+    } as IMySegmentsResponse);
 
     expect(cache.isInSegment('mocked-segment')).toBe(false);
     expect(cache.getRegisteredSegments()).toEqual(['mocked-segment-2']);

@@ -51,6 +51,8 @@ export function mySegmentsUpdaterFactory(
       shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData as IMembershipsResponse).ls || {}) || shouldNotifyUpdate;
     }
 
+    if (storage.save) storage.save();
+
     // Notify update if required
     if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;

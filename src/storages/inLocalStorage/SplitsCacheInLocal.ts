@@ -79,12 +79,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean {
-    const result = super.update(toAdd, toRemove, changeNumber);
-    if (this.storage.save) this.storage.save();
-    return result;
-  }
-
   addSplit(split: ISplit) {
     try {
       const name = split.name;
