@@ -15,7 +15,14 @@ import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/Telem
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
 import { validateCache } from './validateCache';
+import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
+
+function validateStorage(log: ILogger) {
+  if (isLocalStorageAvailable()) return localStorage;
+
+  log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
+}
 
 /**
  * InLocal storage factory for standalone client-side SplitFactory
@@ -25,21 +32,18 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
   const prefix = validatePrefix(options.prefix);
 
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-
-    // Fallback to InMemoryStorage if LocalStorage API is not available
-    if (!isLocalStorageAvailable()) {
-      params.settings.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
-      return InMemoryStorageCSFactory(params);
-    }
-
     const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
+
+    const storage = validateStorage(log);
+    if (!storage) return InMemoryStorageCSFactory(params);
+
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
-    const splits = new SplitsCacheInLocal(settings, keys);
-    const rbSegments = new RBSegmentsCacheInLocal(settings, keys);
-    const segments = new MySegmentsCacheInLocal(log, keys);
-    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
+    const splits = new SplitsCacheInLocal(settings, keys, storage);
+    const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
+    const segments = new MySegmentsCacheInLocal(log, keys, storage);
+    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
     let validateCachePromise: Promise<boolean> | undefined;
 
     return {
@@ -54,7 +58,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
-        return validateCachePromise || (validateCachePromise = validateCache(options, settings, keys, splits, rbSegments, segments, largeSegments));
+        return validateCachePromise || (validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments));
       },
 
       destroy() {
@@ -67,8 +71,8 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
         return {
           splits: this.splits,
           rbSegments: this.rbSegments,
-          segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey)),
-          largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey)),
+          segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey), storage),
+          largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage),
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,
