@@ -1,8 +1,8 @@
 import SplitIO from '../../types/splitio';
-import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from './types';
+import { IRBSegmentsCacheSync, ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from './types';
 import { setToArray } from '../utils/lang/sets';
 import { getMatching } from '../utils/key';
-import { IMembershipsResponse, IMySegmentsResponse, ISplit } from '../dtos/types';
+import { IMembershipsResponse, IMySegmentsResponse, IRBSegment, ISplit } from '../dtos/types';
 
 /**
  *
@@ -10,16 +10,17 @@ import { IMembershipsResponse, IMySegmentsResponse, ISplit } from '../dtos/types
  * @param storage - object containing `splits` and `segments` cache (client-side variant)
  * @param userKey - user key (matching key) of the provided MySegmentsCache
  *
+ * @TODO load data even if current data is more recent?
  * @TODO extend to load largeSegments
  * @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
  * @TODO add logs, and input validation in this module, in favor of size reduction.
  * @TODO unit tests
  */
-export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits?: ISplitsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
+export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
   // Do not load data if current preloadedData is empty
   if (Object.keys(preloadedData).length === 0) return;
 
-  const { segments = {}, since = -1, flags = [] } = preloadedData;
+  const { segments = {}, since = -1, flags = [], rbSince = -1, rbSegments = [] } = preloadedData;
 
   if (storage.splits) {
     const storedSince = storage.splits.getChangeNumber();
@@ -32,6 +33,19 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
     storage.splits.update(flags as ISplit[], [], since);
+  }
+
+  if (storage.rbSegments) {
+    const storedSince = storage.rbSegments.getChangeNumber();
+
+    // Do not load data if current data is more recent
+    if (storedSince > rbSince) return;
+
+    // cleaning up the localStorage data, since some cached splits might need be part of the preloaded data
+    storage.rbSegments.clear();
+
+    // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
+    storage.rbSegments.update(rbSegments as IRBSegment[], [], rbSince);
   }
 
   if (matchingKey) { // add memberships data (client-side)
@@ -61,9 +75,10 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
 
 export function getSnapshot(storage: IStorageSync, userKeys?: SplitIO.SplitKey[]): SplitIO.PreloadedData {
   return {
-    // lastUpdated: Date.now(),
     since: storage.splits.getChangeNumber(),
     flags: storage.splits.getAll(),
+    rbSince: storage.rbSegments.getChangeNumber(),
+    rbSegments: storage.rbSegments.getAll(),
     segments: userKeys ?
       undefined : // @ts-ignore accessing private prop
       Object.keys(storage.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop

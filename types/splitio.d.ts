@@ -1031,14 +1031,17 @@ declare namespace SplitIO {
    */
   type PreloadedData = {
     /**
-     * Change number of the preloaded data.
-     * If this value is older than the current changeNumber at the storage, the data is not used to update the storage content.
+     * Change number of feature flags.
      */
     since: number;
     /**
      * List of feature flags.
      */
     flags: Object[],
+    /**
+     * Change number of rule-based segments.
+     */
+    rbSince?: number,
     /**
      * List of rule-based segments.
      */

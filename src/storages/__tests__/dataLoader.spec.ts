@@ -9,7 +9,8 @@ test('loadData & getSnapshot', () => {
   const onReadyFromCacheCb = jest.fn();
   // @ts-expect-error
   const serverStorage = InMemoryStorageFactory({ settings: fullSettings }); // @ts-expect-error
-  serverStorage.splits.update([{ name: 'split1' }], [], 123);
+  serverStorage.splits.update([{ name: 'split1' }], [], 123); // @ts-expect-error
+  serverStorage.rbSegments.update([{ name: 'rbs1' }], [], 321);
   serverStorage.segments.update('segment1', [fullSettings.core.key as string], [], 123);
 
   const preloadedData = dataLoader.getSnapshot(serverStorage, [fullSettings.core.key as string]);
@@ -24,6 +25,8 @@ test('loadData & getSnapshot', () => {
   expect(preloadedData).toEqual({
     since: 123,
     flags: [{ name: 'split1' }],
+    rbSince: 321,
+    rbSegments: [{ name: 'rbs1' }],
     memberships: { [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } } },
     segments: undefined
   });

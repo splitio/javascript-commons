@@ -235,6 +235,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean,
   get(name: string): IRBSegment | null,
   getChangeNumber(): number,
+  getAll(): IRBSegment[],
   clear(): void,
   contains(names: Set<string>): boolean,
   // Used only for smart pausing in client-side standalone. Returns true if the storage contains a RBSegment using segments or large segments matchers
