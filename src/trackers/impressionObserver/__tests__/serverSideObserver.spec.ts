@@ -74,7 +74,7 @@ test('Hasher 128 / Impression Hasher Does Not Crash', () => {
   expect(hashImpression128(imp1)).not.toBe(null);
 });
 
-test('Server-side (Node JS) / Impression Observer Basic Functionality', () => {
+test('Server-side (Node.js) / Impression Observer Basic Functionality', () => {
   const observer = impressionObserverSSFactory();
 
   const imp = {

@@ -4,11 +4,11 @@ import { ILogger } from '../../../logger/types';
 /**
  * This function validates `settings.integrations` object
  *
- * @param {any} settings config object provided by the user to initialize the sdk
- * @param {function} integrationValidator filter used to remove invalid integration items
- * @param {string} extraWarning optional string used to better describe why an item might be invalid
+ * @param settings - config object provided by the user to initialize the sdk
+ * @param integrationValidator - filter used to remove invalid integration items
+ * @param extraWarning - optional string used to better describe why an item might be invalid
  *
- * @returns {Array} array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
+ * @returns array of valid integration items. The array might be empty if `settings` object does not have valid integrations.
  */
 export function validateIntegrations(settings: { log: ILogger, integrations?: any }, integrationValidator: (integrationItem: any) => boolean, extraWarning?: string) {
   const { integrations, log } = settings;

@@ -8,9 +8,8 @@ test('loadData & getSnapshot', () => {
   jest.spyOn(dataLoader, 'loadData');
   const onReadyFromCacheCb = jest.fn();
   // @ts-expect-error
-  const serverStorage = InMemoryStorageFactory({ settings: fullSettings });
-  serverStorage.splits.setChangeNumber(123); // @ts-expect-error
-  serverStorage.splits.addSplits([['split1', { name: 'split1' }]]);
+  const serverStorage = InMemoryStorageFactory({ settings: fullSettings }); // @ts-expect-error
+  serverStorage.splits.update([{ name: 'split1' }], [], 123);
   serverStorage.segments.update('segment1', [fullSettings.core.key as string], [], 123);
 
   const preloadedData = dataLoader.getSnapshot(serverStorage, [fullSettings.core.key as string]);
@@ -24,8 +23,8 @@ test('loadData & getSnapshot', () => {
   expect(dataLoader.getSnapshot(clientStorage, [fullSettings.core.key as string])).toEqual(preloadedData);
   expect(preloadedData).toEqual({
     since: 123,
-    splitsData: [{ name: 'split1' }],
-    membershipsData: { [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } } },
-    segmentsData: undefined
+    flags: [{ name: 'split1' }],
+    memberships: { [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } } },
+    segments: undefined
   });
 });

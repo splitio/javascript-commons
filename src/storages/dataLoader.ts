@@ -1,16 +1,14 @@
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from './types';
 import { setToArray } from '../utils/lang/sets';
 import { getMatching } from '../utils/key';
-import { IMembershipsResponse, IMySegmentsResponse } from '../dtos/types';
+import { IMembershipsResponse, IMySegmentsResponse, ISplit } from '../dtos/types';
 
 /**
- * Storage-agnostic adaptation of `loadDataIntoLocalStorage` function
- * (https://github.com/godaddy/split-javascript-data-loader/blob/master/src/load-data.js)
  *
- * @param preloadedData validated data following the format proposed in https://github.com/godaddy/split-javascript-data-loader and extended with a `mySegmentsData` property.
- * @param storage object containing `splits` and `segments` cache (client-side variant)
- * @param userKey user key (matching key) of the provided MySegmentsCache
+ * @param preloadedData - validated data
+ * @param storage - object containing `splits` and `segments` cache (client-side variant)
+ * @param userKey - user key (matching key) of the provided MySegmentsCache
  *
  * @TODO extend to load largeSegments
  * @TODO extend to load data on shared mySegments storages. Be specific when emitting SDK_READY_FROM_CACHE on shared clients. Maybe the serializer should provide the `useSegments` flag.
@@ -21,7 +19,7 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
   // Do not load data if current preloadedData is empty
   if (Object.keys(preloadedData).length === 0) return;
 
-  const { segmentsData = {}, since = -1, splitsData = [] } = preloadedData;
+  const { segments = {}, since = -1, flags = [] } = preloadedData;
 
   if (storage.splits) {
     const storedSince = storage.splits.getChangeNumber();
@@ -31,32 +29,31 @@ export function loadData(preloadedData: SplitIO.PreloadedData, storage: { splits
 
     // cleaning up the localStorage data, since some cached splits might need be part of the preloaded data
     storage.splits.clear();
-    storage.splits.setChangeNumber(since);
 
     // splitsData in an object where the property is the split name and the pertaining value is a stringified json of its data
-    storage.splits.addSplits(splitsData.map(split => ([split.name, split])));
+    storage.splits.update(flags as ISplit[], [], since);
   }
 
-  if (matchingKey) { // add mySegments data (client-side)
-    let membershipsData = preloadedData.membershipsData && preloadedData.membershipsData[matchingKey];
-    if (!membershipsData && segmentsData) {
-      membershipsData = {
+  if (matchingKey) { // add memberships data (client-side)
+    let memberships = preloadedData.memberships && preloadedData.memberships[matchingKey];
+    if (!memberships && segments) {
+      memberships = {
         ms: {
-          k: Object.keys(segmentsData).filter(segmentName => {
-            const segmentKeys = segmentsData[segmentName];
+          k: Object.keys(segments).filter(segmentName => {
+            const segmentKeys = segments[segmentName];
             return segmentKeys.indexOf(matchingKey) > -1;
           }).map(segmentName => ({ n: segmentName }))
         }
       };
     }
-    if (membershipsData) {
-      if (membershipsData.ms) storage.segments.resetSegments(membershipsData.ms);
-      if (membershipsData.ls && storage.largeSegments) storage.largeSegments.resetSegments(membershipsData.ls);
-    }
 
+    if (memberships) {
+      if ((memberships as IMembershipsResponse).ms) storage.segments.resetSegments((memberships as IMembershipsResponse).ms!);
+      if ((memberships as IMembershipsResponse).ls && storage.largeSegments) storage.largeSegments.resetSegments((memberships as IMembershipsResponse).ls!);
+    }
   } else { // add segments data (server-side)
-    Object.keys(segmentsData).forEach(segmentName => {
-      const segmentKeys = segmentsData[segmentName];
+    Object.keys(segments).forEach(segmentName => {
+      const segmentKeys = segments[segmentName];
       storage.segments.update(segmentName, segmentKeys, [], -1);
     });
   }
@@ -66,14 +63,14 @@ export function getSnapshot(storage: IStorageSync, userKeys?: SplitIO.SplitKey[]
   return {
     // lastUpdated: Date.now(),
     since: storage.splits.getChangeNumber(),
-    splitsData: storage.splits.getAll(),
-    segmentsData: userKeys ?
+    flags: storage.splits.getAll(),
+    segments: userKeys ?
       undefined : // @ts-ignore accessing private prop
       Object.keys(storage.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop
         prev[cur] = setToArray(storage.segments.segmentCache[cur] as Set<string>);
         return prev;
       }, {}),
-    membershipsData: userKeys ?
+    memberships: userKeys ?
       userKeys.reduce<Record<string, IMembershipsResponse>>((prev, userKey) => {
         if (storage.shared) {
           // Client-side segments

@@ -1,6 +1,6 @@
 import { IBetweenMatcherData, IBetweenStringMatcherData, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 
 export interface IDependencyMatcherValue {
@@ -25,10 +25,10 @@ export interface IEvaluation {
   config?: string | null
 }
 
-export type IEvaluationResult = IEvaluation & { treatment: string }
+export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }
 
 export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
-export type IEvaluator = (key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | undefined>
+export type IEvaluator = (key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | boolean | undefined>
 
-export type IMatcher = (...args: any) => MaybeThenable<boolean>
+export type IMatcher = (value: string | number | boolean | string[] | IDependencyMatcherValue, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>

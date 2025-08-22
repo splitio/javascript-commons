@@ -12,6 +12,7 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.ENGINE_VALUE, c.LOG_PREFIX_ENGINE_VALUE + 'Extracted attribute `%s`. %s will be used for matching.'],
   [c.ENGINE_SANITIZE, c.LOG_PREFIX_ENGINE + ':sanitize: Attempted to sanitize %s which should be of type %s. Sanitized and processed value => %s'],
   [c.ENGINE_MATCHER_RESULT, c.LOG_PREFIX_ENGINE_MATCHER + '[%s] Result: %s. Rule value: %s. Evaluation value: %s'],
+  [c.ENGINE_DEFAULT, c.LOG_PREFIX_ENGINE + 'Evaluates to default treatment. %s'],
   // SDK
   [c.CLEANUP_REGISTERING, c.LOG_PREFIX_CLEANUP + 'Registering cleanup handler %s'],
   [c.CLEANUP_DEREGISTERING, c.LOG_PREFIX_CLEANUP + 'Deregistering cleanup handler %s'],
@@ -20,10 +21,9 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   [c.RETRIEVE_MANAGER, 'Retrieving manager instance.'],
   // synchronizer
   [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Feature flags data: \n%s'],
-  [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up feature flags update using since = %s'],
-  [c.SYNC_SPLITS_NEW, c.LOG_PREFIX_SYNC_SPLITS + 'New feature flags %s'],
-  [c.SYNC_SPLITS_REMOVED, c.LOG_PREFIX_SYNC_SPLITS + 'Removed feature flags %s'],
-  [c.SYNC_SPLITS_SEGMENTS, c.LOG_PREFIX_SYNC_SPLITS + 'Segment names collected %s'],
+  [c.SYNC_SPLITS_FETCH, c.LOG_PREFIX_SYNC_SPLITS + 'Spin up feature flags update using since = %s and rbSince = %s.'],
+  [c.SYNC_SPLITS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New feature flags: %s. Removed feature flags: %s.'],
+  [c.SYNC_RBS_UPDATE, c.LOG_PREFIX_SYNC_SPLITS + 'New rule-based segments: %s. Removed rule-based segments: %s.'],
   [c.STREAMING_NEW_MESSAGE, c.LOG_PREFIX_SYNC_STREAMING + 'New SSE message received, with data: %s.'],
   [c.SYNC_TASK_START, c.LOG_PREFIX_SYNC + ': Starting %s. Running each %s millis'],
   [c.SYNC_TASK_EXECUTE, c.LOG_PREFIX_SYNC + ': Running %s'],

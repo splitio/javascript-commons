@@ -1,4 +1,4 @@
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { QUEUED } from '../../utils/constants';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { eventTrackerFactory } from '../eventTracker';

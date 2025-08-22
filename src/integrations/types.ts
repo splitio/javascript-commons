@@ -1,6 +1,7 @@
 import { IEventsCacheBase } from '../storages/types';
 import { IEventsHandler, IImpressionsHandler, ITelemetryTracker } from '../trackers/types';
-import { ISettings, SplitIO } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 
 export interface IIntegration {
   queue(data: SplitIO.IntegrationData): void
@@ -14,7 +15,7 @@ export interface IIntegrationFactoryParams {
   telemetryTracker: ITelemetryTracker
 }
 
-export type IntegrationFactory = {
+export type IntegrationFactory = SplitIO.IntegrationFactory & {
   readonly type: string
   (params: IIntegrationFactoryParams): IIntegration | void
 }

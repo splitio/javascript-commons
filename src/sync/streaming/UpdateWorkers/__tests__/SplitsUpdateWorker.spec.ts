@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
 import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
+import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { SplitsUpdateWorker } from '../SplitsUpdateWorker';
 import { FETCH_BACKOFF_MAX_RETRIES } from '../constants';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
@@ -53,19 +54,26 @@ const telemetryTracker = telemetryTrackerFactory(); // no-op telemetry tracker
 
 describe('SplitsUpdateWorker', () => {
 
+  const storage = {
+    splits: new SplitsCacheInMemory(),
+    rbSegments: new RBSegmentsCacheInMemory()
+  };
+
   afterEach(() => { // restore
     Backoff.__TEST__BASE_MILLIS = undefined;
     Backoff.__TEST__MAX_MILLIS = undefined;
+
+    storage.splits.clear();
+    storage.rbSegments.clear();
   });
 
   test('put', async () => {
 
     // setup
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits);
 
     Backoff.__TEST__BASE_MILLIS = 1; // retry immediately
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
 
     // assert calling `splitsSyncTask.execute` if `isExecuting` is false
     expect(splitsSyncTask.isExecuting()).toBe(false);
@@ -102,9 +110,8 @@ describe('SplitsUpdateWorker', () => {
   test('put, backoff', async () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 50;
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, [90, 90, 90]);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits, [90, 90, 90]);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
 
     // while fetch fails, should retry with backoff
     splitUpdateWorker.put({ changeNumber: 100 });
@@ -121,9 +128,8 @@ describe('SplitsUpdateWorker', () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 10; // 10 millis instead of 10 sec
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits, [...Array(FETCH_BACKOFF_MAX_RETRIES).fill(90), 90, 100]); // 12 executions. Last one is valid
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -146,9 +152,8 @@ describe('SplitsUpdateWorker', () => {
     // setup
     Backoff.__TEST__BASE_MILLIS = 10; // 10 millis instead of 10 sec
     Backoff.__TEST__MAX_MILLIS = 60; // 60 millis instead of 1 min
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits, Array(FETCH_BACKOFF_MAX_RETRIES * 2).fill(90)); // 20 executions. No one is valid
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 }); // queued
 
@@ -168,39 +173,37 @@ describe('SplitsUpdateWorker', () => {
 
   test('killSplit', async () => {
     // setup
-    const cache = new SplitsCacheInMemory();
-    cache.addSplit('lol1', '{ "name": "something"}');
-    cache.addSplit('lol2', '{ "name": "something else"}');
+    storage.splits.addSplit({ name: 'something' });
+    storage.splits.addSplit({ name: 'something else' });
 
-    const splitsSyncTask = splitsSyncTaskMock(cache);
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, splitsEventEmitterMock, telemetryTracker);
 
     // assert killing split locally, emitting SDK_SPLITS_ARRIVED event, and synchronizing splits if changeNumber is new
-    splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'lol1', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
+    splitUpdateWorker.killSplit({ changeNumber: 100, splitName: 'something', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // synchronizes splits if `isExecuting` is false
     expect(splitsEventEmitterMock.emit.mock.calls).toEqual([[SDK_SPLITS_ARRIVED, true]]); // emits `SDK_SPLITS_ARRIVED` with `isSplitKill` flag in true, if split kill resolves with update
-    assertKilledSplit(cache, 100, 'lol1', 'off');
+    assertKilledSplit(storage.splits, 100, 'something', 'off');
 
     // assert not killing split locally, not emitting SDK_SPLITS_ARRIVED event, and not synchronizes splits, if changeNumber is old
     splitsSyncTask.__resolveSplitsUpdaterCall(100);
     await new Promise(res => setTimeout(res));
     splitsSyncTask.execute.mockClear();
     splitsEventEmitterMock.emit.mockClear();
-    splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'lol1', defaultTreatment: 'on' });
+    splitUpdateWorker.killSplit({ changeNumber: 90, splitName: 'something', defaultTreatment: 'on' });
 
     await new Promise(res => setTimeout(res));
     expect(splitsSyncTask.execute).toBeCalledTimes(0); // doesn't synchronize splits if killLocally resolved without update
     expect(splitsEventEmitterMock.emit).toBeCalledTimes(0); // doesn't emit `SDK_SPLITS_ARRIVED` if killLocally resolved without update
 
-    assertKilledSplit(cache, 100, 'lol1', 'off'); // calling `killLocally` with an old changeNumber made no effect
+    assertKilledSplit(storage.splits, 100, 'something', 'off'); // calling `killLocally` with an old changeNumber made no effect
   });
 
   test('stop', async () => {
     // setup
-    const cache = new SplitsCacheInMemory();
-    const splitsSyncTask = splitsSyncTaskMock(cache, [95]);
+    const splitsSyncTask = splitsSyncTaskMock(storage.splits, [95]);
     Backoff.__TEST__BASE_MILLIS = 1;
-    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+    const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
 
     splitUpdateWorker.put({ changeNumber: 100 });
 
@@ -212,32 +215,29 @@ describe('SplitsUpdateWorker', () => {
 
   test('put, avoid fetching if payload sent', async () => {
 
-    const cache = new SplitsCacheInMemory();
     splitNotifications.forEach(notification => {
-      const pcn = cache.getChangeNumber();
-      const splitsSyncTask = splitsSyncTaskMock(cache);
-      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
+      const pcn = storage.splits.getChangeNumber();
+      const splitsSyncTask = splitsSyncTaskMock(storage.splits);
+      const splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
       const payload = notification.decoded;
       const changeNumber = payload.changeNumber;
-      splitUpdateWorker.put( { changeNumber, pcn }, payload); // queued
+      splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression }); // queued
       expect(splitsSyncTask.execute).toBeCalledTimes(1);
-      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {changeNumber, payload}]);
+      expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { changeNumber, payload }]);
     });
   });
 
   test('put, ccn and pcn validation for IFF', () => {
-    const cache = new SplitsCacheInMemory();
-
     // ccn = 103 & pcn = 104: Something was missed -> fetch split changes
     let ccn = 103;
     let pcn = 104;
     let changeNumber = 105;
-    cache.setChangeNumber(ccn);
+    storage.splits.setChangeNumber(ccn);
     const notification = splitNotifications[0];
 
-    let splitsSyncTask = splitsSyncTaskMock(cache);
-    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    let splitsSyncTask = splitsSyncTaskMock(storage.splits);
+    let splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
@@ -246,11 +246,11 @@ describe('SplitsUpdateWorker', () => {
     ccn = 110;
     pcn = 0;
     changeNumber = 111;
-    cache.setChangeNumber(ccn);
+    storage.splits.setChangeNumber(ccn);
 
-    splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    splitsSyncTask = splitsSyncTaskMock(storage.splits);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
     expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, undefined]);
     splitsSyncTask.execute.mockClear();
@@ -259,13 +259,13 @@ describe('SplitsUpdateWorker', () => {
     ccn = 120;
     pcn = 120;
     changeNumber = 121;
-    cache.setChangeNumber(ccn);
+    storage.splits.setChangeNumber(ccn);
 
-    splitsSyncTask = splitsSyncTaskMock(cache);
-    splitUpdateWorker = SplitsUpdateWorker(loggerMock, cache, splitsSyncTask, telemetryTracker);
-    splitUpdateWorker.put({ changeNumber, pcn }, notification.decoded);
+    splitsSyncTask = splitsSyncTaskMock(storage.splits);
+    splitUpdateWorker = SplitsUpdateWorker(loggerMock, storage, splitsSyncTask, telemetryTracker);
+    splitUpdateWorker.put({ changeNumber, pcn, d: notification.data, c: notification.compression });
     expect(splitsSyncTask.execute).toBeCalledTimes(1);
-    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, {payload: notification.decoded, changeNumber }]);
+    expect(splitsSyncTask.execute.mock.calls[0]).toEqual([true, undefined, { payload: notification.decoded, changeNumber }]);
 
   });
 });

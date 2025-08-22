@@ -1,4 +1,4 @@
-// @TODO eventually migrate to JS-Node-SDK package.
+// @TODO eventually migrate to Node.js SDK package.
 import { ISignalListener } from './types';
 import { thenable } from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
@@ -25,7 +25,7 @@ export class NodeSignalListener implements ISignalListener {
     syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
     settings: ISettings
   ) {
-    // @TODO review handler logic when implementing Node SDK
+    // @TODO review handler logic when implementing Node.js SDK
     this.handler = function () {
       if (syncManager) {
         // syncManager.stop();
@@ -56,7 +56,7 @@ export class NodeSignalListener implements ISignalListener {
       // Cleaned up, remove handlers.
       this.stop();
 
-      // This handler prevented the default behaviour, start again.
+      // This handler prevented the default behavior, start again.
       // eslint-disable-next-line no-undef
       process.kill(process.pid, SIGTERM);
     };
@@ -72,7 +72,7 @@ export class NodeSignalListener implements ISignalListener {
     }
 
     if (thenable(handlerResult)) {
-      // Always exit, even with errors. The promise is returned for UT purposses.
+      // Always exit, even with errors. The promise is returned for UT purposes.
       return handlerResult.then(wrapUp).catch(wrapUp);
     } else {
       wrapUp();

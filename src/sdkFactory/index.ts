@@ -3,7 +3,7 @@ import { sdkReadinessManagerFactory } from '../readiness/sdkReadinessManager';
 import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
-import { IBasicClient, SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
@@ -13,12 +13,12 @@ import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
-import { NONE, OPTIMIZED } from '../utils/constants';
+import { DEBUG, OPTIMIZED } from '../utils/constants';
 
 /**
  * Modular SDK factory
  */
-export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.ISDK | SplitIO.IAsyncSDK {
+export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, impressionsObserverFactory,
@@ -57,26 +57,22 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     }
   });
 
-  const clients: Record<string, IBasicClient> = {};
+  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
+  const clients: Record<string, SplitIO.IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
   const observer = impressionsObserverFactory();
-  const uniqueKeysTracker = impressionsMode === NONE ? uniqueKeysTrackerFactory(log, storage.uniqueKeys!, filterAdapterFactory && filterAdapterFactory()) : undefined;
+  const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
 
-  let strategy;
-  switch (impressionsMode) {
-    case OPTIMIZED:
-      strategy = strategyOptimizedFactory(observer, storage.impressionCounts!);
-      break;
-    case NONE:
-      strategy = strategyNoneFactory(storage.impressionCounts!, uniqueKeysTracker!);
-      break;
-    default:
-      strategy = strategyDebugFactory(observer);
-  }
+  const noneStrategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
+  const strategy = impressionsMode === OPTIMIZED ?
+    strategyOptimizedFactory(observer, storage.impressionCounts) :
+    impressionsMode === DEBUG ?
+      strategyDebugFactory(observer) :
+      noneStrategy;
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, strategy, whenInit, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, whenInit, integrationsManager, storage.telemetry);
   const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
@@ -102,7 +98,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
     validateAndTrackApiKey(log, settings.core.authorizationKey);
     readiness.init();
-    uniqueKeysTracker && uniqueKeysTracker.start();
+    uniqueKeysTracker.start();
     syncManager && syncManager.start();
     signalListener && signalListener.start();
 
@@ -129,6 +125,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ICsSDK | SplitIO.
     settings,
 
     destroy() {
+      hasInit = false;
       return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
   }, extraProps && extraProps(ctx), lazyInit ? { init } : init());

@@ -8,7 +8,7 @@ import { EventsCachePluggable } from './EventsCachePluggable';
 import { wrapperAdapter, METHODS_TO_PROMISE_WRAP } from './wrapperAdapter';
 import { isObject } from '../../utils/lang';
 import { getStorageHash, validatePrefix } from '../KeyBuilder';
-import { CONSUMER_PARTIAL_MODE, DEBUG, NONE, STORAGE_PLUGGABLE } from '../../utils/constants';
+import { CONSUMER_PARTIAL_MODE, STORAGE_PLUGGABLE } from '../../utils/constants';
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
@@ -20,6 +20,7 @@ import { UniqueKeysCacheInMemory } from '../inMemory/UniqueKeysCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { metadataBuilder } from '../utils';
 import { LOG_PREFIX } from '../pluggable/constants';
+import { RBSegmentsCachePluggable } from './RBSegmentsCachePluggable';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -32,7 +33,7 @@ export interface PluggableStorageOptions {
 /**
  * Validate pluggable storage factory options.
  *
- * @param options user options
+ * @param options - user options
  * @throws Will throw an error if the options are invalid. Example: wrapper is not provided or doesn't have some methods.
  */
 function validatePluggableStorageOptions(options: any) {
@@ -63,36 +64,33 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
   const prefix = validatePrefix(options.prefix);
 
   function PluggableStorageFactory(params: IStorageFactoryParams): IStorageAsync {
-    const { onReadyCb, settings, settings: { log, mode, sync: { impressionsMode }, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
+    const { onReadyCb, settings, settings: { log, mode, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
     const metadata = metadataBuilder(settings);
     const keys = new KeyBuilderSS(prefix, metadata);
     const wrapper = wrapperAdapter(log, options.wrapper);
 
-    const isSyncronizer = mode === undefined; // If mode is not defined, the synchronizer is running
+    const isSynchronizer = mode === undefined; // If mode is not defined, the synchronizer is running
     const isPartialConsumer = mode === CONSUMER_PARTIAL_MODE;
 
-    const telemetry = shouldRecordTelemetry(params) || isSyncronizer ?
+    const telemetry = shouldRecordTelemetry(params) || isSynchronizer ?
       isPartialConsumer ?
         new TelemetryCacheInMemory() :
         new TelemetryCachePluggable(log, keys, wrapper) :
       undefined;
 
-    const impressionCountsCache = impressionsMode !== DEBUG || isSyncronizer ?
-      isPartialConsumer ?
-        new ImpressionCountsCacheInMemory() :
-        new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper) :
-      undefined;
+    const impressionCountsCache = isPartialConsumer ?
+      new ImpressionCountsCacheInMemory() :
+      new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper);
 
-    const uniqueKeysCache = impressionsMode === NONE || isSyncronizer ?
-      isPartialConsumer ?
-        settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
-        new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper) :
-      undefined;
+    const uniqueKeysCache = isPartialConsumer ?
+      settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
+      new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper);
 
     // Connects to wrapper and emits SDK_READY event on main client
     const connectPromise = wrapper.connect().then(() => {
-      if (isSyncronizer) {
-        // In standalone or producer mode, clear storage if SDK key or feature flag filter has changed
+      if (isSynchronizer) {
+        // @TODO reuse InLocalStorage::validateCache logic
+        // In standalone or producer mode, clear storage if SDK key, flags filter criteria or flags spec version was modified
         return wrapper.get(keys.buildHashKey()).then((hash) => {
           const currentHash = getStorageHash(settings);
           if (hash !== currentHash) {
@@ -106,8 +104,8 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
         });
       } else {
         // Start periodic flush of async storages if not running synchronizer (producer mode)
-        if (impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
-        if (uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
+        if ((impressionCountsCache as ImpressionCountsCachePluggable).start) (impressionCountsCache as ImpressionCountsCachePluggable).start();
+        if ((uniqueKeysCache as UniqueKeysCachePluggable).start) (uniqueKeysCache as UniqueKeysCachePluggable).start();
         if (telemetry && (telemetry as ITelemetryCacheAsync).recordConfig) (telemetry as ITelemetryCacheAsync).recordConfig();
 
         onReadyCb();
@@ -120,6 +118,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
     return {
       splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
+      rbSegments: new RBSegmentsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),
       impressionCounts: impressionCountsCache,
@@ -129,9 +128,9 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
 
       // Stop periodic flush and disconnect the underlying storage
       destroy() {
-        return Promise.all(isSyncronizer ? [] : [
-          impressionCountsCache && (impressionCountsCache as ImpressionCountsCachePluggable).stop && (impressionCountsCache as ImpressionCountsCachePluggable).stop(),
-          uniqueKeysCache && (uniqueKeysCache as UniqueKeysCachePluggable).stop && (uniqueKeysCache as UniqueKeysCachePluggable).stop(),
+        return Promise.all(isSynchronizer ? [] : [
+          (impressionCountsCache as ImpressionCountsCachePluggable).stop && (impressionCountsCache as ImpressionCountsCachePluggable).stop(),
+          (uniqueKeysCache as UniqueKeysCachePluggable).stop && (uniqueKeysCache as UniqueKeysCachePluggable).stop(),
         ]).then(() => wrapper.disconnect());
       },
 

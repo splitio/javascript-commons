@@ -19,7 +19,7 @@ describe('Manager with sync cache (In Memory)', () => {
   /** Setup: create manager */
   const cache = new SplitsCacheInMemory();
   const manager = sdkManagerFactory({ mode: 'standalone', log: loggerMock }, cache, sdkReadinessManagerMock);
-  cache.addSplit(splitObject.name, splitObject as any);
+  cache.addSplit(splitObject as any);
 
   test('List all splits', () => {
 

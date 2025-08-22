@@ -21,7 +21,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
     function __handleSegmentUpdateCall() {
       isHandlingEvent = true;
-      if (maxChangeNumber > segmentsCache.getChangeNumber(segment)) {
+      if (maxChangeNumber > (segmentsCache.getChangeNumber(segment) || -1)) {
         handleNewEvent = false;
 
         // fetch segments revalidating data if cached
@@ -32,7 +32,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
           } else {
             const attempts = backoff.attempts + 1;
 
-            if (maxChangeNumber <= segmentsCache.getChangeNumber(segment)) {
+            if (maxChangeNumber <= (segmentsCache.getChangeNumber(segment) || -1)) {
               log.debug(`Refresh completed${cdnBypass ? ' bypassing the CDN' : ''} in ${attempts} attempts.`);
               isHandlingEvent = false;
               return;
@@ -60,7 +60,7 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
 
     return {
       put(changeNumber: number) {
-        const currentChangeNumber = segmentsCache.getChangeNumber(segment);
+        const currentChangeNumber = segmentsCache.getChangeNumber(segment) || -1;
 
         if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
 
@@ -84,8 +84,8 @@ export function SegmentsUpdateWorker(log: ILogger, segmentsSyncTask: ISegmentsSy
     /**
      * Invoked by NotificationProcessor on SEGMENT_UPDATE event
      *
-     * @param {number} changeNumber change number of the SEGMENT_UPDATE notification
-     * @param {string} segmentName segment name of the SEGMENT_UPDATE notification
+     * @param changeNumber - change number of the SEGMENT_UPDATE notification
+     * @param segmentName - segment name of the SEGMENT_UPDATE notification
      */
     put({ changeNumber, segmentName }: ISegmentUpdateData) {
       if (!segments[segmentName]) segments[segmentName] = SegmentUpdateWorker(segmentName);

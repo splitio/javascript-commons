@@ -1,5 +1,4 @@
 import { ISettings } from '../types';
-import { startsWith } from '../utils/lang';
 import { hash } from '../utils/murmur3/murmur3';
 
 const everythingAtTheEnd = /[^.]+$/;
@@ -34,22 +33,20 @@ export class KeyBuilder {
     return `${this.prefix}.splits.till`;
   }
 
-  // NOT USED
-  // buildSplitsReady() {
-  //   return `${this.prefix}.splits.ready`;
-  // }
-
-  isSplitKey(key: string) {
-    return startsWith(key, `${this.prefix}.split.`);
-  }
-
   buildSplitKeyPrefix() {
     return `${this.prefix}.split.`;
   }
 
-  // Only used by InLocalStorage.
-  buildSplitsWithSegmentCountKey() {
-    return `${this.prefix}.splits.usingSegments`;
+  buildRBSegmentKey(rbsegmentName: string) {
+    return `${this.prefix}.rbsegment.${rbsegmentName}`;
+  }
+
+  buildRBSegmentsTillKey() {
+    return `${this.prefix}.rbsegments.till`;
+  }
+
+  buildRBSegmentKeyPrefix() {
+    return `${this.prefix}.rbsegment.`;
   }
 
   buildSegmentNameKey(segmentName: string) {
@@ -59,11 +56,6 @@ export class KeyBuilder {
   buildSegmentTillKey(segmentName: string) {
     return `${this.prefix}.segment.${segmentName}.till`;
   }
-
-  // NOT USED
-  // buildSegmentsReady() {
-  //   return `${this.prefix}.segments.ready`;
-  // }
 
   extractKey(builtKey: string) {
     const s = builtKey.match(everythingAtTheEnd);

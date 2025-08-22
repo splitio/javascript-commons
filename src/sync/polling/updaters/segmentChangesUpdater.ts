@@ -13,10 +13,10 @@ type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noC
  *  - updates `segmentsCache`
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  *
- * @param log logger instance
- * @param segmentChangesFetcher fetcher of `/segmentChanges`
- * @param segments segments storage, with sync or async methods
- * @param readiness optional readiness manager. Not required for synchronizer or producer mode.
+ * @param log - logger instance
+ * @param segmentChangesFetcher - fetcher of `/segmentChanges`
+ * @param segments - segments storage, with sync or async methods
+ * @param readiness - optional readiness manager. Not required for synchronizer or producer mode.
  */
 export function segmentChangesUpdaterFactory(
   log: ILogger,
@@ -33,9 +33,9 @@ export function segmentChangesUpdaterFactory(
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      return fetchOnlyNew && since !== -1 ?
+      return fetchOnlyNew && since !== undefined ?
         false :
-        segmentChangesFetcher(since, segmentName, noCache, till).then((changes) => {
+        segmentChangesFetcher(since || -1, segmentName, noCache, till).then((changes) => {
           return Promise.all(changes.map(x => {
             log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             return segments.update(segmentName, x.added, x.removed, x.till);
@@ -50,11 +50,11 @@ export function segmentChangesUpdaterFactory(
    * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
    * Returned promise will not be rejected.
    *
-   * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
-   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
-   * @param {string | undefined} segmentName segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
-   * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
-   * @param {number | undefined} till till target for the provided segmentName, for CDN bypass.
+   * @param fetchOnlyNew - if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
+   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE or RB_SEGMENT_UPDATE notifications.
+   * @param segmentName - segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
+   * @param noCache - true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
+   * @param till - till target for the provided segmentName, for CDN bypass.
    */
   return function segmentChangesUpdater(fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);

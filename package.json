@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "2.0.0-rc.2",
+  "version": "2.4.1",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -17,10 +17,10 @@
   ],
   "scripts": {
     "check": "npm run check:lint && npm run check:types",
-    "check:lint": "eslint src --ext .js,.ts",
+    "check:lint": "eslint src types --ext .js,.ts",
     "check:types": "tsc --noEmit",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm -d true --declarationDir types",
+    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm",
     "build:cjs": "rimraf cjs && tsc -m CommonJS --outDir cjs",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -45,6 +45,7 @@
   "bugs": "https://github.com/splitio/javascript-commons/issues",
   "homepage": "https://github.com/splitio/javascript-commons#readme",
   "dependencies": {
+    "@types/ioredis": "^4.28.0",
     "tslib": "^2.3.1"
   },
   "peerDependencies": {
@@ -66,6 +67,7 @@
     "eslint": "^8.48.0",
     "eslint-plugin-compat": "^6.0.1",
     "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-tsdoc": "^0.3.0",
     "fetch-mock": "^9.11.0",
     "ioredis": "^4.28.0",
     "jest": "^27.2.3",

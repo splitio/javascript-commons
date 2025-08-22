@@ -1,4 +1,5 @@
-import { IEventEmitter, IStatusInterface } from '../types';
+import { IStatusInterface } from '../types';
+import SplitIO from '../../types/splitio';
 
 /** Splits data emitter */
 
@@ -6,13 +7,13 @@ type SDK_SPLITS_ARRIVED = 'state::splits-arrived'
 type SDK_SPLITS_CACHE_LOADED = 'state::splits-cache-loaded'
 type ISplitsEvent = SDK_SPLITS_ARRIVED | SDK_SPLITS_CACHE_LOADED
 
-export interface ISplitsEventEmitter extends IEventEmitter {
+export interface ISplitsEventEmitter extends SplitIO.IEventEmitter {
   emit(event: ISplitsEvent, ...args: any[]): boolean
   on(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   splitsArrived: boolean
   splitsCacheLoaded: boolean
-  initialized: boolean,
+  hasInit: boolean,
   initCallbacks: (() => void)[]
 }
 
@@ -21,7 +22,7 @@ export interface ISplitsEventEmitter extends IEventEmitter {
 type SDK_SEGMENTS_ARRIVED = 'state::segments-arrived'
 type ISegmentsEvent = SDK_SEGMENTS_ARRIVED
 
-export interface ISegmentsEventEmitter extends IEventEmitter {
+export interface ISegmentsEventEmitter extends SplitIO.IEventEmitter {
   emit(event: ISegmentsEvent, ...args: any[]): boolean
   on(event: ISegmentsEvent, listener: (...args: any[]) => void): this;
   once(event: ISegmentsEvent, listener: (...args: any[]) => void): this;
@@ -37,7 +38,7 @@ export type SDK_UPDATE = 'state::update'
 export type SDK_DESTROY = 'state::destroy'
 export type IReadinessEvent = SDK_READY_TIMED_OUT | SDK_READY | SDK_READY_FROM_CACHE | SDK_UPDATE | SDK_DESTROY
 
-export interface IReadinessEventEmitter extends IEventEmitter {
+export interface IReadinessEventEmitter extends SplitIO.IEventEmitter {
   emit(event: IReadinessEvent, ...args: any[]): boolean
 }
 

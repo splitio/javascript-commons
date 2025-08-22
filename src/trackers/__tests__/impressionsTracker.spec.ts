@@ -2,7 +2,7 @@ import { impressionsTrackerFactory } from '../impressionsTracker';
 import { ImpressionCountsCacheInMemory } from '../../storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionObserverSSFactory } from '../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { strategyDebugFactory } from '../strategy/strategyDebug';
 import { strategyOptimizedFactory } from '../strategy/strategyOptimized';
@@ -36,6 +36,10 @@ const fakeSettingsWithListener = {
 };
 const fakeWhenInit = (cb: () => void) => cb();
 
+const fakeNoneStrategy = {
+  process: jest.fn(() => false)
+};
+
 /* Tests */
 
 describe('Impressions Tracker', () => {
@@ -48,42 +52,35 @@ describe('Impressions Tracker', () => {
 
   const strategy = strategyDebugFactory(impressionObserverCSFactory());
 
-  test('Tracker API', () => {
-    expect(typeof impressionsTrackerFactory).toBe('function'); // The module should return a function which acts as a factory.
-
-    const instance = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategy, fakeWhenInit);
-    expect(typeof instance.track).toBe('function'); // The instance should implement the track method which will actually track queued impressions.
-  });
-
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategy, fakeWhenInit);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
 
     const imp1 = {
       feature: '10',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const imp2 = {
       feature: '20',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const imp3 = {
       feature: '30',
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([imp1, imp2, imp3]);
+    tracker.track([{ imp: imp1 }, { imp: imp2, disabled: false }, { imp: imp3, disabled: true }]);
 
-    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2, imp3]); // Should call the storage track method once we invoke .track() method, passing queued params in a sequence.
+    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2]); // Should call the storage track method once we invoke .track() method, passing impressions with `track` enabled
   });
 
   test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
-    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, strategy, fakeWhenInit, fakeIntegrationsManager);
+    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit, fakeIntegrationsManager);
 
     const fakeImpression = {
       feature: 'impression'
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const fakeImpression2 = {
       feature: 'impression_2'
-    } as ImpressionDTO;
+    } as SplitIO.ImpressionDTO;
     const fakeAttributes = {
       fake: 'attributes'
     };
@@ -93,9 +90,9 @@ describe('Impressions Tracker', () => {
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be invoked if we haven't tracked impressions.
 
     // We signal that we actually want to track the queued impressions.
-    tracker.track([fakeImpression, fakeImpression2], fakeAttributes);
+    tracker.track([{ imp: fakeImpression }, { imp: fakeImpression2, disabled: true }], fakeAttributes);
 
-    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression, fakeImpression2]); // Even with a listener, impression should be sent to the cache
+    expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([fakeImpression]); // Even with a listener, impressions (with `track` enabled) should be sent to the cache
     expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be executed synchronously.
 
@@ -127,7 +124,7 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
   const impression2 = {
     feature: 'qc_team_2',
     keyName: 'marcio@split.io',
@@ -135,7 +132,7 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
   const impression3 = {
     feature: 'qc_team',
     keyName: 'marcio@split.io',
@@ -143,21 +140,21 @@ describe('Impressions Tracker', () => {
     time: 0,
     bucketingKey: 'impr_bucketing_2',
     label: 'default rule'
-  } as ImpressionDTO;
+  } as SplitIO.ImpressionDTO;
 
   test('Should track 3 impressions with Previous Time.', () => {
     impression.time = impression2.time = 123456789;
     impression3.time = 1234567891;
 
     const trackers = [
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyDebugFactory(impressionObserverSSFactory()), fakeWhenInit, undefined),
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyDebugFactory(impressionObserverCSFactory()), fakeWhenInit, undefined)
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyDebugFactory(impressionObserverSSFactory()), fakeWhenInit, undefined),
+      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyDebugFactory(impressionObserverCSFactory()), fakeWhenInit, undefined)
     ];
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
 
     trackers.forEach(tracker => {
-      tracker.track([impression, impression2, impression3]);
+      tracker.track([{ imp: impression, disabled: false }, { imp: impression2 }, { imp: impression3 }]);
 
       const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 
@@ -178,11 +175,11 @@ describe('Impressions Tracker', () => {
     impression3.time = Date.now();
 
     const impressionCountsCache = new ImpressionCountsCacheInMemory();
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache), fakeWhenInit, undefined, fakeTelemetryCache as any);
+    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache), fakeWhenInit, undefined, fakeTelemetryCache as any);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
-    tracker.track([impression, impression2, impression3]);
+    tracker.track([{ imp: impression }, { imp: impression2 }, { imp: impression3 }]);
 
     const lastArgs = fakeImpressionsCache.track.mock.calls[fakeImpressionsCache.track.mock.calls.length - 1];
 
@@ -201,21 +198,21 @@ describe('Impressions Tracker', () => {
   test('Should track or not impressions depending on user consent status', () => {
     const settings = { ...fullSettings };
 
-    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache, strategy, fakeWhenInit);
+    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
 
-    tracker.track([impression]);
+    tracker.track([{ imp: impression }]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(1); // impression should be tracked if userConsent is undefined
 
     settings.userConsent = 'UNKNOWN';
-    tracker.track([impression]);
+    tracker.track([{ imp: impression }]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(2); // impression should be tracked if userConsent is unknown
 
     settings.userConsent = 'GRANTED';
-    tracker.track([impression]);
+    tracker.track([{ imp: impression }]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should be tracked if userConsent is granted
 
     settings.userConsent = 'DECLINED';
-    tracker.track([impression]);
+    tracker.track([{ imp: impression }]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(3); // impression should not be tracked if userConsent is declined
   });
 

@@ -1,8 +1,8 @@
 /**
  * Searches the index of the specified `value` inside an ordered array of `items` using the binary search algorithm.
  *
- * @param items the array to be searched
- * @param value the value to be searched for
+ * @param items - the array to be searched
+ * @param value - the value to be searched for
  * @returns integer number between 0 and `items.length`. This value is the index of the search value,
  * if it is contained in the array, or the index at which the value should be inserted to keep the array ordered.
  */

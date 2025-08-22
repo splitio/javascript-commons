@@ -8,6 +8,7 @@ import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
+import { usesSegmentsSync } from '../../../storages/AbstractSplitsCacheSync';
 
 type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -27,7 +28,7 @@ export function mySegmentsUpdaterFactory(
   matchingKey: string
 ): IMySegmentsUpdater {
 
-  const { splits, segments, largeSegments } = storage;
+  const { segments, largeSegments } = storage;
   let readyOnAlreadyExistentState = true;
   let startingUp = true;
 
@@ -51,7 +52,7 @@ export function mySegmentsUpdaterFactory(
     }
 
     // Notify update if required
-    if (splits.usesSegments() && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
       segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }
@@ -87,12 +88,12 @@ export function mySegmentsUpdaterFactory(
    * MySegments updater returns a promise that resolves with a `false` boolean value if it fails to fetch mySegments or synchronize them with the storage.
    * Returned promise will not be rejected.
    *
-   * @param {SegmentsData | undefined} segmentsData it can be:
+   * @param segmentsData - it can be:
    *  (1) the list of mySegments names to sync in the storage,
    *  (2) an object with a segment name and action (true: add, or false: delete) to update the storage,
    *  (3) or `undefined`, for which the updater will fetch mySegments in order to sync the storage.
-   * @param {boolean | undefined} noCache true to revalidate data to fetch
-   * @param {boolean | undefined} till query param to bypass CDN requests
+   * @param noCache - true to revalidate data to fetch
+   * @param till - query param to bypass CDN requests
    */
   return function mySegmentsUpdater(segmentsData?: MySegmentsData, noCache?: boolean, till?: number) {
     return _mySegmentsUpdater(0, segmentsData, noCache, till);

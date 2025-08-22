@@ -14,8 +14,8 @@ const CONTROL_CHANNEL_REGEX = /^control_/;
 /**
  * Build metadata headers for SSE connection.
  *
- * @param {ISettings} settings Validated settings.
- * @returns {Record<string, string>} Headers object
+ * @param settings - Validated settings.
+ * @returns Headers object
  */
 function buildSSEHeaders(settings: ISettings) {
   const headers: Record<string, string> = {
@@ -45,8 +45,8 @@ export class SSEClient implements ISSEClient {
   /**
    * SSEClient constructor.
    *
-   * @param settings Validated settings.
-   * @param platform object containing environment-specific dependencies
+   * @param settings - Validated settings.
+   * @param platform - object containing environment-specific dependencies
    * @throws 'EventSource API is not available.' if EventSource is not available.
    */
   constructor(private settings: ISettings, { getEventSource, getOptions }: IPlatform) {
@@ -64,9 +64,6 @@ export class SSEClient implements ISSEClient {
 
   /**
    * Open the connection with a given authToken
-   *
-   * @param {IAuthTokenPushEnabled} authToken
-   * @throws {TypeError} Will throw an error if `authToken` is undefined
    */
   open(authToken: IAuthTokenPushEnabled) {
     this.close(); // it closes connection if previously opened

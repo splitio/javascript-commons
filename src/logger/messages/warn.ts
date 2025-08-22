@@ -18,7 +18,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],
   // input validation
   [c.WARN_SETTING_NULL, '%s: Property "%s" is of invalid type. Setting value to null.'],
-  [c.WARN_TRIMMING_PROPERTIES, '%s: Event has more than 300 properties. Some of them will be trimmed when processed.'],
+  [c.WARN_TRIMMING_PROPERTIES, '%s: more than 300 properties were provided. Some of them will be trimmed when processed.'],
   [c.WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [c.WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
   [c.WARN_NOT_EXISTENT_SPLIT, '%s: feature flag "%s" does not exist in this environment. Please double check what feature flags exist in the Split user interface.'],
@@ -33,7 +33,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_SDK_KEY, c.LOG_PREFIX_SETTINGS + ': You already have %s. We recommend keeping only one instance of the factory at all times (Singleton pattern) and reusing it throughout your application'],
 
   [c.STREAMING_PARSING_MEMBERSHIPS_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching Memberships due to an error processing %s notification: %s'],
-  [c.STREAMING_PARSING_SPLIT_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching SplitChanges due to an error processing SPLIT_UPDATE notification: %s'],
+  [c.STREAMING_PARSING_SPLIT_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching SplitChanges due to an error processing %s notification: %s'],
   [c.WARN_INVALID_FLAGSET, '%s: you passed %s, flag set must adhere to the regular expressions %s. This means a flag set must start with a letter or number, be in lowercase, alphanumeric and have a max length of 50 characters. %s was discarded.'],
   [c.WARN_LOWERCASE_FLAGSET, '%s: flag set %s should be all lowercase - converting string to lowercase.'],
   [c.WARN_FLAGSET_WITHOUT_FLAGS, '%s: you passed %s flag set that does not contain cached feature flag names. Please double check what flag sets are in use in the Split user interface.'],

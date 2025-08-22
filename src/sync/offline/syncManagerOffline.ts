@@ -14,7 +14,7 @@ function flush() {
  * Offline SyncManager factory.
  * Can be used for server-side API, and client-side API with or without multiple clients.
  *
- * @param splitsParser e.g., `splitsParserFromFile`, `splitsParserFromSettings`.
+ * @param splitsParser - e.g., `splitsParserFromFile`, `splitsParserFromSettings`.
  */
 export function syncManagerOfflineFactory(
   splitsParserFactory: () => ISplitsParser

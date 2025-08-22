@@ -5,6 +5,7 @@
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
+    "eslint-plugin-tsdoc",
     "import"
   ],
 
@@ -88,6 +89,19 @@
       "parserOptions": {
         "ecmaVersion": 2015,
         "sourceType": "module"
+      }
+    },
+    {
+      "files": ["types/**"],
+      "rules": {
+        "no-use-before-define": "off"
+      }
+    },
+    {
+      // Enable TSDoc rules for TypeScript files, allowing the use of JSDoc in JS files.
+      "files": ["**/*.ts"],
+      "rules": {
+        "tsdoc/syntax": "warn"
       }
     },
     // @TODO remove when moving InLocalStorage to js-browser

@@ -111,7 +111,7 @@ export function groupBy<T extends Record<string, any>>(source: T[], prop: string
 /**
  * Checks if a given value is a boolean.
  */
-export function isBoolean(val: any): boolean {
+export function isBoolean(val: any): val is boolean {
   return val === true || val === false;
 }
 
@@ -120,7 +120,7 @@ export function isBoolean(val: any): boolean {
  * Unlike `Number.isFinite`, it also tests Number object instances.
  * Unlike global `isFinite`, it returns false if the value is not a number or Number object instance.
  */
-export function isFiniteNumber(val: any): boolean {
+export function isFiniteNumber(val: any): val is number {
   if (val instanceof Number) val = val.valueOf();
   return typeof val === 'number' ?
     Number.isFinite ? Number.isFinite(val) : isFinite(val) :
