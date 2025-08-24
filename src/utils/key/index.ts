@@ -1,4 +1,5 @@
 import SplitIO from '../../../types/splitio';
+import { ISettings } from '../../types';
 import { isObject } from '../lang';
 
 // function isSplitKeyObject(key: any): key is SplitIO.SplitKeyObject {
@@ -31,4 +32,8 @@ export function keyParser(key: SplitIO.SplitKey): SplitIO.SplitKeyObject {
       bucketingKey: key as string
     };
   }
+}
+
+export function checkIfServerSide(settings: ISettings) {
+  return !settings.core.key;
 }
