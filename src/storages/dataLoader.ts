@@ -6,31 +6,31 @@ import { IMembershipsResponse, IMySegmentsResponse, IRBSegment, ISplit } from '.
 import { ILogger } from '../logger/types';
 
 /**
- * Sets the given synchronous storage with the provided preloaded data snapshot.
+ * Sets the given synchronous storage with the provided rollout plan snapshot.
  * If `matchingKey` is provided, the storage is handled as a client-side storage (segments and largeSegments are instances of MySegmentsCache).
  * Otherwise, the storage is handled as a server-side storage (segments is an instance of SegmentsCache).
  */
-export function setCache(log: ILogger, preloadedData: SplitIO.PreloadedData, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
-  // Do not load data if current preloadedData is empty
-  if (Object.keys(preloadedData).length === 0) return;
+export function setRolloutPlan(log: ILogger, rolloutPlan: SplitIO.RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
+  // Do not load data if current rollout plan is empty
+  if (Object.keys(rolloutPlan).length === 0) return;
 
   const { splits, rbSegments, segments, largeSegments } = storage;
 
-  log.debug(`set cache${matchingKey ? ` for key ${matchingKey}` : ''}`);
+  log.debug(`storage: set feature flags and segments${matchingKey ? ` for key ${matchingKey}` : ''}`);
 
   if (splits) {
     splits.clear();
-    splits.update(preloadedData.flags as ISplit[] || [], [], preloadedData.since || -1);
+    splits.update(rolloutPlan.flags as ISplit[] || [], [], rolloutPlan.since || -1);
   }
 
   if (rbSegments) {
     rbSegments.clear();
-    rbSegments.update(preloadedData.rbSegments as IRBSegment[] || [], [], preloadedData.rbSince || -1);
+    rbSegments.update(rolloutPlan.rbSegments as IRBSegment[] || [], [], rolloutPlan.rbSince || -1);
   }
 
-  const segmentsData = preloadedData.segments || {};
+  const segmentsData = rolloutPlan.segments || {};
   if (matchingKey) { // add memberships data (client-side)
-    let memberships = preloadedData.memberships && preloadedData.memberships[matchingKey];
+    let memberships = rolloutPlan.memberships && rolloutPlan.memberships[matchingKey];
     if (!memberships && segmentsData) {
       memberships = {
         ms: {
@@ -55,13 +55,13 @@ export function setCache(log: ILogger, preloadedData: SplitIO.PreloadedData, sto
 }
 
 /**
- * Gets the preloaded data snapshot from the given synchronous storage.
+ * Gets the rollout plan snapshot from the given synchronous storage.
  * If `keys` are provided, the memberships for those keys is returned, to protect segments data.
  * Otherwise, the segments data is returned.
  */
-export function getCache(log: ILogger, storage: IStorageSync, keys?: SplitIO.SplitKey[]): SplitIO.PreloadedData {
+export function getRolloutPlan(log: ILogger, storage: IStorageSync, keys?: SplitIO.SplitKey[]): SplitIO.RolloutPlan {
 
-  log.debug(`get cache${keys ? ` for keys ${keys}` : ''}`);
+  log.debug(`storage: get feature flags and segments${keys ? ` for keys ${keys}` : ''}`);
 
   return {
     since: storage.splits.getChangeNumber(),

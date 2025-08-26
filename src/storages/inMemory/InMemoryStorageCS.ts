@@ -8,7 +8,7 @@ import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
-import { setCache } from '../dataLoader';
+import { setRolloutPlan } from '../dataLoader';
 import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 
 /**
@@ -17,7 +17,7 @@ import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
  * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation }, preloadedData }, onReadyFromCacheCb } = params;
+  const { settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation }, initialRolloutPlan }, onReadyFromCacheCb } = params;
 
   const storages: Record<string, IStorageSync> = {};
 
@@ -45,8 +45,8 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
         const segments = new MySegmentsCacheInMemory();
         const largeSegments = new MySegmentsCacheInMemory();
 
-        if (preloadedData) {
-          setCache(log, preloadedData, { segments, largeSegments }, matchingKey);
+        if (initialRolloutPlan) {
+          setRolloutPlan(log, initialRolloutPlan, { segments, largeSegments }, matchingKey);
         }
 
         storages[matchingKey] = {
@@ -81,8 +81,8 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
   const matchingKey = getMatching(params.settings.core.key);
   storages[matchingKey] = storage;
 
-  if (preloadedData) {
-    setCache(log, preloadedData, storage, matchingKey);
+  if (initialRolloutPlan) {
+    setRolloutPlan(log, initialRolloutPlan, storage, matchingKey);
     if (splits.getChangeNumber() > -1) onReadyFromCacheCb();
   }
 

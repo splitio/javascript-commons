@@ -353,7 +353,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
   /**
    * Data to initialize the SDK storage with. If provided and valid, the SDK will be ready from cache immediately.
    */
-  preloadedData?: SplitIO.PreloadedData;
+  initialRolloutPlan?: SplitIO.RolloutPlan;
   /**
    * SDK Startup settings.
    */
@@ -559,7 +559,7 @@ declare namespace SplitIO {
       eventsFirstPushWindow: number;
     };
     readonly storage: StorageSyncFactory | StorageAsyncFactory | StorageOptions;
-    readonly preloadedData?: SplitIO.PreloadedData;
+    readonly initialRolloutPlan?: SplitIO.RolloutPlan;
     readonly urls: {
       events: string;
       sdk: string;
@@ -1025,11 +1025,11 @@ declare namespace SplitIO {
     type: NodeSyncStorage | NodeAsyncStorage | BrowserStorage;
     prefix?: string;
     options?: Object;
-  }
+  };
   /**
-   * Defines the format of rollout plan data to preload the factory storage (cache).
+   * Defines the format of rollout plan data to preload the SDK cache.
    */
-  type PreloadedData = {
+  type RolloutPlan = {
     /**
      * Change number of feature flags.
      */
@@ -1037,29 +1037,29 @@ declare namespace SplitIO {
     /**
      * List of feature flags.
      */
-    flags: Object[],
+    flags: Object[];
     /**
      * Change number of rule-based segments.
      */
-    rbSince?: number,
+    rbSince?: number;
     /**
      * List of rule-based segments.
      */
-    rbSegments?: Object[],
+    rbSegments?: Object[];
     /**
      * Optional map of user keys to their memberships.
      */
     memberships?: {
-      [key: string]: Object
-    },
+      [key: string]: Object;
+    };
     /**
      * Optional map of segments to their list of keys.
      * This property is ignored if `memberships` is provided.
      */
     segments?: {
-      [segmentName: string]: string[]
-    },
-  }
+      [segmentName: string]: string[];
+    };
+  };
   /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
@@ -1082,7 +1082,7 @@ declare namespace SplitIO {
   type IntegrationFactory = {
     readonly type: string;
     (params: any): (Integration | void);
-  }
+  };
   /**
    * A pair of user key and it's trafficType, required for tracking valid Split events.
    */
@@ -1609,7 +1609,7 @@ declare namespace SplitIO {
      * @param keys - Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys, rather than the complete segments data.
      * @returns The current snapshot of the SDK rollout plan.
      */
-    getCache(keys?: SplitKey[]): PreloadedData,
+    getRolloutPlan(keys?: SplitKey[]): RolloutPlan;
   }
   /**
    * This represents the interface for the SDK instance for server-side with asynchronous storage.

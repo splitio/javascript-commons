@@ -6,8 +6,8 @@ import { IRBSegment, ISplit } from '../../dtos/types';
 
 import * as dataLoader from '../dataLoader';
 
-describe('setCache & getCache', () => {
-  jest.spyOn(dataLoader, 'setCache');
+describe('setRolloutPlan & getRolloutPlan', () => {
+  jest.spyOn(dataLoader, 'setRolloutPlan');
   const onReadyFromCacheCb = jest.fn();
   const onReadyCb = jest.fn();
 
@@ -24,23 +24,23 @@ describe('setCache & getCache', () => {
   });
 
   test('using preloaded data with memberships', () => {
-    const preloadedData = dataLoader.getCache(loggerMock, serverStorage, [fullSettings.core.key as string, otherKey]);
+    const rolloutPlanData = dataLoader.getRolloutPlan(loggerMock, serverStorage, [fullSettings.core.key as string, otherKey]);
 
     // Load client-side storage with preloaded data
-    const clientStorage = InMemoryStorageCSFactory({ settings: { ...fullSettings, preloadedData }, onReadyFromCacheCb, onReadyCb });
-    expect(dataLoader.setCache).toBeCalledTimes(1);
+    const clientStorage = InMemoryStorageCSFactory({ settings: { ...fullSettings, initialRolloutPlan: rolloutPlanData }, onReadyFromCacheCb, onReadyCb });
+    expect(dataLoader.setRolloutPlan).toBeCalledTimes(1);
     expect(onReadyFromCacheCb).toBeCalledTimes(1);
 
     // Shared client storage
     const sharedClientStorage = clientStorage.shared!(otherKey);
-    expect(dataLoader.setCache).toBeCalledTimes(2);
+    expect(dataLoader.setRolloutPlan).toBeCalledTimes(2);
 
     expect(clientStorage.segments.getRegisteredSegments()).toEqual(['segment1']);
     expect(sharedClientStorage.segments.getRegisteredSegments()).toEqual(['segment1']);
 
     // Get preloaded data from client-side storage
-    expect(dataLoader.getCache(loggerMock, clientStorage, [fullSettings.core.key as string, otherKey])).toEqual(preloadedData);
-    expect(preloadedData).toEqual({
+    expect(dataLoader.getRolloutPlan(loggerMock, clientStorage, [fullSettings.core.key as string, otherKey])).toEqual(rolloutPlanData);
+    expect(rolloutPlanData).toEqual({
       since: 123,
       flags: [{ name: 'split1' }],
       rbSince: 321,
@@ -54,20 +54,20 @@ describe('setCache & getCache', () => {
   });
 
   test('using preloaded data with segments', () => {
-    const preloadedData = dataLoader.getCache(loggerMock, serverStorage);
+    const rolloutPlanData = dataLoader.getRolloutPlan(loggerMock, serverStorage);
 
     // Load client-side storage with preloaded data
-    const clientStorage = InMemoryStorageCSFactory({ settings: { ...fullSettings, preloadedData }, onReadyFromCacheCb, onReadyCb });
-    expect(dataLoader.setCache).toBeCalledTimes(1);
+    const clientStorage = InMemoryStorageCSFactory({ settings: { ...fullSettings, initialRolloutPlan: rolloutPlanData }, onReadyFromCacheCb, onReadyCb });
+    expect(dataLoader.setRolloutPlan).toBeCalledTimes(1);
     expect(onReadyFromCacheCb).toBeCalledTimes(1);
 
     // Shared client storage
     const sharedClientStorage = clientStorage.shared!(otherKey);
-    expect(dataLoader.setCache).toBeCalledTimes(2);
+    expect(dataLoader.setRolloutPlan).toBeCalledTimes(2);
     expect(clientStorage.segments.getRegisteredSegments()).toEqual(['segment1']);
     expect(sharedClientStorage.segments.getRegisteredSegments()).toEqual(['segment1']);
 
-    expect(preloadedData).toEqual({
+    expect(rolloutPlanData).toEqual({
       since: 123,
       flags: [{ name: 'split1' }],
       rbSince: 321,
