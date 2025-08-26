@@ -69,12 +69,6 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
 /**
  * Returns a string representing the URL encoded query component of /splitChanges URL.
  *
- * The possible formats of the query string are:
- *  - null: if all filters are empty
- *  - '&names=<comma-separated-values>': if only `byPrefix` filter is undefined
- *  - '&prefixes=<comma-separated-values>': if only `byName` filter is undefined
- *  - '&names=<comma-separated-values>&prefixes=<comma-separated-values>': if no one is undefined
- *
  * @param groupedFilters - object of filters. Each filter must be a list of valid, unique and ordered string values.
  * @returns null or string with the `split filter query` component of the URL.
  */

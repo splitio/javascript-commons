@@ -24,7 +24,11 @@ interface ISharedSettings {
   sync?: {
     /**
      * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
-     * This configuration is only meaningful when the SDK is working in "standalone" mode.
+     *
+     * NOTES:
+     * - This configuration is only meaningful when the SDK is working in `"standalone"` mode.
+     * - If `bySet` filter is provided, `byName` and `byPrefix` filters are ignored.
+     * - If both `byName` and `byPrefix` filters are provided, the intersection of the two groups of feature flags is fetched.
      *
      * Example:
      * ```
@@ -69,7 +73,7 @@ interface ISharedSettings {
        * const factory = SplitFactory({
        *   ...
        *   sync: {
-       *     getHeaderOverrides(context) {
+       *     getHeaderOverrides: (context) => {
        *       return {
        *         'Authorization': context.headers['Authorization'] + ', other-value',
        *         'custom-header': 'custom-value'
@@ -1137,7 +1141,7 @@ declare namespace SplitIO {
      */
     type: SplitFilterType;
     /**
-     * List of values: feature flag names for 'byName' filter type, and feature flag name prefixes for 'byPrefix' type.
+     * List of values: flag set names for 'bySet' filter type, feature flag names for 'byName' filter type, and feature flag name prefixes for 'byPrefix' type.
      */
     values: string[];
   }
@@ -1360,7 +1364,7 @@ declare namespace SplitIO {
          * const factory = SplitFactory({
          *   ...
          *   sync: {
-         *     getHeaderOverrides(context) {
+         *     getHeaderOverrides: (context) => {
          *       return {
          *         'Authorization': context.headers['Authorization'] + ', other-value',
          *         'custom-header': 'custom-value'
