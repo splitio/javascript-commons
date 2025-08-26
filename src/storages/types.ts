@@ -505,7 +505,7 @@ export interface IStorageFactoryParams {
    */
   onReadyCb: (error?: any) => void,
   /**
-   * It is meant for emitting SDK_READY_FROM_CACHE event in standalone mode with preloaded data
+   * For emitting SDK_READY_FROM_CACHE event in consumer mode with Redis and standalone mode with preloaded data
    */
   onReadyFromCacheCb: () => void,
 }
