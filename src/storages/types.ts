@@ -466,7 +466,7 @@ export interface IStorageBase<
   telemetry?: TTelemetryCache,
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
-  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
+  shared?: (matchingKey: string, onReadyCb?: (error?: any) => void) => this
 }
 
 export interface IStorageSync extends IStorageBase<

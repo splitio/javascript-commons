@@ -1,5 +1,5 @@
 2.5.0 (August XX, 2025)
- - Added `factory.getState()` method for standalone server-side SDKs, which returns the rollout plan snapshot from the storage.
+ - Added `factory.getCache()` method for standalone server-side SDKs, which returns the rollout plan snapshot from the storage.
  - Added `preloadedData` configuration option for standalone client-side SDKs, which allows preloading the SDK storage with a snapshot of the rollout plan.
  - Updated internal storage factory to emit the SDK_READY_FROM_CACHE event when it corresponds, to clean up the initialization flow.
 

@@ -8,7 +8,7 @@ import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
-import { loadData } from '../dataLoader';
+import { setCache } from '../dataLoader';
 import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 
 /**
@@ -17,7 +17,9 @@ import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
  * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation }, preloadedData }, onReadyFromCacheCb } = params;
+  const { settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation }, preloadedData }, onReadyFromCacheCb } = params;
+
+  const storages: Record<string, IStorageSync> = {};
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const rbSegments = new RBSegmentsCacheInMemory();
@@ -39,26 +41,30 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
 
     // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared(matchingKey: string) {
-      const segments = new MySegmentsCacheInMemory();
-      const largeSegments = new MySegmentsCacheInMemory();
+      if (!storages[matchingKey]) {
+        const segments = new MySegmentsCacheInMemory();
+        const largeSegments = new MySegmentsCacheInMemory();
 
-      if (preloadedData) {
-        loadData(preloadedData, { segments, largeSegments }, matchingKey);
+        if (preloadedData) {
+          setCache(log, preloadedData, { segments, largeSegments }, matchingKey);
+        }
+
+        storages[matchingKey] = {
+          splits: this.splits,
+          rbSegments: this.rbSegments,
+          segments,
+          largeSegments,
+          impressions: this.impressions,
+          impressionCounts: this.impressionCounts,
+          events: this.events,
+          telemetry: this.telemetry,
+          uniqueKeys: this.uniqueKeys,
+
+          destroy() { }
+        };
       }
 
-      return {
-        splits: this.splits,
-        rbSegments: this.rbSegments,
-        segments,
-        largeSegments,
-        impressions: this.impressions,
-        impressionCounts: this.impressionCounts,
-        events: this.events,
-        telemetry: this.telemetry,
-        uniqueKeys: this.uniqueKeys,
-
-        destroy() { }
-      };
+      return storages[matchingKey];
     },
   };
 
@@ -72,9 +78,11 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     storage.uniqueKeys.track = noopTrack;
   }
 
+  const matchingKey = getMatching(params.settings.core.key);
+  storages[matchingKey] = storage;
 
   if (preloadedData) {
-    loadData(preloadedData, storage, getMatching(params.settings.core.key));
+    setCache(log, preloadedData, storage, matchingKey);
     if (splits.getChangeNumber() > -1) onReadyFromCacheCb();
   }
 

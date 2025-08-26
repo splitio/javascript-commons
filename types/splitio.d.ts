@@ -1603,6 +1603,13 @@ declare namespace SplitIO {
      * @returns The manager instance.
      */
     manager(): IManager;
+    /**
+     * Returns the current snapshot of the SDK rollout plan in cache.
+     *
+     * @param keys - Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys, rather than the complete segments data.
+     * @returns The current snapshot of the SDK rollout plan.
+     */
+    getCache(keys?: SplitKey[]): PreloadedData,
   }
   /**
    * This represents the interface for the SDK instance for server-side with asynchronous storage.
