@@ -5,12 +5,44 @@ import { getMatching } from '../utils/key';
 import { IMembershipsResponse, IMySegmentsResponse, IRBSegment, ISplit } from '../dtos/types';
 import { ILogger } from '../logger/types';
 
+export type RolloutPlan = {
+  /**
+   * Change number of feature flags.
+   */
+  since: number;
+  /**
+   * List of feature flags.
+   */
+  flags: ISplit[];
+  /**
+   * Change number of rule-based segments.
+   */
+  rbSince?: number;
+  /**
+   * List of rule-based segments.
+   */
+  rbSegments?: IRBSegment[];
+  /**
+   * Optional map of user keys to their memberships.
+   */
+  memberships?: {
+    [key: string]: IMembershipsResponse;
+  };
+  /**
+   * Optional map of standard segments to their list of keys.
+   * This property is ignored if `memberships` is provided.
+   */
+  segments?: {
+    [segmentName: string]: string[];
+  };
+};
+
 /**
  * Sets the given synchronous storage with the provided rollout plan snapshot.
  * If `matchingKey` is provided, the storage is handled as a client-side storage (segments and largeSegments are instances of MySegmentsCache).
  * Otherwise, the storage is handled as a server-side storage (segments is an instance of SegmentsCache).
  */
-export function setRolloutPlan(log: ILogger, rolloutPlan: SplitIO.RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
+export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
   // Do not load data if current rollout plan is empty
   if (Object.keys(rolloutPlan).length === 0) return;
 
@@ -20,12 +52,12 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: SplitIO.RolloutPlan, s
 
   if (splits) {
     splits.clear();
-    splits.update(rolloutPlan.flags as ISplit[] || [], [], rolloutPlan.since || -1);
+    splits.update(rolloutPlan.flags || [], [], rolloutPlan.since || -1);
   }
 
   if (rbSegments) {
     rbSegments.clear();
-    rbSegments.update(rolloutPlan.rbSegments as IRBSegment[] || [], [], rolloutPlan.rbSince || -1);
+    rbSegments.update(rolloutPlan.rbSegments || [], [], rolloutPlan.rbSince || -1);
   }
 
   const segmentsData = rolloutPlan.segments || {};
@@ -43,8 +75,8 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: SplitIO.RolloutPlan, s
     }
 
     if (memberships) {
-      if ((memberships as IMembershipsResponse).ms) segments.resetSegments((memberships as IMembershipsResponse).ms!);
-      if ((memberships as IMembershipsResponse).ls && largeSegments) largeSegments.resetSegments((memberships as IMembershipsResponse).ls!);
+      if (memberships.ms) segments.resetSegments(memberships.ms!);
+      if (memberships.ls && largeSegments) largeSegments.resetSegments(memberships.ls!);
     }
   } else { // add segments data (server-side)
     Object.keys(segmentsData).forEach(segmentName => {
@@ -59,7 +91,7 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: SplitIO.RolloutPlan, s
  * If `keys` are provided, the memberships for those keys is returned, to protect segments data.
  * Otherwise, the segments data is returned.
  */
-export function getRolloutPlan(log: ILogger, storage: IStorageSync, keys?: SplitIO.SplitKey[]): SplitIO.RolloutPlan {
+export function getRolloutPlan(log: ILogger, storage: IStorageSync, keys?: SplitIO.SplitKey[]): RolloutPlan {
 
   log.debug(`storage: get feature flags and segments${keys ? ` for keys ${keys}` : ''}`);
 

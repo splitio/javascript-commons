@@ -351,7 +351,8 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
    */
   features?: SplitIO.MockedFeaturesMap;
   /**
-   * Data to initialize the SDK storage with. If provided and valid, the SDK will be ready from cache immediately.
+   * Rollout plan object (i.e., feature flags and segment definitions) to initialize the SDK storage with. If provided and valid, the SDK will be ready from cache immediately.
+   * This object is derived from calling the Node.js SDK’s `getRolloutPlan` method.
    */
   initialRolloutPlan?: SplitIO.RolloutPlan;
   /**
@@ -1027,39 +1028,9 @@ declare namespace SplitIO {
     options?: Object;
   };
   /**
-   * Defines the format of rollout plan data to preload the SDK cache.
+   * A JSON-serializable plain object that defines the format of rollout plan data to preload the SDK cache with feature flags and segments.
    */
-  type RolloutPlan = {
-    /**
-     * Change number of feature flags.
-     */
-    since: number;
-    /**
-     * List of feature flags.
-     */
-    flags: Object[];
-    /**
-     * Change number of rule-based segments.
-     */
-    rbSince?: number;
-    /**
-     * List of rule-based segments.
-     */
-    rbSegments?: Object[];
-    /**
-     * Optional map of user keys to their memberships.
-     */
-    memberships?: {
-      [key: string]: Object;
-    };
-    /**
-     * Optional map of segments to their list of keys.
-     * This property is ignored if `memberships` is provided.
-     */
-    segments?: {
-      [segmentName: string]: string[];
-    };
-  };
+  type RolloutPlan = Object;
   /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
