@@ -1032,6 +1032,23 @@ declare namespace SplitIO {
    */
   type RolloutPlan = Object;
   /**
+   * Options for the `factory.getRolloutPlan` method.
+   */
+  type RolloutPlanOptions = {
+    /**
+     * Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys.
+     *
+     * @defaultValue `undefined`
+     */
+    keys?: SplitKey[];
+    /**
+     * Optional flag to expose segments data in the rollout plan snapshot.
+     *
+     * @defaultValue `false`
+     */
+    exposeSegments?: boolean;
+  };
+  /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
    *
@@ -1580,7 +1597,7 @@ declare namespace SplitIO {
      * @param keys - Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys, rather than the complete segments data.
      * @returns The current snapshot of the SDK rollout plan.
      */
-    getRolloutPlan(keys?: SplitKey[]): RolloutPlan;
+    getRolloutPlan(options?: RolloutPlanOptions): RolloutPlan;
   }
   /**
    * This represents the interface for the SDK instance for server-side with asynchronous storage.

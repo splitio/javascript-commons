@@ -259,7 +259,7 @@ export interface ISegmentChangesResponse {
   name: string,
   added: string[],
   removed: string[],
-  since: number,
+  since?: number,
   till: number
 }
 

@@ -2,40 +2,36 @@ import SplitIO from '../../types/splitio';
 import { IRBSegmentsCacheSync, ISegmentsCacheSync, ISplitsCacheSync, IStorageSync } from './types';
 import { setToArray } from '../utils/lang/sets';
 import { getMatching } from '../utils/key';
-import { IMembershipsResponse, IMySegmentsResponse, IRBSegment, ISplit } from '../dtos/types';
+import { IMembershipsResponse, IMySegmentsResponse, ISegmentChangesResponse, ISplitChangesResponse } from '../dtos/types';
 import { ILogger } from '../logger/types';
+import { isObject } from '../utils/lang';
 
 export type RolloutPlan = {
   /**
-   * Change number of feature flags.
+   * Feature flags and rule-based segments.
    */
-  since: number;
+  splitChanges: ISplitChangesResponse;
   /**
-   * List of feature flags.
-   */
-  flags: ISplit[];
-  /**
-   * Change number of rule-based segments.
-   */
-  rbSince?: number;
-  /**
-   * List of rule-based segments.
-   */
-  rbSegments?: IRBSegment[];
-  /**
-   * Optional map of user keys to their memberships.
+   * Optional map of matching keys to their memberships.
    */
   memberships?: {
-    [key: string]: IMembershipsResponse;
+    [matchingKey: string]: IMembershipsResponse;
   };
   /**
-   * Optional map of standard segments to their list of keys.
+   * Optional list of standard segments.
    * This property is ignored if `memberships` is provided.
    */
-  segments?: {
-    [segmentName: string]: string[];
-  };
+  segmentChanges?: ISegmentChangesResponse[];
 };
+
+/**
+ * Validates if the given rollout plan is valid.
+ */
+function validateRolloutPlan(rolloutPlan: unknown): rolloutPlan is RolloutPlan {
+  if (isObject(rolloutPlan) && isObject((rolloutPlan as any).splitChanges)) return true;
+
+  return false;
+}
 
 /**
  * Sets the given synchronous storage with the provided rollout plan snapshot.
@@ -44,32 +40,35 @@ export type RolloutPlan = {
  */
 export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
   // Do not load data if current rollout plan is empty
-  if (Object.keys(rolloutPlan).length === 0) return;
+  if (!validateRolloutPlan(rolloutPlan)) {
+    log.error('storage: invalid rollout plan provided');
+    return;
+  }
 
   const { splits, rbSegments, segments, largeSegments } = storage;
+  const { splitChanges: { ff, rbs } } = rolloutPlan;
 
   log.debug(`storage: set feature flags and segments${matchingKey ? ` for key ${matchingKey}` : ''}`);
 
-  if (splits) {
+  if (splits && ff) {
     splits.clear();
-    splits.update(rolloutPlan.flags || [], [], rolloutPlan.since || -1);
+    splits.update(ff.d, [], ff.t);
   }
 
-  if (rbSegments) {
+  if (rbSegments && rbs) {
     rbSegments.clear();
-    rbSegments.update(rolloutPlan.rbSegments || [], [], rolloutPlan.rbSince || -1);
+    rbSegments.update(rbs.d, [], rbs.t);
   }
 
-  const segmentsData = rolloutPlan.segments || {};
+  const segmentChanges = rolloutPlan.segmentChanges;
   if (matchingKey) { // add memberships data (client-side)
     let memberships = rolloutPlan.memberships && rolloutPlan.memberships[matchingKey];
-    if (!memberships && segmentsData) {
+    if (!memberships && segmentChanges) {
       memberships = {
         ms: {
-          k: Object.keys(segmentsData).filter(segmentName => {
-            const segmentKeys = segmentsData[segmentName];
-            return segmentKeys.indexOf(matchingKey) > -1;
-          }).map(segmentName => ({ n: segmentName }))
+          k: segmentChanges.filter(segment => {
+            return segment.added.indexOf(matchingKey) > -1;
+          }).map(segment => ({ n: segment.name }))
         }
       };
     }
@@ -79,10 +78,11 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: 
       if (memberships.ls && largeSegments) largeSegments.resetSegments(memberships.ls!);
     }
   } else { // add segments data (server-side)
-    Object.keys(segmentsData).forEach(segmentName => {
-      const segmentKeys = segmentsData[segmentName];
-      segments.update(segmentName, segmentKeys, [], -1);
-    });
+    if (segmentChanges) {
+      segmentChanges.forEach(segment => {
+        segments.update(segment.name, segment.added, segment.removed, segment.till);
+      });
+    }
   }
 }
 
@@ -91,21 +91,32 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: 
  * If `keys` are provided, the memberships for those keys is returned, to protect segments data.
  * Otherwise, the segments data is returned.
  */
-export function getRolloutPlan(log: ILogger, storage: IStorageSync, keys?: SplitIO.SplitKey[]): RolloutPlan {
+export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: SplitIO.RolloutPlanOptions = {}): RolloutPlan {
 
-  log.debug(`storage: get feature flags and segments${keys ? ` for keys ${keys}` : ''}`);
+  const { keys, exposeSegments } = options;
+  const { splits, segments, rbSegments } = storage;
+
+  log.debug(`storage: get feature flags${keys ? `, and memberships for keys ${keys}` : ''}${exposeSegments ? ', and segments' : ''}`);
 
   return {
-    since: storage.splits.getChangeNumber(),
-    flags: storage.splits.getAll(),
-    rbSince: storage.rbSegments.getChangeNumber(),
-    rbSegments: storage.rbSegments.getAll(),
-    segments: keys ?
-      undefined : // @ts-ignore accessing private prop
-      Object.keys(storage.segments.segmentCache).reduce((prev, cur) => { // @ts-ignore accessing private prop
-        prev[cur] = setToArray(storage.segments.segmentCache[cur] as Set<string>);
-        return prev;
-      }, {}),
+    splitChanges: {
+      ff: {
+        t: splits.getChangeNumber(),
+        d: splits.getAll(),
+      },
+      rbs: {
+        t: rbSegments.getChangeNumber(),
+        d: rbSegments.getAll(),
+      }
+    },
+    segmentChanges: exposeSegments ? // @ts-ignore accessing private prop
+      Object.keys(segments.segmentCache).map(segmentName => ({
+        name: segmentName, // @ts-ignore
+        added: setToArray(segments.segmentCache[segmentName] as Set<string>),
+        removed: [],
+        till: segments.getChangeNumber(segmentName)!
+      })) :
+      undefined,
     memberships: keys ?
       keys.reduce<Record<string, IMembershipsResponse>>((prev, key) => {
         if (storage.shared) {
