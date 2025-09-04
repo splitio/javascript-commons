@@ -102,10 +102,12 @@ export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: Spl
     splitChanges: {
       ff: {
         t: splits.getChangeNumber(),
+        s: -1,
         d: splits.getAll(),
       },
       rbs: {
         t: rbSegments.getChangeNumber(),
+        s: -1,
         d: rbSegments.getAll(),
       }
     },
@@ -119,27 +121,22 @@ export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: Spl
       undefined,
     memberships: keys ?
       keys.reduce<Record<string, IMembershipsResponse>>((prev, key) => {
-        if (storage.shared) {
-          // Client-side segments
-          // @ts-ignore accessing private prop
-          const sharedStorage = storage.shared(key);
-          prev[getMatching(key)] = {
-            ms: {
-              // @ts-ignore accessing private prop
+        const matchingKey = getMatching(key);
+        if (storage.shared) { // Client-side segments
+          const sharedStorage = storage.shared(matchingKey);
+          prev[matchingKey] = {
+            ms: { // @ts-ignore
               k: Object.keys(sharedStorage.segments.segmentCache).map(segmentName => ({ n: segmentName })),
             },
-            ls: sharedStorage.largeSegments ? {
-              // @ts-ignore accessing private prop
+            ls: sharedStorage.largeSegments ? { // @ts-ignore
               k: Object.keys(sharedStorage.largeSegments.segmentCache).map(segmentName => ({ n: segmentName })),
             } : undefined
           };
-        } else {
-          prev[getMatching(key)] = {
-            ms: {
-              // Server-side segments
-              // @ts-ignore accessing private prop
-              k: Object.keys(storage.segments.segmentCache).reduce<IMySegmentsResponse['k']>((prev, segmentName) => { // @ts-ignore accessing private prop
-                return storage.segments.segmentCache[segmentName].has(key) ?
+        } else { // Server-side segments
+          prev[matchingKey] = {
+            ms: { // @ts-ignore
+              k: Object.keys(storage.segments.segmentCache).reduce<IMySegmentsResponse['k']>((prev, segmentName) => { // @ts-ignore
+                return storage.segments.segmentCache[segmentName].has(matchingKey) ?
                   prev!.concat({ n: segmentName }) :
                   prev;
               }, [])

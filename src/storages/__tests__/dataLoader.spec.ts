@@ -21,8 +21,8 @@ describe('getRolloutPlan & setRolloutPlan (client-side)', () => {
 
   const expectedRolloutPlan = {
     splitChanges: {
-      ff: { d: [{ name: 'split1' }], t: 123 },
-      rbs: { d: [{ name: 'rbs1' }], t: 321 }
+      ff: { d: [{ name: 'split1' }], t: 123, s: -1 },
+      rbs: { d: [{ name: 'rbs1' }], t: 321, s: -1 }
     },
     memberships: {
       [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } },
