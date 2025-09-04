@@ -7,8 +7,6 @@ import { ImpressionCountsCacheInMemory } from './ImpressionCountsCacheInMemory';
 import { LOCALHOST_MODE, STORAGE_MEMORY } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from './TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from './UniqueKeysCacheInMemoryCS';
-import { getMatching } from '../../utils/key';
-import { setRolloutPlan } from '../dataLoader';
 import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 
 /**
@@ -17,9 +15,7 @@ import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
  * @param params - parameters required by EventsCacheSync
  */
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
-  const { settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation }, initialRolloutPlan }, onReadyFromCacheCb } = params;
-
-  const storages: Record<string, IStorageSync> = {};
+  const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation } } } = params;
 
   const splits = new SplitsCacheInMemory(__splitFiltersValidation);
   const rbSegments = new RBSegmentsCacheInMemory();
@@ -40,31 +36,20 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     destroy() { },
 
     // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
-    shared(matchingKey: string) {
-      if (!storages[matchingKey]) {
-        const segments = new MySegmentsCacheInMemory();
-        const largeSegments = new MySegmentsCacheInMemory();
+    shared() {
+      return {
+        splits: this.splits,
+        rbSegments: this.rbSegments,
+        segments: new MySegmentsCacheInMemory(),
+        largeSegments: new MySegmentsCacheInMemory(),
+        impressions: this.impressions,
+        impressionCounts: this.impressionCounts,
+        events: this.events,
+        telemetry: this.telemetry,
+        uniqueKeys: this.uniqueKeys,
 
-        if (initialRolloutPlan) {
-          setRolloutPlan(log, initialRolloutPlan, { segments, largeSegments }, matchingKey);
-        }
-
-        storages[matchingKey] = {
-          splits: this.splits,
-          rbSegments: this.rbSegments,
-          segments,
-          largeSegments,
-          impressions: this.impressions,
-          impressionCounts: this.impressionCounts,
-          events: this.events,
-          telemetry: this.telemetry,
-          uniqueKeys: this.uniqueKeys,
-
-          destroy() { }
-        };
-      }
-
-      return storages[matchingKey];
+        destroy() { }
+      };
     },
   };
 
@@ -76,14 +61,6 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     storage.events.track = noopTrack;
     storage.impressionCounts.track = noopTrack;
     storage.uniqueKeys.track = noopTrack;
-  }
-
-  const matchingKey = getMatching(params.settings.core.key);
-  storages[matchingKey] = storage;
-
-  if (initialRolloutPlan) {
-    setRolloutPlan(log, initialRolloutPlan, storage, matchingKey);
-    if (splits.getChangeNumber() > -1) onReadyFromCacheCb();
   }
 
   return storage;

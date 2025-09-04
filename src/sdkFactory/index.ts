@@ -14,6 +14,10 @@ import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
 import { DEBUG, OPTIMIZED } from '../utils/constants';
+import { setRolloutPlan } from '../storages/dataLoader';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
+import { IStorageSync } from '../storages/types';
+import { getMatching } from '../utils/key';
 
 /**
  * Modular SDK factory
@@ -24,7 +28,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
     filterAdapterFactory, lazyInit } = params;
-  const { log, sync: { impressionsMode } } = settings;
+  const { log, sync: { impressionsMode }, initialRolloutPlan, mode, core: { key } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -57,7 +61,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     }
   });
 
-  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
+  if (initialRolloutPlan && !isConsumerMode(mode)) {
+    setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
+    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  }
+
   const clients: Record<string, SplitIO.IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });

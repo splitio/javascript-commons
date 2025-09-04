@@ -26,9 +26,9 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
 
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
 
-    // Fallback to InMemoryStorage if LocalStorage API is not available or preloaded data is provided
-    if (!isLocalStorageAvailable() || params.settings.initialRolloutPlan) {
-      params.settings.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable or `initialRolloutPlan` is provided. Falling back to default MEMORY storage');
+    // Fallback to InMemoryStorage if LocalStorage API is not available
+    if (!isLocalStorageAvailable()) {
+      params.settings.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
       return InMemoryStorageCSFactory(params);
     }
 
