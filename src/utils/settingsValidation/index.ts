@@ -7,7 +7,7 @@ import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
-import { validateRolloutPlan } from '../../storages/dataLoader';
+import { validateRolloutPlan } from '../../storages/setRolloutPlan';
 
 // Exported for telemetry
 export const base = {

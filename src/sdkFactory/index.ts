@@ -14,7 +14,7 @@ import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
 import { DEBUG, OPTIMIZED } from '../utils/constants';
-import { setRolloutPlan } from '../storages/dataLoader';
+import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { IStorageSync } from '../storages/types';
 import { getMatching } from '../utils/key';
 

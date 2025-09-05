@@ -1,7 +1,7 @@
 import SplitIO from '../types/splitio';
 import { ISplitFiltersValidation } from './dtos/types';
 import { ILogger } from './logger/types';
-import { RolloutPlan } from './storages/dataLoader';
+import { RolloutPlan } from './storages/types';
 
 /**
  * SplitIO.ISettings interface extended with private properties for internal use

@@ -9,7 +9,7 @@ import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, L
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { buildInstanceId } from './identity';
-import { setRolloutPlan } from '../storages/dataLoader';
+import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { ISegmentsCacheSync } from '../storages/types';
 
 /**

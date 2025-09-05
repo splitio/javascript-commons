@@ -4,7 +4,8 @@ import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { IRBSegment, ISplit } from '../../dtos/types';
 
-import { validateRolloutPlan, setRolloutPlan, getRolloutPlan } from '../dataLoader';
+import { validateRolloutPlan, setRolloutPlan } from '../setRolloutPlan';
+import { getRolloutPlan } from '../getRolloutPlan';
 
 const otherKey = 'otherKey';
 const expectedRolloutPlan = {
