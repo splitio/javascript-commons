@@ -1,5 +1,5 @@
 import SplitIO from '../../types/splitio';
-import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse } from '../dtos/types';
+import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse, ISplitChangesResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { ISettings } from '../types';
@@ -522,3 +522,21 @@ export type IStorageAsyncFactory = SplitIO.StorageAsyncFactory & {
   readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageAsync
 }
+
+export type RolloutPlan = {
+  /**
+   * Feature flags and rule-based segments.
+   */
+  splitChanges: ISplitChangesResponse;
+  /**
+   * Optional map of matching keys to their memberships.
+   */
+  memberships?: {
+    [matchingKey: string]: IMembershipsResponse;
+  };
+  /**
+   * Optional list of standard segments.
+   * This property is ignored if `memberships` is provided.
+   */
+  segmentChanges?: ISegmentChangesResponse[];
+};
