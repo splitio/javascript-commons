@@ -4,33 +4,53 @@ import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { IRBSegment, ISplit } from '../../dtos/types';
 
-import { setRolloutPlan, getRolloutPlan } from '../dataLoader';
+import { validateRolloutPlan, setRolloutPlan, getRolloutPlan } from '../dataLoader';
+
+const otherKey = 'otherKey';
+const expectedRolloutPlan = {
+  splitChanges: {
+    ff: { d: [{ name: 'split1' }], t: 123, s: -1 },
+    rbs: { d: [{ name: 'rbs1' }], t: 321, s: -1 }
+  },
+  memberships: {
+    [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } },
+    [otherKey]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } }
+  },
+  segmentChanges: [{
+    name: 'segment1',
+    added: [fullSettings.core.key as string, otherKey],
+    removed: [],
+    till: 123
+  }]
+};
+
+describe('validateRolloutPlan', () => {
+  afterEach(() => {
+    loggerMock.mockClear();
+  });
+
+  test('valid rollout plan and mode', () => {
+    expect(validateRolloutPlan(loggerMock, { mode: 'standalone', initialRolloutPlan: expectedRolloutPlan } as any)).toEqual(expectedRolloutPlan);
+    expect(loggerMock.error).not.toHaveBeenCalled();
+  });
+
+  test('invalid rollout plan', () => {
+    expect(validateRolloutPlan(loggerMock, { mode: 'standalone', initialRolloutPlan: {} } as any)).toBeUndefined();
+    expect(loggerMock.error).toHaveBeenCalledWith('storage: invalid rollout plan provided');
+  });
+
+  test('invalid mode', () => {
+    expect(validateRolloutPlan(loggerMock, { mode: 'consumer', initialRolloutPlan: expectedRolloutPlan } as any)).toBeUndefined();
+    expect(loggerMock.warn).toHaveBeenCalledWith('storage: initial rollout plan is ignored in consumer mode');
+  });
+});
 
 describe('getRolloutPlan & setRolloutPlan (client-side)', () => {
-  const otherKey = 'otherKey';
-
   // @ts-expect-error Load server-side storage
   const serverStorage = InMemoryStorageFactory({ settings: fullSettings });
   serverStorage.splits.update([{ name: 'split1' } as ISplit], [], 123);
   serverStorage.rbSegments.update([{ name: 'rbs1' } as IRBSegment], [], 321);
   serverStorage.segments.update('segment1', [fullSettings.core.key as string, otherKey], [], 123);
-
-  const expectedRolloutPlan = {
-    splitChanges: {
-      ff: { d: [{ name: 'split1' }], t: 123, s: -1 },
-      rbs: { d: [{ name: 'rbs1' }], t: 321, s: -1 }
-    },
-    memberships: {
-      [fullSettings.core.key as string]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } },
-      [otherKey]: { ms: { k: [{ n: 'segment1' }] }, ls: { k: [] } }
-    },
-    segmentChanges: [{
-      name: 'segment1',
-      added: [fullSettings.core.key as string, otherKey],
-      removed: [],
-      till: 123
-    }]
-  };
 
   afterEach(() => {
     jest.clearAllMocks();

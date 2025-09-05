@@ -5,6 +5,7 @@ import { getMatching } from '../utils/key';
 import { IMembershipsResponse, IMySegmentsResponse, ISegmentChangesResponse, ISplitChangesResponse } from '../dtos/types';
 import { ILogger } from '../logger/types';
 import { isObject } from '../utils/lang';
+import { isConsumerMode } from '../utils/settingsValidation/mode';
 
 export type RolloutPlan = {
   /**
@@ -27,10 +28,18 @@ export type RolloutPlan = {
 /**
  * Validates if the given rollout plan is valid.
  */
-function validateRolloutPlan(rolloutPlan: unknown): rolloutPlan is RolloutPlan {
-  if (isObject(rolloutPlan) && isObject((rolloutPlan as any).splitChanges)) return true;
+export function validateRolloutPlan(log: ILogger, settings: SplitIO.ISettings): RolloutPlan | undefined {
+  const { mode, initialRolloutPlan } = settings;
 
-  return false;
+  if (isConsumerMode(mode)) {
+    log.warn('storage: initial rollout plan is ignored in consumer mode');
+    return;
+  }
+
+  if (isObject(initialRolloutPlan) && isObject((initialRolloutPlan as any).splitChanges)) return initialRolloutPlan as RolloutPlan;
+
+  log.error('storage: invalid rollout plan provided');
+  return;
 }
 
 /**
@@ -39,12 +48,6 @@ function validateRolloutPlan(rolloutPlan: unknown): rolloutPlan is RolloutPlan {
  * Otherwise, the storage is handled as a server-side storage (segments is an instance of SegmentsCache).
  */
 export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
-  // Do not load data if current rollout plan is empty
-  if (!validateRolloutPlan(rolloutPlan)) {
-    log.error('storage: invalid rollout plan provided');
-    return;
-  }
-
   const { splits, rbSegments, segments, largeSegments } = storage;
   const { splitChanges: { ff, rbs } } = rolloutPlan;
 
@@ -79,6 +82,7 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: 
     }
   } else { // add segments data (server-side)
     if (segmentChanges) {
+      segments.clear();
       segmentChanges.forEach(segment => {
         segments.update(segment.name, segment.added, segment.removed, segment.till);
       });
