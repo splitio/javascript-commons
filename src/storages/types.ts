@@ -235,6 +235,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean,
   get(name: string): IRBSegment | null,
   getChangeNumber(): number,
+  getAll(): IRBSegment[],
   clear(): void,
   contains(names: Set<string>): boolean,
   // Used only for smart pausing in client-side standalone. Returns true if the storage contains a RBSegment using segments or large segments matchers
@@ -465,7 +466,7 @@ export interface IStorageBase<
   telemetry?: TTelemetryCache,
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
-  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
+  shared?: (matchingKey: string, onReadyCb?: (error?: any) => void) => this
 }
 
 export interface IStorageSync extends IStorageBase<
@@ -505,6 +506,9 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
+  /**
+   * For emitting SDK_READY_FROM_CACHE event in consumer mode with Redis to allow immediate evaluations
+   */
   onReadyFromCacheCb: () => void,
 }
 
