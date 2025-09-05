@@ -36,6 +36,7 @@ export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: Spl
         name: segmentName, // @ts-ignore
         added: setToArray(segments.segmentCache[segmentName] as Set<string>),
         removed: [],
+        since: -1,
         till: segments.getChangeNumber(segmentName)!
       })) :
       undefined,

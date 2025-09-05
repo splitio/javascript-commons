@@ -21,6 +21,7 @@ const expectedRolloutPlan = {
     name: 'segment1',
     added: [fullSettings.core.key as string, otherKey],
     removed: [],
+    since: -1,
     till: 123
   }]
 };
