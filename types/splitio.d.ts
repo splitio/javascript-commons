@@ -1594,7 +1594,14 @@ declare namespace SplitIO {
     /**
      * Returns the current snapshot of the SDK rollout plan in cache.
      *
-     * @param keys - Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys, rather than the complete segments data.
+     * Wait for the SDK client to be ready before calling this method.
+     *
+     * ```js
+     * await factory.client().ready();
+     * const rolloutPlan = factory.getRolloutPlan();
+     * ```
+     *
+     * @param options - An object of type RolloutPlanOptions for advanced options.
      * @returns The current snapshot of the SDK rollout plan.
      */
     getRolloutPlan(options?: RolloutPlanOptions): RolloutPlan;
