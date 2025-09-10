@@ -351,6 +351,11 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
    */
   features?: SplitIO.MockedFeaturesMap;
   /**
+   * Rollout plan object (i.e., feature flags and segment definitions) to initialize the SDK storage with. If provided and valid, the SDK will be ready from cache immediately.
+   * This object is derived from calling the Node.js SDK’s `getRolloutPlan` method.
+   */
+  initialRolloutPlan?: SplitIO.RolloutPlan;
+  /**
    * SDK Startup settings.
    */
   startup?: {
@@ -555,6 +560,7 @@ declare namespace SplitIO {
       eventsFirstPushWindow: number;
     };
     readonly storage: StorageSyncFactory | StorageAsyncFactory | StorageOptions;
+    readonly initialRolloutPlan?: SplitIO.RolloutPlan;
     readonly urls: {
       events: string;
       sdk: string;
@@ -1020,7 +1026,28 @@ declare namespace SplitIO {
     type: NodeSyncStorage | NodeAsyncStorage | BrowserStorage;
     prefix?: string;
     options?: Object;
-  }
+  };
+  /**
+   * A JSON-serializable plain object that defines the format of rollout plan data to preload the SDK cache with feature flags and segments.
+   */
+  type RolloutPlan = Object;
+  /**
+   * Options for the `factory.getRolloutPlan` method.
+   */
+  type RolloutPlanOptions = {
+    /**
+     * Optional list of keys to generate the rollout plan snapshot with the memberships of the given keys.
+     *
+     * @defaultValue `undefined`
+     */
+    keys?: SplitKey[];
+    /**
+     * Optional flag to expose segments data in the rollout plan snapshot.
+     *
+     * @defaultValue `false`
+     */
+    exposeSegments?: boolean;
+  };
   /**
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
@@ -1043,7 +1070,7 @@ declare namespace SplitIO {
   type IntegrationFactory = {
     readonly type: string;
     (params: any): (Integration | void);
-  }
+  };
   /**
    * A pair of user key and it's trafficType, required for tracking valid Split events.
    */
@@ -1564,6 +1591,20 @@ declare namespace SplitIO {
      * @returns The manager instance.
      */
     manager(): IManager;
+    /**
+     * Returns the current snapshot of the SDK rollout plan in cache.
+     *
+     * Wait for the SDK client to be ready before calling this method.
+     *
+     * ```js
+     * await factory.client().ready();
+     * const rolloutPlan = factory.getRolloutPlan();
+     * ```
+     *
+     * @param options - An object of type RolloutPlanOptions for advanced options.
+     * @returns The current snapshot of the SDK rollout plan.
+     */
+    getRolloutPlan(options?: RolloutPlanOptions): RolloutPlan;
   }
   /**
    * This represents the interface for the SDK instance for server-side with asynchronous storage.

@@ -17,7 +17,7 @@ const MILLIS_IN_A_DAY = 86400000;
  * @returns `true` if cache should be cleared, `false` otherwise
  */
 function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: ISettings, keys: KeyBuilderCS, currentTimestamp: number, isThereCache: boolean) {
-  const { log } = settings;
+  const { log, initialRolloutPlan } = settings;
 
   // Check expiration
   const lastUpdatedTimestamp = parseInt(localStorage.getItem(keys.buildLastUpdatedKey()) as string, 10);
@@ -41,7 +41,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, settings: IS
     } catch (e) {
       log.error(LOG_PREFIX + e);
     }
-    if (isThereCache) {
+    if (isThereCache && !initialRolloutPlan) {
       log.info(LOG_PREFIX + 'SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
       return true;
     }

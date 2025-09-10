@@ -9,13 +9,15 @@ import { RETRIEVE_CLIENT_DEFAULT, NEW_SHARED_CLIENT, RETRIEVE_CLIENT_EXISTING, L
 import { SDK_SEGMENTS_ARRIVED } from '../readiness/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { buildInstanceId } from './identity';
+import { setRolloutPlan } from '../storages/setRolloutPlan';
+import { ISegmentsCacheSync } from '../storages/types';
 
 /**
  * Factory of client method for the client-side API variant where TT is ignored.
  * Therefore, clients don't have a bound TT for the track method.
  */
 export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: SplitIO.SplitKey) => SplitIO.IBrowserClient {
-  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log } } = params;
+  const { clients, storage, syncManager, sdkReadinessManager, settings: { core: { key }, log, initialRolloutPlan } } = params;
 
   const mainClientInstance = clientCSDecorator(
     log,
@@ -55,6 +57,10 @@ export function sdkClientMethodCSFactory(params: ISdkFactoryContext): (key?: Spl
         // Emit SDK_READY in consumer mode for shared clients
         sharedSdkReadiness.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
       });
+
+      if (sharedStorage && initialRolloutPlan) {
+        setRolloutPlan(log, initialRolloutPlan, { segments: sharedStorage.segments as ISegmentsCacheSync, largeSegments: sharedStorage.largeSegments as ISegmentsCacheSync }, matchingKey);
+      }
 
       // 3 possibilities:
       // - Standalone mode: both syncManager and sharedSyncManager are defined
