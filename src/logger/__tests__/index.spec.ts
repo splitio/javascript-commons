@@ -16,12 +16,10 @@ test('SPLIT LOGGER / isLogLevelString utility function', () => {
   expect(isLogLevelString(LOG_LEVELS.DEBUG)).toBe(true); // Calling isLogLevelString should return true with a LOG_LEVELS value
   expect(isLogLevelString('ERROR')).toBe(true); // Calling isLogLevelString should return true with a string equal to some LOG_LEVELS value
   expect(isLogLevelString('INVALID LOG LEVEL')).toBe(false); // Calling isLogLevelString should return false with a string not equal to any LOG_LEVELS value
-
 });
 
 test('SPLIT LOGGER / LogLevels exposed mappings', () => {
   expect(LogLevels).toEqual(LOG_LEVELS); // Exposed log levels should contain the levels we want.
-
 });
 
 test('SPLIT LOGGER / Logger class shape', () => {
@@ -94,27 +92,22 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
 
   // Restore spied object.
   consoleLogSpy.mockRestore();
-
 }
 
 test('SPLIT LOGGER / Logger class public methods behavior - instance.debug', () => {
   testLogLevels(LogLevels.DEBUG);
-
 });
 
 test('SPLIT LOGGER / Logger class public methods behavior - instance.info', () => {
   testLogLevels(LogLevels.INFO);
-
 });
 
 test('SPLIT LOGGER / Logger class public methods behavior - instance.warn', () => {
   testLogLevels(LogLevels.WARN);
-
 });
 
 test('SPLIT LOGGER / Logger class public methods behavior - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
-
 });
 
 test('SPLIT LOGGER / _sprintf', () => {

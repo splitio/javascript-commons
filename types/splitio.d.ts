@@ -91,7 +91,7 @@ interface ISharedSettings {
    * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
    */
   urls?: SplitIO.UrlSettings;
-  logger?: (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void;
+  logger?: SplitIO.Logger;
 }
 /**
  * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
@@ -564,7 +564,7 @@ declare namespace SplitIO {
       telemetry: string;
     };
     readonly integrations?: IntegrationFactory[];
-    readonly logger?: (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void;
+    readonly logger?: Logger;
     readonly debug: boolean | LogLevel | ILogger;
     readonly version: string;
     /**
@@ -595,6 +595,15 @@ declare namespace SplitIO {
    * Log levels.
    */
   type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
+  /**
+   * Custom logger interface.
+   */
+  interface Logger {
+    debug(message: string): any;
+    info(message: string): any;
+    warn(message: string): any;
+    error(message: string): any;
+  }
   /**
    * Logger API
    */

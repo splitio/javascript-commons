@@ -3,7 +3,7 @@ import { ILogger } from '../../../logger/types';
 import { isLocalStorageAvailable } from '../../env/isLocalStorageAvailable';
 import { isNode } from '../../env/isNode';
 import { codesDebug } from '../../../logger/messages/debug';
-import { getLogLevel } from './commons';
+import { getLogLevel, isLogger } from './commons';
 import SplitIO from '../../../../types/splitio';
 
 const allCodes = new Map(codesDebug);
@@ -46,10 +46,10 @@ export function validateLogger(settings: { debug: unknown, logger?: unknown }): 
   const logLevel: SplitIO.LogLevel | undefined = debug !== undefined ? getLogLevel(debug) : initialLogLevel;
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel }, allCodes);
-  if (typeof logger === 'function') log.setLogger(logger as (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void);
+  if (isLogger(logger)) log.setLogger(logger);
 
   // @ts-ignore // if logLevel is undefined at this point, it means that settings `debug` value is invalid
-  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid Log Level - No changes to the logs will be applied.');
+  if (!logLevel) log.logger.error(log._log(LogLevels.ERROR, 'Invalid Log Level - No changes to the logs will be applied.'));
 
   return log;
 }

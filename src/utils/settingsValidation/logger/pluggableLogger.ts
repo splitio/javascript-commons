@@ -1,10 +1,10 @@
 import { Logger, LogLevels } from '../../../logger';
 import { ILogger } from '../../../logger/types';
 import SplitIO from '../../../../types/splitio';
-import { getLogLevel } from './commons';
+import { getLogLevel, isLogger } from './commons';
 
-function isLogger(log: any): log is ILogger {
-  return log !== null && typeof log === 'object' && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function' && typeof log.setLogLevel === 'function';
+function isILogger(log: any): log is ILogger {
+  return isLogger(log) && typeof (log as any).setLogLevel === 'function';
 }
 
 // By default it starts disabled.
@@ -22,18 +22,18 @@ export function validateLogger(settings: { debug: unknown, logger?: unknown }): 
   let logLevel: SplitIO.LogLevel | undefined = initialLogLevel;
 
   if (debug !== undefined) {
-    if (isLogger(debug)) {
-      if (typeof logger === 'function') debug.setLogger(logger as (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void);
+    if (isILogger(debug)) {
+      if (isLogger(logger)) debug.setLogger(logger);
       return debug;
     }
     logLevel = getLogLevel(settings.debug);
   }
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel });
-  if (typeof logger === 'function') log.setLogger(logger as (formattedMsg: string, level: SplitIO.LogLevel, msg: string) => void);
+  if (isLogger(logger)) log.setLogger(logger);
 
   // @ts-ignore // `debug` value is invalid if logLevel is undefined at this point
-  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.');
+  if (!logLevel) log.logger.error(log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.'));
 
   return log;
 }

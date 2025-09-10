@@ -18,3 +18,7 @@ export function getLogLevel(debugValue: unknown): SplitIO.LogLevel | undefined {
       debugValue :
       undefined;
 }
+
+export function isLogger(log: any): log is SplitIO.Logger {
+  return log !== null && typeof log === 'object' && typeof log.debug === 'function' && typeof log.info === 'function' && typeof log.warn === 'function' && typeof log.error === 'function';
+}
