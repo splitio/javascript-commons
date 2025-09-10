@@ -1,3 +1,7 @@
+2.5.0 (September 10, 2025)
+ - Added `factory.getRolloutPlan()` method for standalone server-side SDKs, which returns the rollout plan snapshot from the storage.
+ - Added `initialRolloutPlan` configuration option for standalone client-side SDKs, which allows preloading the SDK storage with a snapshot of the rollout plan.
+
 2.4.1 (June 3, 2025)
  - Bugfix - Improved the Proxy fallback to flag spec version 1.2 to handle cases where the Proxy does not return an end-of-stream marker in 400 status code responses.
 
@@ -9,7 +13,7 @@
  - Updated the Redis storage to:
     - Avoid lazy require of the `ioredis` dependency when the SDK is initialized, and
     - Flag the SDK as ready from cache immediately to allow queueing feature flag evaluations before SDK_READY event is emitted (Reverted in v1.7.0).
- - Bugfix - Enhanced HTTP client module to implement timeouts for failing requests that might otherwise remain pending indefinitely on some Fetch API implementations.
+ - Bugfix - Enhanced HTTP client module to implement timeouts for failing requests that might otherwise remain pending indefinitely on some Fetch API implementations, pausing the SDK synchronization process.
 
 2.2.0 (March 28, 2025)
  - Added a new optional argument to the client `getTreatment` methods to allow passing additional evaluation options, such as a map of properties to append to the generated impressions sent to Split backend. Read more in our docs.

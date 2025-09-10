@@ -10,6 +10,7 @@ import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 import { SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
+import { usesSegmentsSync } from '../storages/AbstractSplitsCacheSync';
 
 /**
  * Online SyncManager factory.
@@ -155,14 +156,14 @@ export function syncManagerOnlineFactory(
             if (pushManager) {
               if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
-                if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
+                if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
               } else {
                 // if not polling, we must execute the sync task for the initial fetch
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
             } else {
-              if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
+              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
             }
           } else {
             if (!readinessManager.isReady()) mySegmentsSyncTask.execute();

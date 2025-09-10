@@ -1,4 +1,4 @@
-import { ISplitsCacheSync } from './types';
+import { ISplitsCacheSync, IStorageSync } from './types';
 import { IRBSegment, ISplit } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
@@ -87,4 +87,8 @@ export function usesSegments(ruleEntity: ISplit | IRBSegment) {
   if (excluded && excluded.segments && excluded.segments.length > 0) return true;
 
   return false;
+}
+
+export function usesSegmentsSync(storage: Pick<IStorageSync, 'splits' | 'rbSegments'>) {
+  return storage.splits.usesSegments() || storage.rbSegments.usesSegments();
 }
