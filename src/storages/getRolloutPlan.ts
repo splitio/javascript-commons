@@ -14,7 +14,7 @@ export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: Spl
   const { keys, exposeSegments } = options;
   const { splits, segments, rbSegments } = storage;
 
-  log.debug(`storage: get feature flags${keys ? `, and memberships for keys ${keys}` : ''}${exposeSegments ? ', and segments' : ''}`);
+  log.debug(`storage: get feature flags${keys ? `, and memberships for keys: ${keys}` : ''}${exposeSegments ? ', and segments' : ''}`);
 
   return {
     splitChanges: {
