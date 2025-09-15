@@ -106,6 +106,10 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     return item && JSON.parse(item);
   }
 
+  getAll(): IRBSegment[] {
+    return this.getNames().map(key => this.get(key)!);
+  }
+
   contains(names: Set<string>): boolean {
     const namesArray = setToArray(names);
     const namesInStorage = this.getNames();
