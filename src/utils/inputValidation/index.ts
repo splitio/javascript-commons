@@ -10,5 +10,4 @@ export { validateTrafficType } from './trafficType';
 export { validateIfNotDestroyed, validateIfOperational } from './isOperational';
 export { validateSplitExistence } from './splitExistence';
 export { validateTrafficTypeExistence } from './trafficTypeExistence';
-export { validatePreloadedData } from './preloadedData';
 export { validateEvaluationOptions } from './eventProperties';

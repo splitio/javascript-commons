@@ -7,6 +7,7 @@ import { ISettingsValidationParams } from './types';
 import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
+import { validateRolloutPlan } from '../../storages/setRolloutPlan';
 
 // Exported for telemetry
 export const base = {
@@ -151,6 +152,9 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid Storage based on mode defined.
   // @ts-ignore, modify readonly prop
   if (storage) withDefaults.storage = storage(withDefaults);
+
+  // @ts-ignore, modify readonly prop
+  if (withDefaults.initialRolloutPlan) withDefaults.initialRolloutPlan = validateRolloutPlan(log, withDefaults);
 
   // Validate key and TT (for client-side)
   const maybeKey = withDefaults.core.key;

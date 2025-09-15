@@ -3,7 +3,7 @@ import { matcherTypes, matcherTypesMapper, matcherDataTypes } from '../matchers/
 import { segmentTransform } from './segment';
 import { whitelistTransform } from './whitelist';
 import { numericTransform } from './unaryNumeric';
-import { zeroSinceHH, zeroSinceSS } from '../convertions';
+import { zeroSinceHH, zeroSinceSS, betweenDateTimeTransform } from '../convertions';
 import { IBetweenMatcherData, IInLargeSegmentMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
 import { IMatcherDto } from '../types';
 
@@ -32,7 +32,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
     let type = matcherTypesMapper(matcherType);
     // As default input data type we use string (even for ALL_KEYS)
     let dataType = matcherDataTypes.STRING;
-    let value = undefined;
+    let value;
 
     if (type === matcherTypes.IN_SEGMENT) {
       value = segmentTransform(userDefinedSegmentMatcherData as IInSegmentMatcherData);
@@ -60,8 +60,7 @@ export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
       dataType = matcherDataTypes.NUMBER;
 
       if (value.dataType === 'DATETIME') {
-        value.start = zeroSinceSS(value.start);
-        value.end = zeroSinceSS(value.end);
+        value = betweenDateTimeTransform(value);
         dataType = matcherDataTypes.DATETIME;
       }
     } else if (type === matcherTypes.BETWEEN_SEMVER) {
