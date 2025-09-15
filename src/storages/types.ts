@@ -1,5 +1,5 @@
 import SplitIO from '../../types/splitio';
-import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse } from '../dtos/types';
+import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse, ISplitChangesResponse } from '../dtos/types';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { ISettings } from '../types';
@@ -247,6 +247,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean,
   get(name: string): IRBSegment | null,
   getChangeNumber(): number,
+  getAll(): IRBSegment[],
   clear(): void,
   contains(names: Set<string>): boolean,
   // Used only for smart pausing in client-side standalone. Returns true if the storage contains a RBSegment using segments or large segments matchers
@@ -477,7 +478,7 @@ export interface IStorageBase<
   telemetry?: TTelemetryCache,
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
-  shared?: (matchingKey: string, onReadyCb: (error?: any) => void) => this
+  shared?: (matchingKey: string, onReadyCb?: (error?: any) => void) => this
 }
 
 export interface IStorageSync extends IStorageBase<
@@ -508,8 +509,6 @@ export interface IStorageAsync extends IStorageBase<
 
 /** StorageFactory */
 
-export type DataLoader = (storage: IStorageSync, matchingKey: string) => void
-
 export interface IStorageFactoryParams {
   settings: ISettings,
   /**
@@ -517,6 +516,9 @@ export interface IStorageFactoryParams {
    * It is meant for emitting SDK_READY event in consumer mode, and waiting before using the storage in the synchronizer.
    */
   onReadyCb: (error?: any) => void,
+  /**
+   * For emitting SDK_READY_FROM_CACHE event in consumer mode with Redis to allow immediate evaluations
+   */
   onReadyFromCacheCb: () => void,
 }
 
@@ -530,3 +532,21 @@ export type IStorageAsyncFactory = SplitIO.StorageAsyncFactory & {
   readonly type: SplitIO.StorageType,
   (params: IStorageFactoryParams): IStorageAsync
 }
+
+export type RolloutPlan = {
+  /**
+   * Feature flags and rule-based segments.
+   */
+  splitChanges: ISplitChangesResponse;
+  /**
+   * Optional map of matching keys to their memberships.
+   */
+  memberships?: {
+    [matchingKey: string]: IMembershipsResponse;
+  };
+  /**
+   * Optional list of standard segments.
+   * This property is ignored if `memberships` is provided.
+   */
+  segmentChanges?: ISegmentChangesResponse[];
+};

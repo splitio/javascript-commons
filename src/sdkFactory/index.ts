@@ -14,6 +14,9 @@ import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized
 import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
 import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
 import { DEBUG, OPTIMIZED } from '../utils/constants';
+import { setRolloutPlan } from '../storages/setRolloutPlan';
+import { IStorageSync } from '../storages/types';
+import { getMatching } from '../utils/key';
 
 /**
  * Modular SDK factory
@@ -24,7 +27,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     syncManagerFactory, SignalListener, impressionsObserverFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
     filterAdapterFactory, lazyInit } = params;
-  const { log, sync: { impressionsMode } } = settings;
+  const { log, sync: { impressionsMode }, initialRolloutPlan, core: { key } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -43,7 +46,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   const storage = storageFactory({
     settings,
-    onReadyCb: (error) => {
+    onReadyCb(error) {
       if (error) {
         // If storage fails to connect, SDK_READY_TIMED_OUT event is emitted immediately. Review when timeout and non-recoverable errors are reworked
         readiness.timeout();
@@ -52,11 +55,16 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
       readiness.splits.emit(SDK_SPLITS_ARRIVED);
       readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
-    onReadyFromCacheCb: () => {
+    onReadyFromCacheCb() {
       readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
     }
   });
-  // @TODO add support for dataloader: `if (params.dataLoader) params.dataLoader(storage);`
+
+  if (initialRolloutPlan) {
+    setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
+    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  }
+
   const clients: Record<string, SplitIO.IBasicClient> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });

@@ -51,6 +51,10 @@ export class RBSegmentsCacheInMemory implements IRBSegmentsCacheSync {
     return this.cache[name] || null;
   }
 
+  getAll(): IRBSegment[] {
+    return this.getNames().map(key => this.get(key)!);
+  }
+
   contains(names: Set<string>): boolean {
     const namesArray = setToArray(names);
     const namesInStorage = this.getNames();
