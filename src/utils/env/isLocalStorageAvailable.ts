@@ -17,3 +17,15 @@ export function isValidStorageWrapper(wrapper: any): boolean {
     typeof wrapper.getItem === 'function' &&
     typeof wrapper.removeItem === 'function';
 }
+
+export function isWebStorage(wrapper: any): boolean {
+  if (typeof wrapper.length === 'number') {
+    try {
+      wrapper.key(0);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+}

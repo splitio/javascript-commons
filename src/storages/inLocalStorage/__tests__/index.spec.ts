@@ -10,6 +10,10 @@ jest.mock('../../inMemory/InMemoryStorageCS', () => {
 import { IStorageFactoryParams } from '../../types';
 import { assertStorageInterface } from '../../__tests__/testUtils';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+import { createMemoryStorage } from './wrapper.mock';
+import * as storageAdapter from '../storageAdapter';
+
+const storageAdapterSpy = jest.spyOn(storageAdapter, 'storageAdapter');
 
 // Test target
 import { InLocalStorage } from '../index';
@@ -23,7 +27,7 @@ describe('IN LOCAL STORAGE', () => {
     fakeInMemoryStorageFactory.mockClear();
   });
 
-  test('calls InMemoryStorage factory if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
+  test('fallback to InMemoryStorage if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
     // Delete global localStorage property
     const originalLocalStorage = Object.getOwnPropertyDescriptor(global, 'localStorage');
     Object.defineProperty(global, 'localStorage', {});
@@ -40,7 +44,7 @@ describe('IN LOCAL STORAGE', () => {
     expect(storage).toBe(fakeInMemoryStorage);
 
     // Provided storage is valid
-    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: { getItem: () => Promise.resolve(null), setItem: () => Promise.resolve(), removeItem: () => Promise.resolve() } });
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: createMemoryStorage() });
     storage = storageFactory(internalSdkParams);
     expect(storage).not.toBe(fakeInMemoryStorage);
 
@@ -48,14 +52,38 @@ describe('IN LOCAL STORAGE', () => {
     Object.defineProperty(global, 'localStorage', originalLocalStorage as PropertyDescriptor);
   });
 
-  test('calls its own storage factory if LocalStorage API is available', () => {
+  test('calls InLocalStorage if LocalStorage API is available', () => {
 
     const storageFactory = InLocalStorage({ prefix: 'prefix' });
     const storage = storageFactory(internalSdkParams);
 
     assertStorageInterface(storage); // the instance must implement the storage interface
     expect(fakeInMemoryStorageFactory).not.toBeCalled(); // doesn't call InMemoryStorage factory
+  });
 
+  test('calls InLocalStorage if the provided storage wrapper is valid', () => {
+    storageAdapterSpy.mockClear();
+
+    // Web Storages should not use the storageAdapter
+    let storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: localStorage });
+    let storage = storageFactory(internalSdkParams);
+    assertStorageInterface(storage);
+    expect(fakeInMemoryStorageFactory).not.toBeCalled();
+    expect(storageAdapterSpy).not.toBeCalled();
+
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: sessionStorage });
+    storage = storageFactory(internalSdkParams);
+    assertStorageInterface(storage);
+    expect(fakeInMemoryStorageFactory).not.toBeCalled();
+    expect(storageAdapterSpy).not.toBeCalled();
+
+    // Non Web Storages should use the storageAdapter
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: createMemoryStorage() });
+    storage = storageFactory(internalSdkParams);
+
+    assertStorageInterface(storage);
+    expect(fakeInMemoryStorageFactory).not.toBeCalled();
+    expect(storageAdapterSpy).toBeCalled();
   });
 
 });
