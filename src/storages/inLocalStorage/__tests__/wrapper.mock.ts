@@ -4,7 +4,7 @@ import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 export const PREFIX = 'SPLITIO';
 
-export function createMemoryStorage(): SplitIO.AsyncStorageWrapper {
+export function createMemoryStorage(): SplitIO.StorageWrapper {
   let cache: Record<string, string> = {};
   return {
     getItem(key: string) {

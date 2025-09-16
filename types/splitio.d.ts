@@ -463,34 +463,22 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
  */
 declare namespace SplitIO {
 
-  interface SyncStorageWrapper {
+  interface StorageWrapper {
     /**
      * Returns the value associated with the given key, or null if the key does not exist.
+     * If the operation is asynchronous, returns a Promise.
      */
-    getItem(key: string): string | null;
+    getItem(key: string): string | null | Promise<string | null>;
     /**
      * Sets the value for the given key, creating a new key/value pair if key does not exist.
+     * If the operation is asynchronous, returns a Promise.
      */
-    setItem(key: string, value: string): void;
+    setItem(key: string, value: string): void | Promise<void>;
     /**
      * Removes the key/value pair for the given key, if the key exists.
+     * If the operation is asynchronous, returns a Promise.
      */
-    removeItem(key: string): void;
-  }
-
-  interface AsyncStorageWrapper {
-    /**
-     * Returns a promise that resolves to the value associated with the given key, or null if the key does not exist.
-     */
-    getItem(key: string): Promise<string | null>;
-    /**
-     * Returns a promise that resolves when the value of the pair identified by key is set to value, creating a new key/value pair if key does not exist.
-     */
-    setItem(key: string, value: string): Promise<void>;
-    /**
-     * Returns a promise that resolves when the key/value pair for the given key is removed, if the key exists.
-     */
-    removeItem(key: string): Promise<void>;
+    removeItem(key: string): void | Promise<void>;
   }
 
   /**
@@ -1013,7 +1001,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `window.localStorage`
      */
-    wrapper?: SyncStorageWrapper | AsyncStorageWrapper;
+    wrapper?: StorageWrapper;
   }
   /**
    * Storage for asynchronous (consumer) SDK.
@@ -1380,7 +1368,7 @@ declare namespace SplitIO {
        *
        * @defaultValue `window.localStorage`
        */
-      wrapper?: SyncStorageWrapper | AsyncStorageWrapper;
+      wrapper?: StorageWrapper;
     };
   }
   /**
