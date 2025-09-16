@@ -19,7 +19,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
         cache = JSON.parse(storedCache || '{}');
         keys = Object.keys(cache);
       }).catch((e) => {
-        log.error(LOG_PREFIX + 'Rejected promise calling wrapper `getItem` method, with error: ' + e);
+        log.error(LOG_PREFIX + 'Error calling wrapper `getItem` method: ' + e);
       }));
     },
 
@@ -27,7 +27,7 @@ export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.St
       return savePromise = savePromise.then(() => {
         return Promise.resolve(wrapper.setItem(prefix, JSON.stringify(cache)));
       }).catch((e) => {
-        log.error(LOG_PREFIX + 'Rejected promise calling wrapper `setItem` method, with error: ' + e);
+        log.error(LOG_PREFIX + 'Error calling wrapper `setItem` method: ' + e);
       });
     },
 
