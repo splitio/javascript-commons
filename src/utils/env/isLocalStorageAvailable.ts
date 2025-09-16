@@ -1,22 +1,21 @@
+/* eslint-disable no-undef */
 export function isLocalStorageAvailable(): boolean {
+  var mod = '__SPLITSOFTWARE__';
   try {
-    // eslint-disable-next-line no-undef
-    return isValidStorageWrapper(localStorage);
+    localStorage.setItem(mod, mod);
+    localStorage.removeItem(mod);
+    return true;
   } catch (e) {
     return false;
   }
 }
 
 export function isValidStorageWrapper(wrapper: any): boolean {
-  var mod = '__SPLITSOFTWARE__';
-  try {
-    wrapper.setItem(mod, mod);
-    wrapper.getItem(mod);
-    wrapper.removeItem(mod);
-    return true;
-  } catch (e) {
-    return false;
-  }
+  return wrapper !== null &&
+    typeof wrapper === 'object' &&
+    typeof wrapper.setItem === 'function' &&
+    typeof wrapper.getItem === 'function' &&
+    typeof wrapper.removeItem === 'function';
 }
 
 export function isWebStorage(wrapper: any): boolean {

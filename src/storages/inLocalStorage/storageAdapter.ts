@@ -4,7 +4,7 @@ import { LOG_PREFIX } from './constants';
 import { StorageAdapter } from '../types';
 
 
-export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.SyncStorageWrapper | SplitIO.AsyncStorageWrapper): Required<StorageAdapter> {
+export function storageAdapter(log: ILogger, prefix: string, wrapper: SplitIO.StorageWrapper): Required<StorageAdapter> {
   let keys: string[] = [];
   let cache: Record<string, string> = {};
 
