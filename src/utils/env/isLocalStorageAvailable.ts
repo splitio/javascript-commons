@@ -9,3 +9,11 @@ export function isLocalStorageAvailable(): boolean {
     return false;
   }
 }
+
+export function isValidStorageWrapper(wrapper: any): boolean {
+  return wrapper !== null &&
+    typeof wrapper === 'object' &&
+    typeof wrapper.setItem === 'function' &&
+    typeof wrapper.getItem === 'function' &&
+    typeof wrapper.removeItem === 'function';
+}

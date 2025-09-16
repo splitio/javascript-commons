@@ -70,7 +70,7 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: Sto
  */
 export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
 
-  return Promise.resolve().then(() => {
+  return Promise.resolve(storage.load && storage.load()).then(() => {
     const currentTimestamp = Date.now();
     const isThereCache = splits.getChangeNumber() > -1;
 
@@ -86,6 +86,9 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
       } catch (e) {
         settings.log.error(LOG_PREFIX + e);
       }
+
+      // Persist clear
+      if (storage.save) storage.save();
 
       return false;
     }

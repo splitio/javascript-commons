@@ -23,19 +23,29 @@ describe('IN LOCAL STORAGE', () => {
     fakeInMemoryStorageFactory.mockClear();
   });
 
-  test('calls InMemoryStorage factory if LocalStorage API is not available', () => {
-
+  test('calls InMemoryStorage factory if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
+    // Delete global localStorage property
     const originalLocalStorage = Object.getOwnPropertyDescriptor(global, 'localStorage');
-    Object.defineProperty(global, 'localStorage', {}); // delete global localStorage property
+    Object.defineProperty(global, 'localStorage', {});
 
-    const storageFactory = InLocalStorage({ prefix: 'prefix' });
-    const storage = storageFactory(internalSdkParams);
-
+    // LocalStorage API is not available
+    let storageFactory = InLocalStorage({ prefix: 'prefix' });
+    let storage = storageFactory(internalSdkParams);
     expect(fakeInMemoryStorageFactory).toBeCalledWith(internalSdkParams); // calls InMemoryStorage factory
     expect(storage).toBe(fakeInMemoryStorage);
 
-    Object.defineProperty(global, 'localStorage', originalLocalStorage as PropertyDescriptor); // restore original localStorage
+    // @ts-expect-error Provided storage is invalid
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: {} });
+    storage = storageFactory(internalSdkParams);
+    expect(storage).toBe(fakeInMemoryStorage);
 
+    // Provided storage is valid
+    storageFactory = InLocalStorage({ prefix: 'prefix', wrapper: { getItem: () => Promise.resolve(null), setItem: () => Promise.resolve(), removeItem: () => Promise.resolve() } });
+    storage = storageFactory(internalSdkParams);
+    expect(storage).not.toBe(fakeInMemoryStorage);
+
+    // Restore original localStorage
+    Object.defineProperty(global, 'localStorage', originalLocalStorage as PropertyDescriptor);
   });
 
   test('calls its own storage factory if LocalStorage API is available', () => {

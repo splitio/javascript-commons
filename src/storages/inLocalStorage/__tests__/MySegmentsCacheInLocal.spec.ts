@@ -1,12 +1,13 @@
 import { MySegmentsCacheInLocal } from '../MySegmentsCacheInLocal';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../../KeyBuilderCS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
+import { storages, PREFIX } from './wrapper.mock';
 import { IMySegmentsResponse } from '../../../dtos/types';
 
-test('SEGMENT CACHE / in LocalStorage', () => {
+test.each(storages)('SEGMENT CACHE / in LocalStorage', (storage) => {
   const caches = [
-    new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS('SPLITIO', 'user'), localStorage),
-    new MySegmentsCacheInLocal(loggerMock, myLargeSegmentsKeyBuilder('SPLITIO', 'user'), localStorage)
+    new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS(PREFIX, 'user'), storage),
+    new MySegmentsCacheInLocal(loggerMock, myLargeSegmentsKeyBuilder(PREFIX, 'user'), storage)
   ];
 
   caches.forEach(cache => {
@@ -33,8 +34,8 @@ test('SEGMENT CACHE / in LocalStorage', () => {
     expect(cache.getKeysCount()).toBe(1);
   });
 
-  expect(localStorage.getItem('SPLITIO.user.segment.mocked-segment-2')).toBe('1');
-  expect(localStorage.getItem('SPLITIO.user.segment.mocked-segment')).toBe(null);
-  expect(localStorage.getItem('SPLITIO.user.largeSegment.mocked-segment-2')).toBe('1');
-  expect(localStorage.getItem('SPLITIO.user.largeSegment.mocked-segment')).toBe(null);
+  expect(storage.getItem(PREFIX + '.user.segment.mocked-segment-2')).toBe('1');
+  expect(storage.getItem(PREFIX + '.user.segment.mocked-segment')).toBe(null);
+  expect(storage.getItem(PREFIX + '.user.largeSegment.mocked-segment-2')).toBe('1');
+  expect(storage.getItem(PREFIX + '.user.largeSegment.mocked-segment')).toBe(null);
 });

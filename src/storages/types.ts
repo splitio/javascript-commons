@@ -9,6 +9,11 @@ import { ISettings } from '../types';
  * (https://developer.mozilla.org/en-US/docs/Web/API/Storage) used by the SDK
  */
 export interface StorageAdapter {
+  // Methods to support async storages
+  load?: () => Promise<void>;
+  save?: () => Promise<void>;
+  whenSaved?: () => Promise<void>;
+  // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
   readonly length: number;
   key(index: number): string | null;
   getItem(key: string): string | null;
@@ -479,6 +484,7 @@ export interface IStorageBase<
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb?: (error?: any) => void) => this
+  save?: () => void | Promise<void>,
 }
 
 export interface IStorageSync extends IStorageBase<
