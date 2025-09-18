@@ -5,6 +5,23 @@ import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync,
 import { ISettings } from '../types';
 
 /**
+ * Internal interface based on a subset of the Web Storage API interface
+ * (https://developer.mozilla.org/en-US/docs/Web/API/Storage) used by the SDK
+ */
+export interface StorageAdapter {
+  // Methods to support async storages
+  load?: () => Promise<void>;
+  save?: () => Promise<void>;
+  whenSaved?: () => Promise<void>;
+  // Methods based on https://developer.mozilla.org/en-US/docs/Web/API/Storage
+  readonly length: number;
+  key(index: number): string | null;
+  getItem(key: string): string | null;
+  removeItem(key: string): void;
+  setItem(key: string, value: string): void;
+}
+
+/**
  * Interface of a pluggable storage wrapper.
  */
 export interface IPluggableStorageWrapper {
@@ -467,6 +484,7 @@ export interface IStorageBase<
   uniqueKeys: TUniqueKeysCache,
   destroy(): void | Promise<void>,
   shared?: (matchingKey: string, onReadyCb?: (error?: any) => void) => this
+  save?: () => void | Promise<void>,
 }
 
 export interface IStorageSync extends IStorageBase<
@@ -480,7 +498,7 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
-  validateCache?: () => boolean, // @TODO support async
+  validateCache?: () => Promise<boolean>,
   largeSegments?: ISegmentsCacheSync,
 }
 
