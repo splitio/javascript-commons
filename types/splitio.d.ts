@@ -132,7 +132,7 @@ interface IPluggableSharedSettings {
   /**
    * Boolean value to indicate whether the logger should be enabled or disabled by default, or a log level string or a Logger object.
    * Passing a logger object is required to get descriptive log messages. Otherwise most logs will print with message codes.
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#logging}.
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/browser-sdk/#logging}.
    *
    * Examples:
    * ```
@@ -179,7 +179,7 @@ interface IServerSideSharedSettings {
     /**
      * Your SDK key.
      *
-     * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
      */
     authorizationKey: string;
     /**
@@ -282,7 +282,7 @@ interface IServerSideSharedSettings {
     eventsQueueSize?: number;
     /**
      * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-     * For more information see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+     * For more information see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#localhost-mode}
      *
      * @defaultValue `15`
      */
@@ -297,7 +297,7 @@ interface IServerSideSharedSettings {
   };
   /**
    * Mocked features file path. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#localhost-mode}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#localhost-mode}
    *
    * @defaultValue `'$HOME/.split'`
    */
@@ -314,13 +314,13 @@ interface IClientSideSharedSettings {
     /**
      * Your SDK key.
      *
-     * @see {@link https://help.split.io/hc/en-us/articles/360019916211-API-keys}
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
      */
     authorizationKey: string;
     /**
      * Customer identifier. Whatever this means to you.
      *
-     * @see {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
      */
     key: SplitIO.SplitKey;
     /**
@@ -347,7 +347,7 @@ interface IClientSideSharedSettings {
 interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISyncSharedSettings {
   /**
    * Mocked features map. For testing purposes only. For using this you should specify "localhost" as authorizationKey on core settings.
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/javascript-sdk/#localhost-mode}
    */
   features?: SplitIO.MockedFeaturesMap;
   /**
@@ -442,7 +442,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
     eventsQueueSize?: number;
     /**
      * For mocking/testing only. The SDK will refresh the features mocked data when mode is set to "localhost" by defining the key.
-     * For more information see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#localhost-mode}
+     * For more information see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/javascript-sdk/#localhost-mode}
      *
      * @defaultValue `15`
      */
@@ -794,7 +794,7 @@ declare namespace SplitIO {
   /**
    * Attributes should be on object with values of type string, boolean, number (dates should be sent as millis since epoch) or array of strings or numbers.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#attribute-syntax}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/javascript-sdk/#attribute-syntax}
    */
   type Attributes = {
     [attributeName: string]: AttributeType;
@@ -806,7 +806,7 @@ declare namespace SplitIO {
   /**
    * Properties should be an object with values of type string, number, boolean or null. Size limit of ~31kb.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#track}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/javascript-sdk/#track}
    */
   type Properties = {
     [propertyName: string]: string | number | boolean | null;
@@ -1076,7 +1076,7 @@ declare namespace SplitIO {
    * Impression listener interface. This is the interface that needs to be implemented
    * by the element you provide to the SDK as impression listener.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#listener}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#listener}
    */
   interface IImpressionListener {
     logImpression(data: ImpressionData): void;
@@ -1211,7 +1211,7 @@ declare namespace SplitIO {
   /**
    * Settings interface for Browser SDK instances created with client-side API and synchronous storage (e.g., in-memory or local storage).
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#configuration}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/browser-sdk/#configuration}
    */
   interface IClientSideSettings extends IClientSideSyncSharedSettings, IPluggableSharedSettings {
     /**
@@ -1232,20 +1232,20 @@ declare namespace SplitIO {
   /**
    * Settings interface for React Native SDK instances, with client-side API and synchronous storage.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/4406066357901-React-Native-SDK#configuration}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/react-native-sdk/#configuration}
    */
   interface IReactNativeSettings extends IClientSideSettings { }
   /**
    * Settings interface for Browser SDK instances created with client-side API and asynchronous storage (e.g., serverless environments with a persistent storage).
    * If your storage is synchronous (by default we use memory, which is sync) use SplitIO.IClientSideSettings instead.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#sharing-state-with-a-pluggable-storage}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/browser-sdk/#sharing-state-with-a-pluggable-storage}
    */
   interface IClientSideAsyncSettings extends IClientSideSharedSettings, ISharedSettings, IPluggableSharedSettings {
     /**
      * The SDK mode. When using `PluggableStorage` as storage, the possible values are "consumer" and "consumer_partial".
      *
-     * @see {@link https://help.split.io/hc/en-us/articles/360058730852-Browser-SDK#sharing-state-with-a-pluggable-storage}
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/browser-sdk/#sharing-state-with-a-pluggable-storage}
      */
     mode: 'consumer' | 'consumer_partial';
     /**
@@ -1331,7 +1331,7 @@ declare namespace SplitIO {
   /**
    * Settings interface for JavaScript SDK instances created on the browser, with client-side API and synchronous storage (e.g., in-memory or local storage).
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020448791-JavaScript-SDK#configuration}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/client-side-sdks/javascript-sdk/#configuration}
    */
   interface IBrowserSettings extends IClientSideSyncSharedSettings, INonPluggableSharedSettings {
     /**
@@ -1375,7 +1375,7 @@ declare namespace SplitIO {
    * Settings interface for JavaScript SDK instances created on Node.js, with server-side API and synchronous in-memory storage.
    * If your storage is asynchronous (Redis for example) use SplitIO.INodeAsyncSettings instead.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#configuration}
    */
   interface INodeSettings extends IServerSideSharedSettings, ISyncSharedSettings, INonPluggableSharedSettings {
     /**
@@ -1462,13 +1462,13 @@ declare namespace SplitIO {
    * Settings interface for JavaScript SDK instances created on Node.js, with asynchronous storage like Redis.
    * If your storage is synchronous (by default we use memory, which is sync) use SplitIO.INodeSettings instead.
    *
-   * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#configuration}
+   * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#configuration}
    */
   interface INodeAsyncSettings extends IServerSideSharedSettings, ISharedSettings, INonPluggableSharedSettings {
     /**
      * The SDK mode. When using 'REDIS' storage type, the only possible value is "consumer", which is required.
      *
-     * @see {@link https://help.split.io/hc/en-us/articles/360020564931-Node-js-SDK#state-sharing-redis-integration}
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#state-sharing-redis-integration}
      */
     mode: 'consumer';
     /**
@@ -1742,7 +1742,7 @@ declare namespace SplitIO {
      * Tracks an event to be fed to the results product on Split user interface.
      *
      * @param key - The key that identifies the entity related to this event.
-     * @param trafficType - The traffic type of the entity related to this event. See {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
      * @param eventType - The event type corresponding to this event.
      * @param value - The value of this event.
      * @param properties - The properties of this event. Values can be string, number, boolean or null.
@@ -1840,7 +1840,7 @@ declare namespace SplitIO {
      * Tracks an event to be fed to the results product on Split user interface, and returns a promise to signal when the event was successfully queued (or not).
      *
      * @param key - The key that identifies the entity related to this event.
-     * @param trafficType - The traffic type of the entity related to this event. See {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
      * @param eventType - The event type corresponding to this event.
      * @param value - The value of this event.
      * @param properties - The properties of this event. Values can be string, number, boolean or null.
@@ -1970,7 +1970,7 @@ declare namespace SplitIO {
     /**
      * Tracks an event to be fed to the results product on Split user interface.
      *
-     * @param trafficType - The traffic type of the entity related to this event. See {@link https://help.split.io/hc/en-us/articles/360019916311-Traffic-type}
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
      * @param eventType - The event type corresponding to this event.
      * @param value - The value of this event.
      * @param properties - The properties of this event. Values can be string, number, boolean or null.
