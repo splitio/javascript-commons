@@ -113,7 +113,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     initCallbacks.length = 0;
   }
 
-  log.info(NEW_FACTORY);
+  log.info(NEW_FACTORY, [settings.version]);
 
   // @ts-ignore
   return objectAssign({
