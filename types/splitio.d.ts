@@ -91,6 +91,9 @@ interface ISharedSettings {
    * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
    */
   urls?: SplitIO.UrlSettings;
+  /**
+   * Custom logger object. If not provided, the SDK will use the default `console.log` method for all log levels.
+   */
   logger?: SplitIO.Logger;
 }
 /**
@@ -642,6 +645,8 @@ declare namespace SplitIO {
     disable(): void;
     /**
      * Sets a log level for the SDK logs.
+     *
+     * @param logLevel - The log level to set.
      */
     setLogLevel(logLevel: LogLevel): void;
     /**

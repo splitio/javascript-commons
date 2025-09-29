@@ -17,23 +17,23 @@ let initialLogLevel = LogLevels.NONE;
  * @returns a logger instance, that might be: the provided logger at `settings.debug`, or one with the given `debug` log level,
  * or one with NONE log level if `debug` is not defined or invalid.
  */
-export function validateLogger(settings: { debug: unknown, logger?: unknown }): ILogger {
+export function validateLogger(settings: { debug: unknown, logger?: SplitIO.Logger }): ILogger {
   const { debug, logger } = settings;
   let logLevel: SplitIO.LogLevel | undefined = initialLogLevel;
 
   if (debug !== undefined) {
     if (isILogger(debug)) {
-      if (isLogger(logger)) debug.setLogger(logger);
+      debug.setLogger(logger);
       return debug;
     }
     logLevel = getLogLevel(settings.debug);
   }
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel });
-  if (isLogger(logger)) log.setLogger(logger);
+  log.setLogger(logger);
 
   // @ts-ignore // `debug` value is invalid if logLevel is undefined at this point
-  if (!logLevel) log.logger.error(log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.'));
+  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.');
 
   return log;
 }

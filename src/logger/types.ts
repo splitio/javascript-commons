@@ -7,7 +7,7 @@ export interface ILoggerOptions {
 }
 
 export interface ILogger extends SplitIO.ILogger {
-  setLogger(logger: SplitIO.Logger): void;
+  setLogger(logger?: SplitIO.Logger): void;
 
   debug(msg: any): void;
   debug(msg: string | number, args?: any[]): void;

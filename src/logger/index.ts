@@ -2,6 +2,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ILoggerOptions, ILogger } from './types';
 import { find, isObject } from '../utils/lang';
 import SplitIO from '../../types/splitio';
+import { isLogger } from '../utils/settingsValidation/logger/commons';
 
 export const LogLevels: SplitIO.ILoggerAPI['LogLevel'] = {
   DEBUG: 'DEBUG',
@@ -43,29 +44,17 @@ const defaultOptions = {
   showLevel: true,
 };
 
-const defaultConsoleLogger: SplitIO.Logger = {
-  debug(message: string) { console.log(message); },
-  info(message: string) { console.log(message); },
-  warn(message: string) { console.log(message); },
-  error(message: string) { console.log(message); }
-};
-
 export class Logger implements ILogger {
 
   private options: Required<ILoggerOptions>;
   private codes: Map<number, string>;
   private logLevel: number;
-  private logger: SplitIO.Logger;
+  private logger?: SplitIO.Logger;
 
   constructor(options?: ILoggerOptions, codes?: Map<number, string>) {
     this.options = objectAssign({}, defaultOptions, options);
     this.codes = codes || new Map();
     this.logLevel = LogLevelIndexes[this.options.logLevel];
-    this.logger = defaultConsoleLogger;
-  }
-
-  setLogger(logger: SplitIO.Logger) {
-    this.logger = logger;
   }
 
   setLogLevel(logLevel: SplitIO.LogLevel) {
@@ -73,23 +62,32 @@ export class Logger implements ILogger {
     this.logLevel = LogLevelIndexes[logLevel];
   }
 
+  setLogger(logger?: SplitIO.Logger) {
+    if (!logger || isLogger(logger)) {
+      this.logger = logger;
+    } else {
+      this._log(LogLevels.ERROR, 'Invalid `logger` instance. It must be an object with `debug`, `info`, `warn` and `error` methods. Defaulting to `console.log`');
+      this.logger = undefined;
+    }
+  }
+
   debug(msg: string | number, args?: any[]) {
-    if (this._shouldLog(LogLevelIndexes.DEBUG)) this.logger.debug(this._log(LogLevels.DEBUG, msg, args));
+    if (this._shouldLog(LogLevelIndexes.DEBUG)) this._log(LogLevels.DEBUG, msg, args);
   }
 
   info(msg: string | number, args?: any[]) {
-    if (this._shouldLog(LogLevelIndexes.INFO)) this.logger.info(this._log(LogLevels.INFO, msg, args));
+    if (this._shouldLog(LogLevelIndexes.INFO)) this._log(LogLevels.INFO, msg, args);
   }
 
   warn(msg: string | number, args?: any[]) {
-    if (this._shouldLog(LogLevelIndexes.WARN)) this.logger.warn(this._log(LogLevels.WARN, msg, args));
+    if (this._shouldLog(LogLevelIndexes.WARN)) this._log(LogLevels.WARN, msg, args);
   }
 
   error(msg: string | number, args?: any[]) {
-    if (this._shouldLog(LogLevelIndexes.ERROR)) this.logger.error(this._log(LogLevels.ERROR, msg, args));
+    if (this._shouldLog(LogLevelIndexes.ERROR)) this._log(LogLevels.ERROR, msg, args);
   }
 
-  private _log(level: SplitIO.LogLevel, msg: string | number, args?: any[]): string {
+  private _log(level: SplitIO.LogLevel, msg: string | number, args?: any[]) {
     if (typeof msg === 'number') {
       const format = this.codes.get(msg);
       msg = format ? _sprintf(format, args) : `Message code ${msg}${args ? ', with args: ' + args.toString() : ''}`;
@@ -97,7 +95,17 @@ export class Logger implements ILogger {
       if (args) msg = _sprintf(msg, args);
     }
 
-    return this._generateLogMessage(level, msg);
+    const formattedText = this._generateLogMessage(level, msg);
+
+    // Do not break on custom logger errors
+    if (this.logger) {
+      try { // @ts-expect-error
+        this.logger[level.toLowerCase()](formattedText);
+        return;
+      } catch (e) { /* empty */ }
+    }
+
+    console.log(formattedText);
   }
 
   private _generateLogMessage(level: SplitIO.LogLevel, text: string) {
