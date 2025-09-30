@@ -2,8 +2,6 @@ import { submitterFactory, firstPushWindowDecorator } from './submitter';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
-const DATA_NAME = 'events';
-
 /**
  * Submitter that periodically posts tracked events
  */
@@ -16,7 +14,7 @@ export function eventsSubmitterFactory(params: ISdkFactoryContextSync) {
   } = params;
 
   // don't retry events.
-  let submitter = submitterFactory(log, postEventsBulk, events, eventsPushRate, DATA_NAME);
+  let submitter = submitterFactory(log, postEventsBulk, events, eventsPushRate);
 
   // Set a timer for the first push window of events.
   if (eventsFirstPushWindow > 0) submitter = firstPushWindowDecorator(submitter, eventsFirstPushWindow);
@@ -24,7 +22,7 @@ export function eventsSubmitterFactory(params: ISdkFactoryContextSync) {
   // register events submitter to be executed when events cache is full
   events.setOnFullQueueCb(() => {
     if (submitter.isRunning()) {
-      log.info(SUBMITTERS_PUSH_FULL_QUEUE, [DATA_NAME]);
+      log.info(SUBMITTERS_PUSH_FULL_QUEUE, [events.name]);
       submitter.execute();
     }
     // If submitter is stopped (e.g., user consent declined or unknown, or app state offline), we don't send the data.
