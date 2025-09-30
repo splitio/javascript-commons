@@ -650,6 +650,12 @@ declare namespace SplitIO {
      */
     setLogLevel(logLevel: LogLevel): void;
     /**
+     * Sets a custom logger for the SDK logs.
+     *
+     * @param logger - The custom logger to set, or `undefined` to remove the custom logger and fall back to the default `console.log` method.
+     */
+    setLogger(logger?: Logger): void;
+    /**
      * Log level constants. Use this to pass them to setLogLevel function.
      */
     LogLevel: {
