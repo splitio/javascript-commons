@@ -40,5 +40,5 @@ export function impressionCountsSubmitterFactory(params: ISdkFactoryContextSync)
   } = params;
 
   // retry impressions counts only once.
-  return submitterFactory(log, postTestImpressionsCount, impressionCounts, IMPRESSIONS_COUNT_RATE, 'impression counts', fromImpressionCountsCollector, 1);
+  return submitterFactory(log, postTestImpressionsCount, impressionCounts, IMPRESSIONS_COUNT_RATE, fromImpressionCountsCollector, 1);
 }
