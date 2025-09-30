@@ -25,6 +25,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying download of feature flags #%s. Reason: %s'],
   [c.SUBMITTERS_PUSH_FULL_QUEUE, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing full %s queue and resetting timer.'],
   [c.SUBMITTERS_PUSH, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Pushing %s.'],
+  [c.SUBMITTERS_PUSH_PAGE_HIDDEN, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing %s because page became hidden.'],
   [c.STREAMING_REFRESH_TOKEN, c.LOG_PREFIX_SYNC_STREAMING + 'Refreshing streaming token in %s seconds, and connecting streaming in %s seconds.'],
   [c.STREAMING_RECONNECT, c.LOG_PREFIX_SYNC_STREAMING + 'Attempting to reconnect streaming in %s seconds.'],
   [c.STREAMING_CONNECTING, c.LOG_PREFIX_SYNC_STREAMING + 'Connecting streaming.'],
