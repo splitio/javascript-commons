@@ -3,6 +3,7 @@ import SplitIO from '../../../types/splitio';
 
 export class ImpressionsCacheInMemory implements IImpressionsCacheSync {
 
+  public name = 'impressions';
   private onFullQueue?: () => void;
   private readonly maxQueue: number;
   private queue: SplitIO.ImpressionDTO[];
