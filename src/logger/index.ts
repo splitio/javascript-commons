@@ -63,11 +63,15 @@ export class Logger implements ILogger {
   }
 
   setLogger(logger?: SplitIO.Logger) {
-    if (!logger || isLogger(logger)) {
-      this.logger = logger;
-    } else {
-      this._log(LogLevels.ERROR, 'Invalid `logger` instance. It must be an object with `debug`, `info`, `warn` and `error` methods. Defaulting to `console.log`');
-      this.logger = undefined;
+    if (logger) {
+      if (isLogger(logger)) {
+        this.logger = logger;
+        // If custom logger is set, all logs are either enabled or disabled
+        if (this.logLevel !== LogLevelIndexes.NONE) this.setLogLevel(LogLevels.DEBUG);
+      } else {
+        this._log(LogLevels.ERROR, 'Invalid `logger` instance. It must be an object with `debug`, `info`, `warn` and `error` methods. Defaulting to `console.log`');
+        this.logger = undefined;
+      }
     }
   }
 

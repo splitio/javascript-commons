@@ -1,6 +1,6 @@
 import { createLoggerAPI } from '../sdkLogger';
 import { Logger, LogLevels } from '../index';
-import { getLoggerLogLevel } from './sdkLogger.mock';
+import { getLoggerLogLevel, getCustomLogger } from './sdkLogger.mock';
 
 test('LoggerAPI / methods and props', () => {
   // creates a LoggerAPI instance
@@ -26,4 +26,12 @@ test('LoggerAPI / methods and props', () => {
 
   expect(API.LogLevel).toEqual(LogLevels); // API object should have LogLevel prop including all available levels.
 
+  // valid custom logger
+  API.setLogger(console);
+  expect(getCustomLogger(logger)).toBe(console);
+
+  // invalid custom logger
+  // @ts-expect-error
+  API.setLogger({});
+  expect(getCustomLogger(logger)).toBeUndefined();
 });

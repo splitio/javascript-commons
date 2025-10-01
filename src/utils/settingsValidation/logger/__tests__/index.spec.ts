@@ -56,6 +56,13 @@ describe('logger validators', () => {
     expect(getLoggerLogLevel(validateLogger({ debug: 'ERROR' }))).toBe('ERROR');
     expect(getLoggerLogLevel(validateLogger({ debug: 'NONE' }))).toBe('NONE');
 
+    // When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true)
+    expect(getLoggerLogLevel(validateLogger({ debug: 'DEBUG', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'INFO', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'WARN', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'ERROR', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'NONE', logger: loggerMock }))).toBe('NONE');
+
     expect(consoleLogSpy).not.toBeCalled();
   });
 
