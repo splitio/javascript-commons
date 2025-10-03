@@ -76,16 +76,16 @@ describe('logger validators', () => {
     const logger = validateLogger({ debug: true, logger: customLogger });
 
     logger.debug('test debug');
-    expect(customLogger.debug).toBeCalledWith('[DEBUG] splitio => test debug');
+    expect(customLogger.debug).toBeCalledWith('splitio => test debug');
 
     logger.info('test info');
-    expect(customLogger.info).toBeCalledWith('[INFO]  splitio => test info');
+    expect(customLogger.info).toBeCalledWith('splitio => test info');
 
     logger.warn('test warn');
-    expect(customLogger.warn).toBeCalledWith('[WARN]  splitio => test warn');
+    expect(customLogger.warn).toBeCalledWith('splitio => test warn');
 
     logger.error('test error');
-    expect(customLogger.error).toBeCalledWith('[ERROR] splitio => test error');
+    expect(customLogger.error).toBeCalledWith('splitio => test error');
 
     expect(consoleLogSpy).not.toBeCalled();
   });
@@ -121,19 +121,19 @@ describe('logger validators', () => {
     const logger = validateLogger({ debug: true, logger: customLoggerWithErrors });
 
     logger.debug('test debug');
-    expect(customLoggerWithErrors.debug).toBeCalledWith('[DEBUG] splitio => test debug');
+    expect(customLoggerWithErrors.debug).toBeCalledWith('splitio => test debug');
     expect(consoleLogSpy).toBeCalledWith('[DEBUG] splitio => test debug');
 
     logger.info('test info');
-    expect(customLoggerWithErrors.info).toBeCalledWith('[INFO]  splitio => test info');
+    expect(customLoggerWithErrors.info).toBeCalledWith('splitio => test info');
     expect(consoleLogSpy).toBeCalledWith('[INFO]  splitio => test info');
 
     logger.warn('test warn');
-    expect(customLoggerWithErrors.warn).toBeCalledWith('[WARN]  splitio => test warn');
+    expect(customLoggerWithErrors.warn).toBeCalledWith('splitio => test warn');
     expect(consoleLogSpy).toBeCalledWith('[WARN]  splitio => test warn');
 
     logger.error('test error');
-    expect(customLoggerWithErrors.error).toBeCalledWith('[ERROR] splitio => test error');
+    expect(customLoggerWithErrors.error).toBeCalledWith('splitio => test error');
     expect(consoleLogSpy).toBeCalledWith('[ERROR] splitio => test error');
 
     expect(consoleLogSpy).toBeCalledTimes(4);

@@ -3,7 +3,6 @@ import SplitIO from '../../types/splitio';
 export interface ILoggerOptions {
   prefix?: string;
   logLevel?: SplitIO.LogLevel;
-  showLevel?: boolean; // @TODO remove this param eventually since it is not being set `false` anymore
 }
 
 export interface ILogger extends SplitIO.ILogger {

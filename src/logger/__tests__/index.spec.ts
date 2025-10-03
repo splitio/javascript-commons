@@ -38,9 +38,9 @@ const LOG_LEVELS_IN_ORDER: SplitIO.LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR
 /* Utility function to avoid repeating too much code */
 function testLogLevels(levelToTest: SplitIO.LogLevel) {
   // Builds the expected message.
-  const buildExpectedMessage = (lvl: string, category: string, msg: string, showLevel?: boolean) => {
+  const buildExpectedMessage = (lvl: string, category: string, msg: string, useDefaultLogger?: boolean) => {
     let res = '';
-    if (showLevel) res += '[' + lvl + ']' + (lvl.length === 4 ? '  ' : ' ');
+    if (useDefaultLogger) res += '[' + lvl + ']' + (lvl.length === 4 ? '  ' : ' ');
     res += category + ' => ';
     res += msg;
     return res;
@@ -49,24 +49,33 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
   // Spy console.log
   const consoleLogSpy = jest.spyOn(global.console, 'log');
 
-  // Runs the suite with the given value for showLevel option.
-  const runTests = (showLevel?: boolean, useCodes?: boolean) => {
+  // Runs the suite with the given values
+  const runTests = (useDefaultLogger?: boolean, useCodes?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
-    const instance = new Logger({ prefix: logCategory, showLevel },
-      useCodes ? new Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
+    const instance = new Logger({ prefix: logCategory },
+      useCodes ? new Map([[1, 'Test log for level %s with default logger: %s %s']]) : undefined);
+    if (!useDefaultLogger) {
+      instance.setLogger({
+        debug: console.log,
+        info: console.log,
+        warn: console.log,
+        error: console.log,
+      });
+    }
+
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
-      const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
-      const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
+      const logMsg = `Test log for level ${levelToTest} with default logger: ${useDefaultLogger} ${logLevelLogsCounter}`;
+      const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, useDefaultLogger);
 
       // Set the logLevel for this iteration.
       instance.setLogLevel(LogLevels[logLevel]);
       // Call the method
       // @ts-ignore
-      if (useCodes) instance[logMethod](1, [levelToTest, showLevel, logLevelLogsCounter]); // @ts-ignore
+      if (useCodes) instance[logMethod](1, [levelToTest, useDefaultLogger, logLevelLogsCounter]); // @ts-ignore
       else instance[logMethod](logMsg);
       // Assert if console.log was called.
       const actualMessage = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
@@ -83,11 +92,11 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
     });
   };
 
-  // Show logLevel
+  // Default console.log (Show level in logs)
   runTests(true);
-  // Hide logLevel
+  // Custom logger (Don't show level in logs)
   runTests(false);
-  // Hide logLevel and use message codes
+  // Custom logger (Don't show level in logs) and use message codes
   runTests(false, true);
 
   // Restore spied object.

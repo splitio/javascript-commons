@@ -30,6 +30,10 @@ test('LoggerAPI / methods and props', () => {
   API.setLogger(console);
   expect(getCustomLogger(logger)).toBe(console);
 
+  // unset custom logger
+  API.setLogger(undefined);
+  expect(getCustomLogger(logger)).toBeUndefined();
+
   // invalid custom logger
   // @ts-expect-error
   API.setLogger({});

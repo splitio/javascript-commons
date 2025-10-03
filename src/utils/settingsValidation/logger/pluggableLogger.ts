@@ -32,8 +32,8 @@ export function validateLogger(settings: { debug: unknown, logger?: SplitIO.Logg
   const log = new Logger({ logLevel: logLevel || initialLogLevel });
   log.setLogger(logger);
 
-  // @ts-ignore // `debug` value is invalid if logLevel is undefined at this point
-  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid `debug` value at config. Logs will be disabled.');
+  // `debug` value is invalid if logLevel is undefined at this point
+  if (!logLevel) log._log('error', 'Invalid `debug` value at config. Logs will be disabled.');
 
   return log;
 }
