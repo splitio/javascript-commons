@@ -49,15 +49,16 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
   };
 
   // Spy console method based on level
-  const levelToMethod: Record<SplitIO.LogLevel, keyof typeof console> = {
+  const levelToMethod: Record<Exclude<SplitIO.LogLevel, 'NONE'>, keyof typeof console> = {
     DEBUG: 'debug',
     INFO: 'info',
     WARN: 'warn',
-    ERROR: 'error',
-    NONE: 'log'
+    ERROR: 'error'
   };
 
-  const consoleMethodSpy = jest.spyOn(global.console, levelToMethod[levelToTest] as any);
+  const consoleMethodSpy = levelToTest === 'NONE'
+    ? jest.spyOn(global.console, 'log').mockImplementation(() => {})
+    : jest.spyOn(global.console, levelToMethod[levelToTest] as any);
 
   // Runs the suite with the given value for showLevel option.
   const runTests = (showLevel?: boolean, useCodes?: boolean) => {

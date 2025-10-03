@@ -23,7 +23,7 @@ const levelToMethod: Record<Exclude<SplitIO.LogLevel, 'NONE'>, keyof typeof cons
   DEBUG: 'debug',
   INFO: 'info',
   WARN: 'warn',
-  ERROR: 'error',
+  ERROR: 'error'
 };
 
 export function isLogLevelString(str: string): str is SplitIO.LogLevel {
