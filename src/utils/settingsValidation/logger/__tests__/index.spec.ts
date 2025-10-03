@@ -11,7 +11,12 @@ const testTargets = [
 describe('logger validators', () => {
 
   const consoleLogSpy = jest.spyOn(global.console, 'log');
-  afterEach(() => { consoleLogSpy.mockClear(); });
+  const consoleErrorSpy = jest.spyOn(global.console, 'error');
+
+  afterEach(() => {
+    consoleLogSpy.mockClear();
+    consoleErrorSpy.mockClear();
+  });
 
   test.each(testTargets)('returns a NONE logger if `debug` property is not defined or false', (validateLogger) => { // @ts-ignore
     expect(getLoggerLogLevel(validateLogger({}))).toBe('NONE');
@@ -29,9 +34,9 @@ describe('logger validators', () => {
     if (validateLogger === builtinValidateLogger) {
       // for builtinValidateLogger, a logger cannot be passed as `debug` property
       expect(getLoggerLogLevel(validateLogger({ debug: loggerMock }))).toBe('NONE');
-      expect(consoleLogSpy).toBeCalledTimes(4);
+      expect(consoleErrorSpy).toBeCalledTimes(4);
     } else {
-      expect(consoleLogSpy).toBeCalledTimes(3);
+      expect(consoleErrorSpy).toBeCalledTimes(3);
     }
   });
 

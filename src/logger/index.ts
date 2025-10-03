@@ -19,6 +19,13 @@ const LogLevelIndexes = {
   NONE: 5
 };
 
+const levelToMethod: Record<Exclude<SplitIO.LogLevel, 'NONE'>, keyof typeof console> = {
+  DEBUG: 'debug',
+  INFO: 'info',
+  WARN: 'warn',
+  ERROR: 'error',
+};
+
 export function isLogLevelString(str: string): str is SplitIO.LogLevel {
   return !!find(LogLevels, (lvl: string) => str === lvl);
 }
@@ -86,7 +93,11 @@ export class Logger implements ILogger {
 
     const formattedText = this._generateLogMessage(level, msg);
 
-    console.log(formattedText);
+    const method = levelToMethod[level as Exclude<SplitIO.LogLevel, 'NONE'>];
+
+    const fn = typeof console[method] === 'function' ? (console as any)[method] : console.log;
+
+    fn(formattedText);
   }
 
   private _generateLogMessage(level: SplitIO.LogLevel, text: string) {

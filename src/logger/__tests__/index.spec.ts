@@ -48,8 +48,16 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
     return res;
   };
 
-  // Spy console.log
-  const consoleLogSpy = jest.spyOn(global.console, 'log');
+  // Spy console method based on level
+  const levelToMethod: Record<SplitIO.LogLevel, keyof typeof console> = {
+    DEBUG: 'debug',
+    INFO: 'info',
+    WARN: 'warn',
+    ERROR: 'error',
+    NONE: 'log'
+  };
+
+  const consoleMethodSpy = jest.spyOn(global.console, levelToMethod[levelToTest] as any);
 
   // Runs the suite with the given value for showLevel option.
   const runTests = (showLevel?: boolean, useCodes?: boolean) => {
@@ -70,8 +78,8 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
       // @ts-ignore
       if (useCodes) instance[logMethod](1, [levelToTest, showLevel, logLevelLogsCounter]); // @ts-ignore
       else instance[logMethod](logMsg);
-      // Assert if console.log was called.
-      const actualMessage = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
+      // Assert if console method was called.
+      const actualMessage = consoleMethodSpy.mock.calls[consoleMethodSpy.mock.calls.length - 1][0];
       if (testForNoLog) {
         expect(actualMessage).not.toBe(expectedMessage);
       } else {
@@ -93,7 +101,7 @@ function testLogLevels(levelToTest: SplitIO.LogLevel) {
   runTests(false, true);
 
   // Restore spied object.
-  consoleLogSpy.mockRestore();
+  consoleMethodSpy.mockRestore();
 
 }
 
@@ -137,4 +145,43 @@ test('SPLIT LOGGER / _sprintf', () => {
   // Handle JSON.stringify exceptions
   const circular: any = { b: null }; circular.b = circular;
   expect(_sprintf('%s', [circular])).toBe('[object Object]');
+});
+
+test('SPLIT LOGGER / logs via correct console method for each level', () => {
+  const spies = {
+    debug: jest.spyOn(console, 'debug').mockImplementation(() => {}),
+    info: jest.spyOn(console, 'info').mockImplementation(() => {}),
+    warn: jest.spyOn(console, 'warn').mockImplementation(() => {}),
+    error: jest.spyOn(console, 'error').mockImplementation(() => {}),
+    log: jest.spyOn(console, 'log').mockImplementation(() => {})
+  };
+
+  const logger = new Logger({ prefix: 'verify-level' });
+
+  logger.setLogLevel(LogLevels.DEBUG);
+
+  logger.debug('debug msg');
+  expect(spies.debug).toHaveBeenCalledWith(expect.stringContaining('debug msg'));
+
+  logger.info('info msg');
+  expect(spies.info).toHaveBeenCalledWith(expect.stringContaining('info msg'));
+
+  logger.warn('warn msg');
+  expect(spies.warn).toHaveBeenCalledWith(expect.stringContaining('warn msg'));
+
+  logger.error('error msg');
+  expect(spies.error).toHaveBeenCalledWith(expect.stringContaining('error msg'));
+
+  logger.setLogLevel(LogLevels.NONE);
+
+  logger.debug('should not log');
+  logger.info('should not log');
+  logger.warn('should not log');
+  logger.error('should not log');
+
+  expect(spies.debug).toHaveBeenCalledTimes(1);
+  expect(spies.info).toHaveBeenCalledTimes(1);
+  expect(spies.warn).toHaveBeenCalledTimes(1);
+  expect(spies.error).toHaveBeenCalledTimes(1);
+  expect(spies.log).not.toHaveBeenCalled();
 });
