@@ -66,6 +66,7 @@ export function getTelemetryConfigStats(mode: SplitIO.SDKMode, storageType: stri
  */
 export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, settings: ISettings) {
   return {
+    name: 'telemetry config',
     isEmpty() { return false; },
     clear() { },
 
@@ -124,7 +125,7 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
     submitterFactory(
       log, splitApi.postMetricsUsage,
       telemetry,
-      telemetryRefreshRate, 'telemetry stats', undefined, 0, true
+      telemetryRefreshRate, undefined, 0, true
     ),
     telemetryRefreshRate
   );
@@ -139,7 +140,7 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
 
     // Post config data when the SDK is ready and if the telemetry submitter was started
     if (submitter.isRunning()) {
-      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, 'telemetry config', undefined, 0, true);
+      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, undefined, 0, true);
       postMetricsConfigTask.execute();
     }
   });

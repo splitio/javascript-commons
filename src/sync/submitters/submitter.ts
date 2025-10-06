@@ -13,12 +13,12 @@ export function submitterFactory<T>(
   postClient: (body: string) => Promise<IResponse>,
   sourceCache: IRecorderCacheSync<T>,
   postRate: number,
-  dataName: string,
   fromCacheToPayload?: (cacheData: T) => any,
   maxRetries: number = 0,
   debugLogs?: boolean // true for telemetry submitters
 ): ISyncTask<[], void> {
 
+  const dataName = sourceCache.name;
   let retries = 0;
   let data: any;
 

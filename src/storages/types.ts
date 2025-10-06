@@ -325,6 +325,7 @@ export interface IUniqueKeysCacheBase {
 
 // API methods for sync recorder storages, used by submitters in standalone mode to pop data and post it to Split BE.
 export interface IRecorderCacheSync<T> {
+  name: string,
   // @TODO names are inconsistent with spec
   /* Checks if cache is empty. Returns true if the cache was just created or cleared */
   isEmpty(): boolean
