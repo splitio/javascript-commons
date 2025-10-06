@@ -20,7 +20,7 @@ const LogLevelIndexes = {
   NONE: 5
 };
 
-const DEFAULT_LOGGER: SplitIO.Logger = {
+export const DEFAULT_LOGGER: SplitIO.Logger = {
   debug(msg) { console.log('[DEBUG] ' + msg); },
   info(msg) { console.log('[INFO]  ' + msg); },
   warn(msg) { console.log('[WARN]  ' + msg); },
