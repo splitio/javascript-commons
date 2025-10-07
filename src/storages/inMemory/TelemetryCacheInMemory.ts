@@ -25,6 +25,8 @@ export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
+  public name = 'telemetry stats';
+
   constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync, private largeSegments?: ISegmentsCacheSync) { }
 
   // isEmpty flag
