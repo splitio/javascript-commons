@@ -104,7 +104,7 @@ export function sdkReadinessManagerFactory(
           return readyPromise;
         },
 
-        __getStatus() {
+        getStatus() {
           return {
             isReady: readinessManager.isReady(),
             isReadyFromCache: readinessManager.isReadyFromCache(),

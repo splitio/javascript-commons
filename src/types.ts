@@ -15,21 +15,6 @@ export interface ISettings extends SplitIO.ISettings {
 }
 
 /**
- * SplitIO.IStatusInterface interface extended with private properties for internal use
- */
-export interface IStatusInterface extends SplitIO.IStatusInterface {
-  // Expose status for internal purposes only. Not considered part of the public API, and might be updated eventually.
-  __getStatus(): {
-    isReady: boolean;
-    isReadyFromCache: boolean;
-    isTimedout: boolean;
-    hasTimedout: boolean;
-    isDestroyed: boolean;
-    isOperational: boolean;
-    lastUpdate: number;
-  };
-}
-/**
  * SplitIO.IBasicClient interface extended with private properties for internal use
  */
 export interface IBasicClient extends SplitIO.IBasicClient {
