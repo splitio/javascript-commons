@@ -3,6 +3,13 @@ import { loggerMock, getLoggerLogLevel } from '../../../../logger/__tests__/sdkL
 import { validateLogger as pluggableValidateLogger } from '../pluggableLogger';
 import { validateLogger as builtinValidateLogger } from '../builtinLogger';
 
+const customLogger = {
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn()
+};
+
 const testTargets = [
   [pluggableValidateLogger],
   [builtinValidateLogger]
@@ -11,7 +18,13 @@ const testTargets = [
 describe('logger validators', () => {
 
   const consoleLogSpy = jest.spyOn(global.console, 'log');
-  afterEach(() => { consoleLogSpy.mockClear(); });
+  afterEach(() => {
+    consoleLogSpy.mockClear();
+    customLogger.debug.mockClear();
+    customLogger.info.mockClear();
+    customLogger.warn.mockClear();
+    customLogger.error.mockClear();
+  });
 
   test.each(testTargets)('returns a NONE logger if `debug` property is not defined or false', (validateLogger) => { // @ts-ignore
     expect(getLoggerLogLevel(validateLogger({}))).toBe('NONE');
@@ -23,8 +36,8 @@ describe('logger validators', () => {
 
   test.each(testTargets)('returns a NONE logger if `debug` property is invalid and logs the error', (validateLogger) => {
     expect(getLoggerLogLevel(validateLogger({ debug: null }))).toBe('NONE');
-    expect(getLoggerLogLevel(validateLogger({ debug: 10 }))).toBe('NONE');
-    expect(getLoggerLogLevel(validateLogger({ debug: {} }))).toBe('NONE');
+    expect(getLoggerLogLevel(validateLogger({ debug: 10, logger: undefined }))).toBe('NONE'); // @ts-expect-error invalid `logger`, ignored because it's falsy
+    expect(getLoggerLogLevel(validateLogger({ debug: {}, logger: false }))).toBe('NONE');
 
     if (validateLogger === builtinValidateLogger) {
       // for builtinValidateLogger, a logger cannot be passed as `debug` property
@@ -43,6 +56,13 @@ describe('logger validators', () => {
     expect(getLoggerLogLevel(validateLogger({ debug: 'ERROR' }))).toBe('ERROR');
     expect(getLoggerLogLevel(validateLogger({ debug: 'NONE' }))).toBe('NONE');
 
+    // When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true)
+    expect(getLoggerLogLevel(validateLogger({ debug: 'DEBUG', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'INFO', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'WARN', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'ERROR', logger: loggerMock }))).toBe('DEBUG');
+    expect(getLoggerLogLevel(validateLogger({ debug: 'NONE', logger: loggerMock }))).toBe('NONE');
+
     expect(consoleLogSpy).not.toBeCalled();
   });
 
@@ -50,6 +70,73 @@ describe('logger validators', () => {
     expect(pluggableValidateLogger({ debug: loggerMock })).toBe(loggerMock);
 
     expect(consoleLogSpy).not.toBeCalled();
+  });
+
+  test.each(testTargets)('uses the provided custom logger if it is valid', (validateLogger) => {
+    const logger = validateLogger({ debug: true, logger: customLogger });
+
+    logger.debug('test debug');
+    expect(customLogger.debug).toBeCalledWith('splitio => test debug');
+
+    logger.info('test info');
+    expect(customLogger.info).toBeCalledWith('splitio => test info');
+
+    logger.warn('test warn');
+    expect(customLogger.warn).toBeCalledWith('splitio => test warn');
+
+    logger.error('test error');
+    expect(customLogger.error).toBeCalledWith('splitio => test error');
+
+    expect(consoleLogSpy).not.toBeCalled();
+  });
+
+  test.each(testTargets)('uses the default console.log method if the provided custom logger is not valid', (validateLogger) => {
+    // @ts-expect-error `logger` property is not valid
+    const logger = validateLogger({ debug: true, logger: {} });
+    expect(consoleLogSpy).toBeCalledWith('[ERROR] splitio => Invalid `logger` instance. It must be an object with `debug`, `info`, `warn` and `error` methods. Defaulting to `console.log`');
+
+    logger.debug('test debug');
+    expect(consoleLogSpy).toBeCalledWith('[DEBUG] splitio => test debug');
+
+    logger.info('test info');
+    expect(consoleLogSpy).toBeCalledWith('[INFO]  splitio => test info');
+
+    logger.warn('test warn');
+    expect(consoleLogSpy).toBeCalledWith('[WARN]  splitio => test warn');
+
+    logger.error('test error');
+    expect(consoleLogSpy).toBeCalledWith('[ERROR] splitio => test error');
+
+    expect(consoleLogSpy).toBeCalledTimes(5);
+  });
+
+  test.each(testTargets)('uses the default console.log method if the provided custom logger throws an error', (validateLogger) => {
+    const customLoggerWithErrors = {
+      debug: jest.fn(() => { throw new Error('debug error'); }),
+      info: jest.fn(() => { throw new Error('info error'); }),
+      warn: jest.fn(() => { throw new Error('warn error'); }),
+      error: jest.fn(() => { throw new Error('error error'); })
+    };
+
+    const logger = validateLogger({ debug: true, logger: customLoggerWithErrors });
+
+    logger.debug('test debug');
+    expect(customLoggerWithErrors.debug).toBeCalledWith('splitio => test debug');
+    expect(consoleLogSpy).toBeCalledWith('[DEBUG] splitio => test debug');
+
+    logger.info('test info');
+    expect(customLoggerWithErrors.info).toBeCalledWith('splitio => test info');
+    expect(consoleLogSpy).toBeCalledWith('[INFO]  splitio => test info');
+
+    logger.warn('test warn');
+    expect(customLoggerWithErrors.warn).toBeCalledWith('splitio => test warn');
+    expect(consoleLogSpy).toBeCalledWith('[WARN]  splitio => test warn');
+
+    logger.error('test error');
+    expect(customLoggerWithErrors.error).toBeCalledWith('splitio => test error');
+    expect(consoleLogSpy).toBeCalledWith('[ERROR] splitio => test error');
+
+    expect(consoleLogSpy).toBeCalledTimes(4);
   });
 
 });

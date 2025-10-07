@@ -31,6 +31,13 @@ export function createLoggerAPI(log: ILogger): SplitIO.ILoggerAPI {
      */
     setLogLevel,
     /**
+     * Sets a custom logger for the SDK logs.
+     * @param logger - Custom logger.
+     */
+    setLogger(logger?: ILogger) {
+      log.setLogger(logger);
+    },
+    /**
      * Disables all the log levels.
      */
     disable() {
