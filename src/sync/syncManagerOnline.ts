@@ -10,6 +10,7 @@ import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 import { SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
+import { usesSegmentsSync } from '../storages/AbstractSplitsCacheSync';
 
 /**
  * Online SyncManager factory.
@@ -88,36 +89,41 @@ export function syncManagerOnlineFactory(
       start() {
         running = true;
 
-        if (startFirstTime) {
-          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
-          if (isCacheLoaded) Promise.resolve().then(() => { readiness.splits.emit(SDK_SPLITS_CACHE_LOADED); });
-        }
+        // @TODO once event, impression and telemetry storages support persistence, call when `validateCache` promise is resolved
+        submitterManager.start(!isConsentGranted(settings));
 
-        // start syncing splits and segments
-        if (pollingManager) {
+        return Promise.resolve(storage.validateCache ? storage.validateCache() : false).then((isCacheLoaded) => {
+          if (!running) return;
 
-          // If synchronization is disabled pushManager and pollingManager should not start
-          if (syncEnabled) {
-            if (pushManager) {
-              // Doesn't call `syncAll` when the syncManager is resuming
+          if (startFirstTime) {
+            // Emits SDK_READY_FROM_CACHE
+            if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+
+          }
+
+          // start syncing splits and segments
+          if (pollingManager) {
+
+            // If synchronization is disabled pushManager and pollingManager should not start
+            if (syncEnabled) {
+              if (pushManager) {
+                // Doesn't call `syncAll` when the syncManager is resuming
+                if (startFirstTime) {
+                  pollingManager.syncAll();
+                }
+                pushManager.start();
+              } else {
+                pollingManager.start();
+              }
+            } else {
               if (startFirstTime) {
                 pollingManager.syncAll();
               }
-              pushManager.start();
-            } else {
-              pollingManager.start();
-            }
-          } else {
-            if (startFirstTime) {
-              pollingManager.syncAll();
             }
           }
-        }
 
-        // start periodic data recording (events, impressions, telemetry).
-        submitterManager.start(!isConsentGranted(settings));
-
-        startFirstTime = false;
+          startFirstTime = false;
+        });
       },
 
       /**
@@ -155,14 +161,14 @@ export function syncManagerOnlineFactory(
             if (pushManager) {
               if (pollingManager.isRunning()) {
                 // if doing polling, we must start the periodic fetch of data
-                if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
+                if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
               } else {
                 // if not polling, we must execute the sync task for the initial fetch
                 // of segments since `syncAll` was already executed when starting the main client
                 mySegmentsSyncTask.execute();
               }
             } else {
-              if (storage.splits.usesSegments() || storage.rbSegments.usesSegments()) mySegmentsSyncTask.start();
+              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
             }
           } else {
             if (!readinessManager.isReady()) mySegmentsSyncTask.execute();

@@ -40,15 +40,16 @@ if (/^(enabled?|on)/i.test(initialState)) {
  * @param settings - user config object, with an optional `debug` property of type boolean or string log level.
  * @returns a logger instance with the log level at `settings.debug`. If `settings.debug` is invalid or not provided, `initialLogLevel` is used.
  */
-export function validateLogger(settings: { debug: unknown }): ILogger {
-  const { debug } = settings;
+export function validateLogger(settings: { debug: unknown, logger?: SplitIO.Logger }): ILogger {
+  const { debug, logger } = settings;
 
   const logLevel: SplitIO.LogLevel | undefined = debug !== undefined ? getLogLevel(debug) : initialLogLevel;
 
   const log = new Logger({ logLevel: logLevel || initialLogLevel }, allCodes);
+  log.setLogger(logger);
 
-  // @ts-ignore // if logLevel is undefined at this point, it means that settings `debug` value is invalid
-  if (!logLevel) log._log(LogLevels.ERROR, 'Invalid Log Level - No changes to the logs will be applied.');
+  // if logLevel is undefined at this point, it means that settings `debug` value is invalid
+  if (!logLevel) log._log('error', 'Invalid Log Level - No changes to the logs will be applied.');
 
   return log;
 }

@@ -1,4 +1,4 @@
-import { IUniqueKeysCacheBase } from '../types';
+import { IUniqueKeysCacheSync } from '../types';
 import { UniqueKeysPayloadSs } from '../../sync/submitters/types';
 import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
 import { setToArray } from '../../utils/lang/sets';
@@ -22,8 +22,8 @@ export function fromUniqueKeysCollector(uniqueKeys: { [featureName: string]: Set
   return { keys: payload };
 }
 
-export class UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
-
+export class UniqueKeysCacheInMemory implements IUniqueKeysCacheSync {
+  public name = 'unique keys';
   protected onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;

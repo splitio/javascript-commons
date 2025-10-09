@@ -59,8 +59,7 @@ export function fromObjectUpdaterFactory(
 
         if (startingUp) {
           startingUp = false;
-          const isCacheLoaded = storage.validateCache ? storage.validateCache() : false;
-          Promise.resolve().then(() => {
+          Promise.resolve(storage.validateCache ? storage.validateCache() : false).then((isCacheLoaded) => {
             // Emits SDK_READY_FROM_CACHE
             if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
             // Emits SDK_READY
