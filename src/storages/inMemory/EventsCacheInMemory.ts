@@ -5,6 +5,7 @@ const MAX_QUEUE_BYTE_SIZE = 5 * 1024 * 1024; // 5M
 
 export class EventsCacheInMemory implements IEventsCacheSync {
 
+  public name = 'events';
   private onFullQueue?: () => void;
   private readonly maxQueue: number;
   private queue: SplitIO.EventData[];

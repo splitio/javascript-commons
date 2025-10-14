@@ -9,7 +9,7 @@ import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING, SUBMITTERS_PUSH_PAGE_HIDDEN } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
 
@@ -104,6 +104,7 @@ export class BrowserSignalListener implements ISignalListener {
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
         postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op to handle possible promise rejection
       }
+      this.settings.log.debug(SUBMITTERS_PUSH_PAGE_HIDDEN, [cache.name]);
     }
   }
 

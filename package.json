@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "2.6.0",
+  "version": "2.7.1",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -57,7 +57,6 @@
     }
   },
   "devDependencies": {
-    "@types/google.analytics": "0.0.40",
     "@types/ioredis": "^4.28.0",
     "@types/jest": "^27.0.0",
     "@types/lodash": "^4.14.162",

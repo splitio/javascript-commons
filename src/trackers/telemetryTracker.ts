@@ -11,11 +11,11 @@ export function telemetryTrackerFactory(
 ): ITelemetryTracker {
 
   if (telemetryCache && now) {
-    const startTime = timer(now);
+    const sessionTimer = timer(now);
 
     return {
       trackEval(method) {
-        const evalTime = timer(now);
+        const evalTimer = timer(now);
 
         return (label) => {
           switch (label) {
@@ -25,20 +25,20 @@ export function telemetryTrackerFactory(
             case SDK_NOT_READY: // @ts-ignore ITelemetryCacheAsync doesn't implement the method
               if (telemetryCache.recordNonReadyUsage) telemetryCache.recordNonReadyUsage();
           }
-          telemetryCache.recordLatency(method, evalTime());
+          telemetryCache.recordLatency(method, evalTimer());
         };
       },
       trackHttp(operation) {
-        const httpTime = timer(now);
+        const httpTimer = timer(now);
 
         return (error) => {
-          (telemetryCache as ITelemetryCacheSync).recordHttpLatency(operation, httpTime());
+          (telemetryCache as ITelemetryCacheSync).recordHttpLatency(operation, httpTimer());
           if (error && error.statusCode) (telemetryCache as ITelemetryCacheSync).recordHttpError(operation, error.statusCode);
           else (telemetryCache as ITelemetryCacheSync).recordSuccessfulSync(operation, Date.now());
         };
       },
       sessionLength() { // @ts-ignore ITelemetryCacheAsync doesn't implement the method
-        if (telemetryCache.recordSessionLength) telemetryCache.recordSessionLength(startTime());
+        if (telemetryCache.recordSessionLength) telemetryCache.recordSessionLength(sessionTimer());
       },
       streamingEvent(e, d) {
         if (e === AUTH_REJECTION) {

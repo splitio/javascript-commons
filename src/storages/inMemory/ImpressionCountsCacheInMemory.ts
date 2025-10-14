@@ -3,6 +3,8 @@ import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
 import { IImpressionCountsCacheSync } from '../types';
 
 export class ImpressionCountsCacheInMemory implements IImpressionCountsCacheSync {
+
+  public name = 'impression counts';
   protected cache: Record<string, number> = {};
   private readonly maxStorage: number;
   protected onFullQueue?: () => void;

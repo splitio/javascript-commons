@@ -91,6 +91,11 @@ interface ISharedSettings {
    * Do not change these settings unless you're working an advanced use case, like connecting to the Split proxy.
    */
   urls?: SplitIO.UrlSettings;
+  /**
+   * Custom logger object. If not provided, the SDK will use the default `console.log` method for all log levels.
+   * Set together with `debug` option to `true` or a log level string to enable logging.
+   */
+  logger?: SplitIO.Logger;
 }
 /**
  * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
@@ -587,6 +592,7 @@ declare namespace SplitIO {
       telemetry: string;
     };
     readonly integrations?: IntegrationFactory[];
+    readonly logger?: Logger;
     readonly debug: boolean | LogLevel | ILogger;
     readonly version: string;
     /**
@@ -618,6 +624,15 @@ declare namespace SplitIO {
    */
   type LogLevel = 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
   /**
+   * Custom logger interface.
+   */
+  interface Logger {
+    debug(message: string): any;
+    info(message: string): any;
+    warn(message: string): any;
+    error(message: string): any;
+  }
+  /**
    * Logger API
    */
   interface ILoggerAPI {
@@ -631,8 +646,16 @@ declare namespace SplitIO {
     disable(): void;
     /**
      * Sets a log level for the SDK logs.
+     *
+     * @param logLevel - The log level to set.
      */
     setLogLevel(logLevel: LogLevel): void;
+    /**
+     * Sets a custom logger for the SDK logs.
+     *
+     * @param logger - The custom logger to set, or `undefined` to remove the custom logger and fall back to the default `console.log` method.
+     */
+    setLogger(logger?: Logger): void;
     /**
      * Log level constants. Use this to pass them to setLogLevel function.
      */
