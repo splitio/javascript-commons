@@ -93,6 +93,7 @@ interface ISharedSettings {
   urls?: SplitIO.UrlSettings;
   /**
    * Custom logger object. If not provided, the SDK will use the default `console.log` method for all log levels.
+   * Set together with `debug` option to `true` or a log level string to enable logging.
    */
   logger?: SplitIO.Logger;
 }
@@ -145,8 +146,6 @@ interface IPluggableSharedSettings {
    * config.debug = ErrorLogger()
    * ```
    *
-   * When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true), delegating log level control to the custom logger.
-   *
    * @defaultValue `false`
    */
   debug?: boolean | SplitIO.LogLevel | SplitIO.ILogger;
@@ -169,8 +168,6 @@ interface INonPluggableSharedSettings {
    * config.debug = true
    * config.debug = 'WARN'
    * ```
-   *
-   * When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true), delegating log level control to the custom logger.
    *
    * @defaultValue `false`
    */
@@ -695,6 +692,52 @@ declare namespace SplitIO {
     };
   }
   /**
+   * Readiness Status interface. It represents the readiness state of an SDK client.
+   */
+  interface ReadinessStatus {
+
+    /**
+     * `isReady` indicates if the client has triggered an `SDK_READY` event and
+     * thus is ready to evaluate with cached data synchronized with the backend.
+     */
+    isReady: boolean;
+
+    /**
+     * `isReadyFromCache` indicates if the client has triggered an `SDK_READY_FROM_CACHE` event and
+     * thus is ready to evaluate with cached data, although the data in cache might be stale.
+     */
+    isReadyFromCache: boolean;
+
+    /**
+     * `isTimedout` indicates if the client has triggered an `SDK_READY_TIMED_OUT` event and is not ready to evaluate.
+     * In other words, `isTimedout` is equivalent to `hasTimedout && !isReady`.
+     */
+    isTimedout: boolean;
+
+    /**
+     * `hasTimedout` indicates if the client has ever triggered an `SDK_READY_TIMED_OUT` event.
+     * It's meant to keep a reference that the SDK emitted a timeout at some point, not the current state.
+     */
+    hasTimedout: boolean;
+
+    /**
+     * `isDestroyed` indicates if the client has been destroyed, i.e., `destroy` method has been called.
+     */
+    isDestroyed: boolean;
+
+    /**
+     * `isOperational` indicates if the client can evaluate feature flags.
+     * In this state, `getTreatment` calls will not return `CONTROL` due to the SDK being unready or destroyed.
+     * It's equivalent to `(isReady || isReadyFromCache) && !isDestroyed`.
+     */
+    isOperational: boolean;
+
+    /**
+     * `lastUpdate` indicates the timestamp of the most recent status event.
+     */
+    lastUpdate: number;
+  }
+  /**
    * Common API for entities that expose status handlers.
    */
   interface IStatusInterface extends EventEmitter {
@@ -702,6 +745,12 @@ declare namespace SplitIO {
      * Constant object containing the SDK events for you to use.
      */
     Event: EventConsts;
+    /**
+     * Gets the readiness status.
+     *
+     * @returns The current readiness status.
+     */
+    getStatus(): ReadinessStatus;
     /**
      * Returns a promise that resolves once the SDK has finished loading (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.

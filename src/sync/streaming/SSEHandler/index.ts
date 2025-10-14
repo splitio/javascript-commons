@@ -25,7 +25,7 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
       const code = error.parsedData.code;
       telemetryTracker.streamingEvent(ABLY_ERROR, code);
 
-      // 401 errors due to invalid or expired token (e.g., if refresh token coudn't be executed)
+      // 401 errors due to invalid or expired token (e.g., if refresh token couldn't be executed)
       if (40140 <= code && code <= 40149) return true;
       // Others 4XX errors (e.g., bad request from the SDK)
       if (40000 <= code && code <= 49999) return false;
