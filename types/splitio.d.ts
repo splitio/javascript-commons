@@ -624,7 +624,7 @@ declare namespace SplitIO {
     /**
      * Fallback treatments to be used when the SDK is not ready or the flag is not found.
      */
-    readonly fallbackTreatments?: FallbackTreatmentOptions;
+    readonly fallbackTreatments?: FallbackTreatmentConfiguration;
   }
   /**
    * Log levels.
@@ -1233,13 +1233,24 @@ declare namespace SplitIO {
    */
   type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
   /**
+   * Fallback treatment can be either a string (treatment) or an object with treatment, config and label.
+   */
+  type FallbackTreatment = string | {
+    treatment: string;
+    config?: string | null;
+    label?: string | null;
+  };
+  /**
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
    */
-  type FallbackTreatmentOptions = {
-    global?: TreatmentWithConfig | Treatment,
+  type FallbackTreatmentConfiguration = {
+    global?: FallbackTreatment,
     byFlag: {
-      [key: string]: TreatmentWithConfig | Treatment
+      [key: string]: FallbackTreatment
     }
+  }
+  type IFallbackTreatmentsCalculator = {
+    resolve(flagName: string, label?: string | undefined): FallbackTreatment;
   }
   /**
    * Logger. Its interface details are not part of the public API. It shouldn't be used directly.
