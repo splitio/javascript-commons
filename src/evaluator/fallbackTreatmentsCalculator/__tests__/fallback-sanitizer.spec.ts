@@ -14,49 +14,49 @@ describe('FallbacksSanitizer', () => {
   });
 
   describe('isValidFlagName', () => {
-    it('returns true for a valid flag name', () => {
+    test('returns true for a valid flag name', () => {
       // @ts-expect-private-access
       expect((FallbacksSanitizer as any).isValidFlagName('my_flag')).toBe(true);
     });
 
-    it('returns false for a name longer than 100 chars', () => {
+    test('returns false for a name longer than 100 chars', () => {
       const longName = 'a'.repeat(101);
       expect((FallbacksSanitizer as any).isValidFlagName(longName)).toBe(false);
     });
 
-    it('returns false if the name contains spaces', () => {
+    test('returns false if the name contains spaces', () => {
       expect((FallbacksSanitizer as any).isValidFlagName('invalid flag')).toBe(false);
     });
   });
 
   describe('isValidTreatment', () => {
-    it('returns true for a valid treatment string', () => {
+    test('returns true for a valid treatment string', () => {
       expect((FallbacksSanitizer as any).isValidTreatment(validTreatment)).toBe(true);
     });
 
-    it('returns false for null or undefined', () => {
+    test('returns false for null or undefined', () => {
       expect((FallbacksSanitizer as any).isValidTreatment(null)).toBe(false);
       expect((FallbacksSanitizer as any).isValidTreatment(undefined)).toBe(false);
     });
 
-    it('returns false for a treatment longer than 100 chars', () => {
+    test('returns false for a treatment longer than 100 chars', () => {
       const long = { treatment: 'a'.repeat(101) };
       expect((FallbacksSanitizer as any).isValidTreatment(long)).toBe(false);
     });
 
-    it('returns false if treatment does not match regex pattern', () => {
+    test('returns false if treatment does not match regex pattern', () => {
       const invalid = { treatment: 'invalid treatment!' };
       expect((FallbacksSanitizer as any).isValidTreatment(invalid)).toBe(false);
     });
   });
 
   describe('sanitizeGlobal', () => {
-    it('returns the treatment if valid', () => {
+    test('returns the treatment if valid', () => {
       expect(FallbacksSanitizer.sanitizeGlobal(validTreatment)).toEqual(validTreatment);
       expect(console.error).not.toHaveBeenCalled();
     });
 
-    it('returns undefined and logs error if invalid', () => {
+    test('returns undefined and logs error if invalid', () => {
       const result = FallbacksSanitizer.sanitizeGlobal(invalidTreatment);
       expect(result).toBeUndefined();
       expect(console.error).toHaveBeenCalledWith(
@@ -66,7 +66,7 @@ describe('FallbacksSanitizer', () => {
   });
 
   describe('sanitizeByFlag', () => {
-    it('returns a sanitized map with valid entries only', () => {
+    test('returns a sanitized map with valid entries only', () => {
       const input = {
         valid_flag: validTreatment,
         'invalid flag': validTreatment,
@@ -79,7 +79,7 @@ describe('FallbacksSanitizer', () => {
       expect(console.error).toHaveBeenCalledTimes(2); // invalid flag + bad_treatment
     });
 
-    it('returns empty object if all invalid', () => {
+    test('returns empty object if all invalid', () => {
       const input = {
         'invalid flag': invalidTreatment,
       };
@@ -89,7 +89,7 @@ describe('FallbacksSanitizer', () => {
       expect(console.error).toHaveBeenCalled();
     });
 
-    it('returns same object if all valid', () => {
+    test('returns same object if all valid', () => {
       const input = {
         flag_one: validTreatment,
         flag_two: { treatment: 'valid_2', config: null },

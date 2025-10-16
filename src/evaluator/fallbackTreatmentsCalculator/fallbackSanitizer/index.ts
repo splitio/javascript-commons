@@ -1,4 +1,4 @@
-import { TreatmentWithConfig } from '../../../../types/splitio';
+import { FallbackTreatment } from '../../../../types/splitio';
 import { FallbackDiscardReason } from '../constants';
 
 
@@ -10,21 +10,26 @@ export class FallbacksSanitizer {
     return name.length <= 100 && !name.includes(' ');
   }
 
-  private static isValidTreatment(t?: TreatmentWithConfig): boolean {
-    if (!t || !t.treatment) {
+  private static isValidTreatment(t?: FallbackTreatment): boolean {
+    if (!t) {
       return false;
+    }
+
+    if (typeof t === 'string') {
+      if (t.length > 100) {
+        return false;
+      }
+      return FallbacksSanitizer.pattern.test(t);
     }
 
     const { treatment } = t;
-
-    if (treatment.length > 100) {
+    if (!treatment || treatment.length > 100) {
       return false;
     }
-
     return FallbacksSanitizer.pattern.test(treatment);
   }
 
-  static sanitizeGlobal(treatment?: TreatmentWithConfig): TreatmentWithConfig | undefined {
+  static sanitizeGlobal(treatment?: FallbackTreatment): FallbackTreatment | undefined {
     if (!this.isValidTreatment(treatment)) {
       console.error(
         `Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`
@@ -35,9 +40,9 @@ export class FallbacksSanitizer {
   }
 
   static sanitizeByFlag(
-    byFlagFallbacks: Record<string, TreatmentWithConfig>
-  ): Record<string, TreatmentWithConfig> {
-    const sanitizedByFlag: Record<string, TreatmentWithConfig> = {};
+    byFlagFallbacks: Record<string, FallbackTreatment>
+  ): Record<string, FallbackTreatment> {
+    const sanitizedByFlag: Record<string, FallbackTreatment> = {};
 
     const entries = Object.entries(byFlagFallbacks);
     entries.forEach(([flag, t]) => {
