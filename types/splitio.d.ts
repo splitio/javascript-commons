@@ -93,6 +93,7 @@ interface ISharedSettings {
   urls?: SplitIO.UrlSettings;
   /**
    * Custom logger object. If not provided, the SDK will use the default `console.log` method for all log levels.
+   * Set together with `debug` option to `true` or a log level string to enable logging.
    */
   logger?: SplitIO.Logger;
 }
@@ -145,8 +146,6 @@ interface IPluggableSharedSettings {
    * config.debug = ErrorLogger()
    * ```
    *
-   * When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true), delegating log level control to the custom logger.
-   *
    * @defaultValue `false`
    */
   debug?: boolean | SplitIO.LogLevel | SplitIO.ILogger;
@@ -169,8 +168,6 @@ interface INonPluggableSharedSettings {
    * config.debug = true
    * config.debug = 'WARN'
    * ```
-   *
-   * When combined with the `logger` option, any log level other than `NONE` (false) will be set to `DEBUG` (true), delegating log level control to the custom logger.
    *
    * @defaultValue `false`
    */
