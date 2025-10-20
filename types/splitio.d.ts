@@ -1235,7 +1235,7 @@ declare namespace SplitIO {
   /**
    * Fallback treatment can be either a string (treatment) or an object with treatment, config and label.
    */
-  type FallbackTreatment = string | {
+  type FallbackTreatment = {
     treatment: string;
     config?: string | null;
     label?: string | null;
@@ -1244,9 +1244,9 @@ declare namespace SplitIO {
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
    */
   type FallbackTreatmentConfiguration = {
-    global?: FallbackTreatment,
-    byFlag: {
-      [key: string]: FallbackTreatment
+    global?: string | FallbackTreatment,
+    byFlag?: {
+      [key: string]: string | FallbackTreatment
     }
   }
   type IFallbackTreatmentsCalculator = {

@@ -3,13 +3,14 @@ import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
+import { FallbackTreatmentsCalculator } from '../fallbackTreatmentsCalculator';
 
-export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'] = [], storage: IStorageSync | IStorageAsync, log: ILogger) {
+export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'] = [], storage: IStorageSync | IStorageAsync, log: ILogger, fallbackTreatmentsCalculator: FallbackTreatmentsCalculator) {
 
   return function prerequisitesMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
 
     function evaluatePrerequisite(prerequisite: { n: string; ts: string[] }): MaybeThenable<boolean> {
-      const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage);
+      const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage, fallbackTreatmentsCalculator);
       return thenable(evaluation) ?
         evaluation.then(evaluation => prerequisite.ts.indexOf(evaluation.treatment!) !== -1) :
         prerequisite.ts.indexOf(evaluation.treatment!) !== -1;

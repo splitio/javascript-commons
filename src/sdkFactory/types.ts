@@ -10,6 +10,7 @@ import { IImpressionObserver } from '../trackers/impressionObserver/types';
 import { IImpressionsTracker, IEventTracker, ITelemetryTracker, IFilterAdapter, IUniqueKeysTracker } from '../trackers/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
+import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 
 /**
  * Environment related dependencies.
@@ -51,6 +52,7 @@ export interface ISdkFactoryContext {
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
   clients: Record<string, SplitIO.IBasicClient>,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {

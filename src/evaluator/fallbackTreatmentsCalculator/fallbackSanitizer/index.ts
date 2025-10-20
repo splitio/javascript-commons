@@ -10,7 +10,7 @@ export class FallbacksSanitizer {
     return name.length <= 100 && !name.includes(' ');
   }
 
-  private static isValidTreatment(t?: FallbackTreatment): boolean {
+  private static isValidTreatment(t?: string | FallbackTreatment): boolean {
     if (!t) {
       return false;
     }
@@ -19,30 +19,30 @@ export class FallbacksSanitizer {
       if (t.length > 100) {
         return false;
       }
-      return FallbacksSanitizer.pattern.test(t);
+      return this.pattern.test(t);
     }
 
     const { treatment } = t;
     if (!treatment || treatment.length > 100) {
       return false;
     }
-    return FallbacksSanitizer.pattern.test(treatment);
+    return this.pattern.test(treatment);
   }
 
-  static sanitizeGlobal(treatment?: FallbackTreatment): FallbackTreatment | undefined {
+  static sanitizeGlobal(treatment?: string | FallbackTreatment): string | FallbackTreatment | undefined {
     if (!this.isValidTreatment(treatment)) {
       console.error(
         `Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`
       );
       return undefined;
     }
-    return treatment!;
+    return treatment;
   }
 
   static sanitizeByFlag(
-    byFlagFallbacks: Record<string, FallbackTreatment>
-  ): Record<string, FallbackTreatment> {
-    const sanitizedByFlag: Record<string, FallbackTreatment> = {};
+    byFlagFallbacks: Record<string, string | FallbackTreatment>
+  ): Record<string, string | FallbackTreatment> {
+    const sanitizedByFlag: Record<string, string | FallbackTreatment> = {};
 
     const entries = Object.entries(byFlagFallbacks);
     entries.forEach(([flag, t]) => {

@@ -11,6 +11,7 @@ import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
 import { ENGINE_DEFAULT } from '../logger/constants';
 import { prerequisitesMatcherContext } from './matchers/prerequisites';
+import { FallbackTreatmentsCalculator } from './fallbackTreatmentsCalculator';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -19,13 +20,13 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
   };
 }
 
-export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync) {
+export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync, fallbackTreatmentsCalculator: FallbackTreatmentsCalculator) {
   const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions, prerequisites } = split;
 
   const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
 
   const evaluator = parser(log, conditions, storage);
-  const prerequisiteMatcher = prerequisitesMatcherContext(prerequisites, storage, log);
+  const prerequisiteMatcher = prerequisitesMatcherContext(prerequisites, storage, log, fallbackTreatmentsCalculator);
 
   return {
 

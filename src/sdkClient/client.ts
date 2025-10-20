@@ -35,7 +35,7 @@ function stringify(options?: SplitIO.EvaluationOptions) {
  * Creator of base client with getTreatments and track methods.
  */
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker, fallbackTreatmentsCalculator } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
@@ -52,7 +52,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluation = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeature(log, key, featureFlagName, attributes, storage) :
+      evaluateFeature(log, key, featureFlagName, attributes, storage, fallbackTreatmentsCalculator) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentNotReady) :
         treatmentNotReady;
@@ -81,7 +81,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
+      evaluateFeatures(log, key, featureFlagNames, attributes, storage, fallbackTreatmentsCalculator) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentsNotReady(featureFlagNames)) :
         treatmentsNotReady(featureFlagNames);
@@ -110,7 +110,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName, fallbackTreatmentsCalculator) :
       isAsync ?
         Promise.resolve({}) :
         {};

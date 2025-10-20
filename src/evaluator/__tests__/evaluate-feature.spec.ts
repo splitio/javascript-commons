@@ -2,6 +2,7 @@
 import { evaluateFeature } from '../index';
 import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
+import { FallbackTreatmentsCalculator } from '../fallbackTreatmentsCalculator';
 
 const splitsMock = {
   regular: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': '', 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': '', 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
@@ -25,6 +26,8 @@ const mockStorage = {
   }
 };
 
+const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator();
+
 test('EVALUATOR / should return label exception, treatment control and config null on error', async () => {
   const expectedOutput = {
     treatment: 'control',
@@ -37,6 +40,7 @@ test('EVALUATOR / should return label exception, treatment control and config nu
     'throw_exception',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
 
   // This validation is async because the only exception possible when retrieving a Split would happen with Async storages.
@@ -61,6 +65,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'config',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationWithConfig).toEqual(expectedOutput); // If the split is retrieved successfully we should get the right evaluation result, label and config.
 
@@ -70,6 +75,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'not_existent_split',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationNotFound).toEqual(expectedOutputControl); // If the split is not retrieved successfully because it does not exist, we should get the right evaluation result, label and config.
 
@@ -79,6 +85,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'regular',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluation).toEqual({ ...expectedOutput, config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
 
@@ -88,6 +95,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'killed',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationKilled).toEqual({ ...expectedOutput, treatment: 'off', config: null, label: SPLIT_KILLED });
   // If the split is retrieved but is killed, we should get the right evaluation result, label and config.
@@ -98,6 +106,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'archived',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationArchived).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
@@ -108,6 +117,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'trafficAlocation1',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationtrafficAlocation1).toEqual({ ...expectedOutput, label: NOT_IN_SPLIT, config: null, treatment: 'off' });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.
@@ -118,6 +128,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'killedWithConfig',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationKilledWithConfig).toEqual({ ...expectedOutput, treatment: 'off', label: SPLIT_KILLED });
   // If the split is retrieved but is killed, we should get the right evaluation result, label and config.
@@ -128,6 +139,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'archivedWithConfig',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationArchivedWithConfig).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
@@ -138,6 +150,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     'trafficAlocation1WithConfig',
     null,
     mockStorage,
+    fallbackTreatmentsCalculator
   );
   expect(evaluationtrafficAlocation1WithConfig).toEqual({ ...expectedOutput, label: NOT_IN_SPLIT, treatment: 'off' });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.

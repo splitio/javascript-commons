@@ -9,6 +9,7 @@ import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
+import { FallbackTreatmentsCalculator } from './fallbackTreatmentsCalculator';
 
 const treatmentException = {
   treatment: CONTROL,
@@ -30,6 +31,7 @@ export function evaluateFeature(
   splitName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator,
 ): MaybeThenable<IEvaluationResult> {
   let parsedSplit;
 
@@ -47,6 +49,7 @@ export function evaluateFeature(
       split,
       attributes,
       storage,
+      fallbackTreatmentsCalculator,
     )).catch(
       // Exception on async `getSplit` storage. For example, when the storage is redis or
       // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
@@ -60,6 +63,7 @@ export function evaluateFeature(
     parsedSplit,
     attributes,
     storage,
+    fallbackTreatmentsCalculator,
   );
 }
 
@@ -69,6 +73,7 @@ export function evaluateFeatures(
   splitNames: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let parsedSplits;
 
@@ -80,13 +85,13 @@ export function evaluateFeatures(
   }
 
   return thenable(parsedSplits) ?
-    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage))
+    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage, fallbackTreatmentsCalculator))
       .catch(() => {
         // Exception on async `getSplits` storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         return treatmentsException(splitNames);
       }) :
-    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage);
+    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage, fallbackTreatmentsCalculator);
 }
 
 export function evaluateFeaturesByFlagSets(
@@ -96,6 +101,7 @@ export function evaluateFeaturesByFlagSets(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   method: string,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let storedFlagNames: MaybeThenable<Set<string>[]>;
 
@@ -111,7 +117,7 @@ export function evaluateFeaturesByFlagSets(
     }
 
     return featureFlags.size ?
-      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage) :
+      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage, fallbackTreatmentsCalculator) :
       {};
   }
 
@@ -138,6 +144,7 @@ function getEvaluation(
   splitJSON: ISplit | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
     treatment: CONTROL,
@@ -146,26 +153,40 @@ function getEvaluation(
   };
 
   if (splitJSON) {
-    const split = engineParser(log, splitJSON, storage);
+    const split = engineParser(log, splitJSON, storage, fallbackTreatmentsCalculator);
     evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
-        result.changeNumber = splitJSON.changeNumber;
-        result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
-        result.impressionsDisabled = splitJSON.impressionsDisabled;
-
-        return result;
+        return buildEvaluation(result, splitJSON, fallbackTreatmentsCalculator);
       });
-    } else {
-      evaluation.changeNumber = splitJSON.changeNumber;
-      evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
-      evaluation.impressionsDisabled = splitJSON.impressionsDisabled;
     }
   }
 
-  return evaluation;
+  return buildEvaluation(evaluation, splitJSON, fallbackTreatmentsCalculator);
+}
+
+function buildEvaluation(evaluation: IEvaluationResult, splitJSON: ISplit | null, fallbackTreatmentsCalculator: FallbackTreatmentsCalculator): IEvaluationResult {
+
+  const result: IEvaluationResult = {
+    treatment: evaluation.treatment,
+    label: evaluation.label,
+    config: evaluation.config
+  };
+
+  if (!splitJSON) return result;
+
+  result.changeNumber = splitJSON.changeNumber;
+  result.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
+  result.impressionsDisabled = splitJSON.impressionsDisabled;
+  if (evaluation.treatment === CONTROL) {
+    const fallbackTreatment = fallbackTreatmentsCalculator.resolve(splitJSON.name, evaluation.label);
+    result.treatment = fallbackTreatment.treatment;
+    result.label = fallbackTreatment.label ? fallbackTreatment.label : '';
+    result.config = fallbackTreatment.config;
+  }
+  return result;
 }
 
 function getEvaluations(
@@ -175,6 +196,7 @@ function getEvaluations(
   splits: Record<string, ISplit | null>,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  fallbackTreatmentsCalculator: FallbackTreatmentsCalculator
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   const result: Record<string, IEvaluationResult> = {};
   const thenables: Promise<void>[] = [];
@@ -184,7 +206,8 @@ function getEvaluations(
       key,
       splits[splitName],
       attributes,
-      storage
+      storage,
+      fallbackTreatmentsCalculator
     );
     if (thenable(evaluation)) {
       thenables.push(evaluation.then(res => {

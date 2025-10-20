@@ -1,7 +1,91 @@
 import { FallbackTreatmentsCalculator } from '../';
-import type { FallbackTreatmentConfiguration } from '../../../../types/splitio'; // adjust path if needed
+import type { FallbackTreatmentConfiguration } from '../../../../types/splitio';
+import { CONTROL } from '../../../utils/constants';
 
 describe('FallbackTreatmentsCalculator', () => {
+  const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  const longName = 'a'.repeat(101);
+
+  test('logs an error if flag name is invalid - by Flag', () => {
+    let config: FallbackTreatmentConfiguration = {
+      byFlag: {
+        'feature A': { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
+      },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[0][0]).toBe(
+      'Fallback treatments - Discarded flag \'feature A\': Invalid flag name (max 100 chars, no spaces)'
+    );
+    config = {
+      byFlag: {
+        [longName]: { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
+      },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[1][0]).toBe(
+      `Fallback treatments - Discarded flag '${longName}': Invalid flag name (max 100 chars, no spaces)`
+    );
+
+    config = {
+      byFlag: {
+        'featureB': { treatment: longName, config: '{ value: 1 }' },
+      },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[2][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureB\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+
+    config = {
+      byFlag: {
+        // @ts-ignore
+        'featureC': { config: '{ global: true }' },
+      },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[3][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+
+    config = {
+      byFlag: {
+        // @ts-ignore
+        'featureC': { treatment: 'invalid treatment!', config: '{ global: true }' },
+      },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[4][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+  });
+
+  test('logs an error if flag name is invalid - global', () => {
+    let config: FallbackTreatmentConfiguration = {
+      global: { treatment: longName, config: '{ value: 1 }' },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[2][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureB\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+
+    config = {
+      // @ts-ignore
+      global: { config: '{ global: true }' },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[3][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+
+    config = {
+      // @ts-ignore
+      global: { treatment: 'invalid treatment!', config: '{ global: true }' },
+    };
+    new FallbackTreatmentsCalculator(config);
+    expect(spy.mock.calls[4][0]).toBe(
+      'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
+    );
+  });
 
   test('returns specific fallback if flag exists', () => {
     const config: FallbackTreatmentConfiguration = {
@@ -42,9 +126,9 @@ describe('FallbackTreatmentsCalculator', () => {
     const result = calculator.resolve('missingFlag', 'label by noFallback');
 
     expect(result).toEqual({
-      treatment: 'CONTROL',
+      treatment: CONTROL,
       config: null,
-      label: 'fallback - label by noFallback',
+      label: 'label by noFallback',
     });
   });
 
@@ -60,7 +144,7 @@ describe('FallbackTreatmentsCalculator', () => {
     expect(result).toEqual({
       treatment: 'TREATMENT_B',
       config: undefined,
-      label: undefined,
+      label: '',
     });
   });
 });

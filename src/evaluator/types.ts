@@ -2,6 +2,7 @@ import { IBetweenMatcherData, IBetweenStringMatcherData, IDependencyMatcherData,
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
+import { FallbackTreatmentsCalculator } from './fallbackTreatmentsCalculator';
 
 export interface IDependencyMatcherValue {
   key: SplitIO.SplitKey,
@@ -27,7 +28,7 @@ export interface IEvaluation {
 
 export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }
 
-export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
+export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync, fallbackTreatmentsCalculator: FallbackTreatmentsCalculator) => MaybeThenable<IEvaluation>
 
 export type IEvaluator = (key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | boolean | undefined>
 
