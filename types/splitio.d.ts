@@ -839,7 +839,15 @@ declare namespace SplitIO {
    */
   type EvaluationOptions = {
     /**
+     * Whether the evaluation/s will track impressions or not.
+     *
+     * @defaultValue `false`
+     */
+    impressionsDisabled?: boolean;
+    /**
      * Optional properties to append to the generated impression object sent to Split backend.
+     *
+     * @defaultValue `undefined`
      */
     properties?: Properties;
   }
