@@ -9,6 +9,7 @@ import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
+const TIMEOUT_ERROR = new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.');
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -93,15 +94,42 @@ export function sdkReadinessManagerFactory(
           SDK_READY_TIMED_OUT,
         },
 
+        // @TODO: remove in next major
         ready() {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {
-              return promiseWrapper(Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
+              return promiseWrapper(Promise.reject(TIMEOUT_ERROR), defaultOnRejected);
             } else {
               return Promise.resolve();
             }
           }
           return readyPromise;
+        },
+
+        whenReady() {
+          return new Promise<void>((resolve, reject) => {
+            if (readinessManager.isReady()) {
+              resolve();
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY, resolve);
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
+        },
+
+        whenReadyFromCache() {
+          return new Promise<void>((resolve, reject) => {
+            if (readinessManager.isReadyFromCache()) {
+              resolve();
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY_FROM_CACHE, resolve);
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
         },
 
         getStatus() {

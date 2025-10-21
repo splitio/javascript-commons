@@ -525,19 +525,19 @@ declare namespace SplitIO {
    */
   type EventConsts = {
     /**
-     * The ready event.
+     * The ready event emitted once the SDK is ready to evaluate feature flags with cache synchronized with the backend.
      */
     SDK_READY: 'init::ready';
     /**
-     * The ready event when fired with cached data.
+     * The ready event emitted once the SDK is ready to evaluate feature flags with cache that could be stale. Use SDK_READY if you want to be sure the cache is in sync with the backend.
      */
     SDK_READY_FROM_CACHE: 'init::cache-ready';
     /**
-     * The timeout event.
+     * The timeout event emitted after `startup.readyTimeout` seconds if the SDK_READY event was not emitted.
      */
     SDK_READY_TIMED_OUT: 'init::timeout';
     /**
-     * The update event.
+     * The update event emitted when the SDK cache is updated with new data from the backend.
      */
     SDK_UPDATE: 'state::update';
   };
@@ -704,7 +704,7 @@ declare namespace SplitIO {
 
     /**
      * `isReadyFromCache` indicates if the client has triggered an `SDK_READY_FROM_CACHE` event and
-     * thus is ready to evaluate with cached data, although the data in cache might be stale.
+     * thus is ready to evaluate with cached data, although the data in cache might be stale, not synchronized with the backend.
      */
     isReadyFromCache: boolean;
 
@@ -728,7 +728,7 @@ declare namespace SplitIO {
     /**
      * `isOperational` indicates if the client can evaluate feature flags.
      * In this state, `getTreatment` calls will not return `CONTROL` due to the SDK being unready or destroyed.
-     * It's equivalent to `(isReady || isReadyFromCache) && !isDestroyed`.
+     * It's equivalent to `isReadyFromCache && !isDestroyed`.
      */
     isOperational: boolean;
 
@@ -752,7 +752,7 @@ declare namespace SplitIO {
      */
     getStatus(): ReadinessStatus;
     /**
-     * Returns a promise that resolves once the SDK has finished loading (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * Returns a promise that resolves once the SDK has finished synchronizing with the backend (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.
      *
      * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
@@ -767,8 +767,23 @@ declare namespace SplitIO {
      * ```
      *
      * @returns A promise that resolves once the SDK is ready or rejects if the SDK has timedout.
+     * @deprecated Use `whenReady` instead.
      */
     ready(): Promise<void>;
+    /**
+     * Returns a promise that resolves once the SDK is ready for evaluations using cached data synchronized with the backend (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `whenReady` method will return a resolved promise once the SDK is ready.
+     *
+     * @returns A promise that resolves once the SDK is ready or rejects if the SDK has timedout.
+     */
+    whenReady(): Promise<void>;
+    /**
+     * Returns a promise that resolves once the SDK is ready for evaluations using cached data which might not yet be synchronized with the backend (`SDK_READY_FROM_CACHE` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready from cache after a timeout event, the `whenReadyFromCache` method will return a resolved promise once the SDK is ready from cache.
+     *
+     * @returns A promise that resolves once the SDK is ready from cache or rejects if the SDK has timedout.
+     */
+    whenReadyFromCache(): Promise<void>;
   }
   /**
    * Common definitions between clients for different environments interface.
@@ -1702,7 +1717,7 @@ declare namespace SplitIO {
      * Wait for the SDK client to be ready before calling this method.
      *
      * ```js
-     * await factory.client().ready();
+     * await factory.client().whenReady();
      * const rolloutPlan = factory.getRolloutPlan();
      * ```
      *
