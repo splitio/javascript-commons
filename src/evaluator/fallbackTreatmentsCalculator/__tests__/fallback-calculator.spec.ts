@@ -1,9 +1,9 @@
 import { FallbackTreatmentsCalculator } from '../';
 import type { FallbackTreatmentConfiguration } from '../../../../types/splitio';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { CONTROL } from '../../../utils/constants';
 
-describe('FallbackTreatmentsCalculator', () => {
-  const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+describe('FallbackTreatmentsCalculator' , () => {
   const longName = 'a'.repeat(101);
 
   test('logs an error if flag name is invalid - by Flag', () => {
@@ -12,8 +12,8 @@ describe('FallbackTreatmentsCalculator', () => {
         'feature A': { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
       },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[0][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[0][0]).toBe(
       'Fallback treatments - Discarded flag \'feature A\': Invalid flag name (max 100 chars, no spaces)'
     );
     config = {
@@ -21,8 +21,8 @@ describe('FallbackTreatmentsCalculator', () => {
         [longName]: { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
       },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[1][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[1][0]).toBe(
       `Fallback treatments - Discarded flag '${longName}': Invalid flag name (max 100 chars, no spaces)`
     );
 
@@ -31,8 +31,8 @@ describe('FallbackTreatmentsCalculator', () => {
         'featureB': { treatment: longName, config: '{ value: 1 }' },
       },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[2][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[2][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureB\': Invalid treatment (max 100 chars and must match pattern)'
     );
 
@@ -42,8 +42,8 @@ describe('FallbackTreatmentsCalculator', () => {
         'featureC': { config: '{ global: true }' },
       },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[3][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[3][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
     );
 
@@ -53,8 +53,8 @@ describe('FallbackTreatmentsCalculator', () => {
         'featureC': { treatment: 'invalid treatment!', config: '{ global: true }' },
       },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[4][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[4][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
     );
   });
@@ -63,8 +63,8 @@ describe('FallbackTreatmentsCalculator', () => {
     let config: FallbackTreatmentConfiguration = {
       global: { treatment: longName, config: '{ value: 1 }' },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[2][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[2][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureB\': Invalid treatment (max 100 chars and must match pattern)'
     );
 
@@ -72,8 +72,8 @@ describe('FallbackTreatmentsCalculator', () => {
       // @ts-ignore
       global: { config: '{ global: true }' },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[3][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[3][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
     );
 
@@ -81,8 +81,8 @@ describe('FallbackTreatmentsCalculator', () => {
       // @ts-ignore
       global: { treatment: 'invalid treatment!', config: '{ global: true }' },
     };
-    new FallbackTreatmentsCalculator(config);
-    expect(spy.mock.calls[4][0]).toBe(
+    new FallbackTreatmentsCalculator(loggerMock, config);
+    expect(loggerMock.error.mock.calls[4][0]).toBe(
       'Fallback treatments - Discarded treatment for flag \'featureC\': Invalid treatment (max 100 chars and must match pattern)'
     );
   });
@@ -93,7 +93,7 @@ describe('FallbackTreatmentsCalculator', () => {
         'featureA': { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
       },
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
+    const calculator = new FallbackTreatmentsCalculator(loggerMock, config);
     const result = calculator.resolve('featureA', 'label by flag');
 
     expect(result).toEqual({
@@ -108,7 +108,7 @@ describe('FallbackTreatmentsCalculator', () => {
       byFlag: {},
       global: { treatment: 'GLOBAL_TREATMENT', config: '{ global: true }' },
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
+    const calculator = new FallbackTreatmentsCalculator(loggerMock, config);
     const result = calculator.resolve('missingFlag', 'label by global');
 
     expect(result).toEqual({
@@ -122,7 +122,7 @@ describe('FallbackTreatmentsCalculator', () => {
     const config: FallbackTreatmentConfiguration = {
       byFlag: {},
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
+    const calculator = new FallbackTreatmentsCalculator(loggerMock, config);
     const result = calculator.resolve('missingFlag', 'label by noFallback');
 
     expect(result).toEqual({
@@ -135,15 +135,15 @@ describe('FallbackTreatmentsCalculator', () => {
   test('returns undefined label if no label provided', () => {
     const config: FallbackTreatmentConfiguration = {
       byFlag: {
-        'featureB': { treatment: 'TREATMENT_B' },
+        'featureB': { treatment: 'TREATMENT_B', config: '{ value: 1 }' },
       },
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
+    const calculator = new FallbackTreatmentsCalculator(loggerMock, config);
     const result = calculator.resolve('featureB');
 
     expect(result).toEqual({
       treatment: 'TREATMENT_B',
-      config: undefined,
+      config: '{ value: 1 }',
       label: '',
     });
   });

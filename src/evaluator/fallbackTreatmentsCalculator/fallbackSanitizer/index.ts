@@ -1,4 +1,6 @@
-import { FallbackTreatment } from '../../../../types/splitio';
+import { FallbackTreatment, Treatment, TreatmentWithConfig } from '../../../../types/splitio';
+import { ILogger } from '../../../logger/types';
+import { isObject, isString } from '../../../utils/lang';
 import { FallbackDiscardReason } from '../constants';
 
 
@@ -10,28 +12,18 @@ export class FallbacksSanitizer {
     return name.length <= 100 && !name.includes(' ');
   }
 
-  private static isValidTreatment(t?: string | FallbackTreatment): boolean {
-    if (!t) {
+  private static isValidTreatment(t?: Treatment | FallbackTreatment): boolean {
+    const treatment = isObject(t) ? (t as TreatmentWithConfig).treatment : t;
+
+    if (!isString(treatment) || treatment.length > 100) {
       return false;
     }
-
-    if (typeof t === 'string') {
-      if (t.length > 100) {
-        return false;
-      }
-      return this.pattern.test(t);
-    }
-
-    const { treatment } = t;
-    if (!treatment || treatment.length > 100) {
-      return false;
-    }
-    return this.pattern.test(treatment);
+    return FallbacksSanitizer.pattern.test(treatment);
   }
 
-  static sanitizeGlobal(treatment?: string | FallbackTreatment): string | FallbackTreatment | undefined {
+  static sanitizeGlobal(logger: ILogger, treatment?: string | FallbackTreatment): string | FallbackTreatment | undefined {
     if (!this.isValidTreatment(treatment)) {
-      console.error(
+      logger.error(
         `Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`
       );
       return undefined;
@@ -40,21 +32,23 @@ export class FallbacksSanitizer {
   }
 
   static sanitizeByFlag(
+    logger: ILogger,
     byFlagFallbacks: Record<string, string | FallbackTreatment>
   ): Record<string, string | FallbackTreatment> {
     const sanitizedByFlag: Record<string, string | FallbackTreatment> = {};
 
-    const entries = Object.entries(byFlagFallbacks);
-    entries.forEach(([flag, t]) => {
+    const entries = Object.keys(byFlagFallbacks);
+    entries.forEach((flag) => {
+      const t = byFlagFallbacks[flag];
       if (!this.isValidFlagName(flag)) {
-        console.error(
+        logger.error(
           `Fallback treatments - Discarded flag '${flag}': ${FallbackDiscardReason.FlagName}`
         );
         return;
       }
 
       if (!this.isValidTreatment(t)) {
-        console.error(
+        logger.error(
           `Fallback treatments - Discarded treatment for flag '${flag}': ${FallbackDiscardReason.Treatment}`
         );
         return;

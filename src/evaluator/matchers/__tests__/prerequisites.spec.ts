@@ -17,7 +17,7 @@ const mockStorage = {
   }
 } as IStorageSync;
 
-const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator();
+const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(loggerMock);
 
 test('MATCHER PREREQUISITES / should return true when all prerequisites are met', () => {
   // A single prerequisite
