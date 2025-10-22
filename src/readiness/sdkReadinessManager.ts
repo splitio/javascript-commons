@@ -132,7 +132,7 @@ export function sdkReadinessManagerFactory(
           });
         },
 
-        __getStatus() {
+        getStatus() {
           return {
             isReady: readinessManager.isReady(),
             isReadyFromCache: readinessManager.isReadyFromCache(),
