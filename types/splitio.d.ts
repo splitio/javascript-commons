@@ -700,7 +700,7 @@ declare namespace SplitIO {
      */
     Event: EventConsts;
     /**
-     * Returns a promise that resolves once the SDK has finished synchronizing with the backend (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * Returns a promise that resolves when the SDK has finished initial synchronization with the backend (`SDK_READY` event emitted), or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility to the event approach, given that the SDK might be eventually ready after a timeout event, the `ready` method will return a resolved promise once the SDK is ready.
      *
      * Caveats: the method was designed to avoid an unhandled Promise rejection if the rejection case is not handled, so that `onRejected` handler is optional when using promises.
@@ -719,15 +719,17 @@ declare namespace SplitIO {
      */
     ready(): Promise<void>;
     /**
-     * Returns a promise that resolves once the SDK is ready for evaluations using cached data synchronized with the backend (`SDK_READY` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * Returns a promise that resolves when the SDK has finished initial synchronization with the backend (`SDK_READY` event emitted), or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready after a timeout event, the `whenReady` method will return a resolved promise once the SDK is ready.
+     * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
      * @returns A promise that resolves once the SDK_READY event is emitted or rejects if the SDK has timedout.
      */
     whenReady(): Promise<void>;
     /**
-     * Returns a promise that resolves once the SDK is ready for evaluations using cached data which might not yet be synchronized with the backend (`SDK_READY_FROM_CACHE` event emitted) or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
+     * Returns a promise that resolves when the SDK is ready for evaluations using cached data, which might not yet be synchronized with the backend (`SDK_READY_FROM_CACHE` event emitted), or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready from cache after a timeout event, the `whenReadyFromCache` method will return a resolved promise once the SDK is ready from cache.
+     * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
      * @returns A promise that resolves once the SDK_READY_FROM_CACHE event is emitted or rejects if the SDK has timedout. The promise resolves with a boolean value that
      * indicates whether the SDK_READY_FROM_CACHE event was emitted together with the SDK_READY event (i.e., the SDK is ready and synchronized with the backend) or not.
