@@ -9,7 +9,7 @@ import {
   validateSplits,
   validateTrafficType,
   validateIfNotDestroyed,
-  validateIfOperational,
+  validateIfReadyFromCache,
   validateEvaluationOptions
 } from '../utils/inputValidation';
 import { startsWith } from '../utils/lang';
@@ -46,7 +46,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
     const options = validateEvaluationOptions(log, maybeOptions, methodName);
 
-    validateIfOperational(log, readinessManager, methodName, nameOrNames);
+    validateIfReadyFromCache(log, readinessManager, methodName, nameOrNames);
 
     const valid = isNotDestroyed && key && nameOrNames && attributes !== false;
 
