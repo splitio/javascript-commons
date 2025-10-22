@@ -1,16 +1,28 @@
-import { FallbackTreatmentConfiguration, FallbackTreatment, IFallbackTreatmentsCalculator} from '../../../types/splitio';
+import { FallbackTreatmentConfiguration, FallbackTreatment } from '../../../types/splitio';
+import { FallbacksSanitizer } from './fallbackSanitizer';
+import { CONTROL } from '../../utils/constants';
+import { isString } from '../../utils/lang';
+import { ILogger } from '../../logger/types';
+
+export type IFallbackTreatmentsCalculator = {
+  resolve(flagName: string, label?: string): FallbackTreatment & { label?: string };
+}
 
 export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculator {
   private readonly labelPrefix = 'fallback - ';
-  private readonly control = 'CONTROL';
   private readonly fallbacks: FallbackTreatmentConfiguration;
 
-  constructor(fallbacks: FallbackTreatmentConfiguration) {
-    this.fallbacks = fallbacks;
+  constructor(logger: ILogger, fallbacks?: FallbackTreatmentConfiguration) {
+    const sanitizedGlobal = fallbacks?.global ? FallbacksSanitizer.sanitizeGlobal(logger, fallbacks.global) : undefined;
+    const sanitizedByFlag = fallbacks?.byFlag ? FallbacksSanitizer.sanitizeByFlag(logger, fallbacks.byFlag) : {};
+    this.fallbacks = {
+      global: sanitizedGlobal,
+      byFlag: sanitizedByFlag
+    };
   }
 
-  resolve(flagName: string, label?: string | undefined): FallbackTreatment {
-    const treatment = this.fallbacks.byFlag[flagName];
+  resolve(flagName: string, label?: string): FallbackTreatment & { label?: string } {
+    const treatment = this.fallbacks.byFlag?.[flagName];
     if (treatment) {
       return this.copyWithLabel(treatment, label);
     }
@@ -20,14 +32,14 @@ export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculat
     }
 
     return {
-      treatment: this.control,
+      treatment: CONTROL,
       config: null,
-      label: this.resolveLabel(label),
+      label,
     };
   }
 
-  private copyWithLabel(fallback: FallbackTreatment, label: string | undefined): FallbackTreatment {
-    if (typeof fallback === 'string') {
+  private copyWithLabel(fallback: string | FallbackTreatment, label?: string): FallbackTreatment & { label: string } {
+    if (isString(fallback)) {
       return {
         treatment: fallback,
         config: null,
@@ -42,8 +54,8 @@ export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculat
     };
   }
 
-  private resolveLabel(label?: string | undefined): string | undefined {
-    return label ? `${this.labelPrefix}${label}` : undefined;
+  private resolveLabel(label?: string): string {
+    return label ? `${this.labelPrefix}${label}` : '';
   }
 
 }

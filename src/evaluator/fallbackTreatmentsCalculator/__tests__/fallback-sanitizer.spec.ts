@@ -1,5 +1,6 @@
 import { FallbacksSanitizer } from '../fallbackSanitizer';
 import { TreatmentWithConfig } from '../../../../types/splitio';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 describe('FallbacksSanitizer', () => {
   const validTreatment: TreatmentWithConfig = { treatment: 'on', config: '{"color":"blue"}' };
@@ -10,7 +11,7 @@ describe('FallbacksSanitizer', () => {
   });
 
   afterEach(() => {
-    (console.error as jest.Mock).mockRestore();
+    (loggerMock.error as jest.Mock).mockRestore();
   });
 
   describe('isValidFlagName', () => {
@@ -52,14 +53,14 @@ describe('FallbacksSanitizer', () => {
 
   describe('sanitizeGlobal', () => {
     test('returns the treatment if valid', () => {
-      expect(FallbacksSanitizer.sanitizeGlobal(validTreatment)).toEqual(validTreatment);
-      expect(console.error).not.toHaveBeenCalled();
+      expect(FallbacksSanitizer.sanitizeGlobal(loggerMock, validTreatment)).toEqual(validTreatment);
+      expect(loggerMock.error).not.toHaveBeenCalled();
     });
 
     test('returns undefined and logs error if invalid', () => {
-      const result = FallbacksSanitizer.sanitizeGlobal(invalidTreatment);
+      const result = FallbacksSanitizer.sanitizeGlobal(loggerMock, invalidTreatment);
       expect(result).toBeUndefined();
-      expect(console.error).toHaveBeenCalledWith(
+      expect(loggerMock.error).toHaveBeenCalledWith(
         expect.stringContaining('Fallback treatments - Discarded fallback')
       );
     });
@@ -73,10 +74,10 @@ describe('FallbacksSanitizer', () => {
         bad_treatment: invalidTreatment,
       };
 
-      const result = FallbacksSanitizer.sanitizeByFlag(input);
+      const result = FallbacksSanitizer.sanitizeByFlag(loggerMock, input);
 
       expect(result).toEqual({ valid_flag: validTreatment });
-      expect(console.error).toHaveBeenCalledTimes(2); // invalid flag + bad_treatment
+      expect(loggerMock.error).toHaveBeenCalledTimes(2); // invalid flag + bad_treatment
     });
 
     test('returns empty object if all invalid', () => {
@@ -84,9 +85,9 @@ describe('FallbacksSanitizer', () => {
         'invalid flag': invalidTreatment,
       };
 
-      const result = FallbacksSanitizer.sanitizeByFlag(input);
+      const result = FallbacksSanitizer.sanitizeByFlag(loggerMock, input);
       expect(result).toEqual({});
-      expect(console.error).toHaveBeenCalled();
+      expect(loggerMock.error).toHaveBeenCalled();
     });
 
     test('returns same object if all valid', () => {
@@ -95,9 +96,9 @@ describe('FallbacksSanitizer', () => {
         flag_two: { treatment: 'valid_2', config: null },
       };
 
-      const result = FallbacksSanitizer.sanitizeByFlag(input);
+      const result = FallbacksSanitizer.sanitizeByFlag(loggerMock, input);
       expect(result).toEqual(input);
-      expect(console.error).not.toHaveBeenCalled();
+      expect(loggerMock.error).not.toHaveBeenCalled();
     });
   });
 });
