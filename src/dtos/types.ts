@@ -1,4 +1,4 @@
-import { SplitIO } from '../types';
+import SplitIO from '../../types/splitio';
 
 export type MaybeThenable<T> = T | Promise<T>
 
@@ -63,6 +63,11 @@ interface IAllKeysMatcher extends ISplitMatcherBase {
 
 interface IInSegmentMatcher extends ISplitMatcherBase {
   matcherType: 'IN_SEGMENT',
+  userDefinedSegmentMatcherData: IInSegmentMatcherData
+}
+
+interface IInRBSegmentMatcher extends ISplitMatcherBase {
+  matcherType: 'IN_RULE_BASED_SEGMENT',
   userDefinedSegmentMatcherData: IInSegmentMatcherData
 }
 
@@ -176,7 +181,7 @@ export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatc
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
   IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
-  IInLargeSegmentMatcher
+  IInLargeSegmentMatcher | IInRBSegmentMatcher
 
 /** Split object */
 export interface ISplitPartition {
@@ -189,26 +194,47 @@ export interface ISplitCondition {
     combiner: 'AND',
     matchers: ISplitMatcher[]
   }
-  partitions: ISplitPartition[]
-  label: string
-  conditionType: 'ROLLOUT' | 'WHITELIST'
+  partitions?: ISplitPartition[]
+  label?: string
+  conditionType?: 'ROLLOUT' | 'WHITELIST'
+}
+
+export interface IExcludedSegment {
+  type: 'standard' | 'large' | 'rule-based',
+  name: string,
+}
+
+export interface IRBSegment {
+  name: string,
+  changeNumber: number,
+  status: 'ACTIVE' | 'ARCHIVED',
+  conditions?: ISplitCondition[],
+  excluded?: {
+    keys?: string[] | null,
+    segments?: IExcludedSegment[] | null
+  }
 }
 
 export interface ISplit {
   name: string,
   changeNumber: number,
+  status: 'ACTIVE' | 'ARCHIVED',
+  conditions: ISplitCondition[],
+  prerequisites?: {
+    n: string,
+    ts: string[]
+  }[]
   killed: boolean,
   defaultTreatment: string,
   trafficTypeName: string,
-  conditions: ISplitCondition[],
-  status: 'ACTIVE' | 'ARCHIVED',
   seed: number,
   trafficAllocation?: number,
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
   },
-  sets?: string[]
+  sets?: string[],
+  impressionsDisabled?: boolean
 }
 
 // Split definition used in offline mode
@@ -216,8 +242,16 @@ export type ISplitPartial = Pick<ISplit, 'conditions' | 'configurations' | 'traf
 
 /** Interface of the parsed JSON response of `/splitChanges` */
 export interface ISplitChangesResponse {
-  till: number,
-  splits: ISplit[]
+  ff?: {
+    t: number,
+    s?: number,
+    d: ISplit[]
+  },
+  rbs?: {
+    t: number,
+    s?: number,
+    d: IRBSegment[]
+  }
 }
 
 /** Interface of the parsed JSON response of `/segmentChanges/{segmentName}` */

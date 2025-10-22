@@ -1,19 +1,15 @@
-import { IUniqueKeysCacheBase } from '../types';
+import { IUniqueKeysCacheSync } from '../types';
 import { UniqueKeysPayloadCs } from '../../sync/submitters/types';
 import { DEFAULT_CACHE_SIZE } from '../inRedis/constants';
+import { setToArray } from '../../utils/lang/sets';
 
-export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
-
+export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheSync {
+  public name = 'unique keys';
   private onFullQueue?: () => void;
   private readonly maxStorage: number;
   private uniqueTrackerSize = 0;
   private uniqueKeysTracker: { [userKey: string]: Set<string> } = {};
 
-  /**
-   *
-   * @param impressionsQueueSize number of queued impressions to call onFullQueueCb.
-   * Default value is 0, that means no maximum value, in case we want to avoid this being triggered.
-   */
   constructor(uniqueKeysQueueSize = DEFAULT_CACHE_SIZE) {
     this.maxStorage = uniqueKeysQueueSize;
   }
@@ -70,7 +66,7 @@ export class UniqueKeysCacheInMemoryCS implements IUniqueKeysCacheBase {
     const userKeys = Object.keys(uniqueKeys);
     for (let k = 0; k < userKeys.length; k++) {
       const userKey = userKeys[k];
-      const featureNames = Array.from(uniqueKeys[userKey]);
+      const featureNames = setToArray(uniqueKeys[userKey]);
       const uniqueKeysPayload = {
         k: userKey,
         fs: featureNames

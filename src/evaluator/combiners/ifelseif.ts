@@ -1,9 +1,9 @@
-import { findIndex } from '../../utils/lang';
+import { findIndex, isBoolean } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
 import { UNSUPPORTED_MATCHER_TYPE } from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
 import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 
@@ -18,14 +18,12 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
     };
   }
 
-  function computeTreatment(predicateResults: Array<IEvaluation | undefined>) {
-    const len = predicateResults.length;
-
-    for (let i = 0; i < len; i++) {
+  function computeEvaluation(predicateResults: Array<IEvaluation | boolean | undefined>): IEvaluation | boolean | undefined {
+    for (let i = 0, len = predicateResults.length; i < len; i++) {
       const evaluation = predicateResults[i];
 
       if (evaluation !== undefined) {
-        log.debug(ENGINE_COMBINER_IFELSEIF, [evaluation.treatment]);
+        if (!isBoolean(evaluation)) log.debug(ENGINE_COMBINER_IFELSEIF, [evaluation.treatment]);
 
         return evaluation;
       }
@@ -35,7 +33,7 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
     return undefined;
   }
 
-  function ifElseIfCombiner(key: SplitIO.SplitKey, seed: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  function ifElseIfCombiner(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
     // In Async environments we are going to have async predicates. There is none way to know
     // before hand so we need to evaluate all the predicates, verify for thenables, and finally,
     // define how to return the treatment (wrap result into a Promise or not).
@@ -43,10 +41,10 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
 
     // if we find a thenable
     if (findIndex(predicateResults, thenable) !== -1) {
-      return Promise.all(predicateResults).then(results => computeTreatment(results));
+      return Promise.all(predicateResults).then(results => computeEvaluation(results));
     }
 
-    return computeTreatment(predicateResults as IEvaluation[]);
+    return computeEvaluation(predicateResults as IEvaluation[]);
   }
 
   // if there is none predicates, then there was an error in parsing phase

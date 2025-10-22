@@ -19,7 +19,7 @@ function processPipelineAnswer(results: Array<[Error | null, string]>): string[]
 
 /**
  * ISplitsCacheAsync implementation that stores split definitions in Redis.
- * Supported by Node.
+ * Supported by Node.js
  */
 export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
@@ -82,7 +82,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., redis operation fails)
    */
-  addSplit(name: string, split: ISplit): Promise<boolean> {
+  addSplit(split: ISplit): Promise<boolean> {
+    const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then(splitFromStorage => {
 
@@ -108,17 +109,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   }
 
   /**
-   * Add a list of splits.
-   * The returned promise is resolved when the operation success
-   * or rejected if it fails (e.g., redis operation fails)
-   */
-  addSplits(entries: [string, ISplit][]): Promise<boolean[]> {
-    return Promise.all(entries.map(keyValuePair => this.addSplit(keyValuePair[0], keyValuePair[1])));
-  }
-
-  /**
    * Remove a given split.
-   * The returned promise is resolved when the operation success, with 1 or 0 indicating if the split existed or not.
+   * The returned promise is resolved when the operation success, with true or false indicating if the split existed (and was removed) or not.
    * or rejected if it fails (e.g., redis operation fails).
    */
   removeSplit(name: string) {
@@ -127,17 +119,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
     }).then(() => {
-      return this.redis.del(this.keys.buildSplitKey(name));
+      return this.redis.del(this.keys.buildSplitKey(name)).then(status => status === 1);
     });
-  }
-
-  /**
-   * Remove a list of splits.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., redis operation fails).
-   */
-  removeSplits(names: string[]): Promise<any> {
-    return Promise.all(names.map(name => this.removeSplit(name)));
   }
 
   /**
@@ -186,10 +169,8 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * Get list of all split definitions.
    * The returned promise is resolved with the list of split definitions,
    * or rejected if redis operation fails.
-   *
-   * @TODO we need to benchmark which is the maximun number of commands we could
-   *       pipeline without kill redis performance.
    */
+  // @TODO we need to benchmark which is the maximun number of commands we could pipeline without kill redis performance.
   getAll(): Promise<ISplit[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
       .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
@@ -268,10 +249,10 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       return Promise.reject(this.redisError);
     }
 
-    const splits: Record<string, ISplit | null> = {};
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
       .then(splitDefinitions => {
+        const splits: Record<string, ISplit | null> = {};
         names.forEach((name, idx) => {
           const split = splitDefinitions[idx];
           splits[name] = split && JSON.parse(split);

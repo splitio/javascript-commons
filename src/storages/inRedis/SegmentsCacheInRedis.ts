@@ -17,24 +17,21 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     this.keys = keys;
   }
 
-  addToSegment(name: string, segmentKeys: string[]) {
+  /**
+   * Update the given segment `name` with the lists of `addedKeys`, `removedKeys` and `changeNumber`.
+   * The returned promise is resolved if the operation success, with `true` if the segment was updated (i.e., some key was added or removed),
+   * or rejected if it fails (e.g., Redis operation fails).
+   */
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    if (segmentKeys.length) {
-      return this.redis.sadd(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.redis.srem(segmentKey, segmentKeys).then(() => true);
-    } else {
-      return Promise.resolve(true);
-    }
+    return Promise.all([
+      addedKeys.length && this.redis.sadd(segmentKey, addedKeys),
+      removedKeys.length && this.redis.srem(segmentKey, removedKeys),
+      this.redis.set(this.keys.buildSegmentTillKey(name), changeNumber + '')
+    ]).then(() => {
+      return addedKeys.length > 0 || removedKeys.length > 0;
+    });
   }
 
   isInSegment(name: string, key: string) {
@@ -43,20 +40,14 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
     ).then(matches => matches !== 0);
   }
 
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.redis.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    ).then(status => status === 'OK');
-  }
-
   getChangeNumber(name: string) {
     return this.redis.get(this.keys.buildSegmentTillKey(name)).then((value: string | null) => {
       const i = parseInt(value as string, 10);
 
-      return isNaNNumber(i) ? -1 : i;
+      return isNaNNumber(i) ? undefined : i;
     }).catch((e) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
-      return -1;
+      return undefined;
     });
   }
 

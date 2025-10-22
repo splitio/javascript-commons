@@ -1,87 +1,99 @@
 import { ImpressionsCacheInMemory } from '../inMemory/ImpressionsCacheInMemory';
 import { ImpressionCountsCacheInMemory } from '../inMemory/ImpressionCountsCacheInMemory';
 import { EventsCacheInMemory } from '../inMemory/EventsCacheInMemory';
-import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory } from '../types';
+import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory, StorageAdapter } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
-import { isLocalStorageAvailable } from '../../utils/env/isLocalStorageAvailable';
+import { isLocalStorageAvailable, isValidStorageWrapper, isWebStorage } from '../../utils/env/isLocalStorageAvailable';
 import { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
-import { MySegmentsCacheInMemory } from '../inMemory/MySegmentsCacheInMemory';
-import { SplitsCacheInMemory } from '../inMemory/SplitsCacheInMemory';
-import { DEFAULT_CACHE_EXPIRATION_IN_MILLIS } from '../../utils/constants/browser';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
 import { LOG_PREFIX } from './constants';
-import { DEBUG, NONE, STORAGE_LOCALSTORAGE } from '../../utils/constants';
+import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
+import { validateCache } from './validateCache';
+import { ILogger } from '../../logger/types';
+import SplitIO from '../../../types/splitio';
+import { storageAdapter } from './storageAdapter';
 
-export interface InLocalStorageOptions {
-  prefix?: string
+function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
+  if (wrapper) {
+    if (isValidStorageWrapper(wrapper)) {
+      return isWebStorage(wrapper) ?
+        wrapper as StorageAdapter: // localStorage and sessionStorage don't need adapter
+        storageAdapter(log, prefix, wrapper);
+    }
+    log.warn(LOG_PREFIX + 'Invalid storage provided. Falling back to LocalStorage API');
+  }
+
+  if (isLocalStorageAvailable()) return localStorage;
+
+  log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
 }
 
 /**
  * InLocal storage factory for standalone client-side SplitFactory
  */
-export function InLocalStorage(options: InLocalStorageOptions = {}): IStorageSyncFactory {
+export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): IStorageSyncFactory {
 
   const prefix = validatePrefix(options.prefix);
 
   function InLocalStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
+    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize } } } = params;
 
-    // Fallback to InMemoryStorage if LocalStorage API is not available
-    if (!isLocalStorageAvailable()) {
-      params.settings.log.warn(LOG_PREFIX + 'LocalStorage API is unavailable. Falling back to default MEMORY storage');
-      return InMemoryStorageCSFactory(params);
-    }
+    const storage = validateStorage(log, prefix, options.wrapper);
+    if (!storage) return InMemoryStorageCSFactory(params);
 
-    const { settings, settings: { log, scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { impressionsMode, __splitFiltersValidation } } } = params;
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
-    const expirationTimestamp = Date.now() - DEFAULT_CACHE_EXPIRATION_IN_MILLIS;
 
-    const splits = new SplitsCacheInLocal(settings, keys, expirationTimestamp);
-    const segments = new MySegmentsCacheInLocal(log, keys);
-    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey));
+    const splits = new SplitsCacheInLocal(settings, keys, storage);
+    const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
+    const segments = new MySegmentsCacheInLocal(log, keys, storage);
+    const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
+    let validateCachePromise: Promise<boolean> | undefined;
 
     return {
       splits,
+      rbSegments,
       segments,
       largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
-      impressionCounts: impressionsMode !== DEBUG ? new ImpressionCountsCacheInMemory() : undefined,
+      impressionCounts: new ImpressionCountsCacheInMemory(),
       events: new EventsCacheInMemory(eventsQueueSize),
       telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
-      uniqueKeys: impressionsMode === NONE ? new UniqueKeysCacheInMemoryCS() : undefined,
+      uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
-      destroy() {
-        this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
-        this.segments = new MySegmentsCacheInMemory();
-        this.largeSegments = new MySegmentsCacheInMemory();
-        this.impressions.clear();
-        this.impressionCounts && this.impressionCounts.clear();
-        this.events.clear();
-        this.uniqueKeys?.clear();
+      validateCache() {
+        return validateCachePromise || (validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments));
       },
 
-      // When using shared instanciation with MEMORY we reuse everything but segments (they are customer per key).
+      save() {
+        return storage.save && storage.save();
+      },
+
+      destroy() {
+        return storage.whenSaved && storage.whenSaved();
+      },
+
+      // When using shared instantiation with MEMORY we reuse everything but segments (they are customer per key).
       shared(matchingKey: string) {
 
         return {
           splits: this.splits,
-          segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey)),
-          largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey)),
+          rbSegments: this.rbSegments,
+          segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey), storage),
+          largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage),
           impressions: this.impressions,
           impressionCounts: this.impressionCounts,
           events: this.events,
           telemetry: this.telemetry,
+          uniqueKeys: this.uniqueKeys,
 
-          destroy() {
-            this.splits = new SplitsCacheInMemory(__splitFiltersValidation);
-            this.segments = new MySegmentsCacheInMemory();
-            this.largeSegments = new MySegmentsCacheInMemory();
-          }
+          destroy() { }
         };
       },
     };

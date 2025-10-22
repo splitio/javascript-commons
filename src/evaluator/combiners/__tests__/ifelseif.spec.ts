@@ -2,7 +2,7 @@
 import { ifElseIfCombinerContext } from '../ifelseif';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-test('IF ELSE IF COMBINER / should correctly propagate context parameters and predicates returns value', async function () {
+test('IF ELSE IF COMBINER / should correctly propagate context parameters and predicates returns value', async () => {
   let inputKey = 'sample';
   let inputSeed = 1234;
   let inputAttributes = {};
@@ -20,10 +20,9 @@ test('IF ELSE IF COMBINER / should correctly propagate context parameters and pr
   let ifElseIfEvaluator = ifElseIfCombinerContext(loggerMock, predicates);
 
   expect(await ifElseIfEvaluator(inputKey, inputSeed, inputAttributes) === evaluationResult).toBe(true);
-  console.log(`evaluator should return ${evaluationResult}`);
 });
 
-test('IF ELSE IF COMBINER / should stop evaluating when one matcher return a treatment', async function () {
+test('IF ELSE IF COMBINER / should stop evaluating when one matcher return a treatment', async () => {
   let predicates = [
     function undef() {
       return undefined;
@@ -41,7 +40,7 @@ test('IF ELSE IF COMBINER / should stop evaluating when one matcher return a tre
   expect(await ifElseIfEvaluator()).toBe('exclude'); // exclude treatment found
 });
 
-test('IF ELSE IF COMBINER / should return undefined if there is none matching rule', async function () {
+test('IF ELSE IF COMBINER / should return undefined if there is none matching rule', async () => {
   const predicates = [
     function undef() {
       return undefined;

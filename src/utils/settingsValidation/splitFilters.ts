@@ -1,6 +1,6 @@
 import { validateSplits } from '../inputValidation/splits';
 import { ISplitFiltersValidation } from '../../dtos/types';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { WARN_SPLITS_FILTER_IGNORED, WARN_SPLITS_FILTER_EMPTY, WARN_SPLITS_FILTER_INVALID, SETTINGS_SPLITS_FILTER, LOG_PREFIX_SETTINGS, ERROR_SETS_FILTER_EXCLUSIVE, WARN_LOWERCASE_FLAGSET, WARN_INVALID_FLAGSET, WARN_FLAGSET_NOT_CONFIGURED } from '../../logger/constants';
 import { objectAssign } from '../lang/objectAssign';
@@ -40,9 +40,9 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
 /**
  * Validate, deduplicate and sort a given list of filter values.
  *
- * @param {string} type filter type string used for log messages
- * @param {string[]} values list of values to validate, deduplicate and sort
- * @param {number} maxLength
+ * @param type - filter type string used for log messages
+ * @param values - list of values to validate, deduplicate and sort
+ * @param maxLength - max length allowed for the list of values
  * @returns list of valid, unique and alphabetically sorted non-empty strings. The list is empty if `values` param is not a non-empty array or all its values are invalid.
  *
  * @throws Error if the sanitized list exceeds the length indicated by `maxLength`
@@ -69,13 +69,7 @@ function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values
 /**
  * Returns a string representing the URL encoded query component of /splitChanges URL.
  *
- * The possible formats of the query string are:
- *  - null: if all filters are empty
- *  - '&names=<comma-separated-values>': if only `byPrefix` filter is undefined
- *  - '&prefixes=<comma-separated-values>': if only `byName` filter is undefined
- *  - '&names=<comma-separated-values>&prefixes=<comma-separated-values>': if no one is undefined
- *
- * @param {Object} groupedFilters object of filters. Each filter must be a list of valid, unique and ordered string values.
+ * @param groupedFilters - object of filters. Each filter must be a list of valid, unique and ordered string values.
  * @returns null or string with the `split filter query` component of the URL.
  */
 function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, string[]>) {
@@ -90,15 +84,12 @@ function queryStringBuilder(groupedFilters: Record<SplitIO.SplitFilterType, stri
 /**
  * Sanitizes set names list taking into account:
  *  - It should be lowercase
- *  - Must adhere the following regular expression /^[a-z0-9][_a-z0-9]{0,49}$/ that means
+ *  - Must adhere the following regular expression `/^[a-z0-9][_a-z0-9]{0,49}$/` that means
  *   - must start with a letter or number
  *   - Be in lowercase
  *   - Be alphanumeric
  *   - have a max length of 50 characters
  *
- * @param {ILogger} log
- * @param {string[]} flagSets
- * @param {string} method
  * @returns sanitized list of set names
  */
 function sanitizeFlagSets(log: ILogger, flagSets: string[], method: string) {
@@ -128,9 +119,9 @@ function configuredFilter(validFilters: SplitIO.SplitFilter[], filterType: Split
 /**
  * Validates `splitFilters` configuration object and parses it into a query string for filtering splits on `/splitChanges` fetch.
  *
- * @param {ILogger} log logger
- * @param {any} maybeSplitFilters split filters configuration param provided by the user
- * @param {string} mode settings mode
+ * @param log - logger
+ * @param maybeSplitFilters - split filters configuration param provided by the user
+ * @param mode - settings mode
  * @returns it returns an object with the following properties:
  *  - `validFilters`: the validated `splitFilters` configuration object defined by the user.
  *  - `queryString`: the parsed split filter query. it is null if all filters are invalid or all values in filters are invalid.

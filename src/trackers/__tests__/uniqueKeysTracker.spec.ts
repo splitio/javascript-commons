@@ -48,6 +48,8 @@ describe('Unique keys tracker', () => {
 
     const uniqueKeysTrackerWithRefresh = uniqueKeysTrackerFactory(loggerMock, fakeUniqueKeysCache, fakeFilter);
 
+    uniqueKeysTrackerWithRefresh.start();
+
     setTimeout(() => {
 
       expect(fakeFilter.clear).toBeCalledTimes(1);

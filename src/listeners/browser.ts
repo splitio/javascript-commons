@@ -5,11 +5,11 @@ import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
 import { IResponse, ISplitApi } from '../services/types';
-import { ImpressionDTO, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
-import { OPTIMIZED, DEBUG, NONE } from '../utils/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
+import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING, SUBMITTERS_PUSH_PAGE_HIDDEN } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
 
@@ -22,7 +22,7 @@ const EVENT_NAME = 'for visibilitychange and pagehide events.';
  */
 export class BrowserSignalListener implements ISignalListener {
 
-  private fromImpressionsCollector: (data: ImpressionDTO[]) => ImpressionsPayload;
+  private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
   constructor(
     private syncManager: ISyncManager | undefined,
@@ -77,17 +77,15 @@ export class BrowserSignalListener implements ISignalListener {
 
     // Flush impressions & events data if there is user consent
     if (isConsentGranted(this.settings)) {
-      const sim = this.settings.sync.impressionsMode;
       const extraMetadata = {
         // sim stands for Sync/Split Impressions Mode
-        sim: sim === OPTIMIZED ? OPTIMIZED : sim === DEBUG ? DEBUG : NONE
+        sim: this.settings.sync.impressionsMode
       };
 
       this._flushData(events + '/testImpressions/beacon', this.storage.impressions, this.serviceApi.postTestImpressionsBulk, this.fromImpressionsCollector, extraMetadata);
       this._flushData(events + '/events/beacon', this.storage.events, this.serviceApi.postEventsBulk);
-      if (this.storage.impressionCounts) this._flushData(events + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
-      // @ts-ignore
-      if (this.storage.uniqueKeys) this._flushData(telemetry + '/v1/keys/cs/beacon', this.storage.uniqueKeys, this.serviceApi.postUniqueKeysBulkCs);
+      this._flushData(events + '/testImpressions/count/beacon', this.storage.impressionCounts, this.serviceApi.postTestImpressionsCount, fromImpressionCountsCollector);
+      this._flushData(telemetry + '/v1/keys/cs/beacon', this.storage.uniqueKeys, this.serviceApi.postUniqueKeysBulkCs);
     }
 
     // Flush telemetry data
@@ -106,6 +104,7 @@ export class BrowserSignalListener implements ISignalListener {
       if (!this._sendBeacon(url, dataPayload, extraMetadata)) {
         postService(JSON.stringify(dataPayload)).catch(() => { }); // no-op to handle possible promise rejection
       }
+      this.settings.log.debug(SUBMITTERS_PUSH_PAGE_HIDDEN, [cache.name]);
     }
   }
 

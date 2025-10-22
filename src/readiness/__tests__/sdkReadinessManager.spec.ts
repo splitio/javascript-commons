@@ -1,11 +1,12 @@
 // @ts-nocheck
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { IEventEmitter } from '../../types';
-import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE } from '../constants';
+import SplitIO from '../../../types/splitio';
+import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../constants';
 import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { EventEmitter } from '../../utils/MinEvents';
 
 const EventEmitterMock = jest.fn(() => ({
   on: jest.fn(),
@@ -15,7 +16,7 @@ const EventEmitterMock = jest.fn(() => ({
   addListener: jest.fn(),
   off: jest.fn(),
   removeListener: jest.fn()
-})) as new () => IEventEmitter;
+})) as new () => SplitIO.IEventEmitter;
 
 // Makes readinessManager emit SDK_READY & update isReady flag
 function emitReadyEvent(readinessManager: IReadinessManager) {
@@ -52,7 +53,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
       expect(sdkStatus[propName]).toBeTruthy(); // The sdkStatus exposes all minimal EventEmitter functionality.
     });
 
-    expect(typeof sdkStatus.ready).toBe('function'); // The sdkStatus exposes a .ready() function.
+    expect(typeof sdkStatus.whenReady).toBe('function'); // The sdkStatus exposes a .whenReady() function.
     expect(typeof sdkStatus.__getStatus).toBe('function'); // The sdkStatus exposes a .__getStatus() function.
     expect(sdkStatus.__getStatus()).toEqual({
       isReady: false, isReadyFromCache: false, isTimedout: false, hasTimedout: false, isDestroyed: false, isOperational: false, lastUpdate: 0
@@ -201,12 +202,12 @@ describe('SDK Readiness Manager - Event emitter', () => {
   });
 });
 
-describe('SDK Readiness Manager - Ready promise', () => {
+describe('SDK Readiness Manager - whenReady promise', () => {
 
-  test('.ready() promise behaviour for clients', async () => {
+  test('.whenReady() promise behavior for clients', async () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
-    const ready = sdkReadinessManager.sdkStatus.ready();
+    const ready = sdkReadinessManager.sdkStatus.whenReady();
     expect(ready instanceof Promise).toBe(true); // It should return a promise.
 
     // make the SDK "ready"
@@ -221,8 +222,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
       () => { throw new Error('It should be resolved on ready event, not rejected.'); }
     );
 
-    // any subsequent call to .ready() must be a resolved promise
-    await ready.then(
+    // any subsequent call to .whenReady() must be a resolved promise
+    await sdkReadinessManager.sdkStatus.whenReady().then(
       () => {
         expect('A subsequent call should be a resolved promise.');
         testPassedCount++;
@@ -235,7 +236,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
 
     const sdkReadinessManagerForTimedout = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
-    const readyForTimeout = sdkReadinessManagerForTimedout.sdkStatus.ready();
+    const readyForTimeout = sdkReadinessManagerForTimedout.sdkStatus.whenReady();
 
     emitTimeoutEvent(sdkReadinessManagerForTimedout.readinessManager); // make the SDK "timed out"
 
@@ -247,8 +248,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
       }
     );
 
-    // any subsequent call to .ready() must be a rejected promise until the SDK is ready
-    await sdkReadinessManagerForTimedout.sdkStatus.ready().then(
+    // any subsequent call to .whenReady() must be a rejected promise until the SDK is ready
+    await sdkReadinessManagerForTimedout.sdkStatus.whenReady().then(
       () => { throw new Error('It should be a promise that was rejected on SDK_READY_TIMED_OUT, not resolved.'); },
       () => {
         expect('A subsequent call should be a rejected promise.');
@@ -259,8 +260,8 @@ describe('SDK Readiness Manager - Ready promise', () => {
     // make the SDK "ready"
     emitReadyEvent(sdkReadinessManagerForTimedout.readinessManager);
 
-    // once SDK_READY, `.ready()` returns a resolved promise
-    await sdkReadinessManagerForTimedout.sdkStatus.ready().then(
+    // once SDK_READY, `.whenReady()` returns a resolved promise
+    await sdkReadinessManagerForTimedout.sdkStatus.whenReady().then(
       () => {
         expect('It should be a resolved promise when the SDK is ready, even after an SDK timeout.');
         loggerMock.mockClear();
@@ -272,21 +273,27 @@ describe('SDK Readiness Manager - Ready promise', () => {
   });
 
   test('Full blown ready promise count as a callback and resolves on SDK_READY', (done) => {
-    let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
+    let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
-    emitReadyEvent(sdkReadinessManager.readinessManager);
+    // Emit ready event
+    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    sdkReadinessManager.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
     expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We should get a warning if the SDK get's ready before calling the ready method or attaching a listener to the ready event
     loggerMock.warn.mockClear();
 
-    sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    sdkReadinessManager.sdkStatus.ready().then(() => {
+    sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
+    sdkReadinessManager.sdkStatus.whenReady().then(() => {
       expect('The ready promise is resolved when the gate emits SDK_READY.');
       done();
     }, () => {
       throw new Error('This should not be called as the promise is being resolved.');
     });
 
-    emitReadyEvent(sdkReadinessManager.readinessManager);
+    // Emit ready event
+    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    sdkReadinessManager.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
     expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener or call the ready method, we get no warnings.
   });
 });

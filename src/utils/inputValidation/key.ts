@@ -1,5 +1,5 @@
 import { isObject, isString, isFiniteNumber, toString } from '../lang';
-import { SplitIO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { ERROR_NULL, WARN_CONVERTING, ERROR_EMPTY, ERROR_TOO_LONG, ERROR_INVALID, ERROR_INVALID_KEY_OBJECT } from '../../logger/constants';
 

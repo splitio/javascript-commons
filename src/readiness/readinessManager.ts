@@ -1,12 +1,15 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { IEventEmitter, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
 
-function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISplitsEventEmitter {
+function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISplitsEventEmitter {
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
     splitsArrived: false,
     splitsCacheLoaded: false,
+    hasInit: false,
+    initCallbacks: []
   });
 
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
@@ -18,7 +21,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISpli
   return splitsEventEmitter;
 }
 
-function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISegmentsEventEmitter {
+function segmentsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISegmentsEventEmitter {
   const segmentsEventEmitter = objectAssign(new EventEmitter(), {
     segmentsArrived: false
   });
@@ -32,9 +35,11 @@ function segmentsEventEmitterFactory(EventEmitter: new () => IEventEmitter): ISe
  * Factory of readiness manager, which handles the ready / update event propagation.
  */
 export function readinessManagerFactory(
-  EventEmitter: new () => IEventEmitter,
+  EventEmitter: new () => SplitIO.IEventEmitter,
   settings: ISettings,
-  splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter)): IReadinessManager {
+  splits: ISplitsEventEmitter = splitsEventEmitterFactory(EventEmitter),
+  isShared?: boolean
+): IReadinessManager {
 
   const readyTimeout = settings.startup.readyTimeout;
 
@@ -56,17 +61,13 @@ export function readinessManagerFactory(
   // emit SDK_READY_TIMED_OUT
   let hasTimedout = false;
 
-  function timeout() {
-    if (hasTimedout) return;
+  function timeout() { // eslint-disable-next-line no-use-before-define
+    if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
     gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
   }
 
-  let readyTimeoutId: ReturnType<typeof setTimeout>;
-  if (readyTimeout > 0) {
-    readyTimeoutId = setTimeout(timeout, readyTimeout);
-  }
 
   // emit SDK_READY and SDK_UPDATE
   let isReady = false;
@@ -74,14 +75,22 @@ export function readinessManagerFactory(
   segments.on(SDK_SEGMENTS_ARRIVED, checkIsReadyOrUpdate);
 
   let isDestroyed = false;
+  let readyTimeoutId: ReturnType<typeof setTimeout>;
+  function __init() {
+    isDestroyed = false;
+    if (readyTimeout > 0 && !isReady) readyTimeoutId = setTimeout(timeout, readyTimeout);
+  }
+
+  splits.initCallbacks.push(__init);
+  if (splits.hasInit) __init();
 
   function checkIsReadyFromCache() {
     isReadyFromCache = true;
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
-    if (!isReady) {
+    if (!isReady && !isDestroyed) {
       try {
         syncLastUpdate();
-        gate.emit(SDK_READY_FROM_CACHE);
+        gate.emit(SDK_READY_FROM_CACHE, isReady);
       } catch (e) {
         // throws user callback exceptions in next tick
         setTimeout(() => { throw e; }, 0);
@@ -90,6 +99,7 @@ export function readinessManagerFactory(
   }
 
   function checkIsReadyOrUpdate(diff: any) {
+    if (isDestroyed) return;
     if (isReady) {
       try {
         syncLastUpdate();
@@ -104,6 +114,10 @@ export function readinessManagerFactory(
         isReady = true;
         try {
           syncLastUpdate();
+          if (!isReadyFromCache) {
+            isReadyFromCache = true;
+            gate.emit(SDK_READY_FROM_CACHE, isReady);
+          }
           gate.emit(SDK_READY);
         } catch (e) {
           // throws user callback exceptions in next tick
@@ -113,16 +127,13 @@ export function readinessManagerFactory(
     }
   }
 
-  let refCount = 1;
-
   return {
     splits,
     segments,
     gate,
 
     shared() {
-      refCount++;
-      return readinessManagerFactory(EventEmitter, settings, splits);
+      return readinessManagerFactory(EventEmitter, settings, splits, true);
     },
 
     // @TODO review/remove next methods when non-recoverable errors are reworked
@@ -132,16 +143,18 @@ export function readinessManagerFactory(
     // tracking and evaluations, while keeping event listeners to emit SDK_READY_TIMED_OUT event
     setDestroyed() { isDestroyed = true; },
 
+    init() {
+      if (splits.hasInit) return;
+      splits.hasInit = true;
+      splits.initCallbacks.forEach(cb => cb());
+    },
+
     destroy() {
       isDestroyed = true;
       syncLastUpdate();
-
-      segments.removeAllListeners();
-      gate.removeAllListeners();
       clearTimeout(readyTimeoutId);
 
-      if (refCount > 0) refCount--;
-      if (refCount === 0) splits.removeAllListeners();
+      if (!isShared) splits.hasInit = false;
     },
 
     isReady() { return isReady; },

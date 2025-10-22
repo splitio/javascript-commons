@@ -5,9 +5,9 @@ import { ILogger } from '../../../logger/types';
 /**
  * This function validates `settings.integrations` object that consists of a list of pluggable integration factories.
  *
- * @param {any} settings config object provided by the user to initialize the sdk
+ * @param settings - config object provided by the user to initialize the sdk
  *
- * @returns {Array} array of valid integration factories. The array might be empty if `settings` object does not have valid integrations.
+ * @returns array of valid integration factories. The array might be empty if `settings` object does not have valid integrations.
  */
 export function validatePluggableIntegrations(settings: { log: ILogger, integrations?: any }): ISettings['integrations'] {
 

@@ -9,25 +9,21 @@ const keys = new KeyBuilderSS(prefix, metadata);
 
 describe('SEGMENTS CACHE IN REDIS', () => {
 
-  test('isInSegment, set/getChangeNumber, add/removeFromSegment', async () => {
+  test('isInSegment, getChangeNumber, update', async () => {
     const connection = new RedisAdapter(loggerMock);
     const cache = new SegmentsCacheInRedis(loggerMock, keys, connection);
 
-    await cache.addToSegment('mocked-segment', ['a', 'b', 'c']);
-
-    await cache.setChangeNumber('mocked-segment', 1);
-
-    await cache.removeFromSegment('mocked-segment', ['d']);
+    await cache.update('mocked-segment', ['a', 'b', 'c'], ['d'], 1);
 
     expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
 
-    expect(await cache.getChangeNumber('inexistent-segment')).toBe(-1); // -1 if the segment doesn't exist
+    expect(await cache.getChangeNumber('inexistent-segment')).toBe(undefined); // -1 if the segment doesn't exist
 
-    await cache.addToSegment('mocked-segment', ['d', 'e']);
+    await cache.update('mocked-segment', ['d', 'e'], [], 2);
 
-    await cache.removeFromSegment('mocked-segment', ['a', 'c']);
+    await cache.update('mocked-segment', [], ['a', 'c'], 2);
 
-    expect(await cache.getChangeNumber('mocked-segment') === 1).toBe(true);
+    expect(await cache.getChangeNumber('mocked-segment') === 2).toBe(true);
 
     expect(await cache.isInSegment('mocked-segment', 'a')).toBe(false);
     expect(await cache.isInSegment('mocked-segment', 'b')).toBe(true);

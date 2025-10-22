@@ -5,7 +5,7 @@ const processOnSpy = jest.spyOn(process, 'on');
 const processRemoveListenerSpy = jest.spyOn(process, 'removeListener');
 const processKillSpy = jest.spyOn(process, 'kill').mockImplementation(() => true);
 
-test('Node JS listener / Signal Listener class methods and start/stop functionality', () => {
+test('NodeSignalListener / Signal Listener class methods and start/stop functionality', () => {
 
   const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
@@ -25,7 +25,7 @@ test('Node JS listener / Signal Listener class methods and start/stop functional
   expect(processRemoveListenerSpy.mock.calls).toEqual([['SIGTERM', listener._sigtermHandler]]);
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with sync handler', () => {
+test('NodeSignalListener / Signal Listener SIGTERM callback with sync handler', () => {
 
   const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
@@ -55,7 +55,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler', ()
   processKillSpy.mockClear();
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
+test('NodeSignalListener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
   const syncManagerMock = { flush: jest.fn(() => { throw 'some error'; }) }; // @ts-expect-error
   const listener = new NodeSignalListener(syncManagerMock, fullSettings);
 
@@ -85,7 +85,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with sync handler that
   processKillSpy.mockClear();
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler', async () => {
+test('NodeSignalListener / Signal Listener SIGTERM callback with async handler', async () => {
 
   const fakePromise = new Promise<void>(res => {
     setTimeout(() => {
@@ -125,7 +125,7 @@ test('Node JS listener / Signal Listener SIGTERM callback with async handler', a
   });
 });
 
-test('Node JS listener / Signal Listener SIGTERM callback with async handler that throws an error', async () => {
+test('NodeSignalListener / Signal Listener SIGTERM callback with async handler that throws an error', async () => {
 
   const fakePromise = new Promise<void>((res, rej) => {
     setTimeout(() => {

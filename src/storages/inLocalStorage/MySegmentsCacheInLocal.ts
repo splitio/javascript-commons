@@ -1,27 +1,30 @@
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
-import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
+import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
+import { StorageAdapter } from '../types';
 
-export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
+export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
   private readonly keys: MySegmentsKeyBuilder;
   private readonly log: ILogger;
+  private readonly storage: StorageAdapter;
 
-  constructor(log: ILogger, keys: MySegmentsKeyBuilder) {
+  constructor(log: ILogger, keys: MySegmentsKeyBuilder, storage: StorageAdapter) {
     super();
     this.log = log;
     this.keys = keys;
+    this.storage = storage;
     // There is not need to flush segments cache like splits cache, since resetSegments receives the up-to-date list of active segments
   }
 
-  addToSegment(name: string): boolean {
+  protected addSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
-      if (localStorage.getItem(segmentKey) === DEFINED) return false;
-      localStorage.setItem(segmentKey, DEFINED);
+      if (this.storage.getItem(segmentKey) === DEFINED) return false;
+      this.storage.setItem(segmentKey, DEFINED);
       return true;
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
@@ -29,12 +32,12 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
     }
   }
 
-  removeFromSegment(name: string): boolean {
+  protected removeSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
     try {
-      if (localStorage.getItem(segmentKey) !== DEFINED) return false;
-      localStorage.removeItem(segmentKey);
+      if (this.storage.getItem(segmentKey) !== DEFINED) return false;
+      this.storage.removeItem(segmentKey);
       return true;
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
@@ -43,28 +46,26 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
   }
 
   isInSegment(name: string): boolean {
-    return localStorage.getItem(this.keys.buildSegmentNameKey(name)) === DEFINED;
+    return this.storage.getItem(this.keys.buildSegmentNameKey(name)) === DEFINED;
   }
 
   getRegisteredSegments(): string[] {
-    // Scan current values from localStorage
-    return Object.keys(localStorage).reduce((accum, key) => {
-      let segmentName = this.keys.extractSegmentName(key);
-
-      if (segmentName) accum.push(segmentName);
-
-      return accum;
-    }, [] as string[]);
+    const registeredSegments: string[] = [];
+    for (let i = 0, len = this.storage.length; i < len; i++) {
+      const segmentName = this.keys.extractSegmentName(this.storage.key(i)!);
+      if (segmentName) registeredSegments.push(segmentName);
+    }
+    return registeredSegments;
   }
 
   getKeysCount() {
     return 1;
   }
 
-  setChangeNumber(name?: string, changeNumber?: number) {
+  protected setChangeNumber(changeNumber?: number) {
     try {
-      if (changeNumber) localStorage.setItem(this.keys.buildTillKey(), changeNumber + '');
-      else localStorage.removeItem(this.keys.buildTillKey());
+      if (changeNumber) this.storage.setItem(this.keys.buildTillKey(), changeNumber + '');
+      else this.storage.removeItem(this.keys.buildTillKey());
     } catch (e) {
       this.log.error(e);
     }
@@ -72,7 +73,7 @@ export class MySegmentsCacheInLocal extends AbstractSegmentsCacheSync {
 
   getChangeNumber() {
     const n = -1;
-    let value: string | number | null = localStorage.getItem(this.keys.buildTillKey());
+    let value: string | number | null = this.storage.getItem(this.keys.buildTillKey());
 
     if (value !== null) {
       value = parseInt(value, 10);

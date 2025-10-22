@@ -8,3 +8,18 @@ export function assertClientApi(client: any, sdkStatus?: object) {
     expect(typeof client[method]).toBe('function');
   });
 }
+
+export function createClientMock(returnValue: any) {
+
+  return {
+    getTreatment: jest.fn(()=> returnValue),
+    getTreatmentWithConfig: jest.fn(()=> returnValue),
+    getTreatments: jest.fn(()=> returnValue),
+    getTreatmentsWithConfig: jest.fn(()=> returnValue),
+    getTreatmentsByFlagSets: jest.fn(()=> returnValue),
+    getTreatmentsWithConfigByFlagSets: jest.fn(()=> returnValue),
+    getTreatmentsByFlagSet: jest.fn(()=> returnValue),
+    getTreatmentsWithConfigByFlagSet: jest.fn(()=> returnValue),
+    track: jest.fn(()=> returnValue),
+  };
+}

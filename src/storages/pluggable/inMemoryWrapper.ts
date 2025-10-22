@@ -1,12 +1,13 @@
 import { IPluggableStorageWrapper } from '../types';
 import { startsWith, toNumber } from '../../utils/lang';
+import { setToArray } from '../../utils/lang/sets';
 
 /**
  * Creates a IPluggableStorageWrapper implementation that stores items in memory.
  * The `_cache` property is the object were items are stored.
  * Intended for testing purposes.
  *
- * @param connDelay delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
+ * @param connDelay - delay in millis for `connect` resolve. If not provided, `connect` resolves immediately.
  */
 export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWrapper & { _cache: Record<string, string | string[] | Set<string>>, _setConnDelay(connDelay: number): void } {
 
@@ -107,7 +108,7 @@ export function inMemoryWrapperFactory(connDelay?: number): IPluggableStorageWra
     getItems(key: string) {
       const set = _cache[key];
       if (!set) return Promise.resolve([]);
-      if (set instanceof Set) return Promise.resolve(Array.from(set));
+      if (set instanceof Set) return Promise.resolve(setToArray(set));
       return Promise.reject('key is not a set');
     },
 

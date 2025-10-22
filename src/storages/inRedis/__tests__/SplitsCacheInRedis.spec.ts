@@ -11,14 +11,11 @@ const keysBuilder = new KeyBuilderSS(prefix, metadata);
 
 describe('SPLITS CACHE REDIS', () => {
 
-  test('add/remove/get splits & set/get change number', async () => {
+  test('add/remove/get splits', async () => {
     const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    await cache.addSplits([
-      ['lol1', splitWithUserTT],
-      ['lol2', splitWithAccountTT]
-    ]);
+    await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
 
     let values = await cache.getAll();
 
@@ -27,33 +24,34 @@ describe('SPLITS CACHE REDIS', () => {
 
     let splitNames = await cache.getSplitNames();
 
-    expect(splitNames.indexOf('lol1') !== -1).toBe(true);
-    expect(splitNames.indexOf('lol2') !== -1).toBe(true);
+    expect(splitNames.length).toBe(2);
+    expect(splitNames.indexOf('user_ff') !== -1).toBe(true);
+    expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
 
-    await cache.removeSplit('lol1');
+    await cache.removeSplit('user_ff');
 
     values = await cache.getAll();
 
     expect(values).toEqual([splitWithAccountTT]);
 
-    expect(await cache.getSplit('lol1')).toEqual(null);
-    expect(await cache.getSplit('lol2')).toEqual(splitWithAccountTT);
+    expect(await cache.getSplit('user_ff')).toEqual(null);
+    expect(await cache.getSplit('account_ff')).toEqual(splitWithAccountTT);
 
     await cache.setChangeNumber(123);
-    expect(await cache.getChangeNumber() === 123).toBe(true);
+    expect(await cache.getChangeNumber()).toBe(123);
 
     splitNames = await cache.getSplitNames();
 
-    expect(splitNames.indexOf('lol1') === -1).toBe(true);
-    expect(splitNames.indexOf('lol2') !== -1).toBe(true);
+    expect(splitNames.indexOf('user_ff') === -1).toBe(true);
+    expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
 
-    const splits = await cache.getSplits(['lol1', 'lol2']);
-    expect(splits['lol1']).toEqual(null);
-    expect(splits['lol2']).toEqual(splitWithAccountTT);
+    const splits = await cache.getSplits(['user_ff', 'account_ff']);
+    expect(splits['user_ff']).toEqual(null);
+    expect(splits['account_ff']).toEqual(splitWithAccountTT);
 
     // Teardown. @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
-    await connection.del(keysBuilder.buildSplitKey('lol2'));
+    await connection.del(keysBuilder.buildSplitKey('account_ff'));
     await connection.del(keysBuilder.buildSplitsTillKey());
     await connection.disconnect();
   });
@@ -62,13 +60,13 @@ describe('SPLITS CACHE REDIS', () => {
     const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    await cache.addSplits([
-      ['split1', splitWithUserTT],
-      ['split2', splitWithAccountTT],
-      ['split3', splitWithUserTT],
-    ]);
-    await cache.addSplit('split4', splitWithUserTT);
-    await cache.addSplit('split4', splitWithUserTT); // trying to add the same definition for an already added split will not have effect
+    await cache.update([
+      { ...splitWithUserTT, name: 'split1' },
+      { ...splitWithAccountTT, name: 'split2' },
+      { ...splitWithUserTT, name: 'split3' },
+    ], [], -1);
+    await cache.addSplit({ ...splitWithUserTT, name: 'split4' });
+    await cache.addSplit({ ...splitWithUserTT, name: 'split4' }); // trying to add the same definition for an already added split will not have effect
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
@@ -81,7 +79,8 @@ describe('SPLITS CACHE REDIS', () => {
 
     expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
 
-    await cache.removeSplits(['split3', 'split2']); // it'll invoke a loop of removeSplit
+    await cache.removeSplit('split3');
+    await cache.removeSplit('split2');
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
@@ -93,10 +92,10 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
 
-    await cache.addSplit('split1', splitWithUserTT);
+    await cache.addSplit({ ...splitWithUserTT, name: 'split1' });
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
 
-    await cache.addSplit('split1', splitWithAccountTT);
+    await cache.addSplit({ ...splitWithAccountTT, name: 'split1' });
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
 
@@ -111,8 +110,7 @@ describe('SPLITS CACHE REDIS', () => {
     const connection = new RedisAdapter(loggerMock);
     const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
 
-    await cache.addSplit('lol1', splitWithUserTT);
-    await cache.addSplit('lol2', splitWithAccountTT);
+    await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
     const initialChangeNumber = await cache.getChangeNumber();
 
     // kill an non-existent split
@@ -123,8 +121,8 @@ describe('SPLITS CACHE REDIS', () => {
     expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
 
     // kill an existent split
-    updated = await cache.killLocally('lol1', 'some_treatment', 100);
-    let lol1Split = await cache.getSplit('lol1') as ISplit;
+    updated = await cache.killLocally('user_ff', 'some_treatment', 100);
+    let lol1Split = await cache.getSplit('user_ff') as ISplit;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -133,14 +131,15 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getChangeNumber()).toBe(initialChangeNumber); // cache changeNumber is not changed
 
     // not update if changeNumber is old
-    updated = await cache.killLocally('lol1', 'some_treatment_2', 90);
-    lol1Split = await cache.getSplit('lol1') as ISplit;
+    updated = await cache.killLocally('user_ff', 'some_treatment_2', 90);
+    lol1Split = await cache.getSplit('user_ff') as ISplit;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
     // Delete splits and TT keys
-    await cache.removeSplits(['lol1', 'lol2']);
+    await cache.update([], [splitWithUserTT, splitWithAccountTT], -1);
+    await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });
@@ -151,12 +150,12 @@ describe('SPLITS CACHE REDIS', () => {
 
     const emptySet = new Set([]);
 
-    await cache.addSplits([
-      [featureFlagOne.name, featureFlagOne],
-      [featureFlagTwo.name, featureFlagTwo],
-      [featureFlagThree.name, featureFlagThree],
-    ]);
-    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+    await cache.update([
+      featureFlagOne,
+      featureFlagTwo,
+      featureFlagThree,
+    ], [], -1);
+    await cache.addSplit(featureFlagWithEmptyFS);
 
     expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
     expect(await cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
@@ -164,13 +163,13 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getNamesByFlagSets(['t'])).toEqual([emptySet]); // 't' not in filter
     expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
-    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['1'] });
+    await cache.addSplit({ ...featureFlagOne, sets: ['1'] });
 
     expect(await cache.getNamesByFlagSets(['1'])).toEqual([emptySet]); // '1' not in filter
     expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_two'])]);
     expect(await cache.getNamesByFlagSets(['n'])).toEqual([emptySet]);
 
-    await cache.addSplit(featureFlagOne.name, { ...featureFlagOne, sets: ['x'] });
+    await cache.addSplit({ ...featureFlagOne, sets: ['x'] });
     expect(await cache.getNamesByFlagSets(['x'])).toEqual([new Set(['ff_one'])]);
     expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new Set(['ff_two']), new Set(['ff_three']), new Set(['ff_one'])]);
 
@@ -188,11 +187,12 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getNamesByFlagSets(['y'])).toEqual([emptySet]); // 'y' not in filter
     expect(await cache.getNamesByFlagSets([])).toEqual([]);
 
-    await cache.addSplit(featureFlagWithEmptyFS.name, featureFlagWithoutFS);
+    await cache.addSplit({ ...featureFlagWithoutFS, name: featureFlagWithEmptyFS.name });
     expect(await cache.getNamesByFlagSets([])).toEqual([]);
 
     // Delete splits, TT and flag set keys
-    await cache.removeSplits([featureFlagThree.name, featureFlagTwo.name, featureFlagWithEmptyFS.name]);
+    await cache.update([], [featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS], -1);
+    await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });
@@ -204,12 +204,12 @@ describe('SPLITS CACHE REDIS', () => {
 
     const emptySet = new Set([]);
 
-    await cacheWithoutFilters.addSplits([
-      [featureFlagOne.name, featureFlagOne],
-      [featureFlagTwo.name, featureFlagTwo],
-      [featureFlagThree.name, featureFlagThree],
-    ]);
-    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS.name, featureFlagWithEmptyFS);
+    await cacheWithoutFilters.update([
+      featureFlagOne,
+      featureFlagTwo,
+      featureFlagThree
+    ], [], -1);
+    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS);
 
     expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
     expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
@@ -219,7 +219,8 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
     // Delete splits, TT and flag set keys
-    await cacheWithoutFilters.removeSplits([featureFlagThree.name, featureFlagTwo.name, featureFlagOne.name, featureFlagWithEmptyFS.name]);
+    await cacheWithoutFilters.update([], [featureFlagThree, featureFlagTwo, featureFlagOne, featureFlagWithEmptyFS], -1);
+    await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });

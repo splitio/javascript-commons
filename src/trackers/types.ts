@@ -1,4 +1,4 @@
-import { SplitIO, ImpressionDTO } from '../types';
+import SplitIO from '../../types/splitio';
 import { StreamingEventType, Method, OperationType, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { IEventsCacheBase } from '../storages/types';
 import { NetworkError } from '../services/types';
@@ -17,8 +17,19 @@ export interface IImpressionsHandler {
   handleImpression(impressionData: SplitIO.ImpressionData): any
 }
 
+export type ImpressionDecorated = {
+  /**
+   * Impression DTO
+   */
+  imp: SplitIO.ImpressionDTO,
+  /**
+   * Whether the impression should be tracked or not
+   */
+  disabled?: boolean
+};
+
 export interface IImpressionsTracker {
-  track(impressions: ImpressionDTO[], attributes?: SplitIO.Attributes): void
+  track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes): void
 }
 
 /** Telemetry tracker */
@@ -65,16 +76,11 @@ export interface IImpressionSenderAdapter {
 
 /** Unique keys tracker */
 export interface IUniqueKeysTracker {
+  start(): void;
   stop(): void;
   track(key: string, featureName: string): void;
 }
 
-export interface IStrategyResult {
-  impressionsToStore: ImpressionDTO[],
-  impressionsToListener: ImpressionDTO[],
-  deduped: number
-}
-
 export interface IStrategy {
-  process(impressions:  ImpressionDTO[]): IStrategyResult
+  process(impression:  SplitIO.ImpressionDTO): boolean
 }

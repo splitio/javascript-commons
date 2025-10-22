@@ -1,22 +1,24 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
-import { IEventEmitter, ISettings } from '../types';
+import { ISettings } from '../types';
+import SplitIO from '../../types/splitio';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
+const TIMEOUT_ERROR = new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.');
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
  * It also updates logs related warnings and errors.
  *
- * @param readyTimeout time in millis to emit SDK_READY_TIME_OUT event
- * @param readinessManager optional readinessManager to use. only used internally for `shared` method
+ * @param readyTimeout - time in millis to emit SDK_READY_TIME_OUT event
+ * @param readinessManager - optional readinessManager to use. only used internally for `shared` method
  */
 export function sdkReadinessManagerFactory(
-  EventEmitter: new () => IEventEmitter,
+  EventEmitter: new () => SplitIO.IEventEmitter,
   settings: ISettings,
   readinessManager = readinessManagerFactory(EventEmitter, settings)): ISdkReadinessManager {
 
@@ -39,13 +41,10 @@ export function sdkReadinessManagerFactory(
     }
   });
 
-  /** Ready promise */
-  let readyPromise: Promise<void>;
-
   readinessManager.gate.once(SDK_READY, () => {
     log.info(CLIENT_READY);
 
-    if (readyCbCount === internalReadyCbCount && !readyPromise) log.warn(CLIENT_NO_LISTENER);
+    if (readyCbCount === internalReadyCbCount) log.warn(CLIENT_NO_LISTENER);
   });
 
   readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
@@ -78,19 +77,31 @@ export function sdkReadinessManagerFactory(
           SDK_UPDATE,
           SDK_READY_TIMED_OUT,
         },
-        ready() {
-          if (readinessManager.isReady()) return Promise.resolve();
 
-          if (readinessManager.hasTimedout()) return Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.'));
-
-          return readyPromise || (readyPromise = new Promise<void>((resolve, reject) => {
-            readinessManager.gate.once(SDK_READY, () => {
+        whenReady() {
+          return new Promise<void>((resolve, reject) => {
+            if (readinessManager.isReady()) {
               resolve();
-            });
-            readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
-              reject(new Error(message));
-            });
-          }));
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY, resolve);
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
+        },
+
+        whenReadyFromCache() {
+          return new Promise<boolean>((resolve, reject) => {
+            if (readinessManager.isReadyFromCache()) {
+              resolve(readinessManager.isReady());
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY_FROM_CACHE, () => resolve(readinessManager.isReady()));
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
         },
 
         __getStatus() {

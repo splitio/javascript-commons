@@ -1,9 +1,9 @@
 import { ImpressionObserver } from './ImpressionObserver';
 import { hash } from '../../utils/murmur3/murmur3';
 import { buildKey } from './buildKey';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 
-export function hashImpression32(impression: ImpressionDTO) {
+export function hashImpression32(impression: SplitIO.ImpressionDTO) {
   return hash(buildKey(impression));
 }
 

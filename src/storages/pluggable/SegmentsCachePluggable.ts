@@ -22,33 +22,20 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   }
 
   /**
-   * Add a list of `segmentKeys` to the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
+   * Update the given segment `name` with the lists of `addedKeys`, `removedKeys` and `changeNumber`.
+   * The returned promise is resolved if the operation success, with `true` if the segment was updated (i.e., some key was added or removed),
+   * or rejected if it fails (e.g., wrapper operation fails).
    */
-  addToSegment(name: string, segmentKeys: string[]) {
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    if (segmentKeys.length) {
-      return this.wrapper.addItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
-  }
-
-  /**
-   * Remove a list of `segmentKeys` from the given segment `name`.
-   * The returned promise is resolved when the operation success
-   * or rejected if wrapper operation fails.
-   */
-  removeFromSegment(name: string, segmentKeys: string[]) {
-    const segmentKey = this.keys.buildSegmentNameKey(name);
-
-    if (segmentKeys.length) {
-      return this.wrapper.removeItems(segmentKey, segmentKeys);
-    } else {
-      return Promise.resolve();
-    }
+    return Promise.all<any>([
+      addedKeys.length && this.wrapper.addItems(segmentKey, addedKeys),
+      removedKeys.length && this.wrapper.removeItems(segmentKey, removedKeys),
+      this.wrapper.set(this.keys.buildSegmentTillKey(name), changeNumber + '')
+    ]).then(() => {
+      return addedKeys.length > 0 || removedKeys.length > 0;
+    });
   }
 
   /**
@@ -60,17 +47,6 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
   }
 
   /**
-   * Set till number for the given segment `name`.
-   * The returned promise is resolved when the operation success,
-   * or rejected if it fails (e.g., wrapper operation fails).
-   */
-  setChangeNumber(name: string, changeNumber: number) {
-    return this.wrapper.set(
-      this.keys.buildSegmentTillKey(name), changeNumber + ''
-    );
-  }
-
-  /**
    * Get till number or -1 if it's not defined.
    * The returned promise is resolved with the changeNumber or -1 if it doesn't exist or a wrapper operation fails.
    * The promise will never be rejected.
@@ -79,10 +55,10 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     return this.wrapper.get(this.keys.buildSegmentTillKey(name)).then((value: string | null) => {
       const i = parseInt(value as string, 10);
 
-      return isNaNNumber(i) ? -1 : i;
+      return isNaNNumber(i) ? undefined : i;
     }).catch((e) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
-      return -1;
+      return undefined;
     });
   }
 
@@ -107,7 +83,7 @@ export class SegmentsCachePluggable implements ISegmentsCacheAsync {
     return this.wrapper.getItems(this.keys.buildRegisteredSegmentsKey());
   }
 
-  /** @TODO implement if required by DataLoader or Producer mode  */
+  // @TODO implement if required by DataLoader or Producer mode
   clear(): Promise<boolean> {
     return Promise.resolve(true);
   }

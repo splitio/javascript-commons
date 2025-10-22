@@ -1,4 +1,4 @@
-import { LogLevel } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { Logger, LogLevels, isLogLevelString, _sprintf } from '../index';
 
 // We'll set this only once. These are the constants we will use for
@@ -16,12 +16,10 @@ test('SPLIT LOGGER / isLogLevelString utility function', () => {
   expect(isLogLevelString(LOG_LEVELS.DEBUG)).toBe(true); // Calling isLogLevelString should return true with a LOG_LEVELS value
   expect(isLogLevelString('ERROR')).toBe(true); // Calling isLogLevelString should return true with a string equal to some LOG_LEVELS value
   expect(isLogLevelString('INVALID LOG LEVEL')).toBe(false); // Calling isLogLevelString should return false with a string not equal to any LOG_LEVELS value
-
 });
 
 test('SPLIT LOGGER / LogLevels exposed mappings', () => {
   expect(LogLevels).toEqual(LOG_LEVELS); // Exposed log levels should contain the levels we want.
-
 });
 
 test('SPLIT LOGGER / Logger class shape', () => {
@@ -36,13 +34,13 @@ test('SPLIT LOGGER / Logger class shape', () => {
   expect(typeof logger.setLogLevel).toBe('function'); // instance.setLogLevel should be a method.
 });
 
-const LOG_LEVELS_IN_ORDER = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
+const LOG_LEVELS_IN_ORDER: SplitIO.LogLevel[] = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'];
 /* Utility function to avoid repeating too much code */
-function testLogLevels(levelToTest: LogLevel) {
+function testLogLevels(levelToTest: SplitIO.LogLevel) {
   // Builds the expected message.
-  const buildExpectedMessage = (lvl: string, category: string, msg: string, showLevel?: boolean) => {
+  const buildExpectedMessage = (lvl: string, category: string, msg: string, useDefaultLogger?: boolean) => {
     let res = '';
-    if (showLevel) res += '[' + lvl + ']' + (lvl.length === 4 ? '  ' : ' ');
+    if (useDefaultLogger) res += '[' + lvl + ']' + (lvl.length === 4 ? '  ' : ' ');
     res += category + ' => ';
     res += msg;
     return res;
@@ -51,24 +49,33 @@ function testLogLevels(levelToTest: LogLevel) {
   // Spy console.log
   const consoleLogSpy = jest.spyOn(global.console, 'log');
 
-  // Runs the suite with the given value for showLevel option.
-  const runTests = (showLevel?: boolean, useCodes?: boolean) => {
+  // Runs the suite with the given values
+  const runTests = (useDefaultLogger?: boolean, useCodes?: boolean) => {
     let logLevelLogsCounter = 0;
     let testForNoLog = false;
     const logMethod = levelToTest.toLowerCase();
     const logCategory = `test-category-${logMethod}`;
-    const instance = new Logger({ prefix: logCategory, showLevel },
-      useCodes ? new Map([[1, 'Test log for level %s with showLevel: %s %s']]) : undefined);
+    const instance = new Logger({ prefix: logCategory },
+      useCodes ? new Map([[1, 'Test log for level %s with default logger: %s %s']]) : undefined);
+    if (!useDefaultLogger) {
+      instance.setLogger({
+        debug: console.log,
+        info: console.log,
+        warn: console.log,
+        error: console.log,
+      });
+    }
+
 
     LOG_LEVELS_IN_ORDER.forEach((logLevel, i) => {
-      const logMsg = `Test log for level ${levelToTest} with showLevel: ${showLevel} ${logLevelLogsCounter}`;
-      const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, showLevel);
+      const logMsg = `Test log for level ${levelToTest} with default logger: ${useDefaultLogger} ${logLevelLogsCounter}`;
+      const expectedMessage = buildExpectedMessage(levelToTest, logCategory, logMsg, useDefaultLogger);
 
       // Set the logLevel for this iteration.
       instance.setLogLevel(LogLevels[logLevel]);
       // Call the method
       // @ts-ignore
-      if (useCodes) instance[logMethod](1, [levelToTest, showLevel, logLevelLogsCounter]); // @ts-ignore
+      if (useCodes) instance[logMethod](1, [levelToTest, useDefaultLogger, logLevelLogsCounter]); // @ts-ignore
       else instance[logMethod](logMsg);
       // Assert if console.log was called.
       const actualMessage = consoleLogSpy.mock.calls[consoleLogSpy.mock.calls.length - 1][0];
@@ -85,36 +92,31 @@ function testLogLevels(levelToTest: LogLevel) {
     });
   };
 
-  // Show logLevel
+  // Default console.log (Show level in logs)
   runTests(true);
-  // Hide logLevel
+  // Custom logger (Don't show level in logs)
   runTests(false);
-  // Hide logLevel and use message codes
+  // Custom logger (Don't show level in logs) and use message codes
   runTests(false, true);
 
   // Restore spied object.
   consoleLogSpy.mockRestore();
-
 }
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.debug', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.debug', () => {
   testLogLevels(LogLevels.DEBUG);
-
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.info', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.info', () => {
   testLogLevels(LogLevels.INFO);
-
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.warn', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.warn', () => {
   testLogLevels(LogLevels.WARN);
-
 });
 
-test('SPLIT LOGGER / Logger class public methods behaviour - instance.error', () => {
+test('SPLIT LOGGER / Logger class public methods behavior - instance.error', () => {
   testLogLevels(LogLevels.ERROR);
-
 });
 
 test('SPLIT LOGGER / _sprintf', () => {

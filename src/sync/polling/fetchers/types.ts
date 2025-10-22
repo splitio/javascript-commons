@@ -5,6 +5,7 @@ export type ISplitChangesFetcher = (
   since: number,
   noCache?: boolean,
   till?: number,
+  rbSince?: number,
   decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
 ) => Promise<ISplitChangesResponse>
 

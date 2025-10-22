@@ -8,5 +8,10 @@
     "on": "\"color\": \"green\""
   },
   "sets": ["set_a"],
-  "defaultTreatment": "off"
+  "defaultTreatment": "off",
+  "impressionsDisabled": false,
+  "prerequisites": [{
+    "flagName": "some_flag",
+    "treatments": ["on"]
+  }]
 }

@@ -1,35 +1,24 @@
-import { AbstractSegmentsCacheSync } from '../AbstractSegmentsCacheSync';
 import { isIntegerNumber } from '../../utils/lang';
+import { ISegmentsCacheSync } from '../types';
 
 /**
- * Default ISplitsCacheSync implementation that stores split definitions in memory.
- * Supported by all JS runtimes.
+ * Default ISplitsCacheSync implementation for server-side that stores segments definitions in memory.
  */
-export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
+export class SegmentsCacheInMemory implements ISegmentsCacheSync {
 
   private segmentCache: Record<string, Set<string>> = {};
   private segmentChangeNumber: Record<string, number> = {};
 
-  addToSegment(name: string, segmentKeys: string[]): boolean {
-    const values = this.segmentCache[name];
-    const keySet = values ? values : new Set<string>();
+  update(name: string, addedKeys: string[], removedKeys: string[], changeNumber: number) {
+    const keySet = this.segmentCache[name] || new Set<string>();
 
-    segmentKeys.forEach(k => keySet.add(k));
-
-    this.segmentCache[name] = keySet;
-
-    return true;
-  }
-
-  removeFromSegment(name: string, segmentKeys: string[]): boolean {
-    const values = this.segmentCache[name];
-    const keySet = values ? values : new Set<string>();
-
-    segmentKeys.forEach(k => keySet.delete(k));
+    addedKeys.forEach(k => keySet.add(k));
+    removedKeys.forEach(k => keySet.delete(k));
 
     this.segmentCache[name] = keySet;
+    this.segmentChangeNumber[name] = changeNumber;
 
-    return true;
+    return addedKeys.length > 0 || removedKeys.length > 0;
   }
 
   isInSegment(name: string, key: string): boolean {
@@ -73,16 +62,13 @@ export class SegmentsCacheInMemory extends AbstractSegmentsCacheSync {
     }, 0);
   }
 
-  setChangeNumber(name: string, changeNumber: number) {
-    this.segmentChangeNumber[name] = changeNumber;
-
-    return true;
-  }
-
   getChangeNumber(name: string) {
     const value = this.segmentChangeNumber[name];
 
-    return isIntegerNumber(value) ? value : -1;
+    return isIntegerNumber(value) ? value : undefined;
   }
+
+  // No-op. Not used in server-side
+  resetSegments() { return false; }
 
 }

@@ -1,6 +1,6 @@
 import { errorParser, messageParser } from './NotificationParser';
 import { notificationKeeperFactory } from './NotificationKeeper';
-import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NONRETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, RB_SEGMENT_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError, INotificationMessage } from './types';
@@ -12,8 +12,8 @@ import { ITelemetryTracker } from '../../../trackers/types';
 /**
  * Factory for SSEHandler, which processes SSEClient messages and emits the corresponding push events.
  *
- * @param log factory logger
- * @param pushEmitter emitter for events related to streaming support
+ * @param log - factory logger
+ * @param pushEmitter - emitter for events related to streaming support
  */
 export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, telemetryTracker: ITelemetryTracker): ISseEventHandler {
 
@@ -25,7 +25,7 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
       const code = error.parsedData.code;
       telemetryTracker.streamingEvent(ABLY_ERROR, code);
 
-      // 401 errors due to invalid or expired token (e.g., if refresh token coudn't be executed)
+      // 401 errors due to invalid or expired token (e.g., if refresh token couldn't be executed)
       if (40140 <= code && code <= 40149) return true;
       // Others 4XX errors (e.g., bad request from the SDK)
       if (40000 <= code && code <= 49999) return false;
@@ -84,6 +84,7 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
         case MEMBERSHIPS_MS_UPDATE:
         case MEMBERSHIPS_LS_UPDATE:
         case SPLIT_KILL:
+        case RB_SEGMENT_UPDATE:
           pushEmitter.emit(parsedData.type, parsedData);
           break;
 

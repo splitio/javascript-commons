@@ -53,6 +53,10 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.buildSplitKeyPrefix()}*`;
   }
 
+  searchPatternForRBSegmentKeys() {
+    return `${this.buildRBSegmentKeyPrefix()}*`;
+  }
+
   /* Telemetry keys */
 
   buildLatencyKey(method: Method, bucket: number) {

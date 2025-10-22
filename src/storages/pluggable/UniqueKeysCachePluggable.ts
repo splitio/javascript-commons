@@ -4,6 +4,7 @@ import { DEFAULT_CACHE_SIZE, REFRESH_RATE } from '../inRedis/constants';
 import { LOG_PREFIX } from './constants';
 import { ILogger } from '../../logger/types';
 import { UniqueKeysItemSs } from '../../sync/submitters/types';
+import { setToArray } from '../../utils/lang/sets';
 
 export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements IUniqueKeysCacheBase {
 
@@ -27,7 +28,7 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
     if (!featureNames.length) return Promise.resolve(false);
 
     const uniqueKeysArray = featureNames.map((featureName) => {
-      const featureKeys = Array.from(this.uniqueKeysTracker[featureName]);
+      const featureKeys = setToArray(this.uniqueKeysTracker[featureName]);
       const uniqueKeysPayload = {
         f: featureName,
         ks: featureKeys
@@ -55,7 +56,7 @@ export class UniqueKeysCachePluggable extends UniqueKeysCacheInMemory implements
 
   /**
    * Async consumer API, used by synchronizer.
-   * @param count number of items to pop from the queue. If not provided or equal 0, all items will be popped.
+   * @param count - number of items to pop from the queue. If not provided or equal 0, all items will be popped.
    */
   popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
     return Promise.resolve(count || this.wrapper.getItemsCount(this.key))

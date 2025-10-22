@@ -10,13 +10,13 @@ const noopFilterAdapter = {
 };
 
 /**
- * Trackes uniques keys
+ * Tracks uniques keys
  * Unique Keys Tracker will be in charge of checking if the MTK was already sent to the BE in the last period
  * or schedule to be sent; if not it will be added in an internal cache and sent in the next post.
  *
- * @param log Logger instance
- * @param uniqueKeysCache cache to save unique keys
- * @param filterAdapter filter adapter
+ * @param log - Logger instance
+ * @param uniqueKeysCache - cache to save unique keys
+ * @param filterAdapter - filter adapter
  */
 export function uniqueKeysTrackerFactory(
   log: ILogger,
@@ -24,10 +24,6 @@ export function uniqueKeysTrackerFactory(
   filterAdapter: IFilterAdapter = noopFilterAdapter,
 ): IUniqueKeysTracker {
   let intervalId: any;
-
-  if (filterAdapter.refreshRate) {
-    intervalId = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
-  }
 
   return {
 
@@ -37,6 +33,12 @@ export function uniqueKeysTrackerFactory(
         return;
       }
       uniqueKeysCache.track(key, featureName);
+    },
+
+    start(): void {
+      if (filterAdapter.refreshRate) {
+        intervalId = setInterval(filterAdapter.clear, filterAdapter.refreshRate);
+      }
     },
 
     stop(): void {

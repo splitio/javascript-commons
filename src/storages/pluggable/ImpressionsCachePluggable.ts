@@ -1,6 +1,6 @@
 import { IPluggableStorageWrapper, IImpressionsCacheAsync } from '../types';
 import { IMetadata } from '../../dtos/types';
-import { ImpressionDTO } from '../../types';
+import SplitIO from '../../../types/splitio';
 import { StoredImpressionWithMetadata } from '../../sync/submitters/types';
 import { ILogger } from '../../logger/types';
 import { impressionsToJSON } from '../utils';
@@ -21,11 +21,11 @@ export class ImpressionsCachePluggable implements IImpressionsCacheAsync {
 
   /**
    * Push given impressions to the storage.
-   * @param impressions  List of impresions to push.
+   * @param impressions -  List of impresions to push.
    * @returns  A promise that is resolved if the push operation succeeded
    * or rejected if the wrapper operation fails.
    */
-  track(impressions: ImpressionDTO[]): Promise<void> {
+  track(impressions: SplitIO.ImpressionDTO[]): Promise<void> {
     return this.wrapper.pushItems(
       this.key,
       impressionsToJSON(impressions, this.metadata)

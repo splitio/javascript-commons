@@ -1,12 +1,9 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
 import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { MaybeThenable } from '../../../dtos/types';
-import { findIndex } from '../../../utils/lang';
 import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
-import { thenable } from '../../../utils/promise/thenable';
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -16,10 +13,10 @@ type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noC
  *  - updates `segmentsCache`
  *  - uses `segmentsEventEmitter` to emit events related to segments data updates
  *
- * @param log logger instance
- * @param segmentChangesFetcher fetcher of `/segmentChanges`
- * @param segments segments storage, with sync or async methods
- * @param readiness optional readiness manager. Not required for synchronizer or producer mode.
+ * @param log - logger instance
+ * @param segmentChangesFetcher - fetcher of `/segmentChanges`
+ * @param segments - segments storage, with sync or async methods
+ * @param readiness - optional readiness manager. Not required for synchronizer or producer mode.
  */
 export function segmentChangesUpdaterFactory(
   log: ILogger,
@@ -30,31 +27,22 @@ export function segmentChangesUpdaterFactory(
 
   let readyOnAlreadyExistentState = true;
 
-  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean) {
+  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean): Promise<boolean> {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
     let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
-      if (fetchOnlyNew && since !== -1) return -1;
-
-      return segmentChangesFetcher(since, segmentName, noCache, till).then(function (changes) {
-        let changeNumber = -1;
-        const results: MaybeThenable<boolean | void>[] = [];
-        changes.forEach(x => {
-          if (x.added.length > 0) results.push(segments.addToSegment(segmentName, x.added));
-          if (x.removed.length > 0) results.push(segments.removeFromSegment(segmentName, x.removed));
-          if (x.added.length > 0 || x.removed.length > 0) {
-            results.push(segments.setChangeNumber(segmentName, x.till));
-            changeNumber = x.till;
-          }
-
-          log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processed ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+      return fetchOnlyNew && since !== undefined ?
+        false :
+        segmentChangesFetcher(since || -1, segmentName, noCache, till).then((changes) => {
+          return Promise.all(changes.map(x => {
+            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            return segments.update(segmentName, x.added, x.removed, x.till);
+          })).then((updates) => {
+            return updates.some(update => update);
+          });
         });
-        // If at least one storage operation result is a promise, join all in a single promise.
-        if (results.some(result => thenable(result))) return Promise.all(results).then(() => changeNumber);
-        return changeNumber;
-      });
     });
   }
   /**
@@ -62,11 +50,11 @@ export function segmentChangesUpdaterFactory(
    * Thus, a false result doesn't imply that SDK_SEGMENTS_ARRIVED was not emitted.
    * Returned promise will not be rejected.
    *
-   * @param {boolean | undefined} fetchOnlyNew if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
-   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE notifications.
-   * @param {string | undefined} segmentName segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
-   * @param {boolean | undefined} noCache true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
-   * @param {number | undefined} till till target for the provided segmentName, for CDN bypass.
+   * @param fetchOnlyNew - if true, only fetch the segments that not exists, i.e., which `changeNumber` is equal to -1.
+   * This param is used by SplitUpdateWorker on server-side SDK, to fetch new registered segments on SPLIT_UPDATE or RB_SEGMENT_UPDATE notifications.
+   * @param segmentName - segment name to fetch. By passing `undefined` it fetches the list of segments registered at the storage
+   * @param noCache - true to revalidate data to fetch on a SEGMENT_UPDATE notifications.
+   * @param till - till target for the provided segmentName, for CDN bypass.
    */
   return function segmentChangesUpdater(fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
@@ -75,16 +63,12 @@ export function segmentChangesUpdaterFactory(
     let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
 
     return segmentsPromise.then(segmentNames => {
-      // Async fetchers are collected here.
-      const updaters: Promise<number>[] = [];
-
-      for (let index = 0; index < segmentNames.length; index++) {
-        updaters.push(updateSegment(segmentNames[index], noCache, till, fetchOnlyNew));
-      }
+      // Async fetchers
+      const updaters = segmentNames.map(segmentName => updateSegment(segmentName, noCache, till, fetchOnlyNew));
 
       return Promise.all(updaters).then(shouldUpdateFlags => {
         // if at least one segment fetch succeeded, mark segments ready
-        if (findIndex(shouldUpdateFlags, v => v !== -1) !== -1 || readyOnAlreadyExistentState) {
+        if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
           if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
         }
