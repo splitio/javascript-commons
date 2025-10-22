@@ -14,7 +14,7 @@ const EVALUATION_RESULT = 'on';
 const client: any = createClientMock(EVALUATION_RESULT);
 
 const readinessManager: any = {
-  isReady: () => true,
+  isReadyFromCache: () => true,
   isDestroyed: () => false
 };
 

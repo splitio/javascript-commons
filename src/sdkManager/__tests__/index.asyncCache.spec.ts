@@ -15,6 +15,7 @@ import SplitIO from '../../../types/splitio';
 const sdkReadinessManagerMock = {
   readinessManager: {
     isReady: jest.fn(() => true),
+    isReadyFromCache: jest.fn(() => true),
     isDestroyed: jest.fn(() => false)
   },
   sdkStatus: jest.fn()
@@ -77,7 +78,7 @@ describe('Manager with async cache', () => {
     const cache = new SplitsCachePluggable(loggerMock, keys, wrapperAdapter(loggerMock, {}));
     const manager = sdkManagerFactory({ mode: 'consumer_partial', log: loggerMock }, cache, sdkReadinessManagerMock);
 
-    expect(await manager.split('some_spplit')).toEqual(null);
+    expect(await manager.split('some_split')).toEqual(null);
     expect(await manager.splits()).toEqual([]);
     expect(await manager.names()).toEqual([]);
 
@@ -98,7 +99,7 @@ describe('Manager with async cache', () => {
     const manager = sdkManagerFactory({ mode: 'consumer_partial', log: loggerMock }, {}, sdkReadinessManagerMock) as SplitIO.IAsyncManager;
 
     function validateManager() {
-      expect(manager.split('some_spplit')).resolves.toBe(null);
+      expect(manager.split('some_split')).resolves.toBe(null);
       expect(manager.splits()).resolves.toEqual([]);
       expect(manager.names()).resolves.toEqual([]);
     }
