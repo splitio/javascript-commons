@@ -120,13 +120,13 @@ export function sdkReadinessManagerFactory(
         },
 
         whenReadyFromCache() {
-          return new Promise<void>((resolve, reject) => {
+          return new Promise<boolean>((resolve, reject) => {
             if (readinessManager.isReadyFromCache()) {
-              resolve();
+              resolve(readinessManager.isReady());
             } else if (readinessManager.hasTimedout()) {
               reject(TIMEOUT_ERROR);
             } else {
-              readinessManager.gate.once(SDK_READY_FROM_CACHE, resolve);
+              readinessManager.gate.once(SDK_READY_FROM_CACHE, () => resolve(readinessManager.isReady()));
               readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
             }
           });
