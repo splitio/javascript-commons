@@ -54,6 +54,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
     });
 
     expect(typeof sdkStatus.whenReady).toBe('function'); // The sdkStatus exposes a .whenReady() function.
+    expect(typeof sdkStatus.whenReadyFromCache).toBe('function'); // The sdkStatus exposes a .whenReadyFromCache() function.
     expect(typeof sdkStatus.__getStatus).toBe('function'); // The sdkStatus exposes a .__getStatus() function.
     expect(sdkStatus.__getStatus()).toEqual({
       isReady: false, isReadyFromCache: false, isTimedout: false, hasTimedout: false, isDestroyed: false, isOperational: false, lastUpdate: 0
@@ -70,9 +71,9 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const sdkReadyResolvePromiseCall = gateMock.once.mock.calls[0];
     const sdkReadyRejectPromiseCall = gateMock.once.mock.calls[1];
     const sdkReadyFromCacheListenersCheckCall = gateMock.once.mock.calls[2];
-    expect(sdkReadyResolvePromiseCall[0]).toBe(SDK_READY); // A one time only subscription is on the SDK_READY event, for resolving the full blown whenReady promise and to check for callbacks warning.
-    expect(sdkReadyRejectPromiseCall[0]).toBe(SDK_READY_TIMED_OUT); // A one time only subscription is also on the SDK_READY_TIMED_OUT event, for rejecting the full blown whenReady promise.
-    expect(sdkReadyFromCacheListenersCheckCall[0]).toBe(SDK_READY_FROM_CACHE); // A one time only subscription is on the SDK_READY_FROM_CACHE event, to log the event and update internal state.
+    expect(sdkReadyResolvePromiseCall[0]).toBe(SDK_READY); // A one time only subscription is on the SDK_READY event
+    expect(sdkReadyRejectPromiseCall[0]).toBe(SDK_READY_TIMED_OUT); // A one time only subscription is also on the SDK_READY_TIMED_OUT event
+    expect(sdkReadyFromCacheListenersCheckCall[0]).toBe(SDK_READY_FROM_CACHE); // A one time only subscription is on the SDK_READY_FROM_CACHE event
 
     expect(gateMock.on).toBeCalledTimes(2); // It should also add two persistent listeners
 
@@ -272,7 +273,7 @@ describe('SDK Readiness Manager - whenReady promise', () => {
     );
   });
 
-  test('Full blown whenReady promise count as a callback and resolves on SDK_READY', (done) => {
+  test('whenReady promise count as a callback and resolves on SDK_READY', (done) => {
     let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
     // Emit ready event
