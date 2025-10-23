@@ -38,6 +38,8 @@ export function sdkReadinessManagerFactory(
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
+    } else if (event === SDK_READY_FROM_CACHE && readinessManager.isReadyFromCache()) {
+      log.error(ERROR_CLIENT_LISTENER, ['SDK_READY_FROM_CACHE']);
     }
   });
 
