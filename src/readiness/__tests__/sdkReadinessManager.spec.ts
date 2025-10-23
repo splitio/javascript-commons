@@ -25,7 +25,7 @@ function emitReadyEvent(readinessManager: IReadinessManager) {
   readinessManager.segments.once.mock.calls[0][1]();
   readinessManager.segments.on.mock.calls[0][1]();
   readinessManager.gate.once.mock.calls[0][1]();
-  if (readinessManager.gate.once.mock.calls[3]) readinessManager.gate.once.mock.calls[3][1](); // ready promise
+  if (readinessManager.gate.once.mock.calls[3]) readinessManager.gate.once.mock.calls[3][1](); // whenReady promise
 }
 
 const timeoutErrorMessage = 'Split SDK emitted SDK_READY_TIMED_OUT event.';
@@ -34,7 +34,7 @@ const timeoutErrorMessage = 'Split SDK emitted SDK_READY_TIMED_OUT event.';
 function emitTimeoutEvent(readinessManager: IReadinessManager) {
   readinessManager.gate.once.mock.calls[1][1](timeoutErrorMessage);
   readinessManager.hasTimedout = () => true;
-  if (readinessManager.gate.once.mock.calls[4]) readinessManager.gate.once.mock.calls[4][1](timeoutErrorMessage); // ready promise
+  if (readinessManager.gate.once.mock.calls[4]) readinessManager.gate.once.mock.calls[4][1](timeoutErrorMessage); // whenReady promise
 }
 
 describe('SDK Readiness Manager - Event emitter', () => {
@@ -70,8 +70,8 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const sdkReadyResolvePromiseCall = gateMock.once.mock.calls[0];
     const sdkReadyRejectPromiseCall = gateMock.once.mock.calls[1];
     const sdkReadyFromCacheListenersCheckCall = gateMock.once.mock.calls[2];
-    expect(sdkReadyResolvePromiseCall[0]).toBe(SDK_READY); // A one time only subscription is on the SDK_READY event, for resolving the full blown ready promise and to check for callbacks warning.
-    expect(sdkReadyRejectPromiseCall[0]).toBe(SDK_READY_TIMED_OUT); // A one time only subscription is also on the SDK_READY_TIMED_OUT event, for rejecting the full blown ready promise.
+    expect(sdkReadyResolvePromiseCall[0]).toBe(SDK_READY); // A one time only subscription is on the SDK_READY event, for resolving the full blown whenReady promise and to check for callbacks warning.
+    expect(sdkReadyRejectPromiseCall[0]).toBe(SDK_READY_TIMED_OUT); // A one time only subscription is also on the SDK_READY_TIMED_OUT event, for rejecting the full blown whenReady promise.
     expect(sdkReadyFromCacheListenersCheckCall[0]).toBe(SDK_READY_FROM_CACHE); // A one time only subscription is on the SDK_READY_FROM_CACHE event, to log the event and update internal state.
 
     expect(gateMock.on).toBeCalledTimes(2); // It should also add two persistent listeners
@@ -101,7 +101,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
 
-    expect(loggerMock.warn).toBeCalledTimes(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor ready promise) we get a warning.
+    expect(loggerMock.warn).toBeCalledTimes(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor whenReady promise) we get a warning.
     expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // Telling us there were no listeners and evaluations before this point may have been incorrect.
 
     expect(loggerMock.info).toBeCalledTimes(1); // If the SDK_READY event fires, we get a info message.
@@ -210,7 +210,7 @@ describe('SDK Readiness Manager - whenReady promise', () => {
     const ready = sdkReadinessManager.sdkStatus.whenReady();
     expect(ready instanceof Promise).toBe(true); // It should return a promise.
 
-    // make the SDK "ready"
+    // make the SDK ready
     emitReadyEvent(sdkReadinessManager.readinessManager);
 
     let testPassedCount = 0;
@@ -238,7 +238,7 @@ describe('SDK Readiness Manager - whenReady promise', () => {
 
     const readyForTimeout = sdkReadinessManagerForTimedout.sdkStatus.whenReady();
 
-    emitTimeoutEvent(sdkReadinessManagerForTimedout.readinessManager); // make the SDK "timed out"
+    emitTimeoutEvent(sdkReadinessManagerForTimedout.readinessManager); // make the SDK timeout
 
     await readyForTimeout.then(
       () => { throw new Error('It should be a promise that was rejected on SDK_READY_TIMED_OUT, not resolved.'); },
@@ -257,7 +257,7 @@ describe('SDK Readiness Manager - whenReady promise', () => {
       }
     );
 
-    // make the SDK "ready"
+    // make the SDK ready
     emitReadyEvent(sdkReadinessManagerForTimedout.readinessManager);
 
     // once SDK_READY, `.whenReady()` returns a resolved promise
@@ -272,19 +272,19 @@ describe('SDK Readiness Manager - whenReady promise', () => {
     );
   });
 
-  test('Full blown ready promise count as a callback and resolves on SDK_READY', (done) => {
+  test('Full blown whenReady promise count as a callback and resolves on SDK_READY', (done) => {
     let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
     // Emit ready event
     sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
     sdkReadinessManager.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We should get a warning if the SDK get's ready before calling the ready method or attaching a listener to the ready event
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We should get a warning if the SDK get's ready before calling the whenReady method or attaching a listener to the ready event
     loggerMock.warn.mockClear();
 
     sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
     sdkReadinessManager.sdkStatus.whenReady().then(() => {
-      expect('The ready promise is resolved when the gate emits SDK_READY.');
+      expect('whenReady promise is resolved when the gate emits SDK_READY.');
       done();
     }, () => {
       throw new Error('This should not be called as the promise is being resolved.');
@@ -294,6 +294,6 @@ describe('SDK Readiness Manager - whenReady promise', () => {
     sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
     sdkReadinessManager.readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
-    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener or call the ready method, we get no warnings.
+    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener or call the whenReady method, we get no warnings.
   });
 });
