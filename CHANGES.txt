@@ -1,5 +1,5 @@
 2.8.0 (October XX, 2025)
- - Added `client.whenReady()` and `client.whenReadyFromCache()` methods to replace the deprecated `client.ready()` method, which had an issue causing the returned promise to hang when using async/await syntax if it was rejected.
+ - Added `client.whenReady()` and `client.whenReadyFromCache()` methods to replace the deprecated `client.ready()` method, which has an issue causing the returned promise to hang when using async/await syntax if it was rejected.
  - Updated the SDK_READY_FROM_CACHE event to be emitted alongside the SDK_READY event if it hasn’t already been emitted.
 
 2.7.1 (October 8, 2025)
