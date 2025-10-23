@@ -35,7 +35,7 @@ function stringify(options?: SplitIO.EvaluationOptions) {
  * Creator of base client with getTreatments and track methods.
  */
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker, fallbackTreatmentsCalculator } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
@@ -143,8 +143,16 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 
-    const { treatment, label, changeNumber, config = null, impressionsDisabled } = evaluation;
+    const { changeNumber, impressionsDisabled } = evaluation;
+    let { treatment, label, config = null } = evaluation;
     log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
+
+    if (treatment === CONTROL) {
+      const fallbackTreatment = fallbackTreatmentsCalculator.resolve(featureFlagName, label);
+      treatment = fallbackTreatment.treatment;
+      label = fallbackTreatment.label ? fallbackTreatment.label : label;
+      config = fallbackTreatment.config;
+    }
 
     if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
