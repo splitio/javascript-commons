@@ -60,7 +60,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   }
 
   function evaluateFallBackTreatment(featureFlagName: string, withConfig: boolean): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
-    const {treatment, config} = fallbackTreatmentsCalculator.resolve(featureFlagName, '');
+    const { treatment, config } = fallbackTreatmentsCalculator.resolve(featureFlagName, '');
 
     if (withConfig) {
       return {
