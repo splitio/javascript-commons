@@ -149,7 +149,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     if (treatment === CONTROL) {
       const fallbackTreatment = fallbackTreatmentsCalculator.resolve(featureFlagName, label);
       treatment = fallbackTreatment.treatment;
-      label = fallbackTreatment.label ? fallbackTreatment.label : label;
+      label = fallbackTreatment.label;
       config = fallbackTreatment.config;
     }
 
