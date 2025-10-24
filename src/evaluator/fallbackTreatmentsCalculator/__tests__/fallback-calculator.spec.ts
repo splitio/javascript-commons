@@ -131,20 +131,4 @@ describe('FallbackTreatmentsCalculator' , () => {
       label: 'label by noFallback',
     });
   });
-
-  test('returns undefined label if no label provided', () => {
-    const config: FallbackTreatmentConfiguration = {
-      byFlag: {
-        'featureB': { treatment: 'TREATMENT_B', config: '{ value: 1 }' },
-      },
-    };
-    const calculator = new FallbackTreatmentsCalculator(loggerMock, config);
-    const result = calculator.resolve('featureB');
-
-    expect(result).toEqual({
-      treatment: 'TREATMENT_B',
-      config: '{ value: 1 }',
-      label: '',
-    });
-  });
 });

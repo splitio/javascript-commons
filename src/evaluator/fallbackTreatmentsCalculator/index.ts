@@ -1,15 +1,16 @@
-import { FallbackTreatmentConfiguration, FallbackTreatment } from '../../../types/splitio';
+import { FallbackTreatmentConfiguration, Treatment, TreatmentWithConfig } from '../../../types/splitio';
 import { FallbacksSanitizer } from './fallbackSanitizer';
 import { CONTROL } from '../../utils/constants';
 import { isString } from '../../utils/lang';
 import { ILogger } from '../../logger/types';
 
 export type IFallbackTreatmentsCalculator = {
-  resolve(flagName: string, label?: string): FallbackTreatment & { label?: string };
+  resolve(flagName: string, label: string): TreatmentWithConfig & { label: string };
 }
 
+export const FALLBACK_PREFIX = 'fallback - ';
+
 export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculator {
-  private readonly labelPrefix = 'fallback - ';
   private readonly fallbacks: FallbackTreatmentConfiguration;
 
   constructor(logger: ILogger, fallbacks?: FallbackTreatmentConfiguration) {
@@ -21,7 +22,7 @@ export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculat
     };
   }
 
-  resolve(flagName: string, label?: string): FallbackTreatment & { label?: string } {
+  resolve(flagName: string, label: string): TreatmentWithConfig & { label: string } {
     const treatment = this.fallbacks.byFlag?.[flagName];
     if (treatment) {
       return this.copyWithLabel(treatment, label);
@@ -38,24 +39,19 @@ export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculat
     };
   }
 
-  private copyWithLabel(fallback: string | FallbackTreatment, label?: string): FallbackTreatment & { label: string } {
+  private copyWithLabel(fallback: Treatment | TreatmentWithConfig, label: string): TreatmentWithConfig & { label: string } {
     if (isString(fallback)) {
       return {
         treatment: fallback,
         config: null,
-        label: this.resolveLabel(label),
+        label: `${FALLBACK_PREFIX}${label}`,
       };
     }
 
     return {
       treatment: fallback.treatment,
       config: fallback.config,
-      label: this.resolveLabel(label),
+      label: `${FALLBACK_PREFIX}${label}`,
     };
   }
-
-  private resolveLabel(label?: string): string {
-    return label ? `${this.labelPrefix}${label}` : '';
-  }
-
 }

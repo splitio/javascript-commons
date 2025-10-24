@@ -1,4 +1,4 @@
-import { FallbackTreatment, Treatment, TreatmentWithConfig } from '../../../../types/splitio';
+import { Treatment, TreatmentWithConfig } from '../../../../types/splitio';
 import { ILogger } from '../../../logger/types';
 import { isObject, isString } from '../../../utils/lang';
 import { FallbackDiscardReason } from '../constants';
@@ -12,7 +12,7 @@ export class FallbacksSanitizer {
     return name.length <= 100 && !name.includes(' ');
   }
 
-  private static isValidTreatment(t?: Treatment | FallbackTreatment): boolean {
+  private static isValidTreatment(t?: Treatment | TreatmentWithConfig): boolean {
     const treatment = isObject(t) ? (t as TreatmentWithConfig).treatment : t;
 
     if (!isString(treatment) || treatment.length > 100) {
@@ -21,7 +21,7 @@ export class FallbacksSanitizer {
     return FallbacksSanitizer.pattern.test(treatment);
   }
 
-  static sanitizeGlobal(logger: ILogger, treatment?: string | FallbackTreatment): string | FallbackTreatment | undefined {
+  static sanitizeGlobal(logger: ILogger, treatment?: Treatment | TreatmentWithConfig): Treatment | TreatmentWithConfig | undefined {
     if (!this.isValidTreatment(treatment)) {
       logger.error(
         `Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`
@@ -33,9 +33,9 @@ export class FallbacksSanitizer {
 
   static sanitizeByFlag(
     logger: ILogger,
-    byFlagFallbacks: Record<string, string | FallbackTreatment>
-  ): Record<string, string | FallbackTreatment> {
-    const sanitizedByFlag: Record<string, string | FallbackTreatment> = {};
+    byFlagFallbacks: Record<string, Treatment | TreatmentWithConfig>
+  ): Record<string, Treatment | TreatmentWithConfig> {
+    const sanitizedByFlag: Record<string, Treatment | TreatmentWithConfig> = {};
 
     const entries = Object.keys(byFlagFallbacks);
     entries.forEach((flag) => {

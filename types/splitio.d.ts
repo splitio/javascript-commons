@@ -1233,16 +1233,12 @@ declare namespace SplitIO {
    */
   type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
   /**
-   * Fallback treatment can be either a string (Treatment) or an object with treatment and config (TreatmentWithConfig).
-   */
-  type FallbackTreatment = TreatmentWithConfig;
-  /**
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
    */
   type FallbackTreatmentConfiguration = {
-    global?: string | FallbackTreatment,
+    global?: Treatment | TreatmentWithConfig,
     byFlag?: {
-      [key: string]: string | FallbackTreatment
+      [featureFlagName: string]: Treatment | TreatmentWithConfig
     }
   }
   /**
