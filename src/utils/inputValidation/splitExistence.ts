@@ -1,4 +1,4 @@
-import { SPLIT_NOT_FOUND } from '../labels';
+import { FALLBACK_SPLIT_NOT_FOUND, SPLIT_NOT_FOUND } from '../labels';
 import { IReadinessManager } from '../../readiness/types';
 import { ILogger } from '../../logger/types';
 import { WARN_NOT_EXISTENT_SPLIT } from '../../logger/constants';
@@ -9,7 +9,7 @@ import { WARN_NOT_EXISTENT_SPLIT } from '../../logger/constants';
  */
 export function validateSplitExistence(log: ILogger, readinessManager: IReadinessManager, splitName: string, labelOrSplitObj: any, method: string): boolean {
   if (readinessManager.isReady()) { // Only if it's ready we validate this, otherwise it may just be that the SDK is not ready yet.
-    if (labelOrSplitObj === SPLIT_NOT_FOUND || labelOrSplitObj == null) {
+    if (labelOrSplitObj === SPLIT_NOT_FOUND || labelOrSplitObj == null || labelOrSplitObj === FALLBACK_SPLIT_NOT_FOUND) {
       log.warn(WARN_NOT_EXISTENT_SPLIT, [method, splitName]);
       return false;
     }

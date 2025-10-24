@@ -1,4 +1,3 @@
-import { objectAssign } from '../utils/lang/objectAssign';
 import {
   validateAttributes,
   validateEvent,
@@ -13,19 +12,20 @@ import {
   validateEvaluationOptions
 } from '../utils/inputValidation';
 import { startsWith } from '../utils/lang';
-import { CONTROL, CONTROL_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG, TRACK_FN_LABEL } from '../utils/constants';
+import { GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG, TRACK_FN_LABEL } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
+import { IFallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager, fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator): TClient {
 
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -59,6 +59,19 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     };
   }
 
+  function evaluateFallBackTreatment(featureFlagName: string, withConfig: boolean): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
+    const { treatment, config } = fallbackTreatmentsCalculator.resolve(featureFlagName, '');
+
+    if (withConfig) {
+      return {
+        treatment,
+        config
+      };
+    }
+
+    return treatment;
+  }
+
   function wrapResult<T>(value: T): MaybeThenable<T> {
     return isAsync ? Promise.resolve(value) : value;
   }
@@ -69,7 +82,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatment(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options);
     } else {
-      return wrapResult(CONTROL);
+      const result = evaluateFallBackTreatment(params.nameOrNames as string, false);
+      return wrapResult(result);
     }
   }
 
@@ -79,7 +93,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     if (params.valid) {
       return client.getTreatmentWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options);
     } else {
-      return wrapResult(objectAssign({}, CONTROL_WITH_CONFIG));
+      const result = evaluateFallBackTreatment(params.nameOrNames as string, true);
+      return wrapResult(result);
     }
   }
 
@@ -90,7 +105,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       return client.getTreatments(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
     } else {
       const res: SplitIO.Treatments = {};
-      if (params.nameOrNames) (params.nameOrNames as string[]).forEach((split: string) => res[split] = CONTROL);
+      if (params.nameOrNames) (params.nameOrNames as string[]).forEach((split: string) => res[split] = evaluateFallBackTreatment(split, false) as SplitIO.Treatment);
 
       return wrapResult(res);
     }
@@ -103,7 +118,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       return client.getTreatmentsWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
     } else {
       const res: SplitIO.TreatmentsWithConfig = {};
-      if (params.nameOrNames) (params.nameOrNames as string[]).forEach(split => res[split] = objectAssign({}, CONTROL_WITH_CONFIG));
+      if (params.nameOrNames) (params.nameOrNames as string[]).forEach(split => res[split] = evaluateFallBackTreatment(split, true) as SplitIO.TreatmentWithConfig);
 
       return wrapResult(res);
     }
