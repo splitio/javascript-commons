@@ -1,3 +1,6 @@
+2.8.0 (October 24, 2025)
+  - Added new configuration for Fallback Treatments, which allows setting a treatment value and optional config to be returned in place of "control", either globally or by flag. Read more in our docs.
+
 2.7.0 (October 7, 2025)
  - Added support for custom loggers: added `logger` configuration option and `LoggerAPI.setLogger` method to allow the SDK to use a custom logger.
 
