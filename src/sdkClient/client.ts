@@ -145,7 +145,6 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
     const { changeNumber, impressionsDisabled } = evaluation;
     let { treatment, label, config = null } = evaluation;
-    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
     if (treatment === CONTROL) {
       const fallbackTreatment = fallbackTreatmentsCalculator.resolve(featureFlagName, label);
@@ -153,6 +152,8 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       label = fallbackTreatment.label ? fallbackTreatment.label : label;
       config = fallbackTreatment.config;
     }
+
+    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
 
     if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING);
