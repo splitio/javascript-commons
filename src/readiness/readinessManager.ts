@@ -90,7 +90,7 @@ export function readinessManagerFactory(
     if (!isReady && !isDestroyed) {
       try {
         syncLastUpdate();
-        gate.emit(SDK_READY_FROM_CACHE);
+        gate.emit(SDK_READY_FROM_CACHE, isReady);
       } catch (e) {
         // throws user callback exceptions in next tick
         setTimeout(() => { throw e; }, 0);
@@ -116,7 +116,7 @@ export function readinessManagerFactory(
           syncLastUpdate();
           if (!isReadyFromCache) {
             isReadyFromCache = true;
-            gate.emit(SDK_READY_FROM_CACHE);
+            gate.emit(SDK_READY_FROM_CACHE, isReady);
           }
           gate.emit(SDK_READY);
         } catch (e) {
