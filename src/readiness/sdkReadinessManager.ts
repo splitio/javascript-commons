@@ -9,7 +9,7 @@ import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
-const TIMEOUT_ERROR = new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.');
+const TIMEOUT_ERROR = new Error(SDK_READY_TIMED_OUT);
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -39,6 +39,8 @@ export function sdkReadinessManagerFactory(
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
+    } else if (event === SDK_READY_FROM_CACHE && readinessManager.isReadyFromCache()) {
+      log.error(ERROR_CLIENT_LISTENER, ['SDK_READY_FROM_CACHE']);
     }
   });
 
@@ -98,7 +100,7 @@ export function sdkReadinessManagerFactory(
         ready() {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {
-              return promiseWrapper(Promise.reject(TIMEOUT_ERROR), defaultOnRejected);
+              return promiseWrapper(Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
             } else {
               return Promise.resolve();
             }
