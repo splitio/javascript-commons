@@ -9,6 +9,7 @@ import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 const sdkReadinessManagerMock = {
   readinessManager: {
     isReady: jest.fn(() => true),
+    isReadyFromCache: jest.fn(() => true),
     isDestroyed: jest.fn(() => false)
   },
   sdkStatus: jest.fn()
@@ -62,7 +63,7 @@ describe('Manager with sync cache (In Memory)', () => {
     sdkReadinessManagerMock.readinessManager.isDestroyed = () => true;
 
     function validateManager() {
-      expect(manager.split('some_spplit')).toBe(null);
+      expect(manager.split('some_split')).toBe(null);
       expect(manager.splits()).toEqual([]);
       expect(manager.names()).toEqual([]);
     }

@@ -51,7 +51,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatment;
     };
 
-    const evaluation = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+    const evaluation = readinessManager.isReadyFromCache() ?
       evaluateFeature(log, key, featureFlagName, attributes, storage) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentNotReady) :
@@ -80,7 +80,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatments;
     };
 
-    const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+    const evaluations = readinessManager.isReadyFromCache() ?
       evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentsNotReady(featureFlagNames)) :
@@ -109,7 +109,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       return treatments;
     };
 
-    const evaluations = readinessManager.isReady() || readinessManager.isReadyFromCache() ?
+    const evaluations = readinessManager.isReadyFromCache() ?
       evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
       isAsync ?
         Promise.resolve({}) :
@@ -149,7 +149,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     if (treatment === CONTROL) {
       const fallbackTreatment = fallbackTreatmentsCalculator.resolve(featureFlagName, label);
       treatment = fallbackTreatment.treatment;
-      label = fallbackTreatment.label ? fallbackTreatment.label : label;
+      label = fallbackTreatment.label;
       config = fallbackTreatment.config;
     }
 
