@@ -1,5 +1,12 @@
+2.8.0 (October XX, 2025)
+ - Added `client.whenReady()` and `client.whenReadyFromCache()` methods to replace the deprecated `client.ready()` method, which has an issue causing the returned promise to hang when using async/await syntax if it was rejected.
+ - Updated the SDK_READY_FROM_CACHE event to be emitted alongside the SDK_READY event if it hasn’t already been emitted.
+
+2.7.1 (October 8, 2025)
+ - Bugfix - Update `debug` option to support log levels when `logger` option is used.
+
 2.7.0 (October 7, 2025)
- - Added support for custom loggers: added `logger` configuration option and `LoggerAPI.setLogger` method to allow the SDK to use a custom logger.
+ - Added support for custom loggers: added `logger` configuration option and `factory.Logger.setLogger` method to allow the SDK to use a custom logger.
 
 2.6.0 (September 18, 2025)
  - Added `storage.wrapper` configuration option to allow the SDK to use a custom storage wrapper for the storage type `LOCALSTORAGE`. Default value is `window.localStorage`.

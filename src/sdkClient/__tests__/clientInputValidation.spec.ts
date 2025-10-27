@@ -17,7 +17,7 @@ const client: any = createClientMock(EVALUATION_RESULT);
 const fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(settings);
 
 const readinessManager: any = {
-  isReady: () => true,
+  isReadyFromCache: () => true,
   isDestroyed: () => false
 };
 
