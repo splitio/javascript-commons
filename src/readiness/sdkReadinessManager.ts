@@ -72,6 +72,17 @@ export function sdkReadinessManagerFactory(
     return promise;
   }
 
+  function getStatus() {
+    return {
+      isReady: readinessManager.isReady(),
+      isReadyFromCache: readinessManager.isReadyFromCache(),
+      isTimedout: readinessManager.isTimedout(),
+      hasTimedout: readinessManager.hasTimedout(),
+      isDestroyed: readinessManager.isDestroyed(),
+      isOperational: readinessManager.isOperational(),
+      lastUpdate: readinessManager.lastUpdate(),
+    };
+  }
 
   return {
     readinessManager,
@@ -134,17 +145,9 @@ export function sdkReadinessManagerFactory(
           });
         },
 
-        getStatus() {
-          return {
-            isReady: readinessManager.isReady(),
-            isReadyFromCache: readinessManager.isReadyFromCache(),
-            isTimedout: readinessManager.isTimedout(),
-            hasTimedout: readinessManager.hasTimedout(),
-            isDestroyed: readinessManager.isDestroyed(),
-            isOperational: readinessManager.isOperational(),
-            lastUpdate: readinessManager.lastUpdate(),
-          };
-        },
+        getStatus,
+        // @TODO: remove in next major
+        __getStatus: getStatus
       }
     )
   };
