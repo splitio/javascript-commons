@@ -1,5 +1,6 @@
 import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies, StreamingEvent, Method, OperationType, MethodExceptions, MethodLatencies, TelemetryUsageStatsPayload, UpdatesFromSSEEnum, UpdatesFromSSE } from '../../sync/submitters/types';
 import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
+import { checkIfServerSide } from '../../utils/key';
 import { findLatencyIndex } from '../findLatencyIndex';
 import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
 
@@ -20,7 +21,7 @@ const ACCEPTANCE_RANGE = 0.001;
  * All factory instances track telemetry on server-side, and 0.1% on client-side.
  */
 export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
-  return settings.mode !== LOCALHOST_MODE && (settings.core.key === undefined || Math.random() <= ACCEPTANCE_RANGE);
+  return settings.mode !== LOCALHOST_MODE && (checkIfServerSide(settings) || Math.random() <= ACCEPTANCE_RANGE);
 }
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {

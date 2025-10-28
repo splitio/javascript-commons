@@ -9,6 +9,7 @@ import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO
 
 const NEW_LISTENER_EVENT = 'newListener';
 const REMOVE_LISTENER_EVENT = 'removeListener';
+const TIMEOUT_ERROR = new Error(SDK_READY_TIMED_OUT);
 
 /**
  * SdkReadinessManager factory, which provides the public status API of SDK clients and manager: ready promise, readiness event emitter and constants (SDK_READY, etc).
@@ -38,6 +39,8 @@ export function sdkReadinessManagerFactory(
       } else if (event === SDK_READY) {
         readyCbCount++;
       }
+    } else if (event === SDK_READY_FROM_CACHE && readinessManager.isReadyFromCache()) {
+      log.error(ERROR_CLIENT_LISTENER, ['SDK_READY_FROM_CACHE']);
     }
   });
 
@@ -69,6 +72,17 @@ export function sdkReadinessManagerFactory(
     return promise;
   }
 
+  function getStatus() {
+    return {
+      isReady: readinessManager.isReady(),
+      isReadyFromCache: readinessManager.isReadyFromCache(),
+      isTimedout: readinessManager.isTimedout(),
+      hasTimedout: readinessManager.hasTimedout(),
+      isDestroyed: readinessManager.isDestroyed(),
+      isOperational: readinessManager.isOperational(),
+      lastUpdate: readinessManager.lastUpdate(),
+    };
+  }
 
   return {
     readinessManager,
@@ -93,6 +107,7 @@ export function sdkReadinessManagerFactory(
           SDK_READY_TIMED_OUT,
         },
 
+        // @TODO: remove in next major
         ready() {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {
@@ -104,17 +119,35 @@ export function sdkReadinessManagerFactory(
           return readyPromise;
         },
 
-        __getStatus() {
-          return {
-            isReady: readinessManager.isReady(),
-            isReadyFromCache: readinessManager.isReadyFromCache(),
-            isTimedout: readinessManager.isTimedout(),
-            hasTimedout: readinessManager.hasTimedout(),
-            isDestroyed: readinessManager.isDestroyed(),
-            isOperational: readinessManager.isOperational(),
-            lastUpdate: readinessManager.lastUpdate(),
-          };
+        whenReady() {
+          return new Promise<void>((resolve, reject) => {
+            if (readinessManager.isReady()) {
+              resolve();
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY, resolve);
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
         },
+
+        whenReadyFromCache() {
+          return new Promise<boolean>((resolve, reject) => {
+            if (readinessManager.isReadyFromCache()) {
+              resolve(readinessManager.isReady());
+            } else if (readinessManager.hasTimedout()) {
+              reject(TIMEOUT_ERROR);
+            } else {
+              readinessManager.gate.once(SDK_READY_FROM_CACHE, () => resolve(readinessManager.isReady()));
+              readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
+            }
+          });
+        },
+
+        getStatus,
+        // @TODO: remove in next major
+        __getStatus: getStatus
       }
     )
   };

@@ -4,6 +4,7 @@ import { clientInputValidationDecorator } from '../clientInputValidation';
 // Mocks
 import { DebugLogger } from '../../logger/browser/DebugLogger';
 import { createClientMock } from './testUtils';
+import { FallbackTreatmentsCalculator, IFallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 const settings: any = {
   log: DebugLogger(),
@@ -13,13 +14,15 @@ const settings: any = {
 const EVALUATION_RESULT = 'on';
 const client: any = createClientMock(EVALUATION_RESULT);
 
+const fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(settings);
+
 const readinessManager: any = {
-  isReady: () => true,
+  isReadyFromCache: () => true,
   isDestroyed: () => false
 };
 
 describe('clientInputValidationDecorator', () => {
-  const clientWithValidation = clientInputValidationDecorator(settings, client, readinessManager);
+  const clientWithValidation = clientInputValidationDecorator(settings, client, readinessManager, fallbackTreatmentsCalculator);
   const logSpy = jest.spyOn(console, 'log');
 
   beforeEach(() => {

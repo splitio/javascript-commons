@@ -10,7 +10,7 @@ import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
-import { getMatching } from '../../utils/key';
+import { checkIfServerSide, getMatching } from '../../utils/key';
 import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
@@ -34,7 +34,7 @@ export function pushManagerFactory(
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
-  const userKey = settings.core.key ? getMatching(settings.core.key) : undefined;
+  const userKey = checkIfServerSide(settings) ? undefined : getMatching(settings.core.key);
   const log = settings.log;
 
   let sseClient: ISSEClient;
