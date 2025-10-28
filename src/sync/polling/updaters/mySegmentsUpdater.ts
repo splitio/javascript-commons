@@ -8,6 +8,7 @@ import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
+import { usesSegmentsSync } from '../../../storages/AbstractSplitsCacheSync';
 
 type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -27,7 +28,7 @@ export function mySegmentsUpdaterFactory(
   matchingKey: string
 ): IMySegmentsUpdater {
 
-  const { splits, rbSegments, segments, largeSegments } = storage;
+  const { segments, largeSegments } = storage;
   let readyOnAlreadyExistentState = true;
   let startingUp = true;
 
@@ -50,8 +51,10 @@ export function mySegmentsUpdaterFactory(
       shouldNotifyUpdate = largeSegments!.resetSegments((segmentsData as IMembershipsResponse).ls || {}) || shouldNotifyUpdate;
     }
 
+    if (storage.save) storage.save();
+
     // Notify update if required
-    if ((splits.usesSegments() || rbSegments.usesSegments()) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
+    if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
       segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
     }

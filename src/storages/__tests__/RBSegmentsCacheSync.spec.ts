@@ -6,7 +6,8 @@ import { IRBSegmentsCacheSync } from '../types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 const cacheInMemory = new RBSegmentsCacheInMemory();
-const cacheInLocal = new RBSegmentsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'));
+// eslint-disable-next-line no-undef
+const cacheInLocal = new RBSegmentsCacheInLocal(fullSettings, new KeyBuilderCS('SPLITIO', 'user'), localStorage);
 
 describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Memory & LocalStorage)', (cache: IRBSegmentsCacheSync) => {
 

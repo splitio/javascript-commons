@@ -13,8 +13,12 @@ const STORED_SPLITS: Record<string, ISplit> = {
 };
 
 const STORED_SEGMENTS: Record<string, Set<string>> = {
-  'segment_test': new Set(['emi@split.io']),
+  'excluded_standard_segment': new Set(['emi@split.io']),
   'regular_segment': new Set(['nadia@split.io'])
+};
+
+const STORED_LARGE_SEGMENTS: Record<string, Set<string>> = {
+  'excluded_large_segment': new Set(['emi-large@split.io'])
 };
 
 const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
@@ -24,7 +28,11 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
     status: 'ACTIVE',
     excluded: {
       keys: ['mauro@split.io', 'gaston@split.io'],
-      segments: ['segment_test']
+      segments: [
+        { type: 'standard', name: 'excluded_standard_segment' },
+        { type: 'large', name: 'excluded_large_segment' },
+        { type: 'rule-based', name: 'excluded_rule_based_segment' }
+      ]
     },
     conditions: [
       {
@@ -87,8 +95,8 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
     changeNumber: 123,
     status: 'ACTIVE',
     excluded: {
-      keys: [],
-      segments: []
+      keys: null,
+      segments: null,
     },
     conditions: [{
       matcherGroup: {
@@ -135,6 +143,37 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
       }
     }]
   },
+  'excluded_rule_based_segment': {
+    name: 'excluded_rule_based_segment',
+    changeNumber: 123,
+    status: 'ACTIVE',
+    conditions: [
+      {
+        matcherGroup: {
+          combiner: 'AND',
+          matchers: [
+            {
+              keySelector: null,
+              matcherType: 'WHITELIST',
+              negate: false,
+              userDefinedSegmentMatcherData: null,
+              whitelistMatcherData: {
+                whitelist: ['emi-rule-based@split.io']
+              },
+              unaryNumericMatcherData: null,
+              betweenMatcherData: null
+            }
+          ]
+        }
+      }
+    ],
+  },
+  'rule_based_segment_without_conditions': {
+    name: 'rule_based_segment_without_conditions',
+    changeNumber: 123,
+    status: 'ACTIVE',
+    conditions: []
+  }
 };
 
 const mockStorageSync = {
@@ -147,6 +186,11 @@ const mockStorageSync = {
   segments: {
     isInSegment(segmentName: string, matchingKey: string) {
       return STORED_SEGMENTS[segmentName] ? STORED_SEGMENTS[segmentName].has(matchingKey) : false;
+    }
+  },
+  largeSegments: {
+    isInSegment(segmentName: string, matchingKey: string) {
+      return STORED_LARGE_SEGMENTS[segmentName] ? STORED_LARGE_SEGMENTS[segmentName].has(matchingKey) : false;
     }
   },
   rbSegments: {
@@ -166,6 +210,11 @@ const mockStorageAsync = {
   segments: {
     isInSegment(segmentName: string, matchingKey: string) {
       return Promise.resolve(STORED_SEGMENTS[segmentName] ? STORED_SEGMENTS[segmentName].has(matchingKey) : false);
+    }
+  },
+  largeSegments: {
+    isInSegment(segmentName: string, matchingKey: string) {
+      return Promise.resolve(STORED_LARGE_SEGMENTS[segmentName] ? STORED_LARGE_SEGMENTS[segmentName].has(matchingKey) : false);
     }
   },
   rbSegments: {
@@ -190,15 +239,25 @@ describe.each([
       value: 'depend_on_mauro_rule_based_segment'
     } as IMatcherDto, mockStorage)!;
 
-    [matcher, dependentMatcher].forEach(async matcher => {
+    [matcher, dependentMatcher].forEach(async (matcher) => {
 
       // should return false if the provided key is excluded (even if some condition is met)
       let match = matcher({ key: 'mauro@split.io', attributes: { location: 'mdp' } }, evaluateFeature);
       expect(thenable(match)).toBe(isAsync);
       expect(await match).toBe(false);
 
-      // should return false if the provided key is in some excluded segment (even if some condition is met)
+      // should return false if the provided key is in some excluded standard segment (even if some condition is met)
       match = matcher({ key: 'emi@split.io', attributes: { location: 'tandil' } }, evaluateFeature);
+      expect(thenable(match)).toBe(isAsync);
+      expect(await match).toBe(false);
+
+      // should return false if the provided key is in some excluded large segment (even if some condition is met)
+      match = matcher({ key: 'emi-large@split.io', attributes: { location: 'tandil' } }, evaluateFeature);
+      expect(thenable(match)).toBe(isAsync);
+      expect(await match).toBe(false);
+
+      // should return false if the provided key is in some excluded rule-based segment (even if some condition is met)
+      match = matcher({ key: 'emi-rule-based@split.io', attributes: { location: 'tandil' } }, evaluateFeature);
       expect(thenable(match)).toBe(isAsync);
       expect(await match).toBe(false);
 
@@ -238,6 +297,14 @@ describe.each([
 
     // should support feature flag dependency matcher
     expect(await matcherTrueAlwaysOn({ key: 'a-key' }, evaluateFeature)).toBe(true); // Parent split returns one of the expected treatments, so the matcher returns true
+
+    const matcherTrueRuleBasedSegmentWithoutConditions = matcherFactory(loggerMock, {
+      type: matcherTypes.IN_RULE_BASED_SEGMENT,
+      value: 'rule_based_segment_without_conditions'
+    } as IMatcherDto, mockStorageSync)!;
+
+    // should support rule-based segment without conditions
+    expect(await matcherTrueRuleBasedSegmentWithoutConditions({ key: 'a-key' }, evaluateFeature)).toBe(false);
   });
 
 });

@@ -199,14 +199,19 @@ export interface ISplitCondition {
   conditionType?: 'ROLLOUT' | 'WHITELIST'
 }
 
+export interface IExcludedSegment {
+  type: 'standard' | 'large' | 'rule-based',
+  name: string,
+}
+
 export interface IRBSegment {
   name: string,
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
   conditions?: ISplitCondition[],
   excluded?: {
-    keys?: string[],
-    segments?: string[]
+    keys?: string[] | null,
+    segments?: IExcludedSegment[] | null
   }
 }
 
@@ -215,6 +220,10 @@ export interface ISplit {
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
   conditions: ISplitCondition[],
+  prerequisites?: {
+    n: string,
+    ts: string[]
+  }[]
   killed: boolean,
   defaultTreatment: string,
   trafficTypeName: string,

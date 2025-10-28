@@ -1,14 +1,16 @@
-import { get } from '../utils/lang';
+import { get, isString } from '../utils/lang';
 import { parser } from './parser';
 import { keyParser } from '../utils/key';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED } from '../utils/labels';
+import { NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED, PREREQUISITES_NOT_MET } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluation, IEvaluationResult, IEvaluator, ISplitEvaluator } from './types';
+import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
 import { ILogger } from '../logger/types';
+import { ENGINE_DEFAULT } from '../logger/constants';
+import { prerequisitesMatcherContext } from './matchers/prerequisites';
 
 function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
   return {
@@ -17,84 +19,55 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
   };
 }
 
-export class Engine {
+export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync) {
+  const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions, prerequisites } = split;
 
-  constructor(private baseInfo: ISplit, private evaluator: IEvaluator) {
+  const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
 
-    // in case we don't have a default treatment in the instantiation, use 'control'
-    if (typeof this.baseInfo.defaultTreatment !== 'string') {
-      this.baseInfo.defaultTreatment = CONTROL;
-    }
-  }
+  const evaluator = parser(log, conditions, storage);
+  const prerequisiteMatcher = prerequisitesMatcherContext(prerequisites, storage, log);
 
-  static parse(log: ILogger, splitFlatStructure: ISplit, storage: IStorageSync | IStorageAsync) {
-    const conditions = splitFlatStructure.conditions;
-    const evaluator = parser(log, conditions, storage);
+  return {
 
-    return new Engine(splitFlatStructure, evaluator);
-  }
+    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
 
-  getKey() {
-    return this.baseInfo.name;
-  }
+      const parsedKey = keyParser(key);
 
-  getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
-    const {
-      killed,
-      seed,
-      defaultTreatment,
-      trafficAllocation,
-      trafficAllocationSeed
-    } = this.baseInfo;
-    let parsedKey;
-    let treatment;
-    let label;
+      function evaluate(prerequisitesMet: boolean) {
+        if (!prerequisitesMet) {
+          log.debug(ENGINE_DEFAULT, ['Prerequisite not met']);
+          return {
+            treatment: defaultTreatment,
+            label: PREREQUISITES_NOT_MET
+          };
+        }
 
-    try {
-      parsedKey = keyParser(key);
-    } catch (err) {
-      return {
-        treatment: CONTROL,
-        label: EXCEPTION
-      };
-    }
+        const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
 
-    if (this.isGarbage()) {
-      treatment = CONTROL;
-      label = SPLIT_ARCHIVED;
-    } else if (killed) {
-      treatment = defaultTreatment;
-      label = SPLIT_KILLED;
-    } else {
-      const evaluation = this.evaluator(
-        parsedKey,
-        seed,
-        trafficAllocation,
-        trafficAllocationSeed,
-        attributes,
-        splitEvaluator
-      ) as MaybeThenable<IEvaluation>;
-
-      // Evaluation could be async, so we should handle that case checking for a
-      // thenable object
-      if (thenable(evaluation)) {
-        return evaluation.then(result => evaluationResult(result, defaultTreatment));
-      } else {
-        return evaluationResult(evaluation, defaultTreatment);
+        return thenable(evaluation) ?
+          evaluation.then(result => evaluationResult(result, defaultTreatment)) :
+          evaluationResult(evaluation, defaultTreatment);
       }
+
+      if (status === 'ARCHIVED') return {
+        treatment: CONTROL,
+        label: SPLIT_ARCHIVED
+      };
+
+      if (killed) {
+        log.debug(ENGINE_DEFAULT, ['Flag is killed']);
+        return {
+          treatment: defaultTreatment,
+          label: SPLIT_KILLED
+        };
+      }
+
+      const prerequisitesMet = prerequisiteMatcher({ key, attributes }, splitEvaluator);
+
+      return thenable(prerequisitesMet) ?
+        prerequisitesMet.then(evaluate) :
+        evaluate(prerequisitesMet);
     }
+  };
 
-    return {
-      treatment,
-      label
-    };
-  }
-
-  isGarbage() {
-    return this.baseInfo.status === 'ARCHIVED';
-  }
-
-  getChangeNumber() {
-    return this.baseInfo.changeNumber;
-  }
 }

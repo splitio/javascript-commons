@@ -67,6 +67,7 @@ export function getTelemetryConfigStats(mode: SplitIO.SDKMode, storageType: stri
  */
 export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, settings: ISettings) {
   return {
+    name: 'telemetry config',
     isEmpty() { return false; },
     clear() { },
 
@@ -119,28 +120,28 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
   if (!telemetry || !now) return; // No submitter created if telemetry cache is not defined
 
   const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness, sdkReadinessManager } = params;
-  const startTime = timer(now);
+  const stopTimer = timer(now);
 
   const submitter = firstPushWindowDecorator(
     submitterFactory(
       log, splitApi.postMetricsUsage,
       telemetry,
-      telemetryRefreshRate, 'telemetry stats', undefined, 0, true
+      telemetryRefreshRate, undefined, 0, true
     ),
     telemetryRefreshRate
   );
 
   readiness.gate.once(SDK_READY_FROM_CACHE, () => {
-    telemetry.recordTimeUntilReadyFromCache(startTime());
+    telemetry.recordTimeUntilReadyFromCache(stopTimer());
   });
 
   sdkReadinessManager.incInternalReadyCbCount();
   readiness.gate.once(SDK_READY, () => {
-    telemetry.recordTimeUntilReady(startTime());
+    telemetry.recordTimeUntilReady(stopTimer());
 
     // Post config data when the SDK is ready and if the telemetry submitter was started
     if (submitter.isRunning()) {
-      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, 'telemetry config', undefined, 0, true);
+      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, undefined, 0, true);
       postMetricsConfigTask.execute();
     }
   });

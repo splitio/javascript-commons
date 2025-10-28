@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateSplitExistence, validateIfNotDestroyed, validateIfOperational } from '../utils/inputValidation';
+import { validateSplit, validateSplitExistence, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
@@ -32,7 +32,8 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
     configs: splitObject.configurations || {},
     sets: splitObject.sets || [],
     defaultTreatment: splitObject.defaultTreatment,
-    impressionsDisabled: splitObject.impressionsDisabled === true
+    impressionsDisabled: splitObject.impressionsDisabled === true,
+    prerequisites: (splitObject.prerequisites || []).map(p => ({ flagName: p.n, treatments: p.ts })),
   };
 }
 
@@ -65,7 +66,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        */
       split(featureFlagName: string) {
         const splitName = validateSplit(log, featureFlagName, SPLIT_FN_LABEL);
-        if (!validateIfNotDestroyed(log, readinessManager, SPLIT_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
+        if (!validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
           return isAsync ? Promise.resolve(null) : null;
         }
 
@@ -86,7 +87,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the feature flag objects present on the factory storage
        */
       splits() {
-        if (!validateIfNotDestroyed(log, readinessManager, SPLITS_FN_LABEL) || !validateIfOperational(log, readinessManager, SPLITS_FN_LABEL)) {
+        if (!validateIfOperational(log, readinessManager, SPLITS_FN_LABEL)) {
           return isAsync ? Promise.resolve([]) : [];
         }
         const currentSplits = splits.getAll();
@@ -99,7 +100,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the feature flag names present on the factory storage
        */
       names() {
-        if (!validateIfNotDestroyed(log, readinessManager, NAMES_FN_LABEL) || !validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {
+        if (!validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {
           return isAsync ? Promise.resolve([]) : [];
         }
         const splitNames = splits.getSplitNames();

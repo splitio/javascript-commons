@@ -28,6 +28,7 @@ export const SYNC_TASK_EXECUTE = 37;
 export const SYNC_TASK_STOP = 38;
 export const SETTINGS_SPLITS_FILTER = 39;
 export const ENGINE_MATCHER_RESULT = 40;
+export const ENGINE_DEFAULT = 41;
 
 export const CLIENT_READY_FROM_CACHE = 100;
 export const CLIENT_READY = 101;
@@ -54,11 +55,12 @@ export const IMPRESSIONS_TRACKER_SUCCESS = 121;
 export const USER_CONSENT_UPDATED = 122;
 export const USER_CONSENT_NOT_UPDATED = 123;
 export const USER_CONSENT_INITIAL = 124;
+export const SUBMITTERS_PUSH_PAGE_HIDDEN = 125;
 
 export const ENGINE_VALUE_INVALID = 200;
 export const ENGINE_VALUE_NO_ATTRIBUTES = 201;
 export const CLIENT_NO_LISTENER = 202;
-export const CLIENT_NOT_READY = 203;
+export const CLIENT_NOT_READY_FROM_CACHE = 203;
 export const SYNC_MYSEGMENTS_FETCH_RETRY = 204;
 export const SYNC_SPLITS_FETCH_FAILS = 205;
 export const STREAMING_PARSING_ERROR_FAILS = 206;
