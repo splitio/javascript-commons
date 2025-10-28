@@ -1,8 +1,11 @@
 import { Treatment, TreatmentWithConfig } from '../../../../types/splitio';
 import { ILogger } from '../../../logger/types';
 import { isObject, isString } from '../../../utils/lang';
-import { FallbackDiscardReason } from '../constants';
 
+enum FallbackDiscardReason {
+  FlagName = 'Invalid flag name (max 100 chars, no spaces)',
+  Treatment = 'Invalid treatment (max 100 chars and must match pattern)',
+}
 
 export class FallbacksSanitizer {
 

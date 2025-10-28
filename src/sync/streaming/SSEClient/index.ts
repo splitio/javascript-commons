@@ -2,6 +2,7 @@ import { IPlatform } from '../../../sdkFactory/types';
 import { decorateHeaders } from '../../../services/decorateHeaders';
 import { IEventSourceConstructor } from '../../../services/types';
 import { ISettings } from '../../../types';
+import { checkIfServerSide } from '../../../utils/key';
 import { isString } from '../../../utils/lang';
 import { objectAssign } from '../../../utils/lang/objectAssign';
 import { IAuthTokenPushEnabled } from '../AuthClient/types';
@@ -73,7 +74,7 @@ export class SSEClient implements ISSEClient {
       return encodeURIComponent(params + channel);
     }).join(',');
     const url = `${this.settings.urls.streaming}/sse?channels=${channelsQueryParam}&accessToken=${authToken.token}&v=${ABLY_API_VERSION}&heartbeats=true`; // same results using `&heartbeats=false`
-    const isServerSide = !this.settings.core.key;
+    const isServerSide = checkIfServerSide(this.settings);
 
     this.connection = new this.eventSource!(
       // For client-side SDKs, metadata is passed as query param to avoid CORS issues and because native EventSource implementations in browsers do not support headers
