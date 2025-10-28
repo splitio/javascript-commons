@@ -1,3 +1,5 @@
+import { FALLBACK_PREFIX } from '../../evaluator/fallbackTreatmentsCalculator';
+
 export const SPLIT_KILLED = 'killed';
 export const NO_CONDITION_MATCH = 'default rule';
 export const SPLIT_NOT_FOUND = 'definition not found';
@@ -7,3 +9,4 @@ export const SPLIT_ARCHIVED = 'archived';
 export const NOT_IN_SPLIT = 'not in split';
 export const UNSUPPORTED_MATCHER_TYPE = 'targeting rule type unsupported by sdk';
 export const PREREQUISITES_NOT_MET = 'prerequisites not met';
+export const FALLBACK_SPLIT_NOT_FOUND = FALLBACK_PREFIX + SPLIT_NOT_FOUND;

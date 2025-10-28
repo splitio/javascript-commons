@@ -3,6 +3,7 @@ import { sdkFactory } from '../index';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import SplitIO from '../../../types/splitio';
 import { EventEmitter } from '../../utils/MinEvents';
+import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 /** Mocks */
 
@@ -36,6 +37,7 @@ const paramsForAsyncSDK = {
   platform: {
     EventEmitter
   },
+  fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator(fullSettings.log)
 };
 
 const SignalListenerInstanceMock = { start: jest.fn() };

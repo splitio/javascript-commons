@@ -618,6 +618,10 @@ declare namespace SplitIO {
      * User consent status if using in client-side. Undefined if using in server-side (Node.js).
      */
     readonly userConsent?: ConsentStatus;
+    /**
+     * Fallback treatments to be used when the SDK is not ready or the flag is not found.
+     */
+    readonly fallbackTreatments?: FallbackTreatmentConfiguration;
   }
   /**
    * Log levels.
@@ -1295,6 +1299,15 @@ declare namespace SplitIO {
    * User consent status.
    */
   type ConsentStatus = 'GRANTED' | 'DECLINED' | 'UNKNOWN';
+  /**
+   * Fallback treatments to be used when the SDK is not ready or the flag is not found.
+   */
+  type FallbackTreatmentConfiguration = {
+    global?: Treatment | TreatmentWithConfig,
+    byFlag?: {
+      [featureFlagName: string]: Treatment | TreatmentWithConfig
+    }
+  }
   /**
    * Logger. Its interface details are not part of the public API. It shouldn't be used directly.
    */
