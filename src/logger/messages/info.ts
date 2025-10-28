@@ -22,7 +22,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.POLLING_SMART_PAUSING, c.LOG_PREFIX_SYNC_POLLING + 'Turning segments data polling %s.'],
   [c.POLLING_START, c.LOG_PREFIX_SYNC_POLLING + 'Starting polling'],
   [c.POLLING_STOP, c.LOG_PREFIX_SYNC_POLLING + 'Stopping polling'],
-  [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying download of feature flags #%s. Reason: %s'],
+  [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying fetch of feature flags (attempt #%s). Reason: %s'],
   [c.SUBMITTERS_PUSH_FULL_QUEUE, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing full %s queue and resetting timer.'],
   [c.SUBMITTERS_PUSH, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Pushing %s.'],
   [c.SUBMITTERS_PUSH_PAGE_HIDDEN, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing %s because page became hidden.'],
