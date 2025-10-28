@@ -66,8 +66,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
     expect(typeof sdkStatus.whenReady).toBe('function'); // The sdkStatus exposes a .whenReady() function.
     expect(typeof sdkStatus.whenReadyFromCache).toBe('function'); // The sdkStatus exposes a .whenReadyFromCache() function.
-    expect(typeof sdkStatus.__getStatus).toBe('function'); // The sdkStatus exposes a .__getStatus() function.
-    expect(sdkStatus.__getStatus()).toEqual({
+    expect(sdkStatus.getStatus()).toEqual({ // The sdkStatus exposes a .getStatus() function.
       isReady: false, isReadyFromCache: false, isTimedout: false, hasTimedout: false, isDestroyed: false, isOperational: false, lastUpdate: 0
     });
 
