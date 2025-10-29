@@ -9,11 +9,11 @@ enum FallbackDiscardReason {
 
 const TREATMENT_PATTERN = /^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$/;
 
-function isValidFlagName(name: string): boolean {
+export function isValidFlagName(name: string): boolean {
   return name.length <= 100 && !name.includes(' ');
 }
 
-function isValidTreatment(t?: Treatment | TreatmentWithConfig): boolean {
+export function isValidTreatment(t?: Treatment | TreatmentWithConfig): boolean {
   const treatment = isObject(t) ? (t as TreatmentWithConfig).treatment : t;
 
   if (!isString(treatment) || treatment.length > 100) {
@@ -23,6 +23,7 @@ function isValidTreatment(t?: Treatment | TreatmentWithConfig): boolean {
 }
 
 function sanitizeGlobal(logger: ILogger, treatment?: Treatment | TreatmentWithConfig): Treatment | TreatmentWithConfig | undefined {
+  if (treatment === undefined) return undefined;
   if (!isValidTreatment(treatment)) {
     logger.error(`Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`);
     return undefined;
@@ -39,6 +40,7 @@ function sanitizeByFlag(
   const entries = Object.keys(byFlagFallbacks);
   entries.forEach((flag) => {
     const t = byFlagFallbacks[flag];
+    if (!t) return;
     if (!isValidFlagName(flag)) {
       logger.error(`Fallback treatments - Discarded flag '${flag}': ${FallbackDiscardReason.FlagName}`);
       return;
