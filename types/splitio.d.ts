@@ -717,7 +717,7 @@ declare namespace SplitIO {
     isReadyFromCache: boolean;
 
     /**
-     * `isTimedout` indicates if the client has triggered an `SDK_READY_TIMED_OUT` event and is not ready to evaluate.
+     * `isTimedout` indicates if the client has triggered an `SDK_READY_TIMED_OUT` event and is not ready.
      * In other words, `isTimedout` is equivalent to `hasTimedout && !isReady`.
      */
     isTimedout: boolean;
