@@ -57,7 +57,7 @@ function sanitizeByFlag(
 
 export function sanitizeFallbacks(logger: ILogger, fallbacks: unknown): FallbackTreatmentConfiguration | undefined {
   if (!isObject(fallbacks)) {
-    logger.error('Fallback treatments - Discarded fallback: Invalid fallback configuration');
+    logger.error('Fallback treatments - Discarded configuration: it must be an object with optional `global` and `byFlag` properties');
     return;
   }
 
