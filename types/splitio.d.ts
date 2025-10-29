@@ -96,6 +96,10 @@ interface ISharedSettings {
    * Set together with `debug` option to `true` or a log level string to enable logging.
    */
   logger?: SplitIO.Logger;
+  /**
+   * Fallback treatments to be used when the SDK is not ready or the flag is not found.
+   */
+  fallbackTreatments?: SplitIO.FallbackTreatmentConfiguration;
 }
 /**
  * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
