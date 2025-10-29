@@ -1,11 +1,8 @@
 import { FallbackTreatmentsCalculator } from '../';
 import type { FallbackTreatmentConfiguration } from '../../../../types/splitio';
-import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { CONTROL } from '../../../utils/constants';
 
 describe('FallbackTreatmentsCalculator' , () => {
-  const longName = 'a'.repeat(101);
-
   test('returns specific fallback if flag exists', () => {
     const config: FallbackTreatmentConfiguration = {
       byFlag: {
