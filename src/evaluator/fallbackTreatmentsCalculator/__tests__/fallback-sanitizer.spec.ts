@@ -11,11 +11,7 @@ describe('FallbacksSanitizer', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-  });
-
-  afterEach(() => {
-    (loggerMock.error as jest.Mock).mockRestore();
+    loggerMock.mockClear();
   });
 
   describe('isValidFlagName', () => {
@@ -113,8 +109,9 @@ describe('FallbacksSanitizer', () => {
       expect(loggerMock.error).not.toHaveBeenCalled();
     });
   });
+
   describe('sanitizeFallbacks', () => {
-    test('returns undefined and logs error if fallbacks is not an object', () => {
+    test('returns undefined and logs error if fallbacks is not an object', () => { // @ts-expect-error
       const result = sanitizeFallbacks(loggerMock, 'invalid_fallbacks');
       expect(result).toBeUndefined();
       expect(loggerMock.error).toHaveBeenCalledWith(
@@ -122,7 +119,7 @@ describe('FallbacksSanitizer', () => {
       );
     });
 
-    test('returns undefined and logs error if fallbacks is not an object', () => {
+    test('returns undefined and logs error if fallbacks is not an object', () => { // @ts-expect-error
       const result = sanitizeFallbacks(loggerMock, true);
       expect(result).toBeUndefined();
       expect(loggerMock.error).toHaveBeenCalledWith(
@@ -130,7 +127,7 @@ describe('FallbacksSanitizer', () => {
       );
     });
 
-    test('sanitizes both global and byFlag fallbacks for empty object', () => {
+    test('sanitizes both global and byFlag fallbacks for empty object', () => { // @ts-expect-error
       const result = sanitizeFallbacks(loggerMock, { global: {} });
       expect(result).toEqual({ global: undefined, byFlag: {} });
     });

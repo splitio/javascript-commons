@@ -33,14 +33,15 @@ function sanitizeGlobal(logger: ILogger, treatment?: Treatment | TreatmentWithCo
 
 function sanitizeByFlag(
   logger: ILogger,
-  byFlagFallbacks: Record<string, Treatment | TreatmentWithConfig> = {}
+  byFlagFallbacks?: Record<string, Treatment | TreatmentWithConfig>
 ): Record<string, Treatment | TreatmentWithConfig> {
   const sanitizedByFlag: Record<string, Treatment | TreatmentWithConfig> = {};
 
-  const entries = Object.keys(byFlagFallbacks);
-  entries.forEach((flag) => {
-    const t = byFlagFallbacks[flag];
-    if (!t) return;
+  if (!isObject(byFlagFallbacks)) return sanitizedByFlag;
+
+  Object.keys(byFlagFallbacks!).forEach((flag) => {
+    const t = byFlagFallbacks![flag];
+
     if (!isValidFlagName(flag)) {
       logger.error(`Fallback treatments - Discarded flag '${flag}': ${FallbackDiscardReason.FlagName}`);
       return;
@@ -57,14 +58,14 @@ function sanitizeByFlag(
   return sanitizedByFlag;
 }
 
-export function sanitizeFallbacks(logger: ILogger, fallbacks: unknown): FallbackTreatmentConfiguration | undefined {
+export function sanitizeFallbacks(logger: ILogger, fallbacks: FallbackTreatmentConfiguration): FallbackTreatmentConfiguration | undefined {
   if (!isObject(fallbacks)) {
     logger.error('Fallback treatments - Discarded configuration: it must be an object with optional `global` and `byFlag` properties');
     return;
   }
 
   return {
-    global: sanitizeGlobal(logger, (fallbacks as FallbackTreatmentConfiguration).global),
-    byFlag: sanitizeByFlag(logger, (fallbacks as FallbackTreatmentConfiguration).byFlag)
+    global: sanitizeGlobal(logger, fallbacks.global),
+    byFlag: sanitizeByFlag(logger, fallbacks.byFlag)
   };
 }

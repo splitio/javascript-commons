@@ -9,7 +9,11 @@ export type IFallbackTreatmentsCalculator = {
 export const FALLBACK_PREFIX = 'fallback - ';
 
 export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculator {
-  constructor(private readonly fallbacks: FallbackTreatmentConfiguration = {}) {}
+  private readonly fallbacks: FallbackTreatmentConfiguration;
+
+  constructor(fallbacks: FallbackTreatmentConfiguration = {}) {
+    this.fallbacks = fallbacks;
+  }
 
   resolve(flagName: string, label: string): TreatmentWithConfig & { label: string } {
     const treatment = this.fallbacks.byFlag?.[flagName];
