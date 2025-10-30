@@ -37,7 +37,7 @@ const paramsForAsyncSDK = {
   platform: {
     EventEmitter
   },
-  fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator(fullSettings.log)
+  fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator()
 };
 
 const SignalListenerInstanceMock = { start: jest.fn() };
