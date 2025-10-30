@@ -98,6 +98,8 @@ interface ISharedSettings {
   logger?: SplitIO.Logger;
   /**
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
+   *
+   * @defaultValue `undefined`
    */
   fallbackTreatments?: SplitIO.FallbackTreatmentConfiguration;
 }
@@ -1307,7 +1309,13 @@ declare namespace SplitIO {
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
    */
   type FallbackTreatmentConfiguration = {
+    /**
+     * Fallback treatment for all flags.
+     */
     global?: Treatment | TreatmentWithConfig,
+    /**
+     * Fallback treatments for specific flags. It takes precedence over the global fallback treatment.
+     */
     byFlag?: {
       [featureFlagName: string]: Treatment | TreatmentWithConfig
     }
