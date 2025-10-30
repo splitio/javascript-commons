@@ -1,7 +1,7 @@
-import { CLIENT_NOT_READY, ERROR_CLIENT_DESTROYED } from '../../../logger/constants';
+import { CLIENT_NOT_READY_FROM_CACHE, ERROR_CLIENT_DESTROYED } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-import { validateIfNotDestroyed, validateIfOperational } from '../isOperational';
+import { validateIfNotDestroyed, validateIfReadyFromCache } from '../isOperational';
 
 describe('validateIfNotDestroyed', () => {
 
@@ -28,37 +28,25 @@ describe('validateIfNotDestroyed', () => {
   });
 });
 
-describe('validateIfOperational', () => {
-
-  test('Should return true and log nothing if the SDK was ready.', () => {
-    const readinessManagerMock = { isReady: jest.fn(() => true) };
-
-    // @ts-ignore
-    expect(validateIfOperational(loggerMock, readinessManagerMock, 'test_method')).toBe(true); // It should return true if SDK was ready.
-    expect(readinessManagerMock.isReady).toBeCalledTimes(1); // It checks for readiness status using the context.
-    expect(loggerMock.warn).not.toBeCalled(); // But it should not log any warnings.
-    expect(loggerMock.error).not.toBeCalled(); // But it should not log any errors.
-  });
+describe('validateIfReadyFromCache', () => {
 
   test('Should return true and log nothing if the SDK was ready from cache.', () => {
-    const readinessManagerMock = { isReady: jest.fn(() => false), isReadyFromCache: jest.fn(() => true) };
+    const readinessManagerMock = { isReadyFromCache: jest.fn(() => true) };
 
     // @ts-ignore
-    expect(validateIfOperational(loggerMock, readinessManagerMock, 'test_method')).toBe(true); // It should return true if SDK was ready.
-    expect(readinessManagerMock.isReady).toBeCalledTimes(1); // It checks for SDK_READY status.
+    expect(validateIfReadyFromCache(loggerMock, readinessManagerMock, 'test_method')).toBe(true); // It should return true if SDK was ready.
     expect(readinessManagerMock.isReadyFromCache).toBeCalledTimes(1); // It checks for SDK_READY_FROM_CACHE status.
     expect(loggerMock.warn).not.toBeCalled(); // But it should not log any warnings.
     expect(loggerMock.error).not.toBeCalled(); // But it should not log any errors.
   });
 
-  test('Should return false and log a warning if the SDK was not ready.', () => {
-    const readinessManagerMock = { isReady: jest.fn(() => false), isReadyFromCache: jest.fn(() => false) };
+  test('Should return false and log a warning if the SDK was not ready from cache.', () => {
+    const readinessManagerMock = { isReadyFromCache: jest.fn(() => false) };
 
     // @ts-ignore
-    expect(validateIfOperational(loggerMock, readinessManagerMock, 'test_method')).toBe(false); // It should return true if SDK was ready.
-    expect(readinessManagerMock.isReady).toBeCalledTimes(1); // It checks for SDK_READY status.
+    expect(validateIfReadyFromCache(loggerMock, readinessManagerMock, 'test_method')).toBe(false); // It should return true if SDK was ready.
     expect(readinessManagerMock.isReadyFromCache).toBeCalledTimes(1); // It checks for SDK_READY_FROM_CACHE status.
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NOT_READY, ['test_method', '']); // It should log the expected warning.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NOT_READY_FROM_CACHE, ['test_method', '']); // It should log the expected warning.
     expect(loggerMock.error).not.toBeCalled(); // But it should not log any errors.
   });
 });

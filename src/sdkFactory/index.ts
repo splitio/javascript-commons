@@ -17,6 +17,7 @@ import { DEBUG, OPTIMIZED } from '../utils/constants';
 import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { IStorageSync } from '../storages/types';
 import { getMatching } from '../utils/key';
+import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 
 /**
  * Modular SDK factory
@@ -60,6 +61,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     }
   });
 
+  const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(settings.fallbackTreatments);
+
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
     if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
@@ -85,7 +88,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;

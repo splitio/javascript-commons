@@ -43,7 +43,8 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
     clientInputValidationDecorator(
       settings,
       clientFactory(params),
-      sdkReadinessManager.readinessManager
+      sdkReadinessManager.readinessManager,
+      params.fallbackTreatmentsCalculator
     ),
 
     // Sdk destroy

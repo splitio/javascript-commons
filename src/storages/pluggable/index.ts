@@ -21,6 +21,7 @@ import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS
 import { metadataBuilder } from '../utils';
 import { LOG_PREFIX } from '../pluggable/constants';
 import { RBSegmentsCachePluggable } from './RBSegmentsCachePluggable';
+import { checkIfServerSide } from '../../utils/key';
 
 const NO_VALID_WRAPPER = 'Expecting pluggable storage `wrapper` in options, but no valid wrapper instance was provided.';
 const NO_VALID_WRAPPER_INTERFACE = 'The provided wrapper instance doesn’t follow the expected interface. Check our docs.';
@@ -83,7 +84,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
       new ImpressionCountsCachePluggable(log, keys.buildImpressionsCountKey(), wrapper);
 
     const uniqueKeysCache = isPartialConsumer ?
-      settings.core.key === undefined ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
+      checkIfServerSide(settings) ? new UniqueKeysCacheInMemory() : new UniqueKeysCacheInMemoryCS() :
       new UniqueKeysCachePluggable(log, keys.buildUniqueKeysKey(), wrapper);
 
     // Connects to wrapper and emits SDK_READY event on main client
