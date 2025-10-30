@@ -1,8 +1,6 @@
 import { FallbackTreatmentConfiguration, Treatment, TreatmentWithConfig } from '../../../types/splitio';
-import { FallbacksSanitizer } from './fallbackSanitizer';
 import { CONTROL } from '../../utils/constants';
 import { isString } from '../../utils/lang';
-import { ILogger } from '../../logger/types';
 
 export type IFallbackTreatmentsCalculator = {
   resolve(flagName: string, label: string): TreatmentWithConfig & { label: string };
@@ -13,13 +11,8 @@ export const FALLBACK_PREFIX = 'fallback - ';
 export class FallbackTreatmentsCalculator implements IFallbackTreatmentsCalculator {
   private readonly fallbacks: FallbackTreatmentConfiguration;
 
-  constructor(logger: ILogger, fallbacks?: FallbackTreatmentConfiguration) {
-    const sanitizedGlobal = fallbacks?.global ? FallbacksSanitizer.sanitizeGlobal(logger, fallbacks.global) : undefined;
-    const sanitizedByFlag = fallbacks?.byFlag ? FallbacksSanitizer.sanitizeByFlag(logger, fallbacks.byFlag) : {};
-    this.fallbacks = {
-      global: sanitizedGlobal,
-      byFlag: sanitizedByFlag
-    };
+  constructor(fallbacks: FallbackTreatmentConfiguration = {}) {
+    this.fallbacks = fallbacks;
   }
 
   resolve(flagName: string, label: string): TreatmentWithConfig & { label: string } {
