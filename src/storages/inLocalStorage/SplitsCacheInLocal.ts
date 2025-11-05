@@ -4,7 +4,7 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISet, _Set, setToArray } from '../../utils/lang/sets';
+import { ISet, _Set } from '../../utils/lang/sets';
 import { ISettings } from '../../types';
 import { getStorageHash } from '../KeyBuilder';
 
@@ -112,8 +112,8 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       this._incrementCounts(split);
       this._decrementCounts(previousSplit);
 
-      if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
-      this.addToFlagSets(split);
+      // if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      // this.addToFlagSets(split);
 
       return true;
     } catch (e) {
@@ -128,7 +128,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       localStorage.removeItem(this.keys.buildSplitKey(name));
 
       this._decrementCounts(split);
-      if (split) this.removeFromFlagSets(split.name, split.sets);
+      // if (split) this.removeFromFlagSets(split.name, split.sets);
 
       return true;
     } catch (e) {
@@ -268,48 +268,48 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  private addToFlagSets(featureFlag: ISplit) {
-    if (!featureFlag.sets) return;
+  // private addToFlagSets(featureFlag: ISplit) {
+  //   if (!featureFlag.sets) return;
 
-    featureFlag.sets.forEach(featureFlagSet => {
+  //   featureFlag.sets.forEach(featureFlagSet => {
 
-      if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
+  //     if (this.flagSetsFilter.length > 0 && !this.flagSetsFilter.some(filterFlagSet => filterFlagSet === featureFlagSet)) return;
 
-      const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
+  //     const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
 
-      const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+  //     const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-      const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
-      flagSetCache.add(featureFlag.name);
+  //     const flagSetCache = new _Set(flagSetFromLocalStorage ? JSON.parse(flagSetFromLocalStorage) : []);
+  //     flagSetCache.add(featureFlag.name);
 
-      localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
-    });
-  }
+  //     localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+  //   });
+  // }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
-    if (!flagSets) return;
+  // private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+  //   if (!flagSets) return;
 
-    flagSets.forEach(flagSet => {
-      this.removeNames(flagSet, featureFlagName);
-    });
-  }
+  //   flagSets.forEach(flagSet => {
+  //     this.removeNames(flagSet, featureFlagName);
+  //   });
+  // }
 
-  private removeNames(flagSetName: string, featureFlagName: string) {
-    const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
+  // private removeNames(flagSetName: string, featureFlagName: string) {
+  //   const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
 
-    const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
+  //   const flagSetFromLocalStorage = localStorage.getItem(flagSetKey);
 
-    if (!flagSetFromLocalStorage) return;
+  //   if (!flagSetFromLocalStorage) return;
 
-    const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
-    flagSetCache.delete(featureFlagName);
+  //   const flagSetCache = new _Set(JSON.parse(flagSetFromLocalStorage));
+  //   flagSetCache.delete(featureFlagName);
 
-    if (flagSetCache.size === 0) {
-      localStorage.removeItem(flagSetKey);
-      return;
-    }
+  //   if (flagSetCache.size === 0) {
+  //     localStorage.removeItem(flagSetKey);
+  //     return;
+  //   }
 
-    localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
-  }
+  //   localStorage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+  // }
 
 }
