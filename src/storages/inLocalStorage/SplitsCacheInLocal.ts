@@ -206,6 +206,9 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const flagSetFromStorage = this.storage.getItem(flagSetKey);
 
       const flagSetCache = new Set(flagSetFromStorage ? JSON.parse(flagSetFromStorage) : []);
+
+      if (flagSetCache.has(featureFlag.name)) return;
+
       flagSetCache.add(featureFlag.name);
 
       this.storage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
