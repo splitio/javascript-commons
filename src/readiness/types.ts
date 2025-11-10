@@ -1,4 +1,3 @@
-import { IStatusInterface } from '../types';
 import SplitIO from '../../types/splitio';
 
 /** Splits data emitter */
@@ -72,7 +71,7 @@ export interface IReadinessManager {
 
 export interface ISdkReadinessManager {
   readinessManager: IReadinessManager
-  sdkStatus: IStatusInterface
+  sdkStatus: SplitIO.IStatusInterface
 
   /**
    * Increment internalReadyCbCount, an offset value of SDK_READY listeners that are added/removed internally

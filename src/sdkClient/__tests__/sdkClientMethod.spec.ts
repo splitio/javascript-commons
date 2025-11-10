@@ -4,6 +4,7 @@ import { sdkClientMethodFactory } from '../sdkClientMethod';
 import { assertClientApi } from './testUtils';
 import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
 import { IBasicClient } from '../../types';
+import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 const errorMessage = 'Shared Client not supported by the storage mechanism. Create isolated instances instead.';
 
@@ -17,7 +18,8 @@ const paramMocks = [
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() },
+    fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -28,7 +30,8 @@ const paramMocks = [
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() },
+    fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
   }
 ];
 

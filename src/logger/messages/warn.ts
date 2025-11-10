@@ -6,7 +6,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.ENGINE_VALUE_INVALID, c.LOG_PREFIX_ENGINE_VALUE + 'Value %s doesn\'t match with expected type.'],
   [c.ENGINE_VALUE_NO_ATTRIBUTES, c.LOG_PREFIX_ENGINE_VALUE + 'Defined attribute `%s`. No attributes received.'],
   // synchronizer
-  [c.SYNC_MYSEGMENTS_FETCH_RETRY, c.LOG_PREFIX_SYNC_MYSEGMENTS + 'Retrying download of segments #%s. Reason: %s'],
+  [c.SYNC_MYSEGMENTS_FETCH_RETRY, c.LOG_PREFIX_SYNC_MYSEGMENTS + 'Retrying fetch of memberships (attempt #%s). Reason: %s'],
   [c.SYNC_SPLITS_FETCH_FAILS, c.LOG_PREFIX_SYNC_SPLITS + 'Error while doing fetch of feature flags. %s'],
   [c.STREAMING_PARSING_ERROR_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE error notification: %s'],
   [c.STREAMING_PARSING_MESSAGE_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE message notification: %s'],
@@ -14,8 +14,8 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.SUBMITTERS_PUSH_FAILS, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Dropping %s after retry. Reason: %s.'],
   [c.SUBMITTERS_PUSH_RETRY, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Failed to push %s, keeping data to retry on next iteration. Reason: %s.'],
   // client status
-  [c.CLIENT_NOT_READY, '%s: the SDK is not ready, results may be incorrect%s. Make sure to wait for SDK readiness before using this method.'],
-  [c.CLIENT_NO_LISTENER, 'No listeners for SDK Readiness detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet ready.'],
+  [c.CLIENT_NOT_READY_FROM_CACHE, '%s: the SDK is not ready to evaluate. Results may be incorrect%s. Make sure to wait for SDK readiness before using this method.'],
+  [c.CLIENT_NO_LISTENER, 'No listeners for SDK_READY event detected. Incorrect control treatments could have been logged if you called getTreatment/s while the SDK was not yet synchronized with the backend.'],
   // input validation
   [c.WARN_SETTING_NULL, '%s: Property "%s" is of invalid type. Setting value to null.'],
   [c.WARN_TRIMMING_PROPERTIES, '%s: more than 300 properties were provided. Some of them will be trimmed when processed.'],
