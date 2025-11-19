@@ -80,44 +80,34 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   addSplit(split: ISplit) {
-    try {
-      const name = split.name;
-      const splitKey = this.keys.buildSplitKey(name);
-      const splitFromStorage = this.storage.getItem(splitKey);
-      const previousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : null;
+    const name = split.name;
+    const splitKey = this.keys.buildSplitKey(name);
+    const splitFromStorage = this.storage.getItem(splitKey);
+    const previousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : null;
 
-      if (previousSplit) {
-        this._decrementCounts(previousSplit);
-        this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
-      }
-
-      this.storage.setItem(splitKey, JSON.stringify(split));
-
-      this._incrementCounts(split);
-      this.addToFlagSets(split);
-
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
+    if (previousSplit) {
+      this._decrementCounts(previousSplit);
+      this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
     }
+
+    this.storage.setItem(splitKey, JSON.stringify(split));
+
+    this._incrementCounts(split);
+    this.addToFlagSets(split);
+
+    return true;
   }
 
   removeSplit(name: string): boolean {
-    try {
-      const split = this.getSplit(name);
-      if (!split) return false;
+    const split = this.getSplit(name);
+    if (!split) return false;
 
-      this.storage.removeItem(this.keys.buildSplitKey(name));
+    this.storage.removeItem(this.keys.buildSplitKey(name));
 
-      this._decrementCounts(split);
-      this.removeFromFlagSets(split.name, split.sets);
+    this._decrementCounts(split);
+    this.removeFromFlagSets(split.name, split.sets);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
   getSplit(name: string): ISplit | null {
