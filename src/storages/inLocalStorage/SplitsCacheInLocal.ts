@@ -18,7 +18,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private readonly storageHash: string;
   private readonly flagSetsFilter: string[];
   private hasSync?: boolean;
-  private updateNewFilter?: boolean;
 
   /**
    * @param {KeyBuilderCS} keys
@@ -102,39 +101,29 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   addSplit(name: string, split: ISplit) {
-    try {
-      const splitKey = this.keys.buildSplitKey(name);
-      const splitFromLocalStorage = localStorage.getItem(splitKey);
-      const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
+    const splitKey = this.keys.buildSplitKey(name);
+    const splitFromLocalStorage = localStorage.getItem(splitKey);
+    const previousSplit = splitFromLocalStorage ? JSON.parse(splitFromLocalStorage) : null;
 
-      localStorage.setItem(splitKey, JSON.stringify(split));
+    localStorage.setItem(splitKey, JSON.stringify(split));
 
-      this._incrementCounts(split);
-      this._decrementCounts(previousSplit);
+    this._incrementCounts(split);
+    this._decrementCounts(previousSplit);
 
-      // if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
-      // this.addToFlagSets(split);
+    // if (previousSplit) this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+    // this.addToFlagSets(split);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
   removeSplit(name: string): boolean {
-    try {
-      const split = this.getSplit(name);
-      localStorage.removeItem(this.keys.buildSplitKey(name));
+    const split = this.getSplit(name);
+    localStorage.removeItem(this.keys.buildSplitKey(name));
 
-      this._decrementCounts(split);
-      // if (split) this.removeFromFlagSets(split.name, split.sets);
+    this._decrementCounts(split);
+    // if (split) this.removeFromFlagSets(split.name, split.sets);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
   getSplit(name: string) {
@@ -143,19 +132,6 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   setChangeNumber(changeNumber: number): boolean {
-
-    // when using a new split query, we must update it at the store
-    if (this.updateNewFilter) {
-      this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
-      const storageHashKey = this.keys.buildHashKey();
-      try {
-        localStorage.setItem(storageHashKey, this.storageHash);
-      } catch (e) {
-        this.log.error(LOG_PREFIX + e);
-      }
-      this.updateNewFilter = false;
-    }
-
     try {
       localStorage.setItem(this.keys.buildSplitsTillKey(), changeNumber + '');
       // update "last updated" timestamp with current time
@@ -246,11 +222,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
     if (storageHash !== this.storageHash) {
       try {
-        // mark cache to update the new query filter on first successful splits fetch
-        this.updateNewFilter = true;
-
         // if there is cache, clear it
         if (this.checkCache()) this.clear();
+
+        this.log.info(LOG_PREFIX + 'SDK key, flags filter criteria or flags spec version was modified. Updating cache');
+        localStorage.setItem(storageHashKey, this.storageHash);
 
       } catch (e) {
         this.log.error(LOG_PREFIX + e);
