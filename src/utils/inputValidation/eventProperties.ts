@@ -2,7 +2,7 @@ import { isObject, isString, isFiniteNumber, isBoolean } from '../lang';
 import { objectAssign } from '../lang/objectAssign';
 import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
-import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
+import { ERROR_NOT_PLAIN_OBJECT, ERROR_NOT_BOOLEAN, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -13,6 +13,17 @@ const ECMA_SIZES = {
 const MAX_PROPERTIES_AMOUNT = 300;
 const MAX_EVENT_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
+
+export function validateImpressionsDisabled(log: ILogger, maybeImpressionsDisabled: any, method: string): boolean | undefined {
+  if (maybeImpressionsDisabled === undefined) return;
+
+  if (maybeImpressionsDisabled === null || !isBoolean(maybeImpressionsDisabled)) {
+    log.error(ERROR_NOT_BOOLEAN, [method, 'impressionsDisabled']);
+    return;
+  }
+
+  return maybeImpressionsDisabled;
+}
 
 export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
@@ -72,7 +83,7 @@ export function validateEvaluationOptions(log: ILogger, maybeOptions: any, metho
     const properties = validateEventProperties(log, maybeOptions.properties, method).properties;
     let options =  properties && Object.keys(properties).length > 0 ? { properties } : undefined;
 
-    const impressionsDisabled = maybeOptions.impressionsDisabled;
+    const impressionsDisabled = validateImpressionsDisabled(log, maybeOptions.impressionsDisabled, method);
     if (!impressionsDisabled) return options;
 
     return options ? { ...options, impressionsDisabled } : { impressionsDisabled };
