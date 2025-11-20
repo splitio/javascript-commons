@@ -4,6 +4,8 @@ import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
 import { LOG_PREFIX, DEFINED } from './constants';
 import { StorageAdapter } from '../types';
+import { MySegmentsData } from '../../sync/polling/types';
+import { IMySegmentsResponse } from '../../dtos/types';
 
 export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
@@ -16,7 +18,6 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
     this.log = log;
     this.keys = keys;
     this.storage = storage;
-    // There is not need to flush segments cache like splits cache, since resetSegments receives the up-to-date list of active segments
   }
 
   protected addSegment(name: string): boolean {
@@ -70,9 +71,9 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
     return n;
   }
 
-  registerSegments() {
+  resetSegments(segmentsData: MySegmentsData | IMySegmentsResponse) {
     try {
-      return super.registerSegments();
+      return super.resetSegments(segmentsData);
     } catch (e) {
       this.log.error(LOG_PREFIX + e);
       return false;

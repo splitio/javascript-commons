@@ -39,3 +39,16 @@ test.each(storages)('SEGMENT CACHE / in LocalStorage', (storage) => {
   expect(storage.getItem(PREFIX + '.user.largeSegment.mocked-segment-2')).toBe('1');
   expect(storage.getItem(PREFIX + '.user.largeSegment.mocked-segment')).toBe(null);
 });
+
+test('SEGMENT CACHE / Special case: localStorage failure should not throw an exception', () => {
+  const cache = new MySegmentsCacheInLocal(loggerMock, new KeyBuilderCS(PREFIX, 'user2'), localStorage);
+
+  // mock localStorage failure
+  const setItemSpy = jest.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new Error('localStorage failure'); });
+  setItemSpy.mockClear();
+
+  expect(cache.resetSegments({ k: [{ n: 'mocked-segment' }, { n: 'mocked-segment-2' }], cn: 123 })).toBe(false);
+  expect(setItemSpy).toHaveBeenCalledTimes(1);
+
+  setItemSpy.mockRestore();
+});

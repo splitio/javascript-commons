@@ -1,4 +1,4 @@
-2.8.1 (November 21, 2025)
+2.8.1 (November 25, 2025)
  - Updated the order of storage operations to prevent inconsistent states when using the `LOCALSTORAGE` storage type and the browser’s `localStorage` fails due to quota limits.
 
 2.8.0 (October 30, 2025)
