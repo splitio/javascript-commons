@@ -96,6 +96,12 @@ interface ISharedSettings {
    * Set together with `debug` option to `true` or a log level string to enable logging.
    */
   logger?: SplitIO.Logger;
+  /**
+   * Fallback treatments to be used when the SDK is not ready or the flag is not found.
+   *
+   * @defaultValue `undefined`
+   */
+  fallbackTreatments?: SplitIO.FallbackTreatmentConfiguration;
 }
 /**
  * Common settings properties for SDKs with synchronous API (standalone and localhost modes).
@@ -713,7 +719,7 @@ declare namespace SplitIO {
     isReadyFromCache: boolean;
 
     /**
-     * `isTimedout` indicates if the client has triggered an `SDK_READY_TIMED_OUT` event and is not ready to evaluate.
+     * `isTimedout` indicates if the client has triggered an `SDK_READY_TIMED_OUT` event and is not ready.
      * In other words, `isTimedout` is equivalent to `hasTimedout && !isReady`.
      */
     isTimedout: boolean;
@@ -1303,7 +1309,13 @@ declare namespace SplitIO {
    * Fallback treatments to be used when the SDK is not ready or the flag is not found.
    */
   type FallbackTreatmentConfiguration = {
+    /**
+     * Fallback treatment for all flags.
+     */
     global?: Treatment | TreatmentWithConfig,
+    /**
+     * Fallback treatments for specific flags. It takes precedence over the global fallback treatment.
+     */
     byFlag?: {
       [featureFlagName: string]: Treatment | TreatmentWithConfig
     }

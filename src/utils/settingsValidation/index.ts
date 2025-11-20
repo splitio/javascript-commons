@@ -8,6 +8,7 @@ import { ISettings } from '../../types';
 import { validateKey } from '../inputValidation/key';
 import { ERROR_MIN_CONFIG_PARAM, LOG_PREFIX_CLIENT_INSTANTIATION } from '../../logger/constants';
 import { validateRolloutPlan } from '../../storages/setRolloutPlan';
+import { sanitizeFallbacks } from '../../evaluator/fallbackTreatmentsCalculator/fallbackSanitizer';
 
 // Exported for telemetry
 export const base = {
@@ -206,6 +207,9 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // ensure a valid user consent value
   // @ts-ignore, modify readonly prop
   withDefaults.userConsent = consent ? consent(withDefaults) : undefined;
+
+  // @ts-ignore, modify readonly prop
+  withDefaults.fallbackTreatments = withDefaults.fallbackTreatments ? sanitizeFallbacks(log, withDefaults.fallbackTreatments) : undefined;
 
   return withDefaults;
 }
