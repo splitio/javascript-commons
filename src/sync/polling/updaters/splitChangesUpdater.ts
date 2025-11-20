@@ -163,8 +163,6 @@ export function splitChangesUpdaterFactory(
           splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
         .then((splitChanges: ISplitChangesResponse) => {
-          startingUp = false;
-
           const usedSegments = new Set<string>();
 
           let ffUpdate: MaybeThenable<boolean> = false;
@@ -186,6 +184,8 @@ export function splitChangesUpdaterFactory(
             segments.registerSegments(setToArray(usedSegments))
           ]).then(([ffChanged, rbsChanged]) => {
             if (storage.save) storage.save();
+
+            startingUp = false;
 
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched

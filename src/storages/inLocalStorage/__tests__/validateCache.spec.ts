@@ -47,6 +47,7 @@ describe.each(storages)('validateCache', (storage) => {
   test('if there is cache and it must not be cleared, it should return true', async () => {
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
+    await storage.save && storage.save();
 
     expect(await validateCache({}, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
 
@@ -66,6 +67,7 @@ describe.each(storages)('validateCache', (storage) => {
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     storage.setItem(keys.buildLastUpdatedKey(), Date.now() - 1000 * 60 * 60 * 24 * 2 + ''); // 2 days ago
+    await storage.save && storage.save();
 
     expect(await validateCache({ expirationDays: 1 }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
@@ -83,6 +85,7 @@ describe.each(storages)('validateCache', (storage) => {
   test('if there is cache and its hash has changed, it should clear cache and return false', async () => {
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
+    await storage.save && storage.save();
 
     expect(await validateCache({}, storage, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 
@@ -99,8 +102,10 @@ describe.each(storages)('validateCache', (storage) => {
 
   test('if there is cache and clearOnInit is true, it should clear cache and return false', async () => {
     // Older cache version (without last clear)
+    storage.removeItem(keys.buildLastClear());
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
+    await storage.save && storage.save();
 
     expect(await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
 

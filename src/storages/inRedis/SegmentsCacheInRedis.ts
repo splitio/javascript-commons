@@ -1,6 +1,6 @@
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
-import { LOG_PREFIX } from '../inLocalStorage/constants';
+import { LOG_PREFIX } from './constants';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
 import type { RedisAdapter } from './RedisAdapter';
