@@ -3,14 +3,10 @@ import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
 import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
 import { ISettings } from '../../types';
-import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 
 const settings = {
   startup: {
     readyTimeout: 0,
-  },
-  storage: {
-    type: STORAGE_LOCALSTORAGE
   }
 } as unknown as ISettings;
 
