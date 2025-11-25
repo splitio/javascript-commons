@@ -112,11 +112,11 @@ describe('clientInputValidationDecorator', () => {
     expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
     expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
 
-    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: {} })).toBe(EVALUATION_RESULT);
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: false })).toBe(EVALUATION_RESULT);
     expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
 
-    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: 'true' })).toBe(EVALUATION_RESULT);
-    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
 
     expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: null })).toBe(EVALUATION_RESULT);
     expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);

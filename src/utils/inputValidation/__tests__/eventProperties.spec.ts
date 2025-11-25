@@ -1,4 +1,4 @@
-import { ERROR_NOT_BOOLEAN, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../../logger/constants';
+import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 import { validateEventProperties } from '../eventProperties';
@@ -192,22 +192,4 @@ describe('INPUT VALIDATION for Event Properties', () => {
     expect(loggerMock.warn).not.toBeCalled(); // Should not log any warnings.
     expect(loggerMock.error).toBeCalledWith(ERROR_SIZE_EXCEEDED, ['some_method_eventProps']); // Should log an error.
   });
-});
-
-describe('INPUT VALIDATION for Impressions disabled', () => {
-
-  afterEach(() => { loggerMock.mockClear(); });
-
-  const impressionsDisabledInvalidValues = [
-    [],
-    () => { },
-    'something',
-    NaN,
-    -Infinity,
-    Infinity,
-    new Promise(res => res),
-    Symbol('asd'),
-    new Map()
-  ];
-
 });

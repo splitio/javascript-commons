@@ -1,3 +1,6 @@
+2.9.0 
+ - Added property `impressionsDisabled` in getTreatment(s) `evaluationOptions` parameter, to disable impressions per evaluations.
+
 2.8.0 (October 30, 2025)
  - Added new configuration for Fallback Treatments, which allows setting a treatment value and optional config to be returned in place of "control", either globally or by flag. Read more in our docs.
  - Added `client.getStatus()` method to retrieve the client readiness status properties (`isReady`, `isReadyFromCache`, etc).
