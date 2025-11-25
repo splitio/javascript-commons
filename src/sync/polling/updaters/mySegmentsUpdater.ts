@@ -66,10 +66,10 @@ export function mySegmentsUpdaterFactory(
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
       mySegmentsFetcher(matchingKey, noCache, till, _promiseDecorator).then(segments => {
-        // Only when we have downloaded segments completely, we should not keep retrying anymore
-        startingUp = false;
-
         updateSegments(segments);
+
+        // Only when we have downloaded and stored segments completely, we should not keep retrying anymore
+        startingUp = false;
         return true;
       });
 
