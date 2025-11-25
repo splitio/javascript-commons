@@ -14,17 +14,6 @@ const MAX_PROPERTIES_AMOUNT = 300;
 const MAX_EVENT_SIZE = 1024 * 32;
 const BASE_EVENT_SIZE = 1024; // We assume 1kb events without properties (avg measured)
 
-export function validateImpressionsDisabled(log: ILogger, maybeImpressionsDisabled: any, method: string): boolean | undefined {
-  if (maybeImpressionsDisabled === undefined) return;
-
-  if (maybeImpressionsDisabled === null || !isBoolean(maybeImpressionsDisabled)) {
-    log.error(ERROR_NOT_BOOLEAN, [method, 'impressionsDisabled']);
-    return;
-  }
-
-  return maybeImpressionsDisabled;
-}
-
 export function validateEventProperties(log: ILogger, maybeProperties: any, method: string): { properties: SplitIO.Properties | null | false, size: number } {
   if (maybeProperties == undefined) return { properties: null, size: BASE_EVENT_SIZE }; // eslint-disable-line eqeqeq
 
@@ -83,7 +72,7 @@ export function validateEvaluationOptions(log: ILogger, maybeOptions: any, metho
     const properties = validateEventProperties(log, maybeOptions.properties, method).properties;
     let options =  properties && Object.keys(properties).length > 0 ? { properties } : undefined;
 
-    const impressionsDisabled = validateImpressionsDisabled(log, maybeOptions.impressionsDisabled, method);
+    const impressionsDisabled = maybeOptions.impressionsDisabled;
     if (!impressionsDisabled) return options;
 
     return options ? { ...options, impressionsDisabled } : { impressionsDisabled };

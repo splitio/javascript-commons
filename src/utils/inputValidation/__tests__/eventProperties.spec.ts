@@ -1,7 +1,7 @@
 import { ERROR_NOT_BOOLEAN, ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../../logger/constants';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
-import { validateEventProperties, validateImpressionsDisabled } from '../eventProperties';
+import { validateEventProperties } from '../eventProperties';
 
 function calculateSize(obj: any) {
   // we calculate the expected size.
@@ -209,31 +209,5 @@ describe('INPUT VALIDATION for Impressions disabled', () => {
     Symbol('asd'),
     new Map()
   ];
-
-  test('Not setting impressionsDisabled is acceptable', () => {
-    expect(validateImpressionsDisabled(loggerMock, undefined, 'some_method_eventProps')).toBeUndefined();
-
-    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
-    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
-  });
-
-  test('When setting a value for impressionsDisabled, only booleans are acceptable', () => {
-
-    impressionsDisabledInvalidValues.forEach(val => {
-      expect(validateImpressionsDisabled(loggerMock, val, 'some_method_eventProps')).toBeUndefined();
-      expect(loggerMock.error).toBeCalledWith(ERROR_NOT_BOOLEAN, ['some_method_eventProps', 'impressionsDisabled']); // Should log an error.
-      loggerMock.error.mockClear();
-    });
-
-    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
-  });
-
-  test('It should return the impressionsDisabled value when valid', () => {
-    expect(validateImpressionsDisabled(loggerMock, true, 'some_method_eventProps')).toBeTruthy();
-    expect(validateImpressionsDisabled(loggerMock, false, 'some_method_eventProps')).toBeFalsy();
-
-    expect(loggerMock.error).not.toBeCalled(); // Should not log any errors.
-    expect(loggerMock.warn).not.toBeCalled(); // It should have not logged any warnings.
-  });
 
 });
