@@ -30,6 +30,7 @@ export function evaluateFeature(
   splitName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  options?: SplitIO.EvaluationOptions
 ): MaybeThenable<IEvaluationResult> {
   let parsedSplit;
 
@@ -47,6 +48,7 @@ export function evaluateFeature(
       split,
       attributes,
       storage,
+      options,
     )).catch(
       // Exception on async `getSplit` storage. For example, when the storage is redis or
       // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
@@ -60,6 +62,7 @@ export function evaluateFeature(
     parsedSplit,
     attributes,
     storage,
+    options,
   );
 }
 
@@ -69,6 +72,7 @@ export function evaluateFeatures(
   splitNames: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let parsedSplits;
 
@@ -80,13 +84,13 @@ export function evaluateFeatures(
   }
 
   return thenable(parsedSplits) ?
-    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage))
+    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage, options))
       .catch(() => {
         // Exception on async `getSplits` storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         return treatmentsException(splitNames);
       }) :
-    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage);
+    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage, options);
 }
 
 export function evaluateFeaturesByFlagSets(
@@ -96,6 +100,7 @@ export function evaluateFeaturesByFlagSets(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   method: string,
+  options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   let storedFlagNames: MaybeThenable<Set<string>[]>;
 
@@ -111,7 +116,7 @@ export function evaluateFeaturesByFlagSets(
     }
 
     return featureFlags.size ?
-      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage) :
+      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage, options) :
       {};
   }
 
@@ -138,6 +143,7 @@ function getEvaluation(
   splitJSON: ISplit | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
     treatment: CONTROL,
@@ -154,14 +160,14 @@ function getEvaluation(
       return evaluation.then(result => {
         result.changeNumber = splitJSON.changeNumber;
         result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
-        result.impressionsDisabled = splitJSON.impressionsDisabled;
+        result.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
 
         return result;
       });
     } else {
       evaluation.changeNumber = splitJSON.changeNumber;
       evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
-      evaluation.impressionsDisabled = splitJSON.impressionsDisabled;
+      evaluation.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
     }
   }
 
@@ -175,6 +181,7 @@ function getEvaluations(
   splits: Record<string, ISplit | null>,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
+  options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   const result: Record<string, IEvaluationResult> = {};
   const thenables: Promise<void>[] = [];
@@ -184,7 +191,8 @@ function getEvaluations(
       key,
       splits[splitName],
       attributes,
-      storage
+      storage,
+      options
     );
     if (thenable(evaluation)) {
       thenables.push(evaluation.then(res => {
