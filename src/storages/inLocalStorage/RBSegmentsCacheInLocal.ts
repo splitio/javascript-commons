@@ -26,9 +26,10 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean {
+    let updated = toAdd.map(toAdd => this.add(toAdd)).some(result => result);
+    updated = toRemove.map(toRemove => this.remove(toRemove.name)).some(result => result) || updated;
     this.setChangeNumber(changeNumber);
-    const updated = toAdd.map(toAdd => this.add(toAdd)).some(result => result);
-    return toRemove.map(toRemove => this.remove(toRemove.name)).some(result => result) || updated;
+    return updated;
   }
 
   private setChangeNumber(changeNumber: number) {
@@ -48,40 +49,30 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   private add(rbSegment: IRBSegment): boolean {
-    try {
-      const name = rbSegment.name;
-      const rbSegmentKey = this.keys.buildRBSegmentKey(name);
-      const rbSegmentFromStorage = this.storage.getItem(rbSegmentKey);
-      const previous = rbSegmentFromStorage ? JSON.parse(rbSegmentFromStorage) : null;
+    const name = rbSegment.name;
+    const rbSegmentKey = this.keys.buildRBSegmentKey(name);
+    const rbSegmentFromStorage = this.storage.getItem(rbSegmentKey);
+    const previous = rbSegmentFromStorage ? JSON.parse(rbSegmentFromStorage) : null;
 
-      this.storage.setItem(rbSegmentKey, JSON.stringify(rbSegment));
+    this.storage.setItem(rbSegmentKey, JSON.stringify(rbSegment));
 
-      let usesSegmentsDiff = 0;
-      if (previous && usesSegments(previous)) usesSegmentsDiff--;
-      if (usesSegments(rbSegment)) usesSegmentsDiff++;
-      if (usesSegmentsDiff !== 0) this.updateSegmentCount(usesSegmentsDiff);
+    let usesSegmentsDiff = 0;
+    if (previous && usesSegments(previous)) usesSegmentsDiff--;
+    if (usesSegments(rbSegment)) usesSegmentsDiff++;
+    if (usesSegmentsDiff !== 0) this.updateSegmentCount(usesSegmentsDiff);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
   private remove(name: string): boolean {
-    try {
-      const rbSegment = this.get(name);
-      if (!rbSegment) return false;
+    const rbSegment = this.get(name);
+    if (!rbSegment) return false;
 
-      this.storage.removeItem(this.keys.buildRBSegmentKey(name));
+    this.storage.removeItem(this.keys.buildRBSegmentKey(name));
 
-      if (usesSegments(rbSegment)) this.updateSegmentCount(-1);
+    if (usesSegments(rbSegment)) this.updateSegmentCount(-1);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
   private getNames(): string[] {
