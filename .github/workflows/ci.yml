@@ -19,10 +19,10 @@ jobs:
           - 6379:6379
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up nodejs
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           # @TODO: rollback to 'lts/*'
           node-version: '22'
