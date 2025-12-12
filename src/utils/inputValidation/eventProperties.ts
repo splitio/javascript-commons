@@ -2,7 +2,7 @@ import { isObject, isString, isFiniteNumber, isBoolean } from '../lang';
 import { objectAssign } from '../lang/objectAssign';
 import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
-import { ERROR_NOT_PLAIN_OBJECT, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
+import { ERROR_NOT_PLAIN_OBJECT, ERROR_NOT_BOOLEAN, ERROR_SIZE_EXCEEDED, WARN_SETTING_NULL, WARN_TRIMMING_PROPERTIES } from '../../logger/constants';
 
 const ECMA_SIZES = {
   NULL: 0, // While on the JSON it's going to occupy more space, we'll take it as 0 for the approximation.
@@ -70,7 +70,12 @@ export function validateEventProperties(log: ILogger, maybeProperties: any, meth
 export function validateEvaluationOptions(log: ILogger, maybeOptions: any, method: string): SplitIO.EvaluationOptions | undefined {
   if (isObject(maybeOptions)) {
     const properties = validateEventProperties(log, maybeOptions.properties, method).properties;
-    return properties && Object.keys(properties).length > 0 ? { properties } : undefined;
+    let options =  properties && Object.keys(properties).length > 0 ? { properties } : undefined;
+
+    const impressionsDisabled = maybeOptions.impressionsDisabled;
+    if (!impressionsDisabled) return options;
+
+    return options ? { ...options, impressionsDisabled } : { impressionsDisabled };
   } else if (maybeOptions) {
     log.error(ERROR_NOT_PLAIN_OBJECT, [method, 'evaluation options']);
   }
