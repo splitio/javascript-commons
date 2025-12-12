@@ -120,8 +120,8 @@ export function splitChangesUpdaterFactory(
   storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments' | 'save'>,
   splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
-  requestTimeoutBeforeReady: number = 0,
-  retriesOnFailureBeforeReady: number = 0,
+  requestTimeoutBeforeReady = 0,
+  retriesOnFailureBeforeReady = 0,
   isClientSide?: boolean
 ): SplitChangesUpdater {
   const { splits, rbSegments, segments } = storage;
@@ -163,8 +163,6 @@ export function splitChangesUpdaterFactory(
           splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
         .then((splitChanges: ISplitChangesResponse) => {
-          startingUp = false;
-
           const usedSegments = new Set<string>();
 
           let ffUpdate: MaybeThenable<boolean> = false;
@@ -187,6 +185,8 @@ export function splitChangesUpdaterFactory(
           ]).then(([ffChanged, rbsChanged]) => {
             if (storage.save) storage.save();
 
+            startingUp = false;
+
             if (splitsEventEmitter) {
               // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
               return Promise.resolve(!splitsEventEmitter.splitsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
@@ -201,14 +201,13 @@ export function splitChangesUpdaterFactory(
           });
         })
         .catch(error => {
-          log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
-
           if (startingUp && retriesOnFailureBeforeReady > retry) {
             retry += 1;
-            log.info(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
+            log.warn(SYNC_SPLITS_FETCH_RETRY, [retry, error]);
             return _splitChangesUpdater(sinces, retry);
           } else {
             startingUp = false;
+            log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
           }
           return false;
         });

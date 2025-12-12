@@ -2,7 +2,7 @@ import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
 import { AbstractMySegmentsCacheSync } from '../AbstractMySegmentsCacheSync';
 import type { MySegmentsKeyBuilder } from '../KeyBuilderCS';
-import { LOG_PREFIX, DEFINED } from './constants';
+import { DEFINED } from './constants';
 import { StorageAdapter } from '../types';
 
 export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
@@ -16,33 +16,22 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
     this.log = log;
     this.keys = keys;
     this.storage = storage;
-    // There is not need to flush segments cache like splits cache, since resetSegments receives the up-to-date list of active segments
   }
 
   protected addSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    try {
-      if (this.storage.getItem(segmentKey) === DEFINED) return false;
-      this.storage.setItem(segmentKey, DEFINED);
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    if (this.storage.getItem(segmentKey) === DEFINED) return false;
+    this.storage.setItem(segmentKey, DEFINED);
+    return true;
   }
 
   protected removeSegment(name: string): boolean {
     const segmentKey = this.keys.buildSegmentNameKey(name);
 
-    try {
-      if (this.storage.getItem(segmentKey) !== DEFINED) return false;
-      this.storage.removeItem(segmentKey);
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    if (this.storage.getItem(segmentKey) !== DEFINED) return false;
+    this.storage.removeItem(segmentKey);
+    return true;
   }
 
   isInSegment(name: string): boolean {
@@ -63,12 +52,8 @@ export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
   }
 
   protected setChangeNumber(changeNumber?: number) {
-    try {
-      if (changeNumber) this.storage.setItem(this.keys.buildTillKey(), changeNumber + '');
-      else this.storage.removeItem(this.keys.buildTillKey());
-    } catch (e) {
-      this.log.error(e);
-    }
+    if (changeNumber) this.storage.setItem(this.keys.buildTillKey(), changeNumber + '');
+    else this.storage.removeItem(this.keys.buildTillKey());
   }
 
   getChangeNumber() {

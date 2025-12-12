@@ -23,6 +23,8 @@ export function segmentsSyncTaskFactory(
       segmentChangesFetcherFactory(fetchSegmentChanges),
       storage.segments,
       readiness,
+      settings.startup.requestTimeoutBeforeReady,
+      settings.startup.retriesOnFailureBeforeReady,
     ),
     settings.scheduler.segmentsRefreshRate,
     'segmentChangesUpdater'

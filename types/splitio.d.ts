@@ -1343,8 +1343,6 @@ declare namespace SplitIO {
     /**
      * Defines the factory function to instantiate the storage. If not provided, the default in-memory storage is used.
      *
-     * NOTE: Currently, there is no persistent storage option available for the React Native SDK; only `InLocalStorage` for the Browser SDK.
-     *
      * Example:
      * ```
      * SplitFactory({
