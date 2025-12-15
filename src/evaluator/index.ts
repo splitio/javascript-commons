@@ -160,6 +160,7 @@ function getEvaluation(
       return evaluation.then(result => {
         result.changeNumber = splitJSON.changeNumber;
         result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
+        // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
         result.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
 
         return result;
@@ -167,6 +168,7 @@ function getEvaluation(
     } else {
       evaluation.changeNumber = splitJSON.changeNumber;
       evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
+      // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
       evaluation.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
     }
   }

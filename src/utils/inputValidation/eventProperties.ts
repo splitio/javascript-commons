@@ -75,6 +75,7 @@ export function validateEvaluationOptions(log: ILogger, maybeOptions: any, metho
     const impressionsDisabled = maybeOptions.impressionsDisabled;
     if (!impressionsDisabled) return options;
 
+    // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
     return options ? { ...options, impressionsDisabled } : { impressionsDisabled };
   } else if (maybeOptions) {
     log.error(ERROR_NOT_PLAIN_OBJECT, [method, 'evaluation options']);
