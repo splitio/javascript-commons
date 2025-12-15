@@ -1,4 +1,4 @@
-2.9.1 (December 12, 2025)
+2.9.1 (December 16, 2025)
  - Added property `impressionsDisabled` in getTreatment(s) `evaluationOptions` parameter, to disable impressions per evaluations.
 
 2.9.0 (November 26, 2025)

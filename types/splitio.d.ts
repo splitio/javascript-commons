@@ -923,7 +923,7 @@ declare namespace SplitIO {
      *
      * @defaultValue `false`
      */
-    impressionsDisabled?: boolean;
+    // impressionsDisabled?: boolean;
     /**
      * Optional properties to append to the generated impression object sent to Split backend.
      *
