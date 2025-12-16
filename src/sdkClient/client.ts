@@ -52,7 +52,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluation = readinessManager.isReadyFromCache() ?
-      evaluateFeature(log, key, featureFlagName, attributes, storage) :
+      evaluateFeature(log, key, featureFlagName, attributes, storage, options) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentNotReady) :
         treatmentNotReady;
@@ -81,7 +81,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
+      evaluateFeatures(log, key, featureFlagNames, attributes, storage, options) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentsNotReady(featureFlagNames)) :
         treatmentsNotReady(featureFlagNames);
@@ -110,7 +110,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName, options) :
       isAsync ?
         Promise.resolve({}) :
         {};

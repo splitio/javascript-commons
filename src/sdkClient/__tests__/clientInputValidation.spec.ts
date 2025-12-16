@@ -107,4 +107,24 @@ describe('clientInputValidationDecorator', () => {
 
     expect(logSpy).not.toBeCalled();
   });
+
+  test('should ignore the properties in the 4th argument if an empty object is passed', () => {
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: false })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: null })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: false })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined); // impressionsDisabled false is the default behavior, so we don't pass it along
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { properties: undefined })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+  });
 });
