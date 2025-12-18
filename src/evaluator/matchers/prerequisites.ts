@@ -4,11 +4,11 @@ import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
 import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
 
-export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'] = [], storage: IStorageSync | IStorageAsync, log: ILogger) {
-
-  prerequisites = prerequisites == null ? [] : prerequisites;
+export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'], storage: IStorageSync | IStorageAsync, log: ILogger) {
 
   return function prerequisitesMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
+
+    prerequisites = prerequisites == null ? [] : prerequisites;
 
     function evaluatePrerequisite(prerequisite: { n: string; ts: string[] }): MaybeThenable<boolean> {
       const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage);
