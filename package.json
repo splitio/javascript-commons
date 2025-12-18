@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "2.10.0",
+  "version": "2.10.1",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",

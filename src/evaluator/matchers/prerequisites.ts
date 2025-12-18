@@ -6,6 +6,8 @@ import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
 
 export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'] = [], storage: IStorageSync | IStorageAsync, log: ILogger) {
 
+  prerequisites = prerequisites == null ? [] : prerequisites;
+
   return function prerequisitesMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
 
     function evaluatePrerequisite(prerequisite: { n: string; ts: string[] }): MaybeThenable<boolean> {
