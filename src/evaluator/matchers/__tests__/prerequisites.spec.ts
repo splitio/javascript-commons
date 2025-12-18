@@ -73,7 +73,6 @@ test('MATCHER PREREQUISITES / Edge cases', () => {
   const matcherTrueNoPrerequisites = prerequisitesMatcherContext(undefined, mockStorage, loggerMock);
   expect(matcherTrueNoPrerequisites({ key: 'a-key' }, evaluateFeature)).toBe(true);
 
-  //@ts-expect-error null is not assignable
   const matcherTruePrerequisitesNull = prerequisitesMatcherContext(null, mockStorage, loggerMock);
   expect(matcherTruePrerequisitesNull({ key: 'a-key' }, evaluateFeature)).toBe(true);
 
