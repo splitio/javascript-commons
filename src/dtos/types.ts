@@ -220,7 +220,7 @@ export interface ISplit {
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
   conditions: ISplitCondition[],
-  prerequisites?: {
+  prerequisites?: null | {
     n: string,
     ts: string[]
   }[]

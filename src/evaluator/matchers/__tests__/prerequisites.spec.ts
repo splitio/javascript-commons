@@ -73,6 +73,9 @@ test('MATCHER PREREQUISITES / Edge cases', () => {
   const matcherTrueNoPrerequisites = prerequisitesMatcherContext(undefined, mockStorage, loggerMock);
   expect(matcherTrueNoPrerequisites({ key: 'a-key' }, evaluateFeature)).toBe(true);
 
+  const matcherTruePrerequisitesNull = prerequisitesMatcherContext(null, mockStorage, loggerMock);
+  expect(matcherTruePrerequisitesNull({ key: 'a-key' }, evaluateFeature)).toBe(true);
+
   const matcherTrueEmptyPrerequisites = prerequisitesMatcherContext([], mockStorage, loggerMock);
   expect(matcherTrueEmptyPrerequisites({ key: 'a-key' }, evaluateFeature)).toBe(true);
 
