@@ -54,7 +54,8 @@ export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: type
 
 interface ISplitMutations<T extends ISplit | IRBSegment> {
   added: T[],
-  removed: T[]
+  removed: T[],
+  names: string[]
 }
 
 /**
@@ -88,16 +89,18 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
   return rules.reduce((accum, ruleEntity) => {
     if (ruleEntity.status === 'ACTIVE' && (!filters || matchFilters(ruleEntity as ISplit, filters))) {
       accum.added.push(ruleEntity);
+      accum.names.push(ruleEntity.name);
 
       parseSegments(ruleEntity).forEach((segmentName: string) => {
         segments.add(segmentName);
       });
     } else {
       accum.removed.push(ruleEntity);
+      accum.names.push(ruleEntity.name);
     }
 
     return accum;
-  }, { added: [], removed: [] } as ISplitMutations<T>);
+  }, { added: [], removed: [], names: [] } as ISplitMutations<T>);
 }
 
 /**
@@ -165,9 +168,11 @@ export function splitChangesUpdaterFactory(
         .then((splitChanges: ISplitChangesResponse) => {
           const usedSegments = new Set<string>();
 
+          let updatedFlags: string[] = [];
           let ffUpdate: MaybeThenable<boolean> = false;
           if (splitChanges.ff) {
-            const { added, removed } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            const { added, removed, names } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            updatedFlags = names;
             log.debug(SYNC_SPLITS_UPDATE, [added.length, removed.length]);
             ffUpdate = splits.update(added, removed, splitChanges.ff.t);
           }
@@ -193,7 +198,7 @@ export function splitChangesUpdaterFactory(
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
-                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
+                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, { updatedFlags });
                   return true;
                 });
             }

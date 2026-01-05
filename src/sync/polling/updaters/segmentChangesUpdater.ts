@@ -83,7 +83,7 @@ export function segmentChangesUpdaterFactory(
         // if at least one segment fetch succeeded, mark segments ready
         if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
-          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { updatedSegments: segmentNames });
         }
         return true;
       });

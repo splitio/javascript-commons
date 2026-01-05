@@ -3,6 +3,7 @@ import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
 import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
 import { ISettings } from '../../types';
+import { EventMetadata, SdkUpdateMetadataKeys } from '../../sync/polling/types';
 
 const settings = {
   startup: {
@@ -299,4 +300,63 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
     done();
   }, settingsWithTimeout.startup.readyTimeout * 1.5);
 
+});
+
+test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  const metadata: EventMetadata = {
+    [SdkUpdateMetadataKeys.UPDATED_FLAGS]: ['flag1', 'flag2']
+  };
+
+  let receivedMetadata: EventMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED, metadata);
+
+  expect(receivedMetadata).toEqual(metadata);
+});
+
+test('READINESS MANAGER / SDK_UPDATE should handle undefined metadata', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  let receivedMetadata: any;
+  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+
+  expect(receivedMetadata).toBeUndefined();
+});
+
+test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  const metadata: EventMetadata = {
+    [SdkUpdateMetadataKeys.UPDATED_SEGMENTS]: ['segment1', 'segment2']
+  };
+
+  let receivedMetadata: EventMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
+
+  expect(receivedMetadata).toEqual(metadata);
 });
