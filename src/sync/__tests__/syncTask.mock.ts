@@ -1,6 +1,6 @@
 export function syncTaskFactory() {
   return {
-    execute: jest.fn(),
+    execute: jest.fn(() => Promise.resolve(true)),
     isExecuting: jest.fn(),
     start: jest.fn(),
     stop: jest.fn(),
