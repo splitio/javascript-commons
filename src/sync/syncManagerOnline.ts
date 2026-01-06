@@ -145,7 +145,7 @@ export function syncManagerOnlineFactory(
       },
 
       flush() {
-        return submitterManager.execute(!isConsentGranted(settings));
+        return submitterManager.execute(!isConsentGranted(settings)).then(() => {});
       },
 
       // [Only used for client-side]
