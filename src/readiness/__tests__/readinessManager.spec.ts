@@ -3,7 +3,7 @@ import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
 import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
 import { ISettings } from '../../types';
-import { EventMetadata, SdkUpdateMetadataKeys } from '../../sync/polling/types';
+import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../../sync/polling/types';
 
 const settings = {
   startup: {
@@ -309,12 +309,12 @@ test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
   readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
-  const metadata: EventMetadata = {
+  const metadata: SdkUpdateMetadata = {
     [SdkUpdateMetadataKeys.UPDATED_FLAGS]: ['flag1', 'flag2']
   };
 
-  let receivedMetadata: EventMetadata | undefined;
-  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+  let receivedMetadata: SdkUpdateMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
     receivedMetadata = meta;
   });
 
@@ -331,7 +331,7 @@ test('READINESS MANAGER / SDK_UPDATE should handle undefined metadata', () => {
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   let receivedMetadata: any;
-  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
     receivedMetadata = meta;
   });
 
@@ -347,12 +347,12 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
   readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
-  const metadata: EventMetadata = {
+  const metadata: SdkUpdateMetadata = {
     [SdkUpdateMetadataKeys.UPDATED_SEGMENTS]: ['segment1', 'segment2']
   };
 
-  let receivedMetadata: EventMetadata | undefined;
-  readinessManager.gate.on(SDK_UPDATE, (meta: EventMetadata) => {
+  let receivedMetadata: SdkUpdateMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
     receivedMetadata = meta;
   });
 
