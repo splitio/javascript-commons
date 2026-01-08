@@ -1,5 +1,5 @@
 2.10.1 (December 18, 2025)
- - Bugfix - Handle `null` prerequisites properly
+ - Bugfix - Handle `null` prerequisites properly.
 
 2.10.0 (December 16, 2025)
  - Added property `impressionsDisabled` in getTreatment(s) `evaluationOptions` parameter, to disable impressions per evaluations.
