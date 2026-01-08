@@ -15,6 +15,7 @@ import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
+import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -120,6 +121,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
   expect(splitsMutation.added).toEqual([activeSplitWithSegments]);
   expect(splitsMutation.removed).toEqual([archivedSplit]);
+  expect(splitsMutation.names).toEqual([activeSplitWithSegments.name, archivedSplit.name]);
   expect(Array.from(segments)).toEqual(['A', 'B']);
 
   // SDK initialization without sets
@@ -129,6 +131,7 @@ test('splitChangesUpdater / compute splits mutation', () => {
 
   expect(splitsMutation.added).toEqual([testFFSetsAB, test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([]);
+  expect(splitsMutation.names).toEqual([testFFSetsAB.name, test2FFSetsX.name]);
   expect(Array.from(segments)).toEqual([]);
 });
 
@@ -142,24 +145,28 @@ test('splitChangesUpdater / compute splits mutation with filters', () => {
   // should add it to mutations
   expect(splitsMutation.added).toEqual([testFFSetsAB]);
   expect(splitsMutation.removed).toEqual([]);
+  expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation([testFFRemoveSetB], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([testFFRemoveSetB]);
   expect(splitsMutation.removed).toEqual([]);
+  expect(splitsMutation.names).toEqual([testFFRemoveSetB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation([testFFRemoveSetA], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFRemoveSetA]);
+  expect(splitsMutation.names).toEqual([testFFRemoveSetA.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation([testFFEmptySet], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.names).toEqual([testFFEmptySet.name]);
 
   // SDK initialization with names: ['test2']
   splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
@@ -167,11 +174,13 @@ test('splitChangesUpdater / compute splits mutation with filters', () => {
 
   expect(splitsMutation.added).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFSetsAB]);
+  expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   splitsMutation = computeMutation([test2FFSetsX, testFFEmptySet], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.names).toEqual([test2FFSetsX.name, testFFEmptySet.name]);
 });
 
 describe('splitChangesUpdater', () => {
@@ -204,6 +213,7 @@ describe('splitChangesUpdater', () => {
 
   test('test without payload', async () => {
     const result = await splitChangesUpdater();
+    const updatedFlags = splitChangesMock1.ff.d.map(ff => ff.name);
 
     expect(fetchSplitChanges).toBeCalledTimes(1);
     expect(fetchSplitChanges).lastCalledWith(-1, undefined, undefined, -1);
@@ -211,7 +221,7 @@ describe('splitChangesUpdater', () => {
     expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
     expect(updateRbSegments).toBeCalledTimes(0); // no rbSegments to update
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith('state::splits-arrived');
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { updatedFlags });
     expect(result).toBe(true);
   });
 
@@ -276,7 +286,8 @@ describe('splitChangesUpdater', () => {
     // emit always if not configured sets
     for (const setMock of setMocks) {
       await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
-      expect(splitsEmitSpy.mock.calls[index][0]).toBe('state::splits-arrived');
+      expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_SPLITS_ARRIVED);
+      expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ updatedFlags: [payload.name] });
       index++;
     }
 
@@ -294,4 +305,19 @@ describe('splitChangesUpdater', () => {
     }
 
   });
+
+  test('test with ff payload - should emit metadata with flag name', async () => {
+    splitsEmitSpy.mockClear();
+
+    readinessManager.splits.splitsArrived = false;
+    storage.splits.clear();
+
+    const payload = splitNotifications[0].decoded as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
+    const changeNumber = payload.changeNumber;
+
+    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
+
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { updatedFlags: [payload.name] });
+  });
+
 });

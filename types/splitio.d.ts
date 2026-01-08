@@ -3,6 +3,8 @@
 
 import { RedisOptions } from 'ioredis';
 import { RequestOptions } from 'http';
+import { SDK_UPDATE } from '../src/readiness/types';
+import { SdkUpdateMetadata } from '../src/sync/polling/types';
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -497,6 +499,7 @@ declare namespace SplitIO {
    */
   interface IEventEmitter {
     addListener(event: string, listener: (...args: any[]) => void): this;
+    on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string, listener: (...args: any[]) => void): this;
     once(event: string, listener: (...args: any[]) => void): this;
     removeListener(event: string, listener: (...args: any[]) => void): this;
@@ -510,6 +513,7 @@ declare namespace SplitIO {
    */
   interface EventEmitter extends IEventEmitter {
     addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string | symbol, listener: (...args: any[]) => void): this;
     once(event: string | symbol, listener: (...args: any[]) => void): this;
     removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
