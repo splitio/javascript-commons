@@ -38,7 +38,7 @@ export function submitterManagerFactory(params: ISdkFactoryContextSync): ISubmit
     execute(onlyTelemetry?: boolean) {
       const promises = onlyTelemetry ? [] : submitters.map(submitter => submitter.execute());
       if (telemetrySubmitter) promises.push(telemetrySubmitter.execute());
-      return Promise.all(promises);
+      return Promise.all(promises).then(() => { });
     },
 
     isExecuting() {
