@@ -7,6 +7,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { ISegmentChangesFetcher } from '../../fetchers/types';
 import { ISegmentChangesResponse } from '../../../../dtos/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../../readiness/constants';
+import { SdkUpdateMetadataKeys } from '../../types';
 
 describe('segmentChangesUpdater', () => {
   const segments = new SegmentsCacheInMemory();
@@ -47,6 +48,6 @@ describe('segmentChangesUpdater', () => {
     await segmentChangesUpdater(undefined, segmentName);
 
     expect(updateSegments).toHaveBeenCalledWith(segmentName, segmentChange.added, segmentChange.removed, segmentChange.till);
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { updatedSegments: [segmentName] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [segmentName] });
   });
 });

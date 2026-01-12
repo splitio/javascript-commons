@@ -1,9 +1,8 @@
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, ISegmentUpdateData, ISplitUpdateData, ISplitKillData, INotificationData } from './SSEHandler/types';
 import { ITask } from '../types';
-import { IMySegmentsSyncTask, SdkUpdateMetadata } from '../polling/types';
+import { IMySegmentsSyncTask } from '../polling/types';
 import SplitIO from '../../../types/splitio';
 import { ControlType } from './constants';
-import { SDK_UPDATE } from '../../readiness/types';
 
 // Internal SDK events, subscribed by SyncManager and PushManager
 export type PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP'
@@ -38,7 +37,7 @@ type IParsedData<T extends IPushEvent> =
  */
 export interface IPushEventEmitter extends SplitIO.IEventEmitter {
   once<T extends IPushEvent>(event: T, listener: (parsedData: IParsedData<T>) => void): this;
-  on<T extends IPushEvent>(event: T, listener: (metadata: T extends SDK_UPDATE ? SdkUpdateMetadata : never) => void): this;
+  on<T extends IPushEvent>(event: T, listener: (parsedData: IParsedData<T>) => void): this;
   emit<T extends IPushEvent>(event: T, parsedData?: IParsedData<T>): boolean;
 }
 

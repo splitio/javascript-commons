@@ -1,5 +1,4 @@
 import SplitIO from '../../types/splitio';
-import { SdkUpdateMetadata } from '../sync/polling/types';
 
 /** Readiness event types */
 
@@ -23,7 +22,7 @@ type ISplitsEvent = SDK_SPLITS_ARRIVED | SDK_SPLITS_CACHE_LOADED
 export interface ISplitsEventEmitter extends SplitIO.IEventEmitter {
   emit(event: ISplitsEvent, ...args: any[]): boolean
   on(event: ISplitsEvent, listener: (...args: any[]) => void): this;
-  on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
+  on(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
   once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
   splitsArrived: boolean
   splitsCacheLoaded: boolean
@@ -39,7 +38,7 @@ type ISegmentsEvent = SDK_SEGMENTS_ARRIVED
 export interface ISegmentsEventEmitter extends SplitIO.IEventEmitter {
   emit(event: ISegmentsEvent, ...args: any[]): boolean
   on(event: ISegmentsEvent, listener: (...args: any[]) => void): this;
-  on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
+  on(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
   once(event: ISegmentsEvent, listener: (...args: any[]) => void): this;
   segmentsArrived: boolean
 }

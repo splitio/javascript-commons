@@ -310,7 +310,8 @@ test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
-    [SdkUpdateMetadataKeys.UPDATED_FLAGS]: ['flag1', 'flag2']
+    type: SdkUpdateMetadataKeys.FLAGS_UPDATE,
+    names: ['flag1', 'flag2']
   };
 
   let receivedMetadata: SdkUpdateMetadata | undefined;
@@ -348,7 +349,8 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
-    [SdkUpdateMetadataKeys.UPDATED_SEGMENTS]: ['segment1', 'segment2']
+    type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
+    names: ['segment1', 'segment2']
   };
 
   let receivedMetadata: SdkUpdateMetadata | undefined;

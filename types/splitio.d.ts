@@ -3,8 +3,6 @@
 
 import { RedisOptions } from 'ioredis';
 import { RequestOptions } from 'http';
-import { SDK_UPDATE } from '../src/readiness/types';
-import { SdkUpdateMetadata } from '../src/sync/polling/types';
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -495,11 +493,27 @@ declare namespace SplitIO {
   }
 
   /**
+   * Metadata keys for SDK update events.
+   */
+  enum SdkUpdateMetadataKeys {
+    FLAGS_UPDATE = 'FLAGS_UPDATE',
+    SEGMENTS_UPDATE = 'SEGMENTS_UPDATE'
+  }
+
+  /**
+   * List of modified flags or segments
+   * when a sdk update event is emitted.
+   */
+  type SdkUpdateMetadata = {
+    type: SdkUpdateMetadataKeys.FLAGS_UPDATE | SdkUpdateMetadataKeys.SEGMENTS_UPDATE
+    names: string[]
+  }
+
+  /**
    * EventEmitter interface based on a subset of the Node.js EventEmitter methods.
    */
   interface IEventEmitter {
     addListener(event: string, listener: (...args: any[]) => void): this;
-    on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string, listener: (...args: any[]) => void): this;
     once(event: string, listener: (...args: any[]) => void): this;
     removeListener(event: string, listener: (...args: any[]) => void): this;
@@ -512,9 +526,11 @@ declare namespace SplitIO {
    * @see {@link https://nodejs.org/api/events.html}
    */
   interface EventEmitter extends IEventEmitter {
+    addListener(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     addListener(event: string | symbol, listener: (...args: any[]) => void): this;
-    on(event: SDK_UPDATE, listener: (metadata: SdkUpdateMetadata) => void): this;
+    on(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string | symbol, listener: (...args: any[]) => void): this;
+    once(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     once(event: string | symbol, listener: (...args: any[]) => void): this;
     removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
     off(event: string | symbol, listener: (...args: any[]) => void): this;

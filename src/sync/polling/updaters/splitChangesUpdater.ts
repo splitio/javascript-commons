@@ -10,6 +10,7 @@ import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
+import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../types';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
@@ -89,15 +90,14 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
   return rules.reduce((accum, ruleEntity) => {
     if (ruleEntity.status === 'ACTIVE' && (!filters || matchFilters(ruleEntity as ISplit, filters))) {
       accum.added.push(ruleEntity);
-      accum.names.push(ruleEntity.name);
 
       parseSegments(ruleEntity).forEach((segmentName: string) => {
         segments.add(segmentName);
       });
     } else {
       accum.removed.push(ruleEntity);
-      accum.names.push(ruleEntity.name);
     }
+    accum.names.push(ruleEntity.name);
 
     return accum;
   }, { added: [], removed: [], names: [] } as ISplitMutations<T>);
@@ -197,8 +197,12 @@ export function splitChangesUpdaterFactory(
               return Promise.resolve(!splitsEventEmitter.splitsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
+                  const metadata: SdkUpdateMetadata = {
+                    type: SdkUpdateMetadataKeys.FLAGS_UPDATE,
+                    names: updatedFlags
+                  };
                   // emit SDK events
-                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, { updatedFlags });
+                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
                   return true;
                 });
             }

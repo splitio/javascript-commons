@@ -16,6 +16,7 @@ import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegment
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
 import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
+import { SdkUpdateMetadataKeys } from '../../types';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -221,7 +222,7 @@ describe('splitChangesUpdater', () => {
     expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
     expect(updateRbSegments).toBeCalledTimes(0); // no rbSegments to update
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { updatedFlags });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: updatedFlags });
     expect(result).toBe(true);
   });
 
@@ -287,7 +288,7 @@ describe('splitChangesUpdater', () => {
     for (const setMock of setMocks) {
       await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_SPLITS_ARRIVED);
-      expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ updatedFlags: [payload.name] });
+      expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
       index++;
     }
 
@@ -317,7 +318,7 @@ describe('splitChangesUpdater', () => {
 
     await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { updatedFlags: [payload.name] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
   });
 
 });

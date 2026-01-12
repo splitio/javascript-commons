@@ -3,7 +3,6 @@ import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
-import { SdkUpdateMetadata } from '../sync/polling/types';
 
 function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISplitsEventEmitter {
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
@@ -16,7 +15,7 @@ function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter
   // `isSplitKill` condition avoids an edge-case of wrongly emitting SDK_READY if:
   // - `/memberships` fetch and SPLIT_KILL occurs before `/splitChanges` fetch, and
   // - storage has cached splits (for which case `splitsStorage.killLocally` can return true)
-  splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (metadata: SdkUpdateMetadata, isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
+  splitsEventEmitter.on(SDK_SPLITS_ARRIVED, (metadata: SplitIO.SdkUpdateMetadata, isSplitKill: boolean) => { if (!isSplitKill) splitsEventEmitter.splitsArrived = true; });
   splitsEventEmitter.once(SDK_SPLITS_CACHE_LOADED, () => { splitsEventEmitter.splitsCacheLoaded = true; });
 
   return splitsEventEmitter;
@@ -99,7 +98,7 @@ export function readinessManagerFactory(
     }
   }
 
-  function checkIsReadyOrUpdate(metadata: SdkUpdateMetadata) {
+  function checkIsReadyOrUpdate(metadata: SplitIO.SdkUpdateMetadata) {
     if (isDestroyed) return;
     if (isReady) {
       try {

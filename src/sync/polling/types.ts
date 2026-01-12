@@ -33,11 +33,13 @@ export interface IPollingManagerCS extends IPollingManager {
 }
 
 export enum SdkUpdateMetadataKeys {
-  UPDATED_FLAGS = 'updatedFlags',
-  UPDATED_SEGMENTS = 'updatedSegments'
+  FLAGS_UPDATE = 'FLAGS_UPDATE',
+  SEGMENTS_UPDATE = 'SEGMENTS_UPDATE'
 }
-
+/**
+ * SdkUpdateMetadata type for polling updaters
+ */
 export type SdkUpdateMetadata = {
-  [SdkUpdateMetadataKeys.UPDATED_FLAGS]?: string[]
-  [SdkUpdateMetadataKeys.UPDATED_SEGMENTS]?: string[]
+  type: SdkUpdateMetadataKeys.FLAGS_UPDATE | SdkUpdateMetadataKeys.SEGMENTS_UPDATE
+  names: string[]
 }
