@@ -10,7 +10,7 @@ import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
-import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../types';
+import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../../../../types/splitio';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>

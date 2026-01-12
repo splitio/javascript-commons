@@ -5,7 +5,7 @@ import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { timeout } from '../../../utils/promise/timeout';
-import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../types';
+import { SdkUpdateMetadata, SdkUpdateMetadataKeys } from '../../../../types/splitio';
 
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>

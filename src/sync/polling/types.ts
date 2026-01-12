@@ -31,15 +31,3 @@ export interface IPollingManagerCS extends IPollingManager {
   remove(matchingKey: string): void;
   get(matchingKey: string): IMySegmentsSyncTask | undefined
 }
-
-export enum SdkUpdateMetadataKeys {
-  FLAGS_UPDATE = 'FLAGS_UPDATE',
-  SEGMENTS_UPDATE = 'SEGMENTS_UPDATE'
-}
-/**
- * SdkUpdateMetadata type for polling updaters
- */
-export type SdkUpdateMetadata = {
-  type: SdkUpdateMetadataKeys.FLAGS_UPDATE | SdkUpdateMetadataKeys.SEGMENTS_UPDATE
-  names: string[]
-}

@@ -16,7 +16,7 @@ import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegment
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
 import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../types';
+import { SdkUpdateMetadataKeys } from '../../../../../types/splitio';
 
 const ARCHIVED_FF = 'ARCHIVED';
 

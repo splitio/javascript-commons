@@ -495,17 +495,28 @@ declare namespace SplitIO {
   /**
    * Metadata keys for SDK update events.
    */
-  enum SdkUpdateMetadataKeys {
+  const enum SdkUpdateMetadataKeys {
+    /**
+     * The update event emitted when the SDK cache is updated with new data for flags.
+     */
     FLAGS_UPDATE = 'FLAGS_UPDATE',
+    /**
+     * The update event emitted when the SDK cache is updated with new data for segments.
+     */
     SEGMENTS_UPDATE = 'SEGMENTS_UPDATE'
   }
 
   /**
-   * List of modified flags or segments
-   * when a sdk update event is emitted.
+   * Metadata for the update event emitted when the SDK cache is updated with new data for flags or segments.
    */
   type SdkUpdateMetadata = {
+    /**
+     * The type of update event.
+     */
     type: SdkUpdateMetadataKeys.FLAGS_UPDATE | SdkUpdateMetadataKeys.SEGMENTS_UPDATE
+    /**
+     * The names of the flags or segments that were updated.
+     */
     names: string[]
   }
 

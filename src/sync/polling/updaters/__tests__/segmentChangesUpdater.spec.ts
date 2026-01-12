@@ -7,7 +7,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { ISegmentChangesFetcher } from '../../fetchers/types';
 import { ISegmentChangesResponse } from '../../../../dtos/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../types';
+import { SdkUpdateMetadataKeys } from '../../../../../types/splitio';
 
 describe('segmentChangesUpdater', () => {
   const segments = new SegmentsCacheInMemory();
