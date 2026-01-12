@@ -350,7 +350,7 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
 
   const metadata: SdkUpdateMetadata = {
     type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
-    names: ['segment1', 'segment2']
+    names: []
   };
 
   let receivedMetadata: SdkUpdateMetadata | undefined;

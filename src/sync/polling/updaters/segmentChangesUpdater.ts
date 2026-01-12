@@ -87,7 +87,7 @@ export function segmentChangesUpdaterFactory(
           readyOnAlreadyExistentState = false;
           const metadata: SdkUpdateMetadata = {
             type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
-            names: segmentNames
+            names: []
           };
           if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
         }
