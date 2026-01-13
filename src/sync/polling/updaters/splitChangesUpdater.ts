@@ -198,8 +198,8 @@ export function splitChangesUpdaterFactory(
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   const metadata: SdkUpdateMetadata = {
-                    type: SdkUpdateMetadataKeys.FLAGS_UPDATE,
-                    names: updatedFlags
+                    type: ffChanged ? SdkUpdateMetadataKeys.FLAGS_UPDATE : SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
+                    names: ffChanged ? updatedFlags : []
                   };
                   // emit SDK events
                   if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
