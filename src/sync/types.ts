@@ -37,7 +37,7 @@ export interface ISyncTask<Input extends any[] = [], Output = any> extends ITask
 /** SyncManager */
 
 export interface ISyncManager extends ITask {
-  flush(): Promise<any>,
+  flush(): Promise<void>,
   pushManager?: IPushManager,
   pollingManager?: IPollingManager,
   submitterManager?: ISubmitterManager
