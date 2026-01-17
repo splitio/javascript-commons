@@ -90,7 +90,11 @@ export function readinessManagerFactory(
     if (!isReady && !isDestroyed) {
       try {
         syncLastUpdate();
-        gate.emit(SDK_READY_FROM_CACHE, isReady);
+        const metadata: SplitIO.SdkReadyMetadata = {
+          initialCacheLoad: true,
+          lastUpdateTimestamp: lastUpdate
+        };
+        gate.emit(SDK_READY_FROM_CACHE, metadata);
       } catch (e) {
         // throws user callback exceptions in next tick
         setTimeout(() => { throw e; }, 0);
@@ -114,11 +118,20 @@ export function readinessManagerFactory(
         isReady = true;
         try {
           syncLastUpdate();
+          const wasReadyFromCache = isReadyFromCache;
           if (!isReadyFromCache) {
             isReadyFromCache = true;
-            gate.emit(SDK_READY_FROM_CACHE, isReady);
+            const metadataFromCache: SplitIO.SdkReadyMetadata = {
+              initialCacheLoad: false,
+              lastUpdateTimestamp: lastUpdate
+            };
+            gate.emit(SDK_READY_FROM_CACHE, metadataFromCache);
           }
-          gate.emit(SDK_READY);
+          const metadataReady: SplitIO.SdkReadyMetadata = {
+            initialCacheLoad: wasReadyFromCache,
+            lastUpdateTimestamp: lastUpdate
+          };
+          gate.emit(SDK_READY, metadataReady);
         } catch (e) {
           // throws user callback exceptions in next tick
           setTimeout(() => { throw e; }, 0);

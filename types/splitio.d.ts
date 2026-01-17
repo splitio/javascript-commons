@@ -521,6 +521,24 @@ declare namespace SplitIO {
   }
 
   /**
+   * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
+   */
+  type SdkReadyMetadata = {
+    /**
+     * Indicates whether the SDK was loaded from cache initially.
+     * - `true` when SDK_READY_FROM_CACHE is emitted from cache (before SDK_READY)
+     * - `true` when SDK_READY is emitted and the SDK was ready from cache first
+     * - `false` when SDK_READY_FROM_CACHE is emitted because SDK became ready without cache
+     * - `false` when SDK_READY is emitted and the SDK was not ready from cache
+     */
+    initialCacheLoad: boolean
+    /**
+     * Timestamp in milliseconds since epoch when the event was emitted.
+     */
+    lastUpdateTimestamp: number
+  }
+
+  /**
    * EventEmitter interface based on a subset of the Node.js EventEmitter methods.
    */
   interface IEventEmitter {
@@ -537,10 +555,16 @@ declare namespace SplitIO {
    * @see {@link https://nodejs.org/api/events.html}
    */
   interface EventEmitter extends IEventEmitter {
+    addListener(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    addListener(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
     addListener(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    on(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    on(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
     on(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string | symbol, listener: (...args: any[]) => void): this;
+    once(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    once(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
     once(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     once(event: string | symbol, listener: (...args: any[]) => void): this;
     removeListener(event: string | symbol, listener: (...args: any[]) => void): this;

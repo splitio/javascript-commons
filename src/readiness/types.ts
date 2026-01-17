@@ -12,6 +12,18 @@ export type IReadinessEvent = SDK_READY_TIMED_OUT | SDK_READY | SDK_READY_FROM_C
 
 export interface IReadinessEventEmitter extends SplitIO.IEventEmitter {
   emit(event: IReadinessEvent, ...args: any[]): boolean
+  on(event: SDK_READY, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  on(event: SDK_READY_FROM_CACHE, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  on(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
+  on(event: string | symbol, listener: (...args: any[]) => void): this;
+  once(event: SDK_READY, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  once(event: SDK_READY_FROM_CACHE, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  once(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
+  once(event: string | symbol, listener: (...args: any[]) => void): this;
+  addListener(event: SDK_READY, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  addListener(event: SDK_READY_FROM_CACHE, listener: (metadata: SplitIO.SdkReadyMetadata) => void): this;
+  addListener(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
+  addListener(event: string | symbol, listener: (...args: any[]) => void): this;
 }
 /** Splits data emitter */
 

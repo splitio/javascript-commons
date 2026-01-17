@@ -9,6 +9,7 @@ import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
+import { SdkUpdateMetadataKeys } from '../../../../types/splitio';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
@@ -55,7 +56,7 @@ export function fromObjectUpdaterFactory(
         splitsCache.clear(), // required to sync removed splits from mock
         splitsCache.update(splits, [], Date.now())
       ]).then(() => {
-        readiness.splits.emit(SDK_SPLITS_ARRIVED);
+        readiness.splits.emit(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [] });
 
         if (startingUp) {
           startingUp = false;
@@ -63,7 +64,7 @@ export function fromObjectUpdaterFactory(
             // Emits SDK_READY_FROM_CACHE
             if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
             // Emits SDK_READY
-            readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+            readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
           });
         }
         return true;

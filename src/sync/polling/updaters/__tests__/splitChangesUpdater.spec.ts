@@ -321,4 +321,108 @@ describe('splitChangesUpdater', () => {
     expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
   });
 
+  test('test with multiple flags updated - should emit metadata with all flag names', async () => {
+    splitsEmitSpy.mockClear();
+    storage.splits.clear();
+    storage.segments.clear();
+    // Start with splitsArrived = false so it emits on first update
+    readinessManager.splits.splitsArrived = false;
+    readinessManager.segments.segmentsArrived = true; // Segments ready
+
+    const flag1 = { name: 'flag1', status: 'ACTIVE', changeNumber: 100, conditions: [] } as unknown as ISplit;
+    const flag2 = { name: 'flag2', status: 'ACTIVE', changeNumber: 101, conditions: [] } as unknown as ISplit;
+    const flag3 = { name: 'flag3', status: 'ACTIVE', changeNumber: 102, conditions: [] } as unknown as ISplit;
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [flag1, flag2, flag3], t: 102 } } });
+    await splitChangesUpdater();
+
+    // Should emit with metadata when splitsArrived is false (first update)
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['flag1', 'flag2', 'flag3'] });
+  });
+
+  test('test with ARCHIVED flag - should emit metadata with flag name', async () => {
+    splitsEmitSpy.mockClear();
+    storage.splits.clear();
+    storage.segments.clear();
+    // Start with splitsArrived = false so it emits on first update
+    readinessManager.splits.splitsArrived = false;
+    readinessManager.segments.segmentsArrived = true; // Segments ready
+
+    const archivedFlag = { name: 'archived-flag', status: ARCHIVED_FF, changeNumber: 200, conditions: [] } as unknown as ISplit;
+
+    const payload = archivedFlag as Pick<ISplit, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
+    const changeNumber = payload.changeNumber;
+
+    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
+
+    // Should emit with metadata when splitsArrived is false (first update)
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
+  });
+
+  test('test with rbsegment payload - should emit SEGMENTS_UPDATE not FLAGS_UPDATE', async () => {
+    splitsEmitSpy.mockClear();
+    readinessManager.splits.splitsArrived = true;
+    storage.rbSegments.clear();
+
+    const payload = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
+    const changeNumber = payload.changeNumber;
+
+    await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: RB_SEGMENT_UPDATE })).resolves.toBe(true);
+
+    // Should emit SEGMENTS_UPDATE (not FLAGS_UPDATE) when only RB segment is updated
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+  });
+
+  test('test with only RB segment update and no flags - should emit SEGMENTS_UPDATE', async () => {
+    splitsEmitSpy.mockClear();
+    readinessManager.splits.splitsArrived = true;
+    storage.splits.clear();
+    storage.rbSegments.clear();
+
+    // Simulate a scenario where only RB segments are updated (no flags)
+    const rbSegment = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
+    fetchMock.once('*', { status: 200, body: { rbs: { d: [rbSegment], t: 1684329854385 } } });
+    await splitChangesUpdater();
+
+    // When updatedFlags.length === 0, should emit SEGMENTS_UPDATE
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+  });
+
+  test('test with both flags and RB segments updated - should emit FLAGS_UPDATE with flag names', async () => {
+    splitsEmitSpy.mockClear();
+    readinessManager.splits.splitsArrived = true;
+    storage.splits.clear();
+    storage.rbSegments.clear();
+    storage.segments.clear();
+
+    // Simulate a scenario where both flags and RB segments are updated
+    const flag1 = { name: 'flag1', status: 'ACTIVE', changeNumber: 400, conditions: [] } as unknown as ISplit;
+    const flag2 = { name: 'flag2', status: 'ACTIVE', changeNumber: 401, conditions: [] } as unknown as ISplit;
+    const rbSegment = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [flag1, flag2], t: 401 }, rbs: { d: [rbSegment], t: 1684329854385 } } });
+    await splitChangesUpdater();
+
+    // When both flags and RB segments are updated, should emit FLAGS_UPDATE with flag names
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['flag1', 'flag2'] });
+  });
+
+  test('test client-side behavior - should emit even when segments not all fetched', async () => {
+    splitsEmitSpy.mockClear();
+    storage.splits.clear();
+    // Start with splitsArrived = false so it emits on first update
+    readinessManager.splits.splitsArrived = false;
+    readinessManager.segments.segmentsArrived = false; // Segments not ready - client-side should still emit
+
+    // Create client-side updater (isClientSide = true)
+    const clientSideUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+
+    const flag1 = { name: 'client-flag', status: 'ACTIVE', changeNumber: 300, conditions: [] } as unknown as ISplit;
+    fetchMock.once('*', { status: 200, body: { ff: { d: [flag1], t: 300 } } });
+    await clientSideUpdater();
+
+    // Client-side should emit even if segments aren't all fetched (isClientSide bypasses checkAllSegmentsExist)
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['client-flag'] });
+  });
+
 });
