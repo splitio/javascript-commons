@@ -4,6 +4,20 @@ import { IStorageSync } from '../../storages/types';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../streaming/types';
 import { ITask, ISyncTask } from '../types';
 
+/**
+ * Metadata keys for SDK update events.
+ */
+export enum SdkUpdateMetadataKeys {
+  /**
+   * The update event emitted when the SDK cache is updated with new data for flags.
+   */
+  FLAGS_UPDATE = 'FLAGS_UPDATE',
+  /**
+   * The update event emitted when the SDK cache is updated with new data for segments.
+   */
+  SEGMENTS_UPDATE = 'SEGMENTS_UPDATE'
+}
+
 export interface ISplitsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, splitUpdateNotification?: { payload: ISplit | IRBSegment, changeNumber: number }], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }

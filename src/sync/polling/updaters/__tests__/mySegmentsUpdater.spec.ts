@@ -7,7 +7,7 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { IMySegmentsFetcher } from '../../fetchers/types';
 import { IMembershipsResponse } from '../../../../dtos/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../../../../types/splitio';
+import { SdkUpdateMetadataKeys } from '../../types';
 import { MySegmentsData } from '../../types';
 import { MEMBERSHIPS_MS_UPDATE } from '../../../streaming/constants';
 import { IStorageSync } from '../../../../storages/types';

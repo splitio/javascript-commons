@@ -9,7 +9,7 @@ import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
 import { usesSegmentsSync } from '../../../storages/AbstractSplitsCacheSync';
-import { SdkUpdateMetadataKeys } from '../../../../types/splitio';
+import { SdkUpdateMetadataKeys } from '../types';
 
 type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 

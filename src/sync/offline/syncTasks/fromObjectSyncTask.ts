@@ -9,7 +9,7 @@ import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
-import { SdkUpdateMetadataKeys } from '../../../../types/splitio';
+import { SdkUpdateMetadataKeys } from '../../polling/types';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
