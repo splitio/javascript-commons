@@ -1,8 +1,8 @@
 // Type definitions for Split Software SDKs
 // Project: https://www.split.io/
 
-import { RedisOptions } from 'ioredis';
-import { RequestOptions } from 'http';
+import type { RedisOptions } from 'ioredis';
+import type { RequestOptions } from 'http';
 
 export as namespace SplitIO;
 export = SplitIO;
