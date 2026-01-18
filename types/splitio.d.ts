@@ -507,6 +507,15 @@ declare namespace SplitIO {
   }
 
   /**
+   * Metadata keys for SDK update events.
+   * Use the string literals directly: 'FLAGS_UPDATE' or 'SEGMENTS_UPDATE'
+   */
+  type SdkUpdateMetadataKeys = {
+    FLAGS_UPDATE: 'FLAGS_UPDATE';
+    SEGMENTS_UPDATE: 'SEGMENTS_UPDATE';
+  };
+
+  /**
    * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
    */
   type SdkReadyMetadata = {
