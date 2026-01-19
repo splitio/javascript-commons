@@ -3,7 +3,7 @@ import { ISplitChangesFetcher } from '../fetchers/types';
 import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
@@ -11,7 +11,6 @@ import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
-import { SdkUpdateMetadataKeys } from '../types';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
@@ -198,12 +197,14 @@ export function splitChangesUpdaterFactory(
               return Promise.resolve(!splitsEventEmitter.splitsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
-                  const metadata: SdkUpdateMetadata = {
-                    type: updatedFlags.length > 0 ? SdkUpdateMetadataKeys.FLAGS_UPDATE : SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
-                    names: updatedFlags.length > 0 ? updatedFlags : []
-                  };
                   // emit SDK events
-                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
+                  if (emitSplitsArrivedEvent) {
+                    const metadata: SdkUpdateMetadata = {
+                      type: updatedFlags.length > 0 ? FLAGS_UPDATE : SEGMENTS_UPDATE,
+                      names: updatedFlags.length > 0 ? updatedFlags : []
+                    };
+                    splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
+                  }
                   return true;
                 });
             }

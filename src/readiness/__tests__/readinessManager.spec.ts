@@ -1,10 +1,9 @@
 import { readinessManagerFactory } from '../readinessManager';
 import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
-import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
+import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../constants';
 import { ISettings } from '../../types';
 import { SdkUpdateMetadata, SdkReadyMetadata } from '../../../types/splitio';
-import { SdkUpdateMetadataKeys } from '../../sync/polling/types';
 
 const settings = {
   startup: {
@@ -311,7 +310,7 @@ test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
-    type: SdkUpdateMetadataKeys.FLAGS_UPDATE,
+    type: FLAGS_UPDATE,
     names: ['flag1', 'flag2']
   };
 
@@ -350,7 +349,7 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
-    type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
+    type: SEGMENTS_UPDATE,
     names: []
   };
 

@@ -15,8 +15,7 @@ import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
-import { SDK_SPLITS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../types';
+import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../../readiness/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -222,7 +221,7 @@ describe('splitChangesUpdater', () => {
     expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
     expect(updateRbSegments).toBeCalledTimes(0); // no rbSegments to update
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: updatedFlags });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: updatedFlags });
     expect(result).toBe(true);
   });
 
@@ -288,7 +287,7 @@ describe('splitChangesUpdater', () => {
     for (const setMock of setMocks) {
       await expect(splitChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_SPLITS_ARRIVED);
-      expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
+      expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ type: FLAGS_UPDATE, names: [payload.name] });
       index++;
     }
 
@@ -318,7 +317,7 @@ describe('splitChangesUpdater', () => {
 
     await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
   });
 
   test('test with multiple flags updated - should emit metadata with all flag names', async () => {
@@ -337,7 +336,7 @@ describe('splitChangesUpdater', () => {
     await splitChangesUpdater();
 
     // Should emit with metadata when splitsArrived is false (first update)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['flag1', 'flag2', 'flag3'] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2', 'flag3'] });
   });
 
   test('test with ARCHIVED flag - should emit metadata with flag name', async () => {
@@ -356,7 +355,7 @@ describe('splitChangesUpdater', () => {
     await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
     // Should emit with metadata when splitsArrived is false (first update)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: [payload.name] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
   });
 
   test('test with rbsegment payload - should emit SEGMENTS_UPDATE not FLAGS_UPDATE', async () => {
@@ -370,7 +369,7 @@ describe('splitChangesUpdater', () => {
     await expect(splitChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: RB_SEGMENT_UPDATE })).resolves.toBe(true);
 
     // Should emit SEGMENTS_UPDATE (not FLAGS_UPDATE) when only RB segment is updated
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with only RB segment update and no flags - should emit SEGMENTS_UPDATE', async () => {
@@ -385,7 +384,7 @@ describe('splitChangesUpdater', () => {
     await splitChangesUpdater();
 
     // When updatedFlags.length === 0, should emit SEGMENTS_UPDATE
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with both flags and RB segments updated - should emit FLAGS_UPDATE with flag names', async () => {
@@ -404,7 +403,7 @@ describe('splitChangesUpdater', () => {
     await splitChangesUpdater();
 
     // When both flags and RB segments are updated, should emit FLAGS_UPDATE with flag names
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['flag1', 'flag2'] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2'] });
   });
 
   test('test client-side behavior - should emit even when segments not all fetched', async () => {
@@ -422,7 +421,7 @@ describe('splitChangesUpdater', () => {
     await clientSideUpdater();
 
     // Client-side should emit even if segments aren't all fetched (isClientSide bypasses checkAllSegmentsExist)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SdkUpdateMetadataKeys.FLAGS_UPDATE, names: ['client-flag'] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['client-flag'] });
   });
 
 });

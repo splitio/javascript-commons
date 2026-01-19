@@ -2,14 +2,13 @@ import { IMySegmentsFetcher } from '../fetchers/types';
 import { IStorageSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
 import { usesSegmentsSync } from '../../../storages/AbstractSplitsCacheSync';
-import { SdkUpdateMetadataKeys } from '../types';
 
 type IMySegmentsUpdater = (segmentsData?: MySegmentsData, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -57,7 +56,7 @@ export function mySegmentsUpdaterFactory(
     // Notify update if required
     if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
     }
   }
 

@@ -6,8 +6,7 @@ import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { IMySegmentsFetcher } from '../../fetchers/types';
 import { IMembershipsResponse } from '../../../../dtos/types';
-import { SDK_SEGMENTS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../types';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../../readiness/constants';
 import { MySegmentsData } from '../../types';
 import { MEMBERSHIPS_MS_UPDATE } from '../../../streaming/constants';
 import { IStorageSync } from '../../../../storages/types';
@@ -59,7 +58,7 @@ describe('mySegmentsUpdater', () => {
 
     await mySegmentsUpdater();
 
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with mySegments data payload - should emit SEGMENTS_UPDATE metadata', async () => {
@@ -82,7 +81,7 @@ describe('mySegmentsUpdater', () => {
 
     await mySegmentsUpdater(segmentsData);
 
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with empty mySegments - should still emit SEGMENTS_UPDATE metadata', async () => {
@@ -103,6 +102,6 @@ describe('mySegmentsUpdater', () => {
 
     await mySegmentsUpdater();
 
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 });

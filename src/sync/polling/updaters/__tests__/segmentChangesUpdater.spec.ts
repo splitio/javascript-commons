@@ -6,8 +6,7 @@ import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { ISegmentChangesFetcher } from '../../fetchers/types';
 import { ISegmentChangesResponse } from '../../../../dtos/types';
-import { SDK_SEGMENTS_ARRIVED } from '../../../../readiness/constants';
-import { SdkUpdateMetadataKeys } from '../../types';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../../readiness/constants';
 
 describe('segmentChangesUpdater', () => {
   const segments = new SegmentsCacheInMemory();
@@ -48,7 +47,7 @@ describe('segmentChangesUpdater', () => {
     await segmentChangesUpdater(undefined, segmentName);
 
     expect(updateSegments).toHaveBeenCalledWith(segmentName, segmentChange.added, segmentChange.removed, segmentChange.till);
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with multiple segments update - should emit SEGMENTS_UPDATE metadata once', async () => {
@@ -102,7 +101,7 @@ describe('segmentChangesUpdater', () => {
 
     // Should emit once when all segments are updated
     expect(segmentsEmitSpy).toHaveBeenCalledTimes(1);
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with empty segments - should still emit SEGMENTS_UPDATE metadata', async () => {
@@ -130,6 +129,6 @@ describe('segmentChangesUpdater', () => {
 
     await segmentChangesUpdater(undefined, segmentName);
 
-    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE, names: [] });
+    expect(segmentsEmitSpy).toBeCalledWith(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 });

@@ -1,12 +1,11 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
 import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
 import { timeout } from '../../../utils/promise/timeout';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
-import { SdkUpdateMetadataKeys } from '../types';
 
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>
@@ -86,11 +85,13 @@ export function segmentChangesUpdaterFactory(
         // if at least one segment fetch succeeded, mark segments ready
         if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
-          const metadata: SdkUpdateMetadata = {
-            type: SdkUpdateMetadataKeys.SEGMENTS_UPDATE,
-            names: []
-          };
-          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
+          if (readiness) {
+            const metadata: SdkUpdateMetadata = {
+              type: SEGMENTS_UPDATE,
+              names: []
+            };
+            readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
+          }
         }
         return true;
       });
