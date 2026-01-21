@@ -3,6 +3,7 @@ import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { SDK_SPLITS_ARRIVED, SDK_SPLITS_CACHE_LOADED, SDK_SEGMENTS_ARRIVED, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE, SDK_READY } from './constants';
 import { IReadinessEventEmitter, IReadinessManager, ISegmentsEventEmitter, ISplitsEventEmitter } from './types';
+import { CacheValidationMetadata } from '../storages/inLocalStorage/validateCache';
 
 function splitsEventEmitterFactory(EventEmitter: new () => SplitIO.IEventEmitter): ISplitsEventEmitter {
   const splitsEventEmitter = objectAssign(new EventEmitter(), {
@@ -55,6 +56,7 @@ export function readinessManagerFactory(
 
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
+  let cacheLastUpdateTimestamp: number | null = null;
   if (splits.splitsCacheLoaded) isReadyFromCache = true; // ready from cache, but doesn't emit SDK_READY_FROM_CACHE
   else splits.once(SDK_SPLITS_CACHE_LOADED, checkIsReadyFromCache);
 
@@ -84,17 +86,17 @@ export function readinessManagerFactory(
   splits.initCallbacks.push(__init);
   if (splits.hasInit) __init();
 
-  function checkIsReadyFromCache() {
+  function checkIsReadyFromCache(cacheMetadata: CacheValidationMetadata) {
     isReadyFromCache = true;
+    cacheLastUpdateTimestamp = cacheMetadata.lastUpdateTimestamp;
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
     if (!isReady && !isDestroyed) {
       try {
         syncLastUpdate();
-        const metadata: SplitIO.SdkReadyMetadata = {
-          initialCacheLoad: true,
-          lastUpdateTimestamp: lastUpdate
-        };
-        gate.emit(SDK_READY_FROM_CACHE, metadata);
+        gate.emit(SDK_READY_FROM_CACHE, {
+          initialCacheLoad: !cacheMetadata.isCacheValid,
+          lastUpdateTimestamp: cacheLastUpdateTimestamp
+        });
       } catch (e) {
         // throws user callback exceptions in next tick
         setTimeout(() => { throw e; }, 0);
@@ -117,19 +119,18 @@ export function readinessManagerFactory(
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
-          syncLastUpdate();
           const wasReadyFromCache = isReadyFromCache;
           if (!isReadyFromCache) {
             isReadyFromCache = true;
-            const metadataFromCache: SplitIO.SdkReadyMetadata = {
-              initialCacheLoad: false,
-              lastUpdateTimestamp: lastUpdate
+            const metadataReadyFromCache: SplitIO.SdkReadyMetadata = {
+              initialCacheLoad: true,
+              lastUpdateTimestamp: null // No cache timestamp when fresh install
             };
-            gate.emit(SDK_READY_FROM_CACHE, metadataFromCache);
+            gate.emit(SDK_READY_FROM_CACHE, metadataReadyFromCache);
           }
           const metadataReady: SplitIO.SdkReadyMetadata = {
-            initialCacheLoad: wasReadyFromCache,
-            lastUpdateTimestamp: lastUpdate
+            initialCacheLoad: !wasReadyFromCache,
+            lastUpdateTimestamp: wasReadyFromCache ? cacheLastUpdateTimestamp : null
           };
           gate.emit(SDK_READY, metadataReady);
         } catch (e) {

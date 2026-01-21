@@ -100,15 +100,13 @@ test('READINESS MANAGER / Ready from cache event should be fired once', (done) =
     counter++;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+    readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
   }, 0);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
 
   setTimeout(() => {
     expect(counter).toBe(1); // should be called only once
@@ -366,19 +364,21 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
 test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when cache is loaded', () => {
   const readinessManager = readinessManagerFactory(EventEmitter, settings);
 
+  const cacheTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
   let receivedMetadata: SdkReadyMetadata | undefined;
   readinessManager.gate.on(SDK_READY_FROM_CACHE, (meta: SdkReadyMetadata) => {
     receivedMetadata = meta;
   });
 
-  // Emit cache loaded event
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  // Emit cache loaded event with timestamp
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, {
+    isCacheValid: true,
+    lastUpdateTimestamp: cacheTimestamp
+  });
 
   expect(receivedMetadata).toBeDefined();
-  expect(receivedMetadata!.initialCacheLoad).toBe(true);
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeGreaterThan(0);
-  // Allow small timing difference (up to 10ms)
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeLessThanOrEqual(Date.now() + 10);
+  expect(receivedMetadata!.initialCacheLoad).toBe(false);
+  expect(receivedMetadata!.lastUpdateTimestamp).toBe(cacheTimestamp);
 });
 
 test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when SDK becomes ready without cache', () => {
@@ -394,17 +394,16 @@ test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when SD
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();
-  expect(receivedMetadata!.initialCacheLoad).toBe(false);
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeGreaterThan(0);
-  // Allow small timing difference (up to 10ms)
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeLessThanOrEqual(Date.now() + 10);
+  expect(receivedMetadata!.initialCacheLoad).toBe(true);
+  expect(receivedMetadata!.lastUpdateTimestamp).toBeNull();
 });
 
 test('READINESS MANAGER / SDK_READY should emit with metadata when ready from cache', () => {
   const readinessManager = readinessManagerFactory(EventEmitter, settings);
 
-  // First emit cache loaded
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  const cacheTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
+  // First emit cache loaded with timestamp
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: cacheTimestamp });
 
   let receivedMetadata: SdkReadyMetadata | undefined;
   readinessManager.gate.on(SDK_READY, (meta: SdkReadyMetadata) => {
@@ -416,10 +415,8 @@ test('READINESS MANAGER / SDK_READY should emit with metadata when ready from ca
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();
-  expect(receivedMetadata!.initialCacheLoad).toBe(true); // Was ready from cache first
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeGreaterThan(0);
-  // Allow small timing difference (up to 10ms)
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeLessThanOrEqual(Date.now() + 10);
+  expect(receivedMetadata!.initialCacheLoad).toBe(false); // Was ready from cache first
+  expect(receivedMetadata!.lastUpdateTimestamp).toBe(cacheTimestamp);
 });
 
 test('READINESS MANAGER / SDK_READY should emit with metadata when ready without cache', () => {
@@ -435,8 +432,6 @@ test('READINESS MANAGER / SDK_READY should emit with metadata when ready without
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();
-  expect(receivedMetadata!.initialCacheLoad).toBe(false); // Was not ready from cache
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeGreaterThan(0);
-  // Allow small timing difference (up to 10ms)
-  expect(receivedMetadata!.lastUpdateTimestamp).toBeLessThanOrEqual(Date.now() + 10);
+  expect(receivedMetadata!.initialCacheLoad).toBe(true); // Was not ready from cache
+  expect(receivedMetadata!.lastUpdateTimestamp).toBeNull(); // No cache timestamp when fresh install
 });

@@ -54,10 +54,10 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
         return;
       }
       readiness.splits.emit(SDK_SPLITS_ARRIVED);
-      readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+      readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { isCacheValid: true, lastUpdateTimestamp: null });
     },
     onReadyFromCacheCb() {
-      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
     }
   });
 
@@ -65,7 +65,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
-    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
   }
 
   const clients: Record<string, SplitIO.IBasicClient> = {};

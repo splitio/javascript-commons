@@ -8,7 +8,7 @@ import { IStorageFactoryParams, IStorageSync } from '../../../storages/types';
 
 export function __InLocalStorageMockFactory(params: IStorageFactoryParams): IStorageSync {
   const result = InMemoryStorageCSFactory(params);
-  result.validateCache = () => Promise.resolve(true); // to emit SDK_READY_FROM_CACHE
+  result.validateCache = () => Promise.resolve({ isCacheValid: true, lastUpdateTimestamp: null }); // to emit SDK_READY_FROM_CACHE
   return result;
 }
 __InLocalStorageMockFactory.type = STORAGE_MEMORY;

@@ -184,16 +184,17 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
 });
 
 test('syncManagerOnline should emit SDK_SPLITS_CACHE_LOADED if validateCache returns true', async () => {
+  const lastUpdateTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
   const params = {
     settings: fullSettings,
-    storage: { validateCache: () => true },
+    storage: { validateCache: () => Promise.resolve({ isCacheValid: true, lastUpdateTimestamp }) },
     readiness: { splits: { emit: jest.fn() } }
   }; // @ts-ignore
   const syncManager = syncManagerOnlineFactory()(params);
 
   await syncManager.start();
 
-  expect(params.readiness.splits.emit).toBeCalledWith(SDK_SPLITS_CACHE_LOADED);
+  expect(params.readiness.splits.emit).toBeCalledWith(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp });
 
   syncManager.stop();
 });

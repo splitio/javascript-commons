@@ -530,7 +530,7 @@ declare namespace SplitIO {
     /**
      * Timestamp in milliseconds since epoch when the event was emitted.
      */
-    lastUpdateTimestamp: number
+    lastUpdateTimestamp: number | null
   }
 
   /**
