@@ -119,6 +119,7 @@ export function readinessManagerFactory(
         clearTimeout(readyTimeoutId);
         isReady = true;
         try {
+          syncLastUpdate();
           const wasReadyFromCache = isReadyFromCache;
           if (!isReadyFromCache) {
             isReadyFromCache = true;
