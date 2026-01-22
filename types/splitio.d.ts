@@ -520,15 +520,15 @@ declare namespace SplitIO {
    */
   type SdkReadyMetadata = {
     /**
-     * Indicates whether the SDK was loaded from cache initially.
-     * - `true` when SDK_READY_FROM_CACHE is emitted from cache (before SDK_READY)
-     * - `true` when SDK_READY is emitted and the SDK was ready from cache first
-     * - `false` when SDK_READY_FROM_CACHE is emitted because SDK became ready without cache
-     * - `false` when SDK_READY is emitted and the SDK was not ready from cache
+     * Indicates whether the SDK was loaded from cache initially. (fresh install or ready from cache)
+     * - `false` when SDK_READY_FROM_CACHE is emitted from cache (before SDK_READY)
+     * - `false` when SDK_READY is emitted and the SDK was ready from cache first
+     * - `true` when SDK_READY_FROM_CACHE is emitted because SDK became ready without cache
+     * - `true` when SDK_READY is emitted and the SDK was not ready from cache
      */
     initialCacheLoad: boolean
     /**
-     * Timestamp in milliseconds since epoch when the event was emitted. Undefined if `initialCacheLoad` is `true`.
+     * Timestamp in milliseconds since epoch when the cache was last updated. Undefined if `initialCacheLoad` is `true`.
      */
     lastUpdateTimestamp?: number
   }

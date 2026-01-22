@@ -54,10 +54,10 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
         return;
       }
       readiness.splits.emit(SDK_SPLITS_ARRIVED);
-      readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
+      readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
     onReadyFromCacheCb() {
-      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
+      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
     }
   });
 
