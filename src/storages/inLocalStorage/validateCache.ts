@@ -12,11 +12,6 @@ import { StorageAdapter } from '../types';
 const DEFAULT_CACHE_EXPIRATION_IN_DAYS = 10;
 const MILLIS_IN_A_DAY = 86400000;
 
-export interface CacheValidationMetadata {
-  isCacheValid: boolean;
-  lastUpdateTimestamp: number | null;
-}
-
 /**
  * Validates if cache should be cleared and sets the cache `hash` if needed.
  *
@@ -71,9 +66,9 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: Sto
  * - its hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
  * - `clearOnInit` was set and cache was not cleared in the last 24 hours
  *
- * @returns Metadata object with `isCacheValid` (true if cache is ready to be used, false otherwise) and `lastUpdateTimestamp` (timestamp of last cache update or null)
+ * @returns Metadata object with `initialCacheLoad` (true if is fresh install, false if is ready from cache) and `lastUpdateTimestamp` (timestamp of last cache update or undefined)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<CacheValidationMetadata> {
+export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<SplitIO.SdkReadyMetadata> {
 
   return Promise.resolve(storage.load && storage.load()).then(() => {
     const currentTimestamp = Date.now();
@@ -81,8 +76,8 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
 
     // Get lastUpdateTimestamp from storage
     const lastUpdatedTimestampStr = storage.getItem(keys.buildLastUpdatedKey());
-    const lastUpdatedTimestamp = lastUpdatedTimestampStr ? parseInt(lastUpdatedTimestampStr, 10) : null;
-    const lastUpdateTimestamp = (!isNaNNumber(lastUpdatedTimestamp) && lastUpdatedTimestamp !== null) ? lastUpdatedTimestamp : null;
+    const lastUpdatedTimestamp = lastUpdatedTimestampStr ? parseInt(lastUpdatedTimestampStr, 10) : undefined;
+    const lastUpdateTimestamp = (!isNaNNumber(lastUpdatedTimestamp) && lastUpdatedTimestamp !== undefined) ? lastUpdatedTimestamp : undefined;
 
     if (validateExpiration(options, storage, settings, keys, currentTimestamp, isThereCache)) {
       splits.clear();
@@ -101,14 +96,14 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
       if (storage.save) storage.save();
 
       return {
-        isCacheValid: false,
-        lastUpdateTimestamp: null
+        initialCacheLoad: true, // Cache was cleared, so this is an initial load (no cache existed)
+        lastUpdateTimestamp: undefined
       };
     }
 
     // Check if ready from cache
     return {
-      isCacheValid: isThereCache,
+      initialCacheLoad: !isThereCache, // true if no cache exists (initial load), false if cache exists (ready from cache)
       lastUpdateTimestamp
     };
   });

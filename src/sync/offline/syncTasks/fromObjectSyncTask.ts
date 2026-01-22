@@ -59,9 +59,9 @@ export function fromObjectUpdaterFactory(
 
         if (startingUp) {
           startingUp = false;
-          Promise.resolve(storage.validateCache ? storage.validateCache() : { isCacheValid: false, lastUpdateTimestamp: null }).then((cacheMetadata) => {
+          Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
             // Emits SDK_READY_FROM_CACHE
-            if (cacheMetadata.isCacheValid) {
+            if (!cacheMetadata.initialCacheLoad) {
               readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
             }
             // Emits SDK_READY

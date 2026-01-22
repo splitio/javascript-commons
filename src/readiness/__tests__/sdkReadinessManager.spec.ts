@@ -219,7 +219,7 @@ describe('SDK Readiness Manager - Promises', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
     // make the SDK ready from cache
-    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { isCacheValid: true, lastUpdateTimestamp: null });
+    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: null });
     expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toBe(false);
 
     // validate error log for SDK_READY_FROM_CACHE
