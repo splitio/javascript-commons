@@ -59,9 +59,11 @@ export function fromObjectUpdaterFactory(
 
         if (startingUp) {
           startingUp = false;
-          Promise.resolve(storage.validateCache ? storage.validateCache() : false).then((isCacheLoaded) => {
+          Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
             // Emits SDK_READY_FROM_CACHE
-            if (isCacheLoaded) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+            if (!cacheMetadata.initialCacheLoad) {
+              readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
+            }
             // Emits SDK_READY
             readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
           });
