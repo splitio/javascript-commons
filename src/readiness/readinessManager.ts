@@ -53,9 +53,13 @@ export function readinessManagerFactory(
     lastUpdate = dateNow > lastUpdate ? dateNow : lastUpdate + 1;
   }
 
+  let metadataReady: SdkReadyMetadata = {
+    initialCacheLoad: true, // true if not ready from cache (initial load), false if ready from cache
+    lastUpdateTimestamp: undefined
+  };
+
   // emit SDK_READY_FROM_CACHE
   let isReadyFromCache = false;
-  let cacheLastUpdateTimestamp: number | undefined = undefined;
   if (splits.splitsCacheLoaded) isReadyFromCache = true; // ready from cache, but doesn't emit SDK_READY_FROM_CACHE
   else splits.once(SDK_SPLITS_CACHE_LOADED, checkIsReadyFromCache);
 
@@ -86,7 +90,7 @@ export function readinessManagerFactory(
   if (splits.hasInit) __init();
 
   function checkIsReadyFromCache(cacheMetadata: SdkReadyMetadata) {
-    cacheLastUpdateTimestamp = cacheMetadata.lastUpdateTimestamp;
+    metadataReady = cacheMetadata;
     isReadyFromCache = true;
     // Don't emit SDK_READY_FROM_CACHE if SDK_READY has been emitted
     if (!isReady && !isDestroyed) {
@@ -116,7 +120,6 @@ export function readinessManagerFactory(
         isReady = true;
         try {
           syncLastUpdate();
-          const wasReadyFromCache = isReadyFromCache;
           if (!isReadyFromCache) {
             isReadyFromCache = true;
             const metadataReadyFromCache: SplitIO.SdkReadyMetadata = {
@@ -125,10 +128,6 @@ export function readinessManagerFactory(
             };
             gate.emit(SDK_READY_FROM_CACHE, metadataReadyFromCache);
           }
-          const metadataReady: SplitIO.SdkReadyMetadata = {
-            initialCacheLoad: !wasReadyFromCache, // true if not ready from cache (initial load), false if ready from cache
-            lastUpdateTimestamp: wasReadyFromCache ? cacheLastUpdateTimestamp : undefined
-          };
           gate.emit(SDK_READY, metadataReady);
         } catch (e) {
           // throws user callback exceptions in next tick
