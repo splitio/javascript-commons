@@ -499,7 +499,7 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
-  validateCache?: () => Promise<{ isCacheValid: boolean; lastUpdateTimestamp: number | null }>,
+  validateCache?: () => Promise<SplitIO.SdkReadyMetadata>,
   largeSegments?: ISegmentsCacheSync,
 }
 

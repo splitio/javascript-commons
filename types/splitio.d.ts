@@ -528,9 +528,9 @@ declare namespace SplitIO {
      */
     initialCacheLoad: boolean
     /**
-     * Timestamp in milliseconds since epoch when the event was emitted.
+     * Timestamp in milliseconds since epoch when the event was emitted. Undefined if `initialCacheLoad` is `true`.
      */
-    lastUpdateTimestamp: number | null
+    lastUpdateTimestamp?: number
   }
 
   /**

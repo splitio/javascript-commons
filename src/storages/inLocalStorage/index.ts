@@ -14,7 +14,7 @@ import { STORAGE_LOCALSTORAGE } from '../../utils/constants';
 import { shouldRecordTelemetry, TelemetryCacheInMemory } from '../inMemory/TelemetryCacheInMemory';
 import { UniqueKeysCacheInMemoryCS } from '../inMemory/UniqueKeysCacheInMemoryCS';
 import { getMatching } from '../../utils/key';
-import { validateCache, CacheValidationMetadata } from './validateCache';
+import { validateCache } from './validateCache';
 import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 import { storageAdapter } from './storageAdapter';
@@ -54,7 +54,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
     const segments = new MySegmentsCacheInLocal(log, keys, storage);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
-    let validateCachePromise: Promise<CacheValidationMetadata> | undefined;
+    let validateCachePromise: Promise<SplitIO.SdkReadyMetadata> | undefined;
 
     return {
       splits,

@@ -92,12 +92,12 @@ export function syncManagerOnlineFactory(
         // @TODO once event, impression and telemetry storages support persistence, call when `validateCache` promise is resolved
         submitterManager.start(!isConsentGranted(settings));
 
-        return Promise.resolve(storage.validateCache ? storage.validateCache() : { isCacheValid: false, lastUpdateTimestamp: null }).then((cacheMetadata) => {
+        return Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
           if (!running) return;
 
           if (startFirstTime) {
             // Emits SDK_READY_FROM_CACHE
-            if (cacheMetadata.isCacheValid) {
+            if (!cacheMetadata.initialCacheLoad) {
               readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
             }
 
