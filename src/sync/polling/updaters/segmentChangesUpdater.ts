@@ -37,7 +37,7 @@ export function segmentChangesUpdaterFactory(
 
   function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean, retries?: number): Promise<boolean> {
     log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
-    let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
+    const sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
