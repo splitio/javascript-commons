@@ -54,8 +54,7 @@ export function readinessManagerFactory(
   }
 
   let metadataReady: SdkReadyMetadata = {
-    initialCacheLoad: true, // true if not ready from cache (initial load), false if ready from cache
-    lastUpdateTimestamp: undefined
+    initialCacheLoad: true
   };
 
   // emit SDK_READY_FROM_CACHE
