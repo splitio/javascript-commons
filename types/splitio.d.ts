@@ -83,7 +83,7 @@ interface ISharedSettings {
        * });
        * ```
        */
-      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
     };
   };
   /**
@@ -499,21 +499,17 @@ declare namespace SplitIO {
     /**
      * The type of update event.
      */
-    type: 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE'
+    type: SdkUpdateMetadataType;
     /**
      * The names of the flags or segments that were updated.
      */
-    names: string[]
+    names: string[];
   }
 
   /**
-   * Metadata keys for SDK update events.
-   * Use the string literals directly: 'FLAGS_UPDATE' or 'SEGMENTS_UPDATE'
+   * Metadata type for SDK update events.
    */
-  type SdkUpdateMetadataKeys = {
-    FLAGS_UPDATE: 'FLAGS_UPDATE';
-    SEGMENTS_UPDATE: 'SEGMENTS_UPDATE';
-  };
+  type SdkUpdateMetadataType = 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
 
   /**
    * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
@@ -526,11 +522,11 @@ declare namespace SplitIO {
      * - `true` when SDK_READY_FROM_CACHE is emitted because SDK became ready without cache
      * - `true` when SDK_READY is emitted and the SDK was not ready from cache
      */
-    initialCacheLoad: boolean
+    initialCacheLoad: boolean;
     /**
      * Timestamp in milliseconds since epoch when the cache was last updated. Undefined if `initialCacheLoad` is `true`.
      */
-    lastUpdateTimestamp?: number
+    lastUpdateTimestamp?: number;
   }
 
   /**
@@ -662,7 +658,7 @@ declare namespace SplitIO {
       enabled: boolean;
       flagSpecVersion: string;
       requestOptions?: {
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+        getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
       };
     };
     readonly runtime: {
@@ -1100,7 +1096,7 @@ declare namespace SplitIO {
     /**
      * Prerequisites for the feature flag.
      */
-    prerequisites: Array<{ flagName: string, treatments: string[] }>;
+    prerequisites: Array<{ flagName: string; treatments: string[]; }>;
   };
   /**
    * A promise that resolves to a feature flag view or null if the feature flag is not found.
@@ -1370,13 +1366,13 @@ declare namespace SplitIO {
     /**
      * Fallback treatment for all flags.
      */
-    global?: Treatment | TreatmentWithConfig,
+    global?: Treatment | TreatmentWithConfig;
     /**
      * Fallback treatments for specific flags. It takes precedence over the global fallback treatment.
      */
     byFlag?: {
-      [featureFlagName: string]: Treatment | TreatmentWithConfig
-    }
+      [featureFlagName: string]: Treatment | TreatmentWithConfig;
+    };
   }
   /**
    * Logger. Its interface details are not part of the public API. It shouldn't be used directly.
@@ -1603,7 +1599,7 @@ declare namespace SplitIO {
          * });
          * ```
          */
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+        getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
         /**
          * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
          *

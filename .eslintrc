@@ -94,7 +94,14 @@
     {
       "files": ["types/**"],
       "rules": {
-        "no-use-before-define": "off"
+        "no-use-before-define": "off",
+        "@typescript-eslint/member-delimiter-style": [
+          "error",
+          {
+            "multiline": { "delimiter": "semi", "requireLast": true },
+            "singleline": { "delimiter": "semi", "requireLast": true }
+          }
+        ]
       }
     },
     {
