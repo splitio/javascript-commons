@@ -60,6 +60,7 @@ export interface IReadinessManager {
   isDestroyed(): boolean,
   isOperational(): boolean,
   lastUpdate(): number,
+  metadataReady(): SplitIO.SdkReadyMetadata,
 
   timeout(): void,
   setDestroyed(): void,
