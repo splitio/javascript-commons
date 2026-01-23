@@ -120,9 +120,9 @@ export function sdkReadinessManagerFactory(
         },
 
         whenReady() {
-          return new Promise<void>((resolve, reject) => {
+          return new Promise<SplitIO.SdkReadyMetadata>((resolve, reject) => {
             if (readinessManager.isReady()) {
-              resolve();
+              resolve(readinessManager.metadataReady());
             } else if (readinessManager.hasTimedout()) {
               reject(TIMEOUT_ERROR);
             } else {
@@ -133,13 +133,13 @@ export function sdkReadinessManagerFactory(
         },
 
         whenReadyFromCache() {
-          return new Promise<boolean>((resolve, reject) => {
+          return new Promise<SplitIO.SdkReadyMetadata>((resolve, reject) => {
             if (readinessManager.isReadyFromCache()) {
-              resolve(readinessManager.isReady());
+              resolve(readinessManager.metadataReady());
             } else if (readinessManager.hasTimedout()) {
               reject(TIMEOUT_ERROR);
             } else {
-              readinessManager.gate.once(SDK_READY_FROM_CACHE, () => resolve(readinessManager.isReady()));
+              readinessManager.gate.once(SDK_READY_FROM_CACHE, resolve);
               readinessManager.gate.once(SDK_READY_TIMED_OUT, () => reject(TIMEOUT_ERROR));
             }
           });

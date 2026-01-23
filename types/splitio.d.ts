@@ -831,18 +831,19 @@ declare namespace SplitIO {
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready after a timeout event, the `whenReady` method will return a resolved promise once the SDK is ready.
      * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
-     * @returns A promise that resolves once the SDK_READY event is emitted or rejects if the SDK has timedout.
+     * @returns A promise that resolves once the SDK_READY event is emitted or rejects if the SDK has timedout. The promise resolves with a metadata object that contains the `initialCacheLoad` property,
+     * which indicates whether the SDK_READY event was emitted together with the SDK_READY_FROM_CACHE event (i.e., fresh install/first app launch) or not (warm cache/subsequent app launch).
      */
-    whenReady(): Promise<void>;
+    whenReady(): Promise<SdkReadyMetadata>;
     /**
      * Returns a promise that resolves when the SDK is ready for evaluations using cached data, which might not yet be synchronized with the backend (`SDK_READY_FROM_CACHE` event emitted), or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready from cache after a timeout event, the `whenReadyFromCache` method will return a resolved promise once the SDK is ready from cache.
      * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
-     * @returns A promise that resolves once the SDK_READY_FROM_CACHE event is emitted or rejects if the SDK has timedout. The promise resolves with a boolean value that
-     * indicates whether the SDK_READY_FROM_CACHE event was emitted together with the SDK_READY event (i.e., the SDK is ready and synchronized with the backend) or not.
+     * @returns A promise that resolves once the SDK_READY_FROM_CACHE event is emitted or rejects if the SDK has timedout. The promise resolves with a metadata object that contains the `initialCacheLoad` property,
+     * which indicates whether the SDK_READY_FROM_CACHE event was emitted together with the SDK_READY event (i.e., fresh install/first app launch) or not (warm cache/subsequent app launch).
      */
-    whenReadyFromCache(): Promise<boolean>;
+    whenReadyFromCache(): Promise<SdkReadyMetadata>;
   }
   /**
    * Common definitions between clients for different environments interface.

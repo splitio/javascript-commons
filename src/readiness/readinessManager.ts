@@ -172,7 +172,8 @@ export function readinessManagerFactory(
     hasTimedout() { return hasTimedout; },
     isDestroyed() { return isDestroyed; },
     isOperational() { return (isReady || isReadyFromCache) && !isDestroyed; },
-    lastUpdate() { return lastUpdate; }
+    lastUpdate() { return lastUpdate; },
+    metadataReady() { return metadataReady; }
   };
 
 }
