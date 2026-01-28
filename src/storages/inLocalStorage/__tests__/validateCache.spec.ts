@@ -29,8 +29,10 @@ describe.each(storages)('validateCache', (storage) => {
     for (let i = 0; i < storage.length; i++) storage.removeItem(storage.key(i) as string);
   });
 
-  test('if there is no cache, it should return false', async () => {
-    expect(await validateCache({}, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+  test('if there is no cache, it should return initialCacheLoad: true', async () => {
+    const result = await validateCache({}, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result.initialCacheLoad).toBe(true);
+    expect(result.lastUpdateTimestamp).toBeUndefined();
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -44,12 +46,16 @@ describe.each(storages)('validateCache', (storage) => {
     expect(storage.getItem(keys.buildLastClear())).toBeNull();
   });
 
-  test('if there is cache and it must not be cleared, it should return true', async () => {
+  test('if there is cache and it must not be cleared, it should return initialCacheLoad: false', async () => {
+    const lastUpdateTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
+    storage.setItem(keys.buildLastUpdatedKey(), lastUpdateTimestamp + '');
     await storage.save && storage.save();
 
-    expect(await validateCache({}, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    const result = await validateCache({}, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result.initialCacheLoad).toBe(false);
+    expect(result.lastUpdateTimestamp).toBe(lastUpdateTimestamp);
 
     expect(logSpy).not.toHaveBeenCalled();
 
@@ -63,13 +69,15 @@ describe.each(storages)('validateCache', (storage) => {
     expect(storage.getItem(keys.buildLastClear())).toBeNull();
   });
 
-  test('if there is cache and it has expired, it should clear cache and return false', async () => {
+  test('if there is cache and it has expired, it should clear cache and return initialCacheLoad: true', async () => {
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     storage.setItem(keys.buildLastUpdatedKey(), Date.now() - 1000 * 60 * 60 * 24 * 2 + ''); // 2 days ago
     await storage.save && storage.save();
 
-    expect(await validateCache({ expirationDays: 1 }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    const result = await validateCache({ expirationDays: 1 }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result.initialCacheLoad).toBe(true);
+    expect(result.lastUpdateTimestamp).toBeUndefined();
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: Cache expired more than 1 days ago. Cleaning up cache');
 
@@ -82,12 +90,14 @@ describe.each(storages)('validateCache', (storage) => {
     expect(nearlyEqual(parseInt(storage.getItem(keys.buildLastClear()) as string), Date.now())).toBe(true);
   });
 
-  test('if there is cache and its hash has changed, it should clear cache and return false', async () => {
+  test('if there is cache and its hash has changed, it should clear cache and return initialCacheLoad: true', async () => {
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     await storage.save && storage.save();
 
-    expect(await validateCache({}, storage, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    const result = await validateCache({}, storage, { ...fullSettings, core: { ...fullSettings.core, authorizationKey: 'another-sdk-key' } }, keys, splits, rbSegments, segments, largeSegments);
+    expect(result.initialCacheLoad).toBe(true);
+    expect(result.lastUpdateTimestamp).toBeUndefined();
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: SDK key, flags filter criteria, or flags spec version has changed. Cleaning up cache');
 
@@ -100,14 +110,16 @@ describe.each(storages)('validateCache', (storage) => {
     expect(nearlyEqual(parseInt(storage.getItem(keys.buildLastClear()) as string), Date.now())).toBe(true);
   });
 
-  test('if there is cache and clearOnInit is true, it should clear cache and return false', async () => {
+  test('if there is cache and clearOnInit is true, it should clear cache and return initialCacheLoad: true', async () => {
     // Older cache version (without last clear)
     storage.removeItem(keys.buildLastClear());
     storage.setItem(keys.buildSplitsTillKey(), '1');
     storage.setItem(keys.buildHashKey(), FULL_SETTINGS_HASH);
     await storage.save && storage.save();
 
-    expect(await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    const result = await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result.initialCacheLoad).toBe(true);
+    expect(result.lastUpdateTimestamp).toBeUndefined();
 
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
 
@@ -122,14 +134,20 @@ describe.each(storages)('validateCache', (storage) => {
 
     // If cache is cleared, it should not clear again until a day has passed
     logSpy.mockClear();
+    const lastUpdateTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
     storage.setItem(keys.buildSplitsTillKey(), '1');
-    expect(await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(true);
+    storage.setItem(keys.buildLastUpdatedKey(), lastUpdateTimestamp + '');
+    const result2 = await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result2.initialCacheLoad).toBe(false);
+    expect(result2.lastUpdateTimestamp).toBe(lastUpdateTimestamp);
     expect(logSpy).not.toHaveBeenCalled();
     expect(storage.getItem(keys.buildLastClear())).toBe(lastClear); // Last clear should not have changed
 
     // If a day has passed, it should clear again
     storage.setItem(keys.buildLastClear(), (Date.now() - 1000 * 60 * 60 * 24 - 1) + '');
-    expect(await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments)).toBe(false);
+    const result3 = await validateCache({ clearOnInit: true }, storage, fullSettings, keys, splits, rbSegments, segments, largeSegments);
+    expect(result3.initialCacheLoad).toBe(true);
+    expect(result3.lastUpdateTimestamp).toBeUndefined();
     expect(logSpy).toHaveBeenCalledWith('storage:localstorage: clearOnInit was set and cache was not cleared in the last 24 hours. Cleaning up cache');
     expect(splits.clear).toHaveBeenCalledTimes(2);
     expect(rbSegments.clear).toHaveBeenCalledTimes(2);

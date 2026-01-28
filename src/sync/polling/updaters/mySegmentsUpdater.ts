@@ -2,7 +2,7 @@ import { IMySegmentsFetcher } from '../fetchers/types';
 import { IStorageSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
@@ -56,7 +56,7 @@ export function mySegmentsUpdaterFactory(
     // Notify update if required
     if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
     }
   }
 

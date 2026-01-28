@@ -237,5 +237,5 @@ export type TelemetryConfigStatsPayload = TelemetryConfigStats & {
 export interface ISubmitterManager extends ISyncTask {
   start(onlyTelemetry?: boolean): void,
   stop(allExceptTelemetry?: boolean): void,
-  execute(onlyTelemetry?: boolean): Promise<any>
+  execute(onlyTelemetry?: boolean): Promise<void>
 }

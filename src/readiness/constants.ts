@@ -10,3 +10,7 @@ export const SDK_READY_TIMED_OUT = 'init::timeout';
 export const SDK_READY = 'init::ready';
 export const SDK_READY_FROM_CACHE = 'init::cache-ready';
 export const SDK_UPDATE = 'state::update';
+
+// SdkUpdateMetadata types:
+export const FLAGS_UPDATE =  'FLAGS_UPDATE';
+export const SEGMENTS_UPDATE = 'SEGMENTS_UPDATE';

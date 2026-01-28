@@ -1,8 +1,9 @@
 import { readinessManagerFactory } from '../readinessManager';
 import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
-import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT } from '../constants';
+import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../constants';
 import { ISettings } from '../../types';
+import { SdkUpdateMetadata, SdkReadyMetadata } from '../../../types/splitio';
 
 const settings = {
   startup: {
@@ -99,15 +100,13 @@ test('READINESS MANAGER / Ready from cache event should be fired once', (done) =
     counter++;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+    readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
   }, 0);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
 
   setTimeout(() => {
     expect(counter).toBe(1); // should be called only once
@@ -299,4 +298,140 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
     done();
   }, settingsWithTimeout.startup.readyTimeout * 1.5);
 
+});
+
+test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  const metadata: SdkUpdateMetadata = {
+    type: FLAGS_UPDATE,
+    names: ['flag1', 'flag2']
+  };
+
+  let receivedMetadata: SdkUpdateMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED, metadata);
+
+  expect(receivedMetadata).toEqual(metadata);
+});
+
+test('READINESS MANAGER / SDK_UPDATE should handle undefined metadata', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  let receivedMetadata: any;
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+
+  expect(receivedMetadata).toBeUndefined();
+});
+
+test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  // SDK_READY
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  const metadata: SdkUpdateMetadata = {
+    type: SEGMENTS_UPDATE,
+    names: []
+  };
+
+  let receivedMetadata: SdkUpdateMetadata | undefined;
+  readinessManager.gate.on(SDK_UPDATE, (meta: SdkUpdateMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
+
+  expect(receivedMetadata).toEqual(metadata);
+});
+
+test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when cache is loaded', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  const cacheTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
+  let receivedMetadata: SdkReadyMetadata | undefined;
+  readinessManager.gate.on(SDK_READY_FROM_CACHE, (meta: SdkReadyMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  // Emit cache loaded event with timestamp
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, {
+    initialCacheLoad: false,
+    lastUpdateTimestamp: cacheTimestamp
+  });
+
+  expect(receivedMetadata).toBeDefined();
+  expect(receivedMetadata!.initialCacheLoad).toBe(false);
+  expect(receivedMetadata!.lastUpdateTimestamp).toBe(cacheTimestamp);
+});
+
+test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when SDK becomes ready without cache', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  let receivedMetadata: SdkReadyMetadata | undefined;
+  readinessManager.gate.on(SDK_READY_FROM_CACHE, (meta: SdkReadyMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  // Make SDK ready without cache first
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  expect(receivedMetadata).toBeDefined();
+  expect(receivedMetadata!.initialCacheLoad).toBe(true);
+  expect(receivedMetadata!.lastUpdateTimestamp).toBeUndefined();
+});
+
+test('READINESS MANAGER / SDK_READY should emit with metadata when ready from cache', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  const cacheTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
+  // First emit cache loaded with timestamp
+  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: cacheTimestamp });
+
+  let receivedMetadata: SdkReadyMetadata | undefined;
+  readinessManager.gate.on(SDK_READY, (meta: SdkReadyMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  // Make SDK ready
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  expect(receivedMetadata).toBeDefined();
+  expect(receivedMetadata!.initialCacheLoad).toBe(false); // Was ready from cache first
+  expect(receivedMetadata!.lastUpdateTimestamp).toBe(cacheTimestamp);
+});
+
+test('READINESS MANAGER / SDK_READY should emit with metadata when ready without cache', () => {
+  const readinessManager = readinessManagerFactory(EventEmitter, settings);
+
+  let receivedMetadata: SdkReadyMetadata | undefined;
+  readinessManager.gate.on(SDK_READY, (meta: SdkReadyMetadata) => {
+    receivedMetadata = meta;
+  });
+
+  // Make SDK ready without cache
+  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
+
+  expect(receivedMetadata).toBeDefined();
+  expect(receivedMetadata!.initialCacheLoad).toBe(true); // Was not ready from cache
+  expect(receivedMetadata!.lastUpdateTimestamp).toBeUndefined(); // No cache timestamp when fresh install
 });
