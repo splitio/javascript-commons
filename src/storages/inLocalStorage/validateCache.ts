@@ -66,13 +66,18 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: Sto
  * - its hash has changed, i.e., the SDK key, flags filter criteria or flags spec version was modified
  * - `clearOnInit` was set and cache was not cleared in the last 24 hours
  *
- * @returns `true` if cache is ready to be used, `false` otherwise (cache was cleared or there is no cache)
+ * @returns Metadata object with `initialCacheLoad` (true if is fresh install, false if is ready from cache) and `lastUpdateTimestamp` (timestamp of last cache update or undefined)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<boolean> {
+export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<SplitIO.SdkReadyMetadata> {
 
   return Promise.resolve(storage.load && storage.load()).then(() => {
     const currentTimestamp = Date.now();
     const isThereCache = splits.getChangeNumber() > -1;
+
+    // Get lastUpdateTimestamp from storage
+    const lastUpdatedTimestampStr = storage.getItem(keys.buildLastUpdatedKey());
+    const lastUpdatedTimestamp = lastUpdatedTimestampStr ? parseInt(lastUpdatedTimestampStr, 10) : undefined;
+    const lastUpdateTimestamp = (!isNaNNumber(lastUpdatedTimestamp) && lastUpdatedTimestamp !== undefined) ? lastUpdatedTimestamp : undefined;
 
     if (validateExpiration(options, storage, settings, keys, currentTimestamp, isThereCache)) {
       splits.clear();
@@ -90,10 +95,16 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
       // Persist clear
       if (storage.save) storage.save();
 
-      return false;
+      return {
+        initialCacheLoad: true, // Cache was cleared, so this is an initial load (no cache existed)
+        lastUpdateTimestamp: undefined
+      };
     }
 
     // Check if ready from cache
-    return isThereCache;
+    return {
+      initialCacheLoad: !isThereCache, // true if no cache exists (initial load), false if cache exists (ready from cache)
+      lastUpdateTimestamp
+    };
   });
 }

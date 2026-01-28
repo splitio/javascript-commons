@@ -1,8 +1,8 @@
 // Type definitions for Split Software SDKs
 // Project: https://www.split.io/
 
-import { RedisOptions } from 'ioredis';
-import { RequestOptions } from 'http';
+import type { RedisOptions } from 'ioredis';
+import type { RequestOptions } from 'http';
 
 export as namespace SplitIO;
 export = SplitIO;
@@ -83,7 +83,7 @@ interface ISharedSettings {
        * });
        * ```
        */
-      getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
     };
   };
   /**
@@ -493,6 +493,43 @@ declare namespace SplitIO {
   }
 
   /**
+   * Metadata for the update event emitted when the SDK cache is updated with new data for flags or segments.
+   */
+  type SdkUpdateMetadata = {
+    /**
+     * The type of update event.
+     */
+    type: SdkUpdateMetadataType;
+    /**
+     * The names of the flags or segments that were updated.
+     */
+    names: string[];
+  }
+
+  /**
+   * Metadata type for SDK update events.
+   */
+  type SdkUpdateMetadataType = 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
+
+  /**
+   * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
+   */
+  type SdkReadyMetadata = {
+    /**
+     * Indicates whether the SDK was loaded from cache initially. (fresh install or ready from cache)
+     * - `false` when SDK_READY_FROM_CACHE is emitted from cache (before SDK_READY)
+     * - `false` when SDK_READY is emitted and the SDK was ready from cache first
+     * - `true` when SDK_READY_FROM_CACHE is emitted because SDK became ready without cache
+     * - `true` when SDK_READY is emitted and the SDK was not ready from cache
+     */
+    initialCacheLoad: boolean;
+    /**
+     * Timestamp in milliseconds since epoch when the cache was last updated. Undefined if `initialCacheLoad` is `true`.
+     */
+    lastUpdateTimestamp?: number;
+  }
+
+  /**
    * EventEmitter interface based on a subset of the Node.js EventEmitter methods.
    */
   interface IEventEmitter {
@@ -509,8 +546,17 @@ declare namespace SplitIO {
    * @see {@link https://nodejs.org/api/events.html}
    */
   interface EventEmitter extends IEventEmitter {
+    addListener(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    addListener(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
+    addListener(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     addListener(event: string | symbol, listener: (...args: any[]) => void): this;
+    on(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    on(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
+    on(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     on(event: string | symbol, listener: (...args: any[]) => void): this;
+    once(event: EventConsts['SDK_READY'], listener: (metadata: SdkReadyMetadata) => void): this;
+    once(event: EventConsts['SDK_READY_FROM_CACHE'], listener: (metadata: SdkReadyMetadata) => void): this;
+    once(event: EventConsts['SDK_UPDATE'], listener: (metadata: SdkUpdateMetadata) => void): this;
     once(event: string | symbol, listener: (...args: any[]) => void): this;
     removeListener(event: string | symbol, listener: (...args: any[]) => void): this;
     off(event: string | symbol, listener: (...args: any[]) => void): this;
@@ -612,7 +658,7 @@ declare namespace SplitIO {
       enabled: boolean;
       flagSpecVersion: string;
       requestOptions?: {
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+        getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
       };
     };
     readonly runtime: {
@@ -785,18 +831,19 @@ declare namespace SplitIO {
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready after a timeout event, the `whenReady` method will return a resolved promise once the SDK is ready.
      * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
-     * @returns A promise that resolves once the SDK_READY event is emitted or rejects if the SDK has timedout.
+     * @returns A promise that resolves once the SDK_READY event is emitted or rejects if the SDK has timedout. The promise resolves with a metadata object that contains the `initialCacheLoad` property,
+     * which indicates whether the SDK_READY event was emitted together with the SDK_READY_FROM_CACHE event (i.e., fresh install/first app launch) or not (warm cache/subsequent app launch).
      */
-    whenReady(): Promise<void>;
+    whenReady(): Promise<SdkReadyMetadata>;
     /**
      * Returns a promise that resolves when the SDK is ready for evaluations using cached data, which might not yet be synchronized with the backend (`SDK_READY_FROM_CACHE` event emitted), or rejected if the SDK has timedout (`SDK_READY_TIMED_OUT` event emitted).
      * As it's meant to provide similar flexibility than event listeners, given that the SDK might be ready from cache after a timeout event, the `whenReadyFromCache` method will return a resolved promise once the SDK is ready from cache.
      * You must handle the promise rejection to avoid an unhandled promise rejection error, or set the `startup.readyTimeout` configuration option to 0 to avoid the timeout and thus the rejection.
      *
-     * @returns A promise that resolves once the SDK_READY_FROM_CACHE event is emitted or rejects if the SDK has timedout. The promise resolves with a boolean value that
-     * indicates whether the SDK_READY_FROM_CACHE event was emitted together with the SDK_READY event (i.e., the SDK is ready and synchronized with the backend) or not.
+     * @returns A promise that resolves once the SDK_READY_FROM_CACHE event is emitted or rejects if the SDK has timedout. The promise resolves with a metadata object that contains the `initialCacheLoad` property,
+     * which indicates whether the SDK_READY_FROM_CACHE event was emitted together with the SDK_READY event (i.e., fresh install/first app launch) or not (warm cache/subsequent app launch).
      */
-    whenReadyFromCache(): Promise<boolean>;
+    whenReadyFromCache(): Promise<SdkReadyMetadata>;
   }
   /**
    * Common definitions between clients for different environments interface.
@@ -1050,7 +1097,7 @@ declare namespace SplitIO {
     /**
      * Prerequisites for the feature flag.
      */
-    prerequisites: Array<{ flagName: string, treatments: string[] }>;
+    prerequisites: Array<{ flagName: string; treatments: string[]; }>;
   };
   /**
    * A promise that resolves to a feature flag view or null if the feature flag is not found.
@@ -1320,13 +1367,13 @@ declare namespace SplitIO {
     /**
      * Fallback treatment for all flags.
      */
-    global?: Treatment | TreatmentWithConfig,
+    global?: Treatment | TreatmentWithConfig;
     /**
      * Fallback treatments for specific flags. It takes precedence over the global fallback treatment.
      */
     byFlag?: {
-      [featureFlagName: string]: Treatment | TreatmentWithConfig
-    }
+      [featureFlagName: string]: Treatment | TreatmentWithConfig;
+    };
   }
   /**
    * Logger. Its interface details are not part of the public API. It shouldn't be used directly.
@@ -1553,7 +1600,7 @@ declare namespace SplitIO {
          * });
          * ```
          */
-        getHeaderOverrides?: (context: { headers: Record<string, string> }) => Record<string, string>;
+        getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
         /**
          * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
          *

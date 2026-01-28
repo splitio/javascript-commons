@@ -1,3 +1,7 @@
+2.11.0 (January XX, 2026)
+ - Added metadata to SDK_UPDATE events to indicate the type of update (FLAGS_UPDATE or SEGMENTS_UPDATE) and the names of updated flags or segments.
+ - Added metadata to SDK_READY and SDK_READY_FROM_CACHE events, including `initialCacheLoad` (boolean: `true` for fresh install/first app launch, `false` for warm cache/second app launch) and `lastUpdateTimestamp` (milliseconds since epoch).
+
 2.10.1 (December 18, 2025)
  - Bugfix - Handle `null` prerequisites properly.
 

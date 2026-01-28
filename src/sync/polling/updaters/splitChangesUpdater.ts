@@ -3,13 +3,14 @@ import { ISplitChangesFetcher } from '../fetchers/types';
 import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
+import { SdkUpdateMetadata } from '../../../../types/splitio';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
@@ -54,7 +55,8 @@ export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: type
 
 interface ISplitMutations<T extends ISplit | IRBSegment> {
   added: T[],
-  removed: T[]
+  removed: T[],
+  names: string[]
 }
 
 /**
@@ -95,9 +97,10 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
     } else {
       accum.removed.push(ruleEntity);
     }
+    accum.names.push(ruleEntity.name);
 
     return accum;
-  }, { added: [], removed: [] } as ISplitMutations<T>);
+  }, { added: [], removed: [], names: [] } as ISplitMutations<T>);
 }
 
 /**
@@ -165,9 +168,11 @@ export function splitChangesUpdaterFactory(
         .then((splitChanges: ISplitChangesResponse) => {
           const usedSegments = new Set<string>();
 
+          let updatedFlags: string[] = [];
           let ffUpdate: MaybeThenable<boolean> = false;
           if (splitChanges.ff) {
-            const { added, removed } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            const { added, removed, names } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            updatedFlags = names;
             log.debug(SYNC_SPLITS_UPDATE, [added.length, removed.length]);
             ffUpdate = splits.update(added, removed, splitChanges.ff.t);
           }
@@ -193,7 +198,13 @@ export function splitChangesUpdaterFactory(
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
-                  if (emitSplitsArrivedEvent) splitsEventEmitter.emit(SDK_SPLITS_ARRIVED);
+                  if (emitSplitsArrivedEvent) {
+                    const metadata: SdkUpdateMetadata = {
+                      type: updatedFlags.length > 0 ? FLAGS_UPDATE : SEGMENTS_UPDATE,
+                      names: updatedFlags.length > 0 ? updatedFlags : []
+                    };
+                    splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
+                  }
                   return true;
                 });
             }

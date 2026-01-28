@@ -9,6 +9,7 @@ import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/consta
 import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { usesSegmentsSync } from '../../storages/AbstractSplitsCacheSync';
+import { SdkUpdateMetadata } from '../../../types/splitio';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -59,8 +60,8 @@ export function pollingManagerCSFactory(
     const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
     // smart ready
-    function smartReady() {
-      if (!readiness.isReady() && !usesSegmentsSync(storage)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+    function smartReady(metadata: SdkUpdateMetadata) {
+      if (!readiness.isReady() && !usesSegmentsSync(storage)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
     }
     if (!usesSegmentsSync(storage)) setTimeout(smartReady, 0);
     else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
