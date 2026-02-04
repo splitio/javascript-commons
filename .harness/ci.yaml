@@ -37,7 +37,7 @@ pipeline:
             steps:
               - step:
                   type: Run
-                  name: redis-server
+                  name: Install and run redis-server
                   identifier: redis_server
                   spec:
                     shell: Sh
@@ -46,13 +46,12 @@ pipeline:
                       redis-server --daemonize yes
               - step:
                   type: Action
-                  name: Set up Nodejs
+                  name: Set up Node.js
                   identifier: Set_up_Nodejs
                   spec:
-                    uses: actions/setup-node@v4
+                    uses: dcodeIO/setup-node-nvm@master
                     with:
-                      node-version: "20"
-                      cache: npm
+                      node-version: lts/*
               - step:
                   type: Run
                   name: npm ci
