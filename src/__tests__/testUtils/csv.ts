@@ -1,18 +1,16 @@
 import fs from 'fs';
-import rl from 'readline';
 
 export function readCSV(filePath: string, delimiter = ','): Promise<string[][]> {
-  return new Promise((resolve) => {
-    const parser = rl.createInterface({
-      input: fs.createReadStream(filePath)
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, 'utf8', (err, content) => {
+      if (err) return reject(err);
+
+      const lines = content.split(/\r?\n/);
+      const data = lines
+        .filter(line => line.trim().length > 0)
+        .map(line => line.split(delimiter));
+
+      resolve(data);
     });
-
-    const data: string[][] = [];
-
-    parser
-      .on('line', line => {
-        data.push(line.split(delimiter));
-      })
-      .on('close', () => resolve(data));
   });
 }
