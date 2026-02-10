@@ -1,0 +1,82 @@
+pipeline:
+  name: javascript-commons
+  identifier: javascriptcommons
+  projectIdentifier: Harness_Split
+  orgIdentifier: PROD
+  tags: {}
+  properties:
+    ci:
+      codebase:
+        connectorRef: fmegithubharnessgitops
+        repoName: javascript-commons
+        build: <+input>
+  stages:
+    - stage:
+        name: Check-Test-Build
+        identifier: Checkout_code
+        description: ""
+        type: CI
+        spec:
+          cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+            paths: []
+          platform:
+            os: Linux
+            arch: Amd64
+          runtime:
+            type: Cloud
+            spec:
+              size: small
+              imageSpec:
+                imageName: ubuntu-latest
+          buildIntelligence:
+            enabled: false
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Install and run redis-server
+                  identifier: redis_server
+                  spec:
+                    shell: Sh
+                    command: |-
+                      apt-get update && apt-get install -y redis-server
+                      redis-server --daemonize yes
+              - step:
+                  type: Action
+                  name: Set up Node.js
+                  identifier: Set_up_Nodejs
+                  spec:
+                    uses: dcodeIO/setup-node-nvm@master
+                    with:
+                      node-version: lts/*
+              - step:
+                  type: Run
+                  name: npm ci
+                  identifier: npm_ci
+                  spec:
+                    shell: Sh
+                    command: npm ci
+              - step:
+                  type: Run
+                  name: npm run check
+                  identifier: npm_run_check
+                  spec:
+                    shell: Sh
+                    command: npm run check
+              - step:
+                  type: Run
+                  name: npm run test
+                  identifier: npm_run_test
+                  spec:
+                    shell: Sh
+                    command: npm run test
+              - step:
+                  type: Run
+                  name: npm run build
+                  identifier: npm_run_build
+                  spec:
+                    shell: Sh
+                    command: npm run build
