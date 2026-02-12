@@ -34,7 +34,7 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
     return pipeline.exec()
       .then(data => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
-        if (data.length && data.length === keys.length) {
+        if (data && data.length && data.length === keys.length) {
           return this.redis.expire(this.key, TTL_REFRESH);
         }
       })

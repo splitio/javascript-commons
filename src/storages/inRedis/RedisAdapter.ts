@@ -42,6 +42,7 @@ export class RedisAdapter extends ioredis {
   constructor(log: ILogger, storageSettings: Record<string, any> = {}) {
     const options = RedisAdapter._defineOptions(storageSettings);
     // Call the ioredis constructor
+    // @ts-ignore
     super(...RedisAdapter._defineLibrarySettings(options));
 
     this.log = log;

@@ -10,11 +10,11 @@ import type { RedisAdapter } from './RedisAdapter';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
-  return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
-    if (errValuePair[0] === null) accum.push(errValuePair[1]);
+function processPipelineAnswer(results: Array<[Error | null, unknown]> | null): string[] {
+  return results ? results.reduce((accum: string[], errValuePair: [Error | null, unknown]) => {
+    if (errValuePair[0] === null) accum.push(errValuePair[1] as string);
     return accum;
-  }, []);
+  }, []) : [];
 }
 
 /**
@@ -26,7 +26,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   private readonly log: ILogger;
   private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
-  private redisError?: string;
+  private redisError?: Error;
   private readonly flagSetsFilter: string[];
 
   constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
@@ -198,11 +198,11 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   */
   getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
-      .then((results) => results.map(([e, value], index) => {
-        if (e === null) return value;
+      .then((results) => results ? results.map(([e, value], index) => {
+        if (e === null) return value as string;
 
         this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
-      }))
+      }) : [])
       .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new Set(namesByFlagSet)));
   }
 

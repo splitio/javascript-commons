@@ -38,7 +38,7 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
     });
 
     this.clear();
-    return this.redis.rpush(this.key, uniqueKeysArray)
+    return this.redis.rpush(this.key, ...uniqueKeysArray)
       .then(data => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
         if (data === featureNames.length) {

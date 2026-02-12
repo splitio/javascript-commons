@@ -25,7 +25,7 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
   track(impressions: SplitIO.ImpressionDTO[]): Promise<void> { // @ts-ignore
     return this.redis.rpush(
       this.key,
-      impressionsToJSON(impressions, this.metadata),
+      ...impressionsToJSON(impressions, this.metadata),
     ).then(queuedCount => {
       // If this is the creation of the key on Redis, set the expiration for it in 1hr.
       if (queuedCount === impressions.length) {
