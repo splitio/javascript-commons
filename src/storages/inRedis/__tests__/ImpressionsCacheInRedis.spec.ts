@@ -1,6 +1,5 @@
 import { RedisAdapter } from '../RedisAdapter';
 import { ImpressionsCacheInRedis } from '../ImpressionsCacheInRedis';
-import IORedis, { BooleanResponse } from 'ioredis';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { o1, o2, o3, o1stored, o2stored, o3stored, metadata } from '../../pluggable/__tests__/ImpressionsCachePluggable.spec';
 
@@ -62,10 +61,10 @@ describe('IMPRESSIONS CACHE IN REDIS', () => {
     // Crap so we can reproduce the latency as we would have on a remote server.
     const originalExpire = connection.expire;
 
-    connection.expire = function patchedForTestRedisExpire(...args: [key: IORedis.KeyType, seconds: number]) {
-      return new Promise<BooleanResponse>((res, rej) => {
+    connection.expire = function patchedForTestRedisExpire(key: string, seconds: number) {
+      return new Promise<'OK' | null>((res, rej) => {
         setTimeout(() => {
-          originalExpire.apply(connection, args).then(res).catch(rej);
+          originalExpire.call(connection, key, seconds).then(res).catch(rej);
         }, 150); // 150ms of delay on the expire
       });
     };

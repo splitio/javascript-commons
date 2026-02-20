@@ -39,13 +39,13 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
 
     this.clear();
     return this.redis.rpush(this.key, ...uniqueKeysArray)
-      .then(data => {
+      .then((data: number) => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
         if (data === featureNames.length) {
           return this.redis.expire(this.key, TTL_REFRESH);
         }
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         this.log.error(`${LOG_PREFIX}Error in uniqueKeys pipeline: ${err}.`);
         return false;
       });
@@ -66,9 +66,9 @@ export class UniqueKeysCacheInRedis extends UniqueKeysCacheInMemory implements I
    * @param count - number of items to pop from the queue. If not provided or equal 0, all items will be popped.
    */
   popNRaw(count = 0): Promise<UniqueKeysItemSs[]> {
-    return this.redis.lrange(this.key, 0, count - 1).then(uniqueKeyItems => {
+    return this.redis.lrange(this.key, 0, count - 1).then((uniqueKeyItems: string[]) => {
       return this.redis.ltrim(this.key, uniqueKeyItems.length, -1)
-        .then(() => uniqueKeyItems.map(uniqueKeyItem => JSON.parse(uniqueKeyItem)));
+        .then(() => uniqueKeyItems.map((uniqueKeyItem: string) => JSON.parse(uniqueKeyItem)));
     });
   }
 

@@ -26,7 +26,7 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
     return this.redis.rpush(
       this.key,
       ...impressionsToJSON(impressions, this.metadata),
-    ).then(queuedCount => {
+    ).then((queuedCount: number) => {
       // If this is the creation of the key on Redis, set the expiration for it in 1hr.
       if (queuedCount === impressions.length) {
         return this.redis.expire(this.key, IMPRESSIONS_TTL_REFRESH);
@@ -45,7 +45,7 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
   }
 
   popNWithMetadata(count: number): Promise<StoredImpressionWithMetadata[]> {
-    return this.redis.lrange(this.key, 0, count - 1).then(items => {
+    return this.redis.lrange(this.key, 0, count - 1).then((items: string[]) => {
       return this.redis.ltrim(this.key, items.length, -1).then(() => {
         // This operation will simply do nothing if the key no longer exists (queue is empty)
         // It's only done in the "successful" exit path so that the TTL is not overriden if impressons weren't
@@ -53,7 +53,7 @@ export class ImpressionsCacheInRedis implements IImpressionsCacheAsync {
         // a huge amount of memory.
         this.redis.expire(this.key, IMPRESSIONS_TTL_REFRESH).catch(() => { }); // noop catch handler
 
-        return items.map(item => JSON.parse(item) as StoredImpressionWithMetadata);
+        return items.map((item: string) => JSON.parse(item) as StoredImpressionWithMetadata);
       });
     });
   }

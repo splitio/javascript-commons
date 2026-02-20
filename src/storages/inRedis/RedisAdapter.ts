@@ -1,4 +1,14 @@
-import ioredis, { Pipeline } from 'ioredis';
+// Dynamically require ioredis to prevent strict TypeScript binding
+// and handle module export differences between v4 and v5.
+let RedisConstructor: any;
+try {
+  const ioredisLib = require('ioredis');
+  RedisConstructor = ioredisLib.default || ioredisLib;
+} catch (e) {
+  // If we reach here, the peer dependency is missing
+  throw new Error('ioredis is missing. Please install ioredis v4 or v5.');
+}
+
 import { ILogger } from '../../logger/types';
 import { merge, isString } from '../../utils/lang';
 import { thenable } from '../../utils/promise/thenable';
@@ -20,42 +30,70 @@ const DEFAULT_OPTIONS = {
 const DEFAULT_LIBRARY_OPTIONS = {
   enableOfflineQueue: false,
   connectTimeout: DEFAULT_OPTIONS.connectionTimeout,
-  lazyConnect: false
+  lazyConnect: false,
+  // CRITICAL: v5 defaults this to 0 (disabled), which breaks dynamic clusters.
+  // v4 defaulted to 5000. We explicitly set it here to ensure v5 works like v4.
+  slotsRefreshInterval: 5000,
 };
 
 interface IRedisCommand {
-  resolve: () => void,
+  resolve: (value?: any) => void,
   reject: (err?: any) => void,
-  command: () => Promise<void>,
-  name: string
+  command: () => Promise<any>,
+  name: string,
 }
 
 /**
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
+ * Refactored to use Composition and Proxy instead of Inheritance to support both v4 and v5.
  */
-export class RedisAdapter extends ioredis {
+export class RedisAdapter {
+  // eslint-disable-next-line no-undef -- Index signature to allow proxying dynamic ioredis methods without TS errors
+  [key: string]: any;
   private readonly log: ILogger;
-  private _options: object;
+  private _options: Record<string, any>;
   private _notReadyCommandsQueue?: IRedisCommand[];
   private _runningCommands: Set<Promise<any>>;
 
+  // The actual ioredis instance
+  public client: any;
+
   constructor(log: ILogger, storageSettings: Record<string, any> = {}) {
     const options = RedisAdapter._defineOptions(storageSettings);
-    // Call the ioredis constructor
-    // @ts-ignore
-    super(...RedisAdapter._defineLibrarySettings(options));
 
     this.log = log;
     this._options = options;
     this._notReadyCommandsQueue = [];
     this._runningCommands = new Set();
+
+    // Instantiate the client using the dynamic constructor
+    const librarySettings = RedisAdapter._defineLibrarySettings(options);
+    this.client = new RedisConstructor(...librarySettings);
+
     this._listenToEvents();
     this._setTimeoutWrappers();
     this._setDisconnectWrapper();
+
+    // Return a Proxy. This allows the adapter to act exactly like an extended class.
+    // If a method/property is accessed that we didn't explicitly wrap, it forwards it to `this.client`.
+    return new Proxy(this, {
+      get(target: RedisAdapter, prop: string | symbol) {
+        // If the property exists on our wrapper (like wrapped 'get', 'set', or internal methods)
+        if (prop in target) {
+          return target[prop as keyof RedisAdapter];
+        }
+        // If it doesn't exist on our wrapper but exists on the real client (like 'on', 'quit')
+        if (target.client && prop in target.client) {
+          const val = target.client[prop];
+          return typeof val === 'function' ? val.bind(target.client) : val;
+        }
+        return undefined;
+      }
+    });
   }
 
   _listenToEvents() {
-    this.once('ready', () => {
+    this.client.once('ready', () => {
       const commandsCount = this._notReadyCommandsQueue ? this._notReadyCommandsQueue.length : 0;
       this.log.info(LOG_PREFIX + `Redis connection established. Queued commands: ${commandsCount}.`);
 
@@ -66,24 +104,21 @@ export class RedisAdapter extends ioredis {
       // After the SDK is ready for the first time we'll stop queueing commands. This is just so we can keep handling BUR for them.
       this._notReadyCommandsQueue = undefined;
     });
-    this.once('close', () => {
+    this.client.once('close', () => {
       this.log.info(LOG_PREFIX + 'Redis connection closed.');
     });
   }
 
   _setTimeoutWrappers() {
-    const instance: Record<string, any> = this;
+    const instance = this;
 
-    const wrapCommand = (originalMethod: Function, methodName: string) => {
-      // The value of "this" in this function should be the instance actually executing the method. It might be the instance referred (the base one)
-      // or it can be the instance of a Pipeline object.
-      return function (this: RedisAdapter | Pipeline) {
-        const params = arguments;
-        const caller = this;
-
+    // We pass `bindTarget` so pipeline execution is bound to the pipeline object,
+    // while standard commands are bound to the client.
+    const wrapCommand = (originalMethod: Function, methodName: string, bindTarget: any) => {
+      return function (...params: any[]) {
         function commandWrapper() {
           instance.log.debug(`${LOG_PREFIX}Executing ${methodName}.`);
-          const result = originalMethod.apply(caller, params);
+          const result = originalMethod.apply(bindTarget, params);
 
           if (thenable(result)) {
             // For handling pending commands on disconnect, add to the set and remove once finished.
@@ -107,7 +142,7 @@ export class RedisAdapter extends ioredis {
 
         if (instance._notReadyCommandsQueue) {
           return new Promise((resolve, reject) => {
-            instance._notReadyCommandsQueue.unshift({
+            instance._notReadyCommandsQueue!.unshift({
               resolve,
               reject,
               command: commandWrapper,
@@ -122,19 +157,19 @@ export class RedisAdapter extends ioredis {
 
     // Wrap regular async methods to track timeouts and queue when Redis is not yet executing commands.
     METHODS_TO_PROMISE_WRAP.forEach(methodName => {
-      const originalFn = instance[methodName];
-      instance[methodName] = wrapCommand(originalFn, methodName);
+      const originalFn = this.client[methodName];
+      this[methodName] = wrapCommand(originalFn, methodName, this.client);
     });
 
     // Special handling for pipeline~like methods. We need to wrap the async trigger, which is exec, but return the Pipeline right away.
     METHODS_TO_PROMISE_WRAP_EXEC.forEach(methodName => {
-      const originalFn = instance[methodName];
+      const originalFn = this.client[methodName];
       // "First level wrapper" to handle the sync execution and wrap async, queueing later if applicable.
-      instance[methodName] = function () {
-        const res = originalFn.apply(instance, arguments);
+      this[methodName] = function (...args: any[]) {
+        const res = originalFn.apply(instance.client, args);
         const originalExec = res.exec;
 
-        res.exec = wrapCommand(originalExec, methodName + '.exec').bind(res);
+        res.exec = wrapCommand(originalExec, `${methodName}.exec`, res);
 
         return res;
       };
@@ -143,10 +178,9 @@ export class RedisAdapter extends ioredis {
 
   _setDisconnectWrapper() {
     const instance = this;
-    const originalMethod = instance.disconnect;
+    const originalMethod = this.client.disconnect;
 
-    instance.disconnect = function disconnect(...params: []) {
-
+    this.disconnect = function disconnect(...params: any[]) {
       setTimeout(function deferredDisconnect() {
         if (instance._runningCommands.size > 0) {
           instance.log.info(LOG_PREFIX + `Attempting to disconnect but there are ${instance._runningCommands.size} commands still waiting for resolution. Defering disconnection until those finish.`);
@@ -154,16 +188,16 @@ export class RedisAdapter extends ioredis {
           Promise.all(setToArray(instance._runningCommands))
             .then(() => {
               instance.log.debug(LOG_PREFIX + 'Pending commands finished successfully, disconnecting.');
-              originalMethod.apply(instance, params);
+              originalMethod.apply(instance.client, params);
             })
             .catch(e => {
               instance.log.warn(LOG_PREFIX + `Pending commands finished with error: ${e}. Proceeding with disconnection.`);
-              originalMethod.apply(instance, params);
+              originalMethod.apply(instance.client, params);
             });
         } else {
           instance.log.debug(LOG_PREFIX + 'No commands pending execution, disconnect.');
           // Nothing pending, just proceed.
-          originalMethod.apply(instance, params);
+          originalMethod.apply(instance.client, params);
         }
       }, 10);
     };

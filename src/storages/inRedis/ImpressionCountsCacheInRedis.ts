@@ -32,13 +32,13 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
       pipeline.hincrby(this.key, key, counts[key]);
     });
     return pipeline.exec()
-      .then(data => {
+      .then((data: [Error | null, unknown][] | null) => {
         // If this is the creation of the key on Redis, set the expiration for it in 3600 seconds.
         if (data && data.length && data.length === keys.length) {
           return this.redis.expire(this.key, TTL_REFRESH);
         }
       })
-      .catch(err => {
+      .catch((err: unknown) => {
         this.log.error(`${LOG_PREFIX}Error in impression counts pipeline: ${err}.`);
         return false;
       });
@@ -56,14 +56,14 @@ export class ImpressionCountsCacheInRedis extends ImpressionCountsCacheInMemory 
   // Async consumer API, used by synchronizer
   getImpressionsCount(): Promise<ImpressionCountsPayload | undefined> {
     return this.redis.hgetall(this.key)
-      .then(counts => {
+      .then((counts: Record<string, string>) => {
         if (!Object.keys(counts).length) return undefined;
 
         this.redis.del(this.key).catch(() => { /* no-op */ });
 
         const pf: ImpressionCountsPayload['pf'] = [];
 
-        forOwn(counts, (count, key) => {
+        forOwn(counts, (count: string, key) => {
           const nameAndTime = key.split('::');
           if (nameAndTime.length !== 2) {
             this.log.error(`${LOG_PREFIX}Error spliting key ${key}`);

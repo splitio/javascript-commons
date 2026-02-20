@@ -135,8 +135,8 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
       cache.stop().then(() => {
         expect(connection.rpush).toBeCalledTimes(2); // Stopping when cache is not empty, calls the wrapper
         expect(connection.rpush.mock.calls).toEqual([
-          [key, [JSON.stringify({ f: 'feature1', ks: ['key1'] }), JSON.stringify({ f: 'feature2', ks: ['key2'] }), JSON.stringify({ f: 'feature3', ks: ['key1', 'key2'] })]],
-          [key, [JSON.stringify({ f: 'feature4', ks: ['key3'] })]]
+          [key, JSON.stringify({ f: 'feature1', ks: ['key1'] }), JSON.stringify({ f: 'feature2', ks: ['key2'] }), JSON.stringify({ f: 'feature3', ks: ['key1', 'key2'] })],
+          [key, JSON.stringify({ f: 'feature4', ks: ['key3'] })]
         ]);
         expect(cache.isEmpty()).toBe(true);
         done();
