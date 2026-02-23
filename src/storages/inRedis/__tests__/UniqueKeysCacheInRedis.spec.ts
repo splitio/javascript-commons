@@ -147,7 +147,7 @@ describe('UNIQUE KEYS CACHE IN REDIS', () => {
   test('Should call "onFullQueueCb" when the queue is full. "popNRaw" should pop items.', async () => {
     const connection = new RedisAdapter(loggerMock);
     // @TODO next line is not required with ioredis
-    await new Promise(res => connection.once('ready', res));
+    await new Promise(res => connection.on('ready', res));
 
     const cache = new UniqueKeysCacheInRedis(loggerMock, key, connection, 3);
 
