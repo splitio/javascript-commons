@@ -18,7 +18,7 @@ import { setToArray } from '../../utils/lang/sets';
 const LOG_PREFIX = 'storage:redis-adapter: ';
 
 // If we ever decide to fully wrap every method, there's a Commander.getBuiltinCommands from ioredis.
-const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw'];
+const METHODS_TO_PROMISE_WRAP = ['set', 'exec', 'del', 'get', 'keys', 'sadd', 'srem', 'sismember', 'smembers', 'incr', 'decr', 'rpush', 'expire', 'mget', 'lrange', 'ltrim', 'hset', 'hincrby', 'popNRaw', 'hgetall', 'llen', 'hget'];
 const METHODS_TO_PROMISE_WRAP_EXEC = ['pipeline'];
 
 // Not part of the settings since it'll vary on each storage. We should be removing storage specific logic from elsewhere.
@@ -45,7 +45,7 @@ interface IRedisCommand {
 
 /**
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
- * Refactored to use Composition and Proxy instead of Inheritance to support both v4 and v5.
+ * Refactored to use Composition instead of Inheritance to support both v4 and v5.
  */
 export class RedisAdapter {
   // eslint-disable-next-line no-undef -- Index signature to allow proxying dynamic ioredis methods without TS errors
@@ -73,23 +73,10 @@ export class RedisAdapter {
     this._listenToEvents();
     this._setTimeoutWrappers();
     this._setDisconnectWrapper();
+  }
 
-    // Return a Proxy. This allows the adapter to act exactly like an extended class.
-    // If a method/property is accessed that we didn't explicitly wrap, it forwards it to `this.client`.
-    return new Proxy(this, {
-      get(target: RedisAdapter, prop: string | symbol) {
-        // If the property exists on our wrapper (like wrapped 'get', 'set', or internal methods)
-        if (prop in target) {
-          return target[prop as keyof RedisAdapter];
-        }
-        // If it doesn't exist on our wrapper but exists on the real client (like 'on', 'quit')
-        if (target.client && prop in target.client) {
-          const val = target.client[prop];
-          return typeof val === 'function' ? val.bind(target.client) : val;
-        }
-        return undefined;
-      }
-    });
+  on(event: string, listener: (...args: any[]) => void) {
+    return this.client.on(event, listener);
   }
 
   _listenToEvents() {
