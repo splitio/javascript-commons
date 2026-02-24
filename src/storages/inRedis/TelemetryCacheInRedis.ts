@@ -43,7 +43,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
    * The returned promise rejects if redis operations fail.
    */
   popLatencies(): Promise<MultiMethodLatencies> {
-    return this.redis.hgetall(this.keys.latencyPrefix).then(latencies => {
+    return this.redis.hgetall(this.keys.latencyPrefix).then((latencies: Record<string, string>) => {
 
       const result: MultiMethodLatencies = new Map();
 
@@ -83,7 +83,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
    * The returned promise rejects if redis operations fail.
    */
   popExceptions(): Promise<MultiMethodExceptions> {
-    return this.redis.hgetall(this.keys.exceptionPrefix).then(exceptions => {
+    return this.redis.hgetall(this.keys.exceptionPrefix).then((exceptions: Record<string, string>) => {
 
       const result: MultiMethodExceptions = new Map();
 
@@ -116,7 +116,7 @@ export class TelemetryCacheInRedis implements ITelemetryCacheAsync {
    * The returned promise rejects if redis operations fail.
    */
   popConfigs(): Promise<MultiConfigs> {
-    return this.redis.hgetall(this.keys.initPrefix).then(configs => {
+    return this.redis.hgetall(this.keys.initPrefix).then((configs: Record<string, string>) => {
 
       const result: MultiConfigs = new Map();
 
