@@ -31,7 +31,7 @@ export class EventsCacheInRedis implements IEventsCacheAsync {
     )
       // We use boolean values to signal successful queueing
       .then(() => true)
-      .catch(err => {
+      .catch((err: unknown) => {
         this.log.error(`${LOG_PREFIX}Error adding event to queue: ${err}.`);
         return false;
       });
@@ -65,9 +65,9 @@ export class EventsCacheInRedis implements IEventsCacheAsync {
    * It is the submitter responsability to handle that.
    */
   popNWithMetadata(count: number): Promise<StoredEventWithMetadata[]> {
-    return this.redis.lrange(this.key, 0, count - 1).then(items => {
+    return this.redis.lrange(this.key, 0, count - 1).then((items: string[]) => {
       return this.redis.ltrim(this.key, items.length, -1).then(() => {
-        return items.map(item => JSON.parse(item) as StoredEventWithMetadata);
+        return items.map((item: string) => JSON.parse(item) as StoredEventWithMetadata);
       });
     });
   }

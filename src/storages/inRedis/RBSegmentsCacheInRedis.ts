@@ -21,12 +21,12 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
 
   get(name: string): Promise<IRBSegment | null> {
     return this.redis.get(this.keys.buildRBSegmentKey(name))
-      .then(maybeRBSegment => maybeRBSegment && JSON.parse(maybeRBSegment));
+      .then((maybeRBSegment: string | null) => maybeRBSegment && JSON.parse(maybeRBSegment));
   }
 
   private getNames(): Promise<string[]> {
     return this.redis.keys(this.keys.searchPatternForRBSegmentKeys()).then(
-      (listOfKeys) => listOfKeys.map(this.keys.extractKey)
+      (listOfKeys: string[]) => listOfKeys.map(this.keys.extractKey)
     );
   }
 
@@ -47,7 +47,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
       })),
       Promise.all(toRemove.map(toRemove => {
         const key = this.keys.buildRBSegmentKey(toRemove.name);
-        return this.redis.del(key).then(status => status === 1);
+        return this.redis.del(key).then((status: number) => status === 1);
       }))
     ]).then(([, added, removed]) => {
       return added.some(result => result) || removed.some(result => result);
@@ -56,7 +56,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
 
   setChangeNumber(changeNumber: number) {
     return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
-      status => status === 'OK'
+      (status: string | null) => status === 'OK'
     );
   }
 
@@ -65,7 +65,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
-    }).catch((e) => {
+    }).catch((e: unknown) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from storage. Error: ' + e);
       return -1;
     });

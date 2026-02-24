@@ -10,11 +10,11 @@ import type { RedisAdapter } from './RedisAdapter';
 /**
  * Discard errors for an answer of multiple operations.
  */
-function processPipelineAnswer(results: Array<[Error | null, string]>): string[] {
-  return results.reduce((accum: string[], errValuePair: [Error | null, string]) => {
-    if (errValuePair[0] === null) accum.push(errValuePair[1]);
+function processPipelineAnswer(results: Array<[Error | null, unknown]> | null): string[] {
+  return results ? results.reduce((accum: string[], errValuePair: [Error | null, unknown]) => {
+    if (errValuePair[0] === null) accum.push(errValuePair[1] as string);
     return accum;
-  }, []);
+  }, []) : [];
 }
 
 /**
@@ -26,7 +26,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   private readonly log: ILogger;
   private readonly redis: RedisAdapter;
   private readonly keys: KeyBuilderSS;
-  private redisError?: string;
+  private redisError?: Error;
   private readonly flagSetsFilter: string[];
 
   constructor(log: ILogger, keys: KeyBuilderSS, redis: RedisAdapter, splitFiltersValidation?: ISplitFiltersValidation) {
@@ -38,7 +38,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
     // There is no need to listen for redis 'error' event, because in that case ioredis calls will be rejected and handled by redis storage adapters.
     // But it is done just to avoid getting the ioredis message `Unhandled error event`.
-    this.redis.on('error', (e) => {
+    this.redis.on('error', (e: Error) => {
       this.redisError = e;
     });
 
@@ -49,7 +49,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
   private _decrementCounts(split: ISplit) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-    return this.redis.decr(ttKey).then(count => {
+    return this.redis.decr(ttKey).then((count: number) => {
       if (count === 0) return this.redis.del(ttKey);
     });
   }
@@ -85,7 +85,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   addSplit(split: ISplit): Promise<boolean> {
     const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
-    return this.redis.get(splitKey).then(splitFromStorage => {
+    return this.redis.get(splitKey).then((splitFromStorage: string | null) => {
 
       // handling parsing error
       let parsedPreviousSplit: ISplit, stringifiedNewSplit;
@@ -119,7 +119,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         return this._decrementCounts(split).then(() => this._updateFlagSets(name, split.sets));
       }
     }).then(() => {
-      return this.redis.del(this.keys.buildSplitKey(name)).then(status => status === 1);
+      return this.redis.del(this.keys.buildSplitKey(name)).then((status: number) => status === 1);
     });
   }
 
@@ -135,7 +135,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     }
 
     return this.redis.get(this.keys.buildSplitKey(name))
-      .then(maybeSplit => maybeSplit && JSON.parse(maybeSplit));
+      .then((maybeSplit: string | null) => maybeSplit && JSON.parse(maybeSplit));
   }
 
   /**
@@ -145,7 +145,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    */
   setChangeNumber(changeNumber: number): Promise<boolean> {
     return this.redis.set(this.keys.buildSplitsTillKey(), changeNumber + '').then(
-      status => status === 'OK'
+      (status: string | null) => status === 'OK'
     );
   }
 
@@ -159,7 +159,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? -1 : i;
-    }).catch((e) => {
+    }).catch((e: unknown) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from storage. Error: ' + e);
       return -1;
     });
@@ -173,9 +173,9 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   // @TODO we need to benchmark which is the maximun number of commands we could pipeline without kill redis performance.
   getAll(): Promise<ISplit[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
-      .then((listOfKeys) => this.redis.pipeline(listOfKeys.map(k => ['get', k])).exec())
+      .then((listOfKeys: string[]) => this.redis.pipeline(listOfKeys.map((k: string) => ['get', k])).exec())
       .then(processPipelineAnswer)
-      .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {
+      .then((splitDefinitions: string[]) => splitDefinitions.map((splitDefinition: string) => {
         return JSON.parse(splitDefinition);
       }));
   }
@@ -187,7 +187,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    */
   getSplitNames(): Promise<string[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys()).then(
-      (listOfKeys) => listOfKeys.map(this.keys.extractKey)
+      (listOfKeys: string[]) => listOfKeys.map(this.keys.extractKey)
     );
   }
 
@@ -198,12 +198,12 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
   */
   getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]> {
     return this.redis.pipeline(flagSets.map(flagSet => ['smembers', this.keys.buildFlagSetKey(flagSet)])).exec()
-      .then((results) => results.map(([e, value], index) => {
-        if (e === null) return value;
+      .then((results: [Error | null, unknown][] | null) => results ? results.map(([e, value]: [Error | null, unknown], index: number) => {
+        if (e === null) return value as string;
 
         this.log.error(LOG_PREFIX + `Could not read result from get members of flag set ${flagSets[index]} due to an error: ${e}`);
-      }))
-      .then(namesByFlagSets => namesByFlagSets.map(namesByFlagSet => new Set(namesByFlagSet)));
+      }) : [])
+      .then((namesByFlagSets: (string | undefined)[]) => namesByFlagSets.map((namesByFlagSet: string | undefined) => new Set(namesByFlagSet)));
   }
 
   /**
@@ -226,7 +226,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
         return ttCount > 0;
       })
-      .catch(e => {
+      .catch((e: unknown) => {
         this.log.error(LOG_PREFIX + `Could not validate traffic type existence of ${trafficType} due to an error: ${e}.`);
         // If there is an error, bypass the validation so the event can get tracked.
         return true;
@@ -251,7 +251,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
 
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
-      .then(splitDefinitions => {
+      .then((splitDefinitions: (string | null)[]) => {
         const splits: Record<string, ISplit | null> = {};
         names.forEach((name, idx) => {
           const split = splitDefinitions[idx];
@@ -259,7 +259,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
         });
         return Promise.resolve(splits);
       })
-      .catch(e => {
+      .catch((e: unknown) => {
         this.log.error(LOG_PREFIX + `Could not grab feature flags due to an error: ${e}.`);
         return Promise.reject(e);
       });
