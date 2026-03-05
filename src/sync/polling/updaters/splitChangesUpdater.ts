@@ -31,7 +31,7 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Exported for testing purposes.
  */
 export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
-  const { conditions = [], excluded } = ruleEntity as IRBSegment;
+  const { conditions, excluded } = ruleEntity as IRBSegment;
 
   const segments = new Set<string>();
   if (excluded && excluded.segments) {
@@ -42,12 +42,14 @@ export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: type
     });
   }
 
-  for (let i = 0; i < conditions.length; i++) {
-    const matchers = conditions[i].matcherGroup.matchers;
+  if (conditions) {
+    for (let i = 0; i < conditions.length; i++) {
+      const matchers = conditions[i].matcherGroup.matchers;
 
-    matchers.forEach(matcher => {
-      if (matcher.matcherType === matcherType) segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
-    });
+      matchers.forEach(matcher => {
+        if (matcher.matcherType === matcherType) segments.add(matcher.userDefinedSegmentMatcherData.segmentName);
+      });
+    }
   }
 
   return segments;

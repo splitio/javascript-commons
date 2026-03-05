@@ -208,11 +208,11 @@ export interface IRBSegment {
   name: string,
   changeNumber: number,
   status: 'ACTIVE' | 'ARCHIVED',
-  conditions?: ISplitCondition[],
+  conditions?: ISplitCondition[] | null,
   excluded?: {
     keys?: string[] | null,
     segments?: IExcludedSegment[] | null
-  }
+  } | null
 }
 
 export interface ISplit {
