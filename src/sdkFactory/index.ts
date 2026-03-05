@@ -35,12 +35,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   // initialization
   let hasInit = false;
-  const initCallbacks: (() => void)[] = [];
-
-  function whenInit(cb: () => void) {
-    if (hasInit) cb();
-    else initCallbacks.push(cb);
-  }
 
   const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, settings);
   const readiness = sdkReadinessManager.readinessManager;
@@ -82,8 +76,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
       strategyDebugFactory(observer) :
       noneStrategy;
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, whenInit, integrationsManager, storage.telemetry);
-  const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, integrationsManager, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
@@ -111,9 +105,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     uniqueKeysTracker.start();
     syncManager && syncManager.start();
     signalListener && signalListener.start();
-
-    initCallbacks.forEach((cb) => cb());
-    initCallbacks.length = 0;
   }
 
   log.info(NEW_FACTORY, [settings.version]);
