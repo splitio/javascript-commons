@@ -2284,4 +2284,74 @@ declare namespace SplitIO {
      */
     split(featureFlagName: string): SplitViewAsync;
   }
+
+  // Configs SDK
+
+  interface Target extends EvaluationOptions {
+    key: SplitKey;
+    attributes?: Attributes;
+  }
+
+  interface Config {
+    value: any;
+    getString(propertyName: string, propertyDefaultValue?: string): string;
+    getNumber(propertyName: string, propertyDefaultValue?: number): number;
+    getBoolean(propertyName: string, propertyDefaultValue?: boolean): boolean;
+    getArray(propertyName: string): ConfigArray;
+    getObject(propertyName: string): Config;
+  }
+  interface ConfigArray {
+    value: any;
+    getString(index: number, propertyDefaultValue?: string): string;
+    getNumber(index: number, propertyDefaultValue?: number): number;
+    getBoolean(index: number, propertyDefaultValue?: boolean): boolean;
+    getArray(index: number): ConfigArray;
+    getObject(index: number): Config;
+  }
+
+  /**
+   * Common definitions between SDK instances for different environments interface.
+   */
+  interface ConfigSDKClient extends IStatusInterface {
+    /**
+     * Current settings of the SDK instance.
+     */
+    settings: ISettings;
+    /**
+     * Logger API.
+     */
+    Logger: ILoggerAPI;
+    /**
+     * Initializes the client.
+     */
+    init(): void;
+    /**
+     * Flushes the client.
+     */
+    flush(): Promise<void>;
+    /**
+     * Destroys the client.
+     *
+     * @returns A promise that resolves once all clients are destroyed.
+     */
+    destroy(): Promise<void>;
+    /**
+     *
+     * @param name
+     * @param target
+     * @returns
+     */
+    getConfig(name: string, target?: Target): Config;
+    /**
+     * Tracks an event to be fed to the results product on Split user interface.
+     *
+     * @param key - The key that identifies the entity related to this event.
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
+     * @param eventType - The event type corresponding to this event.
+     * @param value - The value of this event.
+     * @param properties - The properties of this event. Values can be string, number, boolean or null.
+     * @returns Whether the event was added to the queue successfully or not.
+     */
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
+  }
 }
