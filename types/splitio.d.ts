@@ -2312,7 +2312,7 @@ declare namespace SplitIO {
   /**
    * Common definitions between SDK instances for different environments interface.
    */
-  interface ConfigSDKClient extends IStatusInterface {
+  interface ConfigsClient extends IStatusInterface {
     /**
      * Current settings of the SDK instance.
      */
@@ -2336,10 +2336,11 @@ declare namespace SplitIO {
      */
     destroy(): Promise<void>;
     /**
+     * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
      *
-     * @param name
-     * @param target
-     * @returns
+     * @param name - The name of the config we want to get.
+     * @param target - The target of the config we want to get.
+     * @returns The config object.
      */
     getConfig(name: string, target?: Target): Config;
     /**

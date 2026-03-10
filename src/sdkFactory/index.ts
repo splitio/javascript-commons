@@ -8,11 +8,6 @@ import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { strategyDebugFactory } from '../trackers/strategy/strategyDebug';
-import { strategyOptimizedFactory } from '../trackers/strategy/strategyOptimized';
-import { strategyNoneFactory } from '../trackers/strategy/strategyNone';
-import { uniqueKeysTrackerFactory } from '../trackers/uniqueKeysTracker';
-import { DEBUG, OPTIMIZED } from '../utils/constants';
 import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { IStorageSync } from '../storages/types';
 import { getMatching } from '../utils/key';
@@ -24,10 +19,9 @@ import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCal
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
-    syncManagerFactory, SignalListener, impressionsObserverFactory,
-    integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory,
-    filterAdapterFactory, lazyInit } = params;
-  const { log, sync: { impressionsMode }, initialRolloutPlan, core: { key } } = settings;
+    syncManagerFactory, SignalListener,
+    integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory, lazyInit } = params;
+  const { log, initialRolloutPlan, core: { key } } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
@@ -62,23 +56,13 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
-  const observer = impressionsObserverFactory();
-  const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
-
-  const noneStrategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
-  const strategy = impressionsMode === OPTIMIZED ?
-    strategyOptimizedFactory(observer, storage.impressionCounts) :
-    impressionsMode === DEBUG ?
-      strategyDebugFactory(observer) :
-      noneStrategy;
-
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(params, storage, integrationsManager);
   const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, uniqueKeysTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;
