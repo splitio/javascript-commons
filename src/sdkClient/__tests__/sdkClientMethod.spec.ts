@@ -18,7 +18,7 @@ const paramMocks = [
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() },
+    impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
     fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
@@ -30,7 +30,7 @@ const paramMocks = [
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() },
+    impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
     fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
   }
 ];
@@ -75,7 +75,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
           client.destroy().then(() => {
             expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
             expect(params.storage.destroy).toBeCalledTimes(1);
-            expect(params.uniqueKeysTracker.stop).toBeCalledTimes(1);
+            expect(params.impressionsTracker.stop).toBeCalledTimes(1);
 
             if (params.syncManager) {
               expect(params.syncManager.stop).toBeCalledTimes(1);

@@ -11,7 +11,7 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
  * Creates an Sdk client, i.e., a base client with status, init, flush and destroy interface
  */
 export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, uniqueKeysTracker } = params;
+  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, impressionsTracker } = params;
 
   let hasInit = false;
   let lastActionTime = 0;
@@ -56,7 +56,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
         if (!isSharedClient) {
           validateAndTrackApiKey(settings.log, settings.core.authorizationKey);
           sdkReadinessManager.readinessManager.init();
-          uniqueKeysTracker.start();
+          impressionsTracker.start();
           syncManager && syncManager.start();
           signalListener && signalListener.start();
         }
@@ -77,7 +77,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           releaseApiKey(settings.core.authorizationKey);
           telemetryTracker.sessionLength();
           signalListener && signalListener.stop();
-          uniqueKeysTracker.stop();
+          impressionsTracker.stop();
         }
 
         // Stop background jobs
