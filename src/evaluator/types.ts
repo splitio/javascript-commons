@@ -13,8 +13,8 @@ export interface IMatcherDto {
   name: string
   value?: string | number | boolean | string[] | IDependencyMatcherData | IBetweenMatcherData | IBetweenStringMatcherData | null
 
-  attribute: string | null
-  negate: boolean
+  attribute?: string | null
+  negate?: boolean
   dataType: string
 }
 
