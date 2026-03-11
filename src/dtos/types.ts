@@ -41,10 +41,10 @@ export interface IDependencyMatcherData {
 
 interface ISplitMatcherBase {
   matcherType: string
-  negate: boolean
-  keySelector: null | {
+  negate?: boolean
+  keySelector?: null | {
     trafficType: string,
-    attribute: string | null
+    attribute?: string | null
   }
   userDefinedSegmentMatcherData?: null | IInSegmentMatcherData
   userDefinedLargeSegmentMatcherData?: null | IInLargeSegmentMatcherData
@@ -207,7 +207,7 @@ export interface IExcludedSegment {
 export interface IRBSegment {
   name: string,
   changeNumber: number,
-  status: 'ACTIVE' | 'ARCHIVED',
+  status?: 'ACTIVE' | 'ARCHIVED',
   conditions?: ISplitCondition[] | null,
   excluded?: {
     keys?: string[] | null,
@@ -218,7 +218,7 @@ export interface IRBSegment {
 export interface ISplit {
   name: string,
   changeNumber: number,
-  status: 'ACTIVE' | 'ARCHIVED',
+  status?: 'ACTIVE' | 'ARCHIVED',
   conditions: ISplitCondition[],
   prerequisites?: null | {
     n: string,
