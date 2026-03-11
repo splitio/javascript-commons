@@ -90,7 +90,7 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
 export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, segments: Set<string>, filters?: ISplitFiltersValidation): ISplitMutations<T> {
 
   return rules.reduce((accum, ruleEntity) => {
-    if (ruleEntity.status === 'ACTIVE' && (!filters || matchFilters(ruleEntity as ISplit, filters))) {
+    if (ruleEntity.status !== 'ARCHIVED' && (!filters || matchFilters(ruleEntity as ISplit, filters))) {
       accum.added.push(ruleEntity);
 
       parseSegments(ruleEntity).forEach((segmentName: string) => {
