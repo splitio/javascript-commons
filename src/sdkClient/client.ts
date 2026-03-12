@@ -5,7 +5,7 @@ import { validateSplitExistence } from '../utils/inputValidation/splitExistence'
 import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTypeExistence';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
-import { IEvaluationResult } from '../evaluator/types';
+import { IEvaluation, IEvaluationResult } from '../evaluator/types';
 import SplitIO from '../../types/splitio';
 import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -72,7 +72,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
       const properties = stringify(options);
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue) as SplitIO.Treatment | SplitIO.TreatmentWithConfig;
       });
       impressionsTracker.track(queue, attributes);
 
@@ -101,7 +101,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
       const properties = stringify(options);
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue) as SplitIO.Treatment | SplitIO.TreatmentWithConfig;
       });
       impressionsTracker.track(queue, attributes);
 
@@ -139,7 +139,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     withConfig: boolean,
     invokingMethodName: string,
     queue: ImpressionDecorated[]
-  ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
+  ): SplitIO.Treatment | Pick<IEvaluation, 'treatment' | 'config'> {
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 

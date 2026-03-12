@@ -1,14 +1,15 @@
 import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
 import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
-import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
+import { POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
 export function pollingManagerSSFactory(
-  params: ISdkFactoryContextSync
+  params: ISdkFactoryContextSync,
+  // @TODO
 ): IPollingManager {
 
   const { splitApi, storage, readiness, settings } = params;
@@ -24,8 +25,6 @@ export function pollingManagerSSFactory(
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();
       if (startingUp) {

@@ -215,6 +215,37 @@ export interface IRBSegment {
   } | null
 }
 
+// Similar to ISplit
+// - with optional fields related to targeting information and
+// - an optional link fields that binds configurations to other entities
+export interface IConfig {
+  name: string,
+  changeNumber: number,
+  status?: 'ACTIVE' | 'ARCHIVED',
+  conditions?: ISplitCondition[] | null,
+  prerequisites?: null | {
+    n: string,
+    ts: string[]
+  }[]
+  killed?: boolean,
+  defaultTreatment: string,
+  trafficTypeName?: string,
+  seed?: number,
+  trafficAllocation?: number,
+  trafficAllocationSeed?: number
+  configurations: {
+    [variantName: string]: string | object | null
+  },
+  sets?: string[],
+  impressionsDisabled?: boolean,
+  // a map of entities (e.g., pipeline, feature-flag, etc) to configuration variants
+  links?: {
+    [entityType: string]: {
+      [entityName: string]: string
+    }
+  }
+}
+
 export interface ISplit {
   name: string,
   changeNumber: number,
@@ -231,7 +262,7 @@ export interface ISplit {
   trafficAllocation?: number,
   trafficAllocationSeed?: number
   configurations?: {
-    [treatmentName: string]: string
+    [treatmentName: string]: string | object | null
   },
   sets?: string[],
   impressionsDisabled?: boolean
@@ -246,6 +277,20 @@ export interface ISplitChangesResponse {
     t: number,
     s?: number,
     d: ISplit[]
+  },
+  rbs?: {
+    t: number,
+    s?: number,
+    d: IRBSegment[]
+  }
+}
+
+/** Interface of the parsed JSON response of `/configs` */
+export interface IConfigsResponse {
+  configs?: {
+    t: number,
+    s?: number,
+    d: IConfig[]
   },
   rbs?: {
     t: number,
