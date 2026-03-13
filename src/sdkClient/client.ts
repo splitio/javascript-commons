@@ -7,7 +7,7 @@ import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
 import { IEvaluation, IEvaluationResult } from '../evaluator/types';
 import SplitIO from '../../types/splitio';
-import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
+import { IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { Method } from '../sync/submitters/types';
@@ -39,7 +39,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
-  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
+  function getTreatment(key: SplitIO.SplitKey | undefined, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
@@ -134,15 +134,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function processEvaluation(
     evaluation: IEvaluationResult,
     featureFlagName: string,
-    key: SplitIO.SplitKey,
+    key: SplitIO.SplitKey | undefined,
     properties: string | undefined,
     withConfig: boolean,
     invokingMethodName: string,
     queue: ImpressionDecorated[]
   ): SplitIO.Treatment | Pick<IEvaluation, 'treatment' | 'config'> {
-    const matchingKey = getMatching(key);
-    const bucketingKey = getBucketing(key);
-
     const { changeNumber, impressionsDisabled } = evaluation;
     let { treatment, label, config = null } = evaluation;
 
@@ -153,10 +150,12 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       config = fallbackTreatment.config;
     }
 
-    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
+    // If no target/key, no impression is tracked
+    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName) && key) {
+      const matchingKey = getMatching(key);
+      const bucketingKey = getBucketing(key);
 
-    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
-      log.info(IMPRESSION_QUEUEING);
+      log.info(IMPRESSION_QUEUEING, [featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
           feature: featureFlagName,
