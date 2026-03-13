@@ -41,7 +41,7 @@ export function configsClientFactory(params: ISdkFactoryParams): SplitIO.Configs
         if (target) {
           // Serve config with target
           if (validateTarget(log, target, GET_CONFIG)) {
-            const result = ffClient.getTreatmentWithConfig(target.key, name, target.attributes, target) as SplitIO.TreatmentWithConfig;
+            const result = ffClient.getTreatmentWithConfig(target.key, name, target.attributes) as SplitIO.TreatmentWithConfig;
             return parseConfig(result.config);
           } else {
             log.error('Invalid target for getConfig.');

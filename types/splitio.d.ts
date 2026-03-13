@@ -2287,7 +2287,7 @@ declare namespace SplitIO {
 
   // Configs SDK
 
-  interface Target extends EvaluationOptions {
+  interface Target {
     key: SplitKey;
     attributes?: Attributes;
   }
@@ -2300,6 +2300,7 @@ declare namespace SplitIO {
     getArray(propertyName: string): ConfigArray;
     getObject(propertyName: string): Config;
   }
+
   interface ConfigArray {
     value: any;
     getString(index: number, propertyDefaultValue?: string): string;
@@ -2310,7 +2311,7 @@ declare namespace SplitIO {
   }
 
   /**
-   * Common definitions between SDK instances for different environments interface.
+   * Configs SDK client interface.
    */
   interface ConfigsClient extends IStatusInterface {
     /**
@@ -2342,7 +2343,7 @@ declare namespace SplitIO {
      * @param target - The target of the config we want to get.
      * @returns The config object.
      */
-    getConfig(name: string, target?: Target): Config;
+    getConfig(name: string, target?: Target, options?: EvaluationOptions): Config;
     /**
      * Tracks an event to be fed to the results product on Split user interface.
      *
@@ -2354,5 +2355,52 @@ declare namespace SplitIO {
      * @returns Whether the event was added to the queue successfully or not.
      */
     track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
+  }
+
+  /**
+   * Configs SDK client interface with async methods.
+   */
+  interface AsyncConfigsClient extends IStatusInterface {
+    /**
+     * Current settings of the SDK instance.
+     */
+    settings: ISettings;
+    /**
+     * Logger API.
+     */
+    Logger: ILoggerAPI;
+    /**
+     * Initializes the client.
+     */
+    init(): void;
+    /**
+     * Flushes the client.
+     */
+    flush(): Promise<void>;
+    /**
+     * Destroys the client.
+     *
+     * @returns A promise that resolves once all clients are destroyed.
+     */
+    destroy(): Promise<void>;
+    /**
+     * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
+     *
+     * @param name - The name of the config we want to get.
+     * @param target - The target of the config we want to get.
+     * @returns A promise that resolves with the config object.
+     */
+    getConfig(name: string, target?: Target, options?: EvaluationOptions): Promise<Config>;
+    /**
+     * Tracks an event to be fed to the results product on Split user interface.
+     *
+     * @param key - The key that identifies the entity related to this event.
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
+     * @param eventType - The event type corresponding to this event.
+     * @param value - The value of this event.
+     * @param properties - The properties of this event. Values can be string, number, boolean or null.
+     * @returns A promise that resolves with a boolean indicating whether the event was added to the queue successfully or not.
+     */
+    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>;
   }
 }
