@@ -59,9 +59,8 @@ function createConfigArrayObject(arr: any[]): SplitIO.ConfigArray {
   };
 }
 
-export function parseConfig(config: string | object | null): SplitIO.Config {
+export function parseConfig(config?: string | object | null): SplitIO.Config {
   try {
-    // @ts-ignore
     return createConfigObject(isString(config) ? JSON.parse(config) : config);
   } catch {
     return createConfigObject(null);

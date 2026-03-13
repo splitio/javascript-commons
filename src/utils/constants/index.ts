@@ -86,6 +86,7 @@ export const TREATMENTS_BY_FLAGSET = 'tf';
 export const TREATMENTS_BY_FLAGSETS = 'tfs';
 export const TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf';
 export const TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs';
+export const CONFIG = 'c';
 export const TRACK = 'tr';
 
 export const CONNECTION_ESTABLISHED = 0;
