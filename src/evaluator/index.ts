@@ -24,9 +24,10 @@ function treatmentsException(splitNames: string[]) {
   return evaluations;
 }
 
+// @TODO: test cases with no key
 export function evaluateFeature(
   log: ILogger,
-  key: SplitIO.SplitKey,
+  key: SplitIO.SplitKey | undefined,
   splitName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
@@ -139,7 +140,7 @@ export function evaluateFeaturesByFlagSets(
 
 function getEvaluation(
   log: ILogger,
-  key: SplitIO.SplitKey,
+  key: SplitIO.SplitKey | undefined,
   splitJSON: ISplit | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,

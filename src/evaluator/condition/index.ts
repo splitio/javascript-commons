@@ -24,10 +24,10 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 // Condition factory
 export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
-  return function conditionEvaluator(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  return function conditionEvaluator(key?: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
 
     // Whitelisting has more priority than traffic allocation, so we don't apply this filtering to those conditions.
-    if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation!, key.bucketingKey, trafficAllocationSeed!)) {
+    if (!key || (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation!, key.bucketingKey, trafficAllocationSeed!))) {
       return {
         treatment: undefined, // treatment value is assigned later
         label: NOT_IN_SPLIT

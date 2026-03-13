@@ -19,7 +19,7 @@ const paramMocks = [
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
     impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
-    fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
+    fallbackTreatmentsCalculator: FallbackTreatmentsCalculator({})
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
@@ -31,7 +31,7 @@ const paramMocks = [
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
     impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
-    fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator({})
+    fallbackTreatmentsCalculator: FallbackTreatmentsCalculator({})
   }
 ];
 
