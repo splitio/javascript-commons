@@ -42,7 +42,7 @@ export function sdkConfigFactory(params: ISdkFactoryParams): SplitIO.ConfigsClie
     }
   });
 
-  const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(settings.fallbackTreatments);
+  const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
 
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });

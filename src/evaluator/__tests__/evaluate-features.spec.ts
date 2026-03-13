@@ -1,5 +1,5 @@
 import { evaluateFeatures, evaluateFeaturesByFlagSets } from '../index';
-import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
+import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, DEFINITION_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../../logger/constants';
 import { ISplit } from '../../dtos/types';
@@ -71,7 +71,7 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
     },
   };
 
@@ -122,7 +122,7 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
     },
   };
 

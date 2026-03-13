@@ -21,7 +21,7 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_TRIMMING_PROPERTIES, '%s: more than 300 properties were provided. Some of them will be trimmed when processed.'],
   [c.WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [c.WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
-  [c.WARN_NOT_EXISTENT_SPLIT, '%s: feature flag "%s" does not exist in this environment. Please double check what feature flags exist in the Split user interface.'],
+  [c.WARN_NOT_EXISTENT_DEFINITION, '%s: definition "%s" does not exist in this environment. Please double check what definitions exist in the Split user interface.'],
   [c.WARN_LOWERCASE_TRAFFIC_TYPE, '%s: traffic_type_name should be all lowercase - converting string to lowercase.'],
   [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding feature flag in this environment, make sure you\'re tracking your events to a valid traffic type defined in the Split user interface.'],
   [c.WARN_FLAGSET_NOT_CONFIGURED, '%s: you passed %s which is not part of the configured FlagSetsFilter, ignoring Flag Set.'],

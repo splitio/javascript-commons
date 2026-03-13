@@ -1,7 +1,7 @@
 import { evaluateFeature, evaluateFeatures, evaluateFeaturesByFlagSets } from '../evaluator';
 import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
-import { validateSplitExistence } from '../utils/inputValidation/splitExistence';
+import { validateDefinitionExistence } from '../utils/inputValidation/definitionExistence';
 import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTypeExistence';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
@@ -151,7 +151,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     }
 
     // If no target/key, no impression is tracked
-    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName) && key) {
+    if (validateDefinitionExistence(log, readinessManager, featureFlagName, label, invokingMethodName) && key) {
       const matchingKey = getMatching(key);
       const bucketingKey = getBucketing(key);
 
