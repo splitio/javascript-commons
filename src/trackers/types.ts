@@ -29,7 +29,9 @@ export type ImpressionDecorated = {
 };
 
 export interface IImpressionsTracker {
-  track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes): void
+  start(): void;
+  stop(): void;
+  track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes): void;
 }
 
 /** Telemetry tracker */

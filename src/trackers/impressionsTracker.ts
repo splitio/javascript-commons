@@ -1,27 +1,46 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
-import { IImpressionsCacheBase, ITelemetryCacheSync, ITelemetryCacheAsync } from '../storages/types';
-import { IImpressionsHandler, IImpressionsTracker, ImpressionDecorated, IStrategy } from './types';
-import { ISettings } from '../types';
+import { ITelemetryCacheSync, IStorageBase } from '../storages/types';
+import { IImpressionsHandler, IImpressionsTracker, ImpressionDecorated } from './types';
 import { IMPRESSIONS_TRACKER_SUCCESS, ERROR_IMPRESSIONS_TRACKER, ERROR_IMPRESSIONS_LISTENER } from '../logger/constants';
-import { CONSENT_DECLINED, DEDUPED, QUEUED } from '../utils/constants';
+import { CONSENT_DECLINED, DEBUG, DEDUPED, OPTIMIZED, QUEUED } from '../utils/constants';
 import SplitIO from '../../types/splitio';
+import { ISdkFactoryParams } from '../sdkFactory/types';
+import { strategyDebugFactory } from './strategy/strategyDebug';
+import { strategyNoneFactory } from './strategy/strategyNone';
+import { strategyOptimizedFactory } from './strategy/strategyOptimized';
+import { uniqueKeysTrackerFactory } from './uniqueKeysTracker';
 
 /**
  * Impressions tracker stores impressions in cache and pass them to the listener and integrations manager if provided.
  */
 export function impressionsTrackerFactory(
-  settings: ISettings,
-  impressionsCache: IImpressionsCacheBase,
-  noneStrategy: IStrategy,
-  strategy: IStrategy,
+  params: Pick<ISdkFactoryParams, 'settings' | 'impressionsObserverFactory' | 'filterAdapterFactory'>,
+  storage: Pick<IStorageBase, 'impressions' | 'impressionCounts' | 'uniqueKeys' | 'telemetry'>,
   integrationsManager?: IImpressionsHandler,
-  telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
 ): IImpressionsTracker {
 
-  const { log, impressionListener, runtime: { ip, hostname }, version } = settings;
+  const { settings, impressionsObserverFactory, filterAdapterFactory } = params;
+  const { log, impressionListener, runtime: { ip, hostname }, version, sync: { impressionsMode } } = settings;
+  const observer = impressionsObserverFactory();
+  const uniqueKeysTracker = uniqueKeysTrackerFactory(log, storage.uniqueKeys, filterAdapterFactory && filterAdapterFactory());
+
+  const noneStrategy = strategyNoneFactory(storage.impressionCounts, uniqueKeysTracker);
+  const strategy = impressionsMode === OPTIMIZED ?
+    strategyOptimizedFactory(observer, storage.impressionCounts) :
+    impressionsMode === DEBUG ?
+      strategyDebugFactory(observer) :
+      noneStrategy;
 
   return {
+    start() {
+      uniqueKeysTracker.start();
+    },
+
+    stop() {
+      uniqueKeysTracker.stop();
+    },
+
     track(impressions: ImpressionDecorated[], attributes?: SplitIO.Attributes) {
       if (settings.userConsent === CONSENT_DECLINED) return;
 
@@ -35,7 +54,7 @@ export function impressionsTrackerFactory(
       const impressionsToStoreLength = impressionsToStore.length;
 
       if (impressionsToStoreLength) {
-        const res = impressionsCache.track(impressionsToStore.map((item) => item.imp));
+        const res = storage.impressions.track(impressionsToStore.map((item) => item.imp));
 
         // If we're on an async storage, handle error and log it.
         if (thenable(res)) {
@@ -47,9 +66,9 @@ export function impressionsTrackerFactory(
         } else {
           // Record when impressionsCache is sync only (standalone mode)
           // @TODO we are not dropping impressions on full queue yet, so DROPPED stats are not recorded
-          if (telemetryCache) {
-            (telemetryCache as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStoreLength);
-            (telemetryCache as ITelemetryCacheSync).recordImpressionStats(DEDUPED, impressionsLength - impressionsToStoreLength);
+          if (storage.telemetry) {
+            (storage.telemetry as ITelemetryCacheSync).recordImpressionStats(QUEUED, impressionsToStoreLength);
+            (storage.telemetry as ITelemetryCacheSync).recordImpressionStats(DEDUPED, impressionsLength - impressionsToStoreLength);
           }
         }
       }
