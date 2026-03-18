@@ -12,3 +12,11 @@
 
 ## coverage info
 /coverage
+
+## worktrees
+/.worktrees
+
+## agents files
+/AGENTS.md
+/CLAUDE.md
+/.claude
