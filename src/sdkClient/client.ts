@@ -151,7 +151,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     }
 
     // If no target/key, no impression is tracked
-    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName) && key) {
+    if (key && validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       const matchingKey = getMatching(key);
       const bucketingKey = getBucketing(key);
 
