@@ -1,6 +1,6 @@
 import { engineParser } from './Engine';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, SPLIT_NOT_FOUND } from '../utils/labels';
+import { EXCEPTION, DEFINITION_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
@@ -148,7 +148,7 @@ function getEvaluation(
 ): MaybeThenable<IEvaluationResult> {
   let evaluation: MaybeThenable<IEvaluationResult> = {
     treatment: CONTROL,
-    label: SPLIT_NOT_FOUND,
+    label: DEFINITION_NOT_FOUND,
     config: null
   };
 

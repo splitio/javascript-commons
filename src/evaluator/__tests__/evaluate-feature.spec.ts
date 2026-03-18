@@ -1,5 +1,5 @@
 import { evaluateFeature } from '../index';
-import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
+import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, DEFINITION_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { ISplit } from '../../dtos/types';
 import { IStorageSync } from '../../storages/types';
@@ -53,7 +53,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     config: '{color:\'black\'}', changeNumber: 1487277320548
   };
   const expectedOutputControl = {
-    treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+    treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
   };
 
   const evaluationWithConfig = evaluateFeature(

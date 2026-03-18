@@ -24,7 +24,7 @@ export function pollingManagerSSFactory(
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `Splits will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `Definitions will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
       log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();

@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateSplitExistence, validateIfOperational } from '../utils/inputValidation';
+import { validateSplit, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { ISplit } from '../dtos/types';
@@ -74,12 +74,12 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
 
         if (thenable(split)) {
           return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
-            validateSplitExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
+            validateDefinitionExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
         }
 
-        validateSplitExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
+        validateDefinitionExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
 
         return objectToView(split);
       },
