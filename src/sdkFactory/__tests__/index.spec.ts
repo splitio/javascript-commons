@@ -7,7 +7,7 @@ import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatments
 
 /** Mocks */
 
-const clientInstance = { destroy: jest.fn() };
+const clientInstance = { init: jest.fn(), destroy: jest.fn() };
 const managerInstance = 'manager';
 const mockStorage = {
   splits: jest.fn(),
@@ -40,13 +40,10 @@ const paramsForAsyncSDK = {
   fallbackTreatmentsCalculator: new FallbackTreatmentsCalculator()
 };
 
-const SignalListenerInstanceMock = { start: jest.fn() };
-
 // IBrowserSDK, full params
 const fullParamsForSyncSDK = {
   ...paramsForAsyncSDK,
   syncManagerFactory: jest.fn(),
-  SignalListener: jest.fn(() => SignalListenerInstanceMock),
   impressionsObserverFactory: jest.fn(),
   platform: {
     getEventSource: jest.fn(),
@@ -78,10 +75,6 @@ function assertModulesCalled(params: any) {
   }
   if (params.impressionsObserverFactory) {
     expect(params.impressionsObserverFactory).toBeCalledTimes(1);
-  }
-  if (params.SignalListener) {
-    expect(params.SignalListener).toBeCalledTimes(1);
-    expect(SignalListenerInstanceMock.start).toBeCalledTimes(1);
   }
   if (params.splitApiFactory) {
     expect(params.splitApiFactory.mock.calls).toEqual([[params.settings, params.platform, telemetryTrackerMock]]);

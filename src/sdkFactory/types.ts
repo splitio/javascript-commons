@@ -98,7 +98,11 @@ export interface ISdkFactoryParams {
 
   // Sdk client method factory.
   // It Allows to distinguish SDK clients with the client-side API (`IBrowserSDK` and `IBrowserAsyncSDK`) or server-side API (`ISDK` and `IAsyncSDK`).
-  sdkClientMethodFactory: (params: ISdkFactoryContext) => ({ (): SplitIO.IBrowserClient; (key: SplitIO.SplitKey): SplitIO.IBrowserClient; } | (() => SplitIO.IClient) | (() => SplitIO.IAsyncClient))
+  sdkClientMethodFactory: (params: ISdkFactoryContext) => (
+    { (): SplitIO.IBrowserClient & { init(): void }; (key: SplitIO.SplitKey): SplitIO.IBrowserClient & { init(): void }; } |
+    (() => SplitIO.IClient & { init(): void }) |
+    (() => SplitIO.IAsyncClient & { init(): void })
+  )
 
   // Impression observer factory.
   impressionsObserverFactory: () => IImpressionObserver

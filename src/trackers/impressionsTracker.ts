@@ -15,7 +15,6 @@ export function impressionsTrackerFactory(
   impressionsCache: IImpressionsCacheBase,
   noneStrategy: IStrategy,
   strategy: IStrategy,
-  whenInit: (cb: () => void) => void,
   integrationsManager?: IImpressionsHandler,
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync,
 ): IImpressionsTracker {
@@ -67,18 +66,16 @@ export function impressionsTrackerFactory(
             sdkLanguageVersion: version
           };
 
-          whenInit(() => {
-            // Wrap in a timeout because we don't want it to be blocking.
-            setTimeout(() => {
-              // integrationsManager.handleImpression does not throw errors
-              if (integrationsManager) integrationsManager.handleImpression(impressionData);
+          // Wrap in a timeout because we don't want it to be blocking.
+          setTimeout(() => {
+            // integrationsManager.handleImpression does not throw errors
+            if (integrationsManager) integrationsManager.handleImpression(impressionData);
 
-              try { // @ts-ignore. An exception on the listeners should not break the SDK.
-                if (impressionListener) impressionListener.logImpression(impressionData);
-              } catch (err) {
-                log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
-              }
-            });
+            try { // @ts-ignore. An exception on the listeners should not break the SDK.
+              if (impressionListener) impressionListener.logImpression(impressionData);
+            } catch (err) {
+              log.error(ERROR_IMPRESSIONS_LISTENER, [err]);
+            }
           });
         }
       }

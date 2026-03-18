@@ -4,7 +4,6 @@ import { impressionsTrackerFactory } from '../trackers/impressionsTracker';
 import { eventTrackerFactory } from '../trackers/eventTracker';
 import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import SplitIO from '../../types/splitio';
-import { validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
@@ -33,15 +32,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
   // On non-recoverable errors, we should mark the SDK as destroyed and not start synchronization.
 
-  // initialization
-  let hasInit = false;
-  const initCallbacks: (() => void)[] = [];
-
-  function whenInit(cb: () => void) {
-    if (hasInit) cb();
-    else initCallbacks.push(cb);
-  }
-
   const sdkReadinessManager = sdkReadinessManagerFactory(platform.EventEmitter, settings);
   const readiness = sdkReadinessManager.readinessManager;
 
@@ -68,7 +58,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
   }
 
-  const clients: Record<string, SplitIO.IBasicClient> = {};
+  const clients: Record<string, SplitIO.IBasicClient & { init: () => void }> = {};
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
 
@@ -82,8 +72,8 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
       strategyDebugFactory(observer) :
       noneStrategy;
 
-  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, whenInit, integrationsManager, storage.telemetry);
-  const eventTracker = eventTrackerFactory(settings, storage.events, whenInit, integrationsManager, storage.telemetry);
+  const impressionsTracker = impressionsTrackerFactory(settings, storage.impressions, noneStrategy, strategy, integrationsManager, storage.telemetry);
+  const eventTracker = eventTrackerFactory(settings, storage.events, integrationsManager, storage.telemetry);
 
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
@@ -93,6 +83,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;
 
+  // @TODO: move into platform, and call inside sdkClientFactory (if it's used only there)
   const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
   ctx.signalListener = signalListener;
 
@@ -102,18 +93,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
 
   function init() {
-    if (hasInit) return;
-    hasInit = true;
-
-    // We will just log and allow for the SDK to end up throwing an SDK_TIMEOUT event for devs to handle.
-    validateAndTrackApiKey(log, settings.core.authorizationKey);
-    readiness.init();
-    uniqueKeysTracker.start();
-    syncManager && syncManager.start();
-    signalListener && signalListener.start();
-
-    initCallbacks.forEach((cb) => cb());
-    initCallbacks.length = 0;
+    Object.keys(clients).map(key => clients[key].init());
   }
 
   log.info(NEW_FACTORY, [settings.version]);
@@ -135,7 +115,6 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     settings,
 
     destroy() {
-      hasInit = false;
       return Promise.all(Object.keys(clients).map(key => clients[key].destroy())).then(() => { });
     }
   }, extraProps && extraProps(ctx), lazyInit ? { init } : init());
