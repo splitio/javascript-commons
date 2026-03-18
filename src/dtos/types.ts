@@ -215,7 +215,7 @@ export interface IRBSegment {
   } | null
 }
 
-// Similar to ISplit
+// Superset of ISplit (i.e., ISplit extends IConfig)
 // - with optional fields related to targeting information and
 // - an optional link fields that binds configurations to other entities
 export interface IConfig {
@@ -234,7 +234,7 @@ export interface IConfig {
   trafficAllocation?: number,
   trafficAllocationSeed?: number
   configurations: {
-    [variantName: string]: string | object | null
+    [treatmentName: string]: string | object | null
   },
   sets?: string[],
   impressionsDisabled?: boolean,
@@ -246,6 +246,21 @@ export interface IConfig {
   }
 }
 
+/** Interface of the parsed JSON response of `/configs` */
+export interface IConfigsResponse {
+  configs?: {
+    t: number,
+    s?: number,
+    d: IConfig[]
+  },
+  rbs?: {
+    t: number,
+    s?: number,
+    d: IRBSegment[]
+  }
+}
+
+// @TODO: rename to IDefinition (Configs and Feature Flags are definitions)
 export interface ISplit {
   name: string,
   changeNumber: number,
@@ -277,20 +292,6 @@ export interface ISplitChangesResponse {
     t: number,
     s?: number,
     d: ISplit[]
-  },
-  rbs?: {
-    t: number,
-    s?: number,
-    d: IRBSegment[]
-  }
-}
-
-/** Interface of the parsed JSON response of `/configs` */
-export interface IConfigsResponse {
-  configs?: {
-    t: number,
-    s?: number,
-    d: IConfig[]
   },
   rbs?: {
     t: number,
