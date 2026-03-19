@@ -29,7 +29,7 @@ export function splitsSyncTaskFactory(
       settings.startup.retriesOnFailureBeforeReady,
       isClientSide
     ),
-    settings.scheduler.featuresRefreshRate,
-    'splitChangesUpdater',
+    settings.definitionsType === 'configs' ? settings.scheduler.configsRefreshRate : settings.scheduler.featuresRefreshRate,
+    settings.definitionsType === 'configs' ? 'configsUpdater' : 'splitChangesUpdater',
   );
 }

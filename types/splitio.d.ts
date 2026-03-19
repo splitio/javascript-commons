@@ -615,6 +615,7 @@ declare namespace SplitIO {
     readonly mode: SDKMode;
     readonly scheduler: {
       featuresRefreshRate: number;
+      configsRefreshRate: number;
       impressionsRefreshRate: number;
       impressionsQueueSize: number;
       /**
@@ -2310,6 +2311,65 @@ declare namespace SplitIO {
     getObject(index: number): Config;
   }
 
+  interface ConfigsOptions {
+    /**
+     * Your SDK key.
+     *
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
+     */
+    authorizationKey: string;
+    /**
+     * Configs definitions refresh rate for polling, in seconds.
+     *
+     * @defaultValue `60`
+     */
+    configsRefreshRate?: number;
+    /**
+     * Logging level.
+     *
+     * @defaultValue `'NONE'`
+     */
+    logLevel?: LogLevel;
+    /**
+     * Time in seconds until SDK ready timeout is emitted.
+     *
+     * @defaultValue `10`
+     */
+    timeout?: number;
+    /**
+     * Custom endpoints to replace the default ones used by the SDK.
+     */
+    urls?: UrlSettings;
+    // /**
+    //  * Defines what impressions are sent to Split servers.
+    //  * - DEBUG: all impressions are sent.
+    //  * - OPTIMIZED: will send unique impressions to Split servers, avoiding a considerable amount of traffic that duplicated impressions could generate.
+    //  * - NONE: will send unique keys evaluated per config to Split servers instead of full blown impressions.
+    //  *
+    //  * @defaultValue `'OPTIMIZED'`
+    //  */
+    // impressionsMode?: ImpressionsMode;
+    // /**
+    //  * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+    //  *
+    //  * @defaultValue `1800`
+    //  */
+    // eventsPushRate?: number;
+    // /**
+    //  * The SDK sends impressions back to Split servers. This parameter controls how often this data is sent, in seconds.
+    //  *
+    //  * @defaultValue `1800`
+    //  */
+    // impressionsRefreshRate?: number;
+    // /**
+    //  * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
+    //  * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
+    //  *
+    //  * @defaultValue `true`
+    //  */
+    // streamingEnabled?: boolean;
+  }
+
   /**
    * Configs SDK client interface.
    */
@@ -2322,10 +2382,6 @@ declare namespace SplitIO {
      * Logger API.
      */
     Logger: ILoggerAPI;
-    /**
-     * Initializes the client.
-     */
-    init(): void;
     /**
      * Flushes the client.
      */

@@ -1,4 +1,3 @@
-import SplitIO from '../../types/splitio';
 import { releaseApiKey, validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 
@@ -7,7 +6,7 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
 /**
  * Creates an Sdk client, i.e., a base client with status, init, flush and destroy interface
  */
-export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?: boolean): Pick<SplitIO.ConfigsClient, 'init' | 'flush' | 'destroy'> {
+export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?: boolean): { init(): void; flush(): Promise<void>; destroy(): Promise<void> } {
   const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, impressionsTracker } = params;
 
   let hasInit = false;

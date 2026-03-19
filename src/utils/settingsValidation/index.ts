@@ -29,6 +29,8 @@ export const base = {
   scheduler: {
     // fetch feature updates each 60 sec
     featuresRefreshRate: 60,
+    // fetch configs updates each 60 sec
+    configsRefreshRate: 60,
     // fetch segments updates each 60 sec
     segmentsRefreshRate: 60,
     // publish telemetry stats each 3600 secs (1 hour)
@@ -129,6 +131,7 @@ export function settingsValidation(config: unknown, validationParams: ISettingsV
   // Scheduler periods
   const { scheduler, startup } = withDefaults;
   scheduler.featuresRefreshRate = fromSecondsToMillis(scheduler.featuresRefreshRate);
+  scheduler.configsRefreshRate = fromSecondsToMillis(scheduler.configsRefreshRate);
   scheduler.segmentsRefreshRate = fromSecondsToMillis(scheduler.segmentsRefreshRate);
   scheduler.offlineRefreshRate = fromSecondsToMillis(scheduler.offlineRefreshRate);
   scheduler.eventsPushRate = fromSecondsToMillis(scheduler.eventsPushRate);

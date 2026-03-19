@@ -9,13 +9,14 @@ import { ISdkFactoryContextSync } from '../../sdkFactory/types';
  */
 export function pollingManagerSSFactory(
   params: ISdkFactoryContextSync,
-  // @TODO
 ): IPollingManager {
 
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings);
+  const fetchingConfigs = settings.definitionsType === 'configs';
+
+  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(fetchingConfigs ? splitApi.fetchConfigs : splitApi.fetchSplitChanges, storage, readiness, settings);
   const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(splitApi.fetchSegmentChanges, storage, readiness, settings);
 
   return {
@@ -25,7 +26,7 @@ export function pollingManagerSSFactory(
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `Definitions will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `${fetchingConfigs ? 'configs' : 'feature flags'} will be refreshed each ${fetchingConfigs ? settings.scheduler.configsRefreshRate : settings.scheduler.featuresRefreshRate} millis`);
       log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
       const startingUp = splitsSyncTask.start();
