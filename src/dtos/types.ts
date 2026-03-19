@@ -233,8 +233,8 @@ export interface IConfig {
   seed?: number,
   trafficAllocation?: number,
   trafficAllocationSeed?: number
-  configurations: {
-    [treatmentName: string]: string | null
+  configurations?: {
+    [treatmentName: string]: string
   },
   sets?: string[],
   impressionsDisabled?: boolean,
@@ -277,7 +277,7 @@ export interface ISplit {
   trafficAllocation?: number,
   trafficAllocationSeed?: number
   configurations?: {
-    [treatmentName: string]: string | null
+    [treatmentName: string]: string
   },
   sets?: string[],
   impressionsDisabled?: boolean
