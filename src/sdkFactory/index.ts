@@ -45,7 +45,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     }
   });
 
-  const fallbackTreatmentsCalculator = new FallbackTreatmentsCalculator(settings.fallbackTreatments);
+  const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
 
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));

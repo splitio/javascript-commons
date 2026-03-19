@@ -23,7 +23,7 @@ export interface IBetweenStringMatcherData {
 }
 
 export interface IWhitelistMatcherData {
-  whitelist: string[]
+  whitelist?: string[] | null
 }
 
 export interface IInSegmentMatcherData {
