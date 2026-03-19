@@ -14,7 +14,7 @@ import { sdkLifecycleFactory } from '../sdkClient/sdkLifecycle';
 /**
  * Modular SDK factory
  */
-export function sdkConfigFactory(params: ISdkFactoryParams): SplitIO.ConfigsClient {
+export function sdkConfigsFactory(params: ISdkFactoryParams): SplitIO.ConfigsClient {
 
   const { settings, platform, storageFactory, splitApiFactory, extraProps,
     syncManagerFactory, SignalListener, integrationsManagerFactory } = params;
