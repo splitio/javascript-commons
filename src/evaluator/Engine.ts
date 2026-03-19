@@ -29,7 +29,9 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
 
   return {
 
-    getTreatment(key: SplitIO.SplitKey | undefined, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
+    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
+
+      const parsedKey = keyParser(key);
 
       function evaluate(prerequisitesMet: boolean) {
         if (!prerequisitesMet) {
@@ -40,7 +42,7 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
           };
         }
 
-        const evaluation = evaluator(key ? keyParser(key) : undefined, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
+        const evaluation = evaluator(parsedKey, seed, trafficAllocation, trafficAllocationSeed, attributes, splitEvaluator) as MaybeThenable<IEvaluation>;
 
         return thenable(evaluation) ?
           evaluation.then(result => evaluationResult(result, defaultTreatment)) :
