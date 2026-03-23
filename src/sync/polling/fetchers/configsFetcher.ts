@@ -22,29 +22,20 @@ export function configsFetcherFactory(fetchConfigs: IFetchSplitChanges): ISplitC
 
     return configsPromise
       .then((resp: IResponse) => resp.json())
-      .then((configs: IConfigsResponse) => {
-        return convertConfigsToSplits(configs);
-      });
+      .then(convertConfigsResponseToSplitChangesResponse);
   };
 
 }
 
 function defaultCondition(treatment: string): ISplitCondition {
   return {
-    conditionType: 'ROLLOUT' as const,
+    conditionType: 'ROLLOUT',
     matcherGroup: {
-      combiner: 'AND' as const,
+      combiner: 'AND',
       matchers: [{
-        keySelector: { trafficType: 'user', attribute: null },
+        keySelector: null,
         matcherType: 'ALL_KEYS',
-        negate: false,
-        userDefinedSegmentMatcherData: null,
-        whitelistMatcherData: null,
-        unaryNumericMatcherData: null,
-        betweenMatcherData: null,
-        booleanMatcherData: null,
-        dependencyMatcherData: null,
-        stringMatcherData: null,
+        negate: false
       }],
     },
     partitions: [{ treatment, size: 100 }],
@@ -52,24 +43,27 @@ function defaultCondition(treatment: string): ISplitCondition {
   };
 }
 
-function convertConfigsToSplits(configs: IConfigsResponse): ISplitChangesResponse {
+function convertConfigToDefinitionDTO(config: IConfig) {
+  const defaultTreatment = config.defaultTreatment || 'default';
+
+  return {
+    ...config,
+    defaultTreatment,
+    trafficTypeName: config.trafficTypeName || 'user',
+    conditions: config.conditions && config.conditions.length > 0 ? config.conditions : [defaultCondition(defaultTreatment)],
+    killed: config.killed || false,
+    seed: config.seed || 0,
+    trafficAllocation: config.trafficAllocation || 100,
+    trafficAllocationSeed: config.trafficAllocationSeed || 0,
+  };
+}
+
+function convertConfigsResponseToSplitChangesResponse(configs: IConfigsResponse): ISplitChangesResponse {
   return {
     ...configs,
     ff: configs.configs ? {
       ...configs.configs,
-      d: configs.configs.d?.map((config: IConfig) => {
-        const dt = config.defaultTreatment || 'default';
-        return {
-          ...config,
-          defaultTreatment: dt,
-          conditions: config.conditions && config.conditions.length > 0 ? config.conditions : [defaultCondition(dt)],
-          killed: config.killed || false,
-          trafficTypeName: config.trafficTypeName || 'user',
-          seed: config.seed || 0,
-          trafficAllocation: config.trafficAllocation || 100,
-          trafficAllocationSeed: config.trafficAllocationSeed || 0,
-        };
-      })
+      d: configs.configs.d?.map(convertConfigToDefinitionDTO)
     } : undefined,
     rbs: configs.rbs
   };
