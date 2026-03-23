@@ -3,14 +3,14 @@ import { ISplitChangesFetcher } from '../fetchers/types';
 import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
-import { ILogger } from '../../../logger/types';
+import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE, CONFIGS_UPDATE } from '../../../readiness/constants';
 import { SYNC_SPLITS_FETCH, SYNC_SPLITS_UPDATE, SYNC_RBS_UPDATE, SYNC_SPLITS_FETCH_FAILS, SYNC_SPLITS_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
+import { ISettings } from '../../../types';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
@@ -120,7 +120,7 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
  * @param retriesOnFailureBeforeReady -  How many retries on `/splitChanges` we the updater do in case of failure or timeout. Default 0, i.e., no retries.
  */
 export function splitChangesUpdaterFactory(
-  log: ILogger,
+  settings: Pick<ISettings, 'log' | 'definitionsType'>,
   splitChangesFetcher: ISplitChangesFetcher,
   storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments' | 'save'>,
   splitFiltersValidation: ISplitFiltersValidation,
@@ -129,6 +129,7 @@ export function splitChangesUpdaterFactory(
   retriesOnFailureBeforeReady = 0,
   isClientSide?: boolean
 ): SplitChangesUpdater {
+  const { log, definitionsType } = settings;
   const { splits, rbSegments, segments } = storage;
 
   let startingUp = true;
@@ -202,7 +203,9 @@ export function splitChangesUpdaterFactory(
                   // emit SDK events
                   if (emitSplitsArrivedEvent) {
                     const metadata: SdkUpdateMetadata = {
-                      type: updatedFlags.length > 0 ? FLAGS_UPDATE : SEGMENTS_UPDATE,
+                      type: updatedFlags.length > 0 ?
+                        definitionsType === 'configs' ? CONFIGS_UPDATE : FLAGS_UPDATE :
+                        SEGMENTS_UPDATE,
                       names: updatedFlags.length > 0 ? updatedFlags : []
                     };
                     splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);

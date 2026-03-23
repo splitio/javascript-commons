@@ -509,7 +509,7 @@ declare namespace SplitIO {
   /**
    * Metadata type for SDK update events.
    */
-  type SdkUpdateMetadataType = 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
+  type SdkUpdateMetadataType = 'CONFIGS_UPDATE' | 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
 
   /**
    * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
@@ -2339,7 +2339,11 @@ declare namespace SplitIO {
     /**
      * Custom endpoints to replace the default ones used by the SDK.
      */
-    urls?: UrlSettings;
+    urls?: UrlSettings | string;
+    /**
+     * Fallback configuration objects to use when the SDK is unable to fetch the configurations from the server.
+     */
+    fallbacks?: FallbackTreatmentConfiguration;
     // /**
     //  * Defines what impressions are sent to Split servers.
     //  * - DEBUG: all impressions are sent.

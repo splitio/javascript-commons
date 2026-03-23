@@ -205,7 +205,7 @@ describe('splitChangesUpdater', () => {
 
   let splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
 
-  let splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1);
+  let splitChangesUpdater = splitChangesUpdaterFactory({ log: loggerMock }, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -279,7 +279,7 @@ describe('splitChangesUpdater', () => {
       { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is back in configured sets */
     ];
 
-    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    splitChangesUpdater = splitChangesUpdaterFactory({ log: loggerMock }, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
 
     let index = 0;
     let calls = 0;
@@ -294,7 +294,7 @@ describe('splitChangesUpdater', () => {
     // @ts-ignore
     splitFiltersValidation = { queryString: null, groupedFilters: { bySet: ['set_a'], byName: [], byPrefix: [] }, validFilters: [] };
     storage.splits.clear();
-    splitChangesUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    splitChangesUpdater = splitChangesUpdaterFactory({ log: loggerMock }, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {
@@ -414,7 +414,7 @@ describe('splitChangesUpdater', () => {
     readinessManager.segments.segmentsArrived = false; // Segments not ready - client-side should still emit
 
     // Create client-side updater (isClientSide = true)
-    const clientSideUpdater = splitChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    const clientSideUpdater = splitChangesUpdaterFactory({ log: loggerMock }, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
 
     const flag1 = { name: 'client-flag', status: 'ACTIVE', changeNumber: 300, conditions: [] } as unknown as ISplit;
     fetchMock.once('*', { status: 200, body: { ff: { d: [flag1], t: 300 } } });

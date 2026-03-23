@@ -20,7 +20,7 @@ export function splitsSyncTaskFactory(
   return syncTaskFactory(
     settings.log,
     splitChangesUpdaterFactory(
-      settings.log,
+      settings,
       splitChangesFetcherFactory(fetchSplitChanges, settings, storage),
       storage,
       settings.sync.__splitFiltersValidation,

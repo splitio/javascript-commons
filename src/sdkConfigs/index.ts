@@ -67,10 +67,9 @@ export function sdkConfigsFactory(params: ISdkFactoryParams): SplitIO.ConfigsCli
     Object.create(sdkReadinessManager.sdkStatus) as SplitIO.IStatusInterface,
     sdkLifecycleFactory(ctx),
     {
-      getConfig(name: string, target?: SplitIO.Target): SplitIO.Config {
-        return {
-          value: name + target,
-        } as SplitIO.Config;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      getConfig(_name: string, _target?: SplitIO.Target): SplitIO.Config {
+        throw new Error('getConfig not implemented');
       },
 
       track() {
