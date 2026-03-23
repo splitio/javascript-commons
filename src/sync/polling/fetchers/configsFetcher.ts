@@ -1,4 +1,4 @@
-import { IConfig, IConfigsResponse, ISplitChangesResponse } from '../../../dtos/types';
+import { IConfig, IConfigsResponse, ISplitChangesResponse, ISplitCondition } from '../../../dtos/types';
 import { IFetchSplitChanges, IResponse } from '../../../services/types';
 import { ISplitChangesFetcher } from './types';
 
@@ -29,21 +29,44 @@ export function configsFetcherFactory(fetchConfigs: IFetchSplitChanges): ISplitC
 
 }
 
+function defaultCondition(treatment: string): ISplitCondition {
+  return {
+    conditionType: 'ROLLOUT' as const,
+    matcherGroup: {
+      combiner: 'AND' as const,
+      matchers: [{
+        keySelector: { trafficType: 'user', attribute: null },
+        matcherType: 'ALL_KEYS',
+        negate: false,
+        userDefinedSegmentMatcherData: null,
+        whitelistMatcherData: null,
+        unaryNumericMatcherData: null,
+        betweenMatcherData: null,
+        booleanMatcherData: null,
+        dependencyMatcherData: null,
+        stringMatcherData: null,
+      }],
+    },
+    partitions: [{ treatment, size: 100 }],
+    label: 'default rule',
+  };
+}
+
 function convertConfigsToSplits(configs: IConfigsResponse): ISplitChangesResponse {
   return {
     ...configs,
     ff: configs.configs ? {
       ...configs.configs,
       d: configs.configs.d?.map((config: IConfig) => {
-        // @TODO: review defaults
+        const dt = config.defaultTreatment || 'default';
         return {
           ...config,
-          defaultTreatment: config.defaultTreatment,
-          conditions: config.conditions || [],
+          defaultTreatment: dt,
+          conditions: config.conditions && config.conditions.length > 0 ? config.conditions : [defaultCondition(dt)],
           killed: config.killed || false,
           trafficTypeName: config.trafficTypeName || 'user',
           seed: config.seed || 0,
-          trafficAllocation: config.trafficAllocation || 0,
+          trafficAllocation: config.trafficAllocation || 100,
           trafficAllocationSeed: config.trafficAllocationSeed || 0,
         };
       })
