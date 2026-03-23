@@ -11,6 +11,7 @@ import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 import { ISettings } from '../../../types';
+import { isFetchingConfigs } from '../pollingManagerSS';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
@@ -129,7 +130,7 @@ export function splitChangesUpdaterFactory(
   retriesOnFailureBeforeReady = 0,
   isClientSide?: boolean
 ): SplitChangesUpdater {
-  const { log, definitionsType } = settings;
+  const { log } = settings;
   const { splits, rbSegments, segments } = storage;
 
   let startingUp = true;
@@ -204,7 +205,7 @@ export function splitChangesUpdaterFactory(
                   if (emitSplitsArrivedEvent) {
                     const metadata: SdkUpdateMetadata = {
                       type: updatedFlags.length > 0 ?
-                        definitionsType === 'configs' ? CONFIGS_UPDATE : FLAGS_UPDATE :
+                        isFetchingConfigs(settings) ? CONFIGS_UPDATE : FLAGS_UPDATE :
                         SEGMENTS_UPDATE,
                       names: updatedFlags.length > 0 ? updatedFlags : []
                     };
@@ -223,7 +224,7 @@ export function splitChangesUpdaterFactory(
             return _splitChangesUpdater(sinces, retry);
           } else {
             startingUp = false;
-            log.warn(SYNC_SPLITS_FETCH_FAILS, [error]);
+            log.warn(SYNC_SPLITS_FETCH_FAILS, [(isFetchingConfigs(settings) ? 'configs. ' : 'feature flags. ') + error]);
           }
           return false;
         });

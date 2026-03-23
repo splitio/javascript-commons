@@ -3,6 +3,11 @@ import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
 import { LOG_PREFIX_SYNC_POLLING, POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { ISettings } from '../../types';
+
+export function isFetchingConfigs(settings: Pick<ISettings, 'definitionsType'>) {
+  return settings.definitionsType === 'configs';
+}
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -14,7 +19,7 @@ export function pollingManagerSSFactory(
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const fetchingConfigs = settings.definitionsType === 'configs';
+  const fetchingConfigs = isFetchingConfigs(settings);
 
   const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(fetchingConfigs ? splitApi.fetchConfigs : splitApi.fetchSplitChanges, storage, readiness, settings);
   const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(splitApi.fetchSegmentChanges, storage, readiness, settings);
