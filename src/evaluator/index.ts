@@ -10,16 +10,22 @@ import { ILogger } from '../logger/types';
 import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
-const treatmentException = {
+const EVALUATION_EXCEPTION = {
   treatment: CONTROL,
   label: EXCEPTION,
+  config: null
+};
+
+let EVALUATION_NOT_FOUND = {
+  treatment: CONTROL,
+  label: SPLIT_NOT_FOUND,
   config: null
 };
 
 function treatmentsException(splitNames: string[]) {
   const evaluations: Record<string, IEvaluationResult> = {};
   splitNames.forEach(splitName => {
-    evaluations[splitName] = treatmentException;
+    evaluations[splitName] = EVALUATION_EXCEPTION;
   });
   return evaluations;
 }
@@ -38,7 +44,7 @@ export function evaluateFeature(
     parsedSplit = storage.splits.getSplit(splitName);
   } catch (e) {
     // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
-    return treatmentException;
+    return EVALUATION_EXCEPTION;
   }
 
   if (thenable(parsedSplit)) {
@@ -52,7 +58,7 @@ export function evaluateFeature(
     )).catch(
       // Exception on async `getSplit` storage. For example, when the storage is redis or
       // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
-      () => treatmentException
+      () => EVALUATION_EXCEPTION
     );
   }
 
@@ -145,15 +151,11 @@ function getEvaluation(
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<IEvaluationResult> {
-  let evaluation: MaybeThenable<IEvaluationResult> = {
-    treatment: CONTROL,
-    label: SPLIT_NOT_FOUND,
-    config: null
-  };
+
 
   if (splitJSON) {
     const split = engineParser(log, splitJSON, storage);
-    evaluation = split.getTreatment(key, attributes, evaluateFeature);
+    const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
@@ -171,9 +173,11 @@ function getEvaluation(
       // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
       evaluation.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
     }
+
+    return evaluation;
   }
 
-  return evaluation;
+  return EVALUATION_NOT_FOUND;
 }
 
 function getEvaluations(
@@ -217,12 +221,11 @@ export function evaluateDefaultTreatment(
   try {
     parsedSplit = storage.splits.getSplit(splitName);
   } catch (e) {
-    // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
-    return treatmentException;
+    return EVALUATION_EXCEPTION;
   }
 
   return thenable(parsedSplit) ?
-    parsedSplit.then(getDefaultTreatment).catch(() => treatmentException) :
+    parsedSplit.then(getDefaultTreatment).catch(() => EVALUATION_EXCEPTION) :
     getDefaultTreatment(parsedSplit);
 }
 
@@ -238,9 +241,5 @@ function getDefaultTreatment(
     };
   }
 
-  return {
-    treatment: CONTROL,
-    label: SPLIT_NOT_FOUND,
-    config: null
-  };
+  return EVALUATION_NOT_FOUND;
 }
