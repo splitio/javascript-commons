@@ -39,7 +39,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
-  function getTreatment(key: SplitIO.SplitKey | undefined, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
+  function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
     const wrapUp = (evaluationResult: IEvaluationResult) => {
@@ -134,12 +134,15 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function processEvaluation(
     evaluation: IEvaluationResult,
     featureFlagName: string,
-    key: SplitIO.SplitKey | undefined,
+    key: SplitIO.SplitKey,
     properties: string | undefined,
     withConfig: boolean,
     invokingMethodName: string,
     queue: ImpressionDecorated[]
   ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
+    const matchingKey = getMatching(key);
+    const bucketingKey = getBucketing(key);
+
     const { changeNumber, impressionsDisabled } = evaluation;
     let { treatment, label, config = null } = evaluation;
 
@@ -150,11 +153,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       config = fallbackTreatment.config;
     }
 
-    // If no target/key, no impression is tracked
-    if (key && validateDefinitionExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
-      const matchingKey = getMatching(key);
-      const bucketingKey = getBucketing(key);
-
+    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING, [featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
