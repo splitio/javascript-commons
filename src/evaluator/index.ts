@@ -1,6 +1,6 @@
 import { engineParser } from './Engine';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, DEFINITION_NOT_FOUND } from '../utils/labels';
+import { EXCEPTION, NO_CONDITION_MATCH, DEFINITION_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
@@ -10,24 +10,29 @@ import { ILogger } from '../logger/types';
 import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
 
-const treatmentException = {
+const EVALUATION_EXCEPTION = {
   treatment: CONTROL,
   label: EXCEPTION,
+  config: null
+};
+
+let EVALUATION_NOT_FOUND = {
+  treatment: CONTROL,
+  label: DEFINITION_NOT_FOUND,
   config: null
 };
 
 function treatmentsException(splitNames: string[]) {
   const evaluations: Record<string, IEvaluationResult> = {};
   splitNames.forEach(splitName => {
-    evaluations[splitName] = treatmentException;
+    evaluations[splitName] = EVALUATION_EXCEPTION;
   });
   return evaluations;
 }
 
-// @TODO: test cases with no key
 export function evaluateFeature(
   log: ILogger,
-  key: SplitIO.SplitKey | undefined,
+  key: SplitIO.SplitKey,
   splitName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
@@ -39,7 +44,7 @@ export function evaluateFeature(
     parsedSplit = storage.splits.getSplit(splitName);
   } catch (e) {
     // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
-    return treatmentException;
+    return EVALUATION_EXCEPTION;
   }
 
   if (thenable(parsedSplit)) {
@@ -53,7 +58,7 @@ export function evaluateFeature(
     )).catch(
       // Exception on async `getSplit` storage. For example, when the storage is redis or
       // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
-      () => treatmentException
+      () => EVALUATION_EXCEPTION
     );
   }
 
@@ -140,21 +145,16 @@ export function evaluateFeaturesByFlagSets(
 
 function getEvaluation(
   log: ILogger,
-  key: SplitIO.SplitKey | undefined,
+  key: SplitIO.SplitKey,
   splitJSON: ISplit | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<IEvaluationResult> {
-  let evaluation: MaybeThenable<IEvaluationResult> = {
-    treatment: CONTROL,
-    label: DEFINITION_NOT_FOUND,
-    config: null
-  };
 
   if (splitJSON) {
     const split = engineParser(log, splitJSON, storage);
-    evaluation = split.getTreatment(key, attributes, evaluateFeature);
+    const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
@@ -172,9 +172,11 @@ function getEvaluation(
       // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
       evaluation.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
     }
+
+    return evaluation;
   }
 
-  return evaluation;
+  return EVALUATION_NOT_FOUND;
 }
 
 function getEvaluations(
@@ -207,4 +209,36 @@ function getEvaluations(
   });
 
   return thenables.length > 0 ? Promise.all(thenables).then(() => result) : result;
+}
+
+export function evaluateDefaultTreatment(
+  splitName: string,
+  storage: IStorageSync | IStorageAsync,
+): MaybeThenable<IEvaluationResult> {
+  let parsedSplit;
+
+  try {
+    parsedSplit = storage.splits.getSplit(splitName);
+  } catch (e) {
+    return EVALUATION_EXCEPTION;
+  }
+
+  return thenable(parsedSplit) ?
+    parsedSplit.then(getDefaultTreatment).catch(() => EVALUATION_EXCEPTION) :
+    getDefaultTreatment(parsedSplit);
+}
+
+function getDefaultTreatment(
+  splitJSON: ISplit | null,
+): MaybeThenable<IEvaluationResult> {
+  if (splitJSON) {
+    return {
+      treatment: splitJSON.defaultTreatment,
+      label: NO_CONDITION_MATCH, // "default rule"
+      config: splitJSON.configurations && splitJSON.configurations[splitJSON.defaultTreatment] || null,
+      changeNumber: splitJSON.changeNumber
+    };
+  }
+
+  return EVALUATION_NOT_FOUND;
 }
