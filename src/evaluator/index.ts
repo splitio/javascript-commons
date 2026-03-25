@@ -1,6 +1,6 @@
 import { engineParser } from './Engine';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, SPLIT_NOT_FOUND } from '../utils/labels';
+import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
 import { ISplit, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
@@ -206,4 +206,41 @@ function getEvaluations(
   });
 
   return thenables.length > 0 ? Promise.all(thenables).then(() => result) : result;
+}
+
+export function evaluateDefaultTreatment(
+  splitName: string,
+  storage: IStorageSync | IStorageAsync,
+): MaybeThenable<IEvaluationResult> {
+  let parsedSplit;
+
+  try {
+    parsedSplit = storage.splits.getSplit(splitName);
+  } catch (e) {
+    // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
+    return treatmentException;
+  }
+
+  return thenable(parsedSplit) ?
+    parsedSplit.then(getDefaultTreatment).catch(() => treatmentException) :
+    getDefaultTreatment(parsedSplit);
+}
+
+function getDefaultTreatment(
+  splitJSON: ISplit | null,
+): MaybeThenable<IEvaluationResult> {
+  if (splitJSON) {
+    return {
+      treatment: splitJSON.defaultTreatment,
+      label: NO_CONDITION_MATCH, // "default rule"
+      config: splitJSON.configurations && splitJSON.configurations[splitJSON.defaultTreatment] || null,
+      changeNumber: splitJSON.changeNumber
+    };
+  }
+
+  return {
+    treatment: CONTROL,
+    label: SPLIT_NOT_FOUND,
+    config: null
+  };
 }
