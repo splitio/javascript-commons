@@ -1,3 +1,5 @@
+import { IAuthToken } from '../sync/streaming/AuthClient/types';
+
 export type IRequestOptions = {
 	method?: string,
 	headers?: Record<string, string>,
@@ -32,6 +34,12 @@ export type IFetch = (url: string, options?: IRequestOptions) => Promise<IRespon
 export type IHealthCheckAPI = () => Promise<boolean>
 
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean) => Promise<IResponse>
+
+export type ISecureSplitHttpClient = {
+	httpClient: ISplitHttpClient;
+	// Expose the auth token for the SSEClient to use
+	getAuthData(): Promise<IAuthToken>
+}
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 

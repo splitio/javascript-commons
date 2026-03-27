@@ -1,7 +1,7 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { ISplitApi } from './types';
+import { ISplitApi, ISplitHttpClient } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
@@ -19,17 +19,19 @@ function userKeyToQueryParam(userKey: string) {
  * @param settings - validated settings object
  * @param platform - object containing environment-specific dependencies
  * @param telemetryTracker - telemetry tracker
+ * @param _splitHttpClient - optional split http client to use instead of the default one
  */
 export function splitApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
-  telemetryTracker: ITelemetryTracker
+  telemetryTracker: ITelemetryTracker,
+  _splitHttpClient?: ISplitHttpClient
 ): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
-  const splitHttpClient = splitHttpClientFactory(settings, platform);
+  const splitHttpClient = _splitHttpClient || splitHttpClientFactory(settings, platform);
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
