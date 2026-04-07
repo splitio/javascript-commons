@@ -153,7 +153,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
       config = fallbackTreatment.config;
     }
 
-    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
+    if (validateDefinitionExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
       log.info(IMPRESSION_QUEUEING, [featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
