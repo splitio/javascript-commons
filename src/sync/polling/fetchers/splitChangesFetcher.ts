@@ -1,6 +1,6 @@
 import { ISettings } from '../../../types';
 import { ISplitChangesResponse } from '../../../dtos/types';
-import { IFetchSplitChanges, IResponse } from '../../../services/types';
+import { IFetchDefinitionChanges, IResponse } from '../../../services/types';
 import { IStorageBase } from '../../../storages/types';
 import { FLAG_SPEC_VERSION } from '../../../utils/constants';
 import { base } from '../../../utils/settingsValidation';
@@ -20,7 +20,7 @@ function sdkEndpointOverridden(settings: ISettings) {
  * SplitChanges fetcher is a wrapper around `splitChanges` API service that parses the response and handle errors.
  */
 // @TODO breaking: drop support for Split Proxy below v5.10.0 and simplify the implementation
-export function splitChangesFetcherFactory(fetchSplitChanges: IFetchSplitChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
+export function splitChangesFetcherFactory(fetchSplitChanges: IFetchDefinitionChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
 
   const log = settings.log;
   const PROXY_CHECK_INTERVAL_MILLIS = checkIfServerSide(settings) ? PROXY_CHECK_INTERVAL_MILLIS_SS : PROXY_CHECK_INTERVAL_MILLIS_CS;

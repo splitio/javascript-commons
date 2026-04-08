@@ -22,7 +22,7 @@ export interface IEvaluation {
   treatment?: string,
   label: string,
   changeNumber?: number,
-  config?: string | null
+  config?: string | null | SplitIO.JsonObject
 }
 
 export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }

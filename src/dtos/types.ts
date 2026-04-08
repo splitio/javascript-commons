@@ -215,6 +215,7 @@ export interface IRBSegment {
   } | null
 }
 
+// @TODO: rename to IDefinition (Configs and Feature Flags are definitions)
 export interface ISplit {
   name: string,
   changeNumber: number,
@@ -231,7 +232,7 @@ export interface ISplit {
   trafficAllocation?: number,
   trafficAllocationSeed?: number
   configurations?: {
-    [treatmentName: string]: string
+    [treatmentName: string]: string | SplitIO.JsonObject
   },
   sets?: string[],
   impressionsDisabled?: boolean
