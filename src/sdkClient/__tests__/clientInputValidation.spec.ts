@@ -4,7 +4,7 @@ import { clientInputValidationDecorator } from '../clientInputValidation';
 // Mocks
 import { DebugLogger } from '../../logger/browser/DebugLogger';
 import { createClientMock } from './testUtils';
-import { FallbackTreatmentsCalculator, IFallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
+import { FallbackTreatmentsCalculator, IFallbackCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 const settings: any = {
   log: DebugLogger(),
@@ -14,7 +14,7 @@ const settings: any = {
 const EVALUATION_RESULT = 'on';
 const client: any = createClientMock(EVALUATION_RESULT);
 
-const fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator = FallbackTreatmentsCalculator();
+const fallbackTreatmentsCalculator: IFallbackCalculator = FallbackTreatmentsCalculator();
 
 const readinessManager: any = {
   isReadyFromCache: () => true,
