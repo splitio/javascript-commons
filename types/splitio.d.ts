@@ -509,7 +509,7 @@ declare namespace SplitIO {
   /**
    * Metadata type for SDK update events.
    */
-  type SdkUpdateMetadataType = 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
+  type SdkUpdateMetadataType = 'CONFIGS_UPDATE' | 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
 
   /**
    * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
@@ -2285,7 +2285,112 @@ declare namespace SplitIO {
     split(featureFlagName: string): SplitViewAsync;
   }
 
+  /**
+   * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
+   */
+  type FallbackConfigs = {
+    /**
+     * Fallback config for all config names.
+     */
+    global?: Config;
+    /**
+     * Fallback configs for specific config names. It takes precedence over the global fallback config.
+     */
+    byName?: {
+      [configName: string]: Config;
+    };
+  }
+
+  /**
+   * Configs SDK settings.
+   */
+  interface ConfigsClientSettings {
+    /**
+     * Your SDK key.
+     *
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
+     */
+    authorizationKey: string;
+    /**
+     * Configs definitions refresh rate for polling, in seconds.
+     *
+     * @defaultValue `60`
+     */
+    configsRefreshRate?: number;
+    /**
+     * Logging level.
+     *
+     * @defaultValue `'NONE'`
+     */
+    logLevel?: LogLevel;
+    /**
+     * Time in seconds until SDK ready timeout is emitted.
+     *
+     * @defaultValue `10`
+     */
+    timeout?: number;
+    /**
+     * Custom endpoints to replace the default ones used by the SDK.
+     */
+    urls?: UrlSettings;
+    /**
+     * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
+     */
+    fallbackConfigs?: FallbackConfigs;
+  }
+
+  /**
+   * Target for a config evaluation.
+   */
+  interface Target {
+    /**
+     * The key of the target.
+     */
+    key: SplitKey;
+    /**
+     * The attributes of the target.
+     *
+     * @defaultValue `undefined`
+     */
+    attributes?: Attributes;
+  }
+
   type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
   type JsonArray = JsonValue[];
   type JsonObject = { [key: string]: JsonValue; };
+
+  /**
+   * Config definition.
+   */
+  interface Config {
+    /**
+     * The name of the variant.
+     */
+    variant: string;
+    /**
+     * The config value, a raw JSON object.
+     */
+    value: JsonObject;
+  }
+
+  /**
+   * Configs SDK client interface.
+   */
+  interface ConfigsClient extends IStatusInterface {
+    /**
+     * Destroys the client.
+     *
+     * @returns A promise that resolves once all clients are destroyed.
+     */
+    destroy(): Promise<void>;
+    /**
+     * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
+     *
+     * @param name - The name of the config we want to get.
+     * @param target - The target of the config evaluation.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
+     * @returns The config object.
+     */
+    getConfig(name: string, target?: Target, options?: EvaluationOptions): Config;
+  }
 }

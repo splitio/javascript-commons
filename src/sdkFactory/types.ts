@@ -3,7 +3,7 @@ import { ISignalListener } from '../listeners/types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import type { sdkManagerFactory } from '../sdkManager';
 import type { splitApiFactory } from '../services/splitApi';
-import type { IFallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
+import type { IFallbackCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
@@ -51,7 +51,7 @@ export interface ISdkFactoryContext {
   splitApi?: ISplitApi
   syncManager?: ISyncManager,
   clients: Record<string, SplitIO.IBasicClient>,
-  fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator
+  fallbackCalculator: IFallbackCalculator
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {
