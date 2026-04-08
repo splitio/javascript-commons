@@ -1,14 +1,13 @@
 import { ISplitChangesResponse } from '../../../../dtos/types';
 import { convertConfigsResponseToDefinitionChangesResponse, IConfigsResponse } from '../configsFetcher';
 
-// TODO: complete input and output mocks
-const inputMock: IConfigsResponse = {
+const INPUT: IConfigsResponse = {
   s: 100,
   t: 200,
   d: [{ 'name': 'SomeConfig1', 'defaultVariant': 'v2', 'variants': [{ 'name': 'v1', 'definition': { 'prop1': true, 'prop2': 123 } }, { 'name': 'v2', 'definition': { 'prop1': false, 'prop2': 456 } }], 'targeting': { 'conditions': [{ 'variant': 'v1', 'label': 'main condition', 'matchers': [{ 'type': 'IS_EQUAL_TO', 'data': { 'type': 'NUMBER', 'number': 42 }, 'attribute': 'age' }, { 'type': 'WHITELIST', 'data': { 'strings': ['a', 'b', 'c'] }, 'attribute': 'favoriteCharacter' }] }] } }],
 };
 
-const expectedOutput: ISplitChangesResponse = {
+const EXPECTED_OUTPUT: ISplitChangesResponse = {
   ff: {
     s: 100,
     t: 200,
@@ -68,8 +67,8 @@ const expectedOutput: ISplitChangesResponse = {
 describe('convertConfigsResponseToDefinitionChangesResponse', () => {
 
   test('should convert a configs response to a definition changes response', () => {
-    const result = convertConfigsResponseToDefinitionChangesResponse(inputMock);
-    expect(result).toEqual(expectedOutput);
+    const result = convertConfigsResponseToDefinitionChangesResponse(INPUT);
+    expect(result).toEqual(EXPECTED_OUTPUT);
   });
 
 });
