@@ -19,13 +19,13 @@ import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
-import { IFallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
+import { IFallbackCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager, fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager, fallbackCalculator: IFallbackCalculator): TClient {
 
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -66,7 +66,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       return res;
     }
 
-    const { treatment, config } = fallbackTreatmentsCalculator(featureFlagName as string);
+    const { treatment, config } = fallbackCalculator(featureFlagName as string);
 
     return withConfig ?
       {

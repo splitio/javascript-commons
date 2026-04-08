@@ -1,12 +1,16 @@
-import { FallbackTreatmentConfiguration, TreatmentWithConfig } from '../../../types/splitio';
 import { CONTROL } from '../../utils/constants';
 import { isString } from '../../utils/lang';
+import SplitIO from '../../../types/splitio';
 
-export type IFallbackTreatmentsCalculator = (flagName: string, label?: string) => TreatmentWithConfig & { label: string };
+export type IFallbackCalculator = (definitionName: string, label?: string) => {
+  treatment: string;
+  config: string | null | SplitIO.JsonObject;
+  label: string
+};
 
 export const FALLBACK_PREFIX = 'fallback - ';
 
-export function FallbackTreatmentsCalculator(fallbacks: FallbackTreatmentConfiguration = {}): IFallbackTreatmentsCalculator {
+export function FallbackTreatmentsCalculator(fallbacks: SplitIO.FallbackTreatmentConfiguration = {}): IFallbackCalculator {
 
   return (flagName: string, label = '') => {
     const fallback = fallbacks.byFlag?.[flagName] || fallbacks.global;

@@ -2286,32 +2286,26 @@ declare namespace SplitIO {
     split(featureFlagName: string): SplitViewAsync;
   }
 
-  // Configs SDK
-
-  interface Target {
-    key: SplitKey;
-    attributes?: Attributes;
+  /**
+   * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
+   */
+  type FallbackConfigs = {
+    /**
+     * Fallback config for all config names.
+     */
+    global?: Config;
+    /**
+     * Fallback configs for specific config names. It takes precedence over the global fallback config.
+     */
+    byName?: {
+      [configName: string]: Config;
+    };
   }
 
-  interface Config {
-    value: any;
-    getString(propertyName: string, propertyDefaultValue?: string): string;
-    getNumber(propertyName: string, propertyDefaultValue?: number): number;
-    getBoolean(propertyName: string, propertyDefaultValue?: boolean): boolean;
-    getArray(propertyName: string): ConfigArray;
-    getObject(propertyName: string): Config;
-  }
-
-  interface ConfigArray {
-    value: any;
-    getString(index: number, propertyDefaultValue?: string): string;
-    getNumber(index: number, propertyDefaultValue?: number): number;
-    getBoolean(index: number, propertyDefaultValue?: boolean): boolean;
-    getArray(index: number): ConfigArray;
-    getObject(index: number): Config;
-  }
-
-  interface ConfigsOptions {
+  /**
+   * Configs SDK settings.
+   */
+  interface ConfigsClientSettings {
     /**
      * Your SDK key.
      *
@@ -2339,39 +2333,45 @@ declare namespace SplitIO {
     /**
      * Custom endpoints to replace the default ones used by the SDK.
      */
-    urls?: UrlSettings | string;
+    urls?: UrlSettings;
     /**
-     * Fallback configuration objects to use when the SDK is unable to fetch the configurations from the server.
+     * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
      */
-    fallbacks?: FallbackTreatmentConfiguration;
-    // /**
-    //  * Defines what impressions are sent to Split servers.
-    //  * - DEBUG: all impressions are sent.
-    //  * - OPTIMIZED: will send unique impressions to Split servers, avoiding a considerable amount of traffic that duplicated impressions could generate.
-    //  * - NONE: will send unique keys evaluated per config to Split servers instead of full blown impressions.
-    //  *
-    //  * @defaultValue `'OPTIMIZED'`
-    //  */
-    // impressionsMode?: ImpressionsMode;
-    // /**
-    //  * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
-    //  *
-    //  * @defaultValue `1800`
-    //  */
-    // eventsPushRate?: number;
-    // /**
-    //  * The SDK sends impressions back to Split servers. This parameter controls how often this data is sent, in seconds.
-    //  *
-    //  * @defaultValue `1800`
-    //  */
-    // impressionsRefreshRate?: number;
-    // /**
-    //  * Boolean flag to enable the streaming service as default synchronization mechanism. In the event of any issue with streaming,
-    //  * the SDK would fallback to the polling mechanism. If false, the SDK would poll for changes as usual without attempting to use streaming.
-    //  *
-    //  * @defaultValue `true`
-    //  */
-    // streamingEnabled?: boolean;
+    fallbackConfigs?: FallbackConfigs;
+  }
+
+  /**
+   * Target for a config evaluation.
+   */
+  interface Target {
+    /**
+     * The key of the target.
+     */
+    key: SplitKey;
+    /**
+     * The attributes of the target.
+     *
+     * @defaultValue `undefined`
+     */
+    attributes?: Attributes;
+  }
+
+  type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+  type JsonArray = JsonValue[];
+  type JsonObject = { [key: string]: JsonValue; };
+
+  /**
+   * Config definition.
+   */
+  interface Config {
+    /**
+     * The name of the variant.
+     */
+    variant: string;
+    /**
+     * The config value, a raw JSON object.
+     */
+    value: JsonObject;
   }
 
   /**
@@ -2379,18 +2379,6 @@ declare namespace SplitIO {
    */
   interface ConfigsClient extends IStatusInterface {
     /**
-     * Current settings of the SDK instance.
-     */
-    settings: ISettings;
-    /**
-     * Logger API.
-     */
-    Logger: ILoggerAPI;
-    /**
-     * Flushes the client.
-     */
-    flush(): Promise<void>;
-    /**
      * Destroys the client.
      *
      * @returns A promise that resolves once all clients are destroyed.
@@ -2400,67 +2388,10 @@ declare namespace SplitIO {
      * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
      *
      * @param name - The name of the config we want to get.
-     * @param target - The target of the config we want to get.
+     * @param target - The target of the config evaluation.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The config object.
      */
     getConfig(name: string, target?: Target, options?: EvaluationOptions): Config;
-    /**
-     * Tracks an event to be fed to the results product on Split user interface.
-     *
-     * @param key - The key that identifies the entity related to this event.
-     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
-     * @param eventType - The event type corresponding to this event.
-     * @param value - The value of this event.
-     * @param properties - The properties of this event. Values can be string, number, boolean or null.
-     * @returns Whether the event was added to the queue successfully or not.
-     */
-    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
-  }
-
-  /**
-   * Configs SDK client interface with async methods.
-   */
-  interface AsyncConfigsClient extends IStatusInterface {
-    /**
-     * Current settings of the SDK instance.
-     */
-    settings: ISettings;
-    /**
-     * Logger API.
-     */
-    Logger: ILoggerAPI;
-    /**
-     * Initializes the client.
-     */
-    init(): void;
-    /**
-     * Flushes the client.
-     */
-    flush(): Promise<void>;
-    /**
-     * Destroys the client.
-     *
-     * @returns A promise that resolves once all clients are destroyed.
-     */
-    destroy(): Promise<void>;
-    /**
-     * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
-     *
-     * @param name - The name of the config we want to get.
-     * @param target - The target of the config we want to get.
-     * @returns A promise that resolves with the config object.
-     */
-    getConfig(name: string, target?: Target, options?: EvaluationOptions): Promise<Config>;
-    /**
-     * Tracks an event to be fed to the results product on Split user interface.
-     *
-     * @param key - The key that identifies the entity related to this event.
-     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
-     * @param eventType - The event type corresponding to this event.
-     * @param value - The value of this event.
-     * @param properties - The properties of this event. Values can be string, number, boolean or null.
-     * @returns A promise that resolves with a boolean indicating whether the event was added to the queue successfully or not.
-     */
-    track(key: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): Promise<boolean>;
   }
 }

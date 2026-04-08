@@ -45,7 +45,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
     }
   });
 
-  const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
+  const fallbackCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
 
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
@@ -62,7 +62,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackCalculator };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;

@@ -21,7 +21,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
       settings,
       clientFactory(params),
       sdkReadinessManager.readinessManager,
-      params.fallbackTreatmentsCalculator
+      params.fallbackCalculator
     ),
 
     sdkLifecycleFactory(params, isSharedClient)

@@ -8,16 +8,20 @@ import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY } from '../logger/constants';
 import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
-import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 import { sdkLifecycleFactory } from '../sdkClient/sdkLifecycle';
+import { FallbackConfigsCalculator } from '../evaluator/fallbackConfigsCalculator';
+import { ISettings } from '../types';
+
+interface IConfigsClientSettings extends ISettings {
+  fallbackConfigs?: SplitIO.FallbackConfigs;
+}
 
 /**
  * Modular SDK factory
  */
-export function sdkConfigsFactory(params: ISdkFactoryParams): SplitIO.ConfigsClient {
+export function sdkConfigsFactory(params: ISdkFactoryParams<IConfigsClientSettings>): SplitIO.ConfigsClient {
 
-  const { settings, platform, storageFactory, splitApiFactory, extraProps,
-    syncManagerFactory, SignalListener, integrationsManagerFactory } = params;
+  const { settings, platform, storageFactory, splitApiFactory, extraProps, syncManagerFactory, SignalListener, integrationsManagerFactory } = params;
   const { log } = settings;
 
   // @TODO handle non-recoverable errors, such as, global `fetch` not available, invalid SDK Key, etc.
@@ -42,7 +46,7 @@ export function sdkConfigsFactory(params: ISdkFactoryParams): SplitIO.ConfigsCli
     }
   });
 
-  const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
+  const fallbackCalculator = FallbackConfigsCalculator(settings.fallbackConfigs);
 
   const telemetryTracker = telemetryTrackerFactory(storage.telemetry, platform.now);
   const integrationsManager = integrationsManagerFactory && integrationsManagerFactory({ settings, storage, telemetryTracker });
@@ -53,7 +57,7 @@ export function sdkConfigsFactory(params: ISdkFactoryParams): SplitIO.ConfigsCli
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients: {}, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
+  const ctx: ISdkFactoryContext = { clients: {}, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackCalculator };
 
   const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
   ctx.syncManager = syncManager;
