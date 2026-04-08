@@ -2284,4 +2284,8 @@ declare namespace SplitIO {
      */
     split(featureFlagName: string): SplitViewAsync;
   }
+
+  type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+  type JsonArray = JsonValue[];
+  type JsonObject = { [key: string]: JsonValue; };
 }
