@@ -75,6 +75,7 @@ export const TELEMETRY = 'te';
 export const TOKEN = 'to';
 export const SEGMENT = 'se';
 export const MEMBERSHIPS = 'ms';
+export const CONFIGS = 'cf';
 
 export const TREATMENT = 't';
 export const TREATMENTS = 'ts';
