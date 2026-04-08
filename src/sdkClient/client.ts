@@ -173,7 +173,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     if (withConfig) {
       return {
         treatment,
-        config
+        config: config as string | null
       };
     }
 
