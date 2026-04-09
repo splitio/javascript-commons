@@ -3,12 +3,12 @@ import { matcherFactory } from '..';
 import { evaluateFeature } from '../../index';
 import { IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { IRBSegment, ISplit } from '../../../dtos/types';
+import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../../storages/types';
 import { thenable } from '../../../utils/promise/thenable';
 import { ALWAYS_ON_SPLIT } from '../../../storages/__tests__/testUtils';
 
-const STORED_SPLITS: Record<string, ISplit> = {
+const STORED_SPLITS: Record<string, IDefinition> = {
   'always-on': ALWAYS_ON_SPLIT
 };
 

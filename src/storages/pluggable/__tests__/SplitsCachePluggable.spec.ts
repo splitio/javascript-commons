@@ -3,7 +3,7 @@ import { KeyBuilder } from '../../KeyBuilder';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { wrapperMockFactory } from './wrapper.mock';
 import { splitWithUserTT, splitWithAccountTT, featureFlagOne, featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
-import { ISplit } from '../../../dtos/types';
+import { IDefinition } from '../../../dtos/types';
 
 const keysBuilder = new KeyBuilder();
 
@@ -20,7 +20,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // Assert getSplits
     let valuesObj = await cache.getSplits([splitWithUserTT.name, splitWithAccountTT.name]);
-    expect(valuesObj).toEqual(values.reduce<Record<string, ISplit>>((acc, split) => {
+    expect(valuesObj).toEqual(values.reduce<Record<string, IDefinition>>((acc, split) => {
       acc[split.name] = split;
       return acc;
     }, {}));
@@ -114,7 +114,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // kill an existent split
     updated = await cache.killLocally('user_ff', 'some_treatment', 100);
-    let lol1Split = await cache.getSplit('user_ff') as ISplit;
+    let lol1Split = await cache.getSplit('user_ff') as IDefinition;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -124,7 +124,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
 
     // not update if changeNumber is old
     updated = await cache.killLocally('user_ff', 'some_treatment_2', 90);
-    lol1Split = await cache.getSplit('user_ff') as ISplit;
+    lol1Split = await cache.getSplit('user_ff') as IDefinition;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older

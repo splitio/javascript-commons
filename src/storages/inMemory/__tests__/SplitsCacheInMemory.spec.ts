@@ -1,5 +1,5 @@
 import { SplitsCacheInMemory } from '../SplitsCacheInMemory';
-import { ISplit } from '../../../dtos/types';
+import { IDefinition } from '../../../dtos/types';
 import { splitWithUserTT, splitWithAccountTT, something, somethingElse, featureFlagWithEmptyFS, featureFlagWithoutFS, featureFlagOne, featureFlagTwo, featureFlagThree } from '../../__tests__/testUtils';
 
 test('SPLITS CACHE / In Memory', () => {
@@ -106,7 +106,7 @@ test('SPLITS CACHE / In Memory / killLocally', () => {
 
   // kill an existent split
   updated = cache.killLocally(something.name, 'some_treatment', 100);
-  let lol1Split = cache.getSplit(something.name) as ISplit;
+  let lol1Split = cache.getSplit(something.name) as IDefinition;
 
   expect(updated).toBe(true); // killLocally resolves with update if split is changed
   expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -116,7 +116,7 @@ test('SPLITS CACHE / In Memory / killLocally', () => {
 
   // not update if changeNumber is old
   updated = cache.killLocally(something.name, 'some_treatment_2', 90);
-  lol1Split = cache.getSplit(something.name) as ISplit;
+  lol1Split = cache.getSplit(something.name) as IDefinition;
 
   expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
   expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older

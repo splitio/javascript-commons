@@ -1,4 +1,4 @@
-import { ISplitChangesResponse } from '../../../../dtos/types';
+import { IDefinitionChangesResponse } from '../../../../dtos/types';
 import { convertConfigsResponseToDefinitionChangesResponse, IConfigsResponse } from '../configsFetcher';
 
 const INPUT: IConfigsResponse = {
@@ -12,7 +12,7 @@ const INPUT: IConfigsResponse = {
   }],
 };
 
-const EXPECTED_OUTPUT: ISplitChangesResponse = {
+const EXPECTED_OUTPUT: IDefinitionChangesResponse = {
   ff: {
     s: 100,
     t: 200,

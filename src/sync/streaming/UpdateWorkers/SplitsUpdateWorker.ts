@@ -1,4 +1,4 @@
-import { IRBSegment, ISplit } from '../../../dtos/types';
+import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { STREAMING_PARSING_SPLIT_UPDATE } from '../../../logger/constants';
 import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
@@ -79,7 +79,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
        *
        * @param changeNumber - change number of the notification
        */
-      put({ changeNumber, pcn, type }: ISplitUpdateData, payload?: ISplit | IRBSegment) {
+      put({ changeNumber, pcn, type }: ISplitUpdateData, payload?: IDefinition | IRBSegment) {
         const currentChangeNumber = cache.getChangeNumber();
 
         if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;

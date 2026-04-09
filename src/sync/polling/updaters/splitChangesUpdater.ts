@@ -1,6 +1,6 @@
 import { ISegmentsCacheBase, IStorageBase } from '../../../storages/types';
-import { ISplitChangesFetcher } from '../fetchers/types';
-import { IRBSegment, ISplit, ISplitChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
+import { IDefinitionChangesFetcher } from '../fetchers/types';
+import { IRBSegment, IDefinition, IDefinitionChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { ISplitsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
@@ -12,7 +12,7 @@ import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 
-export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
+export type InstantUpdate = { payload: IDefinition | IRBSegment, changeNumber: number, type: string };
 type SplitChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
 
 // Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
@@ -30,7 +30,7 @@ function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
  * Collect segments from a raw FF or RBS definition.
  * Exported for testing purposes.
  */
-export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
+export function parseSegments(ruleEntity: IDefinition | IRBSegment, matcherType: typeof IN_SEGMENT | typeof IN_RULE_BASED_SEGMENT = IN_SEGMENT): Set<string> {
   const { conditions, excluded } = ruleEntity as IRBSegment;
 
   const segments = new Set<string>();
@@ -55,7 +55,7 @@ export function parseSegments(ruleEntity: ISplit | IRBSegment, matcherType: type
   return segments;
 }
 
-interface ISplitMutations<T extends ISplit | IRBSegment> {
+interface IDefinitionMutations<T extends IDefinition | IRBSegment> {
   added: T[],
   removed: T[],
   names: string[]
@@ -68,7 +68,7 @@ interface ISplitMutations<T extends ISplit | IRBSegment> {
  * @param featureFlag - feature flag to be evaluated
  * @param filters - splitFiltersValidation bySet | byName
  */
-function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
+function matchFilters(featureFlag: IDefinition, filters: ISplitFiltersValidation) {
   const { bySet: setsFilter, byName: namesFilter, byPrefix: prefixFilter } = filters.groupedFilters;
   if (setsFilter.length > 0) return featureFlag.sets && featureFlag.sets.some((featureFlagSet: string) => setsFilter.indexOf(featureFlagSet) > -1);
 
@@ -83,14 +83,14 @@ function matchFilters(featureFlag: ISplit, filters: ISplitFiltersValidation) {
 }
 
 /**
- * Given the list of splits from /splitChanges endpoint, it returns the mutations,
+ * Given the list of definitions from /splitChanges or /configs endpoint, it returns the mutations,
  * i.e., an object with added splits, removed splits and used segments.
  * Exported for testing purposes.
  */
-export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, segments: Set<string>, filters?: ISplitFiltersValidation): ISplitMutations<T> {
+export function computeMutation<T extends IDefinition | IRBSegment>(rules: Array<T>, segments: Set<string>, filters?: ISplitFiltersValidation): IDefinitionMutations<T> {
 
   return rules.reduce((accum, ruleEntity) => {
-    if (ruleEntity.status !== 'ARCHIVED' && (!filters || matchFilters(ruleEntity as ISplit, filters))) {
+    if (ruleEntity.status !== 'ARCHIVED' && (!filters || matchFilters(ruleEntity as IDefinition, filters))) {
       accum.added.push(ruleEntity);
 
       parseSegments(ruleEntity).forEach((segmentName: string) => {
@@ -102,7 +102,7 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
     accum.names.push(ruleEntity.name);
 
     return accum;
-  }, { added: [], removed: [], names: [] } as ISplitMutations<T>);
+  }, { added: [], removed: [], names: [] } as IDefinitionMutations<T>);
 }
 
 /**
@@ -112,7 +112,7 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
  *  - uses `splitsEventEmitter` to emit events related to split data updates
  *
  * @param log -  Logger instance
- * @param splitChangesFetcher -  Fetcher of `/splitChanges`
+ * @param definitionChangesFetcher -  Fetcher of `/splitChanges` or `/configs`
  * @param splits -  Splits storage, with sync or async methods
  * @param segments -  Segments storage, with sync or async methods
  * @param splitsEventEmitter -  Optional readiness manager. Not required for synchronizer or producer mode.
@@ -121,7 +121,7 @@ export function computeMutation<T extends ISplit | IRBSegment>(rules: Array<T>, 
  */
 export function splitChangesUpdaterFactory(
   log: ILogger,
-  splitChangesFetcher: ISplitChangesFetcher,
+  definitionChangesFetcher: IDefinitionChangesFetcher,
   storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments' | 'save'>,
   splitFiltersValidation: ISplitFiltersValidation,
   splitsEventEmitter?: ISplitsEventEmitter,
@@ -161,13 +161,13 @@ export function splitChangesUpdaterFactory(
             // IFFU edge case: a change to a flag that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
             Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
               return contains ?
-                { ff: { d: [instantUpdate.payload as ISplit], t: instantUpdate.changeNumber } } :
-                splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
+                { ff: { d: [instantUpdate.payload as IDefinition], t: instantUpdate.changeNumber } } :
+                definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
             }) :
             { rbs: { d: [instantUpdate.payload as IRBSegment], t: instantUpdate.changeNumber } } :
-          splitChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
+          definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
-        .then((splitChanges: ISplitChangesResponse) => {
+        .then((splitChanges: IDefinitionChangesResponse) => {
           const usedSegments = new Set<string>();
 
           let updatedFlags: string[] = [];

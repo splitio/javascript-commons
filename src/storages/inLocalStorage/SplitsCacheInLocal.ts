@@ -1,4 +1,4 @@
-import { ISplit } from '../../dtos/types';
+import { IDefinition } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
@@ -30,7 +30,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     else this.storage.removeItem(key);
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: IDefinition) {
     try {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
       this._decrementCount(ttKey);
@@ -44,7 +44,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
-  private _incrementCounts(split: ISplit) {
+  private _incrementCounts(split: IDefinition) {
     try {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
       this.storage.setItem(ttKey, (toNumber(this.storage.getItem(ttKey)) + 1) + '');
@@ -79,7 +79,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  addSplit(split: ISplit) {
+  addSplit(split: IDefinition) {
     const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     const splitFromStorage = this.storage.getItem(splitKey);
@@ -110,7 +110,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     return true;
   }
 
-  getSplit(name: string): ISplit | null {
+  getSplit(name: string): IDefinition | null {
     const item = this.storage.getItem(this.keys.buildSplitKey(name));
     return item && JSON.parse(item);
   }
@@ -184,7 +184,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  private addToFlagSets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: IDefinition) {
     if (!featureFlag.sets) return;
 
     featureFlag.sets.forEach(featureFlagSet => {

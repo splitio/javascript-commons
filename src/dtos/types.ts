@@ -2,8 +2,6 @@ import SplitIO from '../../types/splitio';
 
 export type MaybeThenable<T> = T | Promise<T>
 
-/** Split Matchers */
-
 export type IMatcherDataType = null | 'DATETIME' | 'NUMBER'
 
 export interface IUnaryNumericMatcherData {
@@ -39,7 +37,7 @@ export interface IDependencyMatcherData {
   treatments: string[]
 }
 
-interface ISplitMatcherBase {
+interface IDefinitionMatcherBase {
   matcherType: string
   negate?: boolean
   keySelector?: null | {
@@ -57,144 +55,143 @@ interface ISplitMatcherBase {
   betweenStringMatcherData?: null | IBetweenStringMatcherData
 }
 
-interface IAllKeysMatcher extends ISplitMatcherBase {
+interface IAllKeysMatcher extends IDefinitionMatcherBase {
   matcherType: 'ALL_KEYS'
 }
 
-interface IInSegmentMatcher extends ISplitMatcherBase {
+interface IInSegmentMatcher extends IDefinitionMatcherBase {
   matcherType: 'IN_SEGMENT',
   userDefinedSegmentMatcherData: IInSegmentMatcherData
 }
 
-interface IInRBSegmentMatcher extends ISplitMatcherBase {
+interface IInRBSegmentMatcher extends IDefinitionMatcherBase {
   matcherType: 'IN_RULE_BASED_SEGMENT',
   userDefinedSegmentMatcherData: IInSegmentMatcherData
 }
 
-interface IInLargeSegmentMatcher extends ISplitMatcherBase {
+interface IInLargeSegmentMatcher extends IDefinitionMatcherBase {
   matcherType: 'IN_LARGE_SEGMENT',
   userDefinedLargeSegmentMatcherData: IInLargeSegmentMatcherData
 }
 
-interface IWhitelistMatcher extends ISplitMatcherBase {
+interface IWhitelistMatcher extends IDefinitionMatcherBase {
   matcherType: 'WHITELIST',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IEqualToMatcher extends ISplitMatcherBase {
+interface IEqualToMatcher extends IDefinitionMatcherBase {
   matcherType: 'EQUAL_TO',
   unaryNumericMatcherData: IUnaryNumericMatcherData
 }
 
-interface IGreaterThanOrEqualToMatcher extends ISplitMatcherBase {
+interface IGreaterThanOrEqualToMatcher extends IDefinitionMatcherBase {
   matcherType: 'GREATER_THAN_OR_EQUAL_TO',
   unaryNumericMatcherData: IUnaryNumericMatcherData
 }
 
-interface ILessThanOrEqualToMatcher extends ISplitMatcherBase {
+interface ILessThanOrEqualToMatcher extends IDefinitionMatcherBase {
   matcherType: 'LESS_THAN_OR_EQUAL_TO',
   unaryNumericMatcherData: IUnaryNumericMatcherData
 }
 
-interface IBetweenMatcher extends ISplitMatcherBase {
+interface IBetweenMatcher extends IDefinitionMatcherBase {
   matcherType: 'BETWEEN'
   betweenMatcherData: IBetweenMatcherData
 }
 
-interface IEqualToSetMatcher extends ISplitMatcherBase {
+interface IEqualToSetMatcher extends IDefinitionMatcherBase {
   matcherType: 'EQUAL_TO_SET',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IContainsAnyOfSetMatcher extends ISplitMatcherBase {
+interface IContainsAnyOfSetMatcher extends IDefinitionMatcherBase {
   matcherType: 'CONTAINS_ANY_OF_SET',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IContainsAllOfSetMatcher extends ISplitMatcherBase {
+interface IContainsAllOfSetMatcher extends IDefinitionMatcherBase {
   matcherType: 'CONTAINS_ALL_OF_SET',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IPartOfSetMatcher extends ISplitMatcherBase {
+interface IPartOfSetMatcher extends IDefinitionMatcherBase {
   matcherType: 'PART_OF_SET',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IStartsWithMatcher extends ISplitMatcherBase {
+interface IStartsWithMatcher extends IDefinitionMatcherBase {
   matcherType: 'STARTS_WITH',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IEndsWithMatcher extends ISplitMatcherBase {
+interface IEndsWithMatcher extends IDefinitionMatcherBase {
   matcherType: 'ENDS_WITH',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IContainsStringMatcher extends ISplitMatcherBase {
+interface IContainsStringMatcher extends IDefinitionMatcherBase {
   matcherType: 'CONTAINS_STRING',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-interface IInSplitTreatmentMatcher extends ISplitMatcherBase {
+interface IInSplitTreatmentMatcher extends IDefinitionMatcherBase {
   matcherType: 'IN_SPLIT_TREATMENT',
   dependencyMatcherData: IDependencyMatcherData,
 }
 
-interface IEqualToBooleanMatcher extends ISplitMatcherBase {
+interface IEqualToBooleanMatcher extends IDefinitionMatcherBase {
   matcherType: 'EQUAL_TO_BOOLEAN',
   booleanMatcherData: boolean
 }
 
-interface IMatchesStringMatcher extends ISplitMatcherBase {
+interface IMatchesStringMatcher extends IDefinitionMatcherBase {
   matcherType: 'MATCHES_STRING',
   stringMatcherData: string
 }
 
-interface IEqualToSemverMatcher extends ISplitMatcherBase {
+interface IEqualToSemverMatcher extends IDefinitionMatcherBase {
   matcherType: 'EQUAL_TO_SEMVER',
   stringMatcherData: string
 }
 
-interface IGreaterThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+interface IGreaterThanOrEqualToSemverMatcher extends IDefinitionMatcherBase {
   matcherType: 'GREATER_THAN_OR_EQUAL_TO_SEMVER',
   stringMatcherData: string
 }
 
 
-interface ILessThanOrEqualToSemverMatcher extends ISplitMatcherBase {
+interface ILessThanOrEqualToSemverMatcher extends IDefinitionMatcherBase {
   matcherType: 'LESS_THAN_OR_EQUAL_TO_SEMVER',
   stringMatcherData: string
 }
 
-interface IBetweenSemverMatcher extends ISplitMatcherBase {
+interface IBetweenSemverMatcher extends IDefinitionMatcherBase {
   matcherType: 'BETWEEN_SEMVER'
   betweenStringMatcherData: IBetweenStringMatcherData
 }
 
-interface IInListSemverMatcher extends ISplitMatcherBase {
+interface IInListSemverMatcher extends IDefinitionMatcherBase {
   matcherType: 'IN_LIST_SEMVER',
   whitelistMatcherData: IWhitelistMatcherData
 }
 
-export type ISplitMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
+export type IDefinitionMatcher = IAllKeysMatcher | IInSegmentMatcher | IWhitelistMatcher | IEqualToMatcher | IGreaterThanOrEqualToMatcher |
   ILessThanOrEqualToMatcher | IBetweenMatcher | IEqualToSetMatcher | IContainsAnyOfSetMatcher | IContainsAllOfSetMatcher | IPartOfSetMatcher |
   IStartsWithMatcher | IEndsWithMatcher | IContainsStringMatcher | IInSplitTreatmentMatcher | IEqualToBooleanMatcher | IMatchesStringMatcher |
   IEqualToSemverMatcher | IGreaterThanOrEqualToSemverMatcher | ILessThanOrEqualToSemverMatcher | IBetweenSemverMatcher | IInListSemverMatcher |
   IInLargeSegmentMatcher | IInRBSegmentMatcher
 
-/** Split object */
-export interface ISplitPartition {
+export interface IDefinitionPartition {
   treatment: string
   size: number
 }
 
-export interface ISplitCondition {
+export interface IDefinitionCondition {
   matcherGroup: {
     combiner: 'AND',
-    matchers: ISplitMatcher[]
+    matchers: IDefinitionMatcher[]
   }
-  partitions?: ISplitPartition[]
+  partitions?: IDefinitionPartition[]
   label?: string
   conditionType?: 'ROLLOUT' | 'WHITELIST'
 }
@@ -204,49 +201,46 @@ export interface IExcludedSegment {
   name: string,
 }
 
-export interface IRBSegment {
-  name: string,
-  changeNumber: number,
-  status?: 'ACTIVE' | 'ARCHIVED',
-  conditions?: ISplitCondition[] | null,
+export interface TargetingEntity {
+  name: string;
+  // Properties required for evaluation
+  changeNumber: number;
+  status: 'ACTIVE' | 'ARCHIVED';
+  conditions: IDefinitionCondition[];
+}
+
+export interface IRBSegment extends TargetingEntity {
   excluded?: {
     keys?: string[] | null,
     segments?: IExcludedSegment[] | null
   } | null
 }
 
-// @TODO: rename to IDefinition (Configs and Feature Flags are definitions)
-export interface ISplit {
-  name: string,
-  changeNumber: number,
-  status?: 'ACTIVE' | 'ARCHIVED',
-  conditions: ISplitCondition[],
+export interface IDefinition extends TargetingEntity {
+  trafficTypeName: string;
+  sets?: string[];
+  impressionsDisabled?: boolean;
+  // Properties required for evaluation
   prerequisites?: null | {
     n: string,
     ts: string[]
-  }[]
-  killed: boolean,
-  defaultTreatment: string,
-  trafficTypeName: string,
-  seed: number,
-  trafficAllocation?: number,
-  trafficAllocationSeed?: number
+  }[];
+  killed: boolean;
+  defaultTreatment: string;
+  seed: number;
+  trafficAllocation?: number;
+  trafficAllocationSeed?: number;
   configurations?: {
     [treatmentName: string]: string | SplitIO.JsonObject
-  },
-  sets?: string[],
-  impressionsDisabled?: boolean
+  };
 }
 
-// Split definition used in offline mode
-export type ISplitPartial = Pick<ISplit, 'conditions' | 'configurations' | 'trafficTypeName'>
-
 /** Interface of the parsed JSON response of `/splitChanges` */
-export interface ISplitChangesResponse {
+export interface IDefinitionChangesResponse {
   ff?: {
     t: number,
     s?: number,
-    d: ISplit[]
+    d: IDefinition[]
   },
   rbs?: {
     t: number,

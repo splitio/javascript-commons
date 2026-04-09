@@ -4,13 +4,13 @@ import { segmentTransform } from './segment';
 import { whitelistTransform } from './whitelist';
 import { numericTransform } from './unaryNumeric';
 import { zeroSinceHH, zeroSinceSS, betweenDateTimeTransform } from '../convertions';
-import { IBetweenMatcherData, IInLargeSegmentMatcherData, IInSegmentMatcherData, ISplitMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
+import { IBetweenMatcherData, IInLargeSegmentMatcherData, IInSegmentMatcherData, IDefinitionMatcher, IUnaryNumericMatcherData } from '../../dtos/types';
 import { IMatcherDto } from '../types';
 
 /**
  * Flat the complex matcherGroup structure into something handy.
  */
-export function matchersTransform(matchers: ISplitMatcher[]): IMatcherDto[] {
+export function matchersTransform(matchers: IDefinitionMatcher[]): IMatcherDto[] {
 
   let parsedMatchers = matchers.map(matcher => {
     let {
