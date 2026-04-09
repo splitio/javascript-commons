@@ -21,9 +21,9 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.WARN_TRIMMING_PROPERTIES, '%s: more than 300 properties were provided. Some of them will be trimmed when processed.'],
   [c.WARN_CONVERTING, '%s: %s "%s" is not of type string, converting.'],
   [c.WARN_TRIMMING, '%s: %s "%s" has extra whitespace, trimming.'],
-  [c.WARN_NOT_EXISTENT_DEFINITION, '%s: definition "%s" does not exist in this environment. Please double check what definitions exist in the Split user interface.'],
+  [c.WARN_NOT_EXISTENT_DEFINITION, '%s: "%s" does not exist in this environment. Please double check that it exists in Harness UI.'],
   [c.WARN_LOWERCASE_TRAFFIC_TYPE, '%s: traffic_type_name should be all lowercase - converting string to lowercase.'],
-  [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding feature flag in this environment, make sure you\'re tracking your events to a valid traffic type defined in the Split user interface.'],
+  [c.WARN_NOT_EXISTENT_TT, '%s: traffic type "%s" does not have any corresponding feature flag in this environment, make sure you\'re tracking your events to a valid traffic type defined in Harness UI.'],
   [c.WARN_FLAGSET_NOT_CONFIGURED, '%s: you passed %s which is not part of the configured FlagSetsFilter, ignoring Flag Set.'],
   // initialization / settings validation
   [c.WARN_INTEGRATION_INVALID, c.LOG_PREFIX_SETTINGS + ': %s integration item(s) at settings is invalid. %s'],
@@ -36,5 +36,5 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.STREAMING_PARSING_SPLIT_UPDATE, c.LOG_PREFIX_SYNC_STREAMING + 'Fetching SplitChanges due to an error processing %s notification: %s'],
   [c.WARN_INVALID_FLAGSET, '%s: you passed %s, flag set must adhere to the regular expressions %s. This means a flag set must start with a letter or number, be in lowercase, alphanumeric and have a max length of 50 characters. %s was discarded.'],
   [c.WARN_LOWERCASE_FLAGSET, '%s: flag set %s should be all lowercase - converting string to lowercase.'],
-  [c.WARN_FLAGSET_WITHOUT_FLAGS, '%s: you passed %s flag set that does not contain cached feature flag names. Please double check what flag sets are in use in the Split user interface.'],
+  [c.WARN_FLAGSET_WITHOUT_FLAGS, '%s: you passed %s flag set that does not contain cached feature flag names. Please double check what flag sets are in use in Harness UI.'],
 ]);

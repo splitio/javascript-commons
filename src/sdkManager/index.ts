@@ -4,13 +4,13 @@ import { find } from '../utils/lang';
 import { validateSplit, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
-import { ISplit } from '../dtos/types';
+import { IDefinition } from '../dtos/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
-function collectTreatments(splitObject: ISplit) {
+function collectTreatments(splitObject: IDefinition) {
   const conditions = splitObject.conditions;
   // Rollout conditions are supposed to have the entire partitions list, so we find the first one.
   let allTreatmentsCondition = find(conditions, (cond) => cond.conditionType === 'ROLLOUT');
@@ -20,7 +20,7 @@ function collectTreatments(splitObject: ISplit) {
   return allTreatmentsCondition ? allTreatmentsCondition.partitions!.map(v => v.treatment) : [];
 }
 
-function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
+function objectToView(splitObject: IDefinition | null): SplitIO.SplitView | null {
   if (!splitObject) return null;
 
   return {
@@ -37,7 +37,7 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
   };
 }
 
-function objectsToViews(splitObjects: ISplit[]) {
+function objectsToViews(splitObjects: IDefinition[]) {
   let views: SplitIO.SplitView[] = [];
 
   splitObjects.forEach(split => {

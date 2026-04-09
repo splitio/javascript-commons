@@ -1,13 +1,18 @@
-import { ISplitChangesResponse } from '../../../../dtos/types';
+import { IDefinitionChangesResponse } from '../../../../dtos/types';
 import { convertConfigsResponseToDefinitionChangesResponse, IConfigsResponse } from '../configsFetcher';
 
 const INPUT: IConfigsResponse = {
-  s: 100,
-  t: 200,
-  d: [{ 'name': 'SomeConfig1', 'defaultVariant': 'v2', 'variants': [{ 'name': 'v1', 'definition': { 'prop1': true, 'prop2': 123 } }, { 'name': 'v2', 'definition': { 'prop1': false, 'prop2': 456 } }], 'targeting': { 'conditions': [{ 'variant': 'v1', 'label': 'main condition', 'matchers': [{ 'type': 'IS_EQUAL_TO', 'data': { 'type': 'NUMBER', 'number': 42 }, 'attribute': 'age' }, { 'type': 'WHITELIST', 'data': { 'strings': ['a', 'b', 'c'] }, 'attribute': 'favoriteCharacter' }] }] } }],
+  since: 100,
+  till: 200,
+  updated: [{
+    name: 'SomeConfig1',
+    variants: [{ name: 'v1', definition: { prop1: true, prop2: 123 } }, { name: 'v2', definition: { prop1: false, prop2: 456 } }],
+    changeNumber: 0,
+    targeting: { default: 'v2', conditions: [{ partitions: [{ variant: 'v1', size: 100 }], label: 'main condition', matchers: [{ type: 'IS_EQUAL_TO', data: { type: 'NUMBER', number: 42 }, attribute: 'age' }, { type: 'WHITELIST', data: { strings: ['a', 'b', 'c'] }, attribute: 'favoriteCharacter' }] }] }
+  }],
 };
 
-const EXPECTED_OUTPUT: ISplitChangesResponse = {
+const EXPECTED_OUTPUT: IDefinitionChangesResponse = {
   ff: {
     s: 100,
     t: 200,

@@ -1,6 +1,6 @@
-import { ISplit, ISplitChangesResponse, ISplitCondition, ISplitMatcher } from '../../../dtos/types';
+import { IDefinition, IDefinitionChangesResponse, IDefinitionCondition, IDefinitionMatcher } from '../../../dtos/types';
 import { IFetchDefinitionChanges, IResponse } from '../../../services/types';
-import { ISplitChangesFetcher } from './types';
+import { IDefinitionChangesFetcher } from './types';
 import SplitIO from '../../../../types/splitio';
 
 type IConfigMatcher = {
@@ -13,35 +13,48 @@ type IConfigMatcher = {
   attribute?: string;
 }
 
-type IConfig = {
+interface IConfigPartition {
+  variant: string
+  size: number
+}
+
+interface IConfig {
   name: string;
   variants: Array<{
     name: string;
     definition: SplitIO.JsonObject;
   }>;
-  defaultVariant: string;
-  changeNumber?: number;
+  changeNumber: number;
+  trafficTypeName?: string;
+  version?: number;
+  status?: 'ACTIVE' | 'ARCHIVED';
+  killed?: boolean;
+  sets?: string[];
   targeting?: {
+    default?: string;
+    seed?: number;
+    trafficAllocation?: number,
+    trafficAllocationSeed?: number,
     conditions?: Array<{
-      variant: string;
       label: string;
+      partitions: Array<IConfigPartition>;
       matchers: Array<IConfigMatcher>;
     }>
   };
 }
 
 /** Interface of the parsed JSON response of `/configs` */
-export type IConfigsResponse = {
-  t: number,
-  s?: number,
-  d: IConfig[]
+export interface IConfigsResponse {
+  till: number,
+  since?: number,
+  updated: IConfig[]
 }
 
 /**
  * Factory of Configs fetcher.
  * Configs fetcher is a wrapper around `configs` API service that parses the response and handle errors.
  */
-export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): ISplitChangesFetcher {
+export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): IDefinitionChangesFetcher {
 
   return function configsFetcher(
     since: number,
@@ -50,7 +63,7 @@ export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): IS
     rbSince?: number,
     // Optional decorator for `fetchConfigs` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-  ): Promise<ISplitChangesResponse> {
+  ): Promise<IDefinitionChangesResponse> {
 
     let configsPromise = fetchConfigs(since, noCache, till, rbSince);
     if (decorator) configsPromise = decorator(configsPromise);
@@ -62,7 +75,7 @@ export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): IS
 
 }
 
-function defaultCondition(treatment: string): ISplitCondition {
+function defaultCondition(treatment: string): IDefinitionCondition {
   return {
     conditionType: 'ROLLOUT',
     matcherGroup: {
@@ -78,7 +91,7 @@ function defaultCondition(treatment: string): ISplitCondition {
   };
 }
 
-function convertMatcher(matcher: IConfigMatcher): ISplitMatcher {
+function convertMatcher(matcher: IConfigMatcher): IDefinitionMatcher {
   const keySelector = matcher.attribute ? { trafficType: 'user', attribute: matcher.attribute } : null;
 
   switch (matcher.type) {
@@ -99,20 +112,20 @@ function convertMatcher(matcher: IConfigMatcher): ISplitMatcher {
   }
 }
 
-function convertConfigToDefinition(config: IConfig): ISplit {
-  const defaultTreatment = config.defaultVariant || (config.variants && config.variants[0]?.name) || 'control';
+function convertConfigToDefinition(config: IConfig): IDefinition {
+  const defaultTreatment = config.targeting?.default || config.variants[0]?.name || 'control';
 
   const configurations: Record<string, SplitIO.JsonObject> = {};
   config.variants.forEach(variant => configurations[variant.name] = variant.definition);
 
-  const conditions: ISplitCondition[] = config.targeting?.conditions?.map(condition => ({
+  const conditions: IDefinitionCondition[] = config.targeting?.conditions?.map(condition => ({
     conditionType: condition.matchers.some((m: IConfigMatcher) => m.type === 'WHITELIST') ? 'WHITELIST' : 'ROLLOUT',
     label: condition.label,
     matcherGroup: {
       combiner: 'AND',
       matchers: condition.matchers.map(convertMatcher),
     },
-    partitions: [{ treatment: condition.variant, size: 100 }],
+    partitions: condition.partitions.map(partition => ({ treatment: partition.variant, size: partition.size })),
   })) || [];
 
   conditions.push(defaultCondition(defaultTreatment));
@@ -130,12 +143,12 @@ function convertConfigToDefinition(config: IConfig): ISplit {
   };
 }
 
-export function convertConfigsResponseToDefinitionChangesResponse(configs: IConfigsResponse): ISplitChangesResponse {
+export function convertConfigsResponseToDefinitionChangesResponse(configs: IConfigsResponse): IDefinitionChangesResponse {
   return {
     ff: {
-      s: configs.s,
-      t: configs.t,
-      d: configs.d.map(convertConfigToDefinition),
+      s: configs.since,
+      t: configs.till,
+      d: configs.updated.map(convertConfigToDefinition),
     },
   };
 }

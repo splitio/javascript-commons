@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { parser } from '..';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { keyParser } from '../../../utils/key';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -30,7 +30,7 @@ test('PARSER / if user.email starts with ["nico"] then split 100:on', async () =
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -64,7 +64,7 @@ test('PARSER / if user.email = 123, starts with ["1"] then split 100:on should m
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 123
@@ -98,7 +98,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@split.io'
@@ -132,7 +132,7 @@ test('PARSER / if user.email starts with ["nico", "marcio", "facu"] then split 1
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'marciomisi@split.io'
@@ -165,7 +165,7 @@ test('PARSER / if user.email does not start with ["nico"] then not match', async
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@split.io'
@@ -197,7 +197,7 @@ test('PARSER / if user.email is an EMPTY string, start with ["nico"] should not 
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -227,7 +227,7 @@ test('PARSER / if user.email is not a string, start with ["nico"] should not mat
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: {}
@@ -261,7 +261,7 @@ test('PARSER / NEGATED if user.email starts with ["nico"] then split 100:on, so 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -294,7 +294,7 @@ test('PARSER / NEGATED if user.email does not start with ["nico"] should not mat
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@split.io'
@@ -328,7 +328,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, start with ["nico"] sho
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -360,7 +360,7 @@ test('PARSER / NEGATED if user.email is not a string, start with ["nico"] should
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: /asd4?/
@@ -399,7 +399,7 @@ test('PARSER / if user.email ends with ["split.io"] then split 100:on', async ()
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -433,7 +433,7 @@ test('PARSER / if user.email = 123, ends with ["3"] then split 100:on should mat
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 123
@@ -466,7 +466,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -500,7 +500,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@hotmail.com'
@@ -534,7 +534,7 @@ test('PARSER / if user.email ends with ["gmail.com", "split.io", "hotmail.com"] 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -567,7 +567,7 @@ test('PARSER / if user.email does not end with ["split.io"] then not match', asy
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@gmail.io'
@@ -599,7 +599,7 @@ test('PARSER / if user.email is an EMPTY string, end with ["nico"] should not ma
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -629,7 +629,7 @@ test('PARSER / if user.email is not a string, end with ["nico"] should not match
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: []
@@ -665,7 +665,7 @@ test('PARSER / NEGATED if user.email ends with ["split.io"] then split 100:on, s
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -697,7 +697,7 @@ test('PARSER / NEGATED if user.email does not end with ["split.io"] then no matc
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@gmail.io'
@@ -730,7 +730,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, end with ["nico"] shoul
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -762,7 +762,7 @@ test('PARSER / NEGATED if user.email is not a string, end with ["nico"] should n
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: NaN
@@ -801,7 +801,7 @@ test('PARSER / if user.email contains ["@split"] then split 100:on', async () =>
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -835,7 +835,7 @@ test('PARSER / if user.email = 123, contains ["2"] then split 100:on should matc
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 123
@@ -869,7 +869,7 @@ test('PARSER / if user.email contains ["@split"] (beginning) then split 100:on',
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: '@split.io.com.ar'
@@ -903,7 +903,7 @@ test('PARSER / if user.email contains ["@split"] (end) then split 100:on', async
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split'
@@ -937,7 +937,7 @@ test('PARSER / if user.email contains ["@split"] (whole string matches) then spl
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: '@split'
@@ -971,7 +971,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nico@hotmail.com'
@@ -1005,7 +1005,7 @@ test('PARSER / if user.email contains ["@split", "@gmail", "@hotmail"] then spli
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nico@gmail.com'
@@ -1039,7 +1039,7 @@ test('PARSER / if user.email does not contain ["@split"] then not match', async 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@gmail.io'
@@ -1071,7 +1071,7 @@ test('PARSER / if user.email is an EMPTY string, contains ["nico"] should not ma
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -1101,7 +1101,7 @@ test('PARSER / if user.email is not a string, contains ["nico"] should not match
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: null
@@ -1137,7 +1137,7 @@ test('PARSER / NEGATED if user.email contains ["@split"] then split 100:on, then
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'nicolas.zelaya@split.io'
@@ -1170,7 +1170,7 @@ test('PARSER / NEGATED if user.email does not contain ["@split"] then not match,
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: 'facundo@gmail.io'
@@ -1203,7 +1203,7 @@ test('PARSER / NEGATED if user.email is an EMPTY string, contains ["nico"] shoul
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: ''
@@ -1235,7 +1235,7 @@ test('PARSER / NEGATED if user.email is not a string, contains ["nico"] should n
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     email: () => { }

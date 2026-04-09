@@ -1,13 +1,13 @@
-import { ISplitChangesResponse, ISegmentChangesResponse, IMembershipsResponse } from '../../../dtos/types';
+import { IDefinitionChangesResponse, ISegmentChangesResponse, IMembershipsResponse } from '../../../dtos/types';
 import { IResponse } from '../../../services/types';
 
-export type ISplitChangesFetcher = (
+export type IDefinitionChangesFetcher = (
   since: number,
   noCache?: boolean,
   till?: number,
   rbSince?: number,
   decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-) => Promise<ISplitChangesResponse>
+) => Promise<IDefinitionChangesResponse>
 
 export type ISegmentChangesFetcher = (
   since: number,
