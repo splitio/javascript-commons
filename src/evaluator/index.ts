@@ -159,7 +159,7 @@ function getEvaluation(
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
-        result.changeNumber = definition.changeNumber;
+        result.changeNumber = definition.version || definition.changeNumber;
         result.config = definition.configurations && definition.configurations[result.treatment] || null;
         // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
         result.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
@@ -167,7 +167,7 @@ function getEvaluation(
         return result;
       });
     } else {
-      evaluation.changeNumber = definition.changeNumber;
+      evaluation.changeNumber = definition.version || definition.changeNumber;
       evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
       // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
       evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
@@ -236,7 +236,7 @@ function getDefaultTreatment(
       treatment: definition.defaultTreatment,
       label: NO_CONDITION_MATCH, // "default rule"
       config: definition.configurations && definition.configurations[definition.defaultTreatment] || null,
-      changeNumber: definition.changeNumber
+      changeNumber: definition.version || definition.changeNumber
     };
   }
 
