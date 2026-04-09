@@ -203,7 +203,6 @@ export interface IExcludedSegment {
 
 export interface TargetingEntity {
   name: string;
-  // Properties required for evaluation
   changeNumber: number;
   status: 'ACTIVE' | 'ARCHIVED';
   conditions: IDefinitionCondition[];
@@ -220,7 +219,6 @@ export interface IDefinition extends TargetingEntity {
   trafficTypeName: string;
   sets?: string[];
   impressionsDisabled?: boolean;
-  // Properties required for evaluation
   prerequisites?: null | {
     n: string,
     ts: string[]
