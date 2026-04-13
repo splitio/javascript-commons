@@ -219,6 +219,7 @@ export interface IDefinition extends TargetingEntity {
   trafficTypeName: string;
   sets?: string[];
   impressionsDisabled?: boolean;
+  version?: number;
   prerequisites?: null | {
     n: string,
     ts: string[]

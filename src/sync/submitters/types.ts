@@ -12,7 +12,7 @@ type ImpressionPayload = {
   t: string;
   /** Timestamp */
   m: number;
-  /** Change number */
+  /** Version */
   c: number;
   /** Rule label */
   r?: string;

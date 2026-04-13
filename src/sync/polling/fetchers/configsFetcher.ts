@@ -137,7 +137,8 @@ function convertConfigToDefinition(config: IConfig): IDefinition {
 
   return {
     name: config.name,
-    changeNumber: config.changeNumber || 0,
+    version: config.version,
+    changeNumber: config.changeNumber,
     status: 'ACTIVE',
     conditions,
     killed: false,
