@@ -1,12 +1,12 @@
 import { ISettings } from '../../../types';
-import { ISplitChangesResponse } from '../../../dtos/types';
-import { IFetchDefinitionChanges, IResponse } from '../../../services/types';
-import { IStorageBase } from '../../../storages/types';
+import { IDefinitionChangesResponse } from '../../../dtos/types';
+import { IResponse } from '../../../services/types';
 import { FLAG_SPEC_VERSION } from '../../../utils/constants';
 import { base } from '../../../utils/settingsValidation';
-import { ISplitChangesFetcher } from './types';
-import { LOG_PREFIX_SYNC_SPLITS } from '../../../logger/constants';
+import { IDefinitionChangesFetcher } from './types';
+import { LOG_PREFIX_SYNC } from '../../../logger/constants';
 import { checkIfServerSide } from '../../../utils/key';
+import { ISdkFactoryContextSync } from '../../../sdkFactory/types';
 
 const PROXY_CHECK_INTERVAL_MILLIS_CS = 60 * 60 * 1000; // 1 hour in Client Side
 const PROXY_CHECK_INTERVAL_MILLIS_SS = 24 * PROXY_CHECK_INTERVAL_MILLIS_CS; // 24 hours in Server Side
@@ -20,20 +20,21 @@ function sdkEndpointOverridden(settings: ISettings) {
  * SplitChanges fetcher is a wrapper around `splitChanges` API service that parses the response and handle errors.
  */
 // @TODO breaking: drop support for Split Proxy below v5.10.0 and simplify the implementation
-export function splitChangesFetcherFactory(fetchSplitChanges: IFetchDefinitionChanges, settings: ISettings, storage: Pick<IStorageBase, 'splits' | 'rbSegments'>): ISplitChangesFetcher {
+export function splitChangesFetcherFactory(params: ISdkFactoryContextSync): IDefinitionChangesFetcher {
 
+  const { splitApi: { fetchSplitChanges }, settings, storage } = params;
   const log = settings.log;
   const PROXY_CHECK_INTERVAL_MILLIS = checkIfServerSide(settings) ? PROXY_CHECK_INTERVAL_MILLIS_SS : PROXY_CHECK_INTERVAL_MILLIS_CS;
   let lastProxyCheckTimestamp: number | undefined;
 
-  return function splitChangesFetcher(
+  function splitChangesFetcher(
     since: number,
     noCache?: boolean,
     till?: number,
     rbSince?: number,
     // Optional decorator for `fetchSplitChanges` promise, such as timeout or time tracker
     decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-  ): Promise<ISplitChangesResponse> {
+  ): Promise<IDefinitionChangesResponse> {
 
     // Recheck proxy
     if (lastProxyCheckTimestamp && (Date.now() - lastProxyCheckTimestamp) > PROXY_CHECK_INTERVAL_MILLIS) {
@@ -44,7 +45,7 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchDefinitionCh
       .catch((err) => {
         // Handle proxy error with spec 1.3
         if ((!err.statusCode || err.statusCode === 400) && sdkEndpointOverridden(settings) && settings.sync.flagSpecVersion === FLAG_SPEC_VERSION) {
-          log.error(LOG_PREFIX_SYNC_SPLITS + 'Proxy error detected. Retrying with spec 1.2. If you are using Split Proxy, please upgrade to latest version');
+          log.error(LOG_PREFIX_SYNC + 'Proxy error detected. Retrying with spec 1.2. If you are using Split Proxy, please upgrade to latest version');
           lastProxyCheckTimestamp = Date.now();
           settings.sync.flagSpecVersion = '1.2'; // fallback to 1.2 spec
           return fetchSplitChanges(since, noCache, till); // retry request without rbSince
@@ -70,10 +71,10 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchDefinitionCh
 
         // Proxy recovery
         if (lastProxyCheckTimestamp) {
-          log.info(LOG_PREFIX_SYNC_SPLITS + 'Proxy error recovered');
+          log.info(LOG_PREFIX_SYNC + 'Proxy error recovered');
           lastProxyCheckTimestamp = undefined;
           return splitChangesFetcher(-1, undefined, undefined, -1)
-            .then((splitChangesResponse: ISplitChangesResponse) =>
+            .then((splitChangesResponse: IDefinitionChangesResponse) =>
               Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
                 .then(() => splitChangesResponse)
             );
@@ -81,6 +82,8 @@ export function splitChangesFetcherFactory(fetchSplitChanges: IFetchDefinitionCh
 
         return data;
       });
-  };
+  }
 
+  splitChangesFetcher.type = 'feature flags' as const;
+  return splitChangesFetcher;
 }

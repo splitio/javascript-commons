@@ -1,7 +1,7 @@
 import { SplitsCacheInLocal } from '../SplitsCacheInLocal';
 import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse, featureFlagOne, featureFlagTwo, featureFlagThree, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
-import { ISplit } from '../../../dtos/types';
+import { IDefinition } from '../../../dtos/types';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
 import { storages, PREFIX } from './wrapper.mock';
 
@@ -115,7 +115,7 @@ describe.each(storages)('SPLITS CACHE', (storage) => {
 
     // kill an existent split
     updated = cache.killLocally(something.name, 'some_treatment', 100);
-    let lol1Split = cache.getSplit(something.name) as ISplit;
+    let lol1Split = cache.getSplit(something.name) as IDefinition;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -125,7 +125,7 @@ describe.each(storages)('SPLITS CACHE', (storage) => {
 
     // not update if changeNumber is old
     updated = cache.killLocally(something.name, 'some_treatment_2', 90);
-    lol1Split = cache.getSplit(something.name) as ISplit;
+    lol1Split = cache.getSplit(something.name) as IDefinition;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older

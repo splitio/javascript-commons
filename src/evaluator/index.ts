@@ -1,8 +1,8 @@
 import { engineParser } from './Engine';
 import { thenable } from '../utils/promise/thenable';
-import { EXCEPTION, NO_CONDITION_MATCH, SPLIT_NOT_FOUND } from '../utils/labels';
+import { EXCEPTION, NO_CONDITION_MATCH, DEFINITION_NOT_FOUND } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
-import { ISplit, MaybeThenable } from '../dtos/types';
+import { IDefinition, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import { IEvaluationResult } from './types';
 import SplitIO from '../../types/splitio';
@@ -18,14 +18,14 @@ const EVALUATION_EXCEPTION = {
 
 let EVALUATION_NOT_FOUND = {
   treatment: CONTROL,
-  label: SPLIT_NOT_FOUND,
+  label: DEFINITION_NOT_FOUND,
   config: null
 };
 
-function treatmentsException(splitNames: string[]) {
+function treatmentsException(definitionNames: string[]) {
   const evaluations: Record<string, IEvaluationResult> = {};
-  splitNames.forEach(splitName => {
-    evaluations[splitName] = EVALUATION_EXCEPTION;
+  definitionNames.forEach(definitionName => {
+    evaluations[definitionName] = EVALUATION_EXCEPTION;
   });
   return evaluations;
 }
@@ -33,25 +33,25 @@ function treatmentsException(splitNames: string[]) {
 export function evaluateFeature(
   log: ILogger,
   key: SplitIO.SplitKey,
-  splitName: string,
+  definitionName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions
 ): MaybeThenable<IEvaluationResult> {
-  let parsedSplit;
+  let definition;
 
   try {
-    parsedSplit = storage.splits.getSplit(splitName);
+    definition = storage.splits.getSplit(definitionName);
   } catch (e) {
     // Exception on sync `getSplit` storage. Not possible ATM with InMemory and InLocal storages.
     return EVALUATION_EXCEPTION;
   }
 
-  if (thenable(parsedSplit)) {
-    return parsedSplit.then((split) => getEvaluation(
+  if (thenable(definition)) {
+    return definition.then((definition) => getEvaluation(
       log,
       key,
-      split,
+      definition,
       attributes,
       storage,
       options,
@@ -65,7 +65,7 @@ export function evaluateFeature(
   return getEvaluation(
     log,
     key,
-    parsedSplit,
+    definition,
     attributes,
     storage,
     options,
@@ -75,28 +75,28 @@ export function evaluateFeature(
 export function evaluateFeatures(
   log: ILogger,
   key: SplitIO.SplitKey,
-  splitNames: string[],
+  definitionNames: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
-  let parsedSplits;
+  let definitions;
 
   try {
-    parsedSplits = storage.splits.getSplits(splitNames);
+    definitions = storage.splits.getSplits(definitionNames);
   } catch (e) {
     // Exception on sync `getSplits` storage. Not possible ATM with InMemory and InLocal storages.
-    return treatmentsException(splitNames);
+    return treatmentsException(definitionNames);
   }
 
-  return thenable(parsedSplits) ?
-    parsedSplits.then(splits => getEvaluations(log, key, splitNames, splits, attributes, storage, options))
+  return thenable(definitions) ?
+    definitions.then(definitions => getEvaluations(log, key, definitionNames, definitions, attributes, storage, options))
       .catch(() => {
         // Exception on async `getSplits` storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
-        return treatmentsException(splitNames);
+        return treatmentsException(definitionNames);
       }) :
-    getEvaluations(log, key, splitNames, parsedSplits, attributes, storage, options);
+    getEvaluations(log, key, definitionNames, definitions, attributes, storage, options);
 }
 
 export function evaluateFeaturesByFlagSets(
@@ -146,32 +146,31 @@ export function evaluateFeaturesByFlagSets(
 function getEvaluation(
   log: ILogger,
   key: SplitIO.SplitKey,
-  splitJSON: ISplit | null,
+  definition: IDefinition | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<IEvaluationResult> {
 
-
-  if (splitJSON) {
-    const split = engineParser(log, splitJSON, storage);
+  if (definition) {
+    const split = engineParser(log, definition, storage);
     const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     // If the storage is async and the evaluated flag uses segments or dependencies, evaluation is thenable
     if (thenable(evaluation)) {
       return evaluation.then(result => {
-        result.changeNumber = splitJSON.changeNumber;
-        result.config = splitJSON.configurations && splitJSON.configurations[result.treatment] || null;
+        result.changeNumber = definition.changeNumber;
+        result.config = definition.configurations && definition.configurations[result.treatment] || null;
         // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-        result.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
+        result.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
 
         return result;
       });
     } else {
-      evaluation.changeNumber = splitJSON.changeNumber;
-      evaluation.config = splitJSON.configurations && splitJSON.configurations[evaluation.treatment] || null;
+      evaluation.changeNumber = definition.changeNumber;
+      evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
       // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-      evaluation.impressionsDisabled = options?.impressionsDisabled || splitJSON.impressionsDisabled;
+      evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
     }
 
     return evaluation;
@@ -183,29 +182,29 @@ function getEvaluation(
 function getEvaluations(
   log: ILogger,
   key: SplitIO.SplitKey,
-  splitNames: string[],
-  splits: Record<string, ISplit | null>,
+  definitionNames: string[],
+  splits: Record<string, IDefinition | null>,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   options?: SplitIO.EvaluationOptions,
 ): MaybeThenable<Record<string, IEvaluationResult>> {
   const result: Record<string, IEvaluationResult> = {};
   const thenables: Promise<void>[] = [];
-  splitNames.forEach(splitName => {
+  definitionNames.forEach(definitionName => {
     const evaluation = getEvaluation(
       log,
       key,
-      splits[splitName],
+      splits[definitionName],
       attributes,
       storage,
       options
     );
     if (thenable(evaluation)) {
       thenables.push(evaluation.then(res => {
-        result[splitName] = res;
+        result[definitionName] = res;
       }));
     } else {
-      result[splitName] = evaluation;
+      result[definitionName] = evaluation;
     }
   });
 
@@ -213,31 +212,31 @@ function getEvaluations(
 }
 
 export function evaluateDefaultTreatment(
-  splitName: string,
+  definitionName: string,
   storage: IStorageSync | IStorageAsync,
 ): MaybeThenable<IEvaluationResult> {
-  let parsedSplit;
+  let definition;
 
   try {
-    parsedSplit = storage.splits.getSplit(splitName);
+    definition = storage.splits.getSplit(definitionName);
   } catch (e) {
     return EVALUATION_EXCEPTION;
   }
 
-  return thenable(parsedSplit) ?
-    parsedSplit.then(getDefaultTreatment).catch(() => EVALUATION_EXCEPTION) :
-    getDefaultTreatment(parsedSplit);
+  return thenable(definition) ?
+    definition.then(getDefaultTreatment).catch(() => EVALUATION_EXCEPTION) :
+    getDefaultTreatment(definition);
 }
 
 function getDefaultTreatment(
-  splitJSON: ISplit | null,
+  definition: IDefinition | null,
 ): MaybeThenable<IEvaluationResult> {
-  if (splitJSON) {
+  if (definition) {
     return {
-      treatment: splitJSON.defaultTreatment,
+      treatment: definition.defaultTreatment,
       label: NO_CONDITION_MATCH, // "default rule"
-      config: splitJSON.configurations && splitJSON.configurations[splitJSON.defaultTreatment] || null,
-      changeNumber: splitJSON.changeNumber
+      config: definition.configurations && definition.configurations[definition.defaultTreatment] || null,
+      changeNumber: definition.changeNumber
     };
   }
 

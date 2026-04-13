@@ -1,16 +1,16 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateSplitExistence, validateIfOperational } from '../utils/inputValidation';
+import { validateSplit, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
-import { ISplit } from '../dtos/types';
+import { IDefinition } from '../dtos/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { SPLIT_FN_LABEL, SPLITS_FN_LABEL, NAMES_FN_LABEL } from '../utils/constants';
 
-function collectTreatments(splitObject: ISplit) {
+function collectTreatments(splitObject: IDefinition) {
   const conditions = splitObject.conditions;
   // Rollout conditions are supposed to have the entire partitions list, so we find the first one.
   let allTreatmentsCondition = find(conditions, (cond) => cond.conditionType === 'ROLLOUT');
@@ -20,7 +20,7 @@ function collectTreatments(splitObject: ISplit) {
   return allTreatmentsCondition ? allTreatmentsCondition.partitions!.map(v => v.treatment) : [];
 }
 
-function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
+function objectToView(splitObject: IDefinition | null): SplitIO.SplitView | null {
   if (!splitObject) return null;
 
   return {
@@ -37,7 +37,7 @@ function objectToView(splitObject: ISplit | null): SplitIO.SplitView | null {
   };
 }
 
-function objectsToViews(splitObjects: ISplit[]) {
+function objectsToViews(splitObjects: IDefinition[]) {
   let views: SplitIO.SplitView[] = [];
 
   splitObjects.forEach(split => {
@@ -74,12 +74,12 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
 
         if (thenable(split)) {
           return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
-            validateSplitExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
+            validateDefinitionExistence(log, readinessManager, splitName, result, SPLIT_FN_LABEL);
             return objectToView(result);
           });
         }
 
-        validateSplitExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
+        validateDefinitionExistence(log, readinessManager, splitName, split, SPLIT_FN_LABEL);
 
         return objectToView(split);
       },

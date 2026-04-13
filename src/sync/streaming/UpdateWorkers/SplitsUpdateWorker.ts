@@ -1,4 +1,4 @@
-import { IRBSegment, ISplit } from '../../../dtos/types';
+import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { STREAMING_PARSING_SPLIT_UPDATE } from '../../../logger/constants';
 import { ILogger } from '../../../logger/types';
 import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
@@ -7,8 +7,8 @@ import { IRBSegmentsCacheSync, ISplitsCacheSync, IStorageSync } from '../../../s
 import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
-import { ISegmentsSyncTask, ISplitsSyncTask } from '../../polling/types';
-import { InstantUpdate } from '../../polling/updaters/splitChangesUpdater';
+import { ISegmentsSyncTask, IDefinitionsSyncTask } from '../../polling/types';
+import { InstantUpdate } from '../../polling/updaters/definitionChangesUpdater';
 import { RB_SEGMENT_UPDATE } from '../constants';
 import { parseFFUpdatePayload } from '../parseUtils';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
@@ -18,7 +18,7 @@ import { IUpdateWorker } from './types';
 /**
  * SplitsUpdateWorker factory
  */
-export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSyncTask: ISplitsSyncTask, splitsEventEmitter: ISplitsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killSplit(event: ISplitKillData): void } {
+export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, splitsEventEmitter: ISplitsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killSplit(event: ISplitKillData): void } {
 
   const ff = SplitsUpdateWorker(storage.splits);
   const rbs = SplitsUpdateWorker(storage.rbSegments);
@@ -36,7 +36,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
       if (maxChangeNumber > cache.getChangeNumber()) {
         handleNewEvent = false;
         // fetch splits revalidating data if cached
-        splitsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, instantUpdate).then(() => {
+        definitionsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, instantUpdate).then(() => {
           if (!isHandlingEvent) return; // halt if `stop` has been called
           if (handleNewEvent) {
             __handleSplitUpdateCall();
@@ -79,7 +79,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, splitsSy
        *
        * @param changeNumber - change number of the notification
        */
-      put({ changeNumber, pcn, type }: ISplitUpdateData, payload?: ISplit | IRBSegment) {
+      put({ changeNumber, pcn, type }: ISplitUpdateData, payload?: IDefinition | IRBSegment) {
         const currentChangeNumber = cache.getChangeNumber();
 
         if (changeNumber <= currentChangeNumber || changeNumber <= maxChangeNumber) return;
