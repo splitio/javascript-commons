@@ -1,43 +1,38 @@
-import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
+import { definitionsSyncTaskFactory } from './syncTasks/definitionsSyncTask';
 import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
-import { IPollingManager, ISegmentsSyncTask, ISplitsSyncTask } from './types';
-import { LOG_PREFIX_SYNC_POLLING, POLLING_START, POLLING_STOP } from '../../logger/constants';
+import { IPollingManager, ISegmentsSyncTask, IDefinitionsSyncTask } from './types';
+import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-import { ISettings } from '../../types';
-
-export function isFetchingConfigs(settings: Pick<ISettings, 'definitionsType'>) {
-  return settings.definitionsType === 'configs';
-}
+import { IDefinitionChangesFetcher } from './fetchers/types';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
 export function pollingManagerSSFactory(
   params: ISdkFactoryContextSync,
+  definitionChangesFetcher: IDefinitionChangesFetcher
 ): IPollingManager {
 
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const fetchingConfigs = isFetchingConfigs(settings);
-
-  const splitsSyncTask: ISplitsSyncTask = splitsSyncTaskFactory(fetchingConfigs ? splitApi.fetchConfigs : splitApi.fetchSplitChanges, storage, readiness, settings);
+  const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings);
   const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(splitApi.fetchSegmentChanges, storage, readiness, settings);
 
   return {
-    splitsSyncTask,
+    definitionsSyncTask,
     segmentsSyncTask,
 
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `${fetchingConfigs ? 'configs' : 'feature flags'} will be refreshed each ${fetchingConfigs ? settings.scheduler.configsRefreshRate : settings.scheduler.featuresRefreshRate} millis`);
-      log.debug(LOG_PREFIX_SYNC_POLLING + `Segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `${definitionChangesFetcher.type} will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
+      log.debug(LOG_PREFIX_SYNC_POLLING + `segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
-      const startingUp = splitsSyncTask.start();
+      const startingUp = definitionsSyncTask.start();
       if (startingUp) {
         startingUp.then(() => {
-          if (splitsSyncTask.isRunning()) segmentsSyncTask.start();
+          if (definitionsSyncTask.isRunning()) segmentsSyncTask.start();
         });
       }
     },
@@ -46,16 +41,16 @@ export function pollingManagerSSFactory(
     stop() {
       log.info(POLLING_STOP);
 
-      if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
+      if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
       if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
     },
 
     // Used by SyncManager to know if running in polling mode.
-    isRunning: splitsSyncTask.isRunning,
+    isRunning: definitionsSyncTask.isRunning,
 
     syncAll() {
-      // fetch splits and segments. There is no need to catch this promise (`SplitChangesUpdater` is always resolved with a boolean value)
-      return splitsSyncTask.execute().then(() => {
+      // fetch definitions and segments. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
+      return definitionsSyncTask.execute().then(() => {
         return segmentsSyncTask.execute();
       });
     }

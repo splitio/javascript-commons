@@ -6,8 +6,8 @@ export const codesWarn: [number, string][] = codesError.concat([
   [c.ENGINE_VALUE_INVALID, c.LOG_PREFIX_ENGINE_VALUE + 'Value %s doesn\'t match with expected type.'],
   [c.ENGINE_VALUE_NO_ATTRIBUTES, c.LOG_PREFIX_ENGINE_VALUE + 'Defined attribute `%s`. No attributes received.'],
   // synchronizer
-  [c.SYNC_MYSEGMENTS_FETCH_RETRY, c.LOG_PREFIX_SYNC_MYSEGMENTS + 'Retrying fetch of memberships (attempt #%s). Reason: %s'],
-  [c.SYNC_SPLITS_FETCH_FAILS, c.LOG_PREFIX_SYNC_SPLITS + 'Error while doing fetch of %s'],
+  [c.SYNC_FETCH_RETRY, c.LOG_PREFIX_SYNC + 'Retrying fetch of %s (attempt #%s). Reason: %s'],
+  [c.SYNC_FETCH_FAILS, c.LOG_PREFIX_SYNC + 'Error while doing fetch of %s. %s'],
   [c.STREAMING_PARSING_ERROR_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE error notification: %s'],
   [c.STREAMING_PARSING_MESSAGE_FAILS, c.LOG_PREFIX_SYNC_STREAMING + 'Error parsing SSE message notification: %s'],
   [c.STREAMING_FALLBACK, c.LOG_PREFIX_SYNC_STREAMING + 'Falling back to polling mode. Reason: %s'],

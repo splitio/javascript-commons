@@ -4,7 +4,7 @@ import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
 import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
+import { SYNC_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
@@ -76,7 +76,7 @@ export function mySegmentsUpdaterFactory(
     return updaterPromise.catch(error => {
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
-        log.warn(SYNC_MYSEGMENTS_FETCH_RETRY, [retry, error]);
+        log.warn(SYNC_FETCH_RETRY, ['memberships', retry, error]);
         return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params
       } else {
         startingUp = false;
