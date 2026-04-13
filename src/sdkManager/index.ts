@@ -1,7 +1,7 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
-import { validateSplit, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
+import { validateDefinition, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
 import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { IDefinition } from '../dtos/types';
@@ -65,7 +65,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
        * Get the feature flag object corresponding to the given feature flag name if valid
        */
       split(featureFlagName: string) {
-        const splitName = validateSplit(log, featureFlagName, SPLIT_FN_LABEL);
+        const splitName = validateDefinition(log, featureFlagName, SPLIT_FN_LABEL);
         if (!validateIfOperational(log, readinessManager, SPLIT_FN_LABEL) || !splitName) {
           return isAsync ? Promise.resolve(null) : null;
         }
