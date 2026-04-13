@@ -615,7 +615,6 @@ declare namespace SplitIO {
     readonly mode: SDKMode;
     readonly scheduler: {
       featuresRefreshRate: number;
-      configsRefreshRate: number;
       impressionsRefreshRate: number;
       impressionsQueueSize: number;
       /**

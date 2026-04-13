@@ -81,7 +81,6 @@ export function telemetryCacheConfigAdapter(telemetry: ITelemetryCacheSync, sett
         sE: settings.streamingEnabled,
         rR: {
           sp: scheduler.featuresRefreshRate / 1000,
-          cf: scheduler.configsRefreshRate / 1000,
           se: isServerSide ? scheduler.segmentsRefreshRate / 1000 : undefined,
           ms: isServerSide ? undefined : scheduler.segmentsRefreshRate / 1000,
           im: scheduler.impressionsRefreshRate / 1000,

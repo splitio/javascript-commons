@@ -38,7 +38,6 @@ export const fullSettings: ISettings = {
   },
   scheduler: {
     featuresRefreshRate: 1,
-    configsRefreshRate: 1,
     impressionsRefreshRate: 1,
     telemetryRefreshRate: 1,
     segmentsRefreshRate: 1,

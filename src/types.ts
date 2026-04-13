@@ -12,7 +12,6 @@ export interface ISettings extends SplitIO.ISettings {
   };
   readonly log: ILogger;
   readonly initialRolloutPlan?: RolloutPlan;
-  readonly definitionsType?: 'ff' | 'configs'; // default is 'ff'
 }
 
 /**
