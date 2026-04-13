@@ -1,7 +1,8 @@
 import { IDefinition, IDefinitionChangesResponse, IDefinitionCondition, IDefinitionMatcher } from '../../../dtos/types';
-import { IFetchDefinitionChanges, IResponse } from '../../../services/types';
+import { IResponse } from '../../../services/types';
 import { IDefinitionChangesFetcher } from './types';
 import SplitIO from '../../../../types/splitio';
+import { ISdkFactoryContextSync } from '../../../sdkFactory/types';
 
 type IConfigMatcher = {
   type: 'IS_EQUAL_TO';
@@ -54,9 +55,10 @@ export interface IConfigsResponse {
  * Factory of Configs fetcher.
  * Configs fetcher is a wrapper around `configs` API service that parses the response and handle errors.
  */
-export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): IDefinitionChangesFetcher {
+export function configsFetcherFactory(params: ISdkFactoryContextSync): IDefinitionChangesFetcher {
+  const fetchConfigs = params.splitApi.fetchConfigs;
 
-  return function configsFetcher(
+  function configsFetcher(
     since: number,
     noCache?: boolean,
     till?: number,
@@ -71,7 +73,10 @@ export function configsFetcherFactory(fetchConfigs: IFetchDefinitionChanges): ID
     return configsPromise
       .then<IConfigsResponse>((resp: IResponse) => resp.json())
       .then(convertConfigsResponseToDefinitionChangesResponse);
-  };
+  }
+
+  configsFetcher.type = 'configs' as const;
+  return configsFetcher;
 
 }
 

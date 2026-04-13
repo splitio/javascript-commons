@@ -1,13 +1,15 @@
 import { IDefinitionChangesResponse, ISegmentChangesResponse, IMembershipsResponse } from '../../../dtos/types';
 import { IResponse } from '../../../services/types';
 
-export type IDefinitionChangesFetcher = (
+export type IDefinitionChangesFetcher = ((
   since: number,
   noCache?: boolean,
   till?: number,
   rbSince?: number,
   decorator?: (promise: Promise<IResponse>) => Promise<IResponse>
-) => Promise<IDefinitionChangesResponse>
+) => Promise<IDefinitionChangesResponse>) & {
+  type: 'configs' | 'feature flags'
+}
 
 export type ISegmentChangesFetcher = (
   since: number,

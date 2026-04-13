@@ -3,7 +3,7 @@ import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
+import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC } from '../../../logger/constants';
 import { timeout } from '../../../utils/promise/timeout';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 
@@ -38,7 +38,7 @@ export function segmentChangesUpdaterFactory(
   }
 
   function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean, retries?: number): Promise<boolean> {
-    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
+    log.debug(`${LOG_PREFIX_SYNC}Processing segment ${segmentName}`);
     const sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
@@ -47,14 +47,14 @@ export function segmentChangesUpdaterFactory(
         false :
         segmentChangesFetcher(since || -1, segmentName, noCache, till, _promiseDecorator).then((changes) => {
           return Promise.all(changes.map(x => {
-            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            log.debug(`${LOG_PREFIX_SYNC}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             return segments.update(segmentName, x.added, x.removed, x.till);
           })).then((updates) => {
             return updates.some(update => update);
           });
         }).catch(error => {
           if (retries) {
-            log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Retrying fetch of segment ${segmentName} (attempt #${retries}). Reason: ${error}`);
+            log.warn(`${LOG_PREFIX_SYNC}Retrying fetch of segment ${segmentName} (attempt #${retries}). Reason: ${error}`);
             return updateSegment(segmentName, noCache, till, fetchOnlyNew, retries - 1);
           }
           throw error;
@@ -73,7 +73,7 @@ export function segmentChangesUpdaterFactory(
    * @param till - till target for the provided segmentName, for CDN bypass.
    */
   return function segmentChangesUpdater(fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) {
-    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
+    log.debug(`${LOG_PREFIX_SYNC}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
     let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
@@ -104,7 +104,7 @@ export function segmentChangesUpdaterFactory(
           if (readiness) readiness.setDestroyed();
           log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an SDK Key from Harness UI that is of type server-side.`);
         } else {
-          log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
+          log.warn(`${LOG_PREFIX_SYNC}Error while doing fetch of segments. ${error}`);
         }
 
         return false;
