@@ -4,8 +4,8 @@ import {
   validateEventValue,
   validateEventProperties,
   validateKey,
-  validateSplit,
-  validateSplits,
+  validateDefinition,
+  validateDefinitions,
   validateTrafficType,
   validateIfNotDestroyed,
   validateIfReadyFromCache,
@@ -39,8 +39,8 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const nameOrNames = methodName.indexOf('ByFlagSet') > -1 ?
       validateFlagSets(log, methodName, maybeNameOrNames as string[], settings.sync.__splitFiltersValidation.groupedFilters.bySet) :
       startsWith(methodName, GET_TREATMENTS) ?
-        validateSplits(log, maybeNameOrNames, methodName) :
-        validateSplit(log, maybeNameOrNames, methodName);
+        validateDefinitions(log, maybeNameOrNames, methodName) :
+        validateDefinition(log, maybeNameOrNames, methodName);
 
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
