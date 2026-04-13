@@ -109,17 +109,16 @@ export type LastSync = Partial<Record<OperationType, number | undefined>>
 export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
 export type HttpLatencies = Partial<Record<OperationType, Array<number>>>
 
-export type GET_TREATMENT = 't';
-export type GET_TREATMENTS = 'ts';
-export type GET_TREATMENT_WITH_CONFIG = 'tc';
-export type GET_TREATMENTS_WITH_CONFIG = 'tcs';
+export type TREATMENT = 't';
+export type TREATMENTS = 'ts';
+export type TREATMENT_WITH_CONFIG = 'tc';
+export type TREATMENTS_WITH_CONFIG = 'tcs';
 export type TRACK = 'tr';
-export type GET_TREATMENTS_BY_FLAGSET = 'tf'
-export type GET_TREATMENTS_BY_FLAGSETS = 'tfs'
-export type GET_TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf'
-export type GET_TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs'
-export type GET_CONFIG = 'c';
-export type Method = GET_TREATMENT | GET_TREATMENTS | GET_TREATMENT_WITH_CONFIG | GET_TREATMENTS_WITH_CONFIG | TRACK | GET_TREATMENTS_BY_FLAGSET | GET_TREATMENTS_BY_FLAGSETS | GET_TREATMENTS_WITH_CONFIG_BY_FLAGSET | GET_TREATMENTS_WITH_CONFIG_BY_FLAGSETS | GET_CONFIG;
+export type TREATMENTS_BY_FLAGSET = 'tf'
+export type TREATMENTS_BY_FLAGSETS = 'tfs'
+export type TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf'
+export type TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs'
+export type Method = TREATMENT | TREATMENTS | TREATMENT_WITH_CONFIG | TREATMENTS_WITH_CONFIG | TRACK | TREATMENTS_BY_FLAGSET | TREATMENTS_BY_FLAGSETS | TREATMENTS_WITH_CONFIG_BY_FLAGSET | TREATMENTS_WITH_CONFIG_BY_FLAGSETS;
 
 export type MethodLatencies = Partial<Record<Method, Array<number>>>;
 

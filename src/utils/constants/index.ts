@@ -47,7 +47,6 @@ export const GET_TREATMENTS_BY_FLAG_SET = 'getTreatmentsByFlagSet';
 export const GET_TREATMENTS_BY_FLAG_SETS = 'getTreatmentsByFlagSets';
 export const GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET = 'getTreatmentsWithConfigByFlagSet';
 export const GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS = 'getTreatmentsWithConfigByFlagSets';
-export const GET_CONFIG = 'getConfig';
 export const TRACK_FN_LABEL = 'track';
 
 // Manager method names
@@ -86,7 +85,6 @@ export const TREATMENTS_BY_FLAGSET = 'tf';
 export const TREATMENTS_BY_FLAGSETS = 'tfs';
 export const TREATMENTS_WITH_CONFIG_BY_FLAGSET = 'tcf';
 export const TREATMENTS_WITH_CONFIG_BY_FLAGSETS = 'tcfs';
-export const CONFIG = 'c';
 export const TRACK = 'tr';
 
 export const CONNECTION_ESTABLISHED = 0;

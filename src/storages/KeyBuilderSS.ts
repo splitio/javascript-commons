@@ -11,7 +11,6 @@ export const METHOD_NAMES: Record<Method, string> = {
   tfs: 'treatmentsByFlagSets',
   tcf: 'treatmentsWithConfigByFlagSet',
   tcfs: 'treatmentsWithConfigByFlagSets',
-  c: 'config',
   tr: 'track'
 };
 
