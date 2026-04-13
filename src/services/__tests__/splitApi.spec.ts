@@ -78,7 +78,7 @@ describe('splitApi', () => {
 
     function expectedConfigsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings, rbSince?: number) {
       const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
-      return `sdk/configs?${settings.sync.flagSpecVersion ? `s=${settings.sync.flagSpecVersion}&` : ''}since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+      return `sdk/v1/configs?${settings.sync.flagSpecVersion ? `s=${settings.sync.flagSpecVersion}&` : ''}since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
   });
 

@@ -5,10 +5,10 @@ const INPUT: IConfigsResponse = {
   since: 100,
   till: 200,
   updated: [{
-    name: 'SomeConfig1',
+    identifier: 'SomeConfig1',
     variants: [{ name: 'v1', definition: { prop1: true, prop2: 123 } }, { name: 'v2', definition: { prop1: false, prop2: 456 } }],
     changeNumber: 0,
-    targeting: { default: 'v2', conditions: [{ partitions: [{ variant: 'v1', size: 100 }], label: 'main condition', matchers: [{ type: 'IS_EQUAL_TO', data: { type: 'NUMBER', number: 42 }, attribute: 'age' }, { type: 'WHITELIST', data: { strings: ['a', 'b', 'c'] }, attribute: 'favoriteCharacter' }] }] }
+    targeting: { default: 'v2', conditions: [{ partitions: [{ variant: 'v1', size: 100 }], label: 'main condition', matchers: [{ type: 'EQUAL_TO', data: { type: 'NUMBER', number: 42 }, attribute: 'age' }, { type: 'WHITELIST', data: { strings: ['a', 'b', 'c'] }, attribute: 'favoriteCharacter' }] }] }
   }],
 };
 

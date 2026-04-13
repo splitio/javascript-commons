@@ -2360,9 +2360,9 @@ declare namespace SplitIO {
   type JsonObject = { [key: string]: JsonValue; };
 
   /**
-   * Config definition.
+   * Config object returned by getConfig.
    */
-  interface Config {
+  type Config = {
     /**
      * The name of the variant.
      */
