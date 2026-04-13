@@ -158,7 +158,7 @@ export function definitionChangesUpdaterFactory(
       return Promise.resolve(
         instantUpdate ?
           instantUpdate.type === SPLIT_UPDATE ?
-            // IFFU edge case: a change to a flag that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
+            // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
             Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
               return contains ?
                 { ff: { d: [instantUpdate.payload as IDefinition], t: instantUpdate.changeNumber } } :
@@ -170,11 +170,11 @@ export function definitionChangesUpdaterFactory(
         .then((definitionChanges: IDefinitionChangesResponse) => {
           const usedSegments = new Set<string>();
 
-          let updatedFlags: string[] = [];
+          let updatedDefinitions: string[] = [];
           let ffUpdate: MaybeThenable<boolean> = false;
           if (definitionChanges.ff) {
             const { added, removed, names } = computeMutation(definitionChanges.ff.d, usedSegments, splitFiltersValidation);
-            updatedFlags = names;
+            updatedDefinitions = names;
             log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, added.length, removed.length]);
             ffUpdate = splits.update(added, removed, definitionChanges.ff.t);
           }
@@ -202,10 +202,8 @@ export function definitionChangesUpdaterFactory(
                   // emit SDK events
                   if (emitSplitsArrivedEvent) {
                     const metadata: SdkUpdateMetadata = {
-                      type: updatedFlags.length > 0 ?
-                        definitionChangesFetcher.type === 'configs' ? CONFIGS_UPDATE : FLAGS_UPDATE :
-                        SEGMENTS_UPDATE,
-                      names: updatedFlags.length > 0 ? updatedFlags : []
+                      type: updatedDefinitions.length > 0 ? definitionChangesFetcher.type === 'configs' ? CONFIGS_UPDATE : FLAGS_UPDATE : SEGMENTS_UPDATE,
+                      names: updatedDefinitions.length > 0 ? updatedDefinitions : []
                     };
                     splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
                   }
