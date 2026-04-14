@@ -7,10 +7,12 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
  * Creates an Sdk client, i.e., a base client with status, init, flush and destroy interface
  */
 export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?: boolean): { init(): void; flush(): Promise<void>; destroy(): Promise<void> } {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, impressionsTracker } = params;
+  const { sdkReadinessManager, syncManager, storage, settings, telemetryTracker, impressionsTracker, platform } = params;
 
   let hasInit = false;
   let lastActionTime = 0;
+
+  const signalListener = platform.SignalListener && new platform.SignalListener(params);
 
   function __cooldown(func: Function, time: number) {
     const now = Date.now();

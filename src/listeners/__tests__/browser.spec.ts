@@ -161,7 +161,7 @@ function assertStop(listener: BrowserSignalListener) {
 test('Browser JS listener / consumer mode', () => {
   // No SyncManager ==> consumer mode
   // @ts-expect-error
-  const listener = new BrowserSignalListener(undefined, fullSettings, fakeStorageOptimized, fakeSplitApi);
+  const listener = new BrowserSignalListener({ syncManager: undefined, settings: fullSettings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
 
   listener.start();
   assertStart(listener);
@@ -186,7 +186,7 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageOptimized, fakeSplitApi);
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
 
   listener.start();
   assertStart(listener);
@@ -211,7 +211,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, fullSettings, fakeStorageDebug, fakeSplitApi);
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageDebug, splitApi: fakeSplitApi });
 
   listener.start();
   assertStart(listener);
@@ -240,7 +240,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
 test('Browser JS listener / standalone mode / Fallback to regular Fetch transport', () => {
 
   function runBrowserListener() { // @ts-expect-error
-    const listener = new BrowserSignalListener({}, fullSettings, fakeStorageDebug, fakeSplitApi);
+    const listener = new BrowserSignalListener({ syncManager: {}, settings: fullSettings, storage: fakeStorageDebug, splitApi: fakeSplitApi });
     listener.start();
     // Trigger data flush
     triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
@@ -276,7 +276,7 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   const settings = { ...fullSettings };
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener(syncManagerMock, settings, fakeStorageOptimized, fakeSplitApi);
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
 
   listener.start();
 

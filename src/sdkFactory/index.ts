@@ -18,8 +18,7 @@ import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCal
  */
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
-  const { settings, platform, storageFactory, splitApiFactory, extraProps,
-    syncManagerFactory, SignalListener,
+  const { settings, platform, storageFactory, splitApiFactory, extraProps, syncManagerFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory, lazyInit } = params;
   const { log, initialRolloutPlan, core: { key } } = settings;
 
@@ -63,13 +62,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
   const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackCalculator };
-
-  const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
-  ctx.syncManager = syncManager;
-
-  // @TODO: move into platform, and call inside sdkClientFactory (if it's used only there)
-  const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
-  ctx.signalListener = signalListener;
+  ctx.syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
 
   // SDK client and manager
   const clientMethod = sdkClientMethodFactory(ctx);
