@@ -43,14 +43,12 @@ export function trackMethodFactory(deps: ITrackDeps) {
     // Core logic
     const stopTelemetryTracker = telemetryTracker.trackEval(TRACK);
 
-    const matchingKey = getMatching(key);
-    const timestamp = Date.now();
     const eventData: SplitIO.EventData = {
       eventTypeId,
       trafficTypeName,
       value,
-      timestamp,
-      key: matchingKey,
+      timestamp: Date.now(),
+      key: getMatching(key),
       properties: properties as SplitIO.Properties | undefined
     };
 
