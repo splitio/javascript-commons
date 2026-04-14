@@ -47,7 +47,7 @@
   "overrides": [
     {
       "env": {
-        // platform-agnostic code must not reference Node or Browser globals
+        // platform-agnostic code must not reference Node or Browser globals without feature detection
         "node": false,
         "browser": false,
         "es6": true

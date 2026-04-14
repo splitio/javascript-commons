@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-// @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
 import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
