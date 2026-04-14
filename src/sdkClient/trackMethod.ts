@@ -5,25 +5,14 @@ import { validateKey, validateTrafficType, validateEvent, validateEventValue, va
 import { TRACK, TRACK_FN_LABEL } from '../utils/constants';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import SplitIO from '../../types/splitio';
-import { IReadinessManager } from '../readiness/types';
-import { IEventTracker, ITelemetryTracker } from '../trackers/types';
-import { ISettings } from '../types';
-import { ISplitsCacheBase } from '../storages/types';
-
-export interface ITrackDeps {
-  settings: ISettings,
-  eventTracker: IEventTracker,
-  telemetryTracker: ITelemetryTracker,
-  readinessManager: IReadinessManager,
-  definitions: ISplitsCacheBase,
-}
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 /**
  * Creates a standalone `track` function with input validation.
  * Reusable by FF SDK client, Configs SDK, and thin-client SDK.
  */
-export function trackMethodFactory(deps: ITrackDeps) {
-  const { settings, definitions, telemetryTracker, eventTracker, readinessManager } = deps;
+export function trackMethodFactory(params: Pick<ISdkFactoryContext, 'settings' | 'eventTracker' | 'telemetryTracker' | 'storage' | 'sdkReadinessManager'>) {
+  const { settings, storage: { splits }, telemetryTracker, eventTracker, sdkReadinessManager: { readinessManager } } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
@@ -53,7 +42,7 @@ export function trackMethodFactory(deps: ITrackDeps) {
     };
 
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistence(log, readinessManager, definitions, mode, trafficTypeName, TRACK_FN_LABEL);
+    validateTrafficTypeExistence(log, readinessManager, splits, mode, trafficTypeName, TRACK_FN_LABEL);
 
     const result = eventTracker.track(eventData, size);
 

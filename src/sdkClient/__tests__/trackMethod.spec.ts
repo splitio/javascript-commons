@@ -1,6 +1,7 @@
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { trackMethodFactory, ITrackDeps } from '../trackMethod';
+import { trackMethodFactory } from '../trackMethod';
 import { STANDALONE_MODE } from '../../utils/constants';
+import { ISdkFactoryContext } from '../../sdkFactory/types';
 
 const readinessManagerMock = {
   isReady: jest.fn(() => true),
@@ -25,16 +26,13 @@ const definitionsMock = {
   trafficTypeExists: jest.fn(() => true),
 };
 
-function createDeps(overrides?: Partial<ITrackDeps>): ITrackDeps {
-  return {
-    settings: { log: loggerMock, mode: STANDALONE_MODE } as any,
-    eventTracker: eventTrackerMock as any,
-    telemetryTracker: telemetryTrackerMock as any,
-    readinessManager: readinessManagerMock as any,
-    definitions: definitionsMock as any,
-    ...overrides,
-  };
-}
+const trackMethodParams = {
+  settings: { log: loggerMock, mode: STANDALONE_MODE } as any,
+  eventTracker: eventTrackerMock as any,
+  telemetryTracker: telemetryTrackerMock as any,
+  sdkReadinessManager: { readinessManager: readinessManagerMock },
+  storage: { splits: definitionsMock },
+} as unknown as ISdkFactoryContext;
 
 describe('trackMethodFactory', () => {
 
@@ -46,7 +44,7 @@ describe('trackMethodFactory', () => {
   });
 
   test('Should return true when the event was successfully tracked', () => {
-    const track = trackMethodFactory(createDeps());
+    const track = trackMethodFactory(trackMethodParams);
 
     const result = track('validKey', 'user', 'my.event', 10, { prop: 'value' });
 
@@ -68,7 +66,7 @@ describe('trackMethodFactory', () => {
 
   test('Should return false when SDK is destroyed', () => {
     readinessManagerMock.isDestroyed.mockReturnValue(true);
-    const track = trackMethodFactory(createDeps());
+    const track = trackMethodFactory(trackMethodParams);
 
     const result = track('validKey', 'user', 'my.event');
 
@@ -78,7 +76,7 @@ describe('trackMethodFactory', () => {
   });
 
   test('Should return false when no key is provided', () => {
-    const track = trackMethodFactory(createDeps());
+    const track = trackMethodFactory(trackMethodParams);
 
     // @ts-expect-error testing invalid input
     const result = track(undefined, 'user', 'my.event');

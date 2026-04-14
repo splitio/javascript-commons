@@ -35,7 +35,7 @@ export function stringify(options?: SplitIO.EvaluationOptions) {
  * Creator of base client with getTreatments and track methods.
  */
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker, fallbackCalculator } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, telemetryTracker, fallbackCalculator } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
@@ -180,13 +180,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     return treatment;
   }
 
-  const track = trackMethodFactory({
-    settings,
-    eventTracker,
-    telemetryTracker,
-    definitions: storage.splits,
-    readinessManager,
-  });
+  const track = trackMethodFactory(params);
 
   return {
     getTreatment,
