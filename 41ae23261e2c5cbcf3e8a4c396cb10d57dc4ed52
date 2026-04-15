@@ -1,112 +1,69 @@
-tsconfig.json
-  human 8
-src/utils/EventEmitter.js
-  human 1-444
-src/platform/getFetch/browser.ts
-  human 1-5
-src/platform/getEventSource/__tests__/node.spec.ts
-  human 1-5
 src/platform/browser.ts
-  human 1-14
-src/sync/submitters/__tests__/telemetrySubmitter.spec.ts
-  human 80
-src/utils/filter/bloomFilter.ts
-  human 1-38
+  e9b3e072-2ec0-428a-b108-9646c6de8629 11,13
+  human 1-10,12,14
+tsconfig.json
+  e9b3e072-2ec0-428a-b108-9646c6de8629 8
+src/utils/filter/__tests__/bloomFilter.spec.ts
+  human 1-33
 src/platform/getFetch/__tests__/browser.spec.ts
   human 1-15
-src/platform/node.ts
-  human 1-16
-src/platform/getOptions/node.ts
-  human 1-24
+package-lock.json
+  human 21,39-41,44-46,49-51,1605-1611,2226-2255,2569-2575,4347-4370,6603-6609,7236-7242,7387-7393,8214-8223
 types/splitio.d.ts
   human 2344-2399,2449,2454-2465
-src/platform/getOptions/__tests__/node.spec.ts
-  human 1-21
-src/platform/getEventSource/__tests__/browser.spec.ts
-  human 1-15
-src/platform/getFetch/node.ts
-  human 1-27
-src/utils/settingsValidation/__tests__/settings.mocks.ts
-  human 79-83
+.eslintrc
+  human 50
 src/platform/getEventSource/node.ts
   human 1-23
 src/platform/getEventSource/eventsource.js
   human 1-519
-package.json
-  human 52-54,57-59,62-64,73
-src/platform/getEventSource/browser.ts
-  human 1-4
-src/utils/filter/__tests__/bloomFilter.spec.ts
-  human 1-33
+src/platform/getOptions/node.ts
+  human 1-24
 src/platform/getFetch/__tests__/node.spec.ts
   human 1-5
-.eslintrc
-  human 50
-package-lock.json
-  human 21,39-41,44-46,49-51,1605-1611,2226-2255,2569-2575,4347-4370,6603-6609,7236-7242,7387-7393,8214-8223
+src/platform/node.ts
+  human 1-16
+src/utils/filter/bloomFilter.ts
+  human 1-38
+src/platform/getEventSource/browser.ts
+  human 1-4
+src/platform/getFetch/node.ts
+  human 1-27
+src/utils/settingsValidation/__tests__/settings.mocks.ts
+  human 79-83
+package.json
+  human 52-54,57-59,62-64,73
+src/utils/EventEmitter.js
+  human 1-444
+src/platform/getOptions/__tests__/node.spec.ts
+  human 1-21
+src/platform/getEventSource/__tests__/node.spec.ts
+  human 1-5
+src/sync/submitters/__tests__/telemetrySubmitter.spec.ts
+  human 80
+src/platform/getEventSource/__tests__/browser.spec.ts
+  human 1-15
+src/platform/getFetch/browser.ts
+  human 1-5
 ---
 {
   "attestations": [
     {
       "entries": [
         {
-          "accepted_lines": 1,
-          "added_lines": 1,
+          "accepted_lines": 2,
+          "added_lines": 2,
           "deleted_lines": 0,
-          "hash": "human",
-          "lines": "8",
+          "hash": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+          "lines": "11,13",
           "overridden_lines": 0
-        }
-      ],
-      "file": "tsconfig.json"
-    },
-    {
-      "entries": [
+        },
         {
-          "accepted_lines": 444,
-          "added_lines": 444,
+          "accepted_lines": 12,
+          "added_lines": 12,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-444",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/utils/EventEmitter.js"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 5,
-          "added_lines": 5,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-5",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getFetch/browser.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 5,
-          "added_lines": 5,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-5",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getEventSource/__tests__/node.spec.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 14,
-          "added_lines": 14,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-14",
+          "lines": "1-10,12,14",
           "overridden_lines": 0
         }
       ],
@@ -117,26 +74,26 @@ package-lock.json
         {
           "accepted_lines": 1,
           "added_lines": 1,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "80",
+          "deleted_lines": 1,
+          "hash": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+          "lines": "8",
           "overridden_lines": 0
         }
       ],
-      "file": "src/sync/submitters/__tests__/telemetrySubmitter.spec.ts"
+      "file": "tsconfig.json"
     },
     {
       "entries": [
         {
-          "accepted_lines": 38,
-          "added_lines": 38,
+          "accepted_lines": 33,
+          "added_lines": 33,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-38",
+          "lines": "1-33",
           "overridden_lines": 0
         }
       ],
-      "file": "src/utils/filter/bloomFilter.ts"
+      "file": "src/utils/filter/__tests__/bloomFilter.spec.ts"
     },
     {
       "entries": [
@@ -154,28 +111,15 @@ package-lock.json
     {
       "entries": [
         {
-          "accepted_lines": 16,
-          "added_lines": 16,
+          "accepted_lines": 109,
+          "added_lines": 109,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-16",
+          "lines": "21,39-41,44-46,49-51,1605-1611,2226-2255,2569-2575,4347-4370,6603-6609,7236-7242,7387-7393,8214-8223",
           "overridden_lines": 0
         }
       ],
-      "file": "src/platform/node.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 24,
-          "added_lines": 24,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-24",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getOptions/node.ts"
+      "file": "package-lock.json"
     },
     {
       "entries": [
@@ -193,54 +137,15 @@ package-lock.json
     {
       "entries": [
         {
-          "accepted_lines": 21,
-          "added_lines": 21,
+          "accepted_lines": 1,
+          "added_lines": 1,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "1-21",
+          "lines": "50",
           "overridden_lines": 0
         }
       ],
-      "file": "src/platform/getOptions/__tests__/node.spec.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 15,
-          "added_lines": 15,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-15",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getEventSource/__tests__/browser.spec.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 27,
-          "added_lines": 27,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-27",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getFetch/node.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 5,
-          "added_lines": 5,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "79-83",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/utils/settingsValidation/__tests__/settings.mocks.ts"
+      "file": ".eslintrc"
     },
     {
       "entries": [
@@ -271,41 +176,15 @@ package-lock.json
     {
       "entries": [
         {
-          "accepted_lines": 10,
-          "added_lines": 10,
+          "accepted_lines": 24,
+          "added_lines": 24,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "52-54,57-59,62-64,73",
+          "lines": "1-24",
           "overridden_lines": 0
         }
       ],
-      "file": "package.json"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 4,
-          "added_lines": 4,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-4",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/platform/getEventSource/browser.ts"
-    },
-    {
-      "entries": [
-        {
-          "accepted_lines": 33,
-          "added_lines": 33,
-          "deleted_lines": 0,
-          "hash": "human",
-          "lines": "1-33",
-          "overridden_lines": 0
-        }
-      ],
-      "file": "src/utils/filter/__tests__/bloomFilter.spec.ts"
+      "file": "src/platform/getOptions/node.ts"
     },
     {
       "entries": [
@@ -323,46 +202,186 @@ package-lock.json
     {
       "entries": [
         {
-          "accepted_lines": 1,
-          "added_lines": 1,
+          "accepted_lines": 16,
+          "added_lines": 16,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "50",
+          "lines": "1-16",
           "overridden_lines": 0
         }
       ],
-      "file": ".eslintrc"
+      "file": "src/platform/node.ts"
     },
     {
       "entries": [
         {
-          "accepted_lines": 109,
-          "added_lines": 109,
+          "accepted_lines": 38,
+          "added_lines": 38,
           "deleted_lines": 0,
           "hash": "human",
-          "lines": "21,39-41,44-46,49-51,1605-1611,2226-2255,2569-2575,4347-4370,6603-6609,7236-7242,7387-7393,8214-8223",
+          "lines": "1-38",
           "overridden_lines": 0
         }
       ],
-      "file": "package-lock.json"
+      "file": "src/utils/filter/bloomFilter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-4",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "79-83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/settingsValidation/__tests__/settings.mocks.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "52-54,57-59,62-64,73",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "package.json"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 444,
+          "added_lines": 444,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-444",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/EventEmitter.js"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-21",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getOptions/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "80",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/__tests__/telemetrySubmitter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/__tests__/browser.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/browser.ts"
     }
   ],
-  "base_commit_sha": "a6a26a71b8b87b2475654b9a68e9c729301336fd",
-  "branch": "FME-14213-platform-dependencies",
+  "base_commit_sha": "41ae23261e2c5cbcf3e8a4c396cb10d57dc4ed52",
   "commit_sha": "41ae23261e2c5cbcf3e8a4c396cb10d57dc4ed52",
-  "commit_time": "2026-04-14T23:36:44-03:00",
   "git_ai_version": "1.2.6",
   "prompts": {
-    "human": {
-      "accepted_lines": 1404,
-      "agent_id": null,
+    "e9b3e072-2ec0-428a-b108-9646c6de8629": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
       "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
       "messages": [],
       "overriden_lines": 0,
-      "total_additions": 1404,
+      "total_additions": 3,
+      "total_deletions": 1
+    },
+    "human": {
+      "accepted_lines": 1401,
+      "agent_id": null,
+      "human_author": null,
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1401,
       "total_deletions": 0
     }
   },
-  "repo": "https://github.com/splitio/javascript-commons.git",
   "schema_version": "authorship/3.0.0"
 }
