@@ -1,18 +1,14 @@
 import {
   validateAttributes,
-  validateEvent,
-  validateEventValue,
-  validateEventProperties,
   validateKey,
   validateDefinition,
   validateDefinitions,
-  validateTrafficType,
   validateIfNotDestroyed,
   validateIfReadyFromCache,
   validateEvaluationOptions
 } from '../utils/inputValidation';
 import { startsWith } from '../utils/lang';
-import { GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG, TRACK_FN_LABEL } from '../utils/constants';
+import { GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
@@ -143,19 +139,6 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       wrapResult({});
   }
 
-  function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
-    const key = validateKey(log, maybeKey, TRACK_FN_LABEL);
-    const tt = validateTrafficType(log, maybeTT, TRACK_FN_LABEL);
-    const event = validateEvent(log, maybeEvent, TRACK_FN_LABEL);
-    const eventValue = validateEventValue(log, maybeEventValue, TRACK_FN_LABEL);
-    const { properties, size } = validateEventProperties(log, maybeProperties, TRACK_FN_LABEL);
-    const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, TRACK_FN_LABEL);
-
-    return isNotDestroyed && key && tt && event && eventValue !== false && properties !== false ? // @ts-expect-error
-      client.track(key, tt, event, eventValue, properties, size) :
-      wrapResult(false);
-  }
-
   return {
     getTreatment,
     getTreatmentWithConfig,
@@ -165,6 +148,6 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     getTreatmentsWithConfigByFlagSets,
     getTreatmentsByFlagSet,
     getTreatmentsWithConfigByFlagSet,
-    track
+    track: client.track,
   } as TClient;
 }

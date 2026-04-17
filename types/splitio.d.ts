@@ -73,10 +73,12 @@ interface ISharedSettings {
        * const factory = SplitFactory({
        *   ...
        *   sync: {
-       *     getHeaderOverrides: (context) => {
-       *       return {
-       *         'Authorization': context.headers['Authorization'] + ', other-value',
-       *         'custom-header': 'custom-value'
+       *     requestOptions: {
+       *       getHeaderOverrides: (context) => {
+       *         return {
+       *           'Authorization': context.headers['Authorization'] + ', other-value',
+       *           'custom-header': 'custom-value'
+       *         };
        *       };
        *     }
        *   }
@@ -1590,10 +1592,12 @@ declare namespace SplitIO {
          * const factory = SplitFactory({
          *   ...
          *   sync: {
-         *     getHeaderOverrides: (context) => {
-         *       return {
-         *         'Authorization': context.headers['Authorization'] + ', other-value',
-         *         'custom-header': 'custom-value'
+         *     requestOptions: {
+         *       getHeaderOverrides: (context) => {
+         *         return {
+         *           'Authorization': context.headers['Authorization'] + ', other-value',
+         *           'custom-header': 'custom-value'
+         *         };
          *       };
          *     }
          *   }
