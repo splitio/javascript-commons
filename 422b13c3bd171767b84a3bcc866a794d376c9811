@@ -1,0 +1,83 @@
+src/evaluator/index.ts
+  human 19,179,243
+src/evaluator/fallbackTreatmentsCalculator/fallbackSanitizer/index.ts
+  human 5-6,26,44,49
+src/evaluator/fallbackConfigsCalculator/fallbackSanitizer/index.ts
+  human 5-7,26,28,47,53,55
+src/sync/submitters/types.ts
+  human 105
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "19,179,243",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5-6,26,44,49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackTreatmentsCalculator/fallbackSanitizer/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5-7,26,28,47,53,55",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackConfigsCalculator/fallbackSanitizer/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "105",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    }
+  ],
+  "base_commit_sha": "11a94bfa3086075794fe1035e5e6dbc01dba50ae",
+  "branch": "sdk-configs-baseline",
+  "commit_sha": "422b13c3bd171767b84a3bcc866a794d376c9811",
+  "commit_time": "2026-04-19T14:13:24-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 17,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 17,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
