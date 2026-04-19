@@ -16,7 +16,7 @@ const EVALUATION_EXCEPTION = {
   config: null
 };
 
-let EVALUATION_NOT_FOUND = {
+const EVALUATION_DEFINITION_NOT_FOUND = {
   treatment: CONTROL,
   label: DEFINITION_NOT_FOUND,
   config: null
@@ -176,7 +176,7 @@ function getEvaluation(
     return evaluation;
   }
 
-  return EVALUATION_NOT_FOUND;
+  return EVALUATION_DEFINITION_NOT_FOUND;
 }
 
 function getEvaluations(
@@ -240,5 +240,5 @@ function getDefaultTreatment(
     };
   }
 
-  return EVALUATION_NOT_FOUND;
+  return EVALUATION_DEFINITION_NOT_FOUND;
 }

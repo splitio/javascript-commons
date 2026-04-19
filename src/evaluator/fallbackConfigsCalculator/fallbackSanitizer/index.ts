@@ -2,11 +2,9 @@ import SplitIO from '../../../../types/splitio';
 import { ILogger } from '../../../logger/types';
 import { isObject, isString } from '../../../utils/lang';
 
-enum FallbackDiscardReason {
-  ConfigName = 'Invalid config name (max 100 chars, no spaces)',
-  Variant = 'Invalid variant (max 100 chars and must match pattern)',
-  Value = 'Invalid value (must be an object)',
-}
+const CONFIG_NAME_DISCARD_REASON = 'Invalid config name (max 100 chars, no spaces)';
+const VARIANT_DISCARD_REASON = 'Invalid variant (max 100 chars and must match pattern)';
+const VALUE_DISCARD_REASON = 'Invalid value (must be an object)';
 
 const VARIANT_PATTERN = /^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$/;
 
@@ -25,9 +23,9 @@ function sanitizeGlobal(logger: ILogger, config?: SplitIO.Config): SplitIO.Confi
   if (config === undefined) return undefined;
   if (!isValidConfig(config)) {
     if (!isObject(config) || !isString(config!.variant) || config!.variant.length > 100 || !VARIANT_PATTERN.test(config!.variant)) {
-      logger.error(`Fallback configs - Discarded fallback: ${FallbackDiscardReason.Variant}`);
+      logger.error(`Fallback configs - Discarded fallback: ${VARIANT_DISCARD_REASON}`);
     } else {
-      logger.error(`Fallback configs - Discarded fallback: ${FallbackDiscardReason.Value}`);
+      logger.error(`Fallback configs - Discarded fallback: ${VALUE_DISCARD_REASON}`);
     }
     return undefined;
   }
@@ -46,15 +44,15 @@ function sanitizeByName(
     const config = byNameFallbacks![configName];
 
     if (!isValidConfigName(configName)) {
-      logger.error(`Fallback configs - Discarded config '${configName}': ${FallbackDiscardReason.ConfigName}`);
+      logger.error(`Fallback configs - Discarded config '${configName}': ${CONFIG_NAME_DISCARD_REASON}`);
       return;
     }
 
     if (!isValidConfig(config)) {
       if (!isObject(config) || !isString(config.variant) || config.variant.length > 100 || !VARIANT_PATTERN.test(config.variant)) {
-        logger.error(`Fallback configs - Discarded config '${configName}': ${FallbackDiscardReason.Variant}`);
+        logger.error(`Fallback configs - Discarded config '${configName}': ${VARIANT_DISCARD_REASON}`);
       } else {
-        logger.error(`Fallback configs - Discarded config '${configName}': ${FallbackDiscardReason.Value}`);
+        logger.error(`Fallback configs - Discarded config '${configName}': ${VALUE_DISCARD_REASON}`);
       }
       return;
     }

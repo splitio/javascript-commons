@@ -102,8 +102,7 @@ export type TELEMETRY = 'te';
 export type TOKEN = 'to';
 export type SEGMENT = 'se';
 export type MEMBERSHIPS = 'ms';
-export type CONFIGS = 'cf';
-export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MEMBERSHIPS | CONFIGS;
+export type OperationType = SPLITS | IMPRESSIONS | IMPRESSIONS_COUNT | EVENTS | TELEMETRY | TOKEN | SEGMENT | MEMBERSHIPS;
 
 export type LastSync = Partial<Record<OperationType, number | undefined>>
 export type HttpErrors = Partial<Record<OperationType, { [statusCode: string]: number }>>
