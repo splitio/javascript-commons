@@ -2341,6 +2341,62 @@ declare namespace SplitIO {
      * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
      */
     fallbackConfigs?: FallbackConfigs;
+    /**
+     * Custom options object for HTTP(S) requests.
+     * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
+     */
+    requestOptions?: {
+      /**
+       * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
+       * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
+       * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
+       * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
+       *
+       * @defaultValue `undefined`
+       *
+       * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
+       * @returns An object representing a set of headers to be merged with the current headers.
+       *
+       * @example
+       * ```
+       * const client = ConfigsClient({
+       *   ...
+       *   requestOptions: {
+       *     getHeaderOverrides: (context) => {
+       *       return {
+       *         'Authorization': context.headers['Authorization'] + ', other-value',
+       *         'custom-header': 'custom-value'
+       *       };
+       *     }
+       *   }
+       * });
+       * ```
+       */
+      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
+      /**
+       * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
+       *
+       * You can use it, for example, for certificate pinning or setting a network proxy:
+       *
+       * ```
+       * const { HttpsProxyAgent } = require('https-proxy-agent');
+       *
+       * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
+       *
+       * const client = ConfigsClient({
+       *   ...
+       *   requestOptions: {
+       *     agent: proxyAgent
+       *   }
+       * })
+       * ```
+       *
+       * @see {@link https://nodejs.org/api/https.html#class-httpsagent}
+       *
+       * @defaultValue `undefined`
+       */
+      agent?: RequestOptions['agent'];
+    };
   }
 
   /**
@@ -2390,11 +2446,22 @@ declare namespace SplitIO {
     /**
      * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
      *
-     * @param name - The name of the config we want to get.
+     * @param configName - The name of the config we want to get.
      * @param target - The target of the config evaluation.
      * @param options - An object of type EvaluationOptions for advanced evaluation options.
      * @returns The config object.
      */
-    getConfig(name: string, target?: Target, options?: EvaluationOptions): Config;
+    getConfig(configName: string, target?: Target, options?: EvaluationOptions): Config;
+    /**
+     * Tracks an event to be fed to the results product on Harness FME user interface.
+     *
+     * @param trafficKey - The key that identifies the entity related to this event.
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
+     * @param eventType - The event type corresponding to this event.
+     * @param value - The value of this event.
+     * @param properties - The properties of this event. Values can be string, number, boolean or null.
+     * @returns Whether the event was added to the queue successfully or not.
+     */
+    track(trafficKey: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
   }
 }
