@@ -1,0 +1,278 @@
+src/storages/pluggable/ImpressionCountsCachePluggable.ts
+  human 83
+src/sync/submitters/types.ts
+  human 23-24,28,36,38-39,48,50-51,74-77
+src/storages/inRedis/ImpressionsCacheInRedis.ts
+  human 12,17-18,27,50
+src/storages/inRedis/__tests__/ImpressionsCacheInRedis.spec.ts
+  human 5,13,54
+src/storages/utils.ts
+  human 20,25
+src/storages/pluggable/ImpressionsCachePluggable.ts
+  human 9,14-15,30
+src/sync/submitters/uniqueKeysSubmitter.ts
+  human 4,14,21-24,26
+src/trackers/impressionObserver/__tests__/testUtils.ts
+  human 4
+types/splitio.d.ts
+  human 679-682,1008-1011,1020
+src/storages/pluggable/index.ts
+  human 124
+src/listeners/browser.ts
+  human 30,39-40,92
+src/storages/pluggable/__tests__/ImpressionsCachePluggable.spec.ts
+  human 4,11,26,42,64,96
+src/sync/submitters/impressionsSubmitter.ts
+  human 11,21,45,51
+src/storages/inRedis/index.ts
+  human 65
+src/trackers/impressionObserver/__tests__/clientSideObserver.spec.ts
+  human 3,8,19,56,87
+src/sync/submitters/impressionCountsSubmitter.ts
+  human 4,9,19-20,39,45
+src/storages/inRedis/ImpressionCountsCacheInRedis.ts
+  human 69,87
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/ImpressionCountsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "23-24,28,36,38-39,48,50-51,74-77",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12,17-18,27,50",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/ImpressionsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,13,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/ImpressionsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "20,25",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/utils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9,14-15,30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/ImpressionsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,14,21-24,26",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/uniqueKeysSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/impressionObserver/__tests__/testUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "679-682,1008-1011,1020",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "124",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "30,39-40,92",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,11,26,42,64,96",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/__tests__/ImpressionsCachePluggable.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11,21,45,51",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "65",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,8,19,56,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/impressionObserver/__tests__/clientSideObserver.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,9,19-20,39,45",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionCountsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "69,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/ImpressionCountsCacheInRedis.ts"
+    }
+  ],
+  "base_commit_sha": "422b13c3bd171767b84a3bcc866a794d376c9811",
+  "branch": "sdk-configs-impressions-entity-type",
+  "commit_sha": "2496e98e564f287226a5f29dc81d04259cc0a731",
+  "commit_time": "2026-04-19T15:49:21-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 74,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 74,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
