@@ -1,0 +1,158 @@
+src/sync/streaming/parseUtils.ts
+  human 4,38,43,46-51,87
+src/sync/streaming/pushManager.ts
+  human 17,246
+src/services/splitApi.ts
+  human 7,66
+src/sync/streaming/__tests__/parseUtils.spec.ts
+  human 4,6,10,54
+src/sdkClient/client.ts
+  human 157
+src/logger/messages/info.ts
+  human 11
+types/splitio.d.ts
+  human 2339
+src/services/__tests__/splitApi.spec.ts
+  human 68
+src/sdkFactory/types.ts
+  human 76,81
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,38,43,46-51,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/parseUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "17,246",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,66",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitApi.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6,10,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/__tests__/parseUtils.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "157",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/client.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/info.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2339",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/splitApi.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "76,81",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/types.ts"
+    }
+  ],
+  "base_commit_sha": "e47985af0a634a24102c16766e2a12ddb4ccc8f3",
+  "branch": "sdk-configs-baseline",
+  "commit_sha": "11a94bfa3086075794fe1035e5e6dbc01dba50ae",
+  "commit_time": "2026-04-19T13:46:30-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 24,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 24,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
