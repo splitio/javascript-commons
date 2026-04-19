@@ -1,0 +1,113 @@
+src/utils/constants/index.ts
+  human 50,79,89
+src/storages/KeyBuilderSS.ts
+  human 14-15
+src/sync/submitters/types.ts
+  human 105-106,121-122
+src/services/splitApi.ts
+  human 7,66
+types/splitio.d.ts
+  human 2324-2329,2345
+src/services/__tests__/splitApi.spec.ts
+  human 68
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "50,79,89",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/constants/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/KeyBuilderSS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "105-106,121-122",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,66",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitApi.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2324-2329,2345",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/splitApi.spec.ts"
+    }
+  ],
+  "base_commit_sha": "422b13c3bd171767b84a3bcc866a794d376c9811",
+  "branch": "sdk-configs-telemetry",
+  "commit_sha": "0b5fdeab665513438767b4f86285cb6d9ada287f",
+  "commit_time": "2026-04-19T14:26:36-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 19,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 19,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
