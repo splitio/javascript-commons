@@ -154,7 +154,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     }
 
     if (validateDefinitionExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
-      log.info(IMPRESSION_QUEUEING, [featureFlagName, matchingKey, treatment, label]);
+      log.info(IMPRESSION_QUEUEING, ['Feature flag', featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
           feature: featureFlagName,

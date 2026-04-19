@@ -1,7 +1,7 @@
 import { algorithms } from '../../utils/decompress';
 import { decodeFromBase64 } from '../../utils/base64';
 import { hash } from '../../utils/murmur3/murmur3';
-import { Compression, IMembershipMSUpdateData, KeyList } from './SSEHandler/types';
+import { Compression, IMembershipMSUpdateData } from './SSEHandler/types';
 import { IRBSegment, IDefinition } from '../../dtos/types';
 
 const GZIP = 1;
@@ -35,20 +35,20 @@ function decompress(data: string, compression: Compression) {
 }
 
 /**
- * Decode, decompress and parse the provided 'data' into a KeyList object
+ * Decode, decompress and parse the provided 'data' into an object of type T
  *
  * @param data - base64 encoded string
  * @param compression - 1 GZIP, 2 ZLIB
  * @param avoidPrecisionLoss - true as default, set it as false if dont need to avoid precission loss
- * @returns keyList
+ * @returns parsed object
  * @throws if data string cannot be decoded, decompressed or parsed
  */
-export function parseKeyList(data: string, compression: Compression, avoidPrecisionLoss = true): KeyList {
-  const binKeyList = decompress(data, compression);
-  let strKeyList = Uint8ArrayToString(binKeyList);
-  // replace numbers to strings, to avoid losing precision
-  if (avoidPrecisionLoss) strKeyList = strKeyList.replace(/\d+/g, '"$&"');
-  return JSON.parse(strKeyList);
+export function parseCompressedData<T>(data: string, compression: Compression, avoidPrecisionLoss = true): T {
+  const binData = decompress(data, compression);
+  let str = Uint8ArrayToString(binData);
+  // replace numbers to strings, to avoid losing precision (e.g., 64-bit IDs in KeyList)
+  if (avoidPrecisionLoss) str = str.replace(/\d+/g, '"$&"');
+  return JSON.parse(str) as T;
 }
 
 /**
@@ -84,7 +84,7 @@ export function isInBitmap(bitmap: Uint8Array, hash64hex: string) {
  */
 export function parseFFUpdatePayload(compression: Compression, data: string): IDefinition | IRBSegment | undefined {
   return compression > 0 ?
-    parseKeyList(data, compression, false) :
+    parseCompressedData<IDefinition | IRBSegment>(data, compression, false) :
     JSON.parse(decodeFromBase64(data));
 }
 

@@ -4,7 +4,7 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, CONFIGS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
@@ -63,7 +63,7 @@ export function splitApiFactory(
 
     fetchConfigs(since: number, noCache?: boolean, till?: number, rbSince?: number) {
       const url = `${urls.sdk}/v1/configs?${settings.sync.flagSpecVersion ? `s=${settings.sync.flagSpecVersion}&` : ''}since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(CONFIGS));
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
     fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
