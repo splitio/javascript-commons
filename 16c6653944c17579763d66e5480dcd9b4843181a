@@ -1,0 +1,158 @@
+src/sdkClient/client.ts
+  human 1,6,15,38,49,78,107,186-215,226
+src/sync/submitters/types.ts
+  human 120-121
+src/storages/KeyBuilderSS.ts
+  human 14
+src/sdkFactory/types.ts
+  human 76,81
+src/sdkConfigs/config.ts
+  human 1-93
+src/sdkClient/clientInputValidation.ts
+  human 11,19,25-26,60-81,83,87,105,113,121,129,174-182
+src/utils/constants/index.ts
+  human 50,88
+types/splitio.d.ts
+  human 2344-2371,2494-2544
+src/sdkConfigs/index.ts
+  human 1-87
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,6,15,38,49,78,107,186-215,226",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/client.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "120-121",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/KeyBuilderSS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "76,81",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 93,
+          "added_lines": 93,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-93",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkConfigs/config.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 41,
+          "added_lines": 41,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11,19,25-26,60-81,83,87,105,113,121,129,174-182",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/clientInputValidation.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "50,88",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/constants/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 79,
+          "added_lines": 79,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2344-2371,2494-2544",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 87,
+          "added_lines": 87,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkConfigs/index.ts"
+    }
+  ],
+  "base_commit_sha": "61a25a0c46c3176c45d0703240500a2e9a04861c",
+  "branch": "sdk-configs-alternative-approach",
+  "commit_sha": "16c6653944c17579763d66e5480dcd9b4843181a",
+  "commit_time": "2026-04-19T16:11:28-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 345,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 345,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
