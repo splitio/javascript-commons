@@ -2336,7 +2336,20 @@ declare namespace SplitIO {
     /**
      * Custom endpoints to replace the default ones used by the SDK.
      */
-    urls?: Pick<UrlSettings, 'sdk' | 'events'>;
+    urls?: {
+      /**
+       * String property to override the base URL where the SDK will get rollout plan related data, like feature flags and segments definitions.
+       *
+       * @defaultValue `'https://appconfig.split.io/api'`
+       */
+      sdk?: string;
+      /**
+       * String property to override the base URL where the SDK will post event-related information like impressions.
+       *
+       * @defaultValue `'https://events.split.io/api'`
+       */
+      events?: string;
+    };
     /**
      * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
      */

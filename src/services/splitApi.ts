@@ -61,8 +61,8 @@ export function splitApiFactory(
         });
     },
 
-    fetchConfigs(since: number, noCache?: boolean, till?: number, rbSince?: number) {
-      const url = `${urls.sdk}/v1/configs?${settings.sync.flagSpecVersion ? `s=${settings.sync.flagSpecVersion}&` : ''}since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+    fetchConfigs(since: number, noCache?: boolean, till?: number) {
+      const url = `${urls.sdk}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 

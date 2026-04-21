@@ -11,7 +11,7 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
  * Creates a standalone `track` function with input validation.
  * Reusable by FF SDK client, Configs SDK, and thin-client SDK.
  */
-export function trackMethodFactory(params: Pick<ISdkFactoryContext, 'settings' | 'eventTracker' | 'telemetryTracker' | 'storage' | 'sdkReadinessManager'>) {
+export function trackMethodFactory(params: Pick<ISdkFactoryContext, 'settings' | 'eventTracker' | 'telemetryTracker' | 'storage' | 'sdkReadinessManager'>, warnTTExistence = true) {
   const { settings, storage: { splits }, telemetryTracker, eventTracker, sdkReadinessManager: { readinessManager } } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -42,7 +42,7 @@ export function trackMethodFactory(params: Pick<ISdkFactoryContext, 'settings' |
     };
 
     // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistence(log, readinessManager, splits, mode, trafficTypeName, TRACK_FN_LABEL);
+    if (warnTTExistence) validateTrafficTypeExistence(log, readinessManager, splits, mode, trafficTypeName, TRACK_FN_LABEL);
 
     const result = eventTracker.track(eventData, size);
 
