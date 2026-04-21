@@ -2,6 +2,7 @@
 import { IMetadata } from '../../dtos/types';
 import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
+import { EntityType } from '../../sdkFactory/types';
 
 type ImpressionPayload = {
   /** Matching Key */
@@ -25,6 +26,8 @@ type ImpressionPayload = {
 export type ImpressionsPayload = {
   /** Split name */
   f: string,
+  /** Definition type */
+  et?: EntityType,
   /** Key Impressions */
   i: ImpressionPayload[]
 }[]
