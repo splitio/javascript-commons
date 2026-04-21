@@ -1,0 +1,105 @@
+src/listeners/browser.ts
+  477611fa-83d7-4864-a372-2516be014e42 38
+  human 31
+src/sync/submitters/types.ts
+  human 5,29-30
+src/sync/submitters/impressionsSubmitter.ts
+  human 6,11,17-18,47-48,52
+src/sdkFactory/types.ts
+  human 46-48,61-62
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "477611fa-83d7-4864-a372-2516be014e42",
+          "lines": "38",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "31",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,29-30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,11,17-18,47-48,52",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "46-48,61-62",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/types.ts"
+    }
+  ],
+  "base_commit_sha": "8510f068a992d6f2862cbfa87748f6c538ef9dad",
+  "branch": "sdk-configs-impressions-entitytype",
+  "commit_sha": "54f12cef45fe95fb6871f972c8f28296060ea142",
+  "commit_time": "2026-04-21T18:47:01-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "477611fa-83d7-4864-a372-2516be014e42": {
+      "accepted_lines": 1,
+      "agent_id": {
+        "id": "477611fa-83d7-4864-a372-2516be014e42",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 16,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 16,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
