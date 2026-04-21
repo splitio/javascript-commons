@@ -1,0 +1,83 @@
+src/sdkClient/trackMethod.ts
+  human 14,45
+types/splitio.d.ts
+  human 2339-2352
+src/services/splitApi.ts
+  human 64-65
+src/services/__tests__/splitApi.spec.ts
+  human 48,51,79,81
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14,45",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/trackMethod.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2339-2352",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "64-65",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitApi.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "48,51,79,81",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/splitApi.spec.ts"
+    }
+  ],
+  "base_commit_sha": "422b13c3bd171767b84a3bcc866a794d376c9811",
+  "branch": "sdk-configs-baseline",
+  "commit_sha": "8510f068a992d6f2862cbfa87748f6c538ef9dad",
+  "commit_time": "2026-04-21T18:45:28-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 22,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 22,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
