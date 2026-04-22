@@ -21,13 +21,13 @@ type ImpressionPayload = {
   pt?: number;
   /** Stringified JSON object with properties */
   properties?: string;
+  /** Definition type */
+  et?: EntityType,
 };
 
 export type ImpressionsPayload = {
   /** Split name */
   f: string,
-  /** Definition type */
-  et?: EntityType,
   /** Key Impressions */
   i: ImpressionPayload[]
 }[]

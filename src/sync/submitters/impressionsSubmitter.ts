@@ -15,9 +15,8 @@ export function fromImpressionsCollector(sendLabels: boolean, entityType: Entity
   forOwn(groupedByFeature, (value, name) => {
     dto.push({
       f: name, // Definition type
-      et: entityType, // Definition type
       i: value.map(entry => { // Key Impressions
-        const keyImpression = {
+        return {
           k: entry.keyName, // Key
           t: entry.treatment, // Treatment
           m: entry.time, // Timestamp
@@ -25,10 +24,9 @@ export function fromImpressionsCollector(sendLabels: boolean, entityType: Entity
           r: sendLabels ? entry.label : undefined, // Rule
           b: entry.bucketingKey, // Bucketing Key
           pt: entry.pt, // Previous time
-          properties: entry.properties // Properties
+          properties: entry.properties, // Properties
+          et: entityType, // Definition type
         };
-
-        return keyImpression;
       })
     });
   });
