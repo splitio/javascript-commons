@@ -1,0 +1,83 @@
+src/logger/messages/error.ts
+  human 16
+src/storages/inMemory/TelemetryCacheInMemory.ts
+  human 23-24
+src/storages/types.ts
+  human 531-534
+src/logger/messages/warn.ts
+  human 14-15
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/error.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "23-24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/TelemetryCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "531-534",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/warn.ts"
+    }
+  ],
+  "base_commit_sha": "a15c31c11b1a4ca3d2eb8871c666a6d951883edb",
+  "branch": "sdk-configs-polishing",
+  "commit_sha": "bf4c74c7525abf0c421cc59d0c5f418dd2c505f7",
+  "commit_time": "2026-04-23T16:46:40-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 9,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 9,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
