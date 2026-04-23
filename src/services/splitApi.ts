@@ -61,6 +61,7 @@ export function splitApiFactory(
         });
     },
 
+    // @TODO support filterQueryString and handle ERROR_TOO_MANY_SETS error
     fetchConfigs(since: number, noCache?: boolean, till?: number) {
       const url = `${urls.sdk}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);

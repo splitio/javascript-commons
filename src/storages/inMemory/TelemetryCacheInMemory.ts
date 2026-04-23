@@ -20,8 +20,8 @@ const ACCEPTANCE_RANGE = 0.001;
  * Record telemetry if mode is not localhost.
  * All factory instances track telemetry on server-side, and 0.1% on client-side.
  */
-export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
-  return settings.mode !== LOCALHOST_MODE && (checkIfServerSide(settings) || Math.random() <= ACCEPTANCE_RANGE);
+export function shouldRecordTelemetry({ settings, disableTelemetry }: IStorageFactoryParams) {
+  return !disableTelemetry && settings.mode !== LOCALHOST_MODE && (checkIfServerSide(settings) || Math.random() <= ACCEPTANCE_RANGE);
 }
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
