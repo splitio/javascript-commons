@@ -130,7 +130,7 @@ describe('SPLITS CACHE PLUGGABLE', () => {
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
     // Delete splits and TT keys
-    await cache.update([], [splitWithUserTT, splitWithAccountTT], -1);
+    await cache.update([], [splitWithUserTT.name, splitWithAccountTT.name], -1);
     await wrapper.del(keysBuilder.buildSplitsTillKey());
     expect(await wrapper.getKeysByPrefix('SPLITIO')).toHaveLength(0);
   });

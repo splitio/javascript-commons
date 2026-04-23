@@ -54,7 +54,7 @@ describe.each(storages)('SPLITS CACHE', (storage) => {
 
     cache.update([something, somethingElse], [], 1);
 
-    cache.update([], [something, somethingElse], 1);
+    cache.update([], [something.name, somethingElse.name], 1);
 
     expect(cache.getSplit(something.name)).toBe(null);
     expect(cache.getSplit(somethingElse.name)).toBe(null);

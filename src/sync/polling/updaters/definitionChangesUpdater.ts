@@ -57,7 +57,7 @@ export function parseSegments(ruleEntity: IDefinition | IRBSegment, matcherType:
 
 interface IDefinitionMutations<T extends IDefinition | IRBSegment> {
   added: T[],
-  removed: T[],
+  removed: string[],
   names: string[]
 }
 
@@ -97,7 +97,7 @@ export function computeMutation<T extends IDefinition | IRBSegment>(rules: Array
         segments.add(segmentName);
       });
     } else {
-      accum.removed.push(ruleEntity);
+      accum.removed.push(ruleEntity.name);
     }
     accum.names.push(ruleEntity.name);
 

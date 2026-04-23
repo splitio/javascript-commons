@@ -46,7 +46,7 @@ test('SPLITS CACHE / In Memory / Update Splits', () => {
 
   cache.update([something, somethingElse], [], 1);
 
-  cache.update([], [something, somethingElse], 1);
+  cache.update([], [something.name, somethingElse.name], 1);
 
   expect(cache.getSplit(something.name)).toBe(null);
   expect(cache.getSplit(somethingElse.name)).toBe(null);

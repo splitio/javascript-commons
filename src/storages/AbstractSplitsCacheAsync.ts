@@ -12,11 +12,11 @@ export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
   protected abstract removeSplit(name: string): Promise<boolean>
   protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
 
-  update(toAdd: IDefinition[], toRemove: IDefinition[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(addedFF => this.addSplit(addedFF))),
-      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF.name)))
+      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF)))
     ]).then(([, added, removed]) => {
       return added.some(result => result) || removed.some(result => result);
     });

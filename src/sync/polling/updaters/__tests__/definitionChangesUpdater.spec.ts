@@ -120,7 +120,7 @@ test('definitionChangesUpdater / compute splits mutation', () => {
   let splitsMutation = computeMutation([activeSplitWithSegments, archivedSplit] as IDefinition[], segments, splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([activeSplitWithSegments]);
-  expect(splitsMutation.removed).toEqual([archivedSplit]);
+  expect(splitsMutation.removed).toEqual([archivedSplit.name]);
   expect(splitsMutation.names).toEqual([activeSplitWithSegments.name, archivedSplit.name]);
   expect(Array.from(segments)).toEqual(['A', 'B']);
 
@@ -158,14 +158,14 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   splitsMutation = computeMutation([testFFRemoveSetA], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFRemoveSetA]);
+  expect(splitsMutation.removed).toEqual([testFFRemoveSetA.name]);
   expect(splitsMutation.names).toEqual([testFFRemoveSetA.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation([testFFEmptySet], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([testFFEmptySet.name]);
 
   // SDK initialization with names: ['test2']
@@ -173,13 +173,13 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   splitsMutation = computeMutation([testFFSetsAB], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFSetsAB]);
+  expect(splitsMutation.removed).toEqual([testFFSetsAB.name]);
   expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   splitsMutation = computeMutation([test2FFSetsX, testFFEmptySet], new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([test2FFSetsX]);
-  expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([test2FFSetsX.name, testFFEmptySet.name]);
 });
 
@@ -243,7 +243,7 @@ describe('definitionChangesUpdater', () => {
       // Add feature flag in notification
       expect(updateSplits.mock.calls[index][0].length).toBe(payload.status === ARCHIVED_FF ? 0 : 1);
       // Remove feature flag if status is ARCHIVED
-      expect(updateSplits.mock.calls[index][1]).toEqual(payload.status === ARCHIVED_FF ? [payload] : []);
+      expect(updateSplits.mock.calls[index][1]).toEqual(payload.status === ARCHIVED_FF ? [payload.name] : []);
       // fetch segments after feature flag update
       expect(registerSegments).toBeCalledTimes(index + 1);
       expect(registerSegments.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [] : ['maur-2']);
