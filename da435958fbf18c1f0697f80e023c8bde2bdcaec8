@@ -1,0 +1,248 @@
+src/storages/inRedis/__tests__/SplitsCacheInRedis.spec.ts
+  human 141,194,222
+src/sync/polling/updaters/definitionChangesUpdater.ts
+  human 60,100
+src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts
+  human 123,161,168,176,182,246
+src/storages/inMemory/__tests__/SplitsCacheInMemory.spec.ts
+  human 49
+src/storages/__tests__/RBSegmentsCacheSync.spec.ts
+  human 36,42,48,61
+src/storages/types.ts
+  human 197,214,228,244,252,263
+src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts
+  human 28,30
+src/storages/pluggable/__tests__/SplitsCachePluggable.spec.ts
+  human 133
+src/storages/inRedis/RBSegmentsCacheInRedis.ts
+  human 40,49
+src/storages/AbstractSplitsCacheSync.ts
+  human 16,18
+src/storages/AbstractSplitsCacheAsync.ts
+  human 15,19
+src/storages/__tests__/RBSegmentsCacheAsync.spec.ts
+  human 33,39,45,58
+src/storages/inMemory/RBSegmentsCacheInMemory.ts
+  human 18,20
+src/storages/pluggable/RBSegmentsCachePluggable.ts
+  human 39,48
+src/storages/inLocalStorage/__tests__/SplitsCacheInLocal.spec.ts
+  human 57
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "141,194,222",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/SplitsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "60,100",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/definitionChangesUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "123,161,168,176,182,246",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/__tests__/SplitsCacheInMemory.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "36,42,48,61",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/RBSegmentsCacheSync.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "197,214,228,244,252,263",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "28,30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "133",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/__tests__/SplitsCachePluggable.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "40,49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/RBSegmentsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16,18",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractSplitsCacheSync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15,19",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractSplitsCacheAsync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "33,39,45,58",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/RBSegmentsCacheAsync.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "18,20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/RBSegmentsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "39,48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/RBSegmentsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "57",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/__tests__/SplitsCacheInLocal.spec.ts"
+    }
+  ],
+  "base_commit_sha": "5dd58c00804402f4445238eaf5ab944689d51853",
+  "branch": "sdk-configs-storage-update",
+  "commit_sha": "da435958fbf18c1f0697f80e023c8bde2bdcaec8",
+  "commit_time": "2026-04-22T21:10:56-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 40,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 40,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
