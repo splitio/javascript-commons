@@ -204,7 +204,7 @@ export interface IExcludedSegment {
 export interface TargetingEntity {
   name: string;
   changeNumber: number;
-  status: 'ACTIVE' | 'ARCHIVED';
+  status?: 'ACTIVE' | 'ARCHIVED';
   conditions: IDefinitionCondition[];
 }
 
@@ -235,15 +235,17 @@ export interface IDefinition extends TargetingEntity {
 
 /** Interface of the parsed JSON response of `/splitChanges` */
 export interface IDefinitionChangesResponse {
-  ff?: {
-    t: number,
-    s?: number,
-    d: IDefinition[]
+  d?: {
+    till: number,
+    since?: number | null,
+    updated: IDefinition[],
+    removed: string[],
   },
   rbs?: {
-    t: number,
-    s?: number,
-    d: IRBSegment[]
+    till: number,
+    since?: number | null,
+    updated: IRBSegment[],
+    removed: string[],
   }
 }
 

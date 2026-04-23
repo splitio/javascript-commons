@@ -14,7 +14,7 @@ export const matcherTypes: Record<string, number> = {
   ENDS_WITH: 12,
   STARTS_WITH: 13,
   CONTAINS_STRING: 14,
-  IN_SPLIT_TREATMENT: 15,
+  IN_SPLIT_TREATMENT: 15, // For flags only
   EQUAL_TO_BOOLEAN: 16,
   MATCHES_STRING: 17,
   EQUAL_TO_SEMVER: 18,
@@ -22,7 +22,7 @@ export const matcherTypes: Record<string, number> = {
   LESS_THAN_OR_EQUAL_TO_SEMVER: 20,
   BETWEEN_SEMVER: 21,
   IN_LIST_SEMVER: 22,
-  IN_LARGE_SEGMENT: 23,
+  IN_LARGE_SEGMENT: 23, // For client-side only
   IN_RULE_BASED_SEGMENT: 24,
 };
 

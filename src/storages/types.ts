@@ -1,5 +1,6 @@
 import SplitIO from '../../types/splitio';
-import { MaybeThenable, IDefinition, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse, IDefinitionChangesResponse } from '../dtos/types';
+import { MaybeThenable, IDefinition, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse } from '../dtos/types';
+import { ISplitChangesResponse } from '../sync/polling/fetchers/splitChangesFetcher';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { ISettings } from '../types';
@@ -544,7 +545,7 @@ export type RolloutPlan = {
   /**
    * Feature flags and rule-based segments.
    */
-  splitChanges: IDefinitionChangesResponse;
+  splitChanges: ISplitChangesResponse;
   /**
    * Optional map of matching keys to their memberships.
    */

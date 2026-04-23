@@ -1,5 +1,5 @@
 import { ISettings } from '../../../types';
-import { IDefinitionChangesResponse } from '../../../dtos/types';
+import { IDefinition, IRBSegment, IDefinitionChangesResponse } from '../../../dtos/types';
 import { IResponse } from '../../../services/types';
 import { FLAG_SPEC_VERSION } from '../../../utils/constants';
 import { base } from '../../../utils/settingsValidation';
@@ -13,6 +13,39 @@ const PROXY_CHECK_INTERVAL_MILLIS_SS = 24 * PROXY_CHECK_INTERVAL_MILLIS_CS; // 2
 
 function sdkEndpointOverridden(settings: ISettings) {
   return settings.urls.sdk !== base.urls.sdk;
+}
+
+export type ISplit = IDefinition;
+
+/** JSON response of `/splitChanges` */
+export interface ISplitChangesResponse {
+  ff?: {
+    t: number,
+    s?: number,
+    d: ISplit[]
+  },
+  rbs?: {
+    t: number,
+    s?: number,
+    d: IRBSegment[]
+  }
+}
+
+/** JSON response of `/splitChanges` for flag spec version 1.2 or below */
+export interface ISplitChangesLegacyResponse {
+  till: number,
+  since?: number,
+  splits: ISplit[]
+}
+
+function isSplitChangesLegacyResponse(data: ISplitChangesResponse | ISplitChangesLegacyResponse): data is ISplitChangesLegacyResponse {
+  return (data as ISplitChangesLegacyResponse).splits != null;
+}
+
+function partitionByStatus<T extends { status?: string; name: string }>(items: T[], till: number, since?: number) {
+  const updated: T[] = [], removed: string[] = [];
+  items.forEach(item => item.status === 'ARCHIVED' ? removed.push(item.name) : updated.push(item));
+  return { updated, removed, till, since };
 }
 
 /**
@@ -57,16 +90,10 @@ export function splitChangesFetcherFactory(params: ISdkFactoryContextSync): IDef
 
     return splitsPromise
       .then(resp => resp.json())
-      .then(data => {
+      .then((data: ISplitChangesResponse | ISplitChangesLegacyResponse) => {
         // Using flag spec version 1.2 or below
-        if (data.splits) {
-          return {
-            ff: {
-              d: data.splits,
-              s: data.since,
-              t: data.till
-            }
-          };
+        if (isSplitChangesLegacyResponse(data)) {
+          return { d: partitionByStatus(data.splits || [], data.till, data.since) };
         }
 
         // Proxy recovery
@@ -80,7 +107,12 @@ export function splitChangesFetcherFactory(params: ISdkFactoryContextSync): IDef
             );
         }
 
-        return data;
+        const { ff, rbs } = data;
+
+        return {
+          d: ff?.d ? partitionByStatus(ff.d, ff.t, ff.s) : undefined,
+          rbs: rbs?.d ? partitionByStatus(rbs.d, rbs.t, rbs.s) : undefined,
+        };
       });
   }
 
