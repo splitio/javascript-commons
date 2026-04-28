@@ -1,0 +1,173 @@
+src/storages/inMemory/SplitsCacheInMemory.ts
+  human 117
+src/storages/inLocalStorage/SplitsCacheInLocal.ts
+  human 208
+src/sync/polling/fetchers/splitChangesFetcher.ts
+  human 25,30
+src/utils/lang/__tests__/sets.spec.ts
+  human 26-27
+src/utils/lang/sets.ts
+  human 15-18
+src/storages/inRedis/SplitsCacheInRedis.ts
+  human 62
+src/dtos/types.ts
+  human 220,233
+src/storages/pluggable/SplitsCachePluggable.ts
+  human 46
+CHANGES.txt
+  human 14-17
+src/storages/setRolloutPlan.ts
+  human 38,43
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "117",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/SplitsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "208",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/SplitsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "25,30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/splitChangesFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "26-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/lang/__tests__/sets.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15-18",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/lang/sets.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "62",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/SplitsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "220,233",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/dtos/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "46",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/SplitsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14-17",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CHANGES.txt"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "38,43",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/setRolloutPlan.ts"
+    }
+  ],
+  "base_commit_sha": "e65f34f29aaf94406d86e59b690aa4e3864959d9",
+  "branch": "sdk-configs-baseline",
+  "commit_sha": "1fb02466e549060403b5e7ea278d510d9ad3d241",
+  "commit_time": "2026-04-28T16:45:57-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 20,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 20,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
