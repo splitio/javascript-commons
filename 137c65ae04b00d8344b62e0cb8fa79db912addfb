@@ -1,0 +1,99 @@
+src/sync/submitters/__tests__/eventsSubmitter.spec.ts
+  d1d9df00-d7d1-44c2-84bf-536fc846630f 1,108-125,127-152
+  human 126
+src/sync/submitters/types.ts
+  d1d9df00-d7d1-44c2-84bf-536fc846630f 76-82
+src/sync/submitters/eventsSubmitter.ts
+  d1d9df00-d7d1-44c2-84bf-536fc846630f 2,4-5,8-13,24,28
+  human 6-7
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 45,
+          "added_lines": 46,
+          "deleted_lines": 2,
+          "hash": "d1d9df00-d7d1-44c2-84bf-536fc846630f",
+          "lines": "1,108-125,127-152",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "126",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/__tests__/eventsSubmitter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "d1d9df00-d7d1-44c2-84bf-536fc846630f",
+          "lines": "76-82",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 13,
+          "deleted_lines": 1,
+          "hash": "d1d9df00-d7d1-44c2-84bf-536fc846630f",
+          "lines": "2,4-5,8-13,24,28",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6-7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/eventsSubmitter.ts"
+    }
+  ],
+  "base_commit_sha": "a15c31c11b1a4ca3d2eb8871c666a6d951883edb",
+  "branch": "events-payload-entity-type-field",
+  "commit_sha": "137c65ae04b00d8344b62e0cb8fa79db912addfb",
+  "commit_time": "2026-04-28T11:06:49-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "d1d9df00-d7d1-44c2-84bf-536fc846630f": {
+      "accepted_lines": 63,
+      "agent_id": {
+        "id": "d1d9df00-d7d1-44c2-84bf-536fc846630f",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 66,
+      "total_deletions": 3
+    },
+    "human": {
+      "accepted_lines": 3,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
