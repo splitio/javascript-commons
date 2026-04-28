@@ -217,7 +217,7 @@ export interface IRBSegment extends TargetingEntity {
 
 export interface IDefinition extends TargetingEntity {
   trafficTypeName: string;
-  sets?: string[];
+  sets?: string[] | null;
   impressionsDisabled?: boolean;
   prerequisites?: null | {
     n: string,
@@ -230,7 +230,7 @@ export interface IDefinition extends TargetingEntity {
   trafficAllocationSeed?: number;
   configurations?: {
     [treatmentName: string]: string | SplitIO.JsonObject
-  };
+  } | null;
 }
 
 /** Interface of the parsed JSON response of `/splitChanges` */

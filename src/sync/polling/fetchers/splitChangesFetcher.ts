@@ -22,12 +22,12 @@ export interface ISplitChangesResponse {
   ff?: {
     t: number,
     s?: number,
-    d: ISplit[]
+    d?: ISplit[] | null,
   },
   rbs?: {
     t: number,
     s?: number,
-    d: IRBSegment[]
+    d?: IRBSegment[] | null,
   }
 }
 
