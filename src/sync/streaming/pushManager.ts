@@ -14,7 +14,7 @@ import { checkIfServerSide, getMatching } from '../../utils/key';
 import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
-import { getDelay, isInBitmap, parseBitmap, parseKeyList } from './parseUtils';
+import { getDelay, isInBitmap, parseBitmap, parseCompressedData } from './parseUtils';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
 import { IAuthTokenPushEnabled } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
@@ -56,7 +56,7 @@ export function pushManagerFactory(
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = SplitsUpdateWorker(log, storage, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  const splitsUpdateWorker = SplitsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
@@ -243,7 +243,7 @@ export function pushManagerFactory(
       case UpdateStrategy.KeyList: {
         let keyList: KeyList, added: Set<string>, removed: Set<string>;
         try {
-          keyList = parseKeyList(parsedData.d!, parsedData.c!);
+          keyList = parseCompressedData<KeyList>(parsedData.d!, parsedData.c!);
           added = new Set(keyList.a);
           removed = new Set(keyList.r);
         } catch (e) {

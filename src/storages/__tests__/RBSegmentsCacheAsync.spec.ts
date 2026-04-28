@@ -30,19 +30,19 @@ describe.each([{ cache: cacheInRedis, wrapper: redisClient }, { cache: cachePlug
     expect(await cache.getChangeNumber()).toBe(1);
 
     // Remove a segment
-    expect(await cache.update([], [rbSegment], 2)).toBe(true);
+    expect(await cache.update([], [rbSegment.name], 2)).toBe(true);
     expect(await cache.get(rbSegment.name)).toBeNull();
     expect(await cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(await cache.getChangeNumber()).toBe(2);
 
     // Remove remaining segment
-    expect(await cache.update([], [rbSegmentWithInSegmentMatcher], 3)).toBe(true);
+    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toBe(true);
     expect(await cache.get(rbSegment.name)).toBeNull();
     expect(await cache.get(rbSegmentWithInSegmentMatcher.name)).toBeNull();
     expect(await cache.getChangeNumber()).toBe(3);
 
     // No changes
-    expect(await cache.update([], [rbSegmentWithInSegmentMatcher], 4)).toBe(false);
+    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toBe(false);
     expect(await cache.getChangeNumber()).toBe(4);
   });
 
@@ -55,6 +55,6 @@ describe.each([{ cache: cacheInRedis, wrapper: redisClient }, { cache: cachePlug
     expect(await cache.contains(new Set(['nonexistent']))).toBe(false);
     expect(await cache.contains(new Set([rbSegment.name, 'nonexistent']))).toBe(false);
 
-    await cache.update([], [rbSegment, rbSegmentWithInSegmentMatcher], 2);
+    await cache.update([], [rbSegment.name, rbSegmentWithInSegmentMatcher.name], 2);
   });
 });

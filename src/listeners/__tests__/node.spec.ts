@@ -8,7 +8,7 @@ const processKillSpy = jest.spyOn(process, 'kill').mockImplementation(() => true
 test('NodeSignalListener / Signal Listener class methods and start/stop functionality', () => {
 
   const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
-  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
+  const listener = new NodeSignalListener({ syncManager: syncManagerMock, settings: fullSettings });
 
   listener.start();
 
@@ -28,7 +28,7 @@ test('NodeSignalListener / Signal Listener class methods and start/stop function
 test('NodeSignalListener / Signal Listener SIGTERM callback with sync handler', () => {
 
   const syncManagerMock = { flush: jest.fn() }; // @ts-expect-error
-  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
+  const listener = new NodeSignalListener({ syncManager: syncManagerMock, settings: fullSettings });
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -57,7 +57,7 @@ test('NodeSignalListener / Signal Listener SIGTERM callback with sync handler', 
 
 test('NodeSignalListener / Signal Listener SIGTERM callback with sync handler that throws an error', () => {
   const syncManagerMock = { flush: jest.fn(() => { throw 'some error'; }) }; // @ts-expect-error
-  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
+  const listener = new NodeSignalListener({ syncManager: syncManagerMock, settings: fullSettings });
 
   listener.start();
   // Stub stop function since we don't want side effects on test.
@@ -94,7 +94,7 @@ test('NodeSignalListener / Signal Listener SIGTERM callback with async handler',
   });
   const syncManagerMock = { flush: jest.fn(() => fakePromise) };
   // @ts-expect-error
-  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
+  const listener = new NodeSignalListener({ syncManager: syncManagerMock, settings: fullSettings });
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');
@@ -134,7 +134,7 @@ test('NodeSignalListener / Signal Listener SIGTERM callback with async handler t
   });
   const syncManagerMock = { flush: jest.fn(() => fakePromise) };
   // @ts-expect-error
-  const listener = new NodeSignalListener(syncManagerMock, fullSettings);
+  const listener = new NodeSignalListener({ syncManager: syncManagerMock, settings: fullSettings });
 
   // Stub stop function since we don't want side effects on test.
   jest.spyOn(listener, 'stop');

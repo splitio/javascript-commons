@@ -2,7 +2,7 @@ import { IDependencyMatcherData, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
-import { IDependencyMatcherValue, IEvaluation, ISplitEvaluator } from '../types';
+import { IDependencyMatcherValue, IEvaluation, IDefinitionEvaluator } from '../types';
 import { ENGINE_MATCHER_DEPENDENCY, ENGINE_MATCHER_DEPENDENCY_PRE } from '../../logger/constants';
 
 export function dependencyMatcherContext({ split, treatments }: IDependencyMatcherData, storage: IStorageSync | IStorageAsync, log: ILogger) {
@@ -19,7 +19,7 @@ export function dependencyMatcherContext({ split, treatments }: IDependencyMatch
     return matches;
   }
 
-  return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
+  return function dependencyMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: IDefinitionEvaluator): MaybeThenable<boolean> {
     log.debug(ENGINE_MATCHER_DEPENDENCY_PRE, [split, JSON.stringify(key), attributes ? '\n attributes: ' + JSON.stringify(attributes) : '']);
     const evaluation = splitEvaluator(log, key, split, attributes, storage);
 

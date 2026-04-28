@@ -1,5 +1,5 @@
 import { ISplitsCacheAsync } from './types';
-import { ISplit } from '../dtos/types';
+import { IDefinition } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
@@ -8,24 +8,24 @@ import { objectAssign } from '../utils/lang/objectAssign';
  */
 export abstract class AbstractSplitsCacheAsync implements ISplitsCacheAsync {
 
-  protected abstract addSplit(split: ISplit): Promise<boolean>
+  protected abstract addSplit(split: IDefinition): Promise<boolean>
   protected abstract removeSplit(name: string): Promise<boolean>
   protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
 
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(addedFF => this.addSplit(addedFF))),
-      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF.name)))
+      Promise.all(toRemove.map(removedFF => this.removeSplit(removedFF)))
     ]).then(([, added, removed]) => {
       return added.some(result => result) || removed.some(result => result);
     });
   }
 
-  abstract getSplit(name: string): Promise<ISplit | null>
-  abstract getSplits(names: string[]): Promise<Record<string, ISplit | null>>
+  abstract getSplit(name: string): Promise<IDefinition | null>
+  abstract getSplits(names: string[]): Promise<Record<string, IDefinition | null>>
   abstract getChangeNumber(): Promise<number>
-  abstract getAll(): Promise<ISplit[]>
+  abstract getAll(): Promise<IDefinition[]>
   abstract getSplitNames(): Promise<string[]>
   abstract getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
   abstract trafficTypeExists(trafficType: string): Promise<boolean>

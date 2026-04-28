@@ -15,9 +15,9 @@ export class RBSegmentsCacheInMemory implements IRBSegmentsCacheSync {
     this.segmentsCount = 0;
   }
 
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): boolean {
     let updated = toAdd.map(toAdd => this.add(toAdd)).some(result => result);
-    updated = toRemove.map(toRemove => this.remove(toRemove.name)).some(result => result) || updated;
+    updated = toRemove.map(toRemove => this.remove(toRemove)).some(result => result) || updated;
     this.changeNumber = changeNumber;
     return updated;
   }

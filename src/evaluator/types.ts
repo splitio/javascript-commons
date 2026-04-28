@@ -22,13 +22,13 @@ export interface IEvaluation {
   treatment?: string,
   label: string,
   changeNumber?: number,
-  config?: string | null
+  config?: string | null | SplitIO.JsonObject
 }
 
 export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }
 
-export type ISplitEvaluator = (log: ILogger, key: SplitIO.SplitKey, splitName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
+export type IDefinitionEvaluator = (log: ILogger, key: SplitIO.SplitKey, definitionName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 
-export type IEvaluator = (key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<IEvaluation | boolean | undefined>
+export type IEvaluator = (key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) => MaybeThenable<IEvaluation | boolean | undefined>
 
-export type IMatcher = (value: string | number | boolean | string[] | IDependencyMatcherValue, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>
+export type IMatcher = (value: string | number | boolean | string[] | IDependencyMatcherValue, definitionEvaluator?: IDefinitionEvaluator) => MaybeThenable<boolean>

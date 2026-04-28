@@ -14,3 +14,4 @@ export const SDK_UPDATE = 'state::update';
 // SdkUpdateMetadata types:
 export const FLAGS_UPDATE =  'FLAGS_UPDATE';
 export const SEGMENTS_UPDATE = 'SEGMENTS_UPDATE';
+export const CONFIGS_UPDATE = 'CONFIGS_UPDATE';

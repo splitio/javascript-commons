@@ -2,7 +2,7 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { IDefinition, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 import { returnDifference } from '../../utils/lang/sets';
 import type { RedisAdapter } from './RedisAdapter';
@@ -47,14 +47,14 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     });
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: IDefinition) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.redis.decr(ttKey).then((count: number) => {
       if (count === 0) return this.redis.del(ttKey);
     });
   }
 
-  private _incrementCounts(split: ISplit) {
+  private _incrementCounts(split: IDefinition) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.redis.incr(ttKey);
   }
@@ -82,13 +82,13 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., redis operation fails)
    */
-  addSplit(split: ISplit): Promise<boolean> {
+  addSplit(split: IDefinition): Promise<boolean> {
     const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     return this.redis.get(splitKey).then((splitFromStorage: string | null) => {
 
       // handling parsing error
-      let parsedPreviousSplit: ISplit, stringifiedNewSplit;
+      let parsedPreviousSplit: IDefinition, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         stringifiedNewSplit = JSON.stringify(split);
@@ -127,7 +127,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * Get split definition or null if it's not defined.
    * Returned promise is rejected if redis operation fails.
    */
-  getSplit(name: string): Promise<ISplit | null> {
+  getSplit(name: string): Promise<IDefinition | null> {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
@@ -171,7 +171,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * or rejected if redis operation fails.
    */
   // @TODO we need to benchmark which is the maximun number of commands we could pipeline without kill redis performance.
-  getAll(): Promise<ISplit[]> {
+  getAll(): Promise<IDefinition[]> {
     return this.redis.keys(this.keys.searchPatternForSplitKeys())
       .then((listOfKeys: string[]) => this.redis.pipeline(listOfKeys.map((k: string) => ['get', k])).exec())
       .then(processPipelineAnswer)
@@ -242,7 +242,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
    * Fetches multiple splits definitions.
    * Returned promise is rejected if redis operation fails.
    */
-  getSplits(names: string[]): Promise<Record<string, ISplit | null>> {
+  getSplits(names: string[]): Promise<Record<string, IDefinition | null>> {
     if (this.redisError) {
       this.log.error(LOG_PREFIX + this.redisError);
 
@@ -252,7 +252,7 @@ export class SplitsCacheInRedis extends AbstractSplitsCacheAsync {
     const keys = names.map(name => this.keys.buildSplitKey(name));
     return this.redis.mget(...keys)
       .then((splitDefinitions: (string | null)[]) => {
-        const splits: Record<string, ISplit | null> = {};
+        const splits: Record<string, IDefinition | null> = {};
         names.forEach((name, idx) => {
           const split = splitDefinitions[idx];
           splits[name] = split && JSON.parse(split);

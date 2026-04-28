@@ -1,8 +1,8 @@
 import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
 import { IStorageSync } from '../../../storages/types';
-import { ISplitsParser } from '../splitsParser/types';
-import { ISplit, ISplitPartial } from '../../../dtos/types';
+import { IDefinitionsParser, IDefinitionPartial } from '../splitsParser/types';
+import { IDefinition } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
@@ -14,7 +14,7 @@ import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/c
  * Offline equivalent of `splitChangesUpdaterFactory`
  */
 export function fromObjectUpdaterFactory(
-  splitsParser: ISplitsParser,
+  splitsParser: IDefinitionsParser,
   storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings,
@@ -24,9 +24,9 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: ISplit[] = [];
+    const splits: IDefinition[] = [];
     let loadError = null;
-    let splitsMock: false | Record<string, ISplitPartial> = {};
+    let splitsMock: false | Record<string, IDefinitionPartial> = {};
     try {
       splitsMock = splitsParser(settings);
     } catch (err) {
@@ -80,7 +80,7 @@ export function fromObjectUpdaterFactory(
  * PollingManager in Offline mode
  */
 export function fromObjectSyncTaskFactory(
-  splitsParser: ISplitsParser,
+  splitsParser: IDefinitionsParser,
   storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings

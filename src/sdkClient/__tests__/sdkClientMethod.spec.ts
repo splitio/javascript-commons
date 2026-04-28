@@ -8,13 +8,18 @@ import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatments
 
 const errorMessage = 'Shared Client not supported by the storage mechanism. Create isolated instances instead.';
 
+const signalListenerMock = {
+  start: jest.fn(),
+  stop: jest.fn()
+};
+
 const paramMocks = [
   // No SyncManager (i.e., Async SDK) and No signal listener
   {
+    platform: {},
     storage: { destroy: jest.fn(() => Promise.resolve()) },
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
-    signalListener: undefined,
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
@@ -23,10 +28,10 @@ const paramMocks = [
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
+    platform: { SignalListener: jest.fn(() => signalListenerMock) },
     storage: { destroy: jest.fn() },
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
-    signalListener: { stop: jest.fn() },
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
@@ -81,7 +86,7 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
               expect(params.syncManager.stop).toBeCalledTimes(1);
               expect(params.syncManager.flush).toBeCalledTimes(3);
             }
-            if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
+            if (params.platform.SignalListener) expect(signalListenerMock.stop).toBeCalledTimes(1);
 
             done();
           });
