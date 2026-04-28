@@ -9,6 +9,7 @@
    - a new `CONFIGS_UPDATE` metadata type for `SDK_UPDATE` event,
    - an optional `entityType` field in the `/testImpressions/bulk` payload,
    - input validation for the target object.
+ - Removed the misleading warning log 'No listeners for SDK_READY event detected', since users can use the `whenReady` method to wait for the SDK to be ready.
  - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
 
 2.12.1 (April 30, 2026)

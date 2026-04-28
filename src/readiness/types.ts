@@ -77,12 +77,6 @@ export interface ISdkReadinessManager {
   readinessManager: IReadinessManager
   sdkStatus: SplitIO.IStatusInterface
 
-  /**
-   * Increment internalReadyCbCount, an offset value of SDK_READY listeners that are added/removed internally
-   * by the SDK. It is required to properly log the warning 'No listeners for SDK Readiness detected'
-   */
-  incInternalReadyCbCount(): void
-
   /** for client-side */
   shared(): ISdkReadinessManager
 }

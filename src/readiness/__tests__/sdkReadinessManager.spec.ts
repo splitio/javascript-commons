@@ -4,7 +4,7 @@ import SplitIO from '../../../types/splitio';
 import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../constants';
 import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
-import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../../logger/constants';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY } from '../../logger/constants';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../utils/MinEvents';
 
@@ -85,20 +85,18 @@ describe('SDK Readiness Manager - Event emitter', () => {
     expect(sdkReadyRejectPromiseCall[0]).toBe(SDK_READY_TIMED_OUT); // A one time only subscription is also on the SDK_READY_TIMED_OUT event
     expect(sdkReadyFromCacheListenersCheckCall[0]).toBe(SDK_READY_FROM_CACHE); // A one time only subscription is on the SDK_READY_FROM_CACHE event
 
-    expect(gateMock.on).toBeCalledTimes(2); // It should also add two persistent listeners
+    expect(gateMock.on).toBeCalledTimes(1); // It should add one persistent listener
 
-    const removeListenerSubCall = gateMock.on.mock.calls[0];
-    const addListenerSubCall = gateMock.on.mock.calls[1];
+    const addListenerSubCall = gateMock.on.mock.calls[0];
 
-    expect(removeListenerSubCall[0]).toBe('removeListener'); // First subscription should be made to the removeListener event.
-    expect(addListenerSubCall[0]).toBe('newListener'); // Second subscription should be made to the newListener event, after the removeListener one so we avoid an unnecessary trigger.
+    expect(addListenerSubCall[0]).toBe('newListener'); // Subscription should be made to the newListener event.
   });
 
   test('The event callbacks should work as expected - SDK_READY_FROM_CACHE', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
     const gateMock = sdkReadinessManager.readinessManager.gate;
 
-    const readyFromCacheEventCB = gateMock.once.mock.calls[2][1];
+    const readyFromCacheEventCB = gateMock.once.mock.calls[2][1]; // SDK_READY_FROM_CACHE is at index 2 (after SDK_READY and SDK_READY_TIMED_OUT)
     readyFromCacheEventCB();
     expect(loggerMock.info).toBeCalledTimes(1); // If the SDK_READY_FROM_CACHE event fires, we get a info message.
     expect(loggerMock.info).toBeCalledWith(CLIENT_READY_FROM_CACHE); // Telling us the SDK is ready to be used with data from cache.
@@ -108,12 +106,9 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     // Get the callbacks
-    const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[1][1];
+    const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[0][1];
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-
-    expect(loggerMock.warn).toBeCalledTimes(1); // If the SDK_READY event fires and we have no callbacks for it (neither event nor whenReady promise) we get a warning.
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // Telling us there were no listeners and evaluations before this point may have been incorrect.
 
     expect(loggerMock.info).toBeCalledTimes(1); // If the SDK_READY event fires, we get a info message.
     expect(loggerMock.info).toBeCalledWith(CLIENT_READY); // Telling us the SDK is ready.
@@ -134,82 +129,16 @@ describe('SDK Readiness Manager - Event emitter', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
 
     // Get the callbacks
-    const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[1][1];
+    const addListenerCB = sdkReadinessManager.readinessManager.gate.on.mock.calls[0][1];
 
     addListenerCB(SDK_READY);
-    expect(loggerMock.warn).not.toBeCalled(); // We are adding a listener to the ready event before it is ready, so no warnings are logged.
     expect(loggerMock.error).not.toBeCalled(); // We are adding a listener to the ready event before it is ready, so no errors are logged.
 
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn).not.toBeCalled(); // As we had at least one listener, we get no warnings.
-    expect(loggerMock.error).not.toBeCalled(); // As we had at least one listener, we get no errors.
+    expect(loggerMock.error).not.toBeCalled(); // No errors.
 
     expect(loggerMock.info).toBeCalledTimes(1); // If the SDK_READY event fires, we get a info message.
     expect(loggerMock.info).toBeCalledWith(CLIENT_READY); // Telling us the SDK is ready.
-  });
-
-  test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    const gateMock = sdkReadinessManager.readinessManager.gate;
-
-    // Get the callbacks
-    const addListenerCB = gateMock.on.mock.calls[1][1];
-    const removeListenerCB = gateMock.on.mock.calls[0][1];
-
-    // Fake adding two listeners
-    addListenerCB(SDK_READY);
-    addListenerCB(SDK_READY);
-
-    // And then fake remove them.
-    removeListenerCB(SDK_READY);
-    removeListenerCB(SDK_READY);
-
-    emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We get the warning.
-  });
-
-  test('The event callbacks should work as expected - If we end up removing the listeners for SDK_READY, it behaves as if it had none', () => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    const gateMock = sdkReadinessManager.readinessManager.gate;
-
-    // Get the callbacks
-    const removeListenerCB = gateMock.on.mock.calls[0][1];
-    const addListenerCB = gateMock.on.mock.calls[1][1];
-
-    // Fake adding two listeners
-    addListenerCB(SDK_READY);
-    addListenerCB(SDK_READY);
-
-    // And then fake remove only one of them. The rest are events that we don't care about so it should not affect the count.
-    removeListenerCB(SDK_READY);
-    removeListenerCB(SDK_READY_TIMED_OUT);
-    removeListenerCB('random event');
-
-    emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn).not.toBeCalled(); // No warning when the SDK is ready as we still have one listener.
-  });
-
-  test('The event callbacks should work as expected - SDK_READY emits with expected internal callbacks', () => {
-    // the sdkReadinessManager expects more than one SDK_READY callback to not log the "No listeners" warning
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    sdkReadinessManager.incInternalReadyCbCount();
-    const gateMock = sdkReadinessManager.readinessManager.gate;
-
-    // Get the callbacks
-    const removeListenerCB = gateMock.on.mock.calls[0][1];
-    const addListenerCB = gateMock.on.mock.calls[1][1];
-
-    // Fake adding two listeners and removing one
-    addListenerCB(SDK_READY);
-    addListenerCB(SDK_READY);
-    removeListenerCB(SDK_READY);
-
-    expect(loggerMock.warn).not.toBeCalled(); // We are adding/removing listeners to the ready event before it is ready, so no warnings are logged.
-    expect(loggerMock.error).not.toBeCalled(); // We are adding/removing listeners to the ready event before it is ready, so no errors are logged.
-
-    emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(loggerMock.warn).toBeCalled(); // As we had the same amount of listeners that the expected, we get a warning.
-    expect(loggerMock.error).not.toBeCalled(); // As we had at least one listener, we get no errors.
   });
 });
 
@@ -277,55 +206,12 @@ describe('SDK Readiness Manager - Promises', () => {
 
     expect(testPassedCount).toBe(6);
   });
-
-  test('whenReady promise counts as an SDK_READY listener', (done) => {
-    let sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
-
-    emitReadyEvent(sdkReadinessManager.readinessManager);
-
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We should get a warning if the SDK get's ready before calling the whenReady method or attaching a listener to the ready event
-    loggerMock.warn.mockClear();
-
-    sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
-    sdkReadinessManager.sdkStatus.whenReady().then(() => {
-      expect('whenReady promise is resolved when the gate emits SDK_READY.');
-      done();
-    }, () => {
-      throw new Error('This should not be called as the promise is being resolved.');
-    });
-
-    emitReadyEvent(sdkReadinessManager.readinessManager);
-
-    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener or call the whenReady method, we get no warnings.
-  });
 });
 
 // @TODO: remove in next major
 describe('SDK Readiness Manager - Ready promise', () => {
 
   beforeEach(() => { loggerMock.mockClear(); });
-
-  test('ready promise count as a callback and resolves on SDK_READY', (done) => {
-    const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
-    const readyPromise = sdkReadinessManager.sdkStatus.ready();
-
-    // Get the callback
-    const readyEventCB = sdkReadinessManager.readinessManager.gate.once.mock.calls[0][1];
-
-    readyEventCB();
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NO_LISTENER); // We would get the warning if the SDK get\'s ready before attaching any callbacks to ready promise.
-    loggerMock.warn.mockClear();
-
-    readyPromise.then(() => {
-      expect('The ready promise is resolved when the gate emits SDK_READY.');
-      done();
-    }, () => {
-      throw new Error('This should not be called as the promise is being resolved.');
-    });
-
-    readyEventCB();
-    expect(loggerMock.warn).not.toBeCalled(); // But if we have a listener there are no warnings.
-  });
 
   test('.ready() rejected promises have a default onRejected handler that just logs the error', (done) => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitterMock, fullSettings);
