@@ -83,7 +83,7 @@ describe('IMPRESSION COUNTS CACHE IN REDIS', () => {
   test('POST IMPRESSION COUNTS IN REDIS FUNCTION', async () => {
     const connection = new RedisAdapter(loggerMock);
     // @TODO next line is not required with ioredis
-    await new Promise(res => connection.once('ready', res));
+    await new Promise(res => connection.on('ready', res));
 
     const counter = new ImpressionCountsCacheInRedis(loggerMock, key, connection);
     // Clean up in case there are still keys there.

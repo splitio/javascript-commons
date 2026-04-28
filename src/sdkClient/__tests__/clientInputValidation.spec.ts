@@ -4,6 +4,7 @@ import { clientInputValidationDecorator } from '../clientInputValidation';
 // Mocks
 import { DebugLogger } from '../../logger/browser/DebugLogger';
 import { createClientMock } from './testUtils';
+import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 const settings: any = {
   log: DebugLogger(),
@@ -13,13 +14,15 @@ const settings: any = {
 const EVALUATION_RESULT = 'on';
 const client: any = createClientMock(EVALUATION_RESULT);
 
+const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator();
+
 const readinessManager: any = {
   isReadyFromCache: () => true,
   isDestroyed: () => false
 };
 
 describe('clientInputValidationDecorator', () => {
-  const clientWithValidation = clientInputValidationDecorator(settings, client, readinessManager);
+  const clientWithValidation = clientInputValidationDecorator(settings, client, readinessManager, fallbackTreatmentsCalculator);
   const logSpy = jest.spyOn(console, 'log');
 
   beforeEach(() => {
@@ -103,5 +106,25 @@ describe('clientInputValidationDecorator', () => {
     expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
 
     expect(logSpy).not.toBeCalled();
+  });
+
+  test('should ignore the properties in the 4th argument if an empty object is passed', () => {
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: false })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: true })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, { impressionsDisabled: true });
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: null })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { impressionsDisabled: false })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined); // impressionsDisabled false is the default behavior, so we don't pass it along
+
+    expect(clientWithValidation.getTreatment('key', 'ff', undefined, { properties: undefined })).toBe(EVALUATION_RESULT);
+    expect(client.getTreatment).toHaveBeenLastCalledWith('key', 'ff', undefined, undefined);
   });
 });

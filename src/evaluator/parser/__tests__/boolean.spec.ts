@@ -1,6 +1,6 @@
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -24,7 +24,7 @@ test('PARSER / if user.boolean is true then split 100%:on', async () => {
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('testing'), 31, 100, 31, {
     bool: false

@@ -54,7 +54,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
     const segments = new MySegmentsCacheInLocal(log, keys, storage);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
-    let validateCachePromise: Promise<boolean> | undefined;
+    let validateCachePromise: Promise<SplitIO.SdkReadyMetadata> | undefined;
 
     return {
       splits,
@@ -68,7 +68,10 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
-        return validateCachePromise || (validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments));
+        if (!validateCachePromise) {
+          validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments);
+        }
+        return validateCachePromise;
       },
 
       save() {

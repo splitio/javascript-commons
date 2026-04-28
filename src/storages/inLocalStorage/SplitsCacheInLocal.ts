@@ -1,4 +1,4 @@
-import { ISplit } from '../../dtos/types';
+import { IDefinition } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
@@ -30,7 +30,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     else this.storage.removeItem(key);
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: IDefinition) {
     try {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
       this._decrementCount(ttKey);
@@ -44,7 +44,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     }
   }
 
-  private _incrementCounts(split: ISplit) {
+  private _incrementCounts(split: IDefinition) {
     try {
       const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
       this.storage.setItem(ttKey, (toNumber(this.storage.getItem(ttKey)) + 1) + '');
@@ -79,48 +79,38 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
-  addSplit(split: ISplit) {
-    try {
-      const name = split.name;
-      const splitKey = this.keys.buildSplitKey(name);
-      const splitFromStorage = this.storage.getItem(splitKey);
-      const previousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : null;
+  addSplit(split: IDefinition) {
+    const name = split.name;
+    const splitKey = this.keys.buildSplitKey(name);
+    const splitFromStorage = this.storage.getItem(splitKey);
+    const previousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : null;
 
-      if (previousSplit) {
-        this._decrementCounts(previousSplit);
-        this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
-      }
-
-      this.storage.setItem(splitKey, JSON.stringify(split));
-
-      this._incrementCounts(split);
-      this.addToFlagSets(split);
-
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
+    if (previousSplit) {
+      this._decrementCounts(previousSplit);
+      this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
     }
+
+    this.storage.setItem(splitKey, JSON.stringify(split));
+
+    this._incrementCounts(split);
+    this.addToFlagSets(split);
+
+    return true;
   }
 
   removeSplit(name: string): boolean {
-    try {
-      const split = this.getSplit(name);
-      if (!split) return false;
+    const split = this.getSplit(name);
+    if (!split) return false;
 
-      this.storage.removeItem(this.keys.buildSplitKey(name));
+    this.storage.removeItem(this.keys.buildSplitKey(name));
 
-      this._decrementCounts(split);
-      this.removeFromFlagSets(split.name, split.sets);
+    this._decrementCounts(split);
+    this.removeFromFlagSets(split.name, split.sets);
 
-      return true;
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-      return false;
-    }
+    return true;
   }
 
-  getSplit(name: string): ISplit | null {
+  getSplit(name: string): IDefinition | null {
     const item = this.storage.getItem(this.keys.buildSplitKey(name));
     return item && JSON.parse(item);
   }
@@ -194,7 +184,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  private addToFlagSets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: IDefinition) {
     if (!featureFlag.sets) return;
 
     featureFlag.sets.forEach(featureFlagSet => {
@@ -206,13 +196,16 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
       const flagSetFromStorage = this.storage.getItem(flagSetKey);
 
       const flagSetCache = new Set(flagSetFromStorage ? JSON.parse(flagSetFromStorage) : []);
+
+      if (flagSetCache.has(featureFlag.name)) return;
+
       flagSetCache.add(featureFlag.name);
 
       this.storage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
     });
   }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[] | null) {
     if (!flagSets) return;
 
     flagSets.forEach(flagSet => {

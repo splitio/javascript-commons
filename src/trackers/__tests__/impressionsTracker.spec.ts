@@ -2,10 +2,8 @@ import { impressionsTrackerFactory } from '../impressionsTracker';
 import { ImpressionCountsCacheInMemory } from '../../storages/inMemory/ImpressionCountsCacheInMemory';
 import { impressionObserverSSFactory } from '../impressionObserver/impressionObserverSS';
 import { impressionObserverCSFactory } from '../impressionObserver/impressionObserverCS';
-import SplitIO from '../../../types/splitio';
+import SplitIO, { ImpressionsMode } from '../../../types/splitio';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
-import { strategyDebugFactory } from '../strategy/strategyDebug';
-import { strategyOptimizedFactory } from '../strategy/strategyOptimized';
 import { DEDUPED, QUEUED } from '../../utils/constants';
 
 /* Mocks */
@@ -22,22 +20,22 @@ const fakeListener = {
 const fakeIntegrationsManager = {
   handleImpression: jest.fn()
 };
-const fakeSettings = {
-  ...fullSettings,
-  runtime: {
-    hostname: 'fake-hostname',
-    ip: 'fake-ip'
+const fakeStorage = {
+  impressions: fakeImpressionsCache,
+  impressionCounts: new ImpressionCountsCacheInMemory(),
+  uniqueKeys: { track: jest.fn() },
+  telemetry: undefined
+};
+const fakeParams = {
+  settings: fullSettings,
+  impressionsObserverFactory: impressionObserverCSFactory,
+};
+const fakeParamsWithListener = {
+  settings: {
+    ...fullSettings,
+    impressionListener: fakeListener
   },
-  version: 'jest-test'
-};
-const fakeSettingsWithListener = {
-  ...fakeSettings,
-  impressionListener: fakeListener
-};
-const fakeWhenInit = (cb: () => void) => cb();
-
-const fakeNoneStrategy = {
-  process: jest.fn(() => false)
+  impressionsObserverFactory: impressionObserverCSFactory,
 };
 
 /* Tests */
@@ -50,10 +48,8 @@ describe('Impressions Tracker', () => {
     fakeIntegrationsManager.handleImpression.mockClear();
   });
 
-  const strategy = strategyDebugFactory(impressionObserverCSFactory());
-
   test('Should be able to track impressions (in DEBUG mode without Previous Time).', () => {
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
+    const tracker = impressionsTrackerFactory(fakeParams, fakeStorage);
 
     const imp1 = {
       feature: '10',
@@ -72,8 +68,8 @@ describe('Impressions Tracker', () => {
     expect(fakeImpressionsCache.track.mock.calls[0][0]).toEqual([imp1, imp2]); // Should call the storage track method once we invoke .track() method, passing impressions with `track` enabled
   });
 
-  test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', (done) => {
-    const tracker = impressionsTrackerFactory(fakeSettingsWithListener, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit, fakeIntegrationsManager);
+  test('Tracked impressions should be sent to impression listener and integration manager when we invoke .track()', async () => {
+    const tracker = impressionsTrackerFactory(fakeParamsWithListener, fakeStorage, fakeIntegrationsManager);
 
     const fakeImpression = {
       feature: 'impression'
@@ -96,25 +92,23 @@ describe('Impressions Tracker', () => {
     expect(fakeListener.logImpression).not.toBeCalled(); // The listener should not be executed synchronously.
     expect(fakeIntegrationsManager.handleImpression).not.toBeCalled(); // The integrations manager handleImpression method should not be executed synchronously.
 
-    setTimeout(() => {
-      expect(fakeListener.logImpression).toBeCalledTimes(2); // The listener should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
-      expect(fakeIntegrationsManager.handleImpression).toBeCalledTimes(2); // The integrations manager handleImpression method should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
+    await new Promise(resolve => setTimeout(resolve, 0));
 
-      const impressionData1 = { impression: fakeImpression, attributes: fakeAttributes, sdkLanguageVersion: fakeSettings.version, ip: fakeSettings.runtime.ip, hostname: fakeSettings.runtime.hostname };
-      const impressionData2 = { impression: fakeImpression2, attributes: fakeAttributes, sdkLanguageVersion: fakeSettings.version, ip: fakeSettings.runtime.ip, hostname: fakeSettings.runtime.hostname };
+    expect(fakeListener.logImpression).toBeCalledTimes(2); // The listener should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
+    expect(fakeIntegrationsManager.handleImpression).toBeCalledTimes(2); // The integrations manager handleImpression method should be executed after the timeout wrapping make it to the queue stack, once per each tracked impression.
 
-      expect(fakeListener.logImpression.mock.calls[0][0]).toEqual(impressionData1); // The listener should be executed with the corresponding map for each of the impressions.
-      expect(fakeListener.logImpression.mock.calls[1][0]).toEqual(impressionData2); // The listener should be executed with the corresponding map for each of the impressions.
-      expect(fakeListener.logImpression.mock.calls[0][0].impression).not.toBe(fakeImpression); // but impression should be a copy
-      expect(fakeListener.logImpression.mock.calls[1][0].impression).not.toBe(fakeImpression2); // but impression should be a copy
+    const impressionData1 = { impression: fakeImpression, attributes: fakeAttributes, sdkLanguageVersion: fullSettings.version, ip: fullSettings.runtime.ip, hostname: fullSettings.runtime.hostname };
+    const impressionData2 = { impression: fakeImpression2, attributes: fakeAttributes, sdkLanguageVersion: fullSettings.version, ip: fullSettings.runtime.ip, hostname: fullSettings.runtime.hostname };
 
-      expect(fakeIntegrationsManager.handleImpression.mock.calls[0][0]).toEqual(impressionData1); // The integration manager handleImpression method should be executed with the corresponding map for each of the impressions.
-      expect(fakeIntegrationsManager.handleImpression.mock.calls[1][0]).toEqual(impressionData2); // The integration manager handleImpression method should be executed with the corresponding map for each of the impressions.
-      expect(fakeIntegrationsManager.handleImpression.mock.calls[0][0].impression).not.toBe(fakeImpression); // but impression should be a copy
-      expect(fakeIntegrationsManager.handleImpression.mock.calls[1][0].impression).not.toBe(fakeImpression2); // but impression should be a copy
+    expect(fakeListener.logImpression.mock.calls[0][0]).toEqual(impressionData1); // The listener should be executed with the corresponding map for each of the impressions.
+    expect(fakeListener.logImpression.mock.calls[1][0]).toEqual(impressionData2); // The listener should be executed with the corresponding map for each of the impressions.
+    expect(fakeListener.logImpression.mock.calls[0][0].impression).not.toBe(fakeImpression); // but impression should be a copy
+    expect(fakeListener.logImpression.mock.calls[1][0].impression).not.toBe(fakeImpression2); // but impression should be a copy
 
-      done();
-    }, 0);
+    expect(fakeIntegrationsManager.handleImpression.mock.calls[0][0]).toEqual(impressionData1); // The integration manager handleImpression method should be executed with the corresponding map for each of the impressions.
+    expect(fakeIntegrationsManager.handleImpression.mock.calls[1][0]).toEqual(impressionData2); // The integration manager handleImpression method should be executed with the corresponding map for each of the impressions.
+    expect(fakeIntegrationsManager.handleImpression.mock.calls[0][0].impression).not.toBe(fakeImpression); // but impression should be a copy
+    expect(fakeIntegrationsManager.handleImpression.mock.calls[1][0].impression).not.toBe(fakeImpression2); // but impression should be a copy
   });
 
   const impression = {
@@ -147,8 +141,8 @@ describe('Impressions Tracker', () => {
     impression3.time = 1234567891;
 
     const trackers = [
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyDebugFactory(impressionObserverSSFactory()), fakeWhenInit, undefined),
-      impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyDebugFactory(impressionObserverCSFactory()), fakeWhenInit, undefined)
+      impressionsTrackerFactory({ ...fakeParams, impressionsObserverFactory: impressionObserverSSFactory }, fakeStorage),
+      impressionsTrackerFactory(fakeParams, fakeStorage)
     ];
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // storage method should not be called until impressions are tracked.
@@ -175,7 +169,7 @@ describe('Impressions Tracker', () => {
     impression3.time = Date.now();
 
     const impressionCountsCache = new ImpressionCountsCacheInMemory();
-    const tracker = impressionsTrackerFactory(fakeSettings, fakeImpressionsCache, fakeNoneStrategy, strategyOptimizedFactory(impressionObserverCSFactory(), impressionCountsCache), fakeWhenInit, undefined, fakeTelemetryCache as any);
+    const tracker = impressionsTrackerFactory(fakeParams, { ...fakeStorage, impressionCounts: impressionCountsCache, telemetry: fakeTelemetryCache } as any);
 
     expect(fakeImpressionsCache.track).not.toBeCalled(); // cache method should not be called by just creating a tracker
 
@@ -196,9 +190,10 @@ describe('Impressions Tracker', () => {
   });
 
   test('Should track or not impressions depending on user consent status', () => {
-    const settings = { ...fullSettings };
+    const settings = { ...fullSettings, sync: { ...fullSettings.sync, impressionsMode: 'DEBUG' as ImpressionsMode } };
+    const params = { settings, impressionsObserverFactory: impressionObserverCSFactory };
 
-    const tracker = impressionsTrackerFactory(settings, fakeImpressionsCache, fakeNoneStrategy, strategy, fakeWhenInit);
+    const tracker = impressionsTrackerFactory(params, fakeStorage);
 
     tracker.track([{ imp: impression }]);
     expect(fakeImpressionsCache.track).toBeCalledTimes(1); // impression should be tracked if userConsent is undefined

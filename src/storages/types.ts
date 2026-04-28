@@ -1,5 +1,6 @@
 import SplitIO from '../../types/splitio';
-import { MaybeThenable, ISplit, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse, ISplitChangesResponse } from '../dtos/types';
+import { MaybeThenable, IDefinition, IRBSegment, IMySegmentsResponse, IMembershipsResponse, ISegmentChangesResponse } from '../dtos/types';
+import { ISplitChangesResponse } from '../sync/polling/fetchers/splitChangesFetcher';
 import { MySegmentsData } from '../sync/polling/types';
 import { EventDataType, HttpErrors, HttpLatencies, ImpressionDataType, LastSync, Method, MethodExceptions, MethodLatencies, MultiMethodExceptions, MultiMethodLatencies, MultiConfigs, OperationType, StoredEventWithMetadata, StoredImpressionWithMetadata, StreamingEvent, UniqueKeysPayloadCs, UniqueKeysPayloadSs, TelemetryUsageStatsPayload, UpdatesFromSSEEnum } from '../sync/submitters/types';
 import { ISettings } from '../types';
@@ -194,12 +195,12 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface ISplitsCacheBase {
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): MaybeThenable<boolean>,
-  getSplit(name: string): MaybeThenable<ISplit | null>,
-  getSplits(names: string[]): MaybeThenable<Record<string, ISplit | null>>, // `fetchMany` in spec
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): MaybeThenable<boolean>,
+  getSplit(name: string): MaybeThenable<IDefinition | null>,
+  getSplits(names: string[]): MaybeThenable<Record<string, IDefinition | null>>, // `fetchMany` in spec
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
   getChangeNumber(): MaybeThenable<number>,
-  getAll(): MaybeThenable<ISplit[]>,
+  getAll(): MaybeThenable<IDefinition[]>,
   getSplitNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
@@ -211,11 +212,11 @@ export interface ISplitsCacheBase {
 }
 
 export interface ISplitsCacheSync extends ISplitsCacheBase {
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean,
-  getSplit(name: string): ISplit | null,
-  getSplits(names: string[]): Record<string, ISplit | null>,
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean,
+  getSplit(name: string): IDefinition | null,
+  getSplits(names: string[]): Record<string, IDefinition | null>,
   getChangeNumber(): number,
-  getAll(): ISplit[],
+  getAll(): IDefinition[],
   getSplitNames(): string[],
   trafficTypeExists(trafficType: string): boolean,
   usesSegments(): boolean,
@@ -225,11 +226,11 @@ export interface ISplitsCacheSync extends ISplitsCacheBase {
 }
 
 export interface ISplitsCacheAsync extends ISplitsCacheBase {
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): Promise<boolean>,
-  getSplit(name: string): Promise<ISplit | null>,
-  getSplits(names: string[]): Promise<Record<string, ISplit | null>>,
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean>,
+  getSplit(name: string): Promise<IDefinition | null>,
+  getSplits(names: string[]): Promise<Record<string, IDefinition | null>>,
   getChangeNumber(): Promise<number>,
-  getAll(): Promise<ISplit[]>,
+  getAll(): Promise<IDefinition[]>,
   getSplitNames(): Promise<string[]>,
   trafficTypeExists(trafficType: string): Promise<boolean>,
   usesSegments(): Promise<boolean>,
@@ -241,7 +242,7 @@ export interface ISplitsCacheAsync extends ISplitsCacheBase {
 /** Rule-Based Segments cache */
 
 export interface IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): MaybeThenable<boolean>,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): MaybeThenable<boolean>,
   get(name: string): MaybeThenable<IRBSegment | null>,
   getChangeNumber(): MaybeThenable<number>,
   clear(): MaybeThenable<boolean | void>,
@@ -249,7 +250,7 @@ export interface IRBSegmentsCacheBase {
 }
 
 export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): boolean,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): boolean,
   get(name: string): IRBSegment | null,
   getChangeNumber(): number,
   getAll(): IRBSegment[],
@@ -260,7 +261,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
 }
 
 export interface IRBSegmentsCacheAsync extends IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): Promise<boolean>,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean>,
   get(name: string): Promise<IRBSegment | null>,
   getChangeNumber(): Promise<number>,
   clear(): Promise<boolean | void>,
@@ -499,7 +500,7 @@ export interface IStorageSync extends IStorageBase<
   IUniqueKeysCacheSync
 > {
   // Defined in client-side
-  validateCache?: () => Promise<boolean>,
+  validateCache?: () => Promise<SplitIO.SdkReadyMetadata>,
   largeSegments?: ISegmentsCacheSync,
 }
 
@@ -527,6 +528,10 @@ export interface IStorageFactoryParams {
    * For emitting SDK_READY_FROM_CACHE event in consumer mode with Redis to allow immediate evaluations
    */
   onReadyFromCacheCb: () => void,
+  /**
+   * If true, telemetry will not be recorded.
+   */
+  disableTelemetry?: boolean,
 }
 
 

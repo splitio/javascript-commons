@@ -10,6 +10,11 @@ jest.mock('../submitters/submitterManager', () => {
   };
 });
 
+// Mocked splitApi
+const splitApiMock = {
+  fetchSplitChanges: jest.fn()
+} as any;
+
 // Mocked storageManager
 const storageManagerMock = {
   splits: {
@@ -49,6 +54,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   const syncManager = syncManagerOnlineFactory()({
     settings, // @ts-ignore
     storage: {},
+    splitApi: splitApiMock,
   });
   const submitterManager = syncManager.submitterManager!;
 
@@ -100,7 +106,8 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   // Test pushManager for main client
   const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
-    storage: { validateCache: () => false },
+    storage: { validateCache: () => { return Promise.resolve({ initialCacheLoad: true, lastUpdateTimestamp: undefined }); } },
+    splitApi: splitApiMock,
   });
 
   expect(pushManagerFactoryMock).not.toBeCalled();
@@ -169,7 +176,8 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   // pushManager instantiation control test
   const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
-    storage: { validateCache: () => false },
+    storage: { validateCache: () => Promise.resolve({ initialCacheLoad: true, lastUpdateTimestamp: undefined }) },
+    splitApi: splitApiMock,
   });
 
   expect(pushManagerFactoryMock).toBeCalled();
@@ -183,17 +191,19 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
 
 });
 
-test('syncManagerOnline should emit SDK_SPLITS_CACHE_LOADED if validateCache returns true', async () => {
+test('syncManagerOnline should emit SDK_SPLITS_CACHE_LOADED if validateCache returns false', async () => {
+  const lastUpdateTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
   const params = {
     settings: fullSettings,
-    storage: { validateCache: () => true },
-    readiness: { splits: { emit: jest.fn() } }
+    storage: { validateCache: () => Promise.resolve({ initialCacheLoad: false, lastUpdateTimestamp }) },
+    readiness: { splits: { emit: jest.fn() } },
+    splitApi: splitApiMock,
   }; // @ts-ignore
   const syncManager = syncManagerOnlineFactory()(params);
 
   await syncManager.start();
 
-  expect(params.readiness.splits.emit).toBeCalledWith(SDK_SPLITS_CACHE_LOADED);
+  expect(params.readiness.splits.emit).toBeCalledWith(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp });
 
   syncManager.stop();
 });

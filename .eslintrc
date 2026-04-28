@@ -1,4 +1,5 @@
 {
+  "root": true,
   "extends": [
     "eslint:recommended"
   ],
@@ -46,7 +47,7 @@
   "overrides": [
     {
       "env": {
-        // platform-agnostic code must not reference Node or Browser globals
+        // platform-agnostic code must not reference Node or Browser globals without feature detection
         "node": false,
         "browser": false,
         "es6": true
@@ -94,7 +95,14 @@
     {
       "files": ["types/**"],
       "rules": {
-        "no-use-before-define": "off"
+        "no-use-before-define": "off",
+        "@typescript-eslint/member-delimiter-style": [
+          "error",
+          {
+            "multiline": { "delimiter": "semi", "requireLast": true },
+            "singleline": { "delimiter": "semi", "requireLast": true }
+          }
+        ]
       }
     },
     {

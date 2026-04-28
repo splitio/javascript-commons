@@ -81,16 +81,14 @@ describe('STORAGE Redis Adapter', () => {
    * Logs here won't be changing much, so we could validate those. It's not important the exact message but what do they represent.
    */
   test('Class', () => {
-    expect(Object.getPrototypeOf(RedisAdapter)).toBe(ioredis); // The returned class extends from the library of choice (ioredis).
-
     const instance = new RedisAdapter(loggerMock, {
       url: 'redis://localhost:6379/0',
       connectionTimeout: 10000,
       operationTimeout: 10000
     });
 
-    expect(instance instanceof RedisAdapter).toBe(true); // Of course created instance should be an instance of the adapter.
-    expect(instance instanceof ioredis).toBe(true); // And as the class extends from the library, the instance is an instance of the library as well.
+    expect(instance instanceof RedisAdapter).toBe(true); // Created instance should be an instance of the adapter.
+    expect(instance.client).toBeDefined(); // Adapter uses composition; client is the underlying ioredis instance.
 
     expect(typeof instance._options === 'object').toBe(true); // The instance will have an options object.
     expect(Array.isArray(instance._notReadyCommandsQueue)).toBe(true); // The instance will have an array as the _notReadyCommandsQueue property.
@@ -112,7 +110,7 @@ describe('STORAGE Redis Adapter', () => {
     // Keep in mind we're storing the arguments object, not a true array.
     expect(constructorParams.length).toBe(2); // In this signature, the constructor receives two params.
     expect(constructorParams[0]).toBe(redisUrl); // When we use the Redis URL, that should be the first parameter passed to ioredis constructor
-    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
+    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
 
     new RedisAdapter(loggerMock, {
       ...redisParams,
@@ -123,7 +121,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(constructorParams.length).toBe(1); // In this signature, the constructor receives one param.
     // we keep "pass" instead of "password" on our settings API to be backwards compatible.
-    expect(constructorParams[0]).toEqual({ host: redisParams.host, port: redisParams.port, db: redisParams.db, password: redisParams.pass, enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, tls: { ca: 'ca' } }); // If we send all the redis params separate, it will pass one object to the library containing that and the rest of the options.
+    expect(constructorParams[0]).toEqual({ host: redisParams.host, port: redisParams.port, db: redisParams.db, password: redisParams.pass, enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // If we send all the redis params separate, it will pass one object to the library containing that and the rest of the options.
 
     new RedisAdapter(loggerMock, {
       ...redisParams,
@@ -135,7 +133,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(constructorParams.length).toBe(2); // In this signature, the constructor receives two params.
     expect(constructorParams[0]).toBe(redisUrl); // When we use the Redis URL, even if we specified all the other params one by one the URL takes precedence, so that should be the first parameter passed to ioredis constructor
-    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 10000, lazyConnect: false, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
+    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 10000, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
   });
 
   test('static method - _defineOptions', () => {

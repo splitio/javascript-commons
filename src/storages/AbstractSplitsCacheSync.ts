@@ -1,5 +1,5 @@
 import { ISplitsCacheSync, IStorageSync } from './types';
-import { IRBSegment, ISplit } from '../dtos/types';
+import { IRBSegment, IDefinition } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
 
@@ -9,20 +9,21 @@ import { IN_SEGMENT, IN_LARGE_SEGMENT } from '../utils/constants';
  */
 export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
-  protected abstract addSplit(split: ISplit): boolean
+  protected abstract addSplit(split: IDefinition): boolean
   protected abstract removeSplit(name: string): boolean
   protected abstract setChangeNumber(changeNumber: number): boolean | void
 
-  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean {
+    let updated = toAdd.map(addedFF => this.addSplit(addedFF)).some(result => result);
+    updated = toRemove.map(removedFF => this.removeSplit(removedFF)).some(result => result) || updated;
     this.setChangeNumber(changeNumber);
-    const updated = toAdd.map(addedFF => this.addSplit(addedFF)).some(result => result);
-    return toRemove.map(removedFF => this.removeSplit(removedFF.name)).some(result => result) || updated;
+    return updated;
   }
 
-  abstract getSplit(name: string): ISplit | null
+  abstract getSplit(name: string): IDefinition | null
 
-  getSplits(names: string[]): Record<string, ISplit | null> {
-    const splits: Record<string, ISplit | null> = {};
+  getSplits(names: string[]): Record<string, IDefinition | null> {
+    const splits: Record<string, IDefinition | null> = {};
     names.forEach(name => {
       splits[name] = this.getSplit(name);
     });
@@ -31,8 +32,8 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
 
   abstract getChangeNumber(): number
 
-  getAll(): ISplit[] {
-    return this.getSplitNames().map(key => this.getSplit(key) as ISplit);
+  getAll(): IDefinition[] {
+    return this.getSplitNames().map(key => this.getSplit(key) as IDefinition);
   }
 
   abstract getSplitNames(): string[]
@@ -72,7 +73,7 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
  * Given a parsed split, it returns a boolean flagging if its conditions use segments matchers (rules & whitelists).
  * This util is intended to simplify the implementation of `splitsCache::usesSegments` method
  */
-export function usesSegments(ruleEntity: ISplit | IRBSegment) {
+export function usesSegments(ruleEntity: IDefinition | IRBSegment) {
   const conditions = ruleEntity.conditions || [];
   for (let i = 0; i < conditions.length; i++) {
     const matchers = conditions[i].matcherGroup.matchers;

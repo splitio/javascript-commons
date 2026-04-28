@@ -2,7 +2,7 @@ import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilder } from '../KeyBuilder';
 import { IPluggableStorageWrapper } from '../types';
 import { ILogger } from '../../logger/types';
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { IDefinition, ISplitFiltersValidation } from '../../dtos/types';
 import { LOG_PREFIX } from './constants';
 import { AbstractSplitsCacheAsync } from '../AbstractSplitsCacheAsync';
 import { returnDifference } from '../../utils/lang/sets';
@@ -31,19 +31,19 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     this.flagSetsFilter = splitFiltersValidation ? splitFiltersValidation.groupedFilters.bySet : [];
   }
 
-  private _decrementCounts(split: ISplit) {
+  private _decrementCounts(split: IDefinition) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.wrapper.decr(ttKey).then(count => {
       if (count === 0) return this.wrapper.del(ttKey);
     });
   }
 
-  private _incrementCounts(split: ISplit) {
+  private _incrementCounts(split: IDefinition) {
     const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
     return this.wrapper.incr(ttKey);
   }
 
-  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[] | null, flagSetsOfAddedFlag?: string[] | null) {
     const removeFromFlagSets = returnDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
 
     let addToFlagSets = returnDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);
@@ -66,13 +66,13 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved when the operation success
    * or rejected if it fails (e.g., wrapper operation fails)
    */
-  addSplit(split: ISplit): Promise<boolean> {
+  addSplit(split: IDefinition): Promise<boolean> {
     const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     return this.wrapper.get(splitKey).then(splitFromStorage => {
 
       // handling parsing error
-      let parsedPreviousSplit: ISplit, stringifiedNewSplit;
+      let parsedPreviousSplit: IDefinition, stringifiedNewSplit;
       try {
         parsedPreviousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : undefined;
         stringifiedNewSplit = JSON.stringify(split);
@@ -112,7 +112,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplit(name: string): Promise<ISplit | null> {
+  getSplit(name: string): Promise<IDefinition | null> {
     return this.wrapper.get(this.keys.buildSplitKey(name))
       .then(maybeSplit => maybeSplit && JSON.parse(maybeSplit));
   }
@@ -122,11 +122,11 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with a map of split names to their split definition or null if it's not defined,
    * or rejected if wrapper operation fails.
    */
-  getSplits(names: string[]): Promise<Record<string, ISplit | null>> {
+  getSplits(names: string[]): Promise<Record<string, IDefinition | null>> {
     const keys = names.map(name => this.keys.buildSplitKey(name));
 
     return this.wrapper.getMany(keys).then(splitDefinitions => {
-      const splits: Record<string, ISplit | null> = {};
+      const splits: Record<string, IDefinition | null> = {};
       names.forEach((name, idx) => {
         const split = splitDefinitions[idx];
         splits[name] = split && JSON.parse(split);
@@ -140,7 +140,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
    * The returned promise is resolved with the list of split definitions,
    * or rejected if wrapper operation fails.
    */
-  getAll(): Promise<ISplit[]> {
+  getAll(): Promise<IDefinition[]> {
     return this.wrapper.getKeysByPrefix(this.keys.buildSplitKeyPrefix())
       .then((listOfKeys) => this.wrapper.getMany(listOfKeys))
       .then((splitDefinitions) => splitDefinitions.map((splitDefinition) => {

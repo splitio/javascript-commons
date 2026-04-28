@@ -1,6 +1,6 @@
 import { ILogger } from '../../logger/types';
 import { isNaNNumber } from '../../utils/lang';
-import { LOG_PREFIX } from '../inLocalStorage/constants';
+import { LOG_PREFIX } from './constants';
 import { KeyBuilderSS } from '../KeyBuilderSS';
 import { ISegmentsCacheAsync } from '../types';
 import type { RedisAdapter } from './RedisAdapter';
@@ -37,7 +37,7 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
   isInSegment(name: string, key: string) {
     return this.redis.sismember(
       this.keys.buildSegmentNameKey(name), key
-    ).then(matches => matches !== 0);
+    ).then((matches: number) => matches !== 0);
   }
 
   getChangeNumber(name: string) {
@@ -45,7 +45,7 @@ export class SegmentsCacheInRedis implements ISegmentsCacheAsync {
       const i = parseInt(value as string, 10);
 
       return isNaNNumber(i) ? undefined : i;
-    }).catch((e) => {
+    }).catch((e: unknown) => {
       this.log.error(LOG_PREFIX + 'Could not retrieve changeNumber from segments storage. Error: ' + e);
       return undefined;
     });

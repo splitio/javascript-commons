@@ -2,9 +2,9 @@ import { IMySegmentsFetcher } from '../fetchers/types';
 import { IStorageSync } from '../../../storages/types';
 import { ISegmentsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { SYNC_MYSEGMENTS_FETCH_RETRY } from '../../../logger/constants';
+import { SYNC_FETCH_RETRY } from '../../../logger/constants';
 import { MySegmentsData } from '../types';
 import { IMembershipsResponse } from '../../../dtos/types';
 import { MEMBERSHIPS_LS_UPDATE } from '../../streaming/constants';
@@ -56,7 +56,7 @@ export function mySegmentsUpdaterFactory(
     // Notify update if required
     if (usesSegmentsSync(storage) && (shouldNotifyUpdate || readyOnAlreadyExistentState)) {
       readyOnAlreadyExistentState = false;
-      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED);
+      segmentsEventEmitter.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
     }
   }
 
@@ -66,17 +66,17 @@ export function mySegmentsUpdaterFactory(
       new Promise((res) => { updateSegments(segmentsData); res(true); }) :
       // If not provided, fetch mySegments
       mySegmentsFetcher(matchingKey, noCache, till, _promiseDecorator).then(segments => {
-        // Only when we have downloaded segments completely, we should not keep retrying anymore
-        startingUp = false;
-
         updateSegments(segments);
+
+        // Only when we have downloaded and stored segments completely, we should not keep retrying anymore
+        startingUp = false;
         return true;
       });
 
     return updaterPromise.catch(error => {
       if (startingUp && retriesOnFailureBeforeReady > retry) {
         retry += 1;
-        log.warn(SYNC_MYSEGMENTS_FETCH_RETRY, [retry, error]);
+        log.warn(SYNC_FETCH_RETRY, ['memberships', retry, error]);
         return _mySegmentsUpdater(retry); // no need to forward `segmentList` and `noCache` params
       } else {
         startingUp = false;

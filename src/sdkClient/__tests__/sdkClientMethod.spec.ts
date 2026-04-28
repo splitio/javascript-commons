@@ -4,31 +4,39 @@ import { sdkClientMethodFactory } from '../sdkClientMethod';
 import { assertClientApi } from './testUtils';
 import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
 import { IBasicClient } from '../../types';
+import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatmentsCalculator';
 
 const errorMessage = 'Shared Client not supported by the storage mechanism. Create isolated instances instead.';
+
+const signalListenerMock = {
+  start: jest.fn(),
+  stop: jest.fn()
+};
 
 const paramMocks = [
   // No SyncManager (i.e., Async SDK) and No signal listener
   {
+    platform: {},
     storage: { destroy: jest.fn(() => Promise.resolve()) },
     syncManager: undefined,
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
-    signalListener: undefined,
     settings: { mode: CONSUMER_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+    impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
+    fallbackTreatmentsCalculator: FallbackTreatmentsCalculator({})
   },
   // SyncManager (i.e., Sync SDK) and Signal listener
   {
+    platform: { SignalListener: jest.fn(() => signalListenerMock) },
     storage: { destroy: jest.fn() },
     syncManager: { stop: jest.fn(), flush: jest.fn(() => Promise.resolve()) },
     sdkReadinessManager: { sdkStatus: jest.fn(), readinessManager: { destroy: jest.fn() } },
-    signalListener: { stop: jest.fn() },
     settings: { mode: STANDALONE_MODE, log: loggerMock, core: { authorizationKey: 'sdk key '} },
     telemetryTracker: telemetryTrackerFactory(),
     clients: {},
-    uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+    impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() },
+    fallbackTreatmentsCalculator: FallbackTreatmentsCalculator({})
   }
 ];
 
@@ -72,13 +80,13 @@ test.each(paramMocks)('sdkClientMethodFactory', (params, done: any) => {
           client.destroy().then(() => {
             expect(params.sdkReadinessManager.readinessManager.destroy).toBeCalledTimes(1);
             expect(params.storage.destroy).toBeCalledTimes(1);
-            expect(params.uniqueKeysTracker.stop).toBeCalledTimes(1);
+            expect(params.impressionsTracker.stop).toBeCalledTimes(1);
 
             if (params.syncManager) {
               expect(params.syncManager.stop).toBeCalledTimes(1);
               expect(params.syncManager.flush).toBeCalledTimes(3);
             }
-            if (params.signalListener) expect(params.signalListener.stop).toBeCalledTimes(1);
+            if (params.platform.SignalListener) expect(signalListenerMock.stop).toBeCalledTimes(1);
 
             done();
           });

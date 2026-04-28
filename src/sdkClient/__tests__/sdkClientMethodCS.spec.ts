@@ -38,15 +38,22 @@ const syncManagerMock = {
   })
 };
 
+const signalListenerMock = {
+  start: jest.fn(),
+  stop: jest.fn()
+};
+
 const params = {
+  platform:{
+    SignalListener: jest.fn(() => signalListenerMock)
+  },
   storage: storageMock,
   sdkReadinessManager: sdkReadinessManagerMock,
   syncManager: syncManagerMock,
-  signalListener: { stop: jest.fn() },
   settings: settingsWithKey,
   telemetryTracker: telemetryTrackerFactory(),
   clients: {},
-  uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+  impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() }
 };
 
 const invalidAttributes = [
@@ -95,8 +102,8 @@ describe('sdkClientMethodCSFactory', () => {
       expect(params.storage.destroy).toBeCalledTimes(1);
       expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
-      expect(params.signalListener.stop).toBeCalledTimes(1);
-      expect(params.uniqueKeysTracker.stop).toBeCalledTimes(1);
+      expect(params.impressionsTracker.stop).toBeCalledTimes(1);
+      expect(signalListenerMock.stop).toBeCalledTimes(1);
     });
 
   });
@@ -140,7 +147,7 @@ describe('sdkClientMethodCSFactory', () => {
     expect(params.storage.destroy).not.toBeCalled();
     expect(params.syncManager.stop).not.toBeCalled();
     expect(params.syncManager.flush).not.toBeCalled();
-    expect(params.signalListener.stop).not.toBeCalled();
+    expect(signalListenerMock.stop).not.toBeCalled();
 
   });
 

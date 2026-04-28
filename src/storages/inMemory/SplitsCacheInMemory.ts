@@ -1,4 +1,4 @@
-import { ISplit, ISplitFiltersValidation } from '../../dtos/types';
+import { IDefinition, ISplitFiltersValidation } from '../../dtos/types';
 import { AbstractSplitsCacheSync, usesSegments } from '../AbstractSplitsCacheSync';
 import { isFiniteNumber } from '../../utils/lang';
 
@@ -8,7 +8,7 @@ import { isFiniteNumber } from '../../utils/lang';
 export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
 
   private flagSetsFilter: string[];
-  private splitsCache: Record<string, ISplit> = {};
+  private splitsCache: Record<string, IDefinition> = {};
   private ttCache: Record<string, number> = {};
   private changeNumber: number = -1;
   private segmentsCount: number = 0;
@@ -27,7 +27,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     this.flagSetsCache = {};
   }
 
-  addSplit(split: ISplit): boolean {
+  addSplit(split: IDefinition): boolean {
     const name = split.name;
     const previousSplit = this.getSplit(name);
     if (previousSplit) { // We had this Split already
@@ -73,7 +73,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return true;
   }
 
-  getSplit(name: string): ISplit | null {
+  getSplit(name: string): IDefinition | null {
     return this.splitsCache[name] || null;
   }
 
@@ -102,7 +102,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     return flagSets.map(flagSet => this.flagSetsCache[flagSet] || new Set());
   }
 
-  private addToFlagSets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: IDefinition) {
     if (!featureFlag.sets) return;
     featureFlag.sets.forEach(featureFlagSet => {
 
@@ -114,7 +114,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     });
   }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets: string[] | undefined) {
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[] | null) {
     if (!flagSets) return;
     flagSets.forEach(flagSet => {
       this.removeNames(flagSet, featureFlagName);

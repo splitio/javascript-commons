@@ -1,12 +1,14 @@
-import { ISplit, MaybeThenable } from '../../dtos/types';
+import { IDefinition, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
 import { thenable } from '../../utils/promise/thenable';
-import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
+import { IDependencyMatcherValue, IDefinitionEvaluator } from '../types';
 
-export function prerequisitesMatcherContext(prerequisites: ISplit['prerequisites'] = [], storage: IStorageSync | IStorageAsync, log: ILogger) {
+export function prerequisitesMatcherContext(prerequisites: IDefinition['prerequisites'], storage: IStorageSync | IStorageAsync, log: ILogger) {
 
-  return function prerequisitesMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
+  return function prerequisitesMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: IDefinitionEvaluator): MaybeThenable<boolean> {
+
+    prerequisites = prerequisites == null ? [] : prerequisites;
 
     function evaluatePrerequisite(prerequisite: { n: string; ts: string[] }): MaybeThenable<boolean> {
       const evaluation = splitEvaluator(log, key, prerequisite.n, attributes, storage);

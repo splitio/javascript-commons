@@ -1,8 +1,39 @@
-3.0.0 (XXX XX, 2025)
- - BREAKING CHANGES:
-   - Removed the deprecated `client.ready()` method. Use `client.whenReady()` or `client.whenReadyFromCache()` instead.
+3.0.0 (May XX, 2026)
+ - Extracted SDK lifecycle methods (`init`, `flush`, and `destroy`) into a reusable `sdkLifecycle` module.
+ - Extracted the `track` method into a standalone `trackMethod` factory for reuse across SDKs.
+ - Added a bloom filter utility and platform-specific modules (`src/platform/`) for reuse across SDKs.
+ - Added support for the Configs SDK:
+   - new type declarations,
+   - a fallback calculator with sanitizer,
+   - default treatment evaluation (without a target),
+   - a new `CONFIGS_UPDATE` metadata type for `SDK_UPDATE` event,
+   - an optional `entityType` field in the `/testImpressions/bulk` payload,
+   - input validation for the target object.
+ - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
 
-2.8.0 (October XX, 2025)
+2.12.1 (April 30, 2026)
+ - Updated internal modules to handle `null` values from `/splitChanges` response.
+ - Updated some dependencies for vulnerability fixes.
+
+2.12.0 (February 24, 2026)
+ - Added support for ioredis v5 (Related to issue https://github.com/splitio/javascript-commons/issues/471).
+
+2.11.0 (January 28, 2026)
+ - Added functionality to provide metadata alongside SDK update and READY events. Read more in our docs.
+
+2.10.1 (December 18, 2025)
+ - Bugfix - Handle `null` prerequisites properly.
+
+2.10.0 (December 16, 2025)
+ - Added property `impressionsDisabled` in getTreatment(s) `evaluationOptions` parameter, to disable impressions per evaluations.
+
+2.9.0 (November 26, 2025)
+ - Updated the SDK’s initial synchronization in Node.js (server-side) to use the `startup.requestTimeoutBeforeReady` and `startup.retriesOnFailureBeforeReady` options to control the timeout and retry behavior of segment requests.
+ - Updated the order of storage operations to prevent inconsistent states when using the `LOCALSTORAGE` storage type and the browser’s `localStorage` fails due to quota limits.
+
+2.8.0 (October 30, 2025)
+ - Added new configuration for Fallback Treatments, which allows setting a treatment value and optional config to be returned in place of "control", either globally or by flag. Read more in our docs.
+ - Added `client.getStatus()` method to retrieve the client readiness status properties (`isReady`, `isReadyFromCache`, etc).
  - Added `client.whenReady()` and `client.whenReadyFromCache()` methods to replace the deprecated `client.ready()` method, which has an issue causing the returned promise to hang when using async/await syntax if it was rejected.
  - Updated the SDK_READY_FROM_CACHE event to be emitted alongside the SDK_READY event if it hasn’t already been emitted.
 

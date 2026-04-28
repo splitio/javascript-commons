@@ -66,8 +66,7 @@ describe('SDK Readiness Manager - Event emitter', () => {
 
     expect(typeof sdkStatus.whenReady).toBe('function'); // The sdkStatus exposes a .whenReady() function.
     expect(typeof sdkStatus.whenReadyFromCache).toBe('function'); // The sdkStatus exposes a .whenReadyFromCache() function.
-    expect(typeof sdkStatus.__getStatus).toBe('function'); // The sdkStatus exposes a .__getStatus() function.
-    expect(sdkStatus.__getStatus()).toEqual({
+    expect(sdkStatus.getStatus()).toEqual({ // The sdkStatus exposes a .getStatus() function.
       isReady: false, isReadyFromCache: false, isTimedout: false, hasTimedout: false, isDestroyed: false, isOperational: false, lastUpdate: 0
     });
 
@@ -220,12 +219,12 @@ describe('SDK Readiness Manager - Promises', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
     // make the SDK ready from cache
-    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED);
-    expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toBe(false);
+    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: null });
+    expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toEqual({ initialCacheLoad: false, lastUpdateTimestamp: null });
 
     // validate error log for SDK_READY_FROM_CACHE
     expect(loggerMock.error).not.toBeCalled();
-    sdkReadinessManager.readinessManager.gate.on(SDK_READY_FROM_CACHE, () => {});
+    sdkReadinessManager.readinessManager.gate.on(SDK_READY_FROM_CACHE, () => { });
     expect(loggerMock.error).toBeCalledWith(ERROR_CLIENT_LISTENER, ['SDK_READY_FROM_CACHE']);
 
     const readyFromCache = sdkReadinessManager.sdkStatus.whenReadyFromCache();
@@ -233,7 +232,8 @@ describe('SDK Readiness Manager - Promises', () => {
 
     // make the SDK ready
     emitReadyEvent(sdkReadinessManager.readinessManager);
-    expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toBe(true);
+    expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toEqual({ initialCacheLoad: false, lastUpdateTimestamp: null });
+    expect(await sdkReadinessManager.sdkStatus.whenReady()).toEqual({ initialCacheLoad: false, lastUpdateTimestamp: null });
 
     let testPassedCount = 0;
     function incTestPassedCount() { testPassedCount++; }
@@ -261,12 +261,12 @@ describe('SDK Readiness Manager - Promises', () => {
     function incTestPassedCount() { testPassedCount++; }
     function throwTestFailed() { throw new Error('It should rejected, not resolved.'); }
 
-    await readyFromCacheForTimeout.then(throwTestFailed,incTestPassedCount);
-    await readyForTimeout.then(throwTestFailed,incTestPassedCount);
+    await readyFromCacheForTimeout.then(throwTestFailed, incTestPassedCount);
+    await readyForTimeout.then(throwTestFailed, incTestPassedCount);
 
     // any subsequent call to .whenReady() and .whenReadyFromCache() must be a rejected promise until the SDK is ready
-    await sdkReadinessManagerForTimedout.sdkStatus.whenReadyFromCache().then(throwTestFailed,incTestPassedCount);
-    await sdkReadinessManagerForTimedout.sdkStatus.whenReady().then(throwTestFailed,incTestPassedCount);
+    await sdkReadinessManagerForTimedout.sdkStatus.whenReadyFromCache().then(throwTestFailed, incTestPassedCount);
+    await sdkReadinessManagerForTimedout.sdkStatus.whenReady().then(throwTestFailed, incTestPassedCount);
 
     // make the SDK ready
     emitReadyEvent(sdkReadinessManagerForTimedout.readinessManager);

@@ -1,17 +1,17 @@
 import { evaluateFeature, evaluateFeatures, evaluateFeaturesByFlagSets } from '../evaluator';
 import { thenable } from '../utils/promise/thenable';
 import { getMatching, getBucketing } from '../utils/key';
-import { validateSplitExistence } from '../utils/inputValidation/splitExistence';
-import { validateTrafficTypeExistence } from '../utils/inputValidation/trafficTypeExistence';
+import { validateDefinitionExistence } from '../utils/inputValidation/definitionExistence';
 import { SDK_NOT_READY } from '../utils/labels';
-import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
+import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
 import SplitIO from '../../types/splitio';
-import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
+import { IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { Method } from '../sync/submitters/types';
 import { ImpressionDecorated } from '../trackers/types';
+import { trackMethodFactory } from './trackMethod';
 
 const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
 
@@ -23,7 +23,7 @@ function treatmentsNotReady(featureFlagNames: string[]) {
   return evaluations;
 }
 
-function stringify(options?: SplitIO.EvaluationOptions) {
+export function stringify(options?: SplitIO.EvaluationOptions) {
   if (options && options.properties) {
     try {
       return JSON.stringify(options.properties);
@@ -35,7 +35,7 @@ function stringify(options?: SplitIO.EvaluationOptions) {
  * Creator of base client with getTreatments and track methods.
  */
 export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, eventTracker, telemetryTracker } = params;
+  const { sdkReadinessManager: { readinessManager }, storage, settings, impressionsTracker, telemetryTracker, fallbackCalculator } = params;
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
 
@@ -52,7 +52,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluation = readinessManager.isReadyFromCache() ?
-      evaluateFeature(log, key, featureFlagName, attributes, storage) :
+      evaluateFeature(log, key, featureFlagName, attributes, storage, options) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentNotReady) :
         treatmentNotReady;
@@ -81,7 +81,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
+      evaluateFeatures(log, key, featureFlagNames, attributes, storage, options) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentsNotReady(featureFlagNames)) :
         treatmentsNotReady(featureFlagNames);
@@ -110,7 +110,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName, options) :
       isAsync ?
         Promise.resolve({}) :
         {};
@@ -143,11 +143,18 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 
-    const { treatment, label, changeNumber, config = null, impressionsDisabled } = evaluation;
-    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
+    const { changeNumber, impressionsDisabled } = evaluation;
+    let { treatment, label, config = null } = evaluation;
 
-    if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
-      log.info(IMPRESSION_QUEUEING);
+    if (treatment === CONTROL) {
+      const fallbackTreatment = fallbackCalculator(featureFlagName, label);
+      treatment = fallbackTreatment.treatment;
+      label = fallbackTreatment.label;
+      config = fallbackTreatment.config;
+    }
+
+    if (validateDefinitionExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
+      log.info(IMPRESSION_QUEUEING, ['Feature flag', featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
           feature: featureFlagName,
@@ -166,42 +173,14 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     if (withConfig) {
       return {
         treatment,
-        config
+        config: config as string | null
       };
     }
 
     return treatment;
   }
 
-  function track(key: SplitIO.SplitKey, trafficTypeName: string, eventTypeId: string, value?: number, properties?: SplitIO.Properties, size = 1024) {
-    const stopTelemetryTracker = telemetryTracker.trackEval(TRACK);
-
-    const matchingKey = getMatching(key);
-    const timestamp = Date.now();
-    const eventData: SplitIO.EventData = {
-      eventTypeId,
-      trafficTypeName,
-      value,
-      timestamp,
-      key: matchingKey,
-      properties
-    };
-
-    // This may be async but we only warn, we don't actually care if it is valid or not in terms of queueing the event.
-    validateTrafficTypeExistence(log, readinessManager, storage.splits, mode, trafficTypeName, TRACK_FN_LABEL);
-
-    const result = eventTracker.track(eventData, size);
-
-    if (thenable(result)) {
-      return result.then((result) => {
-        stopTelemetryTracker();
-        return result;
-      });
-    } else {
-      stopTelemetryTracker();
-      return result;
-    }
-  }
+  const track = trackMethodFactory(params);
 
   return {
     getTreatment,

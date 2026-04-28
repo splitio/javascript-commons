@@ -1,9 +1,12 @@
 import { ISegmentChangesFetcher } from '../fetchers/types';
 import { ISegmentsCacheBase } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
-import { SDK_SEGMENTS_ARRIVED } from '../../../readiness/constants';
+import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
-import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC_SEGMENTS } from '../../../logger/constants';
+import { LOG_PREFIX_INSTANTIATION, LOG_PREFIX_SYNC } from '../../../logger/constants';
+import { timeout } from '../../../utils/promise/timeout';
+import { SdkUpdateMetadata } from '../../../../types/splitio';
+
 
 type ISegmentChangesUpdater = (fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) => Promise<boolean>
 
@@ -23,25 +26,38 @@ export function segmentChangesUpdaterFactory(
   segmentChangesFetcher: ISegmentChangesFetcher,
   segments: ISegmentsCacheBase,
   readiness?: IReadinessManager,
+  requestTimeoutBeforeReady?: number,
+  retriesOnFailureBeforeReady?: number,
 ): ISegmentChangesUpdater {
 
   let readyOnAlreadyExistentState = true;
 
-  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean): Promise<boolean> {
-    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing segment ${segmentName}`);
-    let sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
+  function _promiseDecorator<T>(promise: Promise<T>) {
+    if (readyOnAlreadyExistentState && requestTimeoutBeforeReady) promise = timeout(requestTimeoutBeforeReady, promise);
+    return promise;
+  }
+
+  function updateSegment(segmentName: string, noCache?: boolean, till?: number, fetchOnlyNew?: boolean, retries?: number): Promise<boolean> {
+    log.debug(`${LOG_PREFIX_SYNC}Processing segment ${segmentName}`);
+    const sincePromise = Promise.resolve(segments.getChangeNumber(segmentName));
 
     return sincePromise.then(since => {
       // if fetchOnlyNew flag, avoid processing already fetched segments
       return fetchOnlyNew && since !== undefined ?
         false :
-        segmentChangesFetcher(since || -1, segmentName, noCache, till).then((changes) => {
+        segmentChangesFetcher(since || -1, segmentName, noCache, till, _promiseDecorator).then((changes) => {
           return Promise.all(changes.map(x => {
-            log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            log.debug(`${LOG_PREFIX_SYNC}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             return segments.update(segmentName, x.added, x.removed, x.till);
           })).then((updates) => {
             return updates.some(update => update);
           });
+        }).catch(error => {
+          if (retries) {
+            log.warn(`${LOG_PREFIX_SYNC}Retrying fetch of segment ${segmentName} (attempt #${retries}). Reason: ${error}`);
+            return updateSegment(segmentName, noCache, till, fetchOnlyNew, retries - 1);
+          }
+          throw error;
         });
     });
   }
@@ -57,20 +73,25 @@ export function segmentChangesUpdaterFactory(
    * @param till - till target for the provided segmentName, for CDN bypass.
    */
   return function segmentChangesUpdater(fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number) {
-    log.debug(`${LOG_PREFIX_SYNC_SEGMENTS}Started segments update`);
+    log.debug(`${LOG_PREFIX_SYNC}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
     let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
 
     return segmentsPromise.then(segmentNames => {
-      // Async fetchers
-      const updaters = segmentNames.map(segmentName => updateSegment(segmentName, noCache, till, fetchOnlyNew));
+      const updaters = segmentNames.map(segmentName => updateSegment(segmentName, noCache, till, fetchOnlyNew, readyOnAlreadyExistentState ? retriesOnFailureBeforeReady : 0));
 
       return Promise.all(updaters).then(shouldUpdateFlags => {
         // if at least one segment fetch succeeded, mark segments ready
         if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
-          if (readiness) readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
+          if (readiness) {
+            const metadata: SdkUpdateMetadata = {
+              type: SEGMENTS_UPDATE,
+              names: []
+            };
+            readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
+          }
         }
         return true;
       });
@@ -81,9 +102,9 @@ export function segmentChangesUpdaterFactory(
           // If the operation is forbidden, it may be due to permissions. Destroy the SDK instance.
           // @TODO although factory status is destroyed, synchronization is not stopped
           if (readiness) readiness.setDestroyed();
-          log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an SDK Key from the Split user interface that is of type server-side.`);
+          log.error(`${LOG_PREFIX_INSTANTIATION}: you passed a client-side type authorizationKey, please grab an SDK Key from Harness UI that is of type server-side.`);
         } else {
-          log.warn(`${LOG_PREFIX_SYNC_SEGMENTS}Error while doing fetch of segments. ${error}`);
+          log.warn(`${LOG_PREFIX_SYNC}Error while doing fetch of segments. ${error}`);
         }
 
         return false;
