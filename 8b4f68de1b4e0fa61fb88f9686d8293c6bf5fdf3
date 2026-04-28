@@ -1,0 +1,38 @@
+CHANGES.txt
+  human 1,3
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CHANGES.txt"
+    }
+  ],
+  "base_commit_sha": "eb99cbd54ed026a3e79fde5d2c599870e1463abf",
+  "branch": "handle-null-splitchanges-response",
+  "commit_sha": "8b4f68de1b4e0fa61fb88f9686d8293c6bf5fdf3",
+  "commit_time": "2026-04-28T16:35:42-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 2,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
