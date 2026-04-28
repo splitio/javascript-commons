@@ -1,5 +1,6 @@
-2.12.1 (April 28, 2026)
+2.12.1 (April 30, 2026)
  - Updated internal modules to handle `null` values from `/splitChanges` response.
+ - Updated some dependencies for vulnerability fixes.
 
 2.12.0 (February 24, 2026)
  - Added support for ioredis v5 (Related to issue https://github.com/splitio/javascript-commons/issues/471).
