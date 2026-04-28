@@ -528,6 +528,10 @@ export interface IStorageFactoryParams {
    * For emitting SDK_READY_FROM_CACHE event in consumer mode with Redis to allow immediate evaluations
    */
   onReadyFromCacheCb: () => void,
+  /**
+   * If true, telemetry will not be recorded.
+   */
+  disableTelemetry?: boolean,
 }
 
 

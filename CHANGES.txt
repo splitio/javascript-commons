@@ -1,3 +1,16 @@
+3.0.0 (May XX, 2026)
+ - Extracted SDK lifecycle methods (`init`, `flush`, and `destroy`) into a reusable `sdkLifecycle` module.
+ - Extracted the `track` method into a standalone `trackMethod` factory for reuse across SDKs.
+ - Added a bloom filter utility and platform-specific modules (`src/platform/`) for reuse across SDKs.
+ - Added support for the Configs SDK:
+   - new type declarations,
+   - a fallback calculator with sanitizer,
+   - default treatment evaluation (without a target),
+   - a new `CONFIGS_UPDATE` metadata type for `SDK_UPDATE` event,
+   - an optional `entityType` field in the `/testImpressions/bulk` payload,
+   - input validation for the target object.
+ - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
+
 2.12.0 (February 24, 2026)
  - Added support for ioredis v5 (Related to issue https://github.com/splitio/javascript-commons/issues/471).
 
