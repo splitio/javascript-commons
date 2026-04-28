@@ -173,7 +173,7 @@ export function splitChangesUpdaterFactory(
           let updatedFlags: string[] = [];
           let ffUpdate: MaybeThenable<boolean> = false;
           if (splitChanges.ff) {
-            const { added, removed, names } = computeMutation(splitChanges.ff.d, usedSegments, splitFiltersValidation);
+            const { added, removed, names } = computeMutation(splitChanges.ff.d || [], usedSegments, splitFiltersValidation);
             updatedFlags = names;
             log.debug(SYNC_SPLITS_UPDATE, [added.length, removed.length]);
             ffUpdate = splits.update(added, removed, splitChanges.ff.t);
@@ -181,7 +181,7 @@ export function splitChangesUpdaterFactory(
 
           let rbsUpdate: MaybeThenable<boolean> = false;
           if (splitChanges.rbs) {
-            const { added, removed } = computeMutation(splitChanges.rbs.d, usedSegments);
+            const { added, removed } = computeMutation(splitChanges.rbs.d || [], usedSegments);
             log.debug(SYNC_RBS_UPDATE, [added.length, removed.length]);
             rbsUpdate = rbSegments.update(added, removed, splitChanges.rbs.t);
           }

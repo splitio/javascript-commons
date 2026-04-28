@@ -232,8 +232,8 @@ export interface ISplit {
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
-  },
-  sets?: string[],
+  } | null,
+  sets?: string[] | null,
   impressionsDisabled?: boolean
 }
 
@@ -245,12 +245,12 @@ export interface ISplitChangesResponse {
   ff?: {
     t: number,
     s?: number,
-    d: ISplit[]
+    d?: ISplit[] | null,
   },
   rbs?: {
     t: number,
     s?: number,
-    d: IRBSegment[]
+    d?: IRBSegment[] | null,
   }
 }
 
