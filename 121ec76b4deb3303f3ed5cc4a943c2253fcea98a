@@ -1,0 +1,998 @@
+src/storages/inRedis/index.ts
+  human 5,62
+src/sync/polling/pollingManagerCS.ts
+  human 8,11,48,69
+src/sdkManager/__tests__/index.asyncCache.spec.ts
+  human 4-5,34,37,71,78
+src/utils/inputValidation/trafficTypeExistence.ts
+  human 3,17
+src/storages/inMemory/InMemoryStorage.ts
+  human 1,20,25,31
+src/storages/inLocalStorage/__tests__/validateCache.spec.ts
+  human 5,18,21-22,33,39,43,51,56,62,66,73,78,84,94,98,104,116,120,126,138,140,148,152
+src/storages/KeyBuilderSS.ts
+  human 52-53
+src/sync/syncManagerOnline.ts
+  human 12-13,105
+src/storages/inMemory/__tests__/DefinitionsCacheInMemory.spec.ts
+  human 1-190
+src/sdkFactory/__tests__/index.spec.ts
+  human 13
+src/storages/inRedis/__tests__/DefinitionsCacheInRedis.spec.ts
+  human 1-228
+src/readiness/__tests__/readinessManager.spec.ts
+  human 4,55,83,85,87,103-104,106,108-109,131,134,136,156,184,238,255,294,307,320,329,337,346,374,393,406,414,431
+src/sdkClient/__tests__/trackMethod.spec.ts
+  human 25,34
+src/evaluator/index.ts
+  human 44,46,59,86,88,95,131,159,186,197,221
+src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts
+  human 5,18,182-183,191,199,203,219,293,300,307-308,323-324,331,336,338-339,349-350,355,357-358,368-369,374,383,388-389,398,403-404,417,422-424,428,435
+src/storages/pluggable/__tests__/DefinitionsCachePluggable.spec.ts
+  human 1-201
+src/storages/KeyBuilderCS.ts
+  human 12,18,38-39,46,54
+src/evaluator/__tests__/evaluate-feature.spec.ts
+  human 19-20,46
+src/storages/pluggable/index.ts
+  human 4,121
+src/sync/streaming/UpdateWorkers/DefinitionsUpdateWorker.ts
+  human 1-145
+src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts
+  human 6,45,124-125,127-128
+src/storages/inMemory/RBSegmentsCacheInMemory.ts
+  human 3
+src/storages/inMemory/TelemetryCacheInMemory.ts
+  human 5,31,54
+src/readiness/__tests__/sdkReadinessManager.spec.ts
+  human 4,24,29-30,151
+src/evaluator/matchers/__tests__/prerequisites.spec.ts
+  human 14-15
+src/storages/inRedis/DefinitionsCacheInRedis.ts
+  human 1-268
+src/sdkManager/index.ts
+  human 5,51,53,55,73,106
+src/storages/inMemory/SegmentsCacheInMemory.ts
+  human 5
+src/storages/AbstractDefinitionsCacheAsync.ts
+  human 1-63
+src/storages/inLocalStorage/validateCache.ts
+  human 5,71,75,83
+src/storages/pluggable/DefinitionsCachePluggable.ts
+  human 1-230
+src/sdkClient/trackMethod.ts
+  human 15,45
+src/sync/polling/fetchers/splitChangesFetcher.ts
+  human 105
+src/evaluator/__tests__/evaluate-features.spec.ts
+  human 25-26,32,34,38,62,129,142,161,164,172,174-176,182-184,187,191-193
+src/evaluator/matchers/__tests__/rbsegment.spec.ts
+  human 181-182,205-206
+src/storages/setRolloutPlan.ts
+  human 2,30-31,36-38
+src/storages/pluggable/__tests__/index.spec.ts
+  human 39,42-43
+src/storages/__tests__/testUtils.ts
+  human 7
+src/sync/polling/updaters/mySegmentsUpdater.ts
+  human 11
+src/sync/__tests__/syncManagerOnline.spec.ts
+  human 5,20,194,199,206
+src/sync/polling/syncTasks/definitionsSyncTask.ts
+  human 26
+src/sync/polling/types.ts
+  human 7
+src/storages/types.ts
+  human 197,199-200,204,211,214,216-217,220,225,228,230-231,234,239,469,478,493,508
+src/sync/offline/syncTasks/fromObjectSyncTask.ts
+  human 10,18,23,55-56,58,65,84
+src/sync/polling/updaters/definitionChangesUpdater.ts
+  human 4,6,131,133,138,186,204-206,215,237
+src/readiness/readinessManager.ts
+  human 4-5,7-10,18-19,21,40,62-63,78,88-89,117,140,145,156-158,166
+src/storages/__tests__/KeyBuilder.spec.ts
+  human 12-14,25-26,68
+src/storages/inLocalStorage/DefinitionsCacheInLocal.ts
+  human 1-234
+src/storages/AbstractDefinitionsCacheSync.ts
+  human 1-95
+src/sync/streaming/UpdateWorkers/__tests__/DefinitionsUpdateWorker.spec.ts
+  human 1-271
+src/storages/inLocalStorage/__tests__/DefinitionsCacheInLocal.spec.ts
+  human 1-233
+src/sdkManager/__tests__/index.syncCache.spec.ts
+  human 4,21,23
+src/sdkFactory/index.ts
+  human 9,39,43,51,69
+src/storages/__tests__/dataLoader.spec.ts
+  human 53
+src/evaluator/matchers/__tests__/dependency.spec.ts
+  human 16-17
+src/storages/inMemory/DefinitionsCacheInMemory.ts
+  human 1-130
+src/storages/inLocalStorage/index.ts
+  human 8,53,60,67,72,89
+src/storages/inMemory/InMemoryStorageCS.ts
+  human 1,20,26,33,41
+src/readiness/constants.ts
+  human 1-3
+src/sync/streaming/pushManager.ts
+  human 9,58-59,171,221-223
+src/utils/inputValidation/__tests__/trafficTypeExistence.spec.ts
+  human 2,28
+src/sync/polling/updaters/__tests__/mySegmentsUpdater.spec.ts
+  human 13,19,24
+src/storages/KeyBuilder.ts
+  human 24-25,28-29,32,36
+src/readiness/types.ts
+  human 19-21,23-25,27-29,51
+src/storages/getRolloutPlan.ts
+  human 15,22,24
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,62",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,11,48,69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/pollingManagerCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,34,37,71,78",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkManager/__tests__/index.asyncCache.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,17",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/trafficTypeExistence.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,20,25,31",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/InMemoryStorage.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 24,
+          "added_lines": 24,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,18,21-22,33,39,43,51,56,62,66,73,78,84,94,98,104,116,120,126,138,140,148,152",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/__tests__/validateCache.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "52-53",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/KeyBuilderSS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12-13,105",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/syncManagerOnline.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 190,
+          "added_lines": 190,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-190",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/__tests__/DefinitionsCacheInMemory.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/__tests__/index.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 228,
+          "added_lines": 228,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-228",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/DefinitionsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 28,
+          "added_lines": 28,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,55,83,85,87,103-104,106,108-109,131,134,136,156,184,238,255,294,307,320,329,337,346,374,393,406,414,431",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/__tests__/readinessManager.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "25,34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/__tests__/trackMethod.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "44,46,59,86,88,95,131,159,186,197,221",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,18,182-183,191,199,203,219,293,300,307-308,323-324,331,336,338-339,349-350,355,357-358,368-369,374,383,388-389,398,403-404,417,422-424,428,435",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 201,
+          "added_lines": 201,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-201",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/__tests__/DefinitionsCachePluggable.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12,18,38-39,46,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/KeyBuilderCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "19-20,46",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/__tests__/evaluate-feature.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,121",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 145,
+          "added_lines": 145,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-145",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/UpdateWorkers/DefinitionsUpdateWorker.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,45,124-125,127-128",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/RBSegmentsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,31,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/TelemetryCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,24,29-30,151",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/__tests__/sdkReadinessManager.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/prerequisites.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 268,
+          "added_lines": 268,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-268",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/DefinitionsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,51,53,55,73,106",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkManager/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/SegmentsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 63,
+          "added_lines": 63,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-63",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractDefinitionsCacheAsync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,71,75,83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/validateCache.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 230,
+          "added_lines": 230,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-230",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/DefinitionsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15,45",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/trackMethod.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "105",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/splitChangesFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "25-26,32,34,38,62,129,142,161,164,172,174-176,182-184,187,191-193",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/__tests__/evaluate-features.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "181-182,205-206",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/rbsegment.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,30-31,36-38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/setRolloutPlan.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "39,42-43",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/__tests__/index.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/testUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/mySegmentsUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,20,194,199,206",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/__tests__/syncManagerOnline.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "26",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/syncTasks/definitionsSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "197,199-200,204,211,214,216-217,220,225,228,230-231,234,239,469,478,493,508",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "10,18,23,55-56,58,65,84",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/syncTasks/fromObjectSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6,131,133,138,186,204-206,215,237",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/definitionChangesUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 22,
+          "added_lines": 22,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,7-10,18-19,21,40,62-63,78,88-89,117,140,145,156-158,166",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/readinessManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12-14,25-26,68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/KeyBuilder.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 234,
+          "added_lines": 234,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-234",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/DefinitionsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 95,
+          "added_lines": 95,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-95",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractDefinitionsCacheSync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 271,
+          "added_lines": 271,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-271",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/UpdateWorkers/__tests__/DefinitionsUpdateWorker.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 233,
+          "added_lines": 233,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-233",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/__tests__/DefinitionsCacheInLocal.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,21,23",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkManager/__tests__/index.syncCache.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9,39,43,51,69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "53",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/dataLoader.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16-17",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/dependency.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 130,
+          "added_lines": 130,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-130",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/DefinitionsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,53,60,67,72,89",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,20,26,33,41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/InMemoryStorageCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/constants.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9,58-59,171,221-223",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,28",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/trafficTypeExistence.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13,19,24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/mySegmentsUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24-25,28-29,32,36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/KeyBuilder.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "19-21,23-25,27-29,51",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15,22,24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/getRolloutPlan.ts"
+    }
+  ],
+  "base_commit_sha": "7803a0336ae27770be0c1dec62c612faf664353d",
+  "branch": "rename-split-to-definition",
+  "commit_sha": "121ec76b4deb3303f3ed5cc4a943c2253fcea98a",
+  "commit_time": "2026-04-28T18:59:18-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 2622,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2622,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
