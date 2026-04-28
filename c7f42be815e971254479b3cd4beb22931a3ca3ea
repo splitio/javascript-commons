@@ -1,0 +1,3069 @@
+src/platform/browser.ts
+  e9b3e072-2ec0-428a-b108-9646c6de8629 11,13
+  human 1-10,12,14
+src/logger/messages/error.ts
+  6cc2490a-fb98-49b7-82d1-fd551a5f3dba 5,37
+  human 16
+src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts
+  d84f8c53-f0aa-469b-a573-38a5f567b269 266-281
+  human 1-265,282-438
+src/listeners/browser.ts
+  477611fa-83d7-4864-a372-2516be014e42 38
+  human 14,25-28,31-35
+src/sync/polling/fetchers/splitChangesFetcher.ts
+  d84f8c53-f0aa-469b-a573-38a5f567b269 45-50,96
+  human 2-3,6-9,18-44,56,58,60,63,70,81,93,95,101,104,110-115,117,119-120
+src/sync/submitters/__tests__/impressionsSubmitter.spec.ts
+  d84f8c53-f0aa-469b-a573-38a5f567b269 1,99-108,111-115
+  human 109-110
+tsconfig.json
+  e9b3e072-2ec0-428a-b108-9646c6de8629 8
+src/storages/AbstractMySegmentsCacheSync.ts
+  human 52,64,66-67,69-72,74,76,78-81,83-86,88-90,92-94,97-98
+src/platform/getEventSource/__tests__/node.spec.ts
+  human 1-5
+.eslintrc
+  human 2,50,98-105
+src/evaluator/matchersTransform/whitelist.ts
+  human 1,6
+src/sdkFactory/types.ts
+  human 6,11,38-43,46-48,58,61-62,108-112
+src/storages/inRedis/__tests__/ImpressionCountsCacheInRedis.spec.ts
+  human 86
+src/sdkClient/__tests__/trackMethod.spec.ts
+  human 1-88
+LICENSE
+  human 2-4,6,8-202
+src/sdkClient/client.ts
+  human 4,6,9,14,26,38,55,84,113,146-147,149-157,176,183
+src/utils/inputValidation/index.ts
+  human 7-8,11
+src/readiness/types.ts
+  human 3-16,26,42,63,78
+src/evaluator/condition/index.ts
+  human 5,25,27
+.gitignore
+  human 15-22
+package-lock.json
+  human 3-4,9,19-21,23,28,36,39-41,44-46,49-51,105,496-498,574-576,578,584-586,588,611-612,615-617,619,631-633,635,648,657-659,661,667-670,672,674-675,696-708,1575,1605-1610,1634-1636,1638,1640-1644,1646,1648,1651,1658-1659,1668-1670,1672-1673,1675-1678,1682,1689,1698-1700,1702,1704-1705,1708,1716-1718,1720,1722-1723,1725,1728,1735,1744-1746,1748,1750,1758-1760,1762,1764-1765,1769-1771,1774,1787-1789,1797-1799,1801,1803,1813-1815,1817,1826-1828,1830,1833-1835,1838,1845,1849-1851,1853,1855-1856,1859,1866-1872,1877,1885,1908,1935-1937,1939,2021,2226-2255,2257-2259,2304,2503-2505,2569-2575,2656-2658,2660,2688,2712,2956-2959,2961-2962,2966-2968,2971,3441-3443,3526,3540-3542,3544,3661-3663,3665,3671,3682,3830-3834,3977,4026,4193-4195,4197,4203-4205,4207,4224,4261,4289-4291,4293,4295,4297-4298,4306,4347-4370,4558,4692,6397-6399,6489-6490,6560-6564,6582,6603-6609,6672,6721-6723,6725,6756,6968,7044,7056-7058,7060,7236-7241,7328,7387-7393,7746-7748,7750,7752,7897-7899,7901-7902,8214-8223
+src/utils/inputValidation/__tests__/definition.spec.ts
+  human 1-71
+src/storages/inRedis/__tests__/TelemetryCacheInRedis.spec.ts
+  human 13-16,18-21,23-26,28,30-33,35-37,39-42,44-46,48-50,57-77,79-96
+src/utils/settingsValidation/index.ts
+  human 11,211-213
+src/sync/offline/splitsParser/types.ts
+  human 1,4-8
+src/services/__tests__/splitApi.spec.ts
+  human 48-52,54,57-58,61,65-66,77-81
+src/utils/inputValidation/definitions.ts
+  human 1-21
+src/sync/polling/pollingManagerCS.ts
+  human 6,12-13,20-21,27,49,65-66,76,83,91,96,98,100
+src/storages/inRedis/__tests__/RedisAdapter.spec.ts
+  human 90-91,113,124,136
+src/sdkClient/__tests__/clientInputValidation.spec.ts
+  human 7,17-18,25,110-129
+src/sync/offline/splitsParser/splitsParserFromSettings.ts
+  human 1,44,49
+src/trackers/__tests__/impressionsTracker.spec.ts
+  human 5,23-27,29-31,33-38,52,71-72,95,97-98,100-101,103-106,108-111,144-145,172,193-194,196
+src/sync/offline/syncManagerOffline.ts
+  human 4,20
+src/readiness/__tests__/readinessManager.spec.ts
+  human 4,6,103-104,106,108-109,302-437
+src/utils/inputValidation/__tests__/definitionExistence.spec.ts
+  human 1-47
+src/sync/polling/updaters/__tests__/mySegmentsUpdater.spec.ts
+  human 1-107
+src/storages/inRedis/RBSegmentsCacheInRedis.ts
+  human 24,29,40,49-50,59,68
+src/evaluator/matchers/whitelist.ts
+  human 1-2
+src/platform/getFetch/__tests__/node.spec.ts
+  human 1-5
+src/platform/getFetch/node.ts
+  human 1-27
+src/storages/__tests__/testUtils.ts
+  human 1,26-32,37,39,41,43,45
+src/platform/getOptions/node.ts
+  human 1-24
+src/evaluator/parser/__tests__/boolean.spec.ts
+  human 3,27
+src/sync/polling/updaters/__tests__/segmentChangesUpdater.spec.ts
+  human 1-134
+src/storages/inRedis/SegmentsCacheInRedis.ts
+  human 3,40,48
+.harness/orgs/PROD/projects/Harness_Split/pipelines/javascript-commons.yaml
+  human 1-82
+src/utils/lang/sets.ts
+  human 15-18
+src/logger/messages/debug.ts
+  human 24-25,27-29
+src/evaluator/fallbackConfigsCalculator/index.ts
+  human 1-24
+src/platform/getEventSource/eventsource.js
+  human 1-519
+src/utils/inputValidation/definitionExistence.ts
+  human 1-19
+src/evaluator/parser/__tests__/set.spec.ts
+  human 4,34,69,104,139,173,207,241,275,310,343,376,410,447,484,519,554,589,623,657,692,725,758,792,829,866,901,936,971,1005,1040,1073,1106,1140,1177,1214,1249,1284,1318,1353,1386,1419,1453,1485
+src/utils/filter/__tests__/bloomFilter.spec.ts
+  human 1-33
+src/storages/setRolloutPlan.ts
+  human 38,43
+src/sync/streaming/pushManager.ts
+  human 13,17,37,59,246
+src/sync/polling/fetchers/types.ts
+  human 1,4,10-12
+src/storages/inRedis/__tests__/SplitsCacheInRedis.spec.ts
+  human 5,125,135,141,194,222
+src/listeners/__tests__/browser.spec.ts
+  human 164,189,214,243,279
+src/sdkClient/sdkClient.ts
+  human 6,9,12,23-24,27
+src/storages/__tests__/RBSegmentsCacheSync.spec.ts
+  human 36,42,48,61
+src/utils/inputValidation/__tests__/definitions.spec.ts
+  human 1-87
+src/listeners/__tests__/node.spec.ts
+  human 11,31,60,97,137
+src/storages/inRedis/__tests__/ImpressionsCacheInRedis.spec.ts
+  human 64-65,67
+src/trackers/__tests__/eventTracker.spec.ts
+  human 38,54,95
+src/platform/getOptions/__tests__/node.spec.ts
+  human 1-21
+src/utils/inputValidation/target.ts
+  human 1-21
+src/storages/inRedis/SplitsCacheInRedis.ts
+  human 5,13-15,17,29,41,50,52,57,62,85,88,91,122,130,138,148,162,174,176,178,190,201-202,205-206,229,245,254-255,262
+src/platform/getFetch/__tests__/browser.spec.ts
+  human 1-15
+src/storages/pluggable/index.ts
+  human 24,87
+src/sync/polling/updaters/segmentChangesUpdater.ts
+  human 4,6-9,29-30,35-42,48,50,55-60,76,82,88-94,105,107
+src/utils/settingsValidation/splitFilters.ts
+  human 1,52,184
+src/evaluator/fallbackConfigsCalculator/fallbackSanitizer/index.ts
+  human 1-76
+src/sync/polling/pollingManagerSS.ts
+  human 1,3,6,12-13,19,23,29-30,32,35,44,49,52-53
+src/storages/inRedis/RedisAdapter.ts
+  human 1-11,21,33-36,40,42-43,48,50-52,54,58-60,68-72,78-81,83,94,100,102-105,108,132,147-148,153,155-156,159,168,170,178,182,187
+src/evaluator/matchers/prerequisites.ts
+  human 1,5,7,9-11
+src/storages/inRedis/__tests__/UniqueKeysCacheInRedis.spec.ts
+  human 138-139,150
+src/storages/inRedis/ImpressionsCacheInRedis.ts
+  human 28-29,48,56
+package.json
+  human 3,52-54,57-59,62-64,71-73,75,80,88
+src/sync/streaming/UpdateWorkers/SplitsUpdateWorker.ts
+  human 1,10-11,21,39,82
+src/sync/submitters/__tests__/telemetrySubmitter.spec.ts
+  human 80
+types/splitio.d.ts
+  human 4-5,76-81,88,101-106,497-533,551-553,555-557,559-561,663,675-678,752-797,806-811,817-818,820,826-827,829,951-956,959-960,1083,1346-1360,1576-1581,1588,2272-2460
+src/utils/inputValidation/definition.ts
+  human 1-27
+src/utils/filter/bloomFilter.ts
+  human 1-38
+src/services/types.ts
+  human 38,62-63
+src/utils/lang/__tests__/sets.spec.ts
+  human 26-27
+src/storages/inLocalStorage/__tests__/SplitsCacheInLocal.spec.ts
+  human 4,57,118,128
+src/platform/getFetch/browser.ts
+  human 1-5
+src/sdkClient/sdkLifecycle.ts
+  human 1-78
+src/evaluator/matchers/matcherTypes.ts
+  human 17,25
+src/platform/getEventSource/node.ts
+  human 1-23
+src/storages/pluggable/__tests__/SplitsCachePluggable.spec.ts
+  human 6,23,117,127,133
+src/storages/inRedis/ImpressionCountsCacheInRedis.ts
+  human 35,37,41,59,66
+src/storages/inMemory/RBSegmentsCacheInMemory.ts
+  human 18-20,22
+src/utils/inputValidation/__tests__/isOperational.spec.ts
+  human 49
+src/storages/inLocalStorage/__tests__/validateCache.spec.ts
+  human 32-35,49-50,53-54,56-58,72,76,78-80,93,96,98-100,113,115,118,120-122,137,139-142,148-150
+src/storages/inRedis/TelemetryCacheInRedis.ts
+  human 46,86,119
+src/utils/inputValidation/isOperational.ts
+  human 12,15,20-21
+src/sdkClient/__tests__/sdkClientMethod.spec.ts
+  human 7,11-15,19,26-27,31,38-39,83,89
+src/sync/submitters/types.ts
+  human 5,24-25,243
+src/storages/inLocalStorage/validateCache.ts
+  human 69,71,77-81,98-101,105-108
+src/platform/getEventSource/__tests__/browser.spec.ts
+  human 1-15
+src/evaluator/matchers/__tests__/prerequisites.spec.ts
+  human 4,8,76-78
+src/trackers/types.ts
+  human 32-34
+src/__tests__/testUtils/csv.ts
+  human 4-6,8-11,13-14
+src/sync/streaming/__tests__/parseUtils.spec.ts
+  human 4,6,10,54
+src/storages/__tests__/RBSegmentsCacheAsync.spec.ts
+  human 33,39,45,58
+src/logger/constants.ts
+  human 22-23,61-62,72,125-130
+src/readiness/constants.ts
+  human 13-17
+src/readiness/sdkReadinessManager.ts
+  human 60-71,96,98,109,111,115,121-123
+CHANGES.txt
+  human 1-12,14-36
+src/sync/submitters/telemetrySubmitter.ts
+  human 14,76,84-85
+src/storages/AbstractSplitsCacheSync.ts
+  human 2,12,16-18,20,23,25-26,35-36,76
+src/utils/inputValidation/__tests__/target.spec.ts
+  human 1-62
+src/trackers/impressionsTracker.ts
+  human 3-4,6,8-12,18-19,23-33,36-43,57,69-71,88-91,93-97
+src/readiness/readinessManager.ts
+  human 3,18,56-59,91-92,98,106,111,124-128,130,175-176
+src/evaluator/matchers/__tests__/rbsegment.spec.ts
+  human 6,11
+src/storages/inRedis/UniqueKeysCacheInRedis.ts
+  human 41-42,48,69,71
+src/storages/inRedis/EventsCacheInRedis.ts
+  human 34,68,70
+src/utils/inputValidation/eventProperties.ts
+  human 73-79
+src/evaluator/parser/__tests__/string.spec.ts
+  human 3,33,67,101,135,168,200,230,264,297,331,363,402,436,469,503,537,570,602,632,668,700,733,765,804,838,872,906,940,974,1008,1042,1074,1104,1140,1173,1206,1238
+src/listeners/node.ts
+  human 7,24
+src/services/splitApi.ts
+  human 64-69
+src/utils/EventEmitter.js
+  human 1-444
+src/storages/inLocalStorage/SplitsCacheInLocal.ts
+  human 1,33,47,82-86,88-91,93,95-98,102-103,105,107-108,110,113,187,199-201,208
+src/sdkClient/__tests__/sdkClientMethodCS.spec.ts
+  human 41-45,47-49,56,105-106,150
+src/sync/polling/types.ts
+  human 1,7,22
+src/evaluator/matchers/dependency.ts
+  human 5,22
+src/sync/syncManagerOnline.ts
+  human 14-15,24,27,29,40,99,104-106
+src/sync/offline/syncTasks/fromObjectSyncTask.ts
+  human 4-5,10,17,27,29,58,62,64-66,68,83
+src/utils/labels/index.ts
+  human 1-2,5,12
+src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts
+  human 28-30,32,52-55,57,59-62,64,68-69,71,73,75
+src/evaluator/combiners/ifelseif.ts
+  human 7,36
+src/storages/inMemory/__tests__/SplitsCacheInMemory.spec.ts
+  human 2,49,109,119
+src/evaluator/types.ts
+  human 16-17,25,30,32,34
+src/sdkFactory/index.ts
+  human 14,21-23,47-48,51,54,58-59,64-65,73
+src/storages/inLocalStorage/index.ts
+  human 57,71-74
+src/evaluator/value/index.ts
+  human 7
+src/evaluator/combiners/and.ts
+  human 5,9,19
+src/sdkClient/clientInputValidation.ts
+  human 4-5,11,18,24,38-39,45,58-73,81-83,89-91,97-99,105-107,113-115,121-123,129-131,137-139,151
+src/sync/submitters/submitterManager.ts
+  human 41
+src/evaluator/parser/__tests__/regex.spec.ts
+  human 3,26
+src/storages/inMemory/SplitsCacheInMemory.ts
+  human 1,11,30,76,105,117
+src/evaluator/condition/engineUtils.ts
+  human 21,24
+src/platform/getEventSource/browser.ts
+  human 1-4
+src/evaluator/matchersTransform/index.ts
+  human 7,13
+CONTRIBUTORS-GUIDE.md
+  human 10,43
+src/evaluator/fallbackTreatmentsCalculator/index.ts
+  human 1-36
+src/presets/serverSide.ts
+  human 1-19
+src/evaluator/fallbackTreatmentsCalculator/fallbackSanitizer/index.ts
+  human 1-69
+src/sync/streaming/SSEClient/index.ts
+  human 5,77
+src/evaluator/__tests__/evaluate-feature.spec.ts
+  human 2,4-15,20,27,39,56,63,72,81,90,100,110,120,130,140
+src/evaluator/fallbackConfigsCalculator/__tests__/fallback-sanitizer.spec.ts
+  human 1-147
+src/sdkFactory/__tests__/index.spec.ts
+  human 6,10,40
+src/sync/__tests__/syncManagerOnline.spec.ts
+  human 13-17,57,109-110,179-180,194-195,198-200,206
+src/logger/messages/info.ts
+  human 11
+src/trackers/eventTracker.ts
+  human 35-41
+src/storages/inMemory/TelemetryCacheInMemory.ts
+  human 3,23-24
+src/sync/submitters/impressionsSubmitter.ts
+  human 6,11,17,19,27-28,45-46,50
+src/utils/settingsValidation/storage/storageCS.ts
+  human 11
+src/sync/polling/updaters/definitionChangesUpdater.ts
+  human 1-239
+src/evaluator/index.ts
+  human 3,5,13,19-25,27-28,36,39,41,44,47,50-51,54,57,61,68,71,78,81,83,86,89,92-93,97,99,109,125,149,152,155-157,162-165,170-173,175-176,179,185-186,189,193,197,199-200,204,207,213-244
+.harness/orgs/PROD/projects/Harness_Split/pipelines/javascriptcommons/input_sets/javascript-commons.yaml
+  human 1-15
+src/sdkClient/trackMethod.ts
+  human 1-59
+src/logger/messages/warn.ts
+  human 9-10,14-15,17,24,26,39
+src/evaluator/parser/__tests__/trafficAllocation.spec.ts
+  human 4,26,53,80,127
+src/evaluator/matchers/__tests__/dependency.spec.ts
+  human 7,10
+src/utils/key/index.ts
+  human 2,36-39
+src/sync/polling/syncTasks/definitionsSyncTask.ts
+  human 1-34
+src/sync/streaming/parseUtils.ts
+  human 4-5,38,43,46-51,85,87
+src/integrations/pluggable.ts
+  human 24
+src/storages/AbstractSplitsCacheAsync.ts
+  human 2,11,15,19,25-26,28
+src/storages/pluggable/SplitsCachePluggable.ts
+  human 5,34,41,46,69,75,115,125,129,143
+src/sync/offline/splitsParser/parseCondition.ts
+  human 1,10
+src/sync/types.ts
+  human 40
+src/storages/pluggable/RBSegmentsCachePluggable.ts
+  human 39,48
+src/evaluator/fallbackConfigsCalculator/__tests__/fallback-calculator.spec.ts
+  human 1-50
+src/sync/polling/updaters/mySegmentsUpdater.ts
+  human 5,7,59,70-72,79
+src/evaluator/matchers/rbsegment.ts
+  human 4,13
+src/readiness/__tests__/sdkReadinessManager.spec.ts
+  human 69,222-223,227,235-236,264-265,268-269
+NOTICE
+  human 1-5
+src/dtos/types.ts
+  human 24,40,42-43,45,58,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,152,157,163,168,173,178,184,189,192,194,204-211,215,218-222,225-230,232-233,237-242,245-248
+src/evaluator/Engine.ts
+  human 7,10,22,32
+src/platform/node.ts
+  human 1-16
+src/utils/settingsValidation/__tests__/settings.mocks.ts
+  human 79-83
+src/sync/polling/syncTasks/segmentsSyncTask.ts
+  human 26-27
+src/storages/__tests__/dataLoader.spec.ts
+  human 5,53
+src/evaluator/__tests__/evaluate-features.spec.ts
+  human 2,5-16,19,26,32-36,38,42,58,74,82,125,134,193,195
+src/evaluator/treatments/index.ts
+  human 1,18
+src/evaluator/parser/__tests__/index.spec.ts
+  human 4,24,53,78,110,149,193,239,276,308,349,390,435,481,526,572,617,659
+src/evaluator/fallbackTreatmentsCalculator/__tests__/fallback-calculator.spec.ts
+  human 1-50
+src/storages/types.ts
+  human 2-3,198-200,203,215-217,219,229-231,233,245,253,264,503,531-534
+src/storages/inLocalStorage/MySegmentsCacheInLocal.ts
+  human 5,24-26,32-34,55-56
+src/evaluator/fallbackTreatmentsCalculator/__tests__/fallback-sanitizer.spec.ts
+  human 1-135
+src/sdkManager/index.ts
+  human 4,7,13,23,32,40,68,77,82
+src/evaluator/parser/__tests__/invalidMatcher.spec.ts
+  human 3,27
+src/evaluator/parser/index.ts
+  human 9-10,16,40
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+          "lines": "11,13",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-10,12,14",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "6cc2490a-fb98-49b7-82d1-fd551a5f3dba",
+          "lines": "5,37",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/error.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "d84f8c53-f0aa-469b-a573-38a5f567b269",
+          "lines": "266-281",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 422,
+          "added_lines": 422,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-265,282-438",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/definitionChangesUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "477611fa-83d7-4864-a372-2516be014e42",
+          "lines": "38",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14,25-28,31-35",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "d84f8c53-f0aa-469b-a573-38a5f567b269",
+          "lines": "45-50,96",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 52,
+          "added_lines": 52,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2-3,6-9,18-44,56,58,60,63,70,81,93,95,101,104,110-115,117,119-120",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/splitChangesFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "d84f8c53-f0aa-469b-a573-38a5f567b269",
+          "lines": "1,99-108,111-115",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "109-110",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/__tests__/impressionsSubmitter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+          "lines": "8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "tsconfig.json"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 26,
+          "added_lines": 26,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "52,64,66-67,69-72,74,76,78-81,83-86,88-90,92-94,97-98",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractMySegmentsCacheSync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,50,98-105",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".eslintrc"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,6",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchersTransform/whitelist.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,11,38-43,46-48,58,61-62,108-112",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "86",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/ImpressionCountsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 88,
+          "added_lines": 88,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-88",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/__tests__/trackMethod.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 199,
+          "added_lines": 199,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2-4,6,8-202",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "LICENSE"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 22,
+          "added_lines": 22,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6,9,14,26,38,55,84,113,146-147,149-157,176,183",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/client.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7-8,11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 18,
+          "added_lines": 18,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-16,26,42,63,78",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,25,27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/condition/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15-22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".gitignore"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 360,
+          "added_lines": 360,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-4,9,19-21,23,28,36,39-41,44-46,49-51,105,496-498,574-576,578,584-586,588,611-612,615-617,619,631-633,635,648,657-659,661,667-670,672,674-675,696-708,1575,1605-1610,1634-1636,1638,1640-1644,1646,1648,1651,1658-1659,1668-1670,1672-1673,1675-1678,1682,1689,1698-1700,1702,1704-1705,1708,1716-1718,1720,1722-1723,1725,1728,1735,1744-1746,1748,1750,1758-1760,1762,1764-1765,1769-1771,1774,1787-1789,1797-1799,1801,1803,1813-1815,1817,1826-1828,1830,1833-1835,1838,1845,1849-1851,1853,1855-1856,1859,1866-1872,1877,1885,1908,1935-1937,1939,2021,2226-2255,2257-2259,2304,2503-2505,2569-2575,2656-2658,2660,2688,2712,2956-2959,2961-2962,2966-2968,2971,3441-3443,3526,3540-3542,3544,3661-3663,3665,3671,3682,3830-3834,3977,4026,4193-4195,4197,4203-4205,4207,4224,4261,4289-4291,4293,4295,4297-4298,4306,4347-4370,4558,4692,6397-6399,6489-6490,6560-6564,6582,6603-6609,6672,6721-6723,6725,6756,6968,7044,7056-7058,7060,7236-7241,7328,7387-7393,7746-7748,7750,7752,7897-7899,7901-7902,8214-8223",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "package-lock.json"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 71,
+          "added_lines": 71,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-71",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/definition.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 69,
+          "added_lines": 69,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13-16,18-21,23-26,28,30-33,35-37,39-42,44-46,48-50,57-77,79-96",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/TelemetryCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11,211-213",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/settingsValidation/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,4-8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/splitsParser/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "48-52,54,57-58,61,65-66,77-81",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/splitApi.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-21",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/definitions.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,12-13,20-21,27,49,65-66,76,83,91,96,98,100",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/pollingManagerCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "90-91,113,124,136",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/RedisAdapter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 24,
+          "added_lines": 24,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,17-18,25,110-129",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/__tests__/clientInputValidation.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,44,49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/splitsParser/splitsParserFromSettings.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 37,
+          "added_lines": 37,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,23-27,29-31,33-38,52,71-72,95,97-98,100-101,103-106,108-111,144-145,172,193-194,196",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/__tests__/impressionsTracker.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/syncManagerOffline.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 143,
+          "added_lines": 143,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6,103-104,106,108-109,302-437",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/__tests__/readinessManager.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 47,
+          "added_lines": 47,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-47",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/definitionExistence.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 107,
+          "added_lines": 107,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-107",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/mySegmentsUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24,29,40,49-50,59,68",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/RBSegmentsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-2",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/whitelist.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,26-32,37,39,41,43,45",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/testUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 24,
+          "added_lines": 24,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getOptions/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/boolean.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 134,
+          "added_lines": 134,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-134",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/__tests__/segmentChangesUpdater.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,40,48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/SegmentsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 82,
+          "added_lines": 82,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-82",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".harness/orgs/PROD/projects/Harness_Split/pipelines/javascript-commons.yaml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "15-18",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/lang/sets.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24-25,27-29",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/debug.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 24,
+          "added_lines": 24,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackConfigsCalculator/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 519,
+          "added_lines": 519,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-519",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/eventsource.js"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-19",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/definitionExistence.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 44,
+          "added_lines": 44,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,34,69,104,139,173,207,241,275,310,343,376,410,447,484,519,554,589,623,657,692,725,758,792,829,866,901,936,971,1005,1040,1073,1106,1140,1177,1214,1249,1284,1318,1353,1386,1419,1453,1485",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/set.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 33,
+          "added_lines": 33,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-33",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/filter/__tests__/bloomFilter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "38,43",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/setRolloutPlan.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13,17,37,59,246",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,4,10-12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,125,135,141,194,222",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/SplitsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "164,189,214,243,279",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/__tests__/browser.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,9,12,23-24,27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/sdkClient.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "36,42,48,61",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/RBSegmentsCacheSync.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 87,
+          "added_lines": 87,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/definitions.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11,31,60,97,137",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "64-65,67",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/ImpressionsCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "38,54,95",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/__tests__/eventTracker.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-21",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getOptions/__tests__/node.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 21,
+          "added_lines": 21,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-21",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/target.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 32,
+          "added_lines": 32,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,13-15,17,29,41,50,52,57,62,85,88,91,122,130,138,148,162,174,176,178,190,201-202,205-206,229,245,254-255,262",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/SplitsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/__tests__/browser.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 34,
+          "added_lines": 34,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6-9,29-30,35-42,48,50,55-60,76,82,88-94,105,107",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/segmentChangesUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,52,184",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/settingsValidation/splitFilters.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 76,
+          "added_lines": 76,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-76",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackConfigsCalculator/fallbackSanitizer/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,3,6,12-13,19,23,29-30,32,35,44,49,52-53",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/pollingManagerSS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 56,
+          "added_lines": 56,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-11,21,33-36,40,42-43,48,50-52,54,58-60,68-72,78-81,83,94,100,102-105,108,132,147-148,153,155-156,159,168,170,178,182,187",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/RedisAdapter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,5,7,9-11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/prerequisites.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "138-139,150",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/__tests__/UniqueKeysCacheInRedis.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "28-29,48,56",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/ImpressionsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,52-54,57-59,62-64,71-73,75,80,88",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "package.json"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,10-11,21,39,82",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/UpdateWorkers/SplitsUpdateWorker.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "80",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/__tests__/telemetrySubmitter.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 344,
+          "added_lines": 344,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,76-81,88,101-106,497-533,551-553,555-557,559-561,663,675-678,752-797,806-811,817-818,820,826-827,829,951-956,959-960,1083,1346-1360,1576-1581,1588,2272-2460",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/definition.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-38",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/filter/bloomFilter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "38,62-63",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "26-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/lang/__tests__/sets.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,57,118,128",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/__tests__/SplitsCacheInLocal.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getFetch/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 78,
+          "added_lines": 78,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-78",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/sdkLifecycle.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "17,25",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/matcherTypes.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 23,
+          "added_lines": 23,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-23",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,23,117,127,133",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/__tests__/SplitsCachePluggable.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "35,37,41,59,66",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/ImpressionCountsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "18-20,22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/RBSegmentsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/isOperational.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 35,
+          "added_lines": 35,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "32-35,49-50,53-54,56-58,72,76,78-80,93,96,98-100,113,115,118,120-122,137,139-142,148-150",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/__tests__/validateCache.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "46,86,119",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/TelemetryCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12,15,20-21",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/isOperational.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,11-15,19,26-27,31,38-39,83,89",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/__tests__/sdkClientMethod.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,24-25,243",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "69,71,77-81,98-101,105-108",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/validateCache.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/__tests__/browser.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,8,76-78",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/prerequisites.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "32-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-6,8-11,13-14",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/__tests__/testUtils/csv.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,6,10,54",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/__tests__/parseUtils.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "33,39,45,58",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/RBSegmentsCacheAsync.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "22-23,61-62,72,125-130",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/constants.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13-17",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/constants.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 20,
+          "added_lines": 20,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "60-71,96,98,109,111,115,121-123",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/sdkReadinessManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 35,
+          "added_lines": 35,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-12,14-36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CHANGES.txt"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14,76,84-85",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/telemetrySubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,12,16-18,20,23,25-26,35-36,76",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractSplitsCacheSync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 62,
+          "added_lines": 62,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-62",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/__tests__/target.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 42,
+          "added_lines": 42,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-4,6,8-12,18-19,23-33,36-43,57,69-71,88-91,93-97",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/impressionsTracker.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,18,56-59,91-92,98,106,111,124-128,130,175-176",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/readinessManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/rbsegment.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "41-42,48,69,71",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/UniqueKeysCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "34,68,70",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inRedis/EventsCacheInRedis.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "73-79",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/inputValidation/eventProperties.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,33,67,101,135,168,200,230,264,297,331,363,402,436,469,503,537,570,602,632,668,700,733,765,804,838,872,906,940,974,1008,1042,1074,1104,1140,1173,1206,1238",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/string.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "64-69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitApi.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 444,
+          "added_lines": 444,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-444",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/EventEmitter.js"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 29,
+          "added_lines": 29,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,33,47,82-86,88-91,93,95-98,102-103,105,107-108,110,113,187,199-201,208",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/SplitsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "41-45,47-49,56,105-106,150",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/__tests__/sdkClientMethodCS.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,7,22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/dependency.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14-15,24,27,29,40,99,104-106",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/syncManagerOnline.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,10,17,27,29,58,62,64-66,68,83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/syncTasks/fromObjectSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-2,5,12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/labels/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "28-30,32,52-55,57,59-62,64,68-69,71,73,75",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/RBSegmentsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/combiners/ifelseif.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,49,109,119",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/__tests__/SplitsCacheInMemory.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16-17,25,30,32,34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14,21-23,47-48,51,54,58-59,64-65,73",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "57,71-74",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/value/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,9,19",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/combiners/and.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 49,
+          "added_lines": 49,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,11,18,24,38-39,45,58-73,81-83,89-91,97-99,105-107,113-115,121-123,129-131,137-139,151",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/clientInputValidation.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/submitterManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,26",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/regex.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,11,30,76,105,117",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/SplitsCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "21,24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/condition/engineUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-4",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/getEventSource/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,13",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchersTransform/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "10,43",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CONTRIBUTORS-GUIDE.md"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 36,
+          "added_lines": 36,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-36",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackTreatmentsCalculator/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 19,
+          "added_lines": 19,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-19",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/presets/serverSide.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 69,
+          "added_lines": 69,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackTreatmentsCalculator/fallbackSanitizer/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,77",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEClient/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 26,
+          "added_lines": 26,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,4-15,20,27,39,56,63,72,81,90,100,110,120,130,140",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/__tests__/evaluate-feature.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 147,
+          "added_lines": 147,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-147",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackConfigsCalculator/__tests__/fallback-sanitizer.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,10,40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/__tests__/index.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "13-17,57,109-110,179-180,194-195,198-200,206",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/__tests__/syncManagerOnline.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/info.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "35-41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/trackers/eventTracker.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,23-24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inMemory/TelemetryCacheInMemory.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,11,17,19,27-28,45-46,50",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "11",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/settingsValidation/storage/storageCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 239,
+          "added_lines": 239,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-239",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/definitionChangesUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 92,
+          "added_lines": 92,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,5,13,19-25,27-28,36,39,41,44,47,50-51,54,57,61,68,71,78,81,83,86,89,92-93,97,99,109,125,149,152,155-157,162-165,170-173,175-176,179,185-186,189,193,197,199-200,204,207,213-244",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 15,
+          "added_lines": 15,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-15",
+          "overridden_lines": 0
+        }
+      ],
+      "file": ".harness/orgs/PROD/projects/Harness_Split/pipelines/javascriptcommons/input_sets/javascript-commons.yaml"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 59,
+          "added_lines": 59,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-59",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/trackMethod.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9-10,14-15,17,24,26,39",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/messages/warn.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,26,53,80,127",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/trafficAllocation.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/__tests__/dependency.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,36-39",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/key/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 34,
+          "added_lines": 34,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/syncTasks/definitionsSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 12,
+          "added_lines": 12,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4-5,38,43,46-51,85,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/parseUtils.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/integrations/pluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,11,15,19,25-26,28",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/AbstractSplitsCacheAsync.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,34,41,46,69,75,115,125,129,143",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/SplitsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/offline/splitsParser/parseCondition.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "39,48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/pluggable/RBSegmentsCachePluggable.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 50,
+          "added_lines": 50,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-50",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackConfigsCalculator/__tests__/fallback-calculator.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,7,59,70-72,79",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/updaters/mySegmentsUpdater.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,13",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/matchers/rbsegment.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "69,222-223,227,235-236,264-265,268-269",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/__tests__/sdkReadinessManager.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-5",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "NOTICE"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 66,
+          "added_lines": 66,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24,40,42-43,45,58,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,152,157,163,168,173,178,184,189,192,194,204-211,215,218-222,225-230,232-233,237-242,245-248",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/dtos/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7,10,22,32",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/Engine.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-16",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/platform/node.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "79-83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/settingsValidation/__tests__/settings.mocks.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "26-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/syncTasks/segmentsSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,53",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/__tests__/dataLoader.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 29,
+          "added_lines": 29,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,5-16,19,26,32-36,38,42,58,74,82,125,134,193,195",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/__tests__/evaluate-features.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,18",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/treatments/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 18,
+          "added_lines": 18,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,24,53,78,110,149,193,239,276,308,349,390,435,481,526,572,617,659",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/index.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 50,
+          "added_lines": 50,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-50",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackTreatmentsCalculator/__tests__/fallback-calculator.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 22,
+          "added_lines": 22,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2-3,198-200,203,215-217,219,229-231,233,245,253,264,503,531-534",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,24-26,32-34,55-56",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/storages/inLocalStorage/MySegmentsCacheInLocal.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 135,
+          "added_lines": 135,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1-135",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/fallbackTreatmentsCalculator/__tests__/fallback-sanitizer.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,7,13,23,32,40,68,77,82",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkManager/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/__tests__/invalidMatcher.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9-10,16,40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/evaluator/parser/index.ts"
+    }
+  ],
+  "base_commit_sha": "e06acd5dfc6b8410321c2a1d7edaaadd5ed5209f",
+  "branch": "breaking_changes_ready_method",
+  "commit_sha": "c7f42be815e971254479b3cd4beb22931a3ca3ea",
+  "commit_time": "2026-04-28T16:51:18-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "477611fa-83d7-4864-a372-2516be014e42": {
+      "accepted_lines": 1,
+      "agent_id": {
+        "id": "477611fa-83d7-4864-a372-2516be014e42",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 1,
+      "total_deletions": 0
+    },
+    "6cc2490a-fb98-49b7-82d1-fd551a5f3dba": {
+      "accepted_lines": 2,
+      "agent_id": {
+        "id": "6cc2490a-fb98-49b7-82d1-fd551a5f3dba",
+        "model": "default",
+        "tool": "cursor"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 0
+    },
+    "d84f8c53-f0aa-469b-a573-38a5f567b269": {
+      "accepted_lines": 39,
+      "agent_id": {
+        "id": "d84f8c53-f0aa-469b-a573-38a5f567b269",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 39,
+      "total_deletions": 0
+    },
+    "e9b3e072-2ec0-428a-b108-9646c6de8629": {
+      "accepted_lines": 3,
+      "agent_id": {
+        "id": "e9b3e072-2ec0-428a-b108-9646c6de8629",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 0
+    },
+    "human": {
+      "accepted_lines": 6071,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 6071,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
