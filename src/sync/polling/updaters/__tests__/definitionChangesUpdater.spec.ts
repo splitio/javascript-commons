@@ -1,4 +1,4 @@
-import { IRBSegment, IDefinition } from '../../../../dtos/types';
+import { IRBSegment, IDefinition, IDefinitionCondition } from '../../../../dtos/types';
 import { readinessManagerFactory } from '../../../../readiness/readinessManager';
 import { splitApiFactory } from '../../../../services/splitApi';
 import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
@@ -38,59 +38,54 @@ const activeSplitWithSegments = {
       }]
     }
   }]
-};
+} as IDefinition;
 
 const archivedSplit = {
   name: 'Split2',
   status: 'ARCHIVED'
-};
-// @ts-ignore
-const testFFSetsAB: IDefinition =
-{
+} as IDefinition;
+
+const testFFSetsAB = {
   name: 'test',
   status: 'ACTIVE',
-  conditions: [],
+  conditions: [] as IDefinitionCondition[],
   killed: false,
   sets: ['set_a', 'set_b']
-};
-// @ts-ignore
-const test2FFSetsX: IDefinition =
-{
+} as IDefinition;
+
+const test2FFSetsX = {
   name: 'test2',
   status: 'ACTIVE',
-  conditions: [],
+  conditions: [] as IDefinitionCondition[],
   killed: false,
   sets: ['set_x']
-};
-// @ts-ignore
-const testFFRemoveSetB: IDefinition =
-{
+} as IDefinition;
+
+const testFFRemoveSetB = {
   name: 'test',
   status: 'ACTIVE',
-  conditions: [],
+  conditions: [] as IDefinitionCondition[],
   sets: ['set_a']
-};
-// @ts-ignore
-const testFFRemoveSetA: IDefinition =
-{
+} as IDefinition;
+
+const testFFRemoveSetA = {
   name: 'test',
   status: 'ACTIVE',
-  conditions: [],
+  conditions: [] as IDefinitionCondition[],
   sets: ['set_x']
-};
-// @ts-ignore
-const testFFEmptySet: IDefinition =
-{
+} as IDefinition;
+
+const testFFEmptySet = {
   name: 'test',
   status: 'ACTIVE',
-  conditions: [],
-  sets: []
-};
-// @ts-ignore
-const rbsWithExcludedSegment: IRBSegment = {
+  conditions: [] as IDefinitionCondition[],
+  sets: [] as string[]
+} as IDefinition;
+
+const rbsWithExcludedSegment = {
   name: 'rbs',
   status: 'ACTIVE',
-  conditions: [],
+  conditions: [] as IDefinitionCondition[],
   excluded: {
     segments: [{
       type: 'standard',
@@ -100,7 +95,7 @@ const rbsWithExcludedSegment: IRBSegment = {
       name: 'D'
     }]
   }
-};
+} as IRBSegment;
 
 test('definitionChangesUpdater / segments parser', () => {
   let segments = parseSegments(activeSplitWithSegments as IDefinition);
@@ -117,17 +112,17 @@ test('definitionChangesUpdater / compute splits mutation', () => {
   const splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
 
   let segments = new Set<string>();
-  let splitsMutation = computeMutation([activeSplitWithSegments, archivedSplit] as IDefinition[], segments, splitFiltersValidation);
+  let splitsMutation = computeMutation({ updated: [activeSplitWithSegments], removed: [archivedSplit.name] }, segments, splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([activeSplitWithSegments]);
-  expect(splitsMutation.removed).toEqual([archivedSplit]);
-  expect(splitsMutation.names).toEqual([activeSplitWithSegments.name, archivedSplit.name]);
+  expect(splitsMutation.removed).toEqual([archivedSplit.name]);
+  expect(splitsMutation.names).toEqual([archivedSplit.name, activeSplitWithSegments.name]);
   expect(Array.from(segments)).toEqual(['A', 'B']);
 
   // SDK initialization without sets
   // should process all the notifications
   segments = new Set<string>();
-  splitsMutation = computeMutation([testFFSetsAB, test2FFSetsX] as IDefinition[], segments, splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [testFFSetsAB, test2FFSetsX], removed: [] }, segments, splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([testFFSetsAB, test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([]);
@@ -140,7 +135,7 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   let splitFiltersValidation = { queryString: '&sets=set_a,set_b', groupedFilters: { bySet: ['set_a', 'set_b'], byName: ['name_1'], byPrefix: [] }, validFilters: [] };
 
   // fetching new feature flag in sets A & B
-  let splitsMutation = computeMutation([testFFSetsAB], new Set(), splitFiltersValidation);
+  let splitsMutation = computeMutation({ updated: [testFFSetsAB], removed: [] }, new Set(), splitFiltersValidation);
 
   // should add it to mutations
   expect(splitsMutation.added).toEqual([testFFSetsAB]);
@@ -148,38 +143,38 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   // fetching existing test feature flag removed from set B
-  splitsMutation = computeMutation([testFFRemoveSetB], new Set(), splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [testFFRemoveSetB], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([testFFRemoveSetB]);
   expect(splitsMutation.removed).toEqual([]);
   expect(splitsMutation.names).toEqual([testFFRemoveSetB.name]);
 
   // fetching existing test feature flag removed from set B
-  splitsMutation = computeMutation([testFFRemoveSetA], new Set(), splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [testFFRemoveSetA], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFRemoveSetA]);
+  expect(splitsMutation.removed).toEqual([testFFRemoveSetA.name]);
   expect(splitsMutation.names).toEqual([testFFRemoveSetA.name]);
 
   // fetching existing test feature flag removed from set B
-  splitsMutation = computeMutation([testFFEmptySet], new Set(), splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([testFFEmptySet.name]);
 
   // SDK initialization with names: ['test2']
   splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
-  splitsMutation = computeMutation([testFFSetsAB], new Set(), splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [testFFSetsAB], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([]);
-  expect(splitsMutation.removed).toEqual([testFFSetsAB]);
+  expect(splitsMutation.removed).toEqual([testFFSetsAB.name]);
   expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
-  splitsMutation = computeMutation([test2FFSetsX, testFFEmptySet], new Set(), splitFiltersValidation);
+  splitsMutation = computeMutation({ updated: [test2FFSetsX, testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.added).toEqual([test2FFSetsX]);
-  expect(splitsMutation.removed).toEqual([testFFEmptySet]);
+  expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([test2FFSetsX.name, testFFEmptySet.name]);
 });
 
@@ -243,7 +238,7 @@ describe('definitionChangesUpdater', () => {
       // Add feature flag in notification
       expect(updateSplits.mock.calls[index][0].length).toBe(payload.status === ARCHIVED_FF ? 0 : 1);
       // Remove feature flag if status is ARCHIVED
-      expect(updateSplits.mock.calls[index][1]).toEqual(payload.status === ARCHIVED_FF ? [payload] : []);
+      expect(updateSplits.mock.calls[index][1]).toEqual(payload.status === ARCHIVED_FF ? [payload.name] : []);
       // fetch segments after feature flag update
       expect(registerSegments).toBeCalledTimes(index + 1);
       expect(registerSegments.mock.calls[index][0]).toEqual(payload.status === ARCHIVED_FF ? [] : ['maur-2']);
@@ -263,6 +258,22 @@ describe('definitionChangesUpdater', () => {
 
     expect(updateRbSegments).toBeCalledTimes(1);
     expect(updateRbSegments).toBeCalledWith([payload], [], changeNumber);
+
+    expect(registerSegments).toBeCalledTimes(1);
+    expect(registerSegments).toBeCalledWith([]);
+  });
+
+  test('test with archived rbsegment payload', async () => {
+    const payload = { name: 'rbsegment', status: 'ARCHIVED', changeNumber: 1684329854386, conditions: [] } as unknown as IRBSegment;
+    const changeNumber = payload.changeNumber;
+
+    await expect(definitionChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: RB_SEGMENT_UPDATE })).resolves.toBe(true);
+
+    expect(fetchSplitChanges).toBeCalledTimes(0);
+    expect(updateSplits).toBeCalledTimes(0);
+
+    expect(updateRbSegments).toBeCalledTimes(1);
+    expect(updateRbSegments).toBeCalledWith([], [payload.name], changeNumber);
 
     expect(registerSegments).toBeCalledTimes(1);
     expect(registerSegments).toBeCalledWith([]);

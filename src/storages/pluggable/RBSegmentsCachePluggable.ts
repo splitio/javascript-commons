@@ -36,7 +36,7 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
     });
   }
 
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(toAdd => {
@@ -45,7 +45,7 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
         return this.wrapper.set(key, stringifiedNewRBSegment).then(() => true);
       })),
       Promise.all(toRemove.map(toRemove => {
-        const key = this.keys.buildRBSegmentKey(toRemove.name);
+        const key = this.keys.buildRBSegmentKey(toRemove);
         return this.wrapper.del(key);
       }))
     ]).then(([, added, removed]) => {

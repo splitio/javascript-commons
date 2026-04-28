@@ -13,9 +13,9 @@ export abstract class AbstractSplitsCacheSync implements ISplitsCacheSync {
   protected abstract removeSplit(name: string): boolean
   protected abstract setChangeNumber(changeNumber: number): boolean | void
 
-  update(toAdd: IDefinition[], toRemove: IDefinition[], changeNumber: number): boolean {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean {
     let updated = toAdd.map(addedFF => this.addSplit(addedFF)).some(result => result);
-    updated = toRemove.map(removedFF => this.removeSplit(removedFF.name)).some(result => result) || updated;
+    updated = toRemove.map(removedFF => this.removeSplit(removedFF)).some(result => result) || updated;
     this.setChangeNumber(changeNumber);
     return updated;
   }

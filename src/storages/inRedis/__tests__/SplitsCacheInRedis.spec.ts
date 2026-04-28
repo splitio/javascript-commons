@@ -138,7 +138,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
     // Delete splits and TT keys
-    await cache.update([], [splitWithUserTT, splitWithAccountTT], -1);
+    await cache.update([], [splitWithUserTT.name, splitWithAccountTT.name], -1);
     await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
@@ -191,7 +191,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cache.getNamesByFlagSets([])).toEqual([]);
 
     // Delete splits, TT and flag set keys
-    await cache.update([], [featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS], -1);
+    await cache.update([], [featureFlagThree.name, featureFlagTwo.name, featureFlagWithEmptyFS.name], -1);
     await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
@@ -219,7 +219,7 @@ describe('SPLITS CACHE REDIS', () => {
     expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
     // Delete splits, TT and flag set keys
-    await cacheWithoutFilters.update([], [featureFlagThree, featureFlagTwo, featureFlagOne, featureFlagWithEmptyFS], -1);
+    await cacheWithoutFilters.update([], [featureFlagThree.name, featureFlagTwo.name, featureFlagOne.name, featureFlagWithEmptyFS.name], -1);
     await connection.del(keysBuilder.buildSplitsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
