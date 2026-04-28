@@ -1,0 +1,105 @@
+src/readiness/__tests__/sdkReadinessManager.spec.ts
+  616e2b0b-7059-4a31-b636-080938576336 88,90,92,99,109,132,138
+  human 7
+src/readiness/sdkReadinessManager.ts
+  human 8
+src/sync/submitters/telemetrySubmitter.ts
+  human 122
+CHANGES.txt
+  human 12
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 20,
+          "deleted_lines": 57,
+          "hash": "616e2b0b-7059-4a31-b636-080938576336",
+          "lines": "88,90,92,99,109,132,138",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/__tests__/sdkReadinessManager.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/readiness/sdkReadinessManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "122",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/telemetrySubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "12",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "CHANGES.txt"
+    }
+  ],
+  "base_commit_sha": "1fb02466e549060403b5e7ea278d510d9ad3d241",
+  "branch": "sdk-configs-baseline",
+  "commit_sha": "7803a0336ae27770be0c1dec62c612faf664353d",
+  "commit_time": "2026-04-28T17:37:45-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "616e2b0b-7059-4a31-b636-080938576336": {
+      "accepted_lines": 7,
+      "agent_id": {
+        "id": "616e2b0b-7059-4a31-b636-080938576336",
+        "model": "claude-sonnet-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 20,
+      "total_deletions": 57
+    },
+    "human": {
+      "accepted_lines": 4,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 4,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
