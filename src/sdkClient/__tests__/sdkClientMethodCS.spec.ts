@@ -46,7 +46,7 @@ const params = {
   settings: settingsWithKey,
   telemetryTracker: telemetryTrackerFactory(),
   clients: {},
-  uniqueKeysTracker: { start: jest.fn(), stop: jest.fn() }
+  impressionsTracker: { start: jest.fn(), stop: jest.fn(), track: jest.fn() }
 };
 
 const invalidAttributes = [
@@ -96,7 +96,7 @@ describe('sdkClientMethodCSFactory', () => {
       expect(params.syncManager.stop).toBeCalledTimes(1);
       expect(params.syncManager.flush).toBeCalledTimes(1);
       expect(params.signalListener.stop).toBeCalledTimes(1);
-      expect(params.uniqueKeysTracker.stop).toBeCalledTimes(1);
+      expect(params.impressionsTracker.stop).toBeCalledTimes(1);
     });
 
   });
