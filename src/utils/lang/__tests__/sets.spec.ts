@@ -23,4 +23,6 @@ test('returnDifference', () => {
   expect(returnDifference([], [])).toEqual([]);
   expect(returnDifference(list, [])).toEqual(list);
   expect(returnDifference([], list2)).toEqual([]);
+
+  expect(returnDifference(undefined, null)).toEqual([]);
 });
