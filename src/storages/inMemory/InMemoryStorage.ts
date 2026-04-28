@@ -1,4 +1,4 @@
-import { SplitsCacheInMemory } from './SplitsCacheInMemory';
+import { DefinitionsCacheInMemory } from './DefinitionsCacheInMemory';
 import { SegmentsCacheInMemory } from './SegmentsCacheInMemory';
 import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
@@ -17,18 +17,18 @@ import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 export function InMemoryStorageFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize, }, sync: { __splitFiltersValidation } } } = params;
 
-  const splits = new SplitsCacheInMemory(__splitFiltersValidation);
+  const definitions = new DefinitionsCacheInMemory(__splitFiltersValidation);
   const rbSegments = new RBSegmentsCacheInMemory();
   const segments = new SegmentsCacheInMemory();
 
   const storage = {
-    splits,
+    definitions,
     rbSegments,
     segments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
     impressionCounts: new ImpressionCountsCacheInMemory(),
     events: new EventsCacheInMemory(eventsQueueSize),
-    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
+    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(definitions, segments) : undefined,
     uniqueKeys: new UniqueKeysCacheInMemory(),
 
     destroy() { }

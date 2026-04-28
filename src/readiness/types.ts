@@ -16,17 +16,17 @@ export interface IReadinessEventEmitter extends SplitIO.IEventEmitter {
 
 /** Splits data emitter */
 
-type SDK_SPLITS_ARRIVED = 'state::splits-arrived'
-type SDK_SPLITS_CACHE_LOADED = 'state::splits-cache-loaded'
-type ISplitsEvent = SDK_SPLITS_ARRIVED | SDK_SPLITS_CACHE_LOADED
+type SDK_DEFINITIONS_ARRIVED = 'state::splits-arrived'
+type SDK_DEFINITIONS_CACHE_LOADED = 'state::splits-cache-loaded'
+type IDefinitionsEvent = SDK_DEFINITIONS_ARRIVED | SDK_DEFINITIONS_CACHE_LOADED
 
-export interface ISplitsEventEmitter extends SplitIO.IEventEmitter {
-  emit(event: ISplitsEvent, ...args: any[]): boolean
-  on(event: ISplitsEvent, listener: (...args: any[]) => void): this;
+export interface IDefinitionsEventEmitter extends SplitIO.IEventEmitter {
+  emit(event: IDefinitionsEvent, ...args: any[]): boolean
+  on(event: IDefinitionsEvent, listener: (...args: any[]) => void): this;
   on(event: SDK_UPDATE, listener: (metadata: SplitIO.SdkUpdateMetadata) => void): this;
-  once(event: ISplitsEvent, listener: (...args: any[]) => void): this;
-  splitsArrived: boolean
-  splitsCacheLoaded: boolean
+  once(event: IDefinitionsEvent, listener: (...args: any[]) => void): this;
+  definitionsArrived: boolean
+  definitionsCacheLoaded: boolean
   hasInit: boolean,
   initCallbacks: (() => void)[]
 }
@@ -48,7 +48,7 @@ export interface ISegmentsEventEmitter extends SplitIO.IEventEmitter {
 
 export interface IReadinessManager {
   /** Event emitters */
-  splits: ISplitsEventEmitter,
+  definitions: IDefinitionsEventEmitter,
   segments: ISegmentsEventEmitter,
   gate: IReadinessEventEmitter,
 

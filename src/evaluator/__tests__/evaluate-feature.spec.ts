@@ -16,8 +16,8 @@ const splitsMock: Record<string, IDefinition> = {
 };
 
 const mockStorage = {
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       if (name === 'throw_exception') throw new Error('Error');
       if (splitsMock[name]) return splitsMock[name];
 
@@ -43,7 +43,7 @@ test('EVALUATOR / should return label exception, treatment control and config nu
   // This validation is async because the only exception possible when retrieving a Split would happen with Async storages.
   const evaluation = await evaluationPromise;
 
-  expect(evaluation).toEqual(expectedOutput); // If there was an error on the getSplits we should get the results for exception.
+  expect(evaluation).toEqual(expectedOutput); // If there was an error on the get method, we should get the results for exception.
 });
 
 

@@ -2,7 +2,7 @@ import type { RedisAdapter } from './RedisAdapter';
 import { IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams } from '../types';
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { SplitsCacheInRedis } from './SplitsCacheInRedis';
+import { DefinitionsCacheInRedis } from './DefinitionsCacheInRedis';
 import { SegmentsCacheInRedis } from './SegmentsCacheInRedis';
 import { ImpressionsCacheInRedis } from './ImpressionsCacheInRedis';
 import { EventsCacheInRedis } from './EventsCacheInRedis';
@@ -59,7 +59,7 @@ export function InRedisStorage(options: InRedisStorageOptions = {}): IStorageAsy
     });
 
     return {
-      splits: new SplitsCacheInRedis(log, keys, redisClient, settings.sync.__splitFiltersValidation),
+      definitions: new DefinitionsCacheInRedis(log, keys, redisClient, settings.sync.__splitFiltersValidation),
       rbSegments: new RBSegmentsCacheInRedis(log, keys, redisClient),
       segments: new SegmentsCacheInRedis(log, keys, redisClient),
       impressions: new ImpressionsCacheInRedis(log, keys.buildImpressionsKey(), redisClient, metadata),

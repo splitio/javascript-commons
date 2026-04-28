@@ -9,9 +9,9 @@ test('KEYS / splits keys', () => {
   const expectedKey = `SPLITIO.split.${splitName}`;
   const expectedTill = 'SPLITIO.splits.till';
 
-  expect(builder.buildSplitKey(splitName)).toBe(expectedKey);
-  expect(builder.buildSplitsTillKey()).toBe(expectedTill);
-  expect(builder.extractKey(builder.buildSplitKey(splitName))).toBe(splitName);
+  expect(builder.buildDefinitionKey(splitName)).toBe(expectedKey);
+  expect(builder.buildDefinitionsTillKey()).toBe(expectedTill);
+  expect(builder.extractKey(builder.buildDefinitionKey(splitName))).toBe(splitName);
 });
 
 test('KEYS / splits keys with custom prefix', () => {
@@ -22,8 +22,8 @@ test('KEYS / splits keys with custom prefix', () => {
   const expectedKey = `${prefix}.split.${splitName}`;
   const expectedTill = `${prefix}.splits.till`;
 
-  expect(builder.buildSplitKey(splitName)).toBe(expectedKey);
-  expect(builder.buildSplitsTillKey() === expectedTill).toBe(true);
+  expect(builder.buildDefinitionKey(splitName)).toBe(expectedKey);
+  expect(builder.buildDefinitionsTillKey() === expectedTill).toBe(true);
 });
 
 const prefix = 'SPLITIO';
@@ -65,7 +65,7 @@ test('KEYS / flag set keys', () => {
   const flagSetName = 'flagset_x';
   const expectedKey = `${prefix}.flagSet.${flagSetName}`;
 
-  expect(builder.buildFlagSetKey(flagSetName)).toBe(expectedKey);
+  expect(builder.buildSetKey(flagSetName)).toBe(expectedKey);
 
 });
 

@@ -12,16 +12,16 @@ import { IMembershipsResponse, IMySegmentsResponse } from '../dtos/types';
 export function getRolloutPlan(log: ILogger, storage: IStorageSync, options: SplitIO.RolloutPlanOptions = {}): RolloutPlan {
 
   const { keys, exposeSegments } = options;
-  const { splits, segments, rbSegments } = storage;
+  const { definitions, segments, rbSegments } = storage;
 
   log.debug(`storage: get feature flags${keys ? `, and memberships for keys: ${keys}` : ''}${exposeSegments ? ', and segments' : ''}`);
 
   return {
     splitChanges: {
       ff: {
-        t: splits.getChangeNumber(),
+        t: definitions.getChangeNumber(),
         s: -1,
-        d: splits.getAll(),
+        d: definitions.getAll(),
       },
       rbs: {
         t: rbSegments.getChangeNumber(),

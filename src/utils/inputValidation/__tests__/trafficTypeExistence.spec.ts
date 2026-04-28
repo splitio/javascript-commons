@@ -1,5 +1,5 @@
 import { IReadinessManager } from '../../../readiness/types';
-import { ISplitsCacheBase } from '../../../storages/types';
+import { IDefinitionsCacheBase } from '../../../storages/types';
 import { LOCALHOST_MODE, STANDALONE_MODE } from '../../constants';
 import { thenable } from '../../promise/thenable';
 import { WARN_NOT_EXISTENT_TT } from '../../../logger/constants';
@@ -25,7 +25,7 @@ const splitsCacheMock = {
     }
     return false;
   })
-} as ISplitsCacheBase & { trafficTypeExists: jest.Mock };
+} as IDefinitionsCacheBase & { trafficTypeExists: jest.Mock };
 
 /** Test target */
 import { validateTrafficTypeExistence } from '../trafficTypeExistence';
