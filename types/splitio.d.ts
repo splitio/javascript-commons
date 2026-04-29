@@ -73,10 +73,12 @@ interface ISharedSettings {
        * const factory = SplitFactory({
        *   ...
        *   sync: {
-       *     getHeaderOverrides: (context) => {
-       *       return {
-       *         'Authorization': context.headers['Authorization'] + ', other-value',
-       *         'custom-header': 'custom-value'
+       *     requestOptions: {
+       *       getHeaderOverrides: (context) => {
+       *         return {
+       *           'Authorization': context.headers['Authorization'] + ', other-value',
+       *           'custom-header': 'custom-value'
+       *         };
        *       };
        *     }
        *   }
@@ -509,7 +511,7 @@ declare namespace SplitIO {
   /**
    * Metadata type for SDK update events.
    */
-  type SdkUpdateMetadataType = 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
+  type SdkUpdateMetadataType = 'CONFIGS_UPDATE' | 'FLAGS_UPDATE' | 'SEGMENTS_UPDATE';
 
   /**
    * Metadata for the ready events emitted when the SDK is ready to evaluate feature flags.
@@ -1590,10 +1592,12 @@ declare namespace SplitIO {
          * const factory = SplitFactory({
          *   ...
          *   sync: {
-         *     getHeaderOverrides: (context) => {
-         *       return {
-         *         'Authorization': context.headers['Authorization'] + ', other-value',
-         *         'custom-header': 'custom-value'
+         *     requestOptions: {
+         *       getHeaderOverrides: (context) => {
+         *         return {
+         *           'Authorization': context.headers['Authorization'] + ', other-value',
+         *           'custom-header': 'custom-value'
+         *         };
          *       };
          *     }
          *   }
@@ -2283,5 +2287,194 @@ declare namespace SplitIO {
      * @returns A promise that resolves to the SplitIO.SplitView value.
      */
     split(featureFlagName: string): SplitViewAsync;
+  }
+
+  /**
+   * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
+   */
+  type FallbackConfigs = {
+    /**
+     * Fallback config for all config names.
+     */
+    global?: Config;
+    /**
+     * Fallback configs for specific config names. It takes precedence over the global fallback config.
+     */
+    byName?: {
+      [configName: string]: Config;
+    };
+  }
+
+  /**
+   * Configs SDK settings.
+   */
+  interface ConfigsClientSettings {
+    /**
+     * Your SDK key.
+     *
+     * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
+     */
+    authorizationKey: string;
+    /**
+     * Configs definitions refresh rate for polling, in seconds.
+     *
+     * @defaultValue `60`
+     */
+    configsRefreshRate?: number;
+    /**
+     * Logging level.
+     *
+     * @defaultValue `'NONE'`
+     */
+    logLevel?: LogLevel;
+    /**
+     * Time in seconds until SDK ready timeout is emitted.
+     *
+     * @defaultValue `10`
+     */
+    timeout?: number;
+    /**
+     * Custom endpoints to replace the default ones used by the SDK.
+     */
+    urls?: {
+      /**
+       * String property to override the base URL where the SDK will get rollout plan related data, like feature flags and segments definitions.
+       *
+       * @defaultValue `'https://appconfig.split.io/api'`
+       */
+      sdk?: string;
+      /**
+       * String property to override the base URL where the SDK will post event-related information like impressions.
+       *
+       * @defaultValue `'https://events.split.io/api'`
+       */
+      events?: string;
+    };
+    /**
+     * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
+     */
+    fallbackConfigs?: FallbackConfigs;
+    /**
+     * Custom options object for HTTP(S) requests.
+     * If provided, this object is merged with the options object passed by the SDK for EventSource and Fetch calls.
+     */
+    requestOptions?: {
+      /**
+       * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
+       * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
+       * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
+       * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
+       *
+       * @defaultValue `undefined`
+       *
+       * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
+       * @returns An object representing a set of headers to be merged with the current headers.
+       *
+       * @example
+       * ```
+       * const client = ConfigsClient({
+       *   ...
+       *   requestOptions: {
+       *     getHeaderOverrides: (context) => {
+       *       return {
+       *         'Authorization': context.headers['Authorization'] + ', other-value',
+       *         'custom-header': 'custom-value'
+       *       };
+       *     }
+       *   }
+       * });
+       * ```
+       */
+      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
+      /**
+       * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
+       *
+       * You can use it, for example, for certificate pinning or setting a network proxy:
+       *
+       * ```
+       * const { HttpsProxyAgent } = require('https-proxy-agent');
+       *
+       * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
+       *
+       * const client = ConfigsClient({
+       *   ...
+       *   requestOptions: {
+       *     agent: proxyAgent
+       *   }
+       * })
+       * ```
+       *
+       * @see {@link https://nodejs.org/api/https.html#class-httpsagent}
+       *
+       * @defaultValue `undefined`
+       */
+      agent?: RequestOptions['agent'];
+    };
+  }
+
+  /**
+   * Target for a config evaluation.
+   */
+  interface Target {
+    /**
+     * The key of the target.
+     */
+    key: SplitKey;
+    /**
+     * The attributes of the target.
+     *
+     * @defaultValue `undefined`
+     */
+    attributes?: Attributes;
+  }
+
+  type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+  type JsonArray = JsonValue[];
+  type JsonObject = { [key: string]: JsonValue; };
+
+  /**
+   * Config object returned by getConfig.
+   */
+  type Config = {
+    /**
+     * The name of the variant.
+     */
+    variant: string;
+    /**
+     * The config value, a raw JSON object.
+     */
+    value: JsonObject;
+  }
+
+  /**
+   * Configs SDK client interface.
+   */
+  interface ConfigsClient extends IStatusInterface {
+    /**
+     * Destroys the client.
+     *
+     * @returns A promise that resolves once all clients are destroyed.
+     */
+    destroy(): Promise<void>;
+    /**
+     * Gets the config object for a given config name and optional target. If no target is provided, the default variant of the config is returned.
+     *
+     * @param configName - The name of the config we want to get.
+     * @param target - The target of the config evaluation.
+     * @param options - An object of type EvaluationOptions for advanced evaluation options.
+     * @returns The config object.
+     */
+    getConfig(configName: string, target?: Target, options?: EvaluationOptions): Config;
+    /**
+     * Tracks an event to be fed to the results product on Harness FME user interface.
+     *
+     * @param trafficKey - The key that identifies the entity related to this event.
+     * @param trafficType - The traffic type of the entity related to this event. See {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/fme-settings/traffic-types/}
+     * @param eventType - The event type corresponding to this event.
+     * @param value - The value of this event.
+     * @param properties - The properties of this event. Values can be string, number, boolean or null.
+     * @returns Whether the event was added to the queue successfully or not.
+     */
+    track(trafficKey: SplitKey, trafficType: string, eventType: string, value?: number, properties?: Properties): boolean;
   }
 }

@@ -45,20 +45,25 @@ describe('splitApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe(expectedFlagsUrl(-1, 100, settings.validateFilters || false, settings, -1));
 
+    splitApi.fetchConfigs(-1, false, 100);
+    [url, { headers }] = fetchMock.mock.calls[4];
+    assertHeaders(settings, headers);
+    expect(url).toBe(expectedConfigsUrl(-1, 100, settings.validateFilters || false, settings));
+
     splitApi.postEventsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[4][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[5][1].headers);
 
     splitApi.postTestImpressionsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[5][1].headers);
-    expect(fetchMock.mock.calls[5][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
+    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
+    expect(fetchMock.mock.calls[6][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
 
     splitApi.postTestImpressionsCount('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
 
     splitApi.postMetricsConfig('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
-    splitApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
+    splitApi.postMetricsUsage('fake-body');
+    assertHeaders(settings, fetchMock.mock.calls[9][1].headers);
 
     expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(9);
 
@@ -69,6 +74,11 @@ describe('splitApi', () => {
     function expectedFlagsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings, rbSince?: number) {
       const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
       return `sdk/splitChanges?s=1.1&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+    }
+
+    function expectedConfigsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings) {
+      const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
+      return `sdk/v1/configs?since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
   });
 

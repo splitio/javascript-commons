@@ -1,6 +1,6 @@
 import { thenable } from '../promise/thenable';
 import { LOCALHOST_MODE } from '../constants';
-import { ISplitsCacheBase } from '../../storages/types';
+import { IDefinitionsCacheBase } from '../../storages/types';
 import { IReadinessManager } from '../../readiness/types';
 import SplitIO from '../../../types/splitio';
 import { MaybeThenable } from '../../dtos/types';
@@ -14,7 +14,7 @@ function logTTExistenceWarning(log: ILogger, maybeTT: string, method: string) {
 /**
  * Separated from the previous method since on some cases it'll be async.
  */
-export function validateTrafficTypeExistence(log: ILogger, readinessManager: IReadinessManager, splitsCache: ISplitsCacheBase, mode: SplitIO.SDKMode, maybeTT: string, method: string): MaybeThenable<boolean> {
+export function validateTrafficTypeExistence(log: ILogger, readinessManager: IReadinessManager, splitsCache: IDefinitionsCacheBase, mode: SplitIO.SDKMode, maybeTT: string, method: string): MaybeThenable<boolean> {
 
   // If not ready or in localhost mode, we won't run the validation
   if (!readinessManager.isReady() || mode === LOCALHOST_MODE) return true;

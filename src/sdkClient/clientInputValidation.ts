@@ -1,31 +1,27 @@
 import {
   validateAttributes,
-  validateEvent,
-  validateEventValue,
-  validateEventProperties,
   validateKey,
-  validateSplit,
-  validateSplits,
-  validateTrafficType,
+  validateDefinition,
+  validateDefinitions,
   validateIfNotDestroyed,
   validateIfReadyFromCache,
   validateEvaluationOptions
 } from '../utils/inputValidation';
 import { startsWith } from '../utils/lang';
-import { GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG, TRACK_FN_LABEL } from '../utils/constants';
+import { GET_TREATMENT, GET_TREATMENTS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENT_WITH_CONFIG } from '../utils/constants';
 import { IReadinessManager } from '../readiness/types';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { validateFlagSets } from '../utils/settingsValidation/splitFilters';
-import { IFallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
+import { IFallbackCalculator } from '../evaluator/fallbackTreatmentsCalculator';
 
 /**
  * Decorator that validates the input before actually executing the client methods.
  * We should "guard" the client here, while not polluting the "real" implementation of those methods.
  */
-export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager, fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator): TClient {
+export function clientInputValidationDecorator<TClient extends SplitIO.IClient | SplitIO.IAsyncClient>(settings: ISettings, client: TClient, readinessManager: IReadinessManager, fallbackCalculator: IFallbackCalculator): TClient {
 
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -39,14 +35,14 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const nameOrNames = methodName.indexOf('ByFlagSet') > -1 ?
       validateFlagSets(log, methodName, maybeNameOrNames as string[], settings.sync.__splitFiltersValidation.groupedFilters.bySet) :
       startsWith(methodName, GET_TREATMENTS) ?
-        validateSplits(log, maybeNameOrNames, methodName) :
-        validateSplit(log, maybeNameOrNames, methodName);
+        validateDefinitions(log, maybeNameOrNames, methodName) :
+        validateDefinition(log, maybeNameOrNames, methodName);
 
     const attributes = validateAttributes(log, maybeAttributes, methodName);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, methodName);
     const options = validateEvaluationOptions(log, maybeOptions, methodName);
 
-    validateIfReadyFromCache(log, readinessManager, methodName, nameOrNames);
+    validateIfReadyFromCache(log, readinessManager, methodName);
 
     const valid = isNotDestroyed && key && nameOrNames && attributes !== false;
 
@@ -66,7 +62,7 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       return res;
     }
 
-    const { treatment, config } = fallbackTreatmentsCalculator(featureFlagName as string);
+    const { treatment, config } = fallbackCalculator(featureFlagName as string);
 
     return withConfig ?
       {
@@ -143,19 +139,6 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
       wrapResult({});
   }
 
-  function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
-    const key = validateKey(log, maybeKey, TRACK_FN_LABEL);
-    const tt = validateTrafficType(log, maybeTT, TRACK_FN_LABEL);
-    const event = validateEvent(log, maybeEvent, TRACK_FN_LABEL);
-    const eventValue = validateEventValue(log, maybeEventValue, TRACK_FN_LABEL);
-    const { properties, size } = validateEventProperties(log, maybeProperties, TRACK_FN_LABEL);
-    const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, TRACK_FN_LABEL);
-
-    return isNotDestroyed && key && tt && event && eventValue !== false && properties !== false ? // @ts-expect-error
-      client.track(key, tt, event, eventValue, properties, size) :
-      wrapResult(false);
-  }
-
   return {
     getTreatment,
     getTreatmentWithConfig,
@@ -165,6 +148,6 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     getTreatmentsWithConfigByFlagSets,
     getTreatmentsByFlagSet,
     getTreatmentsWithConfigByFlagSet,
-    track
+    track: client.track,
   } as TClient;
 }

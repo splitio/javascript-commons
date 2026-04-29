@@ -1,4 +1,4 @@
-import { ISplitPartition } from '../../dtos/types';
+import { IDefinitionPartition } from '../../dtos/types';
 import { findIndex } from '../../utils/lang';
 
 export class Treatments {
@@ -15,7 +15,7 @@ export class Treatments {
     this._treatments = treatments;
   }
 
-  static parse(data: ISplitPartition[]) {
+  static parse(data: IDefinitionPartition[]) {
     let { ranges, treatments } = data.reduce((accum, value) => {
       let { size, treatment } = value;
 

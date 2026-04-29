@@ -1,4 +1,4 @@
-import { SplitsCacheInMemory } from './SplitsCacheInMemory';
+import { DefinitionsCacheInMemory } from './DefinitionsCacheInMemory';
 import { MySegmentsCacheInMemory } from './MySegmentsCacheInMemory';
 import { ImpressionsCacheInMemory } from './ImpressionsCacheInMemory';
 import { EventsCacheInMemory } from './EventsCacheInMemory';
@@ -17,20 +17,20 @@ import { RBSegmentsCacheInMemory } from './RBSegmentsCacheInMemory';
 export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorageSync {
   const { settings: { scheduler: { impressionsQueueSize, eventsQueueSize }, sync: { __splitFiltersValidation } } } = params;
 
-  const splits = new SplitsCacheInMemory(__splitFiltersValidation);
+  const definitions = new DefinitionsCacheInMemory(__splitFiltersValidation);
   const rbSegments = new RBSegmentsCacheInMemory();
   const segments = new MySegmentsCacheInMemory();
   const largeSegments = new MySegmentsCacheInMemory();
 
   const storage = {
-    splits,
+    definitions,
     rbSegments,
     segments,
     largeSegments,
     impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
     impressionCounts: new ImpressionCountsCacheInMemory(),
     events: new EventsCacheInMemory(eventsQueueSize),
-    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
+    telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(definitions, segments) : undefined,
     uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
     destroy() { },
@@ -38,7 +38,7 @@ export function InMemoryStorageCSFactory(params: IStorageFactoryParams): IStorag
     // When using shared instantiation with MEMORY we reuse everything but segments (they are unique per key)
     shared() {
       return {
-        splits: this.splits,
+        definitions: this.definitions,
         rbSegments: this.rbSegments,
         segments: new MySegmentsCacheInMemory(),
         largeSegments: new MySegmentsCacheInMemory(),

@@ -1,32 +1,32 @@
 import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
 import { IStorageSync } from '../../../storages/types';
-import { ISplitsParser } from '../splitsParser/types';
-import { ISplit, ISplitPartial } from '../../../dtos/types';
+import { IDefinitionsParser, IDefinitionPartial } from '../splitsParser/types';
+import { IDefinition } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
 import { CONTROL } from '../../../utils/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_DEFINITIONS_CACHE_LOADED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
 /**
  * Offline equivalent of `splitChangesUpdaterFactory`
  */
 export function fromObjectUpdaterFactory(
-  splitsParser: ISplitsParser,
-  storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
+  splitsParser: IDefinitionsParser,
+  storage: Pick<IStorageSync, 'definitions' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings,
 ): () => Promise<boolean> {
 
-  const log = settings.log, splitsCache = storage.splits;
+  const log = settings.log, definitions = storage.definitions;
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: ISplit[] = [];
+    const splits: IDefinition[] = [];
     let loadError = null;
-    let splitsMock: false | Record<string, ISplitPartial> = {};
+    let splitsMock: false | Record<string, IDefinitionPartial> = {};
     try {
       splitsMock = splitsParser(settings);
     } catch (err) {
@@ -52,17 +52,17 @@ export function fromObjectUpdaterFactory(
       });
 
       return Promise.all([
-        splitsCache.clear(), // required to sync removed splits from mock
-        splitsCache.update(splits, [], Date.now())
+        definitions.clear(), // required to sync removed splits from mock
+        definitions.update(splits, [], Date.now())
       ]).then(() => {
-        readiness.splits.emit(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: [] });
+        readiness.definitions.emit(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: [] });
 
         if (startingUp) {
           startingUp = false;
           Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
             // Emits SDK_READY_FROM_CACHE
             if (!cacheMetadata.initialCacheLoad) {
-              readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
+              readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
             }
             // Emits SDK_READY
             readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
@@ -80,8 +80,8 @@ export function fromObjectUpdaterFactory(
  * PollingManager in Offline mode
  */
 export function fromObjectSyncTaskFactory(
-  splitsParser: ISplitsParser,
-  storage: Pick<IStorageSync, 'splits' | 'validateCache'>,
+  splitsParser: IDefinitionsParser,
+  storage: Pick<IStorageSync, 'definitions' | 'validateCache'>,
   readiness: IReadinessManager,
   settings: ISettings
 ): ISyncTask<[], boolean> {

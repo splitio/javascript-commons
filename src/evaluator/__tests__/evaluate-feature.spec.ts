@@ -1,10 +1,10 @@
 import { evaluateFeature } from '../index';
-import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
+import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, DEFINITION_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
-import { ISplit } from '../../dtos/types';
+import { IDefinition } from '../../dtos/types';
 import { IStorageSync } from '../../storages/types';
 
-const splitsMock: Record<string, ISplit> = {
+const splitsMock: Record<string, IDefinition> = {
   regular: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
   config: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': { 'on': "{color:'black'}" }, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
   killed: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on2', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': true, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
@@ -16,8 +16,8 @@ const splitsMock: Record<string, ISplit> = {
 };
 
 const mockStorage = {
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       if (name === 'throw_exception') throw new Error('Error');
       if (splitsMock[name]) return splitsMock[name];
 
@@ -43,7 +43,7 @@ test('EVALUATOR / should return label exception, treatment control and config nu
   // This validation is async because the only exception possible when retrieving a Split would happen with Async storages.
   const evaluation = await evaluationPromise;
 
-  expect(evaluation).toEqual(expectedOutput); // If there was an error on the getSplits we should get the results for exception.
+  expect(evaluation).toEqual(expectedOutput); // If there was an error on the get method, we should get the results for exception.
 });
 
 
@@ -53,7 +53,7 @@ test('EVALUATOR / should return right label, treatment and config if storage ret
     config: '{color:\'black\'}', changeNumber: 1487277320548
   };
   const expectedOutputControl = {
-    treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+    treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
   };
 
   const evaluationWithConfig = evaluateFeature(

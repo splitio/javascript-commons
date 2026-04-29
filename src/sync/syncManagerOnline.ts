@@ -9,8 +9,10 @@ import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '..
 import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
-import { SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
-import { usesSegmentsSync } from '../storages/AbstractSplitsCacheSync';
+import { SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
+import { usesSegmentsSync } from '../storages/AbstractDefinitionsCacheSync';
+import { splitChangesFetcherFactory } from './polling/fetchers/splitChangesFetcher';
+import { IDefinitionChangesFetcher } from './polling/fetchers/types';
 
 /**
  * Online SyncManager factory.
@@ -19,10 +21,12 @@ import { usesSegmentsSync } from '../storages/AbstractSplitsCacheSync';
  * @param pollingManagerFactory - allows to specialize the SyncManager for server-side or client-side API by passing
  * `pollingManagerSSFactory` or `pollingManagerCSFactory` respectively.
  * @param pushManagerFactory - optional to build a SyncManager with or without streaming support
+ * @param definitionChangesFetcherFactory - optional to replace the default split changes fetcher
  */
 export function syncManagerOnlineFactory(
-  pollingManagerFactory?: (params: ISdkFactoryContextSync) => IPollingManager,
+  pollingManagerFactory?: (params: ISdkFactoryContextSync, definitionChangesFetcher: IDefinitionChangesFetcher) => IPollingManager,
   pushManagerFactory?: (params: ISdkFactoryContextSync, pollingManager: IPollingManager) => IPushManager | undefined,
+  definitionChangesFetcherFactory = splitChangesFetcherFactory
 ): (params: ISdkFactoryContextSync) => ISyncManagerCS {
 
   /**
@@ -33,7 +37,7 @@ export function syncManagerOnlineFactory(
     const { settings, settings: { log, streamingEnabled, sync: { enabled: syncEnabled } }, telemetryTracker, storage, readiness } = params;
 
     /** Polling Manager */
-    const pollingManager = pollingManagerFactory && pollingManagerFactory(params);
+    const pollingManager = pollingManagerFactory && pollingManagerFactory(params, definitionChangesFetcherFactory(params));
 
     /** Push Manager */
     const pushManager = syncEnabled && streamingEnabled && pollingManager && pushManagerFactory ?
@@ -98,7 +102,7 @@ export function syncManagerOnlineFactory(
           if (startFirstTime) {
             // Emits SDK_READY_FROM_CACHE
             if (!cacheMetadata.initialCacheLoad) {
-              readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
+              readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
             }
 
           }

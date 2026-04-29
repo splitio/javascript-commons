@@ -3,12 +3,12 @@ import { matcherFactory } from '..';
 import { evaluateFeature } from '../../index';
 import { IMatcherDto } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { IRBSegment, ISplit } from '../../../dtos/types';
+import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../../storages/types';
 import { thenable } from '../../../utils/promise/thenable';
 import { ALWAYS_ON_SPLIT } from '../../../storages/__tests__/testUtils';
 
-const STORED_SPLITS: Record<string, ISplit> = {
+const STORED_SPLITS: Record<string, IDefinition> = {
   'always-on': ALWAYS_ON_SPLIT
 };
 
@@ -178,8 +178,8 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
 
 const mockStorageSync = {
   isSync: true,
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       return STORED_SPLITS[name];
     }
   },
@@ -202,8 +202,8 @@ const mockStorageSync = {
 
 const mockStorageAsync = {
   isSync: false,
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       return Promise.resolve(STORED_SPLITS[name]);
     }
   },

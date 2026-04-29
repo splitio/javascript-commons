@@ -2,7 +2,7 @@ import { ImpressionDataType, EventDataType, LastSync, HttpErrors, HttpLatencies,
 import { DEDUPED, DROPPED, LOCALHOST_MODE, QUEUED } from '../../utils/constants';
 import { checkIfServerSide } from '../../utils/key';
 import { findLatencyIndex } from '../findLatencyIndex';
-import { ISegmentsCacheSync, ISplitsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
+import { ISegmentsCacheSync, IDefinitionsCacheSync, IStorageFactoryParams, ITelemetryCacheSync } from '../types';
 
 const MAX_STREAMING_EVENTS = 20;
 const MAX_TAGS = 10;
@@ -20,15 +20,15 @@ const ACCEPTANCE_RANGE = 0.001;
  * Record telemetry if mode is not localhost.
  * All factory instances track telemetry on server-side, and 0.1% on client-side.
  */
-export function shouldRecordTelemetry({ settings }: IStorageFactoryParams) {
-  return settings.mode !== LOCALHOST_MODE && (checkIfServerSide(settings) || Math.random() <= ACCEPTANCE_RANGE);
+export function shouldRecordTelemetry({ settings, disableTelemetry }: IStorageFactoryParams) {
+  return !disableTelemetry && settings.mode !== LOCALHOST_MODE && (checkIfServerSide(settings) || Math.random() <= ACCEPTANCE_RANGE);
 }
 
 export class TelemetryCacheInMemory implements ITelemetryCacheSync {
 
   public name = 'telemetry stats';
 
-  constructor(private splits?: ISplitsCacheSync, private segments?: ISegmentsCacheSync, private largeSegments?: ISegmentsCacheSync) { }
+  constructor(private definitions?: IDefinitionsCacheSync, private segments?: ISegmentsCacheSync, private largeSegments?: ISegmentsCacheSync) { }
 
   // isEmpty flag
   private e = true;
@@ -51,7 +51,7 @@ export class TelemetryCacheInMemory implements ITelemetryCacheSync {
       iQ: this.getImpressionStats(QUEUED),
       iDe: this.getImpressionStats(DEDUPED),
       iDr: this.getImpressionStats(DROPPED),
-      spC: this.splits && this.splits.getSplitNames().length,
+      spC: this.definitions && this.definitions.getNames().length,
       seC: this.segments && this.segments.getRegisteredSegments().length,
       skC: this.segments && this.segments.getKeysCount(),
       lsC: this.largeSegments && this.largeSegments.getRegisteredSegments().length,

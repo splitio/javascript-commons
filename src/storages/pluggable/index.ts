@@ -1,7 +1,7 @@
 import { IPluggableStorageWrapper, IStorageAsync, IStorageAsyncFactory, IStorageFactoryParams, ITelemetryCacheAsync } from '../types';
 
 import { KeyBuilderSS } from '../KeyBuilderSS';
-import { SplitsCachePluggable } from './SplitsCachePluggable';
+import { DefinitionsCachePluggable } from './DefinitionsCachePluggable';
 import { SegmentsCachePluggable } from './SegmentsCachePluggable';
 import { ImpressionsCachePluggable } from './ImpressionsCachePluggable';
 import { EventsCachePluggable } from './EventsCachePluggable';
@@ -118,7 +118,7 @@ export function PluggableStorage(options: PluggableStorageOptions): IStorageAsyn
     });
 
     return {
-      splits: new SplitsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
+      definitions: new DefinitionsCachePluggable(log, keys, wrapper, settings.sync.__splitFiltersValidation),
       rbSegments: new RBSegmentsCachePluggable(log, keys, wrapper),
       segments: new SegmentsCachePluggable(log, keys, wrapper),
       impressions: isPartialConsumer ? new ImpressionsCacheInMemory(impressionsQueueSize) : new ImpressionsCachePluggable(log, keys.buildImpressionsKey(), wrapper, metadata),

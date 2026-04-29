@@ -1,11 +1,11 @@
 import { evaluateFeatures, evaluateFeaturesByFlagSets } from '../index';
-import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, SPLIT_NOT_FOUND } from '../../utils/labels';
+import { EXCEPTION, NOT_IN_SPLIT, SPLIT_ARCHIVED, SPLIT_KILLED, DEFINITION_NOT_FOUND } from '../../utils/labels';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../../logger/constants';
-import { ISplit } from '../../dtos/types';
+import { IDefinition } from '../../dtos/types';
 import { IStorageSync } from '../../storages/types';
 
-const splitsMock: Record<string, ISplit> = {
+const splitsMock: Record<string, IDefinition> = {
   regular: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
   config: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on', 'seed': 1684183541, 'configurations': { 'on': "{color:'black'}" }, 'status': 'ACTIVE', 'killed': false, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
   killed: { 'changeNumber': 1487277320548, 'trafficAllocationSeed': 1667452163, 'trafficAllocation': 100, 'trafficTypeName': 'user', 'name': 'always-on2', 'seed': 1684183541, 'configurations': {}, 'status': 'ACTIVE', 'killed': true, 'defaultTreatment': 'off', 'conditions': [{ 'conditionType': 'ROLLOUT', 'matcherGroup': { 'combiner': 'AND', 'matchers': [{ 'keySelector': { 'trafficType': 'user', 'attribute': '' }, 'matcherType': 'ALL_KEYS', 'negate': false, 'userDefinedSegmentMatcherData': { 'segmentName': '' }, 'unaryNumericMatcherData': { 'dataType': null, 'value': 0 }, 'whitelistMatcherData': { 'whitelist': null }, 'betweenMatcherData': { 'dataType': null, 'start': 0, 'end': 0 } }] }, 'partitions': [{ 'treatment': 'on', 'size': 100 }, { 'treatment': 'off', 'size': 0 }], 'label': 'in segment all' }] },
@@ -22,20 +22,20 @@ const flagSetsMock: Record<string, Set<string>> = {
 };
 
 const mockStorage = {
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       if (name === 'throw_exception') throw new Error('Error');
       if (splitsMock[name]) return splitsMock[name];
 
       return null;
     },
-    getSplits(names: string[]) {
+    getMany(names: string[]) {
       return names.reduce((acc, name) => {
-        acc[name] = this.getSplit(name);
+        acc[name] = this.get(name);
         return acc;
-      }, {} as Record<string, ISplit | null>);
+      }, {} as Record<string, IDefinition | null>);
     },
-    getNamesByFlagSets(flagSets: string[]) {
+    getNamesBySets(flagSets: string[]) {
       return flagSets.map(flagset => flagSetsMock[flagset] || new Set());
     }
   }
@@ -59,7 +59,7 @@ test('EVALUATOR - Multiple evaluations at once  / should return label exception,
     mockStorage,
   );
 
-  expect(evaluation).toEqual(expectedOutput); // If there was an error on the `getSplits` we should get the results for exception.
+  expect(evaluation).toEqual(expectedOutput); // If there was an error on the get method, we should get the results for exception.
 
 });
 
@@ -71,7 +71,7 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
     },
   };
 
@@ -122,11 +122,11 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
       config: '{color:\'black\'}', changeNumber: 1487277320548
     },
     not_existent_split: {
-      treatment: 'control', label: SPLIT_NOT_FOUND, config: null
+      treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
     },
   };
 
-  const getResultsByFlagsets = (flagSets: string[], storage = mockStorage) => {
+  const getResultsByFlagSets = (flagSets: string[], storage = mockStorage) => {
     return evaluateFeaturesByFlagSets(
       loggerMock,
       'fake-key',
@@ -139,7 +139,7 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
 
   test('should return right labels, treatments and configs if storage returns without errors', async () => {
 
-    let multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config', 'arch_and_killed']);
+    let multipleEvaluationAtOnceByFlagSets = await getResultsByFlagSets(['reg_and_config', 'arch_and_killed']);
 
     // assert evaluationWithConfig
     expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
@@ -158,10 +158,10 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
     // assert not_existent_split not in evaluation if it is not related to defined flag sets
     expect(multipleEvaluationAtOnceByFlagSets['not_existent_split']).toEqual(undefined);
 
-    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets([]);
+    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagSets([]);
     expect(multipleEvaluationAtOnceByFlagSets).toEqual({});
 
-    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagsets(['reg_and_config']);
+    multipleEvaluationAtOnceByFlagSets = await getResultsByFlagSets(['reg_and_config']);
     expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']);
     expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null });
     expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
@@ -169,28 +169,28 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
   });
 
   test('should log a warning if evaluating with flag sets that doesn\'t contain cached feature flags', async () => {
-    const getSplitsSpy = jest.spyOn(mockStorage.splits, 'getSplits');
+    const getManySpy = jest.spyOn(mockStorage.definitions, 'getMany');
 
-    // No flag set contains cached feature flags -> getSplits method is not called
-    expect(getResultsByFlagsets(['inexistent_set1', 'inexistent_set2'])).toEqual({});
-    expect(getSplitsSpy).not.toHaveBeenCalled();
+    // No flag set contains cached feature flags -> getMany method is not called
+    expect(getResultsByFlagSets(['inexistent_set1', 'inexistent_set2'])).toEqual({});
+    expect(getManySpy).not.toHaveBeenCalled();
     expect(loggerMock.warn.mock.calls).toEqual([
       [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set1']],
       [WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set2']],
     ]);
 
-    // One flag set contains cached feature flags -> getSplits method is called
-    expect(getResultsByFlagsets(['inexistent_set3', 'reg_and_config'])).toEqual(getResultsByFlagsets(['reg_and_config']));
-    expect(getSplitsSpy).toHaveBeenLastCalledWith(['regular', 'config']);
+    // One flag set contains cached feature flags -> getMany method is called
+    expect(getResultsByFlagSets(['inexistent_set3', 'reg_and_config'])).toEqual(getResultsByFlagSets(['reg_and_config']));
+    expect(getManySpy).toHaveBeenLastCalledWith(['regular', 'config']);
     expect(loggerMock.warn).toHaveBeenLastCalledWith(WARN_FLAGSET_WITHOUT_FLAGS, ['method-name', 'inexistent_set3']);
 
-    getSplitsSpy.mockRestore();
+    getManySpy.mockRestore();
     loggerMock.warn.mockClear();
 
     // Should support async storage too
-    expect(await getResultsByFlagsets(['inexistent_set1', 'inexistent_set2'], {
-      splits: {
-        getNamesByFlagSets(flagSets: string[]) { return Promise.resolve(flagSets.map(flagset => flagSetsMock[flagset] || new Set())); }
+    expect(await getResultsByFlagSets(['inexistent_set1', 'inexistent_set2'], {
+      definitions: {
+        getNamesBySets(flagSets: string[]) { return Promise.resolve(flagSets.map(flagset => flagSetsMock[flagset] || new Set())); }
       }
     } as unknown as IStorageSync)).toEqual({});
     expect(loggerMock.warn.mock.calls).toEqual([

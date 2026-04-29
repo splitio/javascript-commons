@@ -3,26 +3,28 @@ import { forOwn } from '../../utils/lang';
 import { IReadinessManager } from '../../readiness/types';
 import { IStorageSync } from '../../storages/types';
 import { mySegmentsSyncTaskFactory } from './syncTasks/mySegmentsSyncTask';
-import { splitsSyncTaskFactory } from './syncTasks/splitsSyncTask';
+import { definitionsSyncTaskFactory } from './syncTasks/definitionsSyncTask';
 import { getMatching } from '../../utils/key';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 import { POLLING_SMART_PAUSING, POLLING_START, POLLING_STOP } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-import { usesSegmentsSync } from '../../storages/AbstractSplitsCacheSync';
+import { usesSegmentsSync } from '../../storages/AbstractDefinitionsCacheSync';
 import { SdkUpdateMetadata } from '../../../types/splitio';
+import { IDefinitionChangesFetcher } from './fetchers/types';
 
 /**
  * Expose start / stop mechanism for polling data from services.
  * For client-side API with multiple clients.
  */
 export function pollingManagerCSFactory(
-  params: ISdkFactoryContextSync
+  params: ISdkFactoryContextSync,
+  definitionChangesFetcher: IDefinitionChangesFetcher
 ): IPollingManagerCS {
 
   const { splitApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const splitsSyncTask = splitsSyncTaskFactory(splitApi.fetchSplitChanges, storage, readiness, settings, true);
+  const definitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, true);
 
   // Map of matching keys to their corresponding MySegmentsSyncTask.
   const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
@@ -43,8 +45,8 @@ export function pollingManagerCSFactory(
   }
 
   // smart pausing
-  readiness.splits.on(SDK_SPLITS_ARRIVED, () => {
-    if (!splitsSyncTask.isRunning()) return; // noop if not doing polling
+  readiness.definitions.on(SDK_DEFINITIONS_ARRIVED, () => {
+    if (!definitionsSyncTask.isRunning()) return; // noop if not doing polling
     const usingSegments = usesSegmentsSync(storage);
     if (usingSegments !== mySegmentsSyncTask.isRunning()) {
       log.info(POLLING_SMART_PAUSING, [usingSegments ? 'ON' : 'OFF']);
@@ -64,21 +66,21 @@ export function pollingManagerCSFactory(
       if (!readiness.isReady() && !usesSegmentsSync(storage)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
     }
     if (!usesSegmentsSync(storage)) setTimeout(smartReady, 0);
-    else readiness.splits.once(SDK_SPLITS_ARRIVED, smartReady);
+    else readiness.definitions.once(SDK_DEFINITIONS_ARRIVED, smartReady);
 
     mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
     return mySegmentsSyncTask;
   }
 
   return {
-    splitsSyncTask,
+    definitionsSyncTask,
     segmentsSyncTask: mySegmentsSyncTask,
 
     // Start periodic fetching (polling)
     start() {
       log.info(POLLING_START);
 
-      splitsSyncTask.start();
+      definitionsSyncTask.start();
       if (usesSegmentsSync(storage)) startMySegmentsSyncTasks();
     },
 
@@ -86,16 +88,16 @@ export function pollingManagerCSFactory(
     stop() {
       log.info(POLLING_STOP);
 
-      if (splitsSyncTask.isRunning()) splitsSyncTask.stop();
+      if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
       stopMySegmentsSyncTasks();
     },
 
     // Used by SyncManager to know if running in polling mode.
-    isRunning: splitsSyncTask.isRunning,
+    isRunning: definitionsSyncTask.isRunning,
 
-    // fetch splits and segments
+    // fetch definitions and segments
     syncAll() {
-      const promises = [splitsSyncTask.execute()];
+      const promises = [definitionsSyncTask.execute()];
       forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
         promises.push(mySegmentsSyncTask.execute());
       });
