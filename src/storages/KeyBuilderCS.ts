@@ -9,13 +9,13 @@ export interface MySegmentsKeyBuilder {
 
 export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
 
-  protected readonly regexSplitsCacheKey: RegExp;
+  protected readonly regexDefinitionsCacheKey: RegExp;
   protected readonly matchingKey: string;
 
   constructor(prefix: string, matchingKey: string) {
     super(prefix);
     this.matchingKey = matchingKey;
-    this.regexSplitsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet)\\.`);
+    this.regexDefinitionsCacheKey = new RegExp(`^${prefix}\\.(splits?|trafficType|flagSet)\\.`);
   }
 
   /**
@@ -35,15 +35,15 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
     return `${this.prefix}.splits.lastUpdated`;
   }
 
-  isSplitsCacheKey(key: string) {
-    return this.regexSplitsCacheKey.test(key);
+  isDefinitionsCacheKey(key: string) {
+    return this.regexDefinitionsCacheKey.test(key);
   }
 
   buildTillKey() {
     return `${this.prefix}.${this.matchingKey}.segments.till`;
   }
 
-  isSplitKey(key: string) {
+  isDefinitionKey(key: string) {
     return startsWith(key, `${this.prefix}.split.`);
   }
 
@@ -51,7 +51,7 @@ export class KeyBuilderCS extends KeyBuilder implements MySegmentsKeyBuilder {
     return startsWith(key, `${this.prefix}.rbsegment.`);
   }
 
-  buildSplitsWithSegmentCountKey() {
+  buildDefinitionsWithSegmentCountKey() {
     return `${this.prefix}.splits.usingSegments`;
   }
 

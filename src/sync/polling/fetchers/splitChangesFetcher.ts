@@ -102,7 +102,7 @@ export function splitChangesFetcherFactory(params: ISdkFactoryContextSync): IDef
           lastProxyCheckTimestamp = undefined;
           return splitChangesFetcher(-1, undefined, undefined, -1)
             .then((splitChangesResponse: IDefinitionChangesResponse) =>
-              Promise.all([storage.splits.clear(), storage.rbSegments.clear()])
+              Promise.all([storage.definitions.clear(), storage.rbSegments.clear()])
                 .then(() => splitChangesResponse)
             );
         }

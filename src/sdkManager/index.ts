@@ -2,7 +2,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { thenable } from '../utils/promise/thenable';
 import { find } from '../utils/lang';
 import { validateDefinition, validateDefinitionExistence, validateIfOperational } from '../utils/inputValidation';
-import { ISplitsCacheAsync, ISplitsCacheSync } from '../storages/types';
+import { IDefinitionsCacheAsync, IDefinitionsCacheSync } from '../storages/types';
 import { ISdkReadinessManager } from '../readiness/types';
 import { IDefinition } from '../dtos/types';
 import { ISettings } from '../types';
@@ -48,11 +48,11 @@ function objectsToViews(splitObjects: IDefinition[]) {
   return views;
 }
 
-export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplitsCacheAsync>(
+export function sdkManagerFactory<TDefinitionsCache extends IDefinitionsCacheSync | IDefinitionsCacheAsync>(
   settings: Pick<ISettings, 'log' | 'mode'>,
-  splits: TSplitCache,
+  splits: TDefinitionsCache,
   { readinessManager, sdkStatus }: ISdkReadinessManager,
-): TSplitCache extends ISplitsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
+): TDefinitionsCache extends IDefinitionsCacheAsync ? SplitIO.IAsyncManager : SplitIO.IManager {
 
   const { log, mode } = settings;
   const isAsync = isConsumerMode(mode);
@@ -70,7 +70,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
           return isAsync ? Promise.resolve(null) : null;
         }
 
-        const split = splits.getSplit(splitName);
+        const split = splits.get(splitName);
 
         if (thenable(split)) {
           return split.catch(() => null).then(result => { // handle possible rejections when using pluggable storage
@@ -103,7 +103,7 @@ export function sdkManagerFactory<TSplitCache extends ISplitsCacheSync | ISplits
         if (!validateIfOperational(log, readinessManager, NAMES_FN_LABEL)) {
           return isAsync ? Promise.resolve([]) : [];
         }
-        const splitNames = splits.getSplitNames();
+        const splitNames = splits.getNames();
 
         return thenable(splitNames) ?
           splitNames.catch(() => []) : // handle possible rejections when using pluggable storage

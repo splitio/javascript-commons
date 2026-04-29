@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 import SplitIO from '../../../types/splitio';
-import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../constants';
+import { SDK_READY, SDK_READY_FROM_CACHE, SDK_READY_TIMED_OUT, SDK_UPDATE, SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_DEFINITIONS_CACHE_LOADED } from '../constants';
 import { sdkReadinessManagerFactory } from '../sdkReadinessManager';
 import { IReadinessManager } from '../types';
 import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY } from '../../logger/constants';
@@ -21,13 +21,13 @@ const EventEmitterMock = jest.fn(() => ({
 // Makes readinessManager emit SDK_READY & update isReady flag
 function emitReadyEvent(readinessManager: IReadinessManager) {
   if (readinessManager.gate instanceof EventEmitter) {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
     readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     return;
   }
 
-  readinessManager.splits.once.mock.calls[0][1]();
-  readinessManager.splits.on.mock.calls[0][1]();
+  readinessManager.definitions.once.mock.calls[0][1]();
+  readinessManager.definitions.on.mock.calls[0][1]();
   readinessManager.segments.once.mock.calls[0][1]();
   readinessManager.segments.on.mock.calls[0][1]();
   readinessManager.gate.once.mock.calls[0][1]();
@@ -148,7 +148,7 @@ describe('SDK Readiness Manager - Promises', () => {
     const sdkReadinessManager = sdkReadinessManagerFactory(EventEmitter, fullSettings);
 
     // make the SDK ready from cache
-    sdkReadinessManager.readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: null });
+    sdkReadinessManager.readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: null });
     expect(await sdkReadinessManager.sdkStatus.whenReadyFromCache()).toEqual({ initialCacheLoad: false, lastUpdateTimestamp: null });
 
     // validate error log for SDK_READY_FROM_CACHE

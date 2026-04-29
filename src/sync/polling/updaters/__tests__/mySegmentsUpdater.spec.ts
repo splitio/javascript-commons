@@ -10,18 +10,18 @@ import { SDK_SEGMENTS_ARRIVED, SEGMENTS_UPDATE } from '../../../../readiness/con
 import { MySegmentsData } from '../../types';
 import { MEMBERSHIPS_MS_UPDATE } from '../../../streaming/constants';
 import { IStorageSync } from '../../../../storages/types';
-import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
+import { DefinitionsCacheInMemory } from '../../../../storages/inMemory/DefinitionsCacheInMemory';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 
 describe('mySegmentsUpdater', () => {
   const segments = new MySegmentsCacheInMemory();
   const largeSegments = new MySegmentsCacheInMemory();
-  const splits = new SplitsCacheInMemory();
+  const definitions = new DefinitionsCacheInMemory();
   const rbSegments = new RBSegmentsCacheInMemory();
   const storage: IStorageSync = {
     segments,
     largeSegments,
-    splits,
+    definitions,
     rbSegments,
     impressions: {} as any,
     events: {} as any,

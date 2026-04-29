@@ -6,7 +6,7 @@ import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
 import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
-import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
+import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
@@ -55,8 +55,8 @@ export function pushManagerFactory(
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
-  // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = SplitsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
+  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
@@ -168,7 +168,7 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.stop();
+    definitionsUpdateWorker.stop();
     if (userKey) forOwn(clients, ({ worker }) => worker.stop());
     else segmentsUpdateWorker!.stop();
   }
@@ -218,9 +218,9 @@ export function pushManagerFactory(
 
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
-  pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
-  pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
-  pushEmitter.on(RB_SEGMENT_UPDATE, splitsUpdateWorker.put);
+  pushEmitter.on(SPLIT_KILL, definitionsUpdateWorker.killDefinition);
+  pushEmitter.on(SPLIT_UPDATE, definitionsUpdateWorker.put);
+  pushEmitter.on(RB_SEGMENT_UPDATE, definitionsUpdateWorker.put);
 
   function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
     switch (parsedData.u) {
