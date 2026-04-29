@@ -1,0 +1,38 @@
+src/dtos/types.ts
+  human 237,249,254
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "237,249,254",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/dtos/types.ts"
+    }
+  ],
+  "base_commit_sha": "a516806c0238315b086151705ca0f6246ce4699c",
+  "branch": "handle-null-splitchanges-response",
+  "commit_sha": "60f4a1ca8f604be171371545bf040e640a29597f",
+  "commit_time": "2026-04-28T23:07:37-03:00",
+  "git_ai_version": "1.2.6",
+  "prompts": {
+    "human": {
+      "accepted_lines": 3,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 3,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
