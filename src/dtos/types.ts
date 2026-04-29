@@ -234,7 +234,7 @@ export interface ISplit {
     [treatmentName: string]: string
   } | null,
   sets?: string[] | null,
-  impressionsDisabled?: boolean
+  impressionsDisabled?: boolean | null
 }
 
 // Split definition used in offline mode
@@ -246,12 +246,12 @@ export interface ISplitChangesResponse {
     t: number,
     s?: number,
     d?: ISplit[] | null,
-  },
+  } | null,
   rbs?: {
     t: number,
     s?: number,
     d?: IRBSegment[] | null,
-  }
+  } | null,
 }
 
 /** Interface of the parsed JSON response of `/segmentChanges/{segmentName}` */
