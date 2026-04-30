@@ -2322,6 +2322,19 @@ declare namespace SplitIO {
      */
     configsRefreshRate?: number;
     /**
+     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+     *
+     * @defaultValue `60`
+     */
+    eventsPushRate?: number;
+    /**
+     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
+     * If you use a 0 here, the queue will have no maximum size.
+     *
+     * @defaultValue `500`
+     */
+    eventsQueueSize?: number;
+    /**
      * Logging level.
      *
      * @defaultValue `'NONE'`
