@@ -2316,24 +2316,23 @@ declare namespace SplitIO {
      */
     authorizationKey: string;
     /**
-     * Configs definitions refresh rate for polling, in seconds.
+     * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
      *
      * @defaultValue `60`
      */
-    configsRefreshRate?: number;
+    pollingRate?: number;
     /**
-     * The SDK posts the queued events data in bulks. This parameter controls the posting rate in seconds.
+     * Push rate for events and impressions, in seconds. Minimum value: 60.
      *
      * @defaultValue `60`
      */
-    eventsPushRate?: number;
+    pushRate?: number;
     /**
-     * The maximum number of event items we want to queue. If we queue more values, it will trigger a flush and reset the timer.
-     * If you use a 0 here, the queue will have no maximum size.
+     * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
      *
-     * @defaultValue `500`
+     * @defaultValue `10000`
      */
-    eventsQueueSize?: number;
+    queueSize?: number;
     /**
      * Logging level.
      *
