@@ -6,7 +6,7 @@ import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import SplitIO from '../../types/splitio';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { IStorageSync } from '../storages/types';
@@ -18,8 +18,7 @@ import { FallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCal
  */
 export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IAsyncSDK | SplitIO.IBrowserSDK | SplitIO.IBrowserAsyncSDK {
 
-  const { settings, platform, storageFactory, splitApiFactory, extraProps,
-    syncManagerFactory, SignalListener,
+  const { settings, platform, storageFactory, splitApiFactory, extraProps, syncManagerFactory,
     integrationsManagerFactory, sdkManagerFactory, sdkClientMethodFactory, lazyInit } = params;
   const { log, initialRolloutPlan, core: { key } } = settings;
 
@@ -37,19 +36,19 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
         readiness.timeout();
         return;
       }
-      readiness.splits.emit(SDK_SPLITS_ARRIVED);
+      readiness.definitions.emit(SDK_DEFINITIONS_ARRIVED);
       readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
     onReadyFromCacheCb() {
-      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+      readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED);
     }
   });
 
-  const fallbackTreatmentsCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
+  const fallbackCalculator = FallbackTreatmentsCalculator(settings.fallbackTreatments);
 
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
-    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
+    if ((storage as IStorageSync).definitions.getChangeNumber() > -1) readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
   }
 
   const clients: Record<string, SplitIO.IBasicClient & { init: () => void }> = {};
@@ -62,18 +61,12 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
   // splitApi is used by SyncManager and Browser signal listener
   const splitApi = splitApiFactory && splitApiFactory(settings, platform, telemetryTracker);
 
-  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackTreatmentsCalculator };
-
-  const syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
-  ctx.syncManager = syncManager;
-
-  // @TODO: move into platform, and call inside sdkClientFactory (if it's used only there)
-  const signalListener = SignalListener && new SignalListener(syncManager, settings, storage, splitApi);
-  ctx.signalListener = signalListener;
+  const ctx: ISdkFactoryContext = { clients, splitApi, eventTracker, impressionsTracker, telemetryTracker, sdkReadinessManager, readiness, settings, storage, platform, fallbackCalculator };
+  ctx.syncManager = syncManagerFactory && syncManagerFactory(ctx as ISdkFactoryContextSync);
 
   // SDK client and manager
   const clientMethod = sdkClientMethodFactory(ctx);
-  const managerInstance = sdkManagerFactory(settings, storage.splits, sdkReadinessManager);
+  const managerInstance = sdkManagerFactory(settings, storage.definitions, sdkReadinessManager);
 
 
   function init() {

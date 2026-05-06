@@ -5,10 +5,9 @@ import { ISdkReadinessManager } from './types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { SDK_READY, SDK_READY_TIMED_OUT, SDK_READY_FROM_CACHE, SDK_UPDATE } from './constants';
-import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY, CLIENT_NO_LISTENER } from '../logger/constants';
+import { ERROR_CLIENT_LISTENER, CLIENT_READY_FROM_CACHE, CLIENT_READY } from '../logger/constants';
 
 const NEW_LISTENER_EVENT = 'newListener';
-const REMOVE_LISTENER_EVENT = 'removeListener';
 const TIMEOUT_ERROR = new Error(SDK_READY_TIMED_OUT);
 
 /**
@@ -25,19 +24,10 @@ export function sdkReadinessManagerFactory(
 
   const log = settings.log;
 
-  /** Ready callback warning */
-  let internalReadyCbCount = 0;
-  let readyCbCount = 0;
-  readinessManager.gate.on(REMOVE_LISTENER_EVENT, (event: any) => {
-    if (event === SDK_READY) readyCbCount--;
-  });
-
   readinessManager.gate.on(NEW_LISTENER_EVENT, (event: any) => {
     if (event === SDK_READY || event === SDK_READY_TIMED_OUT) {
       if (readinessManager.isReady()) {
         log.error(ERROR_CLIENT_LISTENER, [event === SDK_READY ? 'SDK_READY' : 'SDK_READY_TIMED_OUT']);
-      } else if (event === SDK_READY) {
-        readyCbCount++;
       }
     } else if (event === SDK_READY_FROM_CACHE && readinessManager.isReadyFromCache()) {
       log.error(ERROR_CLIENT_LISTENER, ['SDK_READY_FROM_CACHE']);
@@ -61,7 +51,6 @@ export function sdkReadinessManagerFactory(
       readinessManager.gate.once(SDK_READY, () => {
         log.info(CLIENT_READY);
 
-        if (readyCbCount === internalReadyCbCount && !promise.hasOnFulfilled()) log.warn(CLIENT_NO_LISTENER);
         resolve();
       });
       readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
@@ -89,10 +78,6 @@ export function sdkReadinessManagerFactory(
 
     shared() {
       return sdkReadinessManagerFactory(EventEmitter, settings, readinessManager.shared());
-    },
-
-    incInternalReadyCbCount() {
-      internalReadyCbCount++;
     },
 
     sdkStatus: objectAssign(

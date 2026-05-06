@@ -4,10 +4,10 @@ import { keyParser } from '../utils/key';
 import { thenable } from '../utils/promise/thenable';
 import { NO_CONDITION_MATCH, SPLIT_ARCHIVED, SPLIT_KILLED, PREREQUISITES_NOT_MET } from '../utils/labels';
 import { CONTROL } from '../utils/constants';
-import { ISplit, MaybeThenable } from '../dtos/types';
+import { IDefinition, MaybeThenable } from '../dtos/types';
 import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluation, IEvaluationResult, ISplitEvaluator } from './types';
+import { IEvaluation, IEvaluationResult, IDefinitionEvaluator } from './types';
 import { ILogger } from '../logger/types';
 import { ENGINE_DEFAULT } from '../logger/constants';
 import { prerequisitesMatcherContext } from './matchers/prerequisites';
@@ -19,7 +19,7 @@ function evaluationResult(result: IEvaluation | undefined, defaultTreatment: str
   };
 }
 
-export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync | IStorageAsync) {
+export function engineParser(log: ILogger, split: IDefinition, storage: IStorageSync | IStorageAsync) {
   const { killed, seed, trafficAllocation, trafficAllocationSeed, status, conditions, prerequisites } = split;
 
   const defaultTreatment = isString(split.defaultTreatment) ? split.defaultTreatment : CONTROL;
@@ -29,7 +29,7 @@ export function engineParser(log: ILogger, split: ISplit, storage: IStorageSync 
 
   return {
 
-    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: ISplitEvaluator): MaybeThenable<IEvaluationResult> {
+    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: IDefinitionEvaluator): MaybeThenable<IEvaluationResult> {
 
       const parsedKey = keyParser(key);
 

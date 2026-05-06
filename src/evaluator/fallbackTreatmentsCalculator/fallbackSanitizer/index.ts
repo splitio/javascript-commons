@@ -2,10 +2,8 @@ import { FallbackTreatmentConfiguration, Treatment, TreatmentWithConfig } from '
 import { ILogger } from '../../../logger/types';
 import { isObject, isString } from '../../../utils/lang';
 
-enum FallbackDiscardReason {
-  FlagName = 'Invalid flag name (max 100 chars, no spaces)',
-  Treatment = 'Invalid treatment (max 100 chars and must match pattern)',
-}
+const FLAG_NAME_DISCARD_REASON = 'Invalid flag name (max 100 chars, no spaces)';
+const TREATMENT_DISCARD_REASON = 'Invalid treatment (max 100 chars and must match pattern)';
 
 const TREATMENT_PATTERN = /^[0-9]+[.a-zA-Z0-9_-]*$|^[a-zA-Z]+[a-zA-Z0-9_-]*$/;
 
@@ -25,7 +23,7 @@ export function isValidTreatment(t?: Treatment | TreatmentWithConfig): boolean {
 function sanitizeGlobal(logger: ILogger, treatment?: Treatment | TreatmentWithConfig): Treatment | TreatmentWithConfig | undefined {
   if (treatment === undefined) return undefined;
   if (!isValidTreatment(treatment)) {
-    logger.error(`Fallback treatments - Discarded fallback: ${FallbackDiscardReason.Treatment}`);
+    logger.error(`Fallback treatments - Discarded fallback: ${TREATMENT_DISCARD_REASON}`);
     return undefined;
   }
   return treatment;
@@ -43,12 +41,12 @@ function sanitizeByFlag(
     const t = byFlagFallbacks![flag];
 
     if (!isValidFlagName(flag)) {
-      logger.error(`Fallback treatments - Discarded flag '${flag}': ${FallbackDiscardReason.FlagName}`);
+      logger.error(`Fallback treatments - Discarded flag '${flag}': ${FLAG_NAME_DISCARD_REASON}`);
       return;
     }
 
     if (!isValidTreatment(t)) {
-      logger.error(`Fallback treatments - Discarded treatment for flag '${flag}': ${FallbackDiscardReason.Treatment}`);
+      logger.error(`Fallback treatments - Discarded treatment for flag '${flag}': ${TREATMENT_DISCARD_REASON}`);
       return;
     }
 

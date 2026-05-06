@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-// @TODO eventually migrate to JS-Browser-SDK package.
 import { ISignalListener } from './types';
 import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
@@ -12,6 +11,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { CLEANUP_REGISTERING, CLEANUP_DEREGISTERING, SUBMITTERS_PUSH_PAGE_HIDDEN } from '../logger/constants';
 import { ISyncManager } from '../sync/types';
 import { isConsentGranted } from '../consent';
+import { ISdkFactoryContextSync } from '../sdkFactory/types';
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
@@ -22,17 +22,20 @@ const EVENT_NAME = 'for visibilitychange and pagehide events.';
  */
 export class BrowserSignalListener implements ISignalListener {
 
+  private syncManager: ISyncManager | undefined;
+  private settings: ISettings;
+  private storage: IStorageSync;
+  private serviceApi: ISplitApi;
   private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
-  constructor(
-    private syncManager: ISyncManager | undefined,
-    private settings: ISettings,
-    private storage: IStorageSync,
-    private serviceApi: ISplitApi,
-  ) {
+  constructor({ syncManager, settings, storage, splitApi, entityType }: ISdkFactoryContextSync) {
+    this.syncManager = syncManager;
+    this.settings = settings;
+    this.storage = storage;
+    this.serviceApi = splitApi;
     this.flushData = this.flushData.bind(this);
     this.flushDataIfHidden = this.flushDataIfHidden.bind(this);
-    this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled);
+    this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled, entityType);
   }
 
   /**

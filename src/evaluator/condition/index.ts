@@ -2,7 +2,7 @@ import { getTreatment, shouldApplyRollout } from './engineUtils';
 import { thenable } from '../../utils/promise/thenable';
 import { NOT_IN_SPLIT } from '../../utils/labels';
 import { MaybeThenable } from '../../dtos/types';
-import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
+import { IEvaluation, IEvaluator, IDefinitionEvaluator } from '../types';
 import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 
@@ -22,9 +22,9 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 }
 
 // Condition factory
-export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
+export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
-  return function conditionEvaluator(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  return function conditionEvaluator(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) {
 
     // Whitelisting has more priority than traffic allocation, so we don't apply this filtering to those conditions.
     if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation!, key.bucketingKey, trafficAllocationSeed!)) {

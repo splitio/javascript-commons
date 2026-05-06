@@ -1,8 +1,8 @@
 import splitObject from './mocks/input.json';
 import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
-import { SplitsCacheInRedis } from '../../storages/inRedis/SplitsCacheInRedis';
-import { SplitsCachePluggable } from '../../storages/pluggable/SplitsCachePluggable';
+import { DefinitionsCacheInRedis } from '../../storages/inRedis/DefinitionsCacheInRedis';
+import { DefinitionsCachePluggable } from '../../storages/pluggable/DefinitionsCachePluggable';
 import { wrapperAdapter } from '../../storages/pluggable/wrapperAdapter';
 import { KeyBuilderSS } from '../../storages/KeyBuilderSS';
 import { ISdkReadinessManager } from '../../readiness/types';
@@ -31,10 +31,10 @@ describe('Manager with async cache', () => {
 
     /** Setup: create manager */
     const connection = new RedisAdapter(loggerMock);
-    const cache = new SplitsCacheInRedis(loggerMock, keys, connection);
+    const cache = new DefinitionsCacheInRedis(loggerMock, keys, connection);
     const manager = sdkManagerFactory({ mode: 'consumer', log: loggerMock }, cache, sdkReadinessManagerMock);
     await cache.clear();
-    await cache.addSplit(splitObject as any);
+    await cache.add(splitObject as any);
 
     /** List all splits */
     const views = await manager.splits();
@@ -68,14 +68,14 @@ describe('Manager with async cache', () => {
     expect(await manager.names()).toEqual([]); // If the factory/client is destroyed, `manager.names()` will return empty array either way since the storage is not valid.
 
     /** Teardown */
-    await cache.removeSplit(splitObject.name);
+    await cache.remove(splitObject.name);
     await connection.disconnect();
   });
 
   test('handles storage errors', async () => {
     // passing an empty object as wrapper, to make method calls of splits cache fail returning a rejected promise.
     // @ts-expect-error
-    const cache = new SplitsCachePluggable(loggerMock, keys, wrapperAdapter(loggerMock, {}));
+    const cache = new DefinitionsCachePluggable(loggerMock, keys, wrapperAdapter(loggerMock, {}));
     const manager = sdkManagerFactory({ mode: 'consumer_partial', log: loggerMock }, cache, sdkReadinessManagerMock);
 
     expect(await manager.split('some_split')).toEqual(null);

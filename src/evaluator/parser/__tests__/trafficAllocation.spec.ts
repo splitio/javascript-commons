@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { IEvaluation } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
@@ -23,7 +23,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', a
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   // @ts-ignore
   const evaluation = await evaluator(keyParser('a key'), 31, 0, 31) as IEvaluation;
@@ -50,7 +50,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% wi
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   // @ts-ignore
   const evaluation = await evaluator(keyParser('a key'), 31, 99, 31) as IEvaluation;
@@ -77,7 +77,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% an
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   // @ts-ignore
   const evaluation = await evaluator(keyParser('a48'), 31, 99, 14) as IEvaluation; // murmur3.bucket('a48', 14) === 100
@@ -124,7 +124,7 @@ test('PARSER / if user is whitelisted and in segment all 100%:off with trafficAl
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   // @ts-ignore
   const evaluation = await evaluator(keyParser('a key'), 31, 0, 31) as IEvaluation;

@@ -8,7 +8,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.CLIENT_READY_FROM_CACHE, READY_MSG + ' from cache'],
   [c.CLIENT_READY, READY_MSG],
   // SDK
-  [c.IMPRESSION_QUEUEING, c.LOG_PREFIX_IMPRESSIONS_TRACKER +'Queueing impression. Feature flag: %s. Key: %s. Evaluation: %s. Label: %s'],
+  [c.IMPRESSION_QUEUEING, c.LOG_PREFIX_IMPRESSIONS_TRACKER +'Queueing impression. %s: %s. Key: %s. Evaluation: %s. Label: %s'],
   [c.NEW_SHARED_CLIENT, 'New shared client instance created.'],
   [c.NEW_FACTORY, 'New Split SDK instance created. %s'],
   [c.EVENTS_TRACKER_SUCCESS, c.LOG_PREFIX_EVENTS_TRACKER + 'Successfully queued %s'],
@@ -21,7 +21,6 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   [c.POLLING_SMART_PAUSING, c.LOG_PREFIX_SYNC_POLLING + 'Turning segments data polling %s.'],
   [c.POLLING_START, c.LOG_PREFIX_SYNC_POLLING + 'Starting polling'],
   [c.POLLING_STOP, c.LOG_PREFIX_SYNC_POLLING + 'Stopping polling'],
-  [c.SYNC_SPLITS_FETCH_RETRY, c.LOG_PREFIX_SYNC_SPLITS + 'Retrying fetch of feature flags (attempt #%s). Reason: %s'],
   [c.SUBMITTERS_PUSH_FULL_QUEUE, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing full %s queue and resetting timer.'],
   [c.SUBMITTERS_PUSH, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Pushing %s.'],
   [c.SUBMITTERS_PUSH_PAGE_HIDDEN, c.LOG_PREFIX_SYNC_SUBMITTERS + 'Flushing %s because page became hidden.'],

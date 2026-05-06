@@ -76,11 +76,11 @@ export const fullSettings: ISettings = {
     hostname: false
   },
   urls: {
-    events: 'events',
-    sdk: 'sdk',
-    auth: 'auth',
-    streaming: 'streaming',
-    telemetry: 'telemetry'
+    sdk: 'https://sdk.split.io/api',
+    events: 'https://events.split.io/api',
+    auth: 'https://auth.split.io/api',
+    streaming: 'https://streaming.split.io',
+    telemetry: 'https://telemetry.split.io/api'
   },
   log: loggerMock,
   userConsent: undefined

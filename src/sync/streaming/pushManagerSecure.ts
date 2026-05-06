@@ -5,7 +5,7 @@ import { objectAssign } from '../../utils/lang/objectAssign';
 import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
-import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
+import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
 import { SSEClient } from './SSEClient';
 import { PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, SECONDS_BEFORE_EXPIRATION, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT } from '../../logger/constants';
@@ -42,7 +42,7 @@ export function pushManagerSecureFactory(
 
   // init workers (server-side only)
   const segmentsUpdateWorker = SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
-  const splitsUpdateWorker = SplitsUpdateWorker(log, storage, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker, pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // flag that indicates if `stop/disconnectPush` was called
   let disconnected: boolean | undefined;
@@ -134,7 +134,7 @@ export function pushManagerSecureFactory(
   }
 
   function stopWorkers() {
-    splitsUpdateWorker.stop();
+    definitionsUpdateWorker.stop();
     segmentsUpdateWorker.stop();
   }
 
@@ -172,9 +172,9 @@ export function pushManagerSecureFactory(
   });
 
   /** Wire update workers */
-  pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
-  pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
-  pushEmitter.on(RB_SEGMENT_UPDATE, splitsUpdateWorker.put);
+  pushEmitter.on(SPLIT_KILL, definitionsUpdateWorker.killDefinition);
+  pushEmitter.on(SPLIT_UPDATE, definitionsUpdateWorker.put);
+  pushEmitter.on(RB_SEGMENT_UPDATE, definitionsUpdateWorker.put);
   pushEmitter.on(SEGMENT_UPDATE, segmentsUpdateWorker.put);
 
   return objectAssign(

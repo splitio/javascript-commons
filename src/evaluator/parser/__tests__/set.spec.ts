@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 //
@@ -31,7 +31,7 @@ test('PARSER / if user.permissions ["read", "write"] equal to set ["read", "writ
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'write']
@@ -66,7 +66,7 @@ test('PARSER / if user.permissions ["write", "read"] equal to set ["read", "writ
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['write', 'read']
@@ -101,7 +101,7 @@ test('PARSER / if user.permissions ["1", 2] equal to set ["1", "2"] then split 1
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['1', 2]
@@ -136,7 +136,7 @@ test('PARSER / if user.permissions ["read", "write", "delete"] equal to set ["re
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'write', 'delete']
@@ -170,7 +170,7 @@ test('PARSER / if user.permissions ["read"] equal to set ["read", "write"] then 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read']
@@ -204,7 +204,7 @@ test('PARSER / if user.permissions ["read", "delete"] equal to set ["read", "wri
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'delete']
@@ -238,7 +238,7 @@ test('PARSER / if user.countries ["argentina", "usa"] equal to set ["usa","argen
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     countries: ['argentina', 'usa']
@@ -272,7 +272,7 @@ test('PARSER / if attribute is not an array we should not match equal to set', a
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation).toBe(undefined); // evaluator should not match
@@ -307,7 +307,7 @@ test('PARSER / if attribute is an EMPTY array we should not match equal to set',
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     countries: []
@@ -340,7 +340,7 @@ test('PARSER / NEGATED if user.permissions ["read", "write"] equal to set ["read
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'write']
@@ -373,7 +373,7 @@ test('PARSER / NEGATED if user.permissions ["read"] equal to set ["read", "write
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read']
@@ -407,7 +407,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match equal to
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation.treatment).toBe('on'); // on
@@ -444,7 +444,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match equal 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     countries: []
@@ -481,7 +481,7 @@ test('PARSER / if user.permissions ["read", "edit", "delete"] contains all of se
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'edit', 'delete']
@@ -516,7 +516,7 @@ test('PARSER / if user.permissions ["edit", "read", "delete"] contains all of se
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['edit', 'read', 'delete']
@@ -551,7 +551,7 @@ test('PARSER / if user.permissions [1, "edit", "delete"] contains all of set ["1
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: [1, 'edit', 'delete']
@@ -586,7 +586,7 @@ test('PARSER / if user.permissions ["read"] contains all of set ["read", "edit"]
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read']
@@ -620,7 +620,7 @@ test('PARSER / if user.permissions ["read", "delete", "manage"] contains all of 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'delete', 'manage']
@@ -654,7 +654,7 @@ test('PARSER / if attribute is not an array we should not match contains all', a
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation).toBe(undefined); // evaluator should not match
@@ -689,7 +689,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains all',
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []
@@ -722,7 +722,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit", "delete"] contains a
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'edit', 'delete']
@@ -755,7 +755,7 @@ test('PARSER / NEGATED if user.permissions ["read"] contains all of set ["read",
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read']
@@ -789,7 +789,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation.treatment).toBe('on'); // on
@@ -826,7 +826,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match contai
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []
@@ -863,7 +863,7 @@ test('PARSER / if user.permissions ["read", "edit"] is part of set ["read", "edi
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'edit']
@@ -898,7 +898,7 @@ test('PARSER / if user.permissions ["edit", "read"] is part of set ["read", "edi
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['edit', 'read']
@@ -933,7 +933,7 @@ test('PARSER / if user.permissions [1, "edit"] is part of set ["1", "edit", "del
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: [1, 'edit']
@@ -968,7 +968,7 @@ test('PARSER / if user.permissions ["admin", "magic"] is part of set ["read", "e
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'magic']
@@ -1002,7 +1002,7 @@ test('PARSER / if attribute is not an array we should not match part of', async 
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation).toBe(undefined); // evaluator should not match
@@ -1037,7 +1037,7 @@ test('PARSER / if attribute is an EMPTY array we should not match part of', asyn
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []
@@ -1070,7 +1070,7 @@ test('PARSER / NEGATED if user.permissions ["read", "edit"] is part of set ["rea
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['read', 'edit']
@@ -1103,7 +1103,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] is part of set ["r
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'magic']
@@ -1137,7 +1137,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match part of,
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation.treatment).toBe('on'); // on
@@ -1174,7 +1174,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match part o
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []
@@ -1211,7 +1211,7 @@ test('PARSER / if user.permissions ["admin", "edit"] contains any of set ["read"
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'edit']
@@ -1246,7 +1246,7 @@ test('PARSER / if user.permissions ["admin", 1] contains any of set ["read", "1"
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 1]
@@ -1281,7 +1281,7 @@ test('PARSER / if user.permissions ["admin", "magic"] contains any of set ["read
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'magic']
@@ -1315,7 +1315,7 @@ test('PARSER / if attribute is not an array we should not match contains any', a
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation).toBe(undefined); // evaluator should not match
@@ -1350,7 +1350,7 @@ test('PARSER / if attribute is an EMPTY array we should not match contains any',
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []
@@ -1383,7 +1383,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "edit"] contains any of set
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'edit']
@@ -1416,7 +1416,7 @@ test('PARSER / NEGATED if user.permissions ["admin", "magic"] contains any of se
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: ['admin', 'magic']
@@ -1450,7 +1450,7 @@ test('PARSER / NEGATED if attribute is not an array we should not match contains
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
 
@@ -1482,7 +1482,7 @@ test('PARSER / NEGATED if attribute is an EMPTY array we should not match contai
       size: 100
     }],
     label: label
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31, {
     permissions: []

@@ -1,4 +1,4 @@
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { isString } from '../../../utils/lang';
 
 export interface IMockSplitEntry {
@@ -7,7 +7,7 @@ export interface IMockSplitEntry {
   config?: string
 }
 
-export function parseCondition(data: IMockSplitEntry): ISplitCondition {
+export function parseCondition(data: IMockSplitEntry): IDefinitionCondition {
   const treatment = data.treatment;
 
   if (data.keys) {

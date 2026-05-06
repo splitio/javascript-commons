@@ -1,7 +1,7 @@
 import { readinessManagerFactory } from '../readinessManager';
 import { EventEmitter } from '../../utils/MinEvents';
 import { IReadinessManager } from '../types';
-import { SDK_READY, SDK_UPDATE, SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_SPLITS_CACHE_LOADED, SDK_READY_TIMED_OUT, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../constants';
+import { SDK_READY, SDK_UPDATE, SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_READY_FROM_CACHE, SDK_DEFINITIONS_CACHE_LOADED, SDK_READY_TIMED_OUT, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../constants';
 import { ISettings } from '../../types';
 import { SdkUpdateMetadata, SdkReadyMetadata } from '../../../types/splitio';
 
@@ -52,7 +52,7 @@ test('READINESS MANAGER / Share splits but segments (without timeout enabled)', 
 
   // Simulate state transitions
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   }, 1000 * Math.random());
   setTimeout(() => {
     readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
@@ -80,11 +80,11 @@ test('READINESS MANAGER / Ready event should be fired once', () => {
     counter++;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(counter).toBe(2); // should be called once
@@ -100,13 +100,13 @@ test('READINESS MANAGER / Ready from cache event should be fired once', (done) =
     counter++;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+    readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
   }, 0);
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: undefined });
 
   setTimeout(() => {
     expect(counter).toBe(1); // should be called only once
@@ -128,12 +128,12 @@ test('READINESS MANAGER / Update event should be fired after the Ready event', (
     isReady && counter++;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(counter).toBe(5); // should count 1 ready plus 4 updates
@@ -153,7 +153,7 @@ test('READINESS MANAGER / Segment updates should not be propagated', (done) => {
     throw new Error('should not be called');
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager2.segments.emit(SDK_SEGMENTS_ARRIVED);
   readinessManager2.segments.emit(SDK_SEGMENTS_ARRIVED);
   readinessManager2.segments.emit(SDK_SEGMENTS_ARRIVED);
@@ -181,7 +181,7 @@ describe('READINESS MANAGER / Timeout event', () => {
     });
 
     setTimeout(() => {
-      readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+      readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
       readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
     }, settingsWithTimeout.startup.readyTimeout + 20);
   });
@@ -235,7 +235,7 @@ test('READINESS MANAGER / Cancel timeout if ready fired', (done) => {
   }, settingsWithTimeout.startup.readyTimeout * 3);
 
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
     readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
   }, settingsWithTimeout.startup.readyTimeout * 0.8);
 });
@@ -252,7 +252,7 @@ test('READINESS MANAGER / Destroy after it was ready but before timedout', () =>
   let lastUpdate = readinessManager.lastUpdate();
   expect(lastUpdate).toBe(0);
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // ready state
 
   expect(readinessManager.lastUpdate()).toBeGreaterThan(lastUpdate);
@@ -291,7 +291,7 @@ test('READINESS MANAGER / Destroy before it was ready and timedout', (done) => {
   }, settingsWithTimeout.startup.readyTimeout * 0.5);
 
   setTimeout(() => {
-    readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+    readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
     readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED); // ready state if the readiness manager wasn't destroyed
 
     expect('Calling destroy should have removed the readyTimeout and the test should end now.');
@@ -304,7 +304,7 @@ test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
   const readinessManager = readinessManagerFactory(EventEmitter, settings);
 
   // SDK_READY
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
@@ -317,7 +317,7 @@ test('READINESS MANAGER / SDK_UPDATE should emit with metadata', () => {
     receivedMetadata = meta;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED, metadata);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED, metadata);
 
   expect(receivedMetadata).toEqual(metadata);
 });
@@ -326,7 +326,7 @@ test('READINESS MANAGER / SDK_UPDATE should handle undefined metadata', () => {
   const readinessManager = readinessManagerFactory(EventEmitter, settings);
 
   // SDK_READY
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   let receivedMetadata: any;
@@ -334,7 +334,7 @@ test('READINESS MANAGER / SDK_UPDATE should handle undefined metadata', () => {
     receivedMetadata = meta;
   });
 
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
 
   expect(receivedMetadata).toBeUndefined();
 });
@@ -343,7 +343,7 @@ test('READINESS MANAGER / SDK_UPDATE should forward metadata from segments', () 
   const readinessManager = readinessManagerFactory(EventEmitter, settings);
 
   // SDK_READY
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   const metadata: SdkUpdateMetadata = {
@@ -371,7 +371,7 @@ test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when ca
   });
 
   // Emit cache loaded event with timestamp
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, {
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, {
     initialCacheLoad: false,
     lastUpdateTimestamp: cacheTimestamp
   });
@@ -390,7 +390,7 @@ test('READINESS MANAGER / SDK_READY_FROM_CACHE should emit with metadata when SD
   });
 
   // Make SDK ready without cache first
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();
@@ -403,7 +403,7 @@ test('READINESS MANAGER / SDK_READY should emit with metadata when ready from ca
 
   const cacheTimestamp = Date.now() - 1000 * 60 * 60; // 1 hour ago
   // First emit cache loaded with timestamp
-  readinessManager.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: cacheTimestamp });
+  readinessManager.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false, lastUpdateTimestamp: cacheTimestamp });
 
   let receivedMetadata: SdkReadyMetadata | undefined;
   readinessManager.gate.on(SDK_READY, (meta: SdkReadyMetadata) => {
@@ -411,7 +411,7 @@ test('READINESS MANAGER / SDK_READY should emit with metadata when ready from ca
   });
 
   // Make SDK ready
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();
@@ -428,7 +428,7 @@ test('READINESS MANAGER / SDK_READY should emit with metadata when ready without
   });
 
   // Make SDK ready without cache
-  readinessManager.splits.emit(SDK_SPLITS_ARRIVED);
+  readinessManager.definitions.emit(SDK_DEFINITIONS_ARRIVED);
   readinessManager.segments.emit(SDK_SEGMENTS_ARRIVED);
 
   expect(receivedMetadata).toBeDefined();

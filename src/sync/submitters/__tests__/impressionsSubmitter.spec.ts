@@ -1,4 +1,4 @@
-import { impressionsSubmitterFactory } from '../impressionsSubmitter';
+import { fromImpressionsCollector, impressionsSubmitterFactory } from '../impressionsSubmitter';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { ImpressionsCacheInMemory } from '../../../storages/inMemory/ImpressionsCacheInMemory';
 
@@ -93,6 +93,23 @@ describe('Impressions submitter', () => {
       done();
     });
 
+  });
+
+});
+
+describe('fromImpressionsCollector', () => {
+
+  test('includes entityType in payload when provided', () => {
+    const impressions = [imp1, imp2];
+    const result = fromImpressionsCollector(false, 'config', impressions);
+
+    expect(result).toEqual([{
+      f: 'someFeature',
+      i: [
+        { k: 'k1', t: 'someTreatment', m: 0, c: 123, et: 'config' },
+        { k: 'k2', t: 'someTreatment', m: 0, c: 123, et: 'config' },
+      ]
+    }]);
   });
 
 });

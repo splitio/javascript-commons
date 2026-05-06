@@ -21,19 +21,19 @@ export class KeyBuilder {
     return `${this.prefix}.trafficType.${trafficType}`;
   }
 
-  buildFlagSetKey(flagSet: string) {
-    return `${this.prefix}.flagSet.${flagSet}`;
+  buildSetKey(set: string) {
+    return `${this.prefix}.flagSet.${set}`;
   }
 
-  buildSplitKey(splitName: string) {
-    return `${this.prefix}.split.${splitName}`;
+  buildDefinitionKey(definitionName: string) {
+    return `${this.prefix}.split.${definitionName}`;
   }
 
-  buildSplitsTillKey() {
+  buildDefinitionsTillKey() {
     return `${this.prefix}.splits.till`;
   }
 
-  buildSplitKeyPrefix() {
+  buildDefinitionKeyPrefix() {
     return `${this.prefix}.split.`;
   }
 
