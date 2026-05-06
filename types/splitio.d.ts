@@ -495,7 +495,7 @@ declare namespace SplitIO {
   }
 
   /**
-   * Metadata for the update event emitted when the SDK cache is updated with new data for flags or segments.
+   * Metadata for the update event emitted when the SDK cache is updated with new data for flags, configs, or segments.
    */
   type SdkUpdateMetadata = {
     /**
@@ -503,7 +503,7 @@ declare namespace SplitIO {
      */
     type: SdkUpdateMetadataType;
     /**
-     * The names of the flags or segments that were updated.
+     * The names of the flags or configs that were updated. Empty array if the update is of type 'SEGMENTS_UPDATE'.
      */
     names: string[];
   }
