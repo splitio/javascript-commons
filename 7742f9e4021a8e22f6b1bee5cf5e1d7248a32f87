@@ -1,0 +1,61 @@
+types/splitio.d.ts
+  human 498,506
+  9a25ca8d-0f0c-4740-a9b3-2d109e92480e 2319,2323,2325,2329,2331,2333,2335
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "498,506",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 7,
+          "added_lines": 0,
+          "deleted_lines": 0,
+          "hash": "9a25ca8d-0f0c-4740-a9b3-2d109e92480e",
+          "lines": "2319,2323,2325,2329,2331,2333,2335",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    }
+  ],
+  "base_commit_sha": "ca2e4f5faf83f4a48ee9962a4ac4c3e9f5772b77",
+  "branch": "refactor-settings",
+  "commit_sha": "7742f9e4021a8e22f6b1bee5cf5e1d7248a32f87",
+  "commit_time": "2026-05-06T18:45:33-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.2",
+  "prompts": {
+    "9a25ca8d-0f0c-4740-a9b3-2d109e92480e": {
+      "accepted_lines": 7,
+      "agent_id": {
+        "id": "9a25ca8d-0f0c-4740-a9b3-2d109e92480e",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 7,
+      "total_deletions": 8
+    },
+    "human": {
+      "accepted_lines": 2,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 2,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
