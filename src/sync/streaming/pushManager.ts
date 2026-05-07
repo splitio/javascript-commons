@@ -11,7 +11,7 @@ import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { checkIfServerSide, getMatching } from '../../utils/key';
-import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NON_RETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseCompressedData } from './parseUtils';
@@ -67,10 +67,10 @@ export function pushManagerFactory(
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
 
-  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NONRETRYABLE_ERROR error.
+  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NON_RETRYABLE_ERROR error.
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
-  // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
+  // flag that indicates a PUSH_NON_RETRYABLE_ERROR, condition with which starting pushManager again is ignored.
   // true if STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE or Auth errors.
   let disabled: boolean | undefined; // `disabled` implies `disconnected === true`
 
@@ -117,11 +117,11 @@ export function pushManagerFactory(
       function (authData) {
         if (disconnected) return;
 
-        // 'pushEnabled: false' is handled as a PUSH_NONRETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
+        // 'pushEnabled: false' is handled as a PUSH_NON_RETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
         // close the sseClient in case the org has been bloqued while the instance was connected to streaming
         if (!authData.pushEnabled) {
           log.info(STREAMING_DISABLED);
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
           return;
         }
 
@@ -140,7 +140,7 @@ export function pushManagerFactory(
         // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
           telemetryTracker.streamingEvent(AUTH_REJECTION);
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
           return;
         }
 
@@ -183,7 +183,7 @@ export function pushManagerFactory(
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
 
-  pushEmitter.on(PUSH_NONRETRYABLE_ERROR, function handleNonRetryableError() {
+  pushEmitter.on(PUSH_NON_RETRYABLE_ERROR, function handleNonRetryableError() {
     disabled = true;
     // Note: `stopWorkers` is been called twice, but it is not harmful
     disconnectPush();

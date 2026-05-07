@@ -6,7 +6,7 @@ export const SECONDS_BEFORE_EXPIRATION = 600;
  * emitted on SSE and Authenticate non-recoverable errors, STREAMING_DISABLED control notification and authentication with pushEnabled false
  * triggers `handleNonRetryableError` call
  */
-export const PUSH_NONRETRYABLE_ERROR = 'PUSH_NONRETRYABLE_ERROR';
+export const PUSH_NON_RETRYABLE_ERROR = 'PUSH_NON_RETRYABLE_ERROR';
 /**
  * emitted on SSE and Authenticate recoverable errors
  * triggers `handleRetryableError` call
@@ -19,7 +19,7 @@ export const PUSH_RETRYABLE_ERROR = 'PUSH_RETRYABLE_ERROR';
 export const PUSH_SUBSYSTEM_UP = 'PUSH_SUBSYSTEM_UP';
 
 /**
- * emitted on STREAMING_PAUSED control notification, OCCUPANCY equal to 0, PUSH_NONRETRYABLE_ERROR and PUSH_RETRYABLE_ERROR events.
+ * emitted on STREAMING_PAUSED control notification, OCCUPANCY equal to 0, PUSH_NON_RETRYABLE_ERROR and PUSH_RETRYABLE_ERROR events.
  * triggers `startPolling` and `stopWorkers` calls
  */
 export const PUSH_SUBSYSTEM_DOWN = 'PUSH_SUBSYSTEM_DOWN';
