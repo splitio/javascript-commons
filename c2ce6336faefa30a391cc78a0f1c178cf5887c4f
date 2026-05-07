@@ -1,0 +1,130 @@
+src/services/authProvider.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 5,24,62
+  human 6,27,35,45,50,61
+src/services/secureSplitHttpClient.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 18
+  human 29
+src/services/__tests__/authProvider.spec.ts
+  human 3,41,55,64,75,89,107,116,131,139,155
+types/splitio.d.ts
+  human 2352-2357
+src/logger/constants.ts
+  human 125
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 4,
+          "deleted_lines": 23,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "5,24,62",
+          "overridden_lines": 3
+        },
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 18,
+          "hash": "human",
+          "lines": "6,27,35,45,50,61",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/authProvider.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 6,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "18",
+          "overridden_lines": 1
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "29",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/secureSplitHttpClient.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 11,
+          "added_lines": 11,
+          "deleted_lines": 10,
+          "hash": "human",
+          "lines": "3,41,55,64,75,89,107,116,131,139,155",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/authProvider.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2352-2357",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "types/splitio.d.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "125",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/logger/constants.ts"
+    }
+  ],
+  "base_commit_sha": "b46bda9eb1f44386e8eb7041ed8e0b3786e8ebcf",
+  "branch": "add-jwt-auth",
+  "commit_sha": "c2ce6336faefa30a391cc78a0f1c178cf5887c4f",
+  "commit_time": "2026-05-07T17:07:13-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.2",
+  "prompts": {
+    "9c744729-55a6-4e5d-b763-ae6691165691": {
+      "accepted_lines": 4,
+      "agent_id": {
+        "id": "9c744729-55a6-4e5d-b763-ae6691165691",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 4,
+      "total_additions": 5,
+      "total_deletions": 29
+    },
+    "human": {
+      "accepted_lines": 25,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 25,
+      "total_deletions": 28
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
