@@ -495,7 +495,7 @@ declare namespace SplitIO {
   }
 
   /**
-   * Metadata for the update event emitted when the SDK cache is updated with new data for flags or segments.
+   * Metadata for the update event emitted when the SDK cache is updated with new data for flags, configs, or segments.
    */
   type SdkUpdateMetadata = {
     /**
@@ -503,7 +503,7 @@ declare namespace SplitIO {
      */
     type: SdkUpdateMetadataType;
     /**
-     * The names of the flags or segments that were updated.
+     * The names of the flags or configs that were updated. Empty array if the update is of type 'SEGMENTS_UPDATE'.
      */
     names: string[];
   }
@@ -2316,11 +2316,23 @@ declare namespace SplitIO {
      */
     authorizationKey: string;
     /**
-     * Configs definitions refresh rate for polling, in seconds.
+     * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
      *
      * @defaultValue `60`
      */
-    configsRefreshRate?: number;
+    pollingRate?: number;
+    /**
+     * Push rate for events and impressions, in seconds. Minimum value: 60.
+     *
+     * @defaultValue `60`
+     */
+    pushRate?: number;
+    /**
+     * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
+     *
+     * @defaultValue `10000`
+     */
+    queueSize?: number;
     /**
      * Logging level.
      *

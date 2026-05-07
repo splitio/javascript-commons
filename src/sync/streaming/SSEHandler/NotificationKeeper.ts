@@ -1,7 +1,7 @@
 import { ITelemetryTracker } from '../../../trackers/types';
 import { CONNECTION_ESTABLISHED, DISABLED, ENABLED, OCCUPANCY_PRI, OCCUPANCY_SEC, PAUSED, STREAMING_STATUS } from '../../../utils/constants';
 import { StreamingEventType } from '../../submitters/types';
-import { ControlType, PUSH_SUBSYSTEM_UP, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN } from '../constants';
+import { ControlType, PUSH_SUBSYSTEM_UP, PUSH_NON_RETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN } from '../constants';
 import { IPushEventEmitter } from '../types';
 
 const CONTROL_CHANNEL_REGEXS = [/control_pri$/, /control_sec$/];
@@ -84,7 +84,7 @@ export function notificationKeeperFactory(pushEmitter: IPushEventEmitter, teleme
             c.cTime = timestamp;
             if (controlType === ControlType.STREAMING_DISABLED) {
               telemetryTracker.streamingEvent(STREAMING_STATUS, DISABLED);
-              pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+              pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
             } else if (hasPublishers) {
               if (controlType === ControlType.STREAMING_PAUSED && hasResumed) {
                 telemetryTracker.streamingEvent(STREAMING_STATUS, PAUSED);
