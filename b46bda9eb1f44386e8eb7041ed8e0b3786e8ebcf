@@ -1,0 +1,340 @@
+src/services/__tests__/secureSplitHttpClient.spec.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 1-85
+src/sdkClient/sdkLifecycle.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 10
+  human 71
+src/utils/__tests__/Backoff.spec.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 4,6,8-9,11-18,20-31,33-48,50-63,65-67,69-70,72-78
+  human 5,7,10,49
+src/services/__tests__/authProvider.spec.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 1-145,147,149-169
+  human 146,148
+src/services/secureSplitHttpClient.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 2-14,16-37,40-42
+  human 1,15,38-39
+src/services/splitApi.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 35-45,72,157-158
+  human 4,26-27,58,159-160
+src/utils/Backoff.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 43-44,46-60
+  human 45,61-63
+src/services/authProvider.ts
+  9c744729-55a6-4e5d-b763-ae6691165691 1-42,45-86
+  human 43-44
+src/sync/streaming/SSEClient/types.ts
+  human 1,10
+src/services/types.ts
+  human 36-37,75-76
+src/utils/jwt/types.ts
+  human 3
+src/sync/streaming/pushManager.ts
+  human 19,84
+src/sync/streaming/AuthClient/index.ts
+  human 2,19,29-30
+src/sync/streaming/__tests__/dataMocks.ts
+  human 40
+src/sync/streaming/AuthClient/types.ts
+  human 3-4,9,12,14
+src/sync/streaming/SSEClient/index.ts
+  human 8,69
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 85,
+          "added_lines": 85,
+          "deleted_lines": 8,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "1-85",
+          "overridden_lines": 1
+        }
+      ],
+      "file": "src/services/__tests__/secureSplitHttpClient.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "10",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "71",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkClient/sdkLifecycle.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 66,
+          "added_lines": 71,
+          "deleted_lines": 7,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "4,6,8-9,11-18,20-31,33-48,50-63,65-67,69-70,72-78",
+          "overridden_lines": 1
+        },
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,7,10,49",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/__tests__/Backoff.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 167,
+          "added_lines": 167,
+          "deleted_lines": 16,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "1-145,147,149-169",
+          "overridden_lines": 3
+        },
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "146,148",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/__tests__/authProvider.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 38,
+          "added_lines": 38,
+          "deleted_lines": 3,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "2-14,16-37,40-42",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,15,38-39",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/secureSplitHttpClient.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 1,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "35-45,72,157-158",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,26-27,58,159-160",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitApi.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 17,
+          "added_lines": 17,
+          "deleted_lines": 1,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "43-44,46-60",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "45,61-63",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/Backoff.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 84,
+          "added_lines": 84,
+          "deleted_lines": 12,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "1-42,45-86",
+          "overridden_lines": 6
+        },
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "43-44",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/authProvider.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEClient/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "36-37,75-76",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/utils/jwt/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "19,84",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,19,29-30",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/AuthClient/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 1,
+          "added_lines": 1,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "40",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/__tests__/dataMocks.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-4,9,12,14",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/AuthClient/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEClient/index.ts"
+    }
+  ],
+  "base_commit_sha": "7742f9e4021a8e22f6b1bee5cf5e1d7248a32f87",
+  "branch": "add-jwt-auth",
+  "commit_sha": "b46bda9eb1f44386e8eb7041ed8e0b3786e8ebcf",
+  "commit_time": "2026-05-07T00:08:33-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.2",
+  "prompts": {
+    "9c744729-55a6-4e5d-b763-ae6691165691": {
+      "accepted_lines": 472,
+      "agent_id": {
+        "id": "9c744729-55a6-4e5d-b763-ae6691165691",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 11,
+      "total_additions": 476,
+      "total_deletions": 48
+    },
+    "human": {
+      "accepted_lines": 44,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 44,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
