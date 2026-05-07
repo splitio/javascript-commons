@@ -1,0 +1,309 @@
+src/sync/submitters/uniqueKeysSubmitter.ts
+  human 3,14-17,20-41
+src/sdkFactory/index.ts
+  human 21,62,64
+src/sync/streaming/AuthClient/index.ts
+  human 6-11,18-27
+src/sync/submitters/eventsSubmitter.ts
+  human 4,12-13,15,18-22
+src/listeners/browser.ts
+  human 6,28,31,35
+src/sync/submitters/telemetrySubmitter.ts
+  human 4,122,125-134,137,153
+src/sdkFactory/types.ts
+  human 5,7,58,67,96
+src/sync/streaming/pushManager.ts
+  human 33,48
+src/sync/polling/pollingManagerSS.ts
+  human 16,20
+src/sync/polling/syncTasks/mySegmentsSyncTask.ts
+  human 8-9,15,19-20,26
+src/sync/submitters/impressionsSubmitter.ts
+  human 7-8,45-46,48-49,52-59
+src/sync/polling/fetchers/mySegmentsFetcher.ts
+  human 1,4-6,12-23
+src/sync/polling/syncTasks/segmentsSyncTask.ts
+  human 6,9,15,19,25
+src/sync/polling/fetchers/splitChangesFetcher.ts
+  human 3-4,7,10,59,61,65-73,89,103
+src/sync/polling/fetchers/segmentChangesFetcher.ts
+  human 3-8,12,29-34
+src/sync/submitters/impressionCountsSubmitter.ts
+  human 2,38-41,44-48
+src/services/splitHttpClient.ts
+  human 10-11,26,83
+src/sync/polling/pollingManagerCS.ts
+  human 24,62
+src/presets/serverSide.ts
+  human 8,14
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 27,
+          "added_lines": 27,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,14-17,20-41",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/uniqueKeysSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "21,62,64",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6-11,18-27",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/AuthClient/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,12-13,15,18-22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/eventsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,28,31,35",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/listeners/browser.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,122,125-134,137,153",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/telemetrySubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "5,7,58,67,96",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sdkFactory/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "33,48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "16,20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/pollingManagerSS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 6,
+          "added_lines": 6,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8-9,15,19-20,26",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/syncTasks/mySegmentsSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "7-8,45-46,48-49,52-59",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 16,
+          "added_lines": 16,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,4-6,12-23",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/mySegmentsFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 5,
+          "added_lines": 5,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "6,9,15,19,25",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/syncTasks/segmentsSyncTask.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 17,
+          "added_lines": 17,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-4,7,10,59,61,65-73,89,103",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/splitChangesFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 13,
+          "added_lines": 13,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3-8,12,29-34",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/fetchers/segmentChangesFetcher.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 10,
+          "added_lines": 10,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,38-41,44-48",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/submitters/impressionCountsSubmitter.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "10-11,26,83",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/splitHttpClient.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "24,62",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/polling/pollingManagerCS.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,14",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/presets/serverSide.ts"
+    }
+  ],
+  "base_commit_sha": "7742f9e4021a8e22f6b1bee5cf5e1d7248a32f87",
+  "branch": "refactor-settings",
+  "commit_sha": "22cacb7ef826e0f11d2c960622178dcc8b3d13de",
+  "commit_time": "2026-05-06T21:00:28-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.2",
+  "prompts": {
+    "human": {
+      "accepted_lines": 171,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 171,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
