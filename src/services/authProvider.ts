@@ -2,11 +2,10 @@ import { IFetchAuth, NetworkError } from './types';
 import { IJwtCredential } from '../sync/streaming/AuthClient/types';
 import { authenticateFactory } from '../sync/streaming/AuthClient';
 import { Backoff } from '../utils/Backoff';
+import { ILogger } from '../logger/types';
+import { LOG_PREFIX_SYNC_AUTH } from '../logger/constants';
 
 const SKEW_SECONDS = 30;
-const MAX_RETRIES = 10;
-const BACKOFF_BASE = 10000; // 10 seconds
-const BACKOFF_MAX = 30000; // 30 seconds
 
 function isExpired(credential: IJwtCredential): boolean {
   return Date.now() / 1000 + SKEW_SECONDS >= credential.expiresAt;
@@ -22,21 +21,20 @@ export interface IAuthProvider {
  * Factory of AuthProvider, which provides JWT credentials for authenticated HTTP requests.
  * Credentials are fetched lazily on demand, cached in memory, and retried with backoff on failure.
  */
-export function authProviderFactory(fetchAuth: IFetchAuth): IAuthProvider {
+export function authProviderFactory(fetchAuth: IFetchAuth, log: ILogger): IAuthProvider {
 
   const authenticate = authenticateFactory(fetchAuth);
-  const backoff = new Backoff(fetchCredential, BACKOFF_BASE, BACKOFF_MAX);
+  const backoff = new Backoff(fetchCredential);
 
   let cachedCredential: IJwtCredential | undefined;
   let inFlightPromise: Promise<IJwtCredential> | undefined;
-  let retryCount = 0;
   let stopped = false;
 
   function fetchCredential(): Promise<IJwtCredential> {
     return authenticate().then(credential => {
+      log.info(LOG_PREFIX_SYNC_AUTH + 'credential fetched successfully');
       cachedCredential = credential;
       inFlightPromise = undefined;
-      retryCount = 0;
       backoff.reset();
       return credential;
     }).catch((error: NetworkError) => {
@@ -44,20 +42,12 @@ export function authProviderFactory(fetchAuth: IFetchAuth): IAuthProvider {
       if (stopped) return cachedCredential!;
 
       if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
+        log.error(LOG_PREFIX_SYNC_AUTH + 'non-retryable error fetching credential (status ' + error.statusCode + '): ' + error.message);
         inFlightPromise = undefined;
-        retryCount = 0;
         throw error;
       }
 
-      if (retryCount >= MAX_RETRIES) {
-        inFlightPromise = undefined;
-        retryCount = 0;
-        backoff.reset();
-        // @TODO: 2-hour cooldown before allowing next attempt
-        throw error;
-      }
-
-      retryCount++;
+      log.warn(LOG_PREFIX_SYNC_AUTH + 'credential fetch failed (attempt ' + (backoff.attempts + 1) + '). Error: ' + error.message);
       return backoff.scheduleCallAsync();
     });
   }
@@ -67,6 +57,8 @@ export function authProviderFactory(fetchAuth: IFetchAuth): IAuthProvider {
       if (cachedCredential && !isExpired(cachedCredential)) {
         return Promise.resolve(cachedCredential);
       }
+
+      if (cachedCredential) log.debug(LOG_PREFIX_SYNC_AUTH + 'cached credential expired');
 
       return inFlightPromise || (inFlightPromise = fetchCredential());
     },
@@ -79,7 +71,6 @@ export function authProviderFactory(fetchAuth: IFetchAuth): IAuthProvider {
       stopped = true;
       cachedCredential = undefined;
       inFlightPromise = undefined;
-      retryCount = 0;
       backoff.reset();
     }
   };

@@ -15,7 +15,7 @@ import { authProviderFactory } from './authProvider';
 export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, fetchAuth: IFetchAuth): ISecureSplitHttpClient {
 
   const splitHttpClient = splitHttpClientFactory(settings, platform);
-  const authProvider = authProviderFactory(fetchAuth);
+  const authProvider = authProviderFactory(fetchAuth, settings.log);
 
   function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker: ((error?: NetworkError) => void) | undefined, logErrorsAsInfo: boolean | undefined, token: string): Promise<IResponse> {
     return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo);
@@ -26,6 +26,7 @@ export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick
       return makeRequest(url, options, latencyTracker, logErrorsAsInfo, credential.token)
         .catch((error: NetworkError) => {
           if (error.statusCode === 401) {
+            // retry once for 401, in case the token has just expired
             authProvider.invalidate();
             return authProvider.credential().then(newCredential => {
               return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newCredential.token);

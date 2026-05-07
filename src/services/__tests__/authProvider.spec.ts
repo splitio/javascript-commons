@@ -1,5 +1,6 @@
 import { authProviderFactory } from '../authProvider';
 import { Backoff } from '../../utils/Backoff';
+import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
 // Speed up backoff for tests
 Backoff.__TEST__BASE_MILLIS = 10;
@@ -37,7 +38,7 @@ describe('authProviderFactory', () => {
 
   test('credential() fetches and caches token', async () => {
     const fetchAuth = mockFetchAuth();
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     const cred = await provider.credential();
     expect(cred.token).toContain('.');
@@ -51,7 +52,7 @@ describe('authProviderFactory', () => {
 
   test('credential() deduplicates concurrent calls', async () => {
     const fetchAuth = mockFetchAuth();
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     const [cred1, cred2] = await Promise.all([provider.credential(), provider.credential()]);
     expect(cred1).toBe(cred2);
@@ -60,7 +61,7 @@ describe('authProviderFactory', () => {
 
   test('invalidate() clears cache, next call fetches fresh', async () => {
     const fetchAuth = mockFetchAuth();
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     await provider.credential();
     provider.invalidate();
@@ -71,7 +72,7 @@ describe('authProviderFactory', () => {
 
   test('credential() refetches when token is expired', async () => {
     const fetchAuth = mockFetchAuth();
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     // Manually inject expired credential via invalidate + fetch cycle
     await provider.credential();
@@ -85,7 +86,7 @@ describe('authProviderFactory', () => {
 
   test('4xx errors reject immediately without retry', async () => {
     const fetchAuth = jest.fn(() => Promise.reject(networkError(401)));
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     await expect(provider.credential()).rejects.toThrow('fetch failed');
     expect(fetchAuth).toHaveBeenCalledTimes(1);
@@ -103,7 +104,7 @@ describe('authProviderFactory', () => {
       });
     });
 
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
     const cred = await provider.credential();
 
     expect(cred.token).toContain('.');
@@ -112,7 +113,7 @@ describe('authProviderFactory', () => {
 
   test('stop() does not throw in any state', async () => {
     const fetchAuth = mockFetchAuth();
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     // Before any credential() call
     expect(() => provider.stop()).not.toThrow();
@@ -127,7 +128,7 @@ describe('authProviderFactory', () => {
 
     // While fetch is in-flight
     const fetchAuth2 = jest.fn(() => new Promise(() => {})); // never resolves
-    const provider2 = authProviderFactory(fetchAuth2 as any);
+    const provider2 = authProviderFactory(fetchAuth2 as any, loggerMock);
     provider2.credential();
     expect(() => provider2.stop()).not.toThrow();
   });
@@ -135,7 +136,7 @@ describe('authProviderFactory', () => {
   test('stop() prevents in-flight request from rejecting or rescheduling', async () => {
     let rejectFetch: (err: any) => void;
     const fetchAuth = jest.fn(() => new Promise((_, reject) => { rejectFetch = reject; }));
-    const provider = authProviderFactory(fetchAuth as any);
+    const provider = authProviderFactory(fetchAuth as any, loggerMock);
 
     const promise = provider.credential();
     provider.stop();
@@ -151,7 +152,7 @@ describe('authProviderFactory', () => {
 
   test('stop() cancels pending retries', async () => {
     const fetchAuth = jest.fn(() => Promise.reject(networkError()));
-    const provider = authProviderFactory(fetchAuth);
+    const provider = authProviderFactory(fetchAuth, loggerMock);
 
     const promise = provider.credential();
     // Let first fetch fail and backoff schedule
