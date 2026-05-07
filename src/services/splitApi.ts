@@ -1,7 +1,7 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { ISplitApi } from './types';
+import { IFetchAuth, ISecureSplitHttpClient, ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
@@ -23,13 +23,25 @@ function userKeyToQueryParam(userKey: string) {
 export function splitApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
-  telemetryTracker: ITelemetryTracker
+  telemetryTracker: ITelemetryTracker,
+  secureSplitHttpClientFactory?: (settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, fetchAuth: IFetchAuth) => ISecureSplitHttpClient,
 ): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const splitHttpClient = splitHttpClientFactory(settings, platform);
+
+  function fetchAuth(userMatchingKeys?: string[]) {
+    let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
+    if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
+      const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
+      if (queryParams) url += '&' + queryParams;
+    }
+    return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
+  }
+
+  const secureSplitHttpClient = secureSplitHttpClientFactory ? secureSplitHttpClientFactory(settings, platform, fetchAuth) : undefined;
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
@@ -43,14 +55,7 @@ export function splitApiFactory(
       return splitHttpClient(url).then(() => true).catch(() => false);
     },
 
-    fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
-      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
-        const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-        if (queryParams) url += '&' + queryParams;
-      }
-      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
-    },
+    fetchAuth,
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
       const url = `${urls.sdk}/splitChanges?s=${settings.sync.flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
@@ -64,7 +69,7 @@ export function splitApiFactory(
     // @TODO support filterQueryString and handle ERROR_TOO_MANY_SETS error
     fetchConfigs(since: number, noCache?: boolean, till?: number) {
       const url = `${urls.sdk}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+      return (secureSplitHttpClient || splitHttpClient)(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
     fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
@@ -149,6 +154,10 @@ export function splitApiFactory(
     postMetricsUsage(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/metrics/usage`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
+    },
+
+    stop() {
+      if (secureSplitHttpClient) secureSplitHttpClient.stop();
     }
   };
 }

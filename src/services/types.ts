@@ -33,6 +33,8 @@ export type IHealthCheckAPI = () => Promise<boolean>
 
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean) => Promise<IResponse>
 
+export type ISecureSplitHttpClient = ISplitHttpClient & { stop(): void }
+
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 
 export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
@@ -70,6 +72,8 @@ export interface ISplitApi {
 	postTestImpressionsCount: IPostTestImpressionsCount
 	postMetricsConfig: IPostMetricsConfig
 	postMetricsUsage: IPostMetricsUsage
+	// lifecycle
+	stop(): void
 }
 
 // Minimal version of EventSource API used by the SDK

@@ -1,5 +1,5 @@
 import { IFetchAuth } from '../../../services/types';
-import { IAuthenticate, IAuthToken } from './types';
+import { IAuthenticate, IJwtCredential } from './types';
 import { objectAssign } from '../../../utils/lang/objectAssign';
 import { encodeToBase64 } from '../../../utils/base64';
 import { decodeJWTtoken } from '../../../utils/jwt';
@@ -16,7 +16,7 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
    * Run authentication requests to Auth Server, and returns a promise that resolves with the decoded JTW token.
    * @param userKeys - set of user Keys to track membership updates. It is undefined for server-side API.
    */
-  return function authenticate(userKeys?: string[]): Promise<IAuthToken> {
+  return function authenticate(userKeys?: string[]): Promise<IJwtCredential> {
     return fetchAuth(userKeys)
       .then(resp => resp.json())
       .then(json => {
@@ -26,7 +26,8 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
           const channels = JSON.parse(decodedToken['x-ably-capability']);
           return objectAssign({
             decodedToken,
-            channels
+            channels,
+            expiresAt: decodedToken.exp
           }, json);
         }
         return json;
