@@ -1,0 +1,114 @@
+src/sync/streaming/constants.ts
+  human 9,22
+src/sync/streaming/SSEHandler/NotificationKeeper.ts
+  human 4,87
+src/sync/streaming/SSEHandler/index.ts
+  human 3,59
+src/sync/streaming/types.ts
+  human 10,25
+src/sync/streaming/SSEHandler/__tests__/index.spec.ts
+  human 3,126,135,216
+src/sync/streaming/pushManager.ts
+  human 14,70,73,120,124,143,186
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "9,22",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/constants.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "4,87",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEHandler/NotificationKeeper.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,59",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEHandler/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "10,25",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 4,
+          "added_lines": 4,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,126,135,216",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEHandler/__tests__/index.spec.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 7,
+          "added_lines": 7,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "14,70,73,120,124,143,186",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    }
+  ],
+  "base_commit_sha": "7742f9e4021a8e22f6b1bee5cf5e1d7248a32f87",
+  "branch": "refactor-settings",
+  "commit_sha": "a145ff1e4bde146e392a8bb736dad6a77ab5a43a",
+  "commit_time": "2026-05-07T17:14:38-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.2",
+  "prompts": {
+    "human": {
+      "accepted_lines": 19,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "messages": [],
+      "overriden_lines": 0,
+      "total_additions": 19,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
