@@ -1,9 +1,11 @@
-import { IFetchAuth, NetworkError } from './types';
+import { ISplitHttpClient, NetworkError } from './types';
 import { IJwtCredential } from '../sync/streaming/AuthClient/types';
 import { authenticateFactory } from '../sync/streaming/AuthClient';
 import { Backoff } from '../utils/Backoff';
-import { ILogger } from '../logger/types';
 import { LOG_PREFIX_SYNC_AUTH } from '../logger/constants';
+import { ISettings } from '../types';
+import { TOKEN } from '../utils/constants';
+import { ITelemetryTracker } from '../trackers/types';
 
 const SKEW_SECONDS = 30;
 
@@ -12,16 +14,23 @@ function isExpired(credential: IJwtCredential): boolean {
 }
 
 export interface IAuthProvider {
-	credential(): Promise<IJwtCredential>;
-	invalidate(): void;
-	stop(): void;
+  credential(): Promise<IJwtCredential>;
+  invalidate(): void;
+  stop(): void;
 }
 
 /**
  * Factory of AuthProvider, which provides JWT credentials for authenticated HTTP requests.
  * Credentials are fetched lazily on demand, cached in memory, and retried with backoff on failure.
  */
-export function authProviderFactory(fetchAuth: IFetchAuth, log: ILogger): IAuthProvider {
+export function authProviderFactory(settings: ISettings, splitHttpClient: ISplitHttpClient, telemetryTracker: ITelemetryTracker): IAuthProvider {
+
+  const { urls, log } = settings;
+
+  function fetchAuth() {
+    let url = `${urls.auth}/v3/auth?capabilities=config`;
+    return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
+  }
 
   const authenticate = authenticateFactory(fetchAuth);
   const backoff = new Backoff(fetchCredential);

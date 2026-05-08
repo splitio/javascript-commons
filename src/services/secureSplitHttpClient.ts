@@ -1,8 +1,9 @@
-import { IRequestOptions, IResponse, ISecureSplitHttpClient, IFetchAuth, NetworkError } from './types';
+import { IRequestOptions, IResponse, ISecureSplitHttpClient, NetworkError } from './types';
 import { ISettings } from '../types';
 import { IPlatform } from '../sdkFactory/types';
 import { splitHttpClientFactory } from './splitHttpClient';
 import { authProviderFactory } from './authProvider';
+import { ITelemetryTracker } from '../trackers/types';
 
 /**
  * Factory of Secure HTTP client, which authenticates requests using a JWT token.
@@ -12,10 +13,10 @@ import { authProviderFactory } from './authProvider';
  * @param platform - object containing environment-specific dependencies
  * @param fetchAuth - function to fetch auth credentials from the /v2/auth endpoint
  */
-export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, fetchAuth: IFetchAuth): ISecureSplitHttpClient {
+export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, telemetryTracker: ITelemetryTracker): ISecureSplitHttpClient {
 
   const splitHttpClient = splitHttpClientFactory(settings, platform);
-  const authProvider = authProviderFactory(fetchAuth, settings.log);
+  const authProvider = authProviderFactory(settings, splitHttpClient, telemetryTracker);
 
   function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker: ((error?: NetworkError) => void) | undefined, logErrorsAsInfo: boolean | undefined, token: string): Promise<IResponse> {
     return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo);

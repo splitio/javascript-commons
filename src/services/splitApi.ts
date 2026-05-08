@@ -1,7 +1,7 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { IFetchAuth, ISecureSplitHttpClient, ISplitApi } from './types';
+import { ISecureSplitHttpClient, ISplitApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
@@ -24,24 +24,14 @@ export function splitApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
   telemetryTracker: ITelemetryTracker,
-  secureSplitHttpClientFactory?: (settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, fetchAuth: IFetchAuth) => ISecureSplitHttpClient,
+  secureSplitHttpClientFactory?: (settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, telemetryTracker: ITelemetryTracker) => ISecureSplitHttpClient,
 ): ISplitApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const splitHttpClient = splitHttpClientFactory(settings, platform);
-
-  function fetchAuth(userMatchingKeys?: string[]) {
-    let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
-    if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
-      const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-      if (queryParams) url += '&' + queryParams;
-    }
-    return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
-  }
-
-  const secureSplitHttpClient = secureSplitHttpClientFactory ? secureSplitHttpClientFactory(settings, platform, fetchAuth) : undefined;
+  const secureSplitHttpClient = secureSplitHttpClientFactory ? secureSplitHttpClientFactory(settings, platform, telemetryTracker) : undefined;
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
@@ -55,7 +45,14 @@ export function splitApiFactory(
       return splitHttpClient(url).then(() => true).catch(() => false);
     },
 
-    fetchAuth,
+    fetchAuth(userMatchingKeys?: string[]) {
+      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
+      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
+        const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
+        if (queryParams) url += '&' + queryParams;
+      }
+      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
+    },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
       const url = `${urls.sdk}/splitChanges?s=${settings.sync.flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
