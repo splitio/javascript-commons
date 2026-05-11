@@ -1,0 +1,167 @@
+src/sync/streaming/SSEClient/types.ts
+  human 1,10
+src/sync/streaming/SSEClient/index.ts
+  human 8,69
+src/sync/streaming/AuthClient/types.ts
+  human 3,5,11-21,23
+src/__tests__/testUtils/jwt.ts
+  human 1,7,17-22
+  9c744729-55a6-4e5d-b763-ae6691165691 3-6,8-9,21
+  human 1-2,7,10-20
+src/services/authProvider.ts
+  human 2,12-13,17,38-39,42-43,65
+  human 1,6-8,17-19,26-33
+src/sync/streaming/pushManager.ts
+  human 19,84
+src/sync/streaming/AuthClient/index.ts
+  human 2,19,29
+---
+{
+  "attestations": [
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,10",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEClient/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "8,69",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/SSEClient/index.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 14,
+          "added_lines": 14,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "3,5,11-21,23",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/AuthClient/types.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 8,
+          "added_lines": 8,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "1,7,17-22",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 7,
+          "added_lines": 0,
+          "deleted_lines": 0,
+          "hash": "9c744729-55a6-4e5d-b763-ae6691165691",
+          "lines": "3-6,8-9,21",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 9,
+          "added_lines": 0,
+          "deleted_lines": 5,
+          "hash": "human",
+          "lines": "1-2,7,10-20",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/__tests__/testUtils/jwt.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 9,
+          "added_lines": 9,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,12-13,17,38-39,42-43,65",
+          "overridden_lines": 0
+        },
+        {
+          "accepted_lines": 14,
+          "added_lines": 0,
+          "deleted_lines": 1,
+          "hash": "human",
+          "lines": "1,6-8,17-19,26-33",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/services/authProvider.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 2,
+          "added_lines": 2,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "19,84",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/pushManager.ts"
+    },
+    {
+      "entries": [
+        {
+          "accepted_lines": 3,
+          "added_lines": 3,
+          "deleted_lines": 0,
+          "hash": "human",
+          "lines": "2,19,29",
+          "overridden_lines": 0
+        }
+      ],
+      "file": "src/sync/streaming/AuthClient/index.ts"
+    }
+  ],
+  "base_commit_sha": "115378a074d54d6a73d9acaaa030ae2a64d0e81c",
+  "branch": "add-jwt-auth",
+  "commit_sha": "7dfb8e0dc692c7e2d63a063f540276524af479d2",
+  "commit_time": "2026-05-11T17:17:43-03:00",
+  "commit_type": "direct_commit",
+  "git_ai_version": "1.4.4",
+  "prompts": {
+    "9c744729-55a6-4e5d-b763-ae6691165691": {
+      "accepted_lines": 66,
+      "agent_id": {
+        "id": "9c744729-55a6-4e5d-b763-ae6691165691",
+        "model": "claude-opus-4-6",
+        "tool": "claude"
+      },
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "overriden_lines": 9,
+      "total_additions": 68,
+      "total_deletions": 92
+    },
+    "human": {
+      "accepted_lines": 40,
+      "agent_id": null,
+      "human_author": "Emiliano Sanchez <emiliano.sanchez@split.io>",
+      "overriden_lines": 0,
+      "total_additions": 40,
+      "total_deletions": 0
+    }
+  },
+  "repo": "https://github.com/splitio/javascript-commons.git",
+  "schema_version": "authorship/3.0.0"
+}
