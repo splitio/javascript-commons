@@ -16,7 +16,7 @@ import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STRE
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseCompressedData } from './parseUtils';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
-import { IJwtCredential } from './AuthClient/types';
+import { IJwtCredentialV2 } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
@@ -81,7 +81,7 @@ export function pushManagerFactory(
   let timeoutIdTokenRefresh: ReturnType<typeof setTimeout>;
   let timeoutIdSseOpen: ReturnType<typeof setTimeout>;
 
-  function scheduleTokenRefreshAndSse(authData: IJwtCredential) {
+  function scheduleTokenRefreshAndSse(authData: IJwtCredentialV2) {
     // clear scheduled tasks if exist
     if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
     if (timeoutIdSseOpen) clearTimeout(timeoutIdSseOpen);

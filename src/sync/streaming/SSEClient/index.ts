@@ -5,7 +5,7 @@ import { ISettings } from '../../../types';
 import { checkIfServerSide } from '../../../utils/key';
 import { isString } from '../../../utils/lang';
 import { objectAssign } from '../../../utils/lang/objectAssign';
-import { IJwtCredential } from '../AuthClient/types';
+import { IJwtCredentialV2 } from '../AuthClient/types';
 import { ISSEClient, ISseEventHandler } from './types';
 
 const ABLY_API_VERSION = '1.1';
@@ -66,7 +66,7 @@ export class SSEClient implements ISSEClient {
   /**
    * Open the connection with a given authToken
    */
-  open(authToken: IJwtCredential) {
+  open(authToken: IJwtCredentialV2) {
     this.close(); // it closes connection if previously opened
 
     const channelsQueryParam = Object.keys(authToken.channels).map((channel) => {

@@ -37,7 +37,6 @@ export const authDataSample = {
   ...authDataResponseSample,
   decodedToken: decodedJwtPayloadSample,
   channels: parsedChannelsSample,
-  expiresAt: 1583787124,
 };
 
 export const userKeySample = 'emi@split.io';

@@ -1,5 +1,5 @@
 import { ISplitHttpClient, NetworkError } from './types';
-import { IJwtCredential } from '../sync/streaming/AuthClient/types';
+import { IJwtCredentialV3 } from '../sync/streaming/AuthClient/types';
 import { authenticateFactory } from '../sync/streaming/AuthClient';
 import { Backoff } from '../utils/Backoff';
 import { LOG_PREFIX_SYNC_AUTH } from '../logger/constants';
@@ -9,12 +9,12 @@ import { ITelemetryTracker } from '../trackers/types';
 
 const SKEW_SECONDS = 30;
 
-function isExpired(credential: IJwtCredential): boolean {
-  return Date.now() / 1000 + SKEW_SECONDS >= credential.expiresAt;
+function isExpired(credential: IJwtCredentialV3): boolean {
+  return Date.now() / 1000 + SKEW_SECONDS >= credential.decodedToken.exp;
 }
 
 export interface IAuthProvider {
-  credential(): Promise<IJwtCredential>;
+  credential(): Promise<IJwtCredentialV3>;
   invalidate(): void;
   stop(): void;
 }
@@ -35,12 +35,12 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
   const authenticate = authenticateFactory(fetchAuth);
   const backoff = new Backoff(fetchCredential);
 
-  let cachedCredential: IJwtCredential | undefined;
-  let inFlightPromise: Promise<IJwtCredential> | undefined;
+  let cachedCredential: IJwtCredentialV3 | undefined;
+  let inFlightPromise: Promise<IJwtCredentialV3> | undefined;
   let stopped = false;
 
-  function fetchCredential(): Promise<IJwtCredential> {
-    return authenticate().then(credential => {
+  function fetchCredential(): Promise<IJwtCredentialV3> {
+    return authenticate().then((credential: IJwtCredentialV3) => {
       log.info(LOG_PREFIX_SYNC_AUTH + 'credential fetched successfully');
       cachedCredential = credential;
       inFlightPromise = undefined;
@@ -62,7 +62,7 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
   }
 
   return {
-    credential(): Promise<IJwtCredential> {
+    credential(): Promise<IJwtCredentialV3> {
       if (cachedCredential && !isExpired(cachedCredential)) {
         return Promise.resolve(cachedCredential);
       }
