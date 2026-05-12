@@ -2331,6 +2331,12 @@ declare namespace SplitIO {
      */
     urls?: {
       /**
+       * String property to override the base URL where the SDK will get JWT authentication credentials.
+       *
+       * @defaultValue `'https://auth.split.io/api'`
+       */
+      auth?: string;
+      /**
        * String property to override the base URL where the SDK will get rollout plan related data, like feature flags and segments definitions.
        *
        * @defaultValue `'https://appconfig.split.io/api'`

@@ -40,6 +40,27 @@ export class Backoff {
     return delayInMillis;
   }
 
+  /**
+   * Schedule a delayed call to `cb`
+   * @returns a promise that resolves/rejects with the result of the `cb` function, which must return a promise.
+   */
+  scheduleCallAsync<T>(): Promise<T> {
+    const delayInMillis = Math.min(this.baseMillis * Math.pow(2, this.attempts), this.maxMillis);
+
+    if (this.timeoutID) clearTimeout(this.timeoutID);
+    this.attempts++;
+
+    return new Promise<T>((resolve, reject) => {
+      this.timeoutID = setTimeout(() => {
+        this.timeoutID = undefined;
+        this.cb().then(resolve, reject);
+      }, delayInMillis);
+    });
+  }
+
+  /**
+   * Reset the backoff attempts
+   */
   reset() {
     this.attempts = 0;
     if (this.timeoutID) {

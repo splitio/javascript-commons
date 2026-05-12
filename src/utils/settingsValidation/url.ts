@@ -2,7 +2,7 @@ import { ISettings } from '../../types';
 
 const telemetryEndpointMatcher = /^\/v1\/metrics\/(config|usage)/;
 const eventsEndpointMatcher = /^\/(testImpressions|metrics|events)/;
-const authEndpointMatcher = /^\/v2\/auth/;
+const authEndpointMatcher = /^\/(v2|v3)\/auth/;
 const streamingEndpointMatcher = /^\/(sse|event-stream)/;
 
 /**

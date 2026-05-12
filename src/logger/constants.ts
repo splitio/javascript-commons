@@ -122,6 +122,7 @@ export const LOG_PREFIX_ENGINE_COMBINER = LOG_PREFIX_ENGINE + ':combiner: ';
 export const LOG_PREFIX_ENGINE_MATCHER = LOG_PREFIX_ENGINE + ':matcher: ';
 export const LOG_PREFIX_ENGINE_VALUE = LOG_PREFIX_ENGINE + ':value: ';
 export const LOG_PREFIX_SYNC = 'sync: ';
+export const LOG_PREFIX_SYNC_AUTH = 'sync:auth: ';
 export const LOG_PREFIX_SYNC_MANAGER = 'sync:sync-manager: ';
 export const LOG_PREFIX_SYNC_OFFLINE = 'sync:offline: ';
 export const LOG_PREFIX_SYNC_STREAMING = 'sync:streaming: ';
