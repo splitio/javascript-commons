@@ -10,7 +10,7 @@ import { FallbackTreatmentsCalculator } from '../../evaluator/fallbackTreatments
 const clientInstance = { init: jest.fn(), destroy: jest.fn() };
 const managerInstance = 'manager';
 const mockStorage = {
-  splits: jest.fn(),
+  definitions: jest.fn(),
   events: jest.fn(),
   impressions: jest.fn()
 };

@@ -119,7 +119,7 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
   const { storage: { telemetry }, platform: { now } } = params;
   if (!telemetry || !now) return; // No submitter created if telemetry cache is not defined
 
-  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness, sdkReadinessManager } = params;
+  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness } = params;
   const stopTimer = timer(now);
 
   const submitter = firstPushWindowDecorator(
@@ -135,7 +135,6 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
     telemetry.recordTimeUntilReadyFromCache(stopTimer());
   });
 
-  sdkReadinessManager.incInternalReadyCbCount();
   readiness.gate.once(SDK_READY, () => {
     telemetry.recordTimeUntilReady(stopTimer());
 

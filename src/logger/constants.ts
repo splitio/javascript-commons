@@ -56,7 +56,6 @@ export const SUBMITTERS_PUSH_PAGE_HIDDEN = 125;
 
 export const ENGINE_VALUE_INVALID = 200;
 export const ENGINE_VALUE_NO_ATTRIBUTES = 201;
-export const CLIENT_NO_LISTENER = 202;
 export const CLIENT_NOT_READY_FROM_CACHE = 203;
 export const SYNC_FETCH_RETRY = 204;
 export const SYNC_FETCH_FAILS = 205;

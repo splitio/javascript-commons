@@ -50,7 +50,7 @@ describe('validateRolloutPlan', () => {
 describe('getRolloutPlan & setRolloutPlan (client-side)', () => {
   // @ts-expect-error Load server-side storage
   const serverStorage = InMemoryStorageFactory({ settings: fullSettings });
-  serverStorage.splits.update([{ name: 'split1' } as IDefinition], [], 123);
+  serverStorage.definitions.update([{ name: 'split1' } as IDefinition], [], 123);
   serverStorage.rbSegments.update([{ name: 'rbs1' } as IRBSegment], [], 321);
   serverStorage.segments.update('segment1', [fullSettings.core.key as string, otherKey], [], 123);
 

@@ -2,7 +2,7 @@ import { IRBSegment, IDefinition, IDefinitionCondition } from '../../../../dtos/
 import { readinessManagerFactory } from '../../../../readiness/readinessManager';
 import { splitApiFactory } from '../../../../services/splitApi';
 import { SegmentsCacheInMemory } from '../../../../storages/inMemory/SegmentsCacheInMemory';
-import { SplitsCacheInMemory } from '../../../../storages/inMemory/SplitsCacheInMemory';
+import { DefinitionsCacheInMemory } from '../../../../storages/inMemory/DefinitionsCacheInMemory';
 import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
 import { definitionChangesUpdaterFactory, parseSegments, computeMutation } from '../definitionChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
@@ -15,7 +15,7 @@ import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
-import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../../readiness/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -179,8 +179,8 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
 });
 
 describe('definitionChangesUpdater', () => {
-  const splits = new SplitsCacheInMemory();
-  const updateSplits = jest.spyOn(splits, 'update');
+  const definitions = new DefinitionsCacheInMemory();
+  const updateSplits = jest.spyOn(definitions, 'update');
 
   const rbSegments = new RBSegmentsCacheInMemory();
   const updateRbSegments = jest.spyOn(rbSegments, 'update');
@@ -188,7 +188,7 @@ describe('definitionChangesUpdater', () => {
   const segments = new SegmentsCacheInMemory();
   const registerSegments = jest.spyOn(segments, 'registerSegments');
 
-  const storage = { splits, rbSegments, segments };
+  const storage = { definitions, rbSegments, segments };
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
   const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
@@ -196,11 +196,11 @@ describe('definitionChangesUpdater', () => {
   const splitChangesFetcher = splitChangesFetcherFactory({ splitApi, settings: fullSettings, storage });
 
   const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
-  const splitsEmitSpy = jest.spyOn(readinessManager.splits, 'emit');
+  const splitsEmitSpy = jest.spyOn(readinessManager.definitions, 'emit');
 
   let splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
 
-  let definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1);
+  let definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -216,7 +216,7 @@ describe('definitionChangesUpdater', () => {
     expect(updateSplits).lastCalledWith(splitChangesMock1.ff.d, [], splitChangesMock1.ff.t);
     expect(updateRbSegments).toBeCalledTimes(0); // no rbSegments to update
     expect(registerSegments).toBeCalledTimes(1);
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: updatedFlags });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: updatedFlags });
     expect(result).toBe(true);
   });
 
@@ -290,22 +290,22 @@ describe('definitionChangesUpdater', () => {
       { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is back in configured sets */
     ];
 
-    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
 
     let index = 0;
     let calls = 0;
     // emit always if not configured sets
     for (const setMock of setMocks) {
       await expect(definitionChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
-      expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_SPLITS_ARRIVED);
+      expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_DEFINITIONS_ARRIVED);
       expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ type: FLAGS_UPDATE, names: [payload.name] });
       index++;
     }
 
     // @ts-ignore
     splitFiltersValidation = { queryString: null, groupedFilters: { bySet: ['set_a'], byName: [], byPrefix: [] }, validFilters: [] };
-    storage.splits.clear();
-    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    storage.definitions.clear();
+    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {
@@ -320,23 +320,23 @@ describe('definitionChangesUpdater', () => {
   test('test with ff payload - should emit metadata with flag name', async () => {
     splitsEmitSpy.mockClear();
 
-    readinessManager.splits.splitsArrived = false;
-    storage.splits.clear();
+    readinessManager.definitions.definitionsArrived = false;
+    storage.definitions.clear();
 
     const payload = splitNotifications[0].decoded as Pick<IDefinition, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
     const changeNumber = payload.changeNumber;
 
     await expect(definitionChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
   });
 
   test('test with multiple flags updated - should emit metadata with all flag names', async () => {
     splitsEmitSpy.mockClear();
-    storage.splits.clear();
+    storage.definitions.clear();
     storage.segments.clear();
-    // Start with splitsArrived = false so it emits on first update
-    readinessManager.splits.splitsArrived = false;
+    // Start with definitionsArrived = false so it emits on first update
+    readinessManager.definitions.definitionsArrived = false;
     readinessManager.segments.segmentsArrived = true; // Segments ready
 
     const flag1 = { name: 'flag1', status: 'ACTIVE', changeNumber: 100, conditions: [] } as unknown as IDefinition;
@@ -346,16 +346,16 @@ describe('definitionChangesUpdater', () => {
     fetchMock.once('*', { status: 200, body: { ff: { d: [flag1, flag2, flag3], t: 102 } } });
     await definitionChangesUpdater();
 
-    // Should emit with metadata when splitsArrived is false (first update)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2', 'flag3'] });
+    // Should emit with metadata when definitionsArrived is false (first update)
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2', 'flag3'] });
   });
 
   test('test with ARCHIVED flag - should emit metadata with flag name', async () => {
     splitsEmitSpy.mockClear();
-    storage.splits.clear();
+    storage.definitions.clear();
     storage.segments.clear();
-    // Start with splitsArrived = false so it emits on first update
-    readinessManager.splits.splitsArrived = false;
+    // Start with definitionsArrived = false so it emits on first update
+    readinessManager.definitions.definitionsArrived = false;
     readinessManager.segments.segmentsArrived = true; // Segments ready
 
     const archivedFlag = { name: 'archived-flag', status: ARCHIVED_FF, changeNumber: 200, conditions: [] } as unknown as IDefinition;
@@ -365,13 +365,13 @@ describe('definitionChangesUpdater', () => {
 
     await expect(definitionChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: SPLIT_UPDATE })).resolves.toBe(true);
 
-    // Should emit with metadata when splitsArrived is false (first update)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
+    // Should emit with metadata when definitionsArrived is false (first update)
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: [payload.name] });
   });
 
   test('test with rbsegment payload - should emit SEGMENTS_UPDATE not FLAGS_UPDATE', async () => {
     splitsEmitSpy.mockClear();
-    readinessManager.splits.splitsArrived = true;
+    readinessManager.definitions.definitionsArrived = true;
     storage.rbSegments.clear();
 
     const payload = { name: 'rbsegment', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IRBSegment;
@@ -380,13 +380,13 @@ describe('definitionChangesUpdater', () => {
     await expect(definitionChangesUpdater(undefined, undefined, { payload, changeNumber: changeNumber, type: RB_SEGMENT_UPDATE })).resolves.toBe(true);
 
     // Should emit SEGMENTS_UPDATE (not FLAGS_UPDATE) when only RB segment is updated
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with only RB segment update and no flags - should emit SEGMENTS_UPDATE', async () => {
     splitsEmitSpy.mockClear();
-    readinessManager.splits.splitsArrived = true;
-    storage.splits.clear();
+    readinessManager.definitions.definitionsArrived = true;
+    storage.definitions.clear();
     storage.rbSegments.clear();
 
     // Simulate a scenario where only RB segments are updated (no flags)
@@ -395,13 +395,13 @@ describe('definitionChangesUpdater', () => {
     await definitionChangesUpdater();
 
     // When updatedFlags.length === 0, should emit SEGMENTS_UPDATE
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
   });
 
   test('test with both flags and RB segments updated - should emit FLAGS_UPDATE with flag names', async () => {
     splitsEmitSpy.mockClear();
-    readinessManager.splits.splitsArrived = true;
-    storage.splits.clear();
+    readinessManager.definitions.definitionsArrived = true;
+    storage.definitions.clear();
     storage.rbSegments.clear();
     storage.segments.clear();
 
@@ -414,25 +414,25 @@ describe('definitionChangesUpdater', () => {
     await definitionChangesUpdater();
 
     // When both flags and RB segments are updated, should emit FLAGS_UPDATE with flag names
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2'] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['flag1', 'flag2'] });
   });
 
   test('test client-side behavior - should emit even when segments not all fetched', async () => {
     splitsEmitSpy.mockClear();
-    storage.splits.clear();
-    // Start with splitsArrived = false so it emits on first update
-    readinessManager.splits.splitsArrived = false;
+    storage.definitions.clear();
+    // Start with definitionsArrived = false so it emits on first update
+    readinessManager.definitions.definitionsArrived = false;
     readinessManager.segments.segmentsArrived = false; // Segments not ready - client-side should still emit
 
     // Create client-side updater (isClientSide = true)
-    const clientSideUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.splits, 1000, 1, true);
+    const clientSideUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
 
     const flag1 = { name: 'client-flag', status: 'ACTIVE', changeNumber: 300, conditions: [] } as unknown as IDefinition;
     fetchMock.once('*', { status: 200, body: { ff: { d: [flag1], t: 300 } } });
     await clientSideUpdater();
 
     // Client-side should emit even if segments aren't all fetched (isClientSide bypasses checkAllSegmentsExist)
-    expect(splitsEmitSpy).toBeCalledWith(SDK_SPLITS_ARRIVED, { type: FLAGS_UPDATE, names: ['client-flag'] });
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['client-flag'] });
   });
 
 });

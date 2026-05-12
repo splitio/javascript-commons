@@ -13,8 +13,8 @@ const STORED_SPLITS: Record<string, IDefinition> = {
 };
 
 const mockStorage = {
-  splits: {
-    getSplit: (name: string) => STORED_SPLITS[name]
+  definitions: {
+    get: (name: string) => STORED_SPLITS[name]
   }
 };
 

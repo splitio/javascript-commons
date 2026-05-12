@@ -194,49 +194,49 @@ export interface IPluggableStorageWrapper {
 
 /** Splits cache */
 
-export interface ISplitsCacheBase {
+export interface IDefinitionsCacheBase {
   update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): MaybeThenable<boolean>,
-  getSplit(name: string): MaybeThenable<IDefinition | null>,
-  getSplits(names: string[]): MaybeThenable<Record<string, IDefinition | null>>, // `fetchMany` in spec
+  get(name: string): MaybeThenable<IDefinition | null>,
+  getMany(names: string[]): MaybeThenable<Record<string, IDefinition | null>>, // `fetchMany` in spec
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
   getChangeNumber(): MaybeThenable<number>,
   getAll(): MaybeThenable<IDefinition[]>,
-  getSplitNames(): MaybeThenable<string[]>,
+  getNames(): MaybeThenable<string[]>,
   // should never reject or throw an exception. Instead return true by default, asssuming the TT might exist.
   trafficTypeExists(trafficType: string): MaybeThenable<boolean>,
   // only for Client-Side. Returns true if the storage is not synchronized yet (getChangeNumber() === -1) or contains a FF using segments or large segments
   usesSegments(): MaybeThenable<boolean>,
   clear(): MaybeThenable<boolean | void>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): MaybeThenable<boolean>,
-  getNamesByFlagSets(flagSets: string[]): MaybeThenable<Set<string>[]>
+  getNamesBySets(sets: string[]): MaybeThenable<Set<string>[]>
 }
 
-export interface ISplitsCacheSync extends ISplitsCacheBase {
+export interface IDefinitionsCacheSync extends IDefinitionsCacheBase {
   update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean,
-  getSplit(name: string): IDefinition | null,
-  getSplits(names: string[]): Record<string, IDefinition | null>,
+  get(name: string): IDefinition | null,
+  getMany(names: string[]): Record<string, IDefinition | null>,
   getChangeNumber(): number,
   getAll(): IDefinition[],
-  getSplitNames(): string[],
+  getNames(): string[],
   trafficTypeExists(trafficType: string): boolean,
   usesSegments(): boolean,
   clear(): void,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): boolean,
-  getNamesByFlagSets(flagSets: string[]): Set<string>[]
+  getNamesBySets(sets: string[]): Set<string>[]
 }
 
-export interface ISplitsCacheAsync extends ISplitsCacheBase {
+export interface IDefinitionsCacheAsync extends IDefinitionsCacheBase {
   update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean>,
-  getSplit(name: string): Promise<IDefinition | null>,
-  getSplits(names: string[]): Promise<Record<string, IDefinition | null>>,
+  get(name: string): Promise<IDefinition | null>,
+  getMany(names: string[]): Promise<Record<string, IDefinition | null>>,
   getChangeNumber(): Promise<number>,
   getAll(): Promise<IDefinition[]>,
-  getSplitNames(): Promise<string[]>,
+  getNames(): Promise<string[]>,
   trafficTypeExists(trafficType: string): Promise<boolean>,
   usesSegments(): Promise<boolean>,
   clear(): Promise<boolean | void>,
   killLocally(name: string, defaultTreatment: string, changeNumber: number): Promise<boolean>,
-  getNamesByFlagSets(flagSets: string[]): Promise<Set<string>[]>
+  getNamesBySets(sets: string[]): Promise<Set<string>[]>
 }
 
 /** Rule-Based Segments cache */
@@ -466,7 +466,7 @@ export interface ITelemetryCacheAsync extends ITelemetryEvaluationProducerAsync,
  */
 
 export interface IStorageBase<
-  TSplitsCache extends ISplitsCacheBase = ISplitsCacheBase,
+  TDefinitionsCache extends IDefinitionsCacheBase = IDefinitionsCacheBase,
   TRBSegmentsCache extends IRBSegmentsCacheBase = IRBSegmentsCacheBase,
   TSegmentsCache extends ISegmentsCacheBase = ISegmentsCacheBase,
   TImpressionsCache extends IImpressionsCacheBase = IImpressionsCacheBase,
@@ -475,7 +475,7 @@ export interface IStorageBase<
   TTelemetryCache extends ITelemetryCacheSync | ITelemetryCacheAsync = ITelemetryCacheSync | ITelemetryCacheAsync,
   TUniqueKeysCache extends IUniqueKeysCacheBase = IUniqueKeysCacheBase
 > {
-  splits: TSplitsCache,
+  definitions: TDefinitionsCache,
   rbSegments: TRBSegmentsCache,
   segments: TSegmentsCache,
   largeSegments?: TSegmentsCache,
@@ -490,7 +490,7 @@ export interface IStorageBase<
 }
 
 export interface IStorageSync extends IStorageBase<
-  ISplitsCacheSync,
+  IDefinitionsCacheSync,
   IRBSegmentsCacheSync,
   ISegmentsCacheSync,
   IImpressionsCacheSync,
@@ -505,7 +505,7 @@ export interface IStorageSync extends IStorageBase<
 }
 
 export interface IStorageAsync extends IStorageBase<
-  ISplitsCacheAsync,
+  IDefinitionsCacheAsync,
   IRBSegmentsCacheAsync,
   ISegmentsCacheAsync,
   IImpressionsCacheAsync | IImpressionsCacheSync,

@@ -4,7 +4,7 @@ import { IStorageSync, IStorageAsync, IImpressionsCacheSync, IEventsCacheSync } 
 // Assert that instances created by storage factories have the expected interface
 export function assertStorageInterface(storage: IStorageSync | IStorageAsync) {
   expect(typeof storage.destroy).toBe('function');
-  expect(typeof storage.splits).toBe('object');
+  expect(typeof storage.definitions).toBe('object');
   expect(typeof storage.segments).toBe('object');
   expect(typeof storage.impressions).toBe('object');
   expect(typeof storage.events).toBe('object');

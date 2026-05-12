@@ -1,9 +1,9 @@
 import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { STREAMING_PARSING_SPLIT_UPDATE } from '../../../logger/constants';
 import { ILogger } from '../../../logger/types';
-import { SDK_SPLITS_ARRIVED } from '../../../readiness/constants';
-import { ISplitsEventEmitter } from '../../../readiness/types';
-import { IRBSegmentsCacheSync, ISplitsCacheSync, IStorageSync } from '../../../storages/types';
+import { SDK_DEFINITIONS_ARRIVED } from '../../../readiness/constants';
+import { IDefinitionsEventEmitter } from '../../../readiness/types';
+import { IRBSegmentsCacheSync, IDefinitionsCacheSync, IStorageSync } from '../../../storages/types';
 import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
@@ -16,22 +16,22 @@ import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT, FETCH_BACKOFF_MAX_RETRIES }
 import { IUpdateWorker } from './types';
 
 /**
- * SplitsUpdateWorker factory
+ * DefinitionsUpdateWorker factory
  */
-export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, splitsEventEmitter: ISplitsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killSplit(event: ISplitKillData): void } {
+export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, definitionsEventEmitter: IDefinitionsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killDefinition(event: ISplitKillData): void } {
 
-  const ff = SplitsUpdateWorker(storage.splits);
-  const rbs = SplitsUpdateWorker(storage.rbSegments);
+  const ff = DefinitionsUpdateWorker(storage.definitions);
+  const rbs = DefinitionsUpdateWorker(storage.rbSegments);
 
-  function SplitsUpdateWorker(cache: ISplitsCacheSync | IRBSegmentsCacheSync) {
+  function DefinitionsUpdateWorker(cache: IDefinitionsCacheSync | IRBSegmentsCacheSync) {
     let maxChangeNumber = -1;
     let handleNewEvent = false;
     let isHandlingEvent: boolean;
     let cdnBypass: boolean;
     let instantUpdate: InstantUpdate | undefined;
-    const backoff = new Backoff(__handleSplitUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
+    const backoff = new Backoff(__handleDefinitionUpdateCall, FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT);
 
-    function __handleSplitUpdateCall() {
+    function __handleDefinitionUpdateCall() {
       isHandlingEvent = true;
       if (maxChangeNumber > cache.getChangeNumber()) {
         handleNewEvent = false;
@@ -39,7 +39,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definiti
         definitionsSyncTask.execute(true, cdnBypass ? maxChangeNumber : undefined, instantUpdate).then(() => {
           if (!isHandlingEvent) return; // halt if `stop` has been called
           if (handleNewEvent) {
-            __handleSplitUpdateCall();
+            __handleDefinitionUpdateCall();
           } else {
             if (instantUpdate) telemetryTracker.trackUpdatesFromSSE(SPLITS);
             // fetch new registered segments for server-side API. Not retrying on error
@@ -64,7 +64,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definiti
             } else {
               backoff.reset();
               cdnBypass = true;
-              __handleSplitUpdateCall();
+              __handleDefinitionUpdateCall();
             }
           }
         });
@@ -93,7 +93,7 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definiti
           instantUpdate = { payload, changeNumber, type };
         }
 
-        if (backoff.timeoutID || !isHandlingEvent) __handleSplitUpdateCall();
+        if (backoff.timeoutID || !isHandlingEvent) __handleDefinitionUpdateCall();
         backoff.reset();
       },
       stop() {
@@ -128,10 +128,10 @@ export function SplitsUpdateWorker(log: ILogger, storage: IStorageSync, definiti
      * @param splitName - name of split to kill
      * @param defaultTreatment - default treatment value
      */
-    killSplit({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
-      if (storage.splits.killLocally(splitName, defaultTreatment, changeNumber)) {
+    killDefinition({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
+      if (storage.definitions.killLocally(splitName, defaultTreatment, changeNumber)) {
         // trigger an SDK_UPDATE if Split was killed locally
-        splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, true);
+        definitionsEventEmitter.emit(SDK_DEFINITIONS_ARRIVED, true);
       }
       // queues the SplitChanges fetch (only if changeNumber is newer)
       ff.put({ changeNumber } as ISplitUpdateData);

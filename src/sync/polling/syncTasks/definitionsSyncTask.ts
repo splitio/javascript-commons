@@ -23,7 +23,7 @@ export function definitionsSyncTaskFactory(
       definitionChangesFetcher,
       storage,
       settings.sync.__splitFiltersValidation,
-      readiness.splits,
+      readiness.definitions,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
       isClientSide

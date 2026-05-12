@@ -1,9 +1,9 @@
 import { ISegmentsCacheBase, IStorageBase } from '../../../storages/types';
 import { IDefinitionChangesFetcher } from '../fetchers/types';
 import { IRBSegment, IDefinition, IDefinitionChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
-import { ISplitsEventEmitter } from '../../../readiness/types';
+import { IDefinitionsEventEmitter } from '../../../readiness/types';
 import { timeout } from '../../../utils/promise/timeout';
-import { SDK_SPLITS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE, CONFIGS_UPDATE } from '../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE, CONFIGS_UPDATE } from '../../../readiness/constants';
 import { ILogger } from '../../../logger/types';
 import { SYNC_FETCH, SYNC_UPDATE, SYNC_FETCH_FAILS, SYNC_FETCH_RETRY } from '../../../logger/constants';
 import { startsWith } from '../../../utils/lang';
@@ -128,14 +128,14 @@ function convertInstantUpdateToDefinitionChanges(instantUpdate: InstantUpdate) {
 export function definitionChangesUpdaterFactory(
   log: ILogger,
   definitionChangesFetcher: IDefinitionChangesFetcher,
-  storage: Pick<IStorageBase, 'splits' | 'rbSegments' | 'segments' | 'save'>,
+  storage: Pick<IStorageBase, 'definitions' | 'rbSegments' | 'segments' | 'save'>,
   splitFiltersValidation: ISplitFiltersValidation,
-  splitsEventEmitter?: ISplitsEventEmitter,
+  definitionsEventEmitter?: IDefinitionsEventEmitter,
   requestTimeoutBeforeReady = 0,
   retriesOnFailureBeforeReady = 0,
   isClientSide?: boolean
 ): DefinitionChangesUpdater {
-  const { splits, rbSegments, segments } = storage;
+  const { definitions, rbSegments, segments } = storage;
 
   let startingUp = true;
 
@@ -183,7 +183,7 @@ export function definitionChangesUpdaterFactory(
             const { added, removed, names } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
             updatedDefinitions = names;
             log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, added.length, removed.length]);
-            ffUpdate = splits.update(added, removed, definitionChanges.d.till);
+            ffUpdate = definitions.update(added, removed, definitionChanges.d.till);
           }
 
           let rbsUpdate: MaybeThenable<boolean> = false;
@@ -201,9 +201,9 @@ export function definitionChangesUpdaterFactory(
 
             startingUp = false;
 
-            if (splitsEventEmitter) {
-              // To emit SDK_SPLITS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!splitsEventEmitter.splitsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
+            if (definitionsEventEmitter) {
+              // To emit SDK_DEFINITIONS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
+              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events
@@ -212,7 +212,7 @@ export function definitionChangesUpdaterFactory(
                       type: updatedDefinitions.length > 0 ? definitionChangesFetcher.type === 'configs' ? CONFIGS_UPDATE : FLAGS_UPDATE : SEGMENTS_UPDATE,
                       names: updatedDefinitions.length > 0 ? updatedDefinitions : []
                     };
-                    splitsEventEmitter.emit(SDK_SPLITS_ARRIVED, metadata);
+                    definitionsEventEmitter.emit(SDK_DEFINITIONS_ARRIVED, metadata);
                   }
                   return true;
                 });
@@ -234,6 +234,6 @@ export function definitionChangesUpdaterFactory(
     }
 
     // `getChangeNumber` never rejects or throws error
-    return Promise.all([splits.getChangeNumber(), rbSegments.getChangeNumber()]).then(_definitionChangesUpdater);
+    return Promise.all([definitions.getChangeNumber(), rbSegments.getChangeNumber()]).then(_definitionChangesUpdater);
   };
 }

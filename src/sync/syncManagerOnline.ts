@@ -9,8 +9,8 @@ import { SYNC_START_POLLING, SYNC_CONTINUE_POLLING, SYNC_STOP_POLLING } from '..
 import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
-import { SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
-import { usesSegmentsSync } from '../storages/AbstractSplitsCacheSync';
+import { SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
+import { usesSegmentsSync } from '../storages/AbstractDefinitionsCacheSync';
 import { splitChangesFetcherFactory } from './polling/fetchers/splitChangesFetcher';
 import { IDefinitionChangesFetcher } from './polling/fetchers/types';
 
@@ -102,7 +102,7 @@ export function syncManagerOnlineFactory(
           if (startFirstTime) {
             // Emits SDK_READY_FROM_CACHE
             if (!cacheMetadata.initialCacheLoad) {
-              readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, cacheMetadata);
+              readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
             }
 
           }

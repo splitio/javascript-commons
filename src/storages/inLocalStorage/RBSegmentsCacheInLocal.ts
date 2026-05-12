@@ -3,7 +3,7 @@ import { ILogger } from '../../logger/types';
 import { ISettings } from '../../types';
 import { isFiniteNumber, isNaNNumber, toNumber } from '../../utils/lang';
 import { setToArray } from '../../utils/lang/sets';
-import { usesSegments } from '../AbstractSplitsCacheSync';
+import { usesSegments } from '../AbstractDefinitionsCacheSync';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { IRBSegmentsCacheSync, StorageAdapter } from '../types';
 import { LOG_PREFIX } from './constants';
@@ -42,7 +42,7 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   private updateSegmentCount(diff: number) {
-    const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
+    const segmentsCountKey = this.keys.buildDefinitionsWithSegmentCountKey();
     const count = toNumber(this.storage.getItem(segmentsCountKey)) + diff;
     if (count > 0) this.storage.setItem(segmentsCountKey, count + '');
     else this.storage.removeItem(segmentsCountKey);
@@ -121,11 +121,11 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
   }
 
   usesSegments(): boolean {
-    const storedCount = this.storage.getItem(this.keys.buildSplitsWithSegmentCountKey());
-    const splitsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
+    const storedCount = this.storage.getItem(this.keys.buildDefinitionsWithSegmentCountKey());
+    const definitionsWithSegmentsCount = storedCount === null ? 0 : toNumber(storedCount);
 
-    return isFiniteNumber(splitsWithSegmentsCount) ?
-      splitsWithSegmentsCount > 0 :
+    return isFiniteNumber(definitionsWithSegmentsCount) ?
+      definitionsWithSegmentsCount > 0 :
       true;
   }
 

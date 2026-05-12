@@ -1,6 +1,6 @@
-// Splits events:
-export const SDK_SPLITS_ARRIVED = 'state::splits-arrived';
-export const SDK_SPLITS_CACHE_LOADED = 'state::splits-cache-loaded';
+// Definitions events:
+export const SDK_DEFINITIONS_ARRIVED = 'state::splits-arrived';
+export const SDK_DEFINITIONS_CACHE_LOADED = 'state::splits-cache-loaded';
 
 // Segments events:
 export const SDK_SEGMENTS_ARRIVED = 'state::segments-arrived';

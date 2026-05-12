@@ -178,8 +178,8 @@ const STORED_RBSEGMENTS: Record<string, IRBSegment> = {
 
 const mockStorageSync = {
   isSync: true,
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       return STORED_SPLITS[name];
     }
   },
@@ -202,8 +202,8 @@ const mockStorageSync = {
 
 const mockStorageAsync = {
   isSync: false,
-  splits: {
-    getSplit(name: string) {
+  definitions: {
+    get(name: string) {
       return Promise.resolve(STORED_SPLITS[name]);
     }
   },

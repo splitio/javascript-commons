@@ -22,7 +22,7 @@ const telemetryTrackerMock = {
 
 const definitionsMock = {
   getAll: jest.fn(() => []),
-  getSplit: jest.fn(() => null),
+  get: jest.fn(() => null),
   trafficTypeExists: jest.fn(() => true),
 };
 
@@ -31,7 +31,7 @@ const trackMethodParams = {
   eventTracker: eventTrackerMock as any,
   telemetryTracker: telemetryTrackerMock as any,
   sdkReadinessManager: { readinessManager: readinessManagerMock },
-  storage: { splits: definitionsMock },
+  storage: { definitions: definitionsMock },
 } as unknown as ISdkFactoryContext;
 
 describe('trackMethodFactory', () => {

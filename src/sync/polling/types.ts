@@ -4,7 +4,7 @@ import { IStorageSync } from '../../storages/types';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../streaming/types';
 import { ITask, ISyncTask } from '../types';
 
-export interface IDefinitionsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, splitUpdateNotification?: { payload: IDefinition | IRBSegment, changeNumber: number }], boolean> { }
+export interface IDefinitionsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, definitionUpdateNotification?: { payload: IDefinition | IRBSegment, changeNumber: number }], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 

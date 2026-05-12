@@ -6,7 +6,7 @@ import { telemetryTrackerFactory } from '../trackers/telemetryTracker';
 import SplitIO from '../../types/splitio';
 import { createLoggerAPI } from '../logger/sdkLogger';
 import { NEW_FACTORY, RETRIEVE_MANAGER } from '../logger/constants';
-import { SDK_SPLITS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_SPLITS_CACHE_LOADED } from '../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { setRolloutPlan } from '../storages/setRolloutPlan';
 import { IStorageSync } from '../storages/types';
@@ -36,11 +36,11 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
         readiness.timeout();
         return;
       }
-      readiness.splits.emit(SDK_SPLITS_ARRIVED);
+      readiness.definitions.emit(SDK_DEFINITIONS_ARRIVED);
       readiness.segments.emit(SDK_SEGMENTS_ARRIVED);
     },
     onReadyFromCacheCb() {
-      readiness.splits.emit(SDK_SPLITS_CACHE_LOADED);
+      readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED);
     }
   });
 
@@ -48,7 +48,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   if (initialRolloutPlan) {
     setRolloutPlan(log, initialRolloutPlan, storage as IStorageSync, key && getMatching(key));
-    if ((storage as IStorageSync).splits.getChangeNumber() > -1) readiness.splits.emit(SDK_SPLITS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
+    if ((storage as IStorageSync).definitions.getChangeNumber() > -1) readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, { initialCacheLoad: false /* Not an initial load, cache exists */ });
   }
 
   const clients: Record<string, SplitIO.IBasicClient & { init: () => void }> = {};
@@ -66,7 +66,7 @@ export function sdkFactory(params: ISdkFactoryParams): SplitIO.ISDK | SplitIO.IA
 
   // SDK client and manager
   const clientMethod = sdkClientMethodFactory(ctx);
-  const managerInstance = sdkManagerFactory(settings, storage.splits, sdkReadinessManager);
+  const managerInstance = sdkManagerFactory(settings, storage.definitions, sdkReadinessManager);
 
 
   function init() {

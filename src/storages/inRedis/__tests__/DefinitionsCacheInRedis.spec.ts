@@ -1,4 +1,4 @@
-import { SplitsCacheInRedis } from '../SplitsCacheInRedis';
+import { DefinitionsCacheInRedis } from '../DefinitionsCacheInRedis';
 import { KeyBuilderSS } from '../../KeyBuilderSS';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { splitWithUserTT, splitWithAccountTT, featureFlagOne, featureFlagThree, featureFlagTwo, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
@@ -9,11 +9,11 @@ import { RedisAdapter } from '../RedisAdapter';
 const prefix = 'splits_cache_ut';
 const keysBuilder = new KeyBuilderSS(prefix, metadata);
 
-describe('SPLITS CACHE REDIS', () => {
+describe('DEFINITIONS CACHE REDIS', () => {
 
   test('add/remove/get splits', async () => {
     const connection = new RedisAdapter(loggerMock);
-    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
+    const cache = new DefinitionsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
 
@@ -22,107 +22,107 @@ describe('SPLITS CACHE REDIS', () => {
     expect(values).toHaveLength(2);
     expect(values).toEqual(values[0].trafficTypeName === splitWithUserTT.trafficTypeName ? [splitWithUserTT, splitWithAccountTT] : [splitWithAccountTT, splitWithUserTT]);
 
-    let splitNames = await cache.getSplitNames();
+    let splitNames = await cache.getNames();
 
     expect(splitNames.length).toBe(2);
     expect(splitNames.indexOf('user_ff') !== -1).toBe(true);
     expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
 
-    await cache.removeSplit('user_ff');
+    await cache.remove('user_ff');
 
     values = await cache.getAll();
 
     expect(values).toEqual([splitWithAccountTT]);
 
-    expect(await cache.getSplit('user_ff')).toEqual(null);
-    expect(await cache.getSplit('account_ff')).toEqual(splitWithAccountTT);
+    expect(await cache.get('user_ff')).toEqual(null);
+    expect(await cache.get('account_ff')).toEqual(splitWithAccountTT);
 
     await cache.setChangeNumber(123);
     expect(await cache.getChangeNumber()).toBe(123);
 
-    splitNames = await cache.getSplitNames();
+    splitNames = await cache.getNames();
 
     expect(splitNames.indexOf('user_ff') === -1).toBe(true);
     expect(splitNames.indexOf('account_ff') !== -1).toBe(true);
 
-    const splits = await cache.getSplits(['user_ff', 'account_ff']);
-    expect(splits['user_ff']).toEqual(null);
-    expect(splits['account_ff']).toEqual(splitWithAccountTT);
+    const definitions = await cache.getMany(['user_ff', 'account_ff']);
+    expect(definitions['user_ff']).toEqual(null);
+    expect(definitions['account_ff']).toEqual(splitWithAccountTT);
 
     // Teardown. @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
-    await connection.del(keysBuilder.buildSplitKey('account_ff'));
-    await connection.del(keysBuilder.buildSplitsTillKey());
+    await connection.del(keysBuilder.buildDefinitionKey('account_ff'));
+    await connection.del(keysBuilder.buildDefinitionsTillKey());
     await connection.disconnect();
   });
 
   test('trafficTypeExists', async () => {
     const connection = new RedisAdapter(loggerMock);
-    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
+    const cache = new DefinitionsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.update([
       { ...splitWithUserTT, name: 'split1' },
       { ...splitWithAccountTT, name: 'split2' },
       { ...splitWithUserTT, name: 'split3' },
     ], [], -1);
-    await cache.addSplit({ ...splitWithUserTT, name: 'split4' });
-    await cache.addSplit({ ...splitWithUserTT, name: 'split4' }); // trying to add the same definition for an already added split will not have effect
+    await cache.add({ ...splitWithUserTT, name: 'split4' });
+    await cache.add({ ...splitWithUserTT, name: 'split4' }); // trying to add the same definition for an already added split will not have effect
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('not_existent_tt')).toBe(false);
 
-    await cache.removeSplit('split4');
+    await cache.remove('split4');
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
 
     expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe('1');
 
-    await cache.removeSplit('split3');
-    await cache.removeSplit('split2');
+    await cache.remove('split3');
+    await cache.remove('split2');
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
 
     expect(await connection.get(keysBuilder.buildTrafficTypeKey('account_tt'))).toBe(null); // TT entry should be removed in the wrapper
 
-    await cache.removeSplit('split1');
+    await cache.remove('split1');
 
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
     expect(await cache.trafficTypeExists('account_tt')).toBe(false);
 
-    await cache.addSplit({ ...splitWithUserTT, name: 'split1' });
+    await cache.add({ ...splitWithUserTT, name: 'split1' });
     expect(await cache.trafficTypeExists('user_tt')).toBe(true);
 
-    await cache.addSplit({ ...splitWithAccountTT, name: 'split1' });
+    await cache.add({ ...splitWithAccountTT, name: 'split1' });
     expect(await cache.trafficTypeExists('account_tt')).toBe(true);
     expect(await cache.trafficTypeExists('user_tt')).toBe(false);
 
     // Teardown. @TODO use cache clear method when implemented
     await connection.del(keysBuilder.buildTrafficTypeKey('account_tt'));
-    await connection.del(keysBuilder.buildSplitKey('malformed'));
-    await connection.del(keysBuilder.buildSplitKey('split1'));
+    await connection.del(keysBuilder.buildDefinitionKey('malformed'));
+    await connection.del(keysBuilder.buildDefinitionKey('split1'));
     await connection.disconnect();
   });
 
   test('killLocally', async () => {
     const connection = new RedisAdapter(loggerMock);
-    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
+    const cache = new DefinitionsCacheInRedis(loggerMock, keysBuilder, connection);
 
     await cache.update([splitWithUserTT, splitWithAccountTT], [], -1);
     const initialChangeNumber = await cache.getChangeNumber();
 
     // kill an non-existent split
     let updated = await cache.killLocally('nonexistent_split', 'other_treatment', 101);
-    const nonexistentSplit = await cache.getSplit('nonexistent_split');
+    const nonexistentSplit = await cache.get('nonexistent_split');
 
     expect(updated).toBe(false); // killLocally resolves without update if split doesn't exist
     expect(nonexistentSplit).toBe(null); // non-existent split keeps being non-existent
 
     // kill an existent split
     updated = await cache.killLocally('user_ff', 'some_treatment', 100);
-    let lol1Split = await cache.getSplit('user_ff') as IDefinition;
+    let lol1Split = await cache.get('user_ff') as IDefinition;
 
     expect(updated).toBe(true); // killLocally resolves with update if split is changed
     expect(lol1Split.killed).toBe(true); // existing split must be killed
@@ -132,21 +132,21 @@ describe('SPLITS CACHE REDIS', () => {
 
     // not update if changeNumber is old
     updated = await cache.killLocally('user_ff', 'some_treatment_2', 90);
-    lol1Split = await cache.getSplit('user_ff') as IDefinition;
+    lol1Split = await cache.get('user_ff') as IDefinition;
 
     expect(updated).toBe(false); // killLocally resolves without update if changeNumber is old
     expect(lol1Split.defaultTreatment).not.toBe('some_treatment_2'); // existing split is not updated if given changeNumber is older
 
     // Delete splits and TT keys
     await cache.update([], [splitWithUserTT.name, splitWithAccountTT.name], -1);
-    await connection.del(keysBuilder.buildSplitsTillKey());
+    await connection.del(keysBuilder.buildDefinitionsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });
 
   test('flag set cache tests', async () => {
     const connection = new RedisAdapter(loggerMock); // @ts-ignore
-    const cache = new SplitsCacheInRedis(loggerMock, keysBuilder, connection, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
+    const cache = new DefinitionsCacheInRedis(loggerMock, keysBuilder, connection, { groupedFilters: { bySet: ['o', 'n', 'e', 'x'] } });
 
     const emptySet = new Set([]);
 
@@ -155,44 +155,44 @@ describe('SPLITS CACHE REDIS', () => {
       featureFlagTwo,
       featureFlagThree,
     ], [], -1);
-    await cache.addSplit(featureFlagWithEmptyFS);
+    await cache.add(featureFlagWithEmptyFS);
 
-    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
-    expect(await cache.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
-    expect(await cache.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
-    expect(await cache.getNamesByFlagSets(['t'])).toEqual([emptySet]); // 't' not in filter
-    expect(await cache.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
+    expect(await cache.getNamesBySets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
+    expect(await cache.getNamesBySets(['n'])).toEqual([new Set(['ff_one'])]);
+    expect(await cache.getNamesBySets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
+    expect(await cache.getNamesBySets(['t'])).toEqual([emptySet]); // 't' not in filter
+    expect(await cache.getNamesBySets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
-    await cache.addSplit({ ...featureFlagOne, sets: ['1'] });
+    await cache.add({ ...featureFlagOne, sets: ['1'] });
 
-    expect(await cache.getNamesByFlagSets(['1'])).toEqual([emptySet]); // '1' not in filter
-    expect(await cache.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_two'])]);
-    expect(await cache.getNamesByFlagSets(['n'])).toEqual([emptySet]);
+    expect(await cache.getNamesBySets(['1'])).toEqual([emptySet]); // '1' not in filter
+    expect(await cache.getNamesBySets(['o'])).toEqual([new Set(['ff_two'])]);
+    expect(await cache.getNamesBySets(['n'])).toEqual([emptySet]);
 
-    await cache.addSplit({ ...featureFlagOne, sets: ['x'] });
-    expect(await cache.getNamesByFlagSets(['x'])).toEqual([new Set(['ff_one'])]);
-    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([new Set(['ff_two']), new Set(['ff_three']), new Set(['ff_one'])]);
+    await cache.add({ ...featureFlagOne, sets: ['x'] });
+    expect(await cache.getNamesBySets(['x'])).toEqual([new Set(['ff_one'])]);
+    expect(await cache.getNamesBySets(['o', 'e', 'x'])).toEqual([new Set(['ff_two']), new Set(['ff_three']), new Set(['ff_one'])]);
 
     // @ts-ignore Simulate an error in connection.pipeline().exec()
     jest.spyOn(connection, 'pipeline').mockImplementationOnce(() => {
       return { exec: () => Promise.resolve([['error', null], [null, ['ff_three']], [null, ['ff_one']]]) };
     });
-    expect(await cache.getNamesByFlagSets(['o', 'e', 'x'])).toEqual([emptySet, new Set(['ff_three']), new Set(['ff_one'])]);
+    expect(await cache.getNamesBySets(['o', 'e', 'x'])).toEqual([emptySet, new Set(['ff_three']), new Set(['ff_one'])]);
     (connection.pipeline as jest.Mock).mockRestore();
 
-    await cache.removeSplit(featureFlagOne.name);
-    expect(await cache.getNamesByFlagSets(['x'])).toEqual([emptySet]);
+    await cache.remove(featureFlagOne.name);
+    expect(await cache.getNamesBySets(['x'])).toEqual([emptySet]);
 
-    await cache.removeSplit(featureFlagOne.name);
-    expect(await cache.getNamesByFlagSets(['y'])).toEqual([emptySet]); // 'y' not in filter
-    expect(await cache.getNamesByFlagSets([])).toEqual([]);
+    await cache.remove(featureFlagOne.name);
+    expect(await cache.getNamesBySets(['y'])).toEqual([emptySet]); // 'y' not in filter
+    expect(await cache.getNamesBySets([])).toEqual([]);
 
-    await cache.addSplit({ ...featureFlagWithoutFS, name: featureFlagWithEmptyFS.name });
-    expect(await cache.getNamesByFlagSets([])).toEqual([]);
+    await cache.add({ ...featureFlagWithoutFS, name: featureFlagWithEmptyFS.name });
+    expect(await cache.getNamesBySets([])).toEqual([]);
 
     // Delete splits, TT and flag set keys
     await cache.update([], [featureFlagThree.name, featureFlagTwo.name, featureFlagWithEmptyFS.name], -1);
-    await connection.del(keysBuilder.buildSplitsTillKey());
+    await connection.del(keysBuilder.buildDefinitionsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });
@@ -200,7 +200,7 @@ describe('SPLITS CACHE REDIS', () => {
   // if FlagSets filter is not defined, it should store all FlagSets in memory.
   test('flag set cache tests without filters', async () => {
     const connection = new RedisAdapter(loggerMock);
-    const cacheWithoutFilters = new SplitsCacheInRedis(loggerMock, keysBuilder, connection);
+    const cacheWithoutFilters = new DefinitionsCacheInRedis(loggerMock, keysBuilder, connection);
 
     const emptySet = new Set([]);
 
@@ -209,18 +209,18 @@ describe('SPLITS CACHE REDIS', () => {
       featureFlagTwo,
       featureFlagThree
     ], [], -1);
-    await cacheWithoutFilters.addSplit(featureFlagWithEmptyFS);
+    await cacheWithoutFilters.add(featureFlagWithEmptyFS);
 
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['n'])).toEqual([new Set(['ff_one'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['t'])).toEqual([new Set(['ff_two', 'ff_three'])]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['y'])).toEqual([emptySet]);
-    expect(await cacheWithoutFilters.getNamesByFlagSets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesBySets(['o'])).toEqual([new Set(['ff_one', 'ff_two'])]);
+    expect(await cacheWithoutFilters.getNamesBySets(['n'])).toEqual([new Set(['ff_one'])]);
+    expect(await cacheWithoutFilters.getNamesBySets(['e'])).toEqual([new Set(['ff_one', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesBySets(['t'])).toEqual([new Set(['ff_two', 'ff_three'])]);
+    expect(await cacheWithoutFilters.getNamesBySets(['y'])).toEqual([emptySet]);
+    expect(await cacheWithoutFilters.getNamesBySets(['o', 'n', 'e'])).toEqual([new Set(['ff_one', 'ff_two']), new Set(['ff_one']), new Set(['ff_one', 'ff_three'])]);
 
     // Delete splits, TT and flag set keys
     await cacheWithoutFilters.update([], [featureFlagThree.name, featureFlagTwo.name, featureFlagOne.name, featureFlagWithEmptyFS.name], -1);
-    await connection.del(keysBuilder.buildSplitsTillKey());
+    await connection.del(keysBuilder.buildDefinitionsTillKey());
     expect(await connection.keys(`${prefix}*`)).toHaveLength(0);
     await connection.disconnect();
   });

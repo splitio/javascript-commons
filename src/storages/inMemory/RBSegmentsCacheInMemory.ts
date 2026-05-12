@@ -1,6 +1,6 @@
 import { IRBSegment } from '../../dtos/types';
 import { setToArray } from '../../utils/lang/sets';
-import { usesSegments } from '../AbstractSplitsCacheSync';
+import { usesSegments } from '../AbstractDefinitionsCacheSync';
 import { IRBSegmentsCacheSync } from '../types';
 
 export class RBSegmentsCacheInMemory implements IRBSegmentsCacheSync {
