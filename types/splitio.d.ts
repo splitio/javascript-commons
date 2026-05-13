@@ -2467,7 +2467,7 @@ declare namespace SplitIO {
   /**
    * Configs SDK client interface.
    */
-  interface ConfigsClient extends IStatusInterface {
+  interface ConfigsClient extends Omit<IStatusInterface, 'ready'> {
     /**
      * Destroys the client.
      *
