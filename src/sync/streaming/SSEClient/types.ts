@@ -1,4 +1,4 @@
-import { IAuthTokenPushEnabled } from '../AuthClient/types';
+import { IJwtCredentialV2 } from '../AuthClient/types';
 
 export interface ISseEventHandler {
   handleError: (ev: Event) => any;
@@ -7,7 +7,7 @@ export interface ISseEventHandler {
 }
 
 export interface ISSEClient {
-  open(authToken: IAuthTokenPushEnabled): void,
+  open(authToken: IJwtCredentialV2): void,
   close(): void,
   setEventHandler(handler: ISseEventHandler): void
 }
