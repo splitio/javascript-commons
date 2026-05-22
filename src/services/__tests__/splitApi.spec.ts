@@ -50,20 +50,25 @@ describe('splitApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe(expectedConfigsUrl(-1, 100, settings.validateFilters || false, settings));
 
+    splitApi.fetchConfigsSegmentChanges(-1, 'segmentName', false, 100);
+    [url, { headers }] = fetchMock.mock.calls[5];
+    assertHeaders(settings, headers);
+    expect(url).toBe('configs/v1/segmentChanges/segmentName?since=-1&till=100');
+
     splitApi.postEventsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[5][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
 
     splitApi.postTestImpressionsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
-    expect(fetchMock.mock.calls[6][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
+    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
+    expect(fetchMock.mock.calls[7][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
 
     splitApi.postTestImpressionsCount('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
 
     splitApi.postMetricsConfig('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
-    splitApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[9][1].headers);
+    splitApi.postMetricsUsage('fake-body');
+    assertHeaders(settings, fetchMock.mock.calls[10][1].headers);
 
     expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(9);
 
@@ -78,7 +83,7 @@ describe('splitApi', () => {
 
     function expectedConfigsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings) {
       const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
-      return `sdk/v1/configs?since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+      return `configs/v1/configs?since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
   });
 

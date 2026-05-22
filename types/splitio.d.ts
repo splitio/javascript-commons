@@ -644,6 +644,7 @@ declare namespace SplitIO {
       auth: string;
       streaming: string;
       telemetry: string;
+      configs: string;
     };
     readonly integrations?: IntegrationFactory[];
     readonly logger?: Logger;
@@ -2356,11 +2357,11 @@ declare namespace SplitIO {
        */
       auth?: string;
       /**
-       * String property to override the base URL where the SDK will get rollout plan related data, like feature flags and segments definitions.
+       * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
        *
-       * @defaultValue `'https://appconfig.split.io/api'`
+       * @defaultValue `'https://configs.split.io/api'`
        */
-      sdk?: string;
+      configs?: string;
       /**
        * String property to override the base URL where the SDK will post event-related information like impressions.
        *

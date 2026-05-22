@@ -3,21 +3,22 @@ import { segmentsSyncTaskFactory } from './syncTasks/segmentsSyncTask';
 import { IPollingManager, ISegmentsSyncTask, IDefinitionsSyncTask } from './types';
 import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
-import { IDefinitionChangesFetcher } from './fetchers/types';
+import { IDefinitionChangesFetcher, ISegmentChangesFetcher } from './fetchers/types';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
  */
 export function pollingManagerSSFactory(
   params: ISdkFactoryContextSync,
-  definitionChangesFetcher: IDefinitionChangesFetcher
+  definitionChangesFetcher: IDefinitionChangesFetcher,
+  segmentChangesFetcher: ISegmentChangesFetcher
 ): IPollingManager {
 
-  const { splitApi, storage, readiness, settings } = params;
+  const { storage, readiness, settings } = params;
   const log = settings.log;
 
   const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings);
-  const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(splitApi.fetchSegmentChanges, storage, readiness, settings);
+  const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
 
   return {
     definitionsSyncTask,

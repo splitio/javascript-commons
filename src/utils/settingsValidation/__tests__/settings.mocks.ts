@@ -80,7 +80,8 @@ export const fullSettings: ISettings = {
     events: 'https://events.split.io/api',
     auth: 'https://auth.split.io/api',
     streaming: 'https://streaming.split.io',
-    telemetry: 'https://telemetry.split.io/api'
+    telemetry: 'https://telemetry.split.io/api',
+    configs: 'https://configs.split.io/api'
   },
   log: loggerMock,
   userConsent: undefined
@@ -105,7 +106,8 @@ export const settingsSplitApi = {
     sdk: 'sdk',
     auth: 'auth',
     streaming: 'streaming',
-    telemetry: 'telemetry'
+    telemetry: 'telemetry',
+    configs: 'configs'
   },
   sync: {
     impressionsMode: 'DEBUG',

@@ -62,8 +62,9 @@ export interface ISplitApi {
 	getEventsAPIHealthCheck: IHealthCheckAPI
 	fetchAuth: IFetchAuth
 	fetchSplitChanges: IFetchDefinitionChanges
-	fetchConfigs: IFetchDefinitionChanges
 	fetchSegmentChanges: IFetchSegmentChanges
+	fetchConfigs: IFetchDefinitionChanges
+	fetchConfigsSegmentChanges: IFetchSegmentChanges
 	fetchMemberships: IFetchMemberships
 	postEventsBulk: IPostEventsBulk
 	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
