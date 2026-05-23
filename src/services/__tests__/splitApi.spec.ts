@@ -45,10 +45,10 @@ describe('splitApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe(expectedFlagsUrl(-1, 100, settings.validateFilters || false, settings, -1));
 
-    splitApi.fetchConfigs(-1, false, 100);
+    splitApi.fetchConfigs(-1, false, 100, -1);
     [url, { headers }] = fetchMock.mock.calls[4];
     assertHeaders(settings, headers);
-    expect(url).toBe(expectedConfigsUrl(-1, 100, settings.validateFilters || false, settings));
+    expect(url).toBe(expectedConfigsUrl(-1, 100, settings.validateFilters || false, settings, -1));
 
     splitApi.fetchConfigsSegmentChanges(-1, 'segmentName', false, 100);
     [url, { headers }] = fetchMock.mock.calls[5];
@@ -81,9 +81,9 @@ describe('splitApi', () => {
       return `sdk/splitChanges?s=1.1&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
 
-    function expectedConfigsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings) {
+    function expectedConfigsUrl(since: number, till: number, usesFilter: boolean, settings: ISettings, rbSince?: number) {
       const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
-      return `configs/v1/configs?since=${since}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
+      return `configs/v1/configs?since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${usesFilter ? filterQueryString : ''}${till ? '&till=' + till : ''}`;
     }
   });
 
