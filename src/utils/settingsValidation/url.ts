@@ -1,9 +1,10 @@
 import { ISettings } from '../../types';
 
-const telemetryEndpointMatcher = /^\/v1\/metrics\/(config|usage)/;
+const telemetryEndpointMatcher = /^\/v1\/(metrics|keys)\/(config|usage|ss|cs)/;
 const eventsEndpointMatcher = /^\/(testImpressions|metrics|events)/;
 const authEndpointMatcher = /^\/(v2|v3)\/auth/;
 const streamingEndpointMatcher = /^\/(sse|event-stream)/;
+const configsEndpointMatcher = /^\/v1\/(configs|segmentChanges)/;
 
 /**
  * Get URL based on a given target (path).
@@ -25,6 +26,9 @@ export function url(settings: ISettings, target: string) {
   }
   if (streamingEndpointMatcher.test(target)) {
     return `${settings.urls.streaming}${target}`;
+  }
+  if (configsEndpointMatcher.test(target)) {
+    return `${settings.urls.configs}${target}`;
   }
   return `${settings.urls.sdk}${target}`;
 }
