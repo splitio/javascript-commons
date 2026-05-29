@@ -57,7 +57,7 @@ export function parseSegments(ruleEntity: IDefinition | IRBSegment, matcherType:
 }
 
 interface IDefinitionMutations<T extends IDefinition | IRBSegment> {
-  added: T[],
+  updated: T[],
   removed: string[],
   names: string[]
 }
@@ -91,7 +91,7 @@ function matchFilters(definition: IDefinition, filters: ISplitFiltersValidation)
 export function computeMutation<T extends IDefinition | IRBSegment>(update: { updated: T[], removed: string[] }, segments: Set<string>, filters?: ISplitFiltersValidation): IDefinitionMutations<T> {
   return update.updated.reduce((accum, ruleEntity) => {
     if (!filters || matchFilters(ruleEntity as IDefinition, filters)) {
-      accum.added.push(ruleEntity);
+      accum.updated.push(ruleEntity);
 
       parseSegments(ruleEntity).forEach((segmentName: string) => {
         segments.add(segmentName);
@@ -101,7 +101,7 @@ export function computeMutation<T extends IDefinition | IRBSegment>(update: { up
     }
     accum.names.push(ruleEntity.name);
     return accum;
-  }, { added: [], removed: update.removed, names: update.removed.slice() } as IDefinitionMutations<T>);
+  }, { updated: [], removed: update.removed, names: update.removed.slice() } as IDefinitionMutations<T>);
 }
 
 function convertInstantUpdateToDefinitionChanges(instantUpdate: InstantUpdate) {
@@ -180,17 +180,17 @@ export function definitionChangesUpdaterFactory(
           let updatedDefinitions: string[] = [];
           let ffUpdate: MaybeThenable<boolean> = false;
           if (definitionChanges.d) {
-            const { added, removed, names } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
+            const { updated, removed, names } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
             updatedDefinitions = names;
-            log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, added.length, removed.length]);
-            ffUpdate = definitions.update(added, removed, definitionChanges.d.till);
+            log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, updated.length, removed.length]);
+            ffUpdate = definitions.update(updated, removed, definitionChanges.d.till);
           }
 
           let rbsUpdate: MaybeThenable<boolean> = false;
           if (definitionChanges.rbs) {
-            const { added, removed } = computeMutation(definitionChanges.rbs, usedSegments);
-            log.debug(SYNC_UPDATE, ['rule-based segments', added.length, removed.length]);
-            rbsUpdate = rbSegments.update(added, removed, definitionChanges.rbs.till);
+            const { updated, removed } = computeMutation(definitionChanges.rbs, usedSegments);
+            log.debug(SYNC_UPDATE, ['rule-based segments', updated.length, removed.length]);
+            rbsUpdate = rbSegments.update(updated, removed, definitionChanges.rbs.till);
           }
 
           return Promise.all([ffUpdate, rbsUpdate,

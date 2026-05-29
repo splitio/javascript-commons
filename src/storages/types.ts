@@ -195,7 +195,7 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface IDefinitionsCacheBase {
-  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): MaybeThenable<boolean>,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber: number): MaybeThenable<boolean>,
   get(name: string): MaybeThenable<IDefinition | null>,
   getMany(names: string[]): MaybeThenable<Record<string, IDefinition | null>>, // `fetchMany` in spec
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
@@ -212,7 +212,7 @@ export interface IDefinitionsCacheBase {
 }
 
 export interface IDefinitionsCacheSync extends IDefinitionsCacheBase {
-  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber: number): boolean,
   get(name: string): IDefinition | null,
   getMany(names: string[]): Record<string, IDefinition | null>,
   getChangeNumber(): number,
@@ -226,7 +226,7 @@ export interface IDefinitionsCacheSync extends IDefinitionsCacheBase {
 }
 
 export interface IDefinitionsCacheAsync extends IDefinitionsCacheBase {
-  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean>,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean>,
   get(name: string): Promise<IDefinition | null>,
   getMany(names: string[]): Promise<Record<string, IDefinition | null>>,
   getChangeNumber(): Promise<number>,

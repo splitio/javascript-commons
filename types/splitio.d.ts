@@ -213,7 +213,7 @@ interface IServerSideSharedSettings {
    */
   startup?: {
     /**
-     * Time in seconds before emitting the SDK_READY_TIMED_OUT event.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `15`
      */
@@ -373,7 +373,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
    */
   startup?: {
     /**
-     * Time in seconds before emitting the SDK_READY_TIMED_OUT event.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `10`
      */
@@ -1439,7 +1439,7 @@ declare namespace SplitIO {
      */
     startup?: {
       /**
-       * Time in seconds before emitting the SDK_READY_TIMED_OUT event.
+       * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
        *
        * @defaultValue `10`
        */
@@ -2341,8 +2341,8 @@ declare namespace SplitIO {
      */
     logLevel?: LogLevel;
     /**
-     * Time in seconds before emitting the SDK_READY_TIMED_OUT event.
-     * A value of -1 disables the timeout and thus the event is never emitted.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
+     * A value of `-1` disables the timeout and thus the event is never emitted.
      *
      * @defaultValue `10`
      */

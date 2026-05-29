@@ -22,7 +22,7 @@ export const codesDebug: [number, string][] = codesInfo.concat([
   // synchronizer
   [c.SYNC_OFFLINE_DATA, c.LOG_PREFIX_SYNC_OFFLINE + 'Feature flags data: \n%s'],
   [c.SYNC_FETCH, c.LOG_PREFIX_SYNC + 'Spin up %s updates using since = %s and rbSince = %s.'],
-  [c.SYNC_UPDATE, c.LOG_PREFIX_SYNC + 'New %s: %s. Removed: %s.'],
+  [c.SYNC_UPDATE, c.LOG_PREFIX_SYNC + 'Updated %s: %s. Removed: %s.'],
   [c.STREAMING_NEW_MESSAGE, c.LOG_PREFIX_SYNC_STREAMING + 'New SSE message received, with data: %s.'],
   [c.SYNC_TASK_START, c.LOG_PREFIX_SYNC + 'Starting %s. Running each %s millis'],
   [c.SYNC_TASK_EXECUTE, c.LOG_PREFIX_SYNC + 'Running %s'],
