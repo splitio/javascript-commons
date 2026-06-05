@@ -29,7 +29,7 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
   function fetchAuth() {
     let url = `${urls.auth}/v3/auth?capabilities=config`;
-    return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
+    return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN), false, true);
   }
 
   const authenticate = authenticateFactory(fetchAuth);

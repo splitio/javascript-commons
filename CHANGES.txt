@@ -1,4 +1,4 @@
-3.0.0 (May XX, 2026)
+3.0.0 (June XX, 2026)
  - Extracted SDK lifecycle methods (`init`, `flush`, and `destroy`) into a reusable `sdkLifecycle` module.
  - Extracted the `track` method into a standalone `trackMethod` factory for reuse across SDKs.
  - Added a bloom filter utility and platform-specific modules (`src/platform/`) for reuse across SDKs.

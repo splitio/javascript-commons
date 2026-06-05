@@ -27,17 +27,20 @@ export function splitHttpClientFactory(settings: ISettings, { getOptions, getFet
   const commonHeaders: Record<string, string> = {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${authorizationKey}`,
-    'SplitSDKVersion': version
+    'Authorization': `Bearer ${authorizationKey}`
   };
 
   if (ip) commonHeaders['SplitSDKMachineIP'] = ip;
   if (hostname) commonHeaders['SplitSDKMachineName'] = removeNonISO88591(hostname);
 
-  return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo: boolean = false): Promise<IResponse> {
+  return function httpClient(url: string, reqOpts: IRequestOptions = {}, latencyTracker: (error?: NetworkError) => void = () => { }, logErrorsAsInfo?: boolean, newVersionHeader?: boolean): Promise<IResponse> {
 
     const request = objectAssign({
-      headers: decorateHeaders(settings, objectAssign({}, commonHeaders, reqOpts.headers || {})),
+      headers: decorateHeaders(settings, objectAssign(
+        newVersionHeader ? { 'X-Harness-FME-SDK-Version': version } : { 'SplitSDKVersion': version },
+        commonHeaders,
+        reqOpts.headers || {}
+      )),
       method: reqOpts.method || 'GET',
       body: reqOpts.body
     }, options);

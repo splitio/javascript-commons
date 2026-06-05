@@ -14,7 +14,8 @@ const FORBIDDEN_HEADERS = new Set([
   'content-encoding',
   'accept',
   'keep-alive',
-  'x-fastly-debug'
+  'x-fastly-debug',
+  'x-harness-fme-sdk-version'
 ]);
 
 export function decorateHeaders(settings: ISettings, headers: Record<string, string>) {

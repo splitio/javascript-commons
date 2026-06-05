@@ -31,7 +31,7 @@ export type IFetch = (url: string, options?: IRequestOptions) => Promise<IRespon
 // IFetch specialization
 export type IHealthCheckAPI = () => Promise<boolean>
 
-export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean) => Promise<IResponse>
+export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
 
 export type ISecureSplitHttpClient = ISplitHttpClient & { stop(): void }
 

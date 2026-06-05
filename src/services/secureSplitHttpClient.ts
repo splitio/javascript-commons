@@ -19,7 +19,7 @@ export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick
   const authProvider = authProviderFactory(settings, splitHttpClient, telemetryTracker);
 
   function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker: ((error?: NetworkError) => void) | undefined, logErrorsAsInfo: boolean | undefined, token: string): Promise<IResponse> {
-    return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo);
+    return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo, true);
   }
 
   const httpClient = function (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean): Promise<IResponse> {
