@@ -30,7 +30,7 @@ export function pushManagerFactory(
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 
-  const { settings, storage, splitApi, readiness, platform, telemetryTracker } = params;
+  const { settings, storage, serviceApi, readiness, platform, telemetryTracker } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -45,7 +45,7 @@ export function pushManagerFactory(
     log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
-  const authenticate = authenticateFactory(splitApi.fetchAuth);
+  const authenticate = authenticateFactory(serviceApi.fetchAuth);
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;

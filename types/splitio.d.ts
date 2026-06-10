@@ -2354,19 +2354,19 @@ declare namespace SplitIO {
       /**
        * String property to override the base URL where the SDK will get JWT authentication credentials.
        *
-       * @defaultValue `'https://auth.split.io/api'`
+       * @defaultValue `'https://auth.split.io'`
        */
       auth?: string;
       /**
        * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
        *
-       * @defaultValue `'https://configs.split.io/api'`
+       * @defaultValue `'https://configs.split.io'`
        */
       configs?: string;
       /**
        * String property to override the base URL where the SDK will post event-related information like impressions.
        *
-       * @defaultValue `'https://events.split.io/api'`
+       * @defaultValue `'https://events.split.io'`
        */
       events?: string;
     };

@@ -21,7 +21,7 @@ export function pollingManagerCSFactory(
   definitionChangesFetcher: IDefinitionChangesFetcher
 ): IPollingManagerCS {
 
-  const { splitApi, storage, readiness, settings } = params;
+  const { serviceApi, storage, readiness, settings } = params;
   const log = settings.log;
 
   const definitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, true);
@@ -59,7 +59,7 @@ export function pollingManagerCSFactory(
   });
 
   function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
-    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(splitApi.fetchMemberships, storage, readiness, settings, matchingKey);
+    const mySegmentsSyncTask = mySegmentsSyncTaskFactory(serviceApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
     // smart ready
     function smartReady(metadata: SdkUpdateMetadata) {

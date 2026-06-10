@@ -10,8 +10,8 @@ jest.mock('../submitters/submitterManager', () => {
   };
 });
 
-// Mocked splitApi
-const splitApiMock = {
+// Mocked serviceApi
+const serviceApiMock = {
   fetchSplitChanges: jest.fn()
 } as any;
 
@@ -54,7 +54,7 @@ test('syncManagerOnline should start or not the submitter depending on user cons
   const syncManager = syncManagerOnlineFactory()({
     settings, // @ts-ignore
     storage: {},
-    splitApi: splitApiMock,
+    serviceApi: serviceApiMock,
   });
   const submitterManager = syncManager.submitterManager!;
 
@@ -107,7 +107,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   const syncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
     storage: { validateCache: () => { return Promise.resolve({ initialCacheLoad: true, lastUpdateTimestamp: undefined }); } },
-    splitApi: splitApiMock,
+    serviceApi: serviceApiMock,
   });
 
   expect(pushManagerFactoryMock).not.toBeCalled();
@@ -177,7 +177,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   const testSyncManager = syncManagerOnlineFactory(() => pollingManagerMock, pushManagerFactoryMock)({
     settings, // @ts-ignore
     storage: { validateCache: () => Promise.resolve({ initialCacheLoad: true, lastUpdateTimestamp: undefined }) },
-    splitApi: splitApiMock,
+    serviceApi: serviceApiMock,
   });
 
   expect(pushManagerFactoryMock).toBeCalled();
@@ -197,7 +197,7 @@ test('syncManagerOnline should emit SDK_DEFINITIONS_CACHE_LOADED if validateCach
     settings: fullSettings,
     storage: { validateCache: () => Promise.resolve({ initialCacheLoad: false, lastUpdateTimestamp }) },
     readiness: { definitions: { emit: jest.fn() } },
-    splitApi: splitApiMock,
+    serviceApi: serviceApiMock,
   }; // @ts-ignore
   const syncManager = syncManagerOnlineFactory()(params);
 

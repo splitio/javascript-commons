@@ -1,5 +1,5 @@
 import { BrowserSignalListener } from '../browser';
-import { ISplitApi } from '../../services/types';
+import { IServiceApi } from '../../services/types';
 import { fullSettings } from '../../utils/settingsValidation/__tests__/settings.mocks';
 
 /* Mocks start */
@@ -74,13 +74,13 @@ const fakeStorageDebug = {
 };
 
 // @ts-expect-error
-const fakeSplitApi = {
+const fakeServiceApi = {
   postTestImpressionsBulk: jest.fn(() => Promise.resolve()),
   postEventsBulk: jest.fn(() => Promise.resolve()),
   postTestImpressionsCount: jest.fn(() => Promise.resolve()),
   postMetricsUsage: jest.fn(() => Promise.resolve()),
   postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),
-} as ISplitApi;
+} as IServiceApi;
 
 const VISIBILITYCHANGE_EVENT = 'visibilitychange';
 const PAGEHIDE_EVENT = 'pagehide';
@@ -129,7 +129,7 @@ beforeEach(() => {
   (global.document.addEventListener as jest.Mock).mockClear();
   (global.document.removeEventListener as jest.Mock).mockClear();
   if (global.window.navigator.sendBeacon) (global.window.navigator.sendBeacon as jest.Mock).mockClear();
-  Object.values(fakeSplitApi).forEach(method => method.mockClear()); // @ts-expect-error
+  Object.values(fakeServiceApi).forEach(method => method.mockClear()); // @ts-expect-error
   global.document.visibilityState = 'visible';
 });
 
@@ -161,7 +161,7 @@ function assertStop(listener: BrowserSignalListener) {
 test('Browser JS listener / consumer mode', () => {
   // No SyncManager ==> consumer mode
   // @ts-expect-error
-  const listener = new BrowserSignalListener({ syncManager: undefined, settings: fullSettings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
+  const listener = new BrowserSignalListener({ syncManager: undefined, settings: fullSettings, storage: fakeStorageOptimized, serviceApi: fakeServiceApi });
 
   listener.start();
   assertStart(listener);
@@ -171,9 +171,9 @@ test('Browser JS listener / consumer mode', () => {
 
   // Unload event was triggered, but sendBeacon and post services should not be called
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(0);
-  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postEventsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsCount).not.toBeCalled();
 
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
@@ -186,7 +186,7 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageOptimized, serviceApi: fakeServiceApi });
 
   listener.start();
   assertStart(listener);
@@ -197,9 +197,9 @@ test('Browser JS listener / standalone mode / Impressions optimized mode with te
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(5);
 
   // Http post services should have not been called
-  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postEventsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsCount).not.toBeCalled();
 
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
@@ -211,7 +211,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   const syncManagerMock = {};
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageDebug, splitApi: fakeSplitApi });
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings: fullSettings, storage: fakeStorageDebug, serviceApi: fakeServiceApi });
 
   listener.start();
   assertStart(listener);
@@ -227,9 +227,9 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
 
   // Http post services should have not been called
-  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postEventsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsCount).not.toBeCalled();
 
   // pre-check and call stop
   expect(global.window.removeEventListener).not.toBeCalled();
@@ -240,7 +240,7 @@ test('Browser JS listener / standalone mode / Impressions debug mode', () => {
 test('Browser JS listener / standalone mode / Fallback to regular Fetch transport', () => {
 
   function runBrowserListener() { // @ts-expect-error
-    const listener = new BrowserSignalListener({ syncManager: {}, settings: fullSettings, storage: fakeStorageDebug, splitApi: fakeSplitApi });
+    const listener = new BrowserSignalListener({ syncManager: {}, settings: fullSettings, storage: fakeStorageDebug, serviceApi: fakeServiceApi });
     listener.start();
     // Trigger data flush
     triggerEvent(VISIBILITYCHANGE_EVENT, 'hidden');
@@ -264,8 +264,8 @@ test('Browser JS listener / standalone mode / Fallback to regular Fetch transpor
   runBrowserListener();
 
   // Assert that browser listener has fallen back to the regular Fetch transport when sendBeacon fails or is not available
-  expect(fakeSplitApi.postTestImpressionsBulk).toBeCalledTimes(3);
-  expect(fakeSplitApi.postEventsBulk).toBeCalledTimes(3);
+  expect(fakeServiceApi.postTestImpressionsBulk).toBeCalledTimes(3);
+  expect(fakeServiceApi.postEventsBulk).toBeCalledTimes(3);
 
   // restore sendBeacon API
   global.navigator.sendBeacon = sendBeacon;
@@ -276,7 +276,7 @@ test('Browser JS listener / standalone mode / user consent status', () => {
   const settings = { ...fullSettings };
 
   // @ts-expect-error
-  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings, storage: fakeStorageOptimized, splitApi: fakeSplitApi });
+  const listener = new BrowserSignalListener({ syncManager: syncManagerMock, settings, storage: fakeStorageOptimized, serviceApi: fakeServiceApi });
 
   listener.start();
 
@@ -287,9 +287,9 @@ test('Browser JS listener / standalone mode / user consent status', () => {
 
   // Unload event was triggered when user consent was unknown and declined. Thus sendBeacon and post services should be called only for telemetry
   expect(global.window.navigator.sendBeacon).toBeCalledTimes(2);
-  expect(fakeSplitApi.postTestImpressionsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postEventsBulk).not.toBeCalled();
-  expect(fakeSplitApi.postTestImpressionsCount).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postEventsBulk).not.toBeCalled();
+  expect(fakeServiceApi.postTestImpressionsCount).not.toBeCalled();
   (global.window.navigator.sendBeacon as jest.Mock).mockClear();
 
   settings.userConsent = 'GRANTED';

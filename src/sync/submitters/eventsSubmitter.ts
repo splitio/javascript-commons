@@ -9,7 +9,7 @@ export function eventsSubmitterFactory(params: ISdkFactoryContextSync) {
 
   const {
     settings: { log, scheduler: { eventsPushRate }, startup: { eventsFirstPushWindow } },
-    splitApi: { postEventsBulk },
+    serviceApi: { postEventsBulk },
     storage: { events },
   } = params;
 

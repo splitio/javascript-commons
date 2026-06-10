@@ -16,7 +16,7 @@ describe('Events submitter', () => {
       scheduler: { eventsPushRate: 30000 },
       startup: { eventsFirstPushWindow: 0 }
     },
-    splitApi: {},
+    serviceApi: {},
     storage: { events: eventsCacheMock }
   };
 
@@ -78,14 +78,14 @@ describe('Events submitter', () => {
     const params = {
       settings: { log: loggerMock, scheduler: { eventsPushRate: 100 }, startup: { eventsFirstPushWindow: 0 } },
       storage: { events: eventsCacheInMemory },
-      splitApi: { postEventsBulk: jest.fn(() => Promise.resolve()) },
+      serviceApi: { postEventsBulk: jest.fn(() => Promise.resolve()) },
     }; // @ts-ignore
     const eventsSubmitter = eventsSubmitterFactory(params);
 
     eventsCacheInMemory.track({ eventTypeId: 'event1', timestamp: 1 });
 
     eventsSubmitter.start();
-    expect(params.splitApi.postEventsBulk.mock.calls).toEqual([['[{"eventTypeId":"event1","timestamp":1}]']]);
+    expect(params.serviceApi.postEventsBulk.mock.calls).toEqual([['[{"eventTypeId":"event1","timestamp":1}]']]);
 
     // Tracking event when POST is pending
     eventsCacheInMemory.track({ eventTypeId: 'event2', timestamp: 1 });
@@ -93,7 +93,7 @@ describe('Events submitter', () => {
     setTimeout(() => { eventsCacheInMemory.track({ eventTypeId: 'event3', timestamp: 1 }); });
 
     setTimeout(() => {
-      expect(params.splitApi.postEventsBulk.mock.calls).toEqual([
+      expect(params.serviceApi.postEventsBulk.mock.calls).toEqual([
         // POST with event1
         ['[{"eventTypeId":"event1","timestamp":1}]'],
         // POST with event2 and event3

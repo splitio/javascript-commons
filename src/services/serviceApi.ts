@@ -1,7 +1,7 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { IServiceApi } from './types';
+import { ISecureSplitHttpClient, IServiceApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
@@ -13,39 +13,41 @@ function userKeyToQueryParam(userKey: string) {
   return 'users=' + encodeURIComponent(userKey); // no need to check availability of `encodeURIComponent`, since it is a global highly supported.
 }
 
-// @TODO remove when migrating to the new `urls` defaults.
 /**
- * Factory of ServiceApi objects, which group the collection of Split HTTP endpoints used by the SDK
+ * Factory of ServiceApi objects, which group the collection of HTTP endpoints used by the SDKs
  *
  * @param settings - validated settings object
  * @param platform - object containing environment-specific dependencies
  * @param telemetryTracker - telemetry tracker
+ * @param secureSplitHttpClientFactory - factory of SecureSplitHttpClient objects
  */
-export function splitApiFactory(
+export function serviceApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
-  telemetryTracker: ITelemetryTracker
+  telemetryTracker: ITelemetryTracker,
+  secureSplitHttpClientFactory?: (settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, telemetryTracker: ITelemetryTracker) => ISecureSplitHttpClient,
 ): IServiceApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
   const splitHttpClient = splitHttpClientFactory(settings, platform);
+  const secureSplitHttpClient = secureSplitHttpClientFactory!(settings, platform, telemetryTracker);
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
     getSdkAPIHealthCheck() {
-      const url = `${urls.sdk}/version`;
+      const url = `${urls.sdk}/api/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
     },
 
     getEventsAPIHealthCheck() {
-      const url = `${urls.events}/version`;
+      const url = `${urls.events}/api/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
     },
 
     fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
+      let url = `${urls.auth}/api/v2/auth?s=${settings.sync.flagSpecVersion}`;
       if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
         const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
         if (queryParams) url += '&' + queryParams;
@@ -54,7 +56,7 @@ export function splitApiFactory(
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
-      const url = `${urls.sdk}/splitChanges?s=${settings.sync.flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+      const url = `${urls.sdk}/api/splitChanges?s=${settings.sync.flagSpecVersion}&since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SPLITS))
         .catch((err) => {
           if (err.statusCode === 414) settings.log.error(ERROR_TOO_MANY_SETS);
@@ -63,8 +65,19 @@ export function splitApiFactory(
     },
 
     fetchSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
-      const url = `${urls.sdk}/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
+      const url = `${urls.sdk}/api/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(SEGMENT));
+    },
+
+    // @TODO support filterQueryString and handle ERROR_TOO_MANY_SETS error
+    fetchConfigs(since: number, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/api/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+      return secureSplitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+    },
+
+    fetchConfigsSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/api/v1/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
+      return secureSplitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
     fetchMemberships(userMatchingKey: string, noCache?: boolean, till?: number) {
@@ -74,7 +87,7 @@ export function splitApiFactory(
        *  - avoid 404 responses. E.g.: '/api/memberships/foo/bar'
        *  - match user keys with special characters. E.g.: 'foo%bar', 'foo/bar'
        */
-      const url = `${urls.sdk}/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
+      const url = `${urls.sdk}/api/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MEMBERSHIPS));
     },
 
@@ -85,7 +98,7 @@ export function splitApiFactory(
      * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postEventsBulk(body: string, headers?: Record<string, string>) {
-      const url = `${urls.events}/events/bulk`;
+      const url = `${urls.events}/api/events/bulk`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS));
     },
 
@@ -96,7 +109,7 @@ export function splitApiFactory(
      * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
-      const url = `${urls.events}/testImpressions/bulk`;
+      const url = `${urls.events}/api/testImpressions/bulk`;
       return splitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
@@ -110,7 +123,7 @@ export function splitApiFactory(
      * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postTestImpressionsCount(body: string, headers?: Record<string, string>) {
-      const url = `${urls.events}/testImpressions/count`;
+      const url = `${urls.events}/api/testImpressions/count`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
     },
 
@@ -121,7 +134,7 @@ export function splitApiFactory(
      * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
-      const url = `${urls.telemetry}/v1/keys/cs`;
+      const url = `${urls.telemetry}/api/v1/keys/cs`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
 
@@ -132,35 +145,22 @@ export function splitApiFactory(
      * @param headers -  Optionals headers to overwrite default ones. For example, it is used in producer mode to overwrite metadata headers.
      */
     postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
-      const url = `${urls.telemetry}/v1/keys/ss`;
+      const url = `${urls.telemetry}/api/v1/keys/ss`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
     },
 
     postMetricsConfig(body: string, headers?: Record<string, string>) {
-      const url = `${urls.telemetry}/v1/metrics/config`;
+      const url = `${urls.telemetry}/api/v1/metrics/config`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
     },
 
     postMetricsUsage(body: string, headers?: Record<string, string>) {
-      const url = `${urls.telemetry}/v1/metrics/usage`;
+      const url = `${urls.telemetry}/api/v1/metrics/usage`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
     },
 
-
-    // Not used. Just here to satisfy the IServiceApi interface.
-
-    fetchConfigs(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.configs}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
-    },
-
-    fetchConfigsSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
-      const url = `${urls.configs}/v1/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
-      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
-    },
-
     stop() {
-      // no-op
+      secureSplitHttpClient.stop();
     }
   };
 }

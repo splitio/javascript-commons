@@ -7,7 +7,7 @@ const COOLDOWN_TIME_IN_MILLIS = 1000;
  * Creates an Sdk client, i.e., a base client with status, init, flush and destroy interface
  */
 export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?: boolean): { init(): void; flush(): Promise<void>; destroy(): Promise<void> } {
-  const { sdkReadinessManager, syncManager, storage, settings, telemetryTracker, impressionsTracker, platform, splitApi } = params;
+  const { sdkReadinessManager, syncManager, storage, settings, telemetryTracker, impressionsTracker, platform, serviceApi } = params;
 
   let hasInit = false;
   let lastActionTime = 0;
@@ -68,7 +68,7 @@ export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?:
 
       // Stop background jobs
       syncManager && syncManager.stop();
-      splitApi && splitApi.stop();
+      serviceApi && serviceApi.stop();
 
       return __flush().then(() => {
         // Cleanup storage

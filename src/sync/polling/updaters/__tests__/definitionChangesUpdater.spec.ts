@@ -7,7 +7,7 @@ import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
 import { definitionChangesUpdaterFactory, parseSegments, computeMutation } from '../definitionChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
-import { fullSettings, settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
+import { fullSettings, settingsServiceApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
@@ -191,9 +191,9 @@ describe('definitionChangesUpdater', () => {
   const storage = { definitions, rbSegments, segments };
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
-  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
-  const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges'); // @ts-ignore
-  const splitChangesFetcher = splitChangesFetcherFactory({ splitApi, settings: fullSettings, storage });
+  const serviceApi = splitApiFactory(settingsServiceApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
+  const fetchSplitChanges = jest.spyOn(serviceApi, 'fetchSplitChanges'); // @ts-ignore
+  const splitChangesFetcher = splitChangesFetcherFactory({ serviceApi, settings: fullSettings, storage });
 
   const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
   const splitsEmitSpy = jest.spyOn(readinessManager.definitions, 'emit');

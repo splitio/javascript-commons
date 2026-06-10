@@ -57,7 +57,7 @@ export type IPostMetricsConfig = (body: string, headers?: Record<string, string>
 
 export type IPostMetricsUsage = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export interface ISplitApi {
+export interface IServiceApi {
 	getSdkAPIHealthCheck: IHealthCheckAPI
 	getEventsAPIHealthCheck: IHealthCheckAPI
 	fetchAuth: IFetchAuth

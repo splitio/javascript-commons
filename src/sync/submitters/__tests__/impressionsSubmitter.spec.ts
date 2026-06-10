@@ -19,11 +19,11 @@ describe('Impressions submitter', () => {
   const params: any = {
     settings: { log: loggerMock, scheduler: { impressionsRefreshRate: 100 }, core: {} },
     storage: { impressions: impressionsCacheInMemory },
-    splitApi: { postTestImpressionsBulk: jest.fn(() => Promise.resolve()) },
+    serviceApi: { postTestImpressionsBulk: jest.fn(() => Promise.resolve()) },
   };
 
   beforeEach(() => {
-    params.splitApi.postTestImpressionsBulk.mockClear();
+    params.serviceApi.postTestImpressionsBulk.mockClear();
   });
 
   test('doesn\'t drop items from cache when POST is resolved', (done) => {
@@ -37,7 +37,7 @@ describe('Impressions submitter', () => {
     setTimeout(() => { impressionsCacheInMemory.track([imp3]); });
 
     setTimeout(() => {
-      expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
+      expect(params.serviceApi.postTestImpressionsBulk.mock.calls).toEqual([
         // POST with imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
         // POST with imp2 and imp3
@@ -50,7 +50,7 @@ describe('Impressions submitter', () => {
 
   test('in case of retry, pop new items from cache to include in the POST payload', (done) => {
     // Make the POST request fail
-    params.splitApi.postTestImpressionsBulk.mockImplementation(() => Promise.reject());
+    params.serviceApi.postTestImpressionsBulk.mockImplementation(() => Promise.reject());
 
     const impressionsSubmitter = impressionsSubmitterFactory(params);
     impressionsCacheInMemory.track([imp1]);
@@ -62,7 +62,7 @@ describe('Impressions submitter', () => {
     setTimeout(() => { impressionsCacheInMemory.track([imp3]); });
 
     setTimeout(() => {
-      expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
+      expect(params.serviceApi.postTestImpressionsBulk.mock.calls).toEqual([
         // impression for imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
         // impressions for imp1, imp2 and imp3
@@ -74,7 +74,7 @@ describe('Impressions submitter', () => {
   });
 
   test('if it is executed while POST is pending, execution is queued until POST is resolved and not same items are submitted', (done) => {
-    params.splitApi.postTestImpressionsBulk.mockImplementation(() => Promise.resolve());
+    params.serviceApi.postTestImpressionsBulk.mockImplementation(() => Promise.resolve());
 
     const impressionsSubmitter = impressionsSubmitterFactory(params);
     impressionsCacheInMemory.track([imp1]);
@@ -83,7 +83,7 @@ describe('Impressions submitter', () => {
     // Tracking impression and executing submitter while POST is pending
     impressionsCacheInMemory.track([{ ...imp1, keyName: 'k2' }]);
     impressionsSubmitter.execute().then(() => {
-      expect(params.splitApi.postTestImpressionsBulk.mock.calls).toEqual([
+      expect(params.serviceApi.postTestImpressionsBulk.mock.calls).toEqual([
         // impression for k1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
         // impression for k2

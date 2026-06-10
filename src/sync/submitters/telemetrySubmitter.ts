@@ -119,12 +119,12 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
   const { storage: { telemetry }, platform: { now } } = params;
   if (!telemetry || !now) return; // No submitter created if telemetry cache is not defined
 
-  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, splitApi, readiness } = params;
+  const { settings, settings: { log, scheduler: { telemetryRefreshRate } }, serviceApi, readiness } = params;
   const stopTimer = timer(now);
 
   const submitter = firstPushWindowDecorator(
     submitterFactory(
-      log, splitApi.postMetricsUsage,
+      log, serviceApi.postMetricsUsage,
       telemetry,
       telemetryRefreshRate, undefined, 0, true
     ),
@@ -140,7 +140,7 @@ export function telemetrySubmitterFactory(params: ISdkFactoryContextSync) {
 
     // Post config data when the SDK is ready and if the telemetry submitter was started
     if (submitter.isRunning()) {
-      const postMetricsConfigTask = submitterFactory(log, splitApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, undefined, 0, true);
+      const postMetricsConfigTask = submitterFactory(log, serviceApi.postMetricsConfig, telemetryCacheConfigAdapter(telemetry, settings), 0, undefined, 0, true);
       postMetricsConfigTask.execute();
     }
   });

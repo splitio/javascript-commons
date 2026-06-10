@@ -8,7 +8,7 @@ import { hash } from '../../../utils/murmur3/murmur3';
 /**
  * Factory of authentication function.
  *
- * @param fetchAuth - `SplitAPI.fetchAuth` endpoint
+ * @param fetchAuth - `ServiceApi.fetchAuth` endpoint
  */
 export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
 

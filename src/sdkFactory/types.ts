@@ -2,9 +2,9 @@ import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/
 import { ISignalListener } from '../listeners/types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import type { sdkManagerFactory } from '../sdkManager';
-import type { splitApiFactory } from '../services/splitApi';
+import { serviceApiFactory } from '../services/serviceApi';
 import type { IFallbackCalculator } from '../evaluator/fallbackTreatmentsCalculator';
-import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
+import { IFetch, IServiceApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
@@ -55,7 +55,7 @@ export interface ISdkFactoryContext {
   eventTracker: IEventTracker,
   telemetryTracker: ITelemetryTracker,
   storage: IStorageSync | IStorageAsync,
-  splitApi?: ISplitApi,
+  serviceApi?: IServiceApi,
   syncManager?: ISyncManager,
   clients: Record<string, SplitIO.IBasicClient>,
   fallbackCalculator: IFallbackCalculator,
@@ -64,13 +64,13 @@ export interface ISdkFactoryContext {
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {
   storage: IStorageSync,
-  splitApi: ISplitApi
+  serviceApi: IServiceApi
   syncManager: ISyncManager,
 }
 
 export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
   storage: IStorageAsync,
-  splitApi: undefined,
+  serviceApi: undefined,
   syncManager: undefined
 }
 
@@ -91,9 +91,9 @@ export interface ISdkFactoryParams {
   // sync SDK (`IBrowserSDK` and `ISDK`) with `IStorageSync`, and async SDK (`IBrowserAsyncSDK` and `IAsyncSDK`) with `IStorageAsync`
   storageFactory: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
 
-  // Factory of Split Api (HTTP Client Service).
+  // Factory of ServiceApi (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: typeof splitApiFactory,
+  serviceApiFactory?: typeof serviceApiFactory,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
