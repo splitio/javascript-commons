@@ -2315,7 +2315,7 @@ declare namespace SplitIO {
      *
      * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
      */
-    authorizationKey: string;
+    sdkKey: string;
     /**
      * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
      *
@@ -2380,33 +2380,6 @@ declare namespace SplitIO {
      */
     requestOptions?: {
       /**
-       * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
-       * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
-       * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
-       * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
-       *
-       * @defaultValue `undefined`
-       *
-       * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
-       * @returns An object representing a set of headers to be merged with the current headers.
-       *
-       * @example
-       * ```
-       * const client = ConfigsClient({
-       *   ...
-       *   requestOptions: {
-       *     getHeaderOverrides: (context) => {
-       *       return {
-       *         'Authorization': context.headers['Authorization'] + ', other-value',
-       *         'custom-header': 'custom-value'
-       *       };
-       *     }
-       *   }
-       * });
-       * ```
-       */
-      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
-      /**
        * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
        *
        * You can use it, for example, for certificate pinning or setting a network proxy:
@@ -2469,7 +2442,7 @@ declare namespace SplitIO {
   /**
    * Configs SDK client interface.
    */
-  interface ConfigsClient extends Omit<IStatusInterface, 'ready'> {
+  interface ConfigsClient extends Omit<IStatusInterface, 'ready' | 'whenReadyFromCache'> {
     /**
      * Destroys the client.
      *
