@@ -1,5 +1,4 @@
 import { objectAssign } from '../utils/lang/objectAssign';
-import { promiseWrapper } from '../utils/promise/wrapper';
 import { readinessManagerFactory } from './readinessManager';
 import { ISdkReadinessManager } from './types';
 import { ISettings } from '../types';
@@ -34,32 +33,17 @@ export function sdkReadinessManagerFactory(
     }
   });
 
-  /** Ready promise */
-  const readyPromise = generateReadyPromise();
+  readinessManager.gate.once(SDK_READY, () => {
+    log.info(CLIENT_READY);
+  });
+
+  readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
+    log.error(message);
+  });
 
   readinessManager.gate.once(SDK_READY_FROM_CACHE, () => {
     log.info(CLIENT_READY_FROM_CACHE);
   });
-
-  // default onRejected handler, that just logs the error, if ready promise doesn't have one.
-  function defaultOnRejected(err: any) {
-    log.error(err && err.message);
-  }
-
-  function generateReadyPromise() {
-    const promise = promiseWrapper(new Promise<void>((resolve, reject) => {
-      readinessManager.gate.once(SDK_READY, () => {
-        log.info(CLIENT_READY);
-
-        resolve();
-      });
-      readinessManager.gate.once(SDK_READY_TIMED_OUT, (message: string) => {
-        reject(new Error(message));
-      });
-    }), defaultOnRejected);
-
-    return promise;
-  }
 
   function getStatus() {
     return {
@@ -90,18 +74,6 @@ export function sdkReadinessManagerFactory(
           SDK_READY_FROM_CACHE,
           SDK_UPDATE,
           SDK_READY_TIMED_OUT,
-        },
-
-        // @TODO: remove in next major
-        ready() {
-          if (readinessManager.hasTimedout()) {
-            if (!readinessManager.isReady()) {
-              return promiseWrapper(Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
-            } else {
-              return Promise.resolve();
-            }
-          }
-          return readyPromise;
         },
 
         whenReady() {
