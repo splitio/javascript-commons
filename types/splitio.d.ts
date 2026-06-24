@@ -26,7 +26,7 @@ interface ISharedSettings {
      * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
      *
      * NOTES:
-     * - This configuration is only meaningful when the SDK is working in `"standalone"` mode.
+     * - This configuration is only meaningful when the SDK is working in `'standalone'` mode.
      * - If `bySet` filter is provided, `byName` and `byPrefix` filters are ignored.
      * - If both `byName` and `byPrefix` filters are provided, the intersection of the two groups of feature flags is fetched.
      *
@@ -2311,64 +2311,73 @@ declare namespace SplitIO {
    */
   interface ConfigsClientSettings {
     /**
-     * Your SDK key.
+     * SDK key used to authenticate with Harness services.
      *
      * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
      */
     sdkKey: string;
     /**
-     * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
-     *
-     * @defaultValue `60`
+     * Log level for SDK logging.
+     * - `'none'`: No logging
+     * - `'error'`: Log errors only
+     * - `'warn'`: Log warnings and errors
+     * - `'info'`: Log info, warnings, and errors
+     * - `'debug'`: Log debug info and above
+     * @defaultValue `'none'`
      */
-    pollingRate?: number;
+    logLevel?: 'none' | 'error' | 'warn' | 'info' | 'debug';
     /**
-     * Push rate for events and impressions, in seconds. Minimum value: 60.
-     *
-     * @defaultValue `60`
+     * Synchronization configuration.
      */
-    pushRate?: number;
-    /**
-     * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
-     *
-     * @defaultValue `10000`
-     */
-    queueSize?: number;
-    /**
-     * Logging level.
-     *
-     * @defaultValue `'NONE'`
-     */
-    logLevel?: LogLevel;
-    /**
-     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
-     * A value of `-1` disables the timeout and thus the event is never emitted.
-     *
-     * @defaultValue `10`
-     */
-    readyTimeout?: number;
-    /**
-     * Custom endpoints to replace the default ones used by the SDK.
-     */
-    urls?: {
+    sync?: {
       /**
-       * String property to override the base URL where the SDK will get JWT authentication credentials.
+       * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
        *
-       * @defaultValue `'https://auth.split.io'`
+       * @defaultValue `60`
        */
-      auth?: string;
+      pollingRate?: number;
       /**
-       * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
+       * Push rate for events and impressions, in seconds. Minimum value: 60.
        *
-       * @defaultValue `'https://configs.split.io'`
+       * @defaultValue `60`
        */
-      configs?: string;
+      pushRate?: number;
       /**
-       * String property to override the base URL where the SDK will post event-related information like impressions.
+       * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
        *
-       * @defaultValue `'https://events.split.io'`
+       * @defaultValue `10000`
        */
-      events?: string;
+      queueSize?: number;
+      /**
+       * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
+       * A value of `-1` disables the timeout and thus the event is never emitted.
+       *
+       * @defaultValue `10`
+       */
+      readyTimeout?: number;
+      /**
+       * Base URLs used by the SDK for different services.
+       */
+      serviceEndpoints?: {
+        /**
+         * String property to override the base URL where the SDK will get JWT authentication credentials.
+         *
+         * @defaultValue `'https://auth.split.io'`
+         */
+        auth?: string;
+        /**
+         * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
+         *
+         * @defaultValue `'https://configs.split.io'`
+         */
+        configs?: string;
+        /**
+         * String property to override the base URL where the SDK will post event-related information like impressions.
+         *
+         * @defaultValue `'https://events.split.io'`
+         */
+        events?: string;
+      };
     };
     /**
      * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
@@ -2385,6 +2394,7 @@ declare namespace SplitIO {
        * You can use it, for example, for certificate pinning or setting a network proxy:
        *
        * ```
+       * const { ConfigsClient } = require('@splitsoftware/splitio-configs');
        * const { HttpsProxyAgent } = require('https-proxy-agent');
        *
        * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
