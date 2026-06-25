@@ -12,7 +12,7 @@
  - Removed the misleading warning log 'No listeners for SDK_READY event detected', since users can use the `whenReady` method to wait for the SDK to be ready.
  - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
 
-2.12.1 (April 30, 2026)
+2.12.1 (June 25, 2026)
  - Updated internal modules to handle `null` values from `/splitChanges` response.
  - Updated some dependencies for vulnerability fixes.
 

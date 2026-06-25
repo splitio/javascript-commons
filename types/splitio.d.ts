@@ -79,7 +79,7 @@ interface ISharedSettings {
        *           'Authorization': context.headers['Authorization'] + ', other-value',
        *           'custom-header': 'custom-value'
        *         };
-       *       };
+       *       }
        *     }
        *   }
        * });
@@ -925,7 +925,7 @@ declare namespace SplitIO {
   type AsyncTreatmentWithConfig = Promise<TreatmentWithConfig>;
   /**
    * An object with the treatments with configs for a bulk of feature flags, returned by getTreatmentsWithConfig.
-   * Each existing configuration is a stringified version of the JSON you defined on the Split user interface. For example:
+   * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI. For example:
    * ```
    *   {
    *     feature1: { treatment: 'on', config: null }
@@ -1080,7 +1080,7 @@ declare namespace SplitIO {
     changeNumber: number;
     /**
      * Map of configurations per treatment.
-     * Each existing configuration is a stringified version of the JSON you defined on the Split user interface.
+     * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI.
      */
     configs: {
       [treatmentName: string]: string;
@@ -1599,7 +1599,7 @@ declare namespace SplitIO {
          *           'Authorization': context.headers['Authorization'] + ', other-value',
          *           'custom-header': 'custom-value'
          *         };
-         *       };
+         *       }
          *     }
          *   }
          * });
