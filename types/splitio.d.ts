@@ -26,7 +26,7 @@ interface ISharedSettings {
      * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
      *
      * NOTES:
-     * - This configuration is only meaningful when the SDK is working in `"standalone"` mode.
+     * - This configuration is only meaningful when the SDK is working in `'standalone'` mode.
      * - If `bySet` filter is provided, `byName` and `byPrefix` filters are ignored.
      * - If both `byName` and `byPrefix` filters are provided, the intersection of the two groups of feature flags is fetched.
      *
@@ -73,11 +73,13 @@ interface ISharedSettings {
        * const factory = SplitFactory({
        *   ...
        *   sync: {
-       *     getHeaderOverrides: (context) => {
-       *       return {
-       *         'Authorization': context.headers['Authorization'] + ', other-value',
-       *         'custom-header': 'custom-value'
-       *       };
+       *     requestOptions: {
+       *       getHeaderOverrides: (context) => {
+       *         return {
+       *           'Authorization': context.headers['Authorization'] + ', other-value',
+       *           'custom-header': 'custom-value'
+       *         };
+       *       }
        *     }
        *   }
        * });
@@ -211,7 +213,7 @@ interface IServerSideSharedSettings {
    */
   startup?: {
     /**
-     * Maximum amount of time used before notify a timeout.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `15`
      */
@@ -371,7 +373,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
    */
   startup?: {
     /**
-     * Maximum amount of time used before notify a timeout.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `10`
      */
@@ -501,7 +503,7 @@ declare namespace SplitIO {
      */
     type: SdkUpdateMetadataType;
     /**
-     * The names of the flags or segments that were updated.
+     * The names of the flags that were updated. Empty array if the update is of type 'SEGMENTS_UPDATE'.
      */
     names: string[];
   }
@@ -922,7 +924,7 @@ declare namespace SplitIO {
   type AsyncTreatmentWithConfig = Promise<TreatmentWithConfig>;
   /**
    * An object with the treatments with configs for a bulk of feature flags, returned by getTreatmentsWithConfig.
-   * Each existing configuration is a stringified version of the JSON you defined on the Split user interface. For example:
+   * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI. For example:
    * ```
    *   {
    *     feature1: { treatment: 'on', config: null }
@@ -1077,7 +1079,7 @@ declare namespace SplitIO {
     changeNumber: number;
     /**
      * Map of configurations per treatment.
-     * Each existing configuration is a stringified version of the JSON you defined on the Split user interface.
+     * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI.
      */
     configs: {
       [treatmentName: string]: string;
@@ -1436,9 +1438,9 @@ declare namespace SplitIO {
      */
     startup?: {
       /**
-       * Maximum amount of time used before notify a timeout.
+       * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
        *
-       * @defaultValue `5`
+       * @defaultValue `10`
        */
       readyTimeout?: number;
       /**
@@ -1590,11 +1592,13 @@ declare namespace SplitIO {
          * const factory = SplitFactory({
          *   ...
          *   sync: {
-         *     getHeaderOverrides: (context) => {
-         *       return {
-         *         'Authorization': context.headers['Authorization'] + ', other-value',
-         *         'custom-header': 'custom-value'
-         *       };
+         *     requestOptions: {
+         *       getHeaderOverrides: (context) => {
+         *         return {
+         *           'Authorization': context.headers['Authorization'] + ', other-value',
+         *           'custom-header': 'custom-value'
+         *         };
+         *       }
          *     }
          *   }
          * });

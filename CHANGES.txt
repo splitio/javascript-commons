@@ -1,4 +1,4 @@
-2.12.1 (April 30, 2026)
+2.12.1 (June 25, 2026)
  - Updated internal modules to handle `null` values from `/splitChanges` response.
  - Updated some dependencies for vulnerability fixes.
 
