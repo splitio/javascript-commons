@@ -2394,7 +2394,7 @@ declare namespace SplitIO {
        * You can use it, for example, for certificate pinning or setting a network proxy:
        *
        * ```
-       * const { ConfigsClient } = require('@splitsoftware/splitio-configs');
+       * const { ConfigsClient } = require('@splitsoftware/configs');
        * const { HttpsProxyAgent } = require('https-proxy-agent');
        *
        * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');

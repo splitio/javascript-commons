@@ -96,7 +96,7 @@ export function sdkReadinessManagerFactory(
         ready() {
           if (readinessManager.hasTimedout()) {
             if (!readinessManager.isReady()) {
-              return promiseWrapper(Promise.reject(new Error('Split SDK has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
+              return promiseWrapper(Promise.reject(new Error('SDK client has emitted SDK_READY_TIMED_OUT event.')), defaultOnRejected);
             } else {
               return Promise.resolve();
             }

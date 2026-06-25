@@ -34,7 +34,7 @@ function emitReadyEvent(readinessManager: IReadinessManager) {
   if (readinessManager.gate.once.mock.calls[3]) readinessManager.gate.once.mock.calls[3][1](); // whenReady promise
 }
 
-const timeoutErrorMessage = 'Split SDK emitted SDK_READY_TIMED_OUT event.';
+const timeoutErrorMessage = 'SDK client emitted SDK_READY_TIMED_OUT event.';
 
 // Makes readinessManager emit SDK_READY_TIMED_OUT & update hasTimedout flag
 function emitTimeoutEvent(readinessManager: IReadinessManager) {
@@ -230,7 +230,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
       readyForTimeout = sdkReadinessManager.sdkStatus.ready();
 
       setTimeout(() => {
-        expect(loggerMock.error).lastCalledWith('Split SDK has emitted SDK_READY_TIMED_OUT event.'); // If we don\'t handle a new .ready() rejected promise, an error is logged.
+        expect(loggerMock.error).lastCalledWith('SDK client has emitted SDK_READY_TIMED_OUT event.'); // If we don\'t handle a new .ready() rejected promise, an error is logged.
         readyForTimeout = sdkReadinessManager.sdkStatus.ready();
 
         readyForTimeout
@@ -238,7 +238,7 @@ describe('SDK Readiness Manager - Ready promise', () => {
           .then(() => { throw new Error(); })
           .catch((error) => {
             expect(error instanceof Error).toBe(true);
-            expect(error.message).toBe('Split SDK has emitted SDK_READY_TIMED_OUT event.');
+            expect(error.message).toBe('SDK client has emitted SDK_READY_TIMED_OUT event.');
             expect(loggerMock.error).toBeCalledTimes(2); // If we provide an onRejected handler, even chaining several onFulfilled handlers, the error is not logged.
             done();
           });

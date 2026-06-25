@@ -69,7 +69,7 @@ export function readinessManagerFactory(
     if (hasTimedout || isReady) return;
     hasTimedout = true;
     syncLastUpdate();
-    gate.emit(SDK_READY_TIMED_OUT, 'Split SDK emitted SDK_READY_TIMED_OUT event.');
+    gate.emit(SDK_READY_TIMED_OUT, 'SDK client emitted SDK_READY_TIMED_OUT event.');
   }
 
 
