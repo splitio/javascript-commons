@@ -43,7 +43,7 @@ export class SplitsCachePluggable extends AbstractSplitsCacheAsync {
     return this.wrapper.incr(ttKey);
   }
 
-  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[], flagSetsOfAddedFlag?: string[]) {
+  private _updateFlagSets(featureFlagName: string, flagSetsOfRemovedFlag?: string[] | null, flagSetsOfAddedFlag?: string[] | null) {
     const removeFromFlagSets = returnDifference(flagSetsOfRemovedFlag, flagSetsOfAddedFlag);
 
     let addToFlagSets = returnDifference(flagSetsOfAddedFlag, flagSetsOfRemovedFlag);

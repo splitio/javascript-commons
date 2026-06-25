@@ -18,10 +18,10 @@ export function getTreatment(log: ILogger, key: string, seed: number | undefined
 /**
  * Evaluates the traffic allocation to see if we should apply rollout conditions or not.
  */
-export function shouldApplyRollout(trafficAllocation: number, key: string, trafficAllocationSeed: number) {
+export function shouldApplyRollout(trafficAllocation: number, bucketingKey: string, trafficAllocationSeed: number) {
   // For rollout, if traffic allocation for splits is 100%, we don't need to filter it because everything should evaluate the rollout.
   if (trafficAllocation < 100) {
-    const _bucket = bucket(key, trafficAllocationSeed);
+    const _bucket = bucket(bucketingKey, trafficAllocationSeed);
 
     if (_bucket > trafficAllocation) {
       return false;

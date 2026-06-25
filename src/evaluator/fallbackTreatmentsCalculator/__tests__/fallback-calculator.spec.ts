@@ -9,8 +9,8 @@ describe('FallbackTreatmentsCalculator' , () => {
         'featureA': { treatment: 'TREATMENT_A', config: '{ value: 1 }' },
       },
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
-    const result = calculator.resolve('featureA', 'label by flag');
+    const calculator = FallbackTreatmentsCalculator(config);
+    const result = calculator('featureA', 'label by flag');
 
     expect(result).toEqual({
       treatment: 'TREATMENT_A',
@@ -24,8 +24,8 @@ describe('FallbackTreatmentsCalculator' , () => {
       byFlag: {},
       global: { treatment: 'GLOBAL_TREATMENT', config: '{ global: true }' },
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
-    const result = calculator.resolve('missingFlag', 'label by global');
+    const calculator = FallbackTreatmentsCalculator(config);
+    const result = calculator('missingFlag', 'label by global');
 
     expect(result).toEqual({
       treatment: 'GLOBAL_TREATMENT',
@@ -38,8 +38,8 @@ describe('FallbackTreatmentsCalculator' , () => {
     const config: FallbackTreatmentConfiguration = {
       byFlag: {},
     };
-    const calculator = new FallbackTreatmentsCalculator(config);
-    const result = calculator.resolve('missingFlag', 'label by noFallback');
+    const calculator = FallbackTreatmentsCalculator(config);
+    const result = calculator('missingFlag', 'label by noFallback');
 
     expect(result).toEqual({
       treatment: CONTROL,

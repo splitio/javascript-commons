@@ -17,7 +17,6 @@ import { isConsumerMode } from '../utils/settingsValidation/mode';
 export function eventTrackerFactory(
   settings: ISettings,
   eventsCache: IEventsCacheBase,
-  whenInit: (cb: () => void) => void,
   integrationsManager?: IEventsHandler,
   telemetryCache?: ITelemetryCacheSync | ITelemetryCacheAsync
 ): IEventTracker {
@@ -33,15 +32,13 @@ export function eventTrackerFactory(
     if (tracked) {
       log.info(EVENTS_TRACKER_SUCCESS, [msg]);
       if (integrationsManager) {
-        whenInit(() => {
-          // Wrap in a timeout because we don't want it to be blocking.
-          setTimeout(() => {
-            // copy of event, to avoid unexpected behavior if modified by integrations
-            const eventDataCopy = objectAssign({}, eventData);
-            if (properties) eventDataCopy.properties = objectAssign({}, properties);
-            // integrationsManager does not throw errors (they are internally handled by each integration module)
-            integrationsManager.handleEvent(eventDataCopy);
-          });
+        // Wrap in a timeout because we don't want it to be blocking.
+        setTimeout(() => {
+          // copy of event, to avoid unexpected behavior if modified by integrations
+          const eventDataCopy = objectAssign({}, eventData);
+          if (properties) eventDataCopy.properties = objectAssign({}, properties);
+          // integrationsManager does not throw errors (they are internally handled by each integration module)
+          integrationsManager.handleEvent(eventDataCopy);
         });
       }
     } else {

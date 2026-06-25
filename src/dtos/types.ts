@@ -23,7 +23,7 @@ export interface IBetweenStringMatcherData {
 }
 
 export interface IWhitelistMatcherData {
-  whitelist: string[]
+  whitelist?: string[] | null
 }
 
 export interface IInSegmentMatcherData {
@@ -41,10 +41,10 @@ export interface IDependencyMatcherData {
 
 interface ISplitMatcherBase {
   matcherType: string
-  negate: boolean
-  keySelector: null | {
+  negate?: boolean
+  keySelector?: null | {
     trafficType: string,
-    attribute: string | null
+    attribute?: string | null
   }
   userDefinedSegmentMatcherData?: null | IInSegmentMatcherData
   userDefinedLargeSegmentMatcherData?: null | IInLargeSegmentMatcherData
@@ -207,18 +207,18 @@ export interface IExcludedSegment {
 export interface IRBSegment {
   name: string,
   changeNumber: number,
-  status: 'ACTIVE' | 'ARCHIVED',
-  conditions?: ISplitCondition[],
+  status?: 'ACTIVE' | 'ARCHIVED',
+  conditions?: ISplitCondition[] | null,
   excluded?: {
     keys?: string[] | null,
     segments?: IExcludedSegment[] | null
-  }
+  } | null
 }
 
 export interface ISplit {
   name: string,
   changeNumber: number,
-  status: 'ACTIVE' | 'ARCHIVED',
+  status?: 'ACTIVE' | 'ARCHIVED',
   conditions: ISplitCondition[],
   prerequisites?: null | {
     n: string,
@@ -232,9 +232,9 @@ export interface ISplit {
   trafficAllocationSeed?: number
   configurations?: {
     [treatmentName: string]: string
-  },
-  sets?: string[],
-  impressionsDisabled?: boolean
+  } | null,
+  sets?: string[] | null,
+  impressionsDisabled?: boolean | null
 }
 
 // Split definition used in offline mode
@@ -245,13 +245,13 @@ export interface ISplitChangesResponse {
   ff?: {
     t: number,
     s?: number,
-    d: ISplit[]
-  },
+    d?: ISplit[] | null,
+  } | null,
   rbs?: {
     t: number,
     s?: number,
-    d: IRBSegment[]
-  }
+    d?: IRBSegment[] | null,
+  } | null,
 }
 
 /** Interface of the parsed JSON response of `/segmentChanges/{segmentName}` */

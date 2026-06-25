@@ -4,7 +4,7 @@ import { ILogger } from '../../logger/types';
 import { sanitize } from './sanitize';
 import { ENGINE_VALUE, ENGINE_VALUE_NO_ATTRIBUTES, ENGINE_VALUE_INVALID } from '../../logger/constants';
 
-function parseValue(log: ILogger, key: SplitIO.SplitKey, attributeName: string | null, attributes?: SplitIO.Attributes) {
+function parseValue(log: ILogger, key: SplitIO.SplitKey, attributeName?: string | null, attributes?: SplitIO.Attributes) {
   let value = undefined;
   if (attributeName) {
     if (attributes) {

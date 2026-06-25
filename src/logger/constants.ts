@@ -32,7 +32,6 @@ export const ENGINE_DEFAULT = 41;
 
 export const CLIENT_READY_FROM_CACHE = 100;
 export const CLIENT_READY = 101;
-export const IMPRESSION = 102;
 export const IMPRESSION_QUEUEING = 103;
 export const NEW_SHARED_CLIENT = 104;
 export const NEW_FACTORY = 105;

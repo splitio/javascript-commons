@@ -1,6 +1,6 @@
 import { objectAssign } from '../utils/lang/objectAssign';
 import SplitIO from '../../types/splitio';
-import { releaseApiKey } from '../utils/inputValidation/apiKey';
+import { releaseApiKey, validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { clientFactory } from './client';
 import { clientInputValidationDecorator } from './clientInputValidation';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -8,11 +8,12 @@ import { ISdkFactoryContext } from '../sdkFactory/types';
 const COOLDOWN_TIME_IN_MILLIS = 1000;
 
 /**
- * Creates an Sdk client, i.e., a base client with status and destroy interface
+ * Creates an Sdk client, i.e., a base client with status, init, flush and destroy interface
  */
 export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: boolean): SplitIO.IClient | SplitIO.IAsyncClient {
-  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, uniqueKeysTracker } = params;
+  const { sdkReadinessManager, syncManager, storage, signalListener, settings, telemetryTracker, impressionsTracker } = params;
 
+  let hasInit = false;
   let lastActionTime = 0;
 
   function __cooldown(func: Function, time: number) {
@@ -47,13 +48,27 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
       params.fallbackTreatmentsCalculator
     ),
 
-    // Sdk destroy
     {
+      init() {
+        if (hasInit) return;
+        hasInit = true;
+
+        if (!isSharedClient) {
+          validateAndTrackApiKey(settings.log, settings.core.authorizationKey);
+          sdkReadinessManager.readinessManager.init();
+          impressionsTracker.start();
+          syncManager && syncManager.start();
+          signalListener && signalListener.start();
+        }
+      },
+
       flush() {
         // @TODO define cooldown time
         return __cooldown(__flush, COOLDOWN_TIME_IN_MILLIS);
       },
+
       destroy() {
+        hasInit = false;
         // Mark the SDK as destroyed immediately
         sdkReadinessManager.readinessManager.destroy();
 
@@ -62,7 +77,7 @@ export function sdkClientFactory(params: ISdkFactoryContext, isSharedClient?: bo
           releaseApiKey(settings.core.authorizationKey);
           telemetryTracker.sessionLength();
           signalListener && signalListener.stop();
-          uniqueKeysTracker.stop();
+          impressionsTracker.stop();
         }
 
         // Stop background jobs

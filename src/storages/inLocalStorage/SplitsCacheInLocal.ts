@@ -205,7 +205,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets?: string[]) {
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[] | null) {
     if (!flagSets) return;
 
     flagSets.forEach(flagSet => {

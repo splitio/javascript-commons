@@ -21,7 +21,7 @@ export function pluggableIntegrationsManagerFactory(
   // No need to check if `settings.integrations` is an array of functions. It was already validated
   integrations.forEach(integrationFactory => {
     let integration = integrationFactory(params);
-    if (integration && integration.queue) listeners.push(integration);
+    if (integration) listeners.push(integration);
   });
 
   // If `listeners` is empty, not return a integration manager

@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "2.12.0",
+  "version": "2.12.1",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -60,10 +60,10 @@
     "@types/ioredis": "^4.28.0",
     "@types/jest": "^27.0.0",
     "@types/lodash": "^4.14.162",
-    "@typescript-eslint/eslint-plugin": "^6.6.0",
-    "@typescript-eslint/parser": "^6.6.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "cross-env": "^7.0.2",
-    "eslint": "^8.48.0",
+    "eslint": "^8.56.0",
     "eslint-plugin-compat": "^6.0.1",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-tsdoc": "^0.3.0",
@@ -76,7 +76,7 @@
     "redis-server": "1.2.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.5",
-    "typescript": "4.4.4"
+    "typescript": "4.7.4"
   },
   "sideEffects": false
 }

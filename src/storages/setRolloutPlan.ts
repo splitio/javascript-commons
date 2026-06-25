@@ -35,12 +35,12 @@ export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: 
 
   if (splits && ff) {
     splits.clear();
-    splits.update(ff.d, [], ff.t);
+    splits.update(ff.d || [], [], ff.t);
   }
 
   if (rbSegments && rbs) {
     rbSegments.clear();
-    rbSegments.update(rbs.d, [], rbs.t);
+    rbSegments.update(rbs.d || [], [], rbs.t);
   }
 
   const segmentChanges = rolloutPlan.segmentChanges;

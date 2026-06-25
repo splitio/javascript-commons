@@ -7,7 +7,7 @@ import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TRACK, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS, TRACK_FN_LABEL } from '../utils/constants';
 import { IEvaluationResult } from '../evaluator/types';
 import SplitIO from '../../types/splitio';
-import { IMPRESSION, IMPRESSION_QUEUEING } from '../logger/constants';
+import { IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
 import { Method } from '../sync/submitters/types';
@@ -147,16 +147,14 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     let { treatment, label, config = null } = evaluation;
 
     if (treatment === CONTROL) {
-      const fallbackTreatment = fallbackTreatmentsCalculator.resolve(featureFlagName, label);
+      const fallbackTreatment = fallbackTreatmentsCalculator(featureFlagName, label);
       treatment = fallbackTreatment.treatment;
       label = fallbackTreatment.label;
       config = fallbackTreatment.config;
     }
 
-    log.info(IMPRESSION, [featureFlagName, matchingKey, treatment, label]);
-
     if (validateSplitExistence(log, readinessManager, featureFlagName, label, invokingMethodName)) {
-      log.info(IMPRESSION_QUEUEING);
+      log.info(IMPRESSION_QUEUEING, [featureFlagName, matchingKey, treatment, label]);
       queue.push({
         imp: {
           feature: featureFlagName,

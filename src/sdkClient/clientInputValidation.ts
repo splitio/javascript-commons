@@ -59,17 +59,20 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     };
   }
 
-  function evaluateFallBackTreatment(featureFlagName: string, withConfig: boolean): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
-    const { treatment, config } = fallbackTreatmentsCalculator.resolve(featureFlagName, '');
-
-    if (withConfig) {
-      return {
-        treatment,
-        config
-      };
+  function evaluateFallBackTreatment(featureFlagName: string | false | string[], withConfig: boolean) {
+    if (Array.isArray(featureFlagName)) {
+      const res: SplitIO.Treatments = {};
+      featureFlagName.forEach((split: string) => res[split] = evaluateFallBackTreatment(split, withConfig) as SplitIO.Treatment);
+      return res;
     }
 
-    return treatment;
+    const { treatment, config } = fallbackTreatmentsCalculator(featureFlagName as string);
+
+    return withConfig ?
+      {
+        treatment,
+        config
+      } : treatment;
   }
 
   function wrapResult<T>(value: T): MaybeThenable<T> {
@@ -79,89 +82,65 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
   function getTreatment(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENT, maybeKey, maybeFeatureFlagName, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatment(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      const result = evaluateFallBackTreatment(params.nameOrNames as string, false);
-      return wrapResult(result);
-    }
+    return params.valid ?
+      client.getTreatment(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult(evaluateFallBackTreatment(params.nameOrNames, false));
   }
 
   function getTreatmentWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagName: string, maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENT_WITH_CONFIG, maybeKey, maybeFeatureFlagName, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      const result = evaluateFallBackTreatment(params.nameOrNames as string, true);
-      return wrapResult(result);
-    }
+    return params.valid ?
+      client.getTreatmentWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string, params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult(evaluateFallBackTreatment(params.nameOrNames, true));
   }
 
   function getTreatments(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS, maybeKey, maybeFeatureFlagNames, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatments(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      const res: SplitIO.Treatments = {};
-      if (params.nameOrNames) (params.nameOrNames as string[]).forEach((split: string) => res[split] = evaluateFallBackTreatment(split, false) as SplitIO.Treatment);
-
-      return wrapResult(res);
-    }
+    return params.valid ?
+      client.getTreatments(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult(evaluateFallBackTreatment(params.nameOrNames || [], false));
   }
 
   function getTreatmentsWithConfig(maybeKey: SplitIO.SplitKey, maybeFeatureFlagNames: string[], maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS_WITH_CONFIG, maybeKey, maybeFeatureFlagNames, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentsWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      const res: SplitIO.TreatmentsWithConfig = {};
-      if (params.nameOrNames) (params.nameOrNames as string[]).forEach(split => res[split] = evaluateFallBackTreatment(split, true) as SplitIO.TreatmentWithConfig);
-
-      return wrapResult(res);
-    }
+    return params.valid ?
+      client.getTreatmentsWithConfig(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult(evaluateFallBackTreatment(params.nameOrNames || [], true));
   }
 
   function getTreatmentsByFlagSets(maybeKey: SplitIO.SplitKey, maybeFlagSets: string[], maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS_BY_FLAG_SETS, maybeKey, maybeFlagSets, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentsByFlagSets(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      return wrapResult({});
-    }
+    return params.valid ?
+      client.getTreatmentsByFlagSets(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult({});
   }
 
   function getTreatmentsWithConfigByFlagSets(maybeKey: SplitIO.SplitKey, maybeFlagSets: string[], maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, maybeKey, maybeFlagSets, maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentsWithConfigByFlagSets(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      return wrapResult({});
-    }
+    return params.valid ?
+      client.getTreatmentsWithConfigByFlagSets(params.key as SplitIO.SplitKey, params.nameOrNames as string[], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult({});
   }
 
   function getTreatmentsByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS_BY_FLAG_SET, maybeKey, [maybeFlagSet], maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, (params.nameOrNames as string[])[0], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      return wrapResult({});
-    }
+    return params.valid ?
+      client.getTreatmentsByFlagSet(params.key as SplitIO.SplitKey, (params.nameOrNames as string[])[0], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult({});
   }
 
   function getTreatmentsWithConfigByFlagSet(maybeKey: SplitIO.SplitKey, maybeFlagSet: string, maybeAttributes?: SplitIO.Attributes, maybeOptions?: SplitIO.EvaluationOptions) {
     const params = validateEvaluationParams(GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, maybeKey, [maybeFlagSet], maybeAttributes, maybeOptions);
 
-    if (params.valid) {
-      return client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, (params.nameOrNames as string[])[0], params.attributes as SplitIO.Attributes | undefined, params.options);
-    } else {
-      return wrapResult({});
-    }
+    return params.valid ?
+      client.getTreatmentsWithConfigByFlagSet(params.key as SplitIO.SplitKey, (params.nameOrNames as string[])[0], params.attributes as SplitIO.Attributes | undefined, params.options) :
+      wrapResult({});
   }
 
   function track(maybeKey: SplitIO.SplitKey, maybeTT: string, maybeEvent: string, maybeEventValue?: number, maybeProperties?: SplitIO.Properties) {
@@ -172,11 +151,9 @@ export function clientInputValidationDecorator<TClient extends SplitIO.IClient |
     const { properties, size } = validateEventProperties(log, maybeProperties, TRACK_FN_LABEL);
     const isNotDestroyed = validateIfNotDestroyed(log, readinessManager, TRACK_FN_LABEL);
 
-    if (isNotDestroyed && key && tt && event && eventValue !== false && properties !== false) { // @ts-expect-error
-      return client.track(key, tt, event, eventValue, properties, size);
-    } else {
-      return isAsync ? Promise.resolve(false) : false;
-    }
+    return isNotDestroyed && key && tt && event && eventValue !== false && properties !== false ? // @ts-expect-error
+      client.track(key, tt, event, eventValue, properties, size) :
+      wrapResult(false);
   }
 
   return {

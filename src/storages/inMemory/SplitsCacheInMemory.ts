@@ -114,7 +114,7 @@ export class SplitsCacheInMemory extends AbstractSplitsCacheSync {
     });
   }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets: string[] | undefined) {
+  private removeFromFlagSets(featureFlagName: string, flagSets?: string[] | null) {
     if (!flagSets) return;
     flagSets.forEach(flagSet => {
       this.removeNames(flagSet, featureFlagName);
