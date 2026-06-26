@@ -76,11 +76,12 @@ export const fullSettings: ISettings = {
     hostname: false
   },
   urls: {
-    events: 'events',
-    sdk: 'sdk',
-    auth: 'auth',
-    streaming: 'streaming',
-    telemetry: 'telemetry'
+    sdk: 'https://sdk.split.io/api',
+    events: 'https://events.split.io/api',
+    auth: 'https://auth.split.io/api',
+    streaming: 'https://streaming.split.io',
+    telemetry: 'https://telemetry.split.io/api',
+    configs: 'https://configs.split.io/api'
   },
   log: loggerMock,
   userConsent: undefined
@@ -95,7 +96,7 @@ export const fullSettingsServerSide = {
   features: '.split'
 };
 
-export const settingsSplitApi = {
+export const settingsServiceApi = {
   core: {
     authorizationKey: 'sdk-key'
   },
@@ -105,7 +106,8 @@ export const settingsSplitApi = {
     sdk: 'sdk',
     auth: 'auth',
     streaming: 'streaming',
-    telemetry: 'telemetry'
+    telemetry: 'telemetry',
+    configs: 'configs'
   },
   sync: {
     impressionsMode: 'DEBUG',

@@ -37,7 +37,7 @@ describe('pushManager in client-side', () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
-      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }
+      ...paramsMock, serviceApi: { fetchAuth: fetchAuthMock }
     }, {}) as IPushManager;
 
     pushManager.start();
@@ -55,7 +55,7 @@ describe('pushManager in client-side', () => {
     const fetchAuthMock = jest.fn(() => Promise.reject({ message: 'error' }));
 
     const pushManager = pushManagerFactory({ // @ts-ignore
-      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: {
+      ...paramsMock, serviceApi: { fetchAuth: fetchAuthMock }, settings: {
         ...fullSettings,
         scheduler: {
           ...fullSettings.scheduler,
@@ -126,7 +126,7 @@ describe('pushManager in server-side', () => {
     const fetchAuthMock = jest.fn();
 
     const pushManager = pushManagerFactory({ // @ts-ignore
-      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: fullSettingsServerSide
+      ...paramsMock, serviceApi: { fetchAuth: fetchAuthMock }, settings: fullSettingsServerSide
     }, {}) as IPushManager;
 
     pushManager.start();
@@ -144,7 +144,7 @@ describe('pushManager in server-side', () => {
     const fetchAuthMock = jest.fn(() => Promise.reject({ message: 'error' }));
 
     const pushManager = pushManagerFactory({ // @ts-ignore
-      ...paramsMock, splitApi: { fetchAuth: fetchAuthMock }, settings: {
+      ...paramsMock, serviceApi: { fetchAuth: fetchAuthMock }, settings: {
         ...fullSettingsServerSide,
         scheduler: {
           ...fullSettingsServerSide.scheduler,

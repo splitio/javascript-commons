@@ -1,5 +1,8 @@
-import { ISplitPartial } from '../../../dtos/types';
+import { IDefinition } from '../../../dtos/types';
 import { ISettings } from '../../../types';
 
-// Analog to `ISplitChangesFetcher` used by `splitChangesUpdaterFactory`
-export type ISplitsParser = (settings: ISettings) => false | Record<string, ISplitPartial>
+// Split definition used in offline mode
+export type IDefinitionPartial = Pick<IDefinition, 'conditions' | 'configurations' | 'trafficTypeName'>
+
+// Analog to `IDefinitionChangesFetcher` used by `definitionChangesUpdaterFactory`
+export type IDefinitionsParser = (settings: ISettings) => false | Record<string, IDefinitionPartial>

@@ -1,7 +1,7 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { ISplitApi } from './types';
+import { IServiceApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
@@ -13,8 +13,9 @@ function userKeyToQueryParam(userKey: string) {
   return 'users=' + encodeURIComponent(userKey); // no need to check availability of `encodeURIComponent`, since it is a global highly supported.
 }
 
+// @TODO remove when migrating to the new `urls` defaults.
 /**
- * Factory of SplitApi objects, which group the collection of Split HTTP endpoints used by the SDK
+ * Factory of ServiceApi objects, which group the collection of Split HTTP endpoints used by the SDK
  *
  * @param settings - validated settings object
  * @param platform - object containing environment-specific dependencies
@@ -24,7 +25,7 @@ export function splitApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
   telemetryTracker: ITelemetryTracker
-): ISplitApi {
+): IServiceApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
@@ -143,6 +144,23 @@ export function splitApiFactory(
     postMetricsUsage(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/v1/metrics/usage`;
       return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), true);
+    },
+
+
+    // Not used. Just here to satisfy the IServiceApi interface.
+
+    fetchConfigs(since: number, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+    },
+
+    fetchConfigsSegmentChanges(since: number, segmentName: string, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/v1/segmentChanges/${segmentName}?since=${since}${till ? '&till=' + till : ''}`;
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+    },
+
+    stop() {
+      // no-op
     }
   };
 }

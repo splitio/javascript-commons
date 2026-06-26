@@ -2,7 +2,7 @@ import { isIntegerNumber } from '../../utils/lang';
 import { ISegmentsCacheSync } from '../types';
 
 /**
- * Default ISplitsCacheSync implementation for server-side that stores segments definitions in memory.
+ * Default IDefinitionsCacheSync implementation for server-side that stores segments definitions in memory.
  */
 export class SegmentsCacheInMemory implements ISegmentsCacheSync {
 

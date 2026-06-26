@@ -4,7 +4,7 @@ import { thenable } from '../utils/promise/thenable';
 import { MaybeThenable } from '../dtos/types';
 import { ISettings } from '../types';
 import { LOG_PREFIX_CLEANUP, CLEANUP_REGISTERING, CLEANUP_DEREGISTERING } from '../logger/constants';
-import { ISyncManager } from '../sync/types';
+import { ISdkFactoryContext } from '../sdkFactory/types';
 
 const SIGTERM = 'SIGTERM';
 const EVENT_NAME = 'for SIGTERM signal.';
@@ -21,10 +21,7 @@ export class NodeSignalListener implements ISignalListener {
   private handler: () => MaybeThenable<any>;
   private settings: ISettings;
 
-  constructor(
-    syncManager: ISyncManager | undefined, // private handler: () => MaybeThenable<void>,
-    settings: ISettings
-  ) {
+  constructor({ syncManager, settings }: ISdkFactoryContext) {
     // @TODO review handler logic when implementing Node.js SDK
     this.handler = function () {
       if (syncManager) {
@@ -61,14 +58,14 @@ export class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, SIGTERM);
     };
 
-    this.settings.log.debug(`${LOG_PREFIX_CLEANUP}Split SDK graceful shutdown after SIGTERM.`);
+    this.settings.log.debug(`${LOG_PREFIX_CLEANUP}SDK graceful shutdown after SIGTERM.`);
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      this.settings.log.error(`${LOG_PREFIX_CLEANUP}Error with Split SDK graceful shutdown: ${err}`);
+      this.settings.log.error(`${LOG_PREFIX_CLEANUP}Error with SDK graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

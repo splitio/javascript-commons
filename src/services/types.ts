@@ -31,11 +31,13 @@ export type IFetch = (url: string, options?: IRequestOptions) => Promise<IRespon
 // IFetch specialization
 export type IHealthCheckAPI = () => Promise<boolean>
 
-export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean) => Promise<IResponse>
+export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
+
+export type ISecureSplitHttpClient = ISplitHttpClient & { stop(): void }
 
 export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 
-export type IFetchSplitChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
+export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
 
 export type IFetchSegmentChanges = (since: number, segmentName: string, noCache?: boolean, till?: number) => Promise<IResponse>
 
@@ -55,12 +57,14 @@ export type IPostMetricsConfig = (body: string, headers?: Record<string, string>
 
 export type IPostMetricsUsage = (body: string, headers?: Record<string, string>) => Promise<IResponse>
 
-export interface ISplitApi {
+export interface IServiceApi {
 	getSdkAPIHealthCheck: IHealthCheckAPI
 	getEventsAPIHealthCheck: IHealthCheckAPI
 	fetchAuth: IFetchAuth
-	fetchSplitChanges: IFetchSplitChanges
+	fetchSplitChanges: IFetchDefinitionChanges
 	fetchSegmentChanges: IFetchSegmentChanges
+	fetchConfigs: IFetchDefinitionChanges
+	fetchConfigsSegmentChanges: IFetchSegmentChanges
 	fetchMemberships: IFetchMemberships
 	postEventsBulk: IPostEventsBulk
 	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
@@ -69,6 +73,8 @@ export interface ISplitApi {
 	postTestImpressionsCount: IPostTestImpressionsCount
 	postMetricsConfig: IPostMetricsConfig
 	postMetricsUsage: IPostMetricsUsage
+	// lifecycle
+	stop(): void
 }
 
 // Minimal version of EventSource API used by the SDK

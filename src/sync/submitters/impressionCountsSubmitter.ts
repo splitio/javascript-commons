@@ -35,7 +35,7 @@ export function impressionCountsSubmitterFactory(params: ISdkFactoryContextSync)
 
   const {
     settings: { log },
-    splitApi: { postTestImpressionsCount },
+    serviceApi: { postTestImpressionsCount },
     storage: { impressionCounts }
   } = params;
 

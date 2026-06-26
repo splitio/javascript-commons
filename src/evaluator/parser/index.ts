@@ -6,14 +6,14 @@ import { conditionContext } from '../condition';
 import { ifElseIfCombinerContext } from '../combiners/ifelseif';
 import { andCombinerContext } from '../combiners/and';
 import { thenable } from '../../utils/promise/thenable';
-import { IEvaluator, IMatcherDto, ISplitEvaluator } from '../types';
-import { ISplitCondition, MaybeThenable } from '../../dtos/types';
+import { IEvaluator, IMatcherDto, IDefinitionEvaluator } from '../types';
+import { IDefinitionCondition, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 import { ENGINE_MATCHER_ERROR, ENGINE_MATCHER_RESULT } from '../../logger/constants';
 
-export function parser(log: ILogger, conditions: ISplitCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
+export function parser(log: ILogger, conditions: IDefinitionCondition[], storage: IStorageSync | IStorageAsync): IEvaluator {
   let predicates = [];
 
   for (let i = 0; i < conditions.length; i++) {
@@ -37,7 +37,7 @@ export function parser(log: ILogger, conditions: ISplitCondition[], storage: ISt
       }
 
       // Evaluator function.
-      return (key: SplitIO.SplitKey, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) => {
+      return (key: SplitIO.SplitKey, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) => {
         const value = sanitizeValue(log, key, matcherDto, attributes);
         let result: MaybeThenable<boolean> = false;
 

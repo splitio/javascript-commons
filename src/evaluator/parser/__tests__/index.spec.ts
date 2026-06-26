@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / if user is in segment all 100%:on', async () => {
@@ -21,7 +21,7 @@ test('PARSER / if user is in segment all 100%:on', async () => {
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
 
@@ -50,7 +50,7 @@ test('PARSER / if user is in segment all 100%:off', async () => {
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
 
@@ -75,7 +75,7 @@ test('PARSER / NEGATED if user is in segment all 100%:on, then no match', async 
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
 
@@ -107,7 +107,7 @@ test('PARSER / if user is in segment ["u1", "u2", "u3", "u4"] then split 100%:on
       size: 100
     }],
     label: 'whitelisted'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation === undefined).toBe(true); // evaluation should throw undefined
@@ -146,7 +146,7 @@ test('PARSER / NEGATED if user is in segment ["u1", "u2", "u3", "u4"] then split
       size: 100
     }],
     label: 'whitelisted'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('a key'), 31, 100, 31);
   expect(evaluation.treatment).toBe('on'); // on
@@ -190,7 +190,7 @@ test('PARSER / if user.account is in list ["v1", "v2", "v3"] then split 100:on',
       size: 100
     }],
     label: 'whitelisted'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     account: 'v1'
@@ -236,7 +236,7 @@ test('PARSER / NEGATED if user.account is in list ["v1", "v2", "v3"] then split 
       size: 100
     }],
     label: 'whitelisted'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     account: 'v1'
@@ -273,7 +273,7 @@ test('PARSER / if user.account is in segment all then split 100:on', async () =>
       size: 100
     }],
     label: 'in segment all'
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   const evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31);
   expect(evaluation.treatment === 'on').toBe(true); // ALL_KEYS always matches
@@ -305,7 +305,7 @@ test('PARSER / if user.attr is between 10 and 20 then split 100:on', async () =>
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: 10
@@ -346,7 +346,7 @@ test('PARSER / NEGATED if user.attr is between 10 and 20 then split 100:on, nega
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: 10
@@ -387,7 +387,7 @@ test('PARSER / if user.attr <= datetime 1458240947021 then split 100:on', async 
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: new Date('2016-03-17T18:55:47.021Z').getTime()
@@ -432,7 +432,7 @@ test('PARSER / NEGATED if user.attr <= datetime 1458240947021 then split 100:on,
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: new Date('2016-03-17T18:55:47.021Z').getTime()
@@ -478,7 +478,7 @@ test('PARSER / if user.attr >= datetime 1458240947021 then split 100:on', async 
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: new Date('2016-03-17T18:55:47.021Z').getTime()
@@ -523,7 +523,7 @@ test('PARSER / NEGATED if user.attr >= datetime 1458240947021 then split 100:on,
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: new Date('2016-03-17T18:55:47.021Z').getTime()
@@ -569,7 +569,7 @@ test('PARSER / if user.attr = datetime 1458240947021 then split 100:on', async (
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: 1458240947021
@@ -614,7 +614,7 @@ test('PARSER / NEGATED if user.attr = datetime 1458240947021 then split 100:on, 
       treatment: 'on',
       size: 100
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('test@split.io'), 31, 100, 31, {
     attr: 1458240947021
@@ -656,7 +656,7 @@ test('PARSER / if user is in segment all then split 20%:A,20%:B,60%:A', async ()
       treatment: 'A',
       size: 60
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator(keyParser('aa'), 31, 100, 31);
   expect(evaluation.treatment).toBe('A'); // 20%:A // bucket 6 with murmur3

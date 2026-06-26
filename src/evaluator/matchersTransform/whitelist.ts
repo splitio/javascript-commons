@@ -1,8 +1,8 @@
-import { ISplitMatcher } from '../../dtos/types';
+import { IDefinitionMatcher } from '../../dtos/types';
 
 /**
  * Extract whitelist array.
  */
-export function whitelistTransform(whitelistObject: ISplitMatcher['whitelistMatcherData']) {
+export function whitelistTransform(whitelistObject: IDefinitionMatcher['whitelistMatcherData']) {
   return whitelistObject && whitelistObject.whitelist;
 }

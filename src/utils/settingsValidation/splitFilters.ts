@@ -1,4 +1,4 @@
-import { validateSplits } from '../inputValidation/splits';
+import { validateDefinitions } from '../inputValidation/definitions';
 import { ISplitFiltersValidation } from '../../dtos/types';
 import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
@@ -49,7 +49,7 @@ function validateFilterType(maybeFilterType: any): maybeFilterType is SplitIO.Sp
  */
 function validateSplitFilter(log: ILogger, type: SplitIO.SplitFilterType, values: string[], maxLength: number) {
   // validate and remove invalid and duplicated values
-  let result = validateSplits(log, values, LOG_PREFIX_SETTINGS, `${type} filter`, `${type} filter value`);
+  let result = validateDefinitions(log, values, LOG_PREFIX_SETTINGS, `${type} filter`, `${type} filter value`);
 
   if (result) {
 
@@ -181,7 +181,7 @@ export function validateSplitFilters(log: ILogger, maybeSplitFilters: any, mode:
 }
 
 export function validateFlagSets(log: ILogger, method: string, flagSets: string[], flagSetsInConfig: string[]): string[] | false {
-  const sets = validateSplits(log, flagSets, method, 'flag sets', 'flag set');
+  const sets = validateDefinitions(log, flagSets, method, 'flag sets', 'flag set');
   let toReturn = sets ? sanitizeFlagSets(log, sets, method) : [];
   if (flagSetsInConfig.length > 0) {
     toReturn = toReturn.filter(flagSet => {

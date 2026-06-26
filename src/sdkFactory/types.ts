@@ -2,9 +2,9 @@ import { IIntegrationManager, IIntegrationFactoryParams } from '../integrations/
 import { ISignalListener } from '../listeners/types';
 import { IReadinessManager, ISdkReadinessManager } from '../readiness/types';
 import type { sdkManagerFactory } from '../sdkManager';
-import type { splitApiFactory } from '../services/splitApi';
-import type { IFallbackTreatmentsCalculator } from '../evaluator/fallbackTreatmentsCalculator';
-import { IFetch, ISplitApi, IEventSourceConstructor } from '../services/types';
+import { serviceApiFactory } from '../services/serviceApi';
+import type { IFallbackCalculator } from '../evaluator/fallbackTreatmentsCalculator';
+import { IFetch, IServiceApi, IEventSourceConstructor } from '../services/types';
 import { IStorageAsync, IStorageSync, IStorageFactoryParams } from '../storages/types';
 import { ISyncManager } from '../sync/types';
 import { IImpressionObserver } from '../trackers/impressionObserver/types';
@@ -35,8 +35,16 @@ export interface IPlatform {
   /**
    * Function used to track latencies for telemetry.
    */
-  now?: () => number
+  now?: () => number,
+  /**
+   * Optional signal listener constructor. Used to listen and handle runtime environment states, like server shutdown, app paused or resumed.
+   */
+  // eslint-disable-next-line no-use-before-define
+  SignalListener?: new (params: ISdkFactoryContext) => ISignalListener, // Used by BrowserSignalListener
 }
+
+// Definition type
+export type EntityType = 'config' | 'flag';
 
 export interface ISdkFactoryContext {
   platform: IPlatform,
@@ -47,22 +55,22 @@ export interface ISdkFactoryContext {
   eventTracker: IEventTracker,
   telemetryTracker: ITelemetryTracker,
   storage: IStorageSync | IStorageAsync,
-  signalListener?: ISignalListener
-  splitApi?: ISplitApi
+  serviceApi?: IServiceApi,
   syncManager?: ISyncManager,
   clients: Record<string, SplitIO.IBasicClient>,
-  fallbackTreatmentsCalculator: IFallbackTreatmentsCalculator
+  fallbackCalculator: IFallbackCalculator,
+  entityType?: EntityType
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {
   storage: IStorageSync,
-  splitApi: ISplitApi
+  serviceApi: IServiceApi
   syncManager: ISyncManager,
 }
 
 export interface ISdkFactoryContextAsync extends ISdkFactoryContext {
   storage: IStorageAsync,
-  splitApi: undefined,
+  serviceApi: undefined,
   syncManager: undefined
 }
 
@@ -83,9 +91,9 @@ export interface ISdkFactoryParams {
   // sync SDK (`IBrowserSDK` and `ISDK`) with `IStorageSync`, and async SDK (`IBrowserAsyncSDK` and `IAsyncSDK`) with `IStorageAsync`
   storageFactory: (params: IStorageFactoryParams) => IStorageSync | IStorageAsync,
 
-  // Factory of Split Api (HTTP Client Service).
+  // Factory of ServiceApi (HTTP Client Service).
   // It is not required when providing an asynchronous storage or offline SyncManager
-  splitApiFactory?: typeof splitApiFactory,
+  serviceApiFactory?: typeof serviceApiFactory,
 
   // SyncManager factory.
   // Not required when providing an asynchronous storage (consumer mode), but required in standalone mode to avoid SDK timeout.
@@ -107,14 +115,6 @@ export interface ISdkFactoryParams {
   impressionsObserverFactory: () => IImpressionObserver
 
   filterAdapterFactory?: () => IFilterAdapter
-
-  // Optional signal listener constructor. Used to handle special app states, like shutdown, app paused or resumed.
-  // Pass only if `syncManager` (used by NodeSignalListener) and `splitApi` (used by Browser listener) are passed.
-  SignalListener?: new (
-    syncManager: ISyncManager | undefined, // Used by NodeSignalListener to flush data, and by BrowserSignalListener to close streaming connection.
-    settings: ISettings, // Used by BrowserSignalListener
-    storage: IStorageSync | IStorageAsync, // Used by BrowserSignalListener
-    serviceApi: ISplitApi | undefined) => ISignalListener, // Used by BrowserSignalListener
 
   // @TODO review impressionListener and integrations interfaces. What about handling impressionListener as an integration ?
   integrationsManagerFactory?: (params: IIntegrationFactoryParams) => IIntegrationManager | undefined,

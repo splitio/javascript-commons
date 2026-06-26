@@ -6,17 +6,17 @@ import { Backoff } from '../../utils/Backoff';
 import { SSEHandlerFactory } from './SSEHandler';
 import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
-import { SplitsUpdateWorker } from './UpdateWorkers/SplitsUpdateWorker';
+import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
 import { authenticateFactory, hashUserKey } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { checkIfServerSide, getMatching } from '../../utils/key';
-import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NONRETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NON_RETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
-import { getDelay, isInBitmap, parseBitmap, parseKeyList } from './parseUtils';
+import { getDelay, isInBitmap, parseBitmap, parseCompressedData } from './parseUtils';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
-import { IAuthTokenPushEnabled } from './AuthClient/types';
+import { IJwtCredentialV2 } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
@@ -30,7 +30,7 @@ export function pushManagerFactory(
   pollingManager: IPollingManager,
 ): IPushManager | undefined {
 
-  const { settings, storage, splitApi, readiness, platform, telemetryTracker } = params;
+  const { settings, storage, serviceApi, readiness, platform, telemetryTracker } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -45,7 +45,7 @@ export function pushManagerFactory(
     log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
-  const authenticate = authenticateFactory(splitApi.fetchAuth);
+  const authenticate = authenticateFactory(serviceApi.fetchAuth);
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
@@ -55,8 +55,8 @@ export function pushManagerFactory(
   // init workers
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
-  // For server-side we pass the segmentsSyncTask, used by SplitsUpdateWorker to fetch new segments
-  const splitsUpdateWorker = SplitsUpdateWorker(log, storage, pollingManager.splitsSyncTask, readiness.splits, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
+  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
 
   // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};
@@ -67,10 +67,10 @@ export function pushManagerFactory(
   // [Only for client-side] variable to flag that a new client was added. It is needed to reconnect streaming.
   let connectForNewClient = false;
 
-  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NONRETRYABLE_ERROR error.
+  // flag that indicates if `stop/disconnectPush` was called, either by the SyncManager, when the client is destroyed, or due to a PUSH_NON_RETRYABLE_ERROR error.
   // It is used to halt the `connectPush` process if it was in progress.
   let disconnected: boolean | undefined;
-  // flag that indicates a PUSH_NONRETRYABLE_ERROR, condition with which starting pushManager again is ignored.
+  // flag that indicates a PUSH_NON_RETRYABLE_ERROR, condition with which starting pushManager again is ignored.
   // true if STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE or Auth errors.
   let disabled: boolean | undefined; // `disabled` implies `disconnected === true`
 
@@ -81,7 +81,7 @@ export function pushManagerFactory(
   let timeoutIdTokenRefresh: ReturnType<typeof setTimeout>;
   let timeoutIdSseOpen: ReturnType<typeof setTimeout>;
 
-  function scheduleTokenRefreshAndSse(authData: IAuthTokenPushEnabled) {
+  function scheduleTokenRefreshAndSse(authData: IJwtCredentialV2) {
     // clear scheduled tasks if exist
     if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
     if (timeoutIdSseOpen) clearTimeout(timeoutIdSseOpen);
@@ -117,11 +117,11 @@ export function pushManagerFactory(
       function (authData) {
         if (disconnected) return;
 
-        // 'pushEnabled: false' is handled as a PUSH_NONRETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
+        // 'pushEnabled: false' is handled as a PUSH_NON_RETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
         // close the sseClient in case the org has been bloqued while the instance was connected to streaming
         if (!authData.pushEnabled) {
           log.info(STREAMING_DISABLED);
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
           return;
         }
 
@@ -140,7 +140,7 @@ export function pushManagerFactory(
         // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
         if (error.statusCode >= 400 && error.statusCode < 500) {
           telemetryTracker.streamingEvent(AUTH_REJECTION);
-          pushEmitter.emit(PUSH_NONRETRYABLE_ERROR);
+          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
           return;
         }
 
@@ -168,7 +168,7 @@ export function pushManagerFactory(
 
   // cancel scheduled fetch retries of Splits, Segments, and MySegments Update Workers
   function stopWorkers() {
-    splitsUpdateWorker.stop();
+    definitionsUpdateWorker.stop();
     if (userKey) forOwn(clients, ({ worker }) => worker.stop());
     else segmentsUpdateWorker!.stop();
   }
@@ -183,7 +183,7 @@ export function pushManagerFactory(
 
   /** Fallback to polling without retry due to: STREAMING_DISABLED control event, or 'pushEnabled: false', or non-recoverable SSE and Authentication errors */
 
-  pushEmitter.on(PUSH_NONRETRYABLE_ERROR, function handleNonRetryableError() {
+  pushEmitter.on(PUSH_NON_RETRYABLE_ERROR, function handleNonRetryableError() {
     disabled = true;
     // Note: `stopWorkers` is been called twice, but it is not harmful
     disconnectPush();
@@ -218,9 +218,9 @@ export function pushManagerFactory(
 
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
-  pushEmitter.on(SPLIT_KILL, splitsUpdateWorker.killSplit);
-  pushEmitter.on(SPLIT_UPDATE, splitsUpdateWorker.put);
-  pushEmitter.on(RB_SEGMENT_UPDATE, splitsUpdateWorker.put);
+  pushEmitter.on(SPLIT_KILL, definitionsUpdateWorker.killDefinition);
+  pushEmitter.on(SPLIT_UPDATE, definitionsUpdateWorker.put);
+  pushEmitter.on(RB_SEGMENT_UPDATE, definitionsUpdateWorker.put);
 
   function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
     switch (parsedData.u) {
@@ -243,7 +243,7 @@ export function pushManagerFactory(
       case UpdateStrategy.KeyList: {
         let keyList: KeyList, added: Set<string>, removed: Set<string>;
         try {
-          keyList = parseKeyList(parsedData.d!, parsedData.c!);
+          keyList = parseCompressedData<KeyList>(parsedData.d!, parsedData.c!);
           added = new Set(keyList.a);
           removed = new Set(keyList.r);
         } catch (e) {

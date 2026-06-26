@@ -4,17 +4,17 @@ import { evaluateFeature } from '../../index';
 import { IMatcher, IMatcherDto } from '../../types';
 import { IStorageSync } from '../../../storages/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
-import { ISplit } from '../../../dtos/types';
+import { IDefinition } from '../../../dtos/types';
 import { ALWAYS_ON_SPLIT, ALWAYS_OFF_SPLIT } from '../../../storages/__tests__/testUtils';
 
-const STORED_SPLITS: Record<string, ISplit> = {
+const STORED_SPLITS: Record<string, IDefinition> = {
   'always-on': ALWAYS_ON_SPLIT,
   'always-off': ALWAYS_OFF_SPLIT
 };
 
 const mockStorage = {
-  splits: {
-    getSplit: (name: string) => STORED_SPLITS[name]
+  definitions: {
+    get: (name: string) => STORED_SPLITS[name]
   }
 };
 

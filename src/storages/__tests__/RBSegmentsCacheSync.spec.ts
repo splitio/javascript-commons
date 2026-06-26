@@ -33,19 +33,19 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
     expect(cache.getChangeNumber()).toBe(1);
 
     // Remove a segment
-    expect(cache.update([], [rbSegment], 2)).toBe(true);
+    expect(cache.update([], [rbSegment.name], 2)).toBe(true);
     expect(cache.get(rbSegment.name)).toBeNull();
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(cache.getChangeNumber()).toBe(2);
 
     // Remove remaining segment
-    expect(cache.update([], [rbSegmentWithInSegmentMatcher], 3)).toBe(true);
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toBe(true);
     expect(cache.get(rbSegment.name)).toBeNull();
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toBeNull();
     expect(cache.getChangeNumber()).toBe(3);
 
     // No changes
-    expect(cache.update([], [rbSegmentWithInSegmentMatcher], 4)).toBe(false);
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toBe(false);
     expect(cache.getChangeNumber()).toBe(4);
   });
 
@@ -58,7 +58,7 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
     expect(cache.contains(new Set(['nonexistent']))).toBe(false);
     expect(cache.contains(new Set([rbSegment.name, 'nonexistent']))).toBe(false);
 
-    cache.update([], [rbSegment, rbSegmentWithInSegmentMatcher], 2);
+    cache.update([], [rbSegment.name, rbSegmentWithInSegmentMatcher.name], 2);
   });
 
   test('usesSegments should track segments usage correctly', () => {

@@ -1,6 +1,6 @@
 export interface IDecodedJWTToken {
   ['x-ably-capability']: string
-  exp: number
+  exp: number // epoch seconds
   iat: number
 
   /** Unused fields: */
