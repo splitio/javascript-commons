@@ -46,7 +46,7 @@ describe('validateIfReadyFromCache', () => {
     // @ts-ignore
     expect(validateIfReadyFromCache(loggerMock, readinessManagerMock, 'test_method')).toBe(false); // It should return true if SDK was ready.
     expect(readinessManagerMock.isReadyFromCache).toBeCalledTimes(1); // It checks for SDK_READY_FROM_CACHE status.
-    expect(loggerMock.warn).toBeCalledWith(CLIENT_NOT_READY_FROM_CACHE, ['test_method', '']); // It should log the expected warning.
+    expect(loggerMock.warn).toBeCalledWith(CLIENT_NOT_READY_FROM_CACHE, ['test_method']); // It should log the expected warning.
     expect(loggerMock.error).not.toBeCalled(); // But it should not log any errors.
   });
 });

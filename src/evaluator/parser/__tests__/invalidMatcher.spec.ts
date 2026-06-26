@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { parser } from '..';
-import { ISplitCondition } from '../../../dtos/types';
+import { IDefinitionCondition } from '../../../dtos/types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / handle invalid matcher as control', async () => {
@@ -24,7 +24,7 @@ test('PARSER / handle invalid matcher as control', async () => {
       treatment: 'A',
       size: 60
     }]
-  }] as ISplitCondition[]);
+  }] as IDefinitionCondition[]);
 
   let evaluation = await evaluator('aaaaa', 31);
 

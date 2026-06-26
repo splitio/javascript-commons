@@ -37,7 +37,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
     });
   }
 
-  update(toAdd: IRBSegment[], toRemove: IRBSegment[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(toAdd => {
@@ -46,7 +46,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
         return this.redis.set(key, stringifiedNewRBSegment).then(() => true);
       })),
       Promise.all(toRemove.map(toRemove => {
-        const key = this.keys.buildRBSegmentKey(toRemove.name);
+        const key = this.keys.buildRBSegmentKey(toRemove);
         return this.redis.del(key).then((status: number) => status === 1);
       }))
     ]).then(([, added, removed]) => {

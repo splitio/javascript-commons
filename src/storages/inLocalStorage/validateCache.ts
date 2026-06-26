@@ -2,7 +2,7 @@ import { ISettings } from '../../types';
 import { isFiniteNumber, isNaNNumber } from '../../utils/lang';
 import { getStorageHash } from '../KeyBuilder';
 import { LOG_PREFIX } from './constants';
-import type { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import type { DefinitionsCacheInLocal } from './DefinitionsCacheInLocal';
 import type { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import type { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { KeyBuilderCS } from '../KeyBuilderCS';
@@ -68,11 +68,11 @@ function validateExpiration(options: SplitIO.InLocalStorageOptions, storage: Sto
  *
  * @returns Metadata object with `initialCacheLoad` (true if is fresh install, false if is ready from cache) and `lastUpdateTimestamp` (timestamp of last cache update or undefined)
  */
-export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, splits: SplitsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<SplitIO.SdkReadyMetadata> {
+export function validateCache(options: SplitIO.InLocalStorageOptions, storage: StorageAdapter, settings: ISettings, keys: KeyBuilderCS, definitions: DefinitionsCacheInLocal, rbSegments: RBSegmentsCacheInLocal, segments: MySegmentsCacheInLocal, largeSegments: MySegmentsCacheInLocal): Promise<SplitIO.SdkReadyMetadata> {
 
   return Promise.resolve(storage.load && storage.load()).then(() => {
     const currentTimestamp = Date.now();
-    const isThereCache = splits.getChangeNumber() > -1;
+    const isThereCache = definitions.getChangeNumber() > -1;
 
     // Get lastUpdateTimestamp from storage
     const lastUpdatedTimestampStr = storage.getItem(keys.buildLastUpdatedKey());
@@ -80,7 +80,7 @@ export function validateCache(options: SplitIO.InLocalStorageOptions, storage: S
     const lastUpdateTimestamp = (!isNaNNumber(lastUpdatedTimestamp) && lastUpdatedTimestamp !== undefined) ? lastUpdatedTimestamp : undefined;
 
     if (validateExpiration(options, storage, settings, keys, currentTimestamp, isThereCache)) {
-      splits.clear();
+      definitions.clear();
       rbSegments.clear();
       segments.clear();
       largeSegments.clear();

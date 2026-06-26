@@ -2,7 +2,7 @@ import * as c from '../constants';
 
 export const codesError: [number, string][] = [
   // evaluator
-  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid feature flag, no valid rules or unsupported targeting rule type found'],
+  [c.ERROR_ENGINE_COMBINER_IFELSEIF, c.LOG_PREFIX_ENGINE_COMBINER + 'Invalid definition, no valid rules or unsupported targeting rule type found'],
   [c.ENGINE_MATCHER_ERROR, c.LOG_PREFIX_ENGINE_MATCHER + '[%s] %s'],
   // SDK
   [c.ERROR_LOGLEVEL_INVALID, 'logger: Invalid Log Level - No changes to the logs will be applied.'],
@@ -13,7 +13,7 @@ export const codesError: [number, string][] = [
   // synchronizer
   [c.ERROR_SYNC_OFFLINE_LOADING, c.LOG_PREFIX_SYNC_OFFLINE + 'There was an issue loading the mock feature flags data. No changes will be applied to the current cache. %s'],
   [c.ERROR_STREAMING_SSE, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to connect or error on streaming connection, with error message: %s'],
-  [c.ERROR_STREAMING_AUTH, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to authenticate for streaming. Error: %s.'],
+  [c.ERROR_STREAMING_AUTH, c.LOG_PREFIX_SYNC_STREAMING + 'Failed to authenticate for streaming. Error: %s'],
   [c.ERROR_HTTP, 'HTTP request failed with %s. URL: %s. Message: %s'],
   // client status
   [c.ERROR_CLIENT_LISTENER, 'A listener was added for %s on the SDK, which has already fired and won\'t be emitted again. The callback won\'t be executed.'],
@@ -34,6 +34,6 @@ export const codesError: [number, string][] = [
   [c.ERROR_INVALID_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "%s" config param. It should be one of the following values: %s. Defaulting to "%s".'],
   [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': the provided storage is invalid.%s Falling back into default MEMORY storage'],
   [c.ERROR_MIN_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': the provided "%s" config param is lower than allowed. Setting to the minimum value %s seconds'],
-  [c.ERROR_TOO_MANY_SETS, c.LOG_PREFIX_SETTINGS + ': the amount of flag sets provided are big causing uri length error.'],
+  [c.ERROR_TOO_MANY_SETS, c.LOG_PREFIX_SETTINGS + ': the number of sets provided is too high, which causes a URI length error.'],
   [c.ERROR_SETS_FILTER_EXCLUSIVE, c.LOG_PREFIX_SETTINGS+': the Set filter is exclusive and cannot be used simultaneously with names or prefix filters. Ignoring names and prefixes.'],
 ];

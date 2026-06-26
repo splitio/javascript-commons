@@ -36,11 +36,11 @@ describe('PLUGGABLE STORAGE', () => {
     const sharedOnReadyCb = jest.fn();
     const sharedStorage = storage.shared('some_key', sharedOnReadyCb);
     assertStorageInterface(sharedStorage);
-    expect(sharedStorage.splits).toBe(storage.splits);
+    expect(sharedStorage.definitions).toBe(storage.definitions);
     expect(wrapperMock.connect).toBeCalledTimes(1); // wrapper connect method should be called once
 
-    expect(await storage.splits.getSplit('some_split')).toBe(null);
-    expect(await sharedStorage.splits.getSplit('some_split')).toBe(null);
+    expect(await storage.definitions.get('some_split')).toBe(null);
+    expect(await sharedStorage.definitions.get('some_split')).toBe(null);
     expect(wrapperMock.get).toBeCalledTimes(2);
     expect(wrapperMock.get).toBeCalledWith(`${prefix}.SPLITIO.split.some_split`); // keys prefix should be the provided one
 

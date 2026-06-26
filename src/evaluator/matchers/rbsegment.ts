@@ -1,7 +1,7 @@
 import { IExcludedSegment, IRBSegment, MaybeThenable } from '../../dtos/types';
 import { IStorageAsync, IStorageSync } from '../../storages/types';
 import { ILogger } from '../../logger/types';
-import { IDependencyMatcherValue, ISplitEvaluator } from '../types';
+import { IDependencyMatcherValue, IDefinitionEvaluator } from '../types';
 import { thenable } from '../../utils/promise/thenable';
 import { getMatching, keyParser } from '../../utils/key';
 import { parser } from '../parser';
@@ -10,7 +10,7 @@ import { STANDARD_SEGMENT, RULE_BASED_SEGMENT, LARGE_SEGMENT } from '../../utils
 
 export function ruleBasedSegmentMatcherContext(segmentName: string, storage: IStorageSync | IStorageAsync, log: ILogger) {
 
-  return function ruleBasedSegmentMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: ISplitEvaluator): MaybeThenable<boolean> {
+  return function ruleBasedSegmentMatcher({ key, attributes }: IDependencyMatcherValue, splitEvaluator: IDefinitionEvaluator): MaybeThenable<boolean> {
     const matchingKey = getMatching(key);
 
     function matchConditions(rbsegment: IRBSegment) {

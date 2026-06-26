@@ -49,8 +49,8 @@ export class KeyBuilderSS extends KeyBuilder {
     return `${this.prefix}.events`;
   }
 
-  searchPatternForSplitKeys() {
-    return `${this.buildSplitKeyPrefix()}*`;
+  searchPatternForDefinitionKeys() {
+    return `${this.buildDefinitionKeyPrefix()}*`;
   }
 
   searchPatternForRBSegmentKeys() {

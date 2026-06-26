@@ -1,5 +1,5 @@
 import SplitIO from '../../types/splitio';
-import { IRBSegmentsCacheSync, ISegmentsCacheSync, ISplitsCacheSync } from './types';
+import { IRBSegmentsCacheSync, ISegmentsCacheSync, IDefinitionsCacheSync } from './types';
 import { ILogger } from '../logger/types';
 import { isObject } from '../utils/lang';
 import { isConsumerMode } from '../utils/settingsValidation/mode';
@@ -27,15 +27,15 @@ export function validateRolloutPlan(log: ILogger, settings: SplitIO.ISettings): 
  * If `matchingKey` is provided, the storage is handled as a client-side storage (segments and largeSegments are instances of MySegmentsCache).
  * Otherwise, the storage is handled as a server-side storage (segments is an instance of SegmentsCache).
  */
-export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: { splits?: ISplitsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
-  const { splits, rbSegments, segments, largeSegments } = storage;
+export function setRolloutPlan(log: ILogger, rolloutPlan: RolloutPlan, storage: { definitions?: IDefinitionsCacheSync, rbSegments?: IRBSegmentsCacheSync, segments: ISegmentsCacheSync, largeSegments?: ISegmentsCacheSync }, matchingKey?: string) {
+  const { definitions, rbSegments, segments, largeSegments } = storage;
   const { splitChanges: { ff, rbs } } = rolloutPlan;
 
   log.debug(`storage: set feature flags and segments${matchingKey ? ` for key ${matchingKey}` : ''}`);
 
-  if (splits && ff) {
-    splits.clear();
-    splits.update(ff.d || [], [], ff.t);
+  if (definitions && ff) {
+    definitions.clear();
+    definitions.update(ff.d || [], [], ff.t);
   }
 
   if (rbSegments && rbs) {

@@ -4,7 +4,7 @@ import { thenable } from '../../utils/promise/thenable';
 import { UNSUPPORTED_MATCHER_TYPE } from '../../utils/labels';
 import { CONTROL } from '../../utils/constants';
 import SplitIO from '../../../types/splitio';
-import { IEvaluation, IEvaluator, ISplitEvaluator } from '../types';
+import { IEvaluation, IEvaluator, IDefinitionEvaluator } from '../types';
 import { ENGINE_COMBINER_IFELSEIF, ENGINE_COMBINER_IFELSEIF_NO_TREATMENT, ERROR_ENGINE_COMBINER_IFELSEIF } from '../../logger/constants';
 
 export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]): IEvaluator {
@@ -33,7 +33,7 @@ export function ifElseIfCombinerContext(log: ILogger, predicates: IEvaluator[]):
     return undefined;
   }
 
-  function ifElseIfCombiner(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: ISplitEvaluator) {
+  function ifElseIfCombiner(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) {
     // In Async environments we are going to have async predicates. There is none way to know
     // before hand so we need to evaluate all the predicates, verify for thenables, and finally,
     // define how to return the treatment (wrap result into a Promise or not).

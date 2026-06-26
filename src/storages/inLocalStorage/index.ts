@@ -5,7 +5,7 @@ import { IStorageFactoryParams, IStorageSync, IStorageSyncFactory, StorageAdapte
 import { validatePrefix } from '../KeyBuilder';
 import { KeyBuilderCS, myLargeSegmentsKeyBuilder } from '../KeyBuilderCS';
 import { isLocalStorageAvailable, isValidStorageWrapper, isWebStorage } from '../../utils/env/isLocalStorageAvailable';
-import { SplitsCacheInLocal } from './SplitsCacheInLocal';
+import { DefinitionsCacheInLocal } from './DefinitionsCacheInLocal';
 import { RBSegmentsCacheInLocal } from './RBSegmentsCacheInLocal';
 import { MySegmentsCacheInLocal } from './MySegmentsCacheInLocal';
 import { InMemoryStorageCSFactory } from '../inMemory/InMemoryStorageCS';
@@ -50,26 +50,26 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
-    const splits = new SplitsCacheInLocal(settings, keys, storage);
+    const definitions = new DefinitionsCacheInLocal(settings, keys, storage);
     const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
     const segments = new MySegmentsCacheInLocal(log, keys, storage);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);
     let validateCachePromise: Promise<SplitIO.SdkReadyMetadata> | undefined;
 
     return {
-      splits,
+      definitions,
       rbSegments,
       segments,
       largeSegments,
       impressions: new ImpressionsCacheInMemory(impressionsQueueSize),
       impressionCounts: new ImpressionCountsCacheInMemory(),
       events: new EventsCacheInMemory(eventsQueueSize),
-      telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(splits, segments) : undefined,
+      telemetry: shouldRecordTelemetry(params) ? new TelemetryCacheInMemory(definitions, segments) : undefined,
       uniqueKeys: new UniqueKeysCacheInMemoryCS(),
 
       validateCache() {
         if (!validateCachePromise) {
-          validateCachePromise = validateCache(options, storage, settings, keys, splits, rbSegments, segments, largeSegments);
+          validateCachePromise = validateCache(options, storage, settings, keys, definitions, rbSegments, segments, largeSegments);
         }
         return validateCachePromise;
       },
@@ -86,7 +86,7 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
       shared(matchingKey: string) {
 
         return {
-          splits: this.splits,
+          definitions: this.definitions,
           rbSegments: this.rbSegments,
           segments: new MySegmentsCacheInLocal(log, new KeyBuilderCS(prefix, matchingKey), storage),
           largeSegments: new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage),

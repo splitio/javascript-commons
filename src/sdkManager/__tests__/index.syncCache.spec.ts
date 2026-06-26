@@ -1,7 +1,7 @@
 import splitObject from './mocks/input.json';
 import splitView from './mocks/output.json';
 import { sdkManagerFactory } from '../index';
-import { SplitsCacheInMemory } from '../../storages/inMemory/SplitsCacheInMemory';
+import { DefinitionsCacheInMemory } from '../../storages/inMemory/DefinitionsCacheInMemory';
 import { ISdkReadinessManager } from '../../readiness/types';
 import { loggerMock } from '../../logger/__tests__/sdkLogger.mock';
 
@@ -18,9 +18,9 @@ const sdkReadinessManagerMock = {
 describe('Manager with sync cache (In Memory)', () => {
 
   /** Setup: create manager */
-  const cache = new SplitsCacheInMemory();
+  const cache = new DefinitionsCacheInMemory();
   const manager = sdkManagerFactory({ mode: 'standalone', log: loggerMock }, cache, sdkReadinessManagerMock);
-  cache.addSplit(splitObject as any);
+  cache.add(splitObject as any);
 
   test('List all splits', () => {
 

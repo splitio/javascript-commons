@@ -1,7 +1,7 @@
 import { ISyncManagerCS } from '../types';
 import { fromObjectSyncTaskFactory } from './syncTasks/fromObjectSyncTask';
 import { objectAssign } from '../../utils/lang/objectAssign';
-import { ISplitsParser } from './splitsParser/types';
+import { IDefinitionsParser } from './splitsParser/types';
 import { IReadinessManager } from '../../readiness/types';
 import { SDK_SEGMENTS_ARRIVED } from '../../readiness/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
@@ -17,7 +17,7 @@ function flush() {
  * @param splitsParser - e.g., `splitsParserFromFile`, `splitsParserFromSettings`.
  */
 export function syncManagerOfflineFactory(
-  splitsParserFactory: () => ISplitsParser
+  splitsParserFactory: () => IDefinitionsParser
 ): (params: ISdkFactoryContextSync) => ISyncManagerCS {
 
   /**

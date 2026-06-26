@@ -1,20 +1,23 @@
 import { IDecodedJWTToken } from '../../../utils/jwt/types';
 
-export interface IAuthTokenPushEnabled {
-  pushEnabled: true
-  token: string
+export type IJwtCredentialV2 = {
+  pushEnabled: boolean
+  token: string // empty string ("") when `"pushEnabled": false`
   decodedToken: IDecodedJWTToken
   channels: { [channel: string]: string[] }
   connDelay?: number
 }
 
-export interface IAuthTokenPushDisabled {
-  pushEnabled: false
-  token: ''
+export type IJwtCredentialV3 = {
+  token: string
+  decodedToken: IDecodedJWTToken
+  channels: { [channel: string]: string[] }
+  config?: {
+    streaming?: {
+      delay?: number
+      enabled?: boolean
+    } | null;
+  } | null;
 }
 
-export type IAuthToken = IAuthTokenPushDisabled | IAuthTokenPushEnabled
-
-export type IAuthenticate = (userKeys?: string[]) => Promise<IAuthToken>
-
-export type IAuthenticateV2 = (isClientSide?: boolean) => Promise<IAuthToken>
+export type IAuthenticate = (userKeys?: string[]) => Promise<IJwtCredentialV2>
