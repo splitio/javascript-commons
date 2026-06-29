@@ -8,12 +8,10 @@ import { StorageAdapter } from '../types';
 export class MySegmentsCacheInLocal extends AbstractMySegmentsCacheSync {
 
   private readonly keys: MySegmentsKeyBuilder;
-  private readonly log: ILogger;
   private readonly storage: StorageAdapter;
 
-  constructor(log: ILogger, keys: MySegmentsKeyBuilder, storage: StorageAdapter) {
+  constructor(_log: ILogger, keys: MySegmentsKeyBuilder, storage: StorageAdapter) {
     super();
-    this.log = log;
     this.keys = keys;
     this.storage = storage;
   }
