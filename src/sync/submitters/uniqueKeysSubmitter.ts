@@ -11,7 +11,7 @@ export function uniqueKeysSubmitterFactory(params: ISdkFactoryContextSync) {
 
   const {
     settings: { log, core: { key } },
-    splitApi: { postUniqueKeysBulkCs, postUniqueKeysBulkSs },
+    serviceApi: { postUniqueKeysBulkCs, postUniqueKeysBulkSs },
     storage: { uniqueKeys }
   } = params;
 

@@ -28,7 +28,7 @@ export function syncManagerOnlineFactory(
   pollingManagerFactory?: (params: ISdkFactoryContextSync, definitionChangesFetcher: IDefinitionChangesFetcher, segmentChangesFetcher: ISegmentChangesFetcher) => IPollingManager,
   pushManagerFactory?: (params: ISdkFactoryContextSync, pollingManager: IPollingManager) => IPushManager | undefined,
   definitionFetcherFactory = splitChangesFetcherFactory,
-  segmentFetcherFactory = (params: ISdkFactoryContextSync) => segmentChangesFetcherFactory(params.splitApi.fetchSegmentChanges)
+  segmentFetcherFactory = (params: ISdkFactoryContextSync) => segmentChangesFetcherFactory(params.serviceApi.fetchSegmentChanges)
 ): (params: ISdkFactoryContextSync) => ISyncManagerCS {
 
   /**

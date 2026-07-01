@@ -26,7 +26,7 @@ interface ISharedSettings {
      * List of feature flag filters. These filters are used to fetch a subset of the feature flag definitions in your environment, in order to reduce the delay of the SDK to be ready.
      *
      * NOTES:
-     * - This configuration is only meaningful when the SDK is working in `"standalone"` mode.
+     * - This configuration is only meaningful when the SDK is working in `'standalone'` mode.
      * - If `bySet` filter is provided, `byName` and `byPrefix` filters are ignored.
      * - If both `byName` and `byPrefix` filters are provided, the intersection of the two groups of feature flags is fetched.
      *
@@ -79,7 +79,7 @@ interface ISharedSettings {
        *           'Authorization': context.headers['Authorization'] + ', other-value',
        *           'custom-header': 'custom-value'
        *         };
-       *       };
+       *       }
        *     }
        *   }
        * });
@@ -213,7 +213,7 @@ interface IServerSideSharedSettings {
    */
   startup?: {
     /**
-     * Maximum amount of time used before notify a timeout.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `15`
      */
@@ -373,7 +373,7 @@ interface IClientSideSyncSharedSettings extends IClientSideSharedSettings, ISync
    */
   startup?: {
     /**
-     * Maximum amount of time used before notify a timeout.
+     * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
      *
      * @defaultValue `10`
      */
@@ -925,7 +925,7 @@ declare namespace SplitIO {
   type AsyncTreatmentWithConfig = Promise<TreatmentWithConfig>;
   /**
    * An object with the treatments with configs for a bulk of feature flags, returned by getTreatmentsWithConfig.
-   * Each existing configuration is a stringified version of the JSON you defined on the Split user interface. For example:
+   * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI. For example:
    * ```
    *   {
    *     feature1: { treatment: 'on', config: null }
@@ -1080,7 +1080,7 @@ declare namespace SplitIO {
     changeNumber: number;
     /**
      * Map of configurations per treatment.
-     * Each existing configuration is a stringified version of the JSON you defined on the Split user interface.
+     * Each existing configuration is a stringified version of the JSON you defined on Harness FME UI.
      */
     configs: {
       [treatmentName: string]: string;
@@ -1439,9 +1439,9 @@ declare namespace SplitIO {
      */
     startup?: {
       /**
-       * Maximum amount of time used before notify a timeout.
+       * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
        *
-       * @defaultValue `5`
+       * @defaultValue `10`
        */
       readyTimeout?: number;
       /**
@@ -1599,7 +1599,7 @@ declare namespace SplitIO {
          *           'Authorization': context.headers['Authorization'] + ', other-value',
          *           'custom-header': 'custom-value'
          *         };
-         *       };
+         *       }
          *     }
          *   }
          * });
@@ -2311,63 +2311,73 @@ declare namespace SplitIO {
    */
   interface ConfigsClientSettings {
     /**
-     * Your SDK key.
+     * SDK key used to authenticate with Harness services.
      *
      * @see {@link https://developer.harness.io/docs/feature-management-experimentation/management-and-administration/account-settings/api-keys/}
      */
-    authorizationKey: string;
+    sdkKey: string;
     /**
-     * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
-     *
-     * @defaultValue `60`
+     * Log level for SDK logging.
+     * - `'none'`: No logging
+     * - `'error'`: Log errors only
+     * - `'warn'`: Log warnings and errors
+     * - `'info'`: Log info, warnings, and errors
+     * - `'debug'`: Log debug info and above
+     * @defaultValue `'none'`
      */
-    pollingRate?: number;
+    logLevel?: 'none' | 'error' | 'warn' | 'info' | 'debug';
     /**
-     * Push rate for events and impressions, in seconds. Minimum value: 60.
-     *
-     * @defaultValue `60`
+     * Synchronization configuration.
      */
-    pushRate?: number;
-    /**
-     * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
-     *
-     * @defaultValue `10000`
-     */
-    queueSize?: number;
-    /**
-     * Logging level.
-     *
-     * @defaultValue `'NONE'`
-     */
-    logLevel?: LogLevel;
-    /**
-     * Time in seconds until SDK ready timeout is emitted.
-     *
-     * @defaultValue `10`
-     */
-    timeout?: number;
-    /**
-     * Custom endpoints to replace the default ones used by the SDK.
-     */
-    urls?: {
+    sync?: {
       /**
-       * String property to override the base URL where the SDK will get JWT authentication credentials.
+       * Polling rate for configs and segments refresh, in seconds. Minimum value: 5.
        *
-       * @defaultValue `'https://auth.split.io/api'`
+       * @defaultValue `60`
        */
-      auth?: string;
+      pollingRate?: number;
       /**
-       * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
+       * Push rate for events and impressions, in seconds. Minimum value: 60.
        *
-       * @defaultValue `'https://configs.split.io/api'`
+       * @defaultValue `60`
        */
-      configs?: string;
+      pushRate?: number;
       /**
-       * String property to override the base URL where the SDK will post event-related information like impressions.
+       * Maximum queue size for events and impressions. When the queue reaches this size, a flush is triggered. Minimum value: 1000.
        *
-       * @defaultValue `'https://events.split.io/api'`
+       * @defaultValue `10000`
        */
-      events?: string;
+      queueSize?: number;
+      /**
+       * Time in seconds before emitting the `SDK_READY_TIMED_OUT` event.
+       * A value of `-1` disables the timeout and thus the event is never emitted.
+       *
+       * @defaultValue `10`
+       */
+      readyTimeout?: number;
+      /**
+       * Base URLs used by the SDK for different services.
+       */
+      serviceEndpoints?: {
+        /**
+         * String property to override the base URL where the SDK will get JWT authentication credentials.
+         *
+         * @defaultValue `'https://auth.split.io'`
+         */
+        auth?: string;
+        /**
+         * String property to override the base URL where the SDK will get rollout plan related data, like configs and segments definitions.
+         *
+         * @defaultValue `'https://configs.split.io'`
+         */
+        configs?: string;
+        /**
+         * String property to override the base URL where the SDK will post event-related information like impressions.
+         *
+         * @defaultValue `'https://events.split.io'`
+         */
+        events?: string;
+      };
     };
     /**
      * Fallback configuration objects returned by the `client.getConfig` method when the SDK is not ready or the provided config name is not found.
@@ -2379,38 +2389,12 @@ declare namespace SplitIO {
      */
     requestOptions?: {
       /**
-       * Custom function called before each request, allowing you to add or update headers in SDK HTTP requests.
-       * Some headers, such as `SplitSDKVersion`, are required by the SDK and cannot be overridden.
-       * To pass multiple headers with the same name, combine their values into a single line, separated by commas. Example: `{ 'Authorization': 'value1, value2' }`
-       * Or provide keys with different cases since headers are case-insensitive. Example: `{ 'authorization': 'value1', 'Authorization': 'value2' }`
-       *
-       * @defaultValue `undefined`
-       *
-       * @param context - The context for the request, which contains the `headers` property object representing the current headers in the request.
-       * @returns An object representing a set of headers to be merged with the current headers.
-       *
-       * @example
-       * ```
-       * const client = ConfigsClient({
-       *   ...
-       *   requestOptions: {
-       *     getHeaderOverrides: (context) => {
-       *       return {
-       *         'Authorization': context.headers['Authorization'] + ', other-value',
-       *         'custom-header': 'custom-value'
-       *       };
-       *     }
-       *   }
-       * });
-       * ```
-       */
-      getHeaderOverrides?: (context: { headers: Record<string, string>; }) => Record<string, string>;
-      /**
        * Custom Node.js HTTP(S) Agent used by the SDK for HTTP(S) requests.
        *
        * You can use it, for example, for certificate pinning or setting a network proxy:
        *
        * ```
+       * const { ConfigsClient } = require('@splitsoftware/configs');
        * const { HttpsProxyAgent } = require('https-proxy-agent');
        *
        * const proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY || 'http://10.10.1.10:1080');
@@ -2468,7 +2452,7 @@ declare namespace SplitIO {
   /**
    * Configs SDK client interface.
    */
-  interface ConfigsClient extends Omit<IStatusInterface, 'ready'> {
+  interface ConfigsClient extends Omit<IStatusInterface, 'ready' | 'whenReadyFromCache'> {
     /**
      * Destroys the client.
      *

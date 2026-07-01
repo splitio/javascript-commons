@@ -17,7 +17,7 @@ describe('Telemetry submitter', () => {
   };
   const params = {
     settings,
-    splitApi: { postMetricsUsage, postMetricsConfig }, // @ts-ignore
+    serviceApi: { postMetricsUsage, postMetricsConfig }, // @ts-ignore
     storage: InMemoryStorageFactory({ settings }),
     platform: { now: () => 123 }, // by returning a fixed timestamp, all latencies are equal to 0
     readiness: {

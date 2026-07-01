@@ -41,7 +41,7 @@ export function impressionsSubmitterFactory(params: ISdkFactoryContextSync) {
 
   const {
     settings: { log, scheduler: { impressionsRefreshRate }, core: { labelsEnabled } },
-    splitApi: { postTestImpressionsBulk },
+    serviceApi: { postTestImpressionsBulk },
     storage: { impressions },
     entityType
   } = params;

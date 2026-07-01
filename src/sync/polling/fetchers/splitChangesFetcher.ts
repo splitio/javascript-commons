@@ -55,7 +55,7 @@ function partitionByStatus<T extends { status?: string; name: string }>(items: T
 // @TODO breaking: drop support for Split Proxy below v5.10.0 and simplify the implementation
 export function splitChangesFetcherFactory(params: ISdkFactoryContextSync): IDefinitionChangesFetcher {
 
-  const { splitApi: { fetchSplitChanges }, settings, storage } = params;
+  const { serviceApi: { fetchSplitChanges }, settings, storage } = params;
   const log = settings.log;
   const PROXY_CHECK_INTERVAL_MILLIS = checkIfServerSide(settings) ? PROXY_CHECK_INTERVAL_MILLIS_SS : PROXY_CHECK_INTERVAL_MILLIS_CS;
   let lastProxyCheckTimestamp: number | undefined;

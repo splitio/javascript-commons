@@ -38,7 +38,7 @@ describe('settingsValidation', () => {
       auth: 'https://auth.split.io/api',
       streaming: 'https://streaming.split.io',
       telemetry: 'https://telemetry.split.io/api',
-      configs: 'https://configs.split.io/api',
+      configs: 'https://configs.split.io',
     });
     expect(settings.sync.impressionsMode).toBe(OPTIMIZED);
     expect(settings.sync.enabled).toBe(true);

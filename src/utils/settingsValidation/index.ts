@@ -59,7 +59,7 @@ export const base = {
     // Telemetry Server
     telemetry: 'https://telemetry.split.io/api',
     // Configs Server
-    configs: 'https://configs.split.io/api',
+    configs: 'https://configs.split.io',
   },
 
   // Defines which kind of storage we should instantiate.

@@ -96,7 +96,7 @@ export const fullSettingsServerSide = {
   features: '.split'
 };
 
-export const settingsSplitApi = {
+export const settingsServiceApi = {
   core: {
     authorizationKey: 'sdk-key'
   },

@@ -58,14 +58,14 @@ export class NodeSignalListener implements ISignalListener {
       process.kill(process.pid, SIGTERM);
     };
 
-    this.settings.log.debug(`${LOG_PREFIX_CLEANUP}Split SDK graceful shutdown after SIGTERM.`);
+    this.settings.log.debug(`${LOG_PREFIX_CLEANUP}SDK graceful shutdown after SIGTERM.`);
 
     let handlerResult = null;
 
     try {
       handlerResult = this.handler();
     } catch (err) {
-      this.settings.log.error(`${LOG_PREFIX_CLEANUP}Error with Split SDK graceful shutdown: ${err}`);
+      this.settings.log.error(`${LOG_PREFIX_CLEANUP}Error with SDK graceful shutdown: ${err}`);
     }
 
     if (thenable(handlerResult)) {

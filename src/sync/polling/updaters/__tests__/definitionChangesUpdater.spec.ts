@@ -7,7 +7,7 @@ import { splitChangesFetcherFactory } from '../../fetchers/splitChangesFetcher';
 import { definitionChangesUpdaterFactory, parseSegments, computeMutation } from '../definitionChangesUpdater';
 import splitChangesMock1 from '../../../../__tests__/mocks/splitchanges.since.-1.json';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
-import { fullSettings, settingsSplitApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
+import { fullSettings, settingsServiceApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { EventEmitter } from '../../../../utils/MinEvents';
 import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
@@ -114,7 +114,7 @@ test('definitionChangesUpdater / compute splits mutation', () => {
   let segments = new Set<string>();
   let splitsMutation = computeMutation({ updated: [activeSplitWithSegments], removed: [archivedSplit.name] }, segments, splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([activeSplitWithSegments]);
+  expect(splitsMutation.updated).toEqual([activeSplitWithSegments]);
   expect(splitsMutation.removed).toEqual([archivedSplit.name]);
   expect(splitsMutation.names).toEqual([archivedSplit.name, activeSplitWithSegments.name]);
   expect(Array.from(segments)).toEqual(['A', 'B']);
@@ -124,7 +124,7 @@ test('definitionChangesUpdater / compute splits mutation', () => {
   segments = new Set<string>();
   splitsMutation = computeMutation({ updated: [testFFSetsAB, test2FFSetsX], removed: [] }, segments, splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([testFFSetsAB, test2FFSetsX]);
+  expect(splitsMutation.updated).toEqual([testFFSetsAB, test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([]);
   expect(splitsMutation.names).toEqual([testFFSetsAB.name, test2FFSetsX.name]);
   expect(Array.from(segments)).toEqual([]);
@@ -138,28 +138,28 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   let splitsMutation = computeMutation({ updated: [testFFSetsAB], removed: [] }, new Set(), splitFiltersValidation);
 
   // should add it to mutations
-  expect(splitsMutation.added).toEqual([testFFSetsAB]);
+  expect(splitsMutation.updated).toEqual([testFFSetsAB]);
   expect(splitsMutation.removed).toEqual([]);
   expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFRemoveSetB], removed: [] }, new Set(), splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([testFFRemoveSetB]);
+  expect(splitsMutation.updated).toEqual([testFFRemoveSetB]);
   expect(splitsMutation.removed).toEqual([]);
   expect(splitsMutation.names).toEqual([testFFRemoveSetB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFRemoveSetA], removed: [] }, new Set(), splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([]);
+  expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFRemoveSetA.name]);
   expect(splitsMutation.names).toEqual([testFFRemoveSetA.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([]);
+  expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([testFFEmptySet.name]);
 
@@ -167,13 +167,13 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
   splitsMutation = computeMutation({ updated: [testFFSetsAB], removed: [] }, new Set(), splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([]);
+  expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFSetsAB.name]);
   expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   splitsMutation = computeMutation({ updated: [test2FFSetsX, testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
-  expect(splitsMutation.added).toEqual([test2FFSetsX]);
+  expect(splitsMutation.updated).toEqual([test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
   expect(splitsMutation.names).toEqual([test2FFSetsX.name, testFFEmptySet.name]);
 });
@@ -191,9 +191,9 @@ describe('definitionChangesUpdater', () => {
   const storage = { definitions, rbSegments, segments };
 
   fetchMock.once('*', { status: 200, body: splitChangesMock1 }); // @ts-ignore
-  const splitApi = splitApiFactory(settingsSplitApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
-  const fetchSplitChanges = jest.spyOn(splitApi, 'fetchSplitChanges'); // @ts-ignore
-  const splitChangesFetcher = splitChangesFetcherFactory({ splitApi, settings: fullSettings, storage });
+  const serviceApi = splitApiFactory(settingsServiceApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
+  const fetchSplitChanges = jest.spyOn(serviceApi, 'fetchSplitChanges'); // @ts-ignore
+  const splitChangesFetcher = splitChangesFetcherFactory({ serviceApi, settings: fullSettings, storage });
 
   const readinessManager = readinessManagerFactory(EventEmitter, fullSettings);
   const splitsEmitSpy = jest.spyOn(readinessManager.definitions, 'emit');

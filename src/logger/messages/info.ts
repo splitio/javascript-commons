@@ -1,7 +1,7 @@
 import * as c from '../constants';
 import { codesWarn } from './warn';
 
-const READY_MSG = 'Split SDK client is ready';
+const READY_MSG = 'SDK client is ready';
 
 export const codesInfo: [number, string][] = codesWarn.concat([
   // client status
@@ -10,7 +10,7 @@ export const codesInfo: [number, string][] = codesWarn.concat([
   // SDK
   [c.IMPRESSION_QUEUEING, c.LOG_PREFIX_IMPRESSIONS_TRACKER +'Queueing impression. %s: %s. Key: %s. Evaluation: %s. Label: %s'],
   [c.NEW_SHARED_CLIENT, 'New shared client instance created.'],
-  [c.NEW_FACTORY, 'New Split SDK instance created. %s'],
+  [c.NEW_FACTORY, 'New SDK instance created. %s'],
   [c.EVENTS_TRACKER_SUCCESS, c.LOG_PREFIX_EVENTS_TRACKER + 'Successfully queued %s'],
   [c.IMPRESSIONS_TRACKER_SUCCESS, c.LOG_PREFIX_IMPRESSIONS_TRACKER + 'Successfully stored %s impression(s).'],
   [c.USER_CONSENT_UPDATED, 'UserConsent: consent status changed from %s to %s.'],

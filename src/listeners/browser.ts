@@ -3,7 +3,7 @@ import { ISignalListener } from './types';
 import { IRecorderCacheSync, IStorageSync } from '../storages/types';
 import { fromImpressionsCollector } from '../sync/submitters/impressionsSubmitter';
 import { fromImpressionCountsCollector } from '../sync/submitters/impressionCountsSubmitter';
-import { IResponse, ISplitApi } from '../services/types';
+import { IResponse, IServiceApi } from '../services/types';
 import { ISettings } from '../types';
 import SplitIO from '../../types/splitio';
 import { ImpressionsPayload } from '../sync/submitters/types';
@@ -25,14 +25,14 @@ export class BrowserSignalListener implements ISignalListener {
   private syncManager: ISyncManager | undefined;
   private settings: ISettings;
   private storage: IStorageSync;
-  private serviceApi: ISplitApi;
+  private serviceApi: IServiceApi;
   private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
-  constructor({ syncManager, settings, storage, splitApi, entityType }: ISdkFactoryContextSync) {
+  constructor({ syncManager, settings, storage, serviceApi, entityType }: ISdkFactoryContextSync) {
     this.syncManager = syncManager;
     this.settings = settings;
     this.storage = storage;
-    this.serviceApi = splitApi;
+    this.serviceApi = serviceApi;
     this.flushData = this.flushData.bind(this);
     this.flushDataIfHidden = this.flushDataIfHidden.bind(this);
     this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled, entityType);

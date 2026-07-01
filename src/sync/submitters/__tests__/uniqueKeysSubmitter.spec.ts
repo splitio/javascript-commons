@@ -19,7 +19,7 @@ function getParams(uniqueKeysCache: any) {
   const params = {
     settings: { log: loggerMock, core: { key: undefined } },
     storage: { uniqueKeys: uniqueKeysCache },
-    splitApi: {
+    serviceApi: {
       postUniqueKeysBulkCs: jest.fn(() => Promise.resolve()),
       postUniqueKeysBulkSs: jest.fn(() => Promise.resolve()) }
   };
@@ -43,8 +43,8 @@ describe('uniqueKeys submitter', () => {
     setTimeout(() => { uniqueKeysCache.track(imp4.keyName, imp4.feature); });
 
     setTimeout(() => {
-      expect(params.splitApi.postUniqueKeysBulkCs.mock.calls).toEqual([]);
-      expect(params.splitApi.postUniqueKeysBulkSs.mock.calls).toEqual([
+      expect(params.serviceApi.postUniqueKeysBulkCs.mock.calls).toEqual([]);
+      expect(params.serviceApi.postUniqueKeysBulkSs.mock.calls).toEqual([
         // POST with imp1
         ['{"keys":[{"f":"someFeature","ks":["k1"]}]}'],
         // POST with imp2 and imp3
@@ -70,8 +70,8 @@ describe('uniqueKeys submitter', () => {
     setTimeout(() => { uniqueKeysCache.track(imp4.keyName, imp4.feature); });
 
     setTimeout(() => {
-      expect(params.splitApi.postUniqueKeysBulkSs.mock.calls).toEqual([]);
-      expect(params.splitApi.postUniqueKeysBulkCs.mock.calls).toEqual([
+      expect(params.serviceApi.postUniqueKeysBulkSs.mock.calls).toEqual([]);
+      expect(params.serviceApi.postUniqueKeysBulkCs.mock.calls).toEqual([
         // POST with imp1
         ['{"keys":[{"k":"k1","fs":["someFeature"]}]}'],
         // POST with imp2 and imp3
