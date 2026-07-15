@@ -149,8 +149,8 @@ export function splitApiFactory(
 
     // Not used. Just here to satisfy the IServiceApi interface.
 
-    fetchConfigs(since: number, noCache?: boolean, till?: number) {
-      const url = `${urls.configs}/v1/configs?since=${since}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
+    fetchConfigs(since: number, noCache?: boolean, till?: number, rbSince?: number) {
+      const url = `${urls.configs}/v1/configs?since=${since}${rbSince ? '&rbSince=' + rbSince : ''}${filterQueryString || ''}${till ? '&till=' + till : ''}`;
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
