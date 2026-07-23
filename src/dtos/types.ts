@@ -192,7 +192,7 @@ export interface IDefinitionCondition {
     matchers: IDefinitionMatcher[]
   }
   partitions?: IDefinitionPartition[]
-  label?: string
+  label?: string | null
   conditionType?: 'ROLLOUT' | 'WHITELIST'
 }
 

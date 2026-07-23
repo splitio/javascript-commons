@@ -56,7 +56,7 @@ export function pushManagerFactory(
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
-  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker, userKey ? undefined : pollingManager.segmentsSyncTask as ISegmentsSyncTask);
+  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker);
 
   // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
   const userKeyHashes: Record<string, string> = {};

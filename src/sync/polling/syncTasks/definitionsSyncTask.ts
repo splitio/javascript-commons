@@ -1,7 +1,7 @@
 import { IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { syncTaskFactory } from '../../syncTask';
-import { IDefinitionsSyncTask } from '../types';
+import { IDefinitionsSyncTask, ISegmentsSyncTask } from '../types';
 import { ISettings } from '../../../types';
 import { definitionChangesUpdaterFactory } from '../updaters/definitionChangesUpdater';
 import { IDefinitionChangesFetcher } from '../fetchers/types';
@@ -14,7 +14,7 @@ export function definitionsSyncTaskFactory(
   storage: IStorageSync,
   readiness: IReadinessManager,
   settings: ISettings,
-  isClientSide?: boolean
+  segmentsSyncTask?: ISegmentsSyncTask // undefined for client-side
 ): IDefinitionsSyncTask {
   return syncTaskFactory(
     settings.log,
@@ -26,7 +26,7 @@ export function definitionsSyncTaskFactory(
       readiness.definitions,
       settings.startup.requestTimeoutBeforeReady,
       settings.startup.retriesOnFailureBeforeReady,
-      isClientSide
+      segmentsSyncTask
     ),
     settings.scheduler.featuresRefreshRate,
     'definitionChangesUpdater',

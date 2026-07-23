@@ -17,8 +17,8 @@ export function pollingManagerSSFactory(
   const { storage, readiness, settings } = params;
   const log = settings.log;
 
-  const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings);
   const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
+  const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, segmentsSyncTask);
 
   return {
     definitionsSyncTask,
