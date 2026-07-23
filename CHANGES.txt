@@ -1,4 +1,4 @@
-3.1.0 (July XX, 2026)
+3.1.0 (July 23, 2026)
  - Added support for rule-based segments in /api/v1/configs endpoint.
 
 3.0.0 (June 26, 2026)
