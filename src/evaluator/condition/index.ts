@@ -7,12 +7,12 @@ import SplitIO from '../../../types/splitio';
 import { ILogger } from '../../logger/types';
 
 // Build Evaluation object if and only if matchingResult is true
-function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed?: number, treatments?: { getTreatmentFor: (x: number) => string }, label?: string): IEvaluation | boolean | undefined {
+function match(log: ILogger, matchingResult: boolean, bucketingKey: string | undefined, seed?: number, treatments?: { getTreatmentFor: (x: number) => string }, label?: string | null): IEvaluation | boolean | undefined {
   if (matchingResult) {
     return treatments ? // Feature flag
       {
         treatment: getTreatment(log, bucketingKey as string, seed, treatments),
-        label: label!
+        label: label ?? ''
       } : // Rule-based segment
       true;
   }
@@ -22,7 +22,7 @@ function match(log: ILogger, matchingResult: boolean, bucketingKey: string | und
 }
 
 // Condition factory
-export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
+export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.SplitKeyObject, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) => MaybeThenable<boolean>, treatments?: { getTreatmentFor: (x: number) => string }, label?: string | null, conditionType?: 'ROLLOUT' | 'WHITELIST'): IEvaluator {
 
   return function conditionEvaluator(key: SplitIO.SplitKeyObject, seed?: number, trafficAllocation?: number, trafficAllocationSeed?: number, attributes?: SplitIO.Attributes, splitEvaluator?: IDefinitionEvaluator) {
 

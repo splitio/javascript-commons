@@ -1,5 +1,6 @@
 import { releaseApiKey, validateAndTrackApiKey } from '../utils/inputValidation/apiKey';
 import { ISdkFactoryContext } from '../sdkFactory/types';
+import { LOCALHOST_MODE } from '../utils/constants';
 
 const COOLDOWN_TIME_IN_MILLIS = 1000;
 
@@ -12,7 +13,7 @@ export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?:
   let hasInit = false;
   let lastActionTime = 0;
 
-  const signalListener = platform.SignalListener && new platform.SignalListener(params);
+  const signalListener = platform.SignalListener && settings.mode !== LOCALHOST_MODE ? new platform.SignalListener(params) : undefined;
 
   function __cooldown(func: Function, time: number) {
     const now = Date.now();

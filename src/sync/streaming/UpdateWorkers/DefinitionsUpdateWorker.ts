@@ -7,7 +7,7 @@ import { IRBSegmentsCacheSync, IDefinitionsCacheSync, IStorageSync } from '../..
 import { ITelemetryTracker } from '../../../trackers/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
-import { ISegmentsSyncTask, IDefinitionsSyncTask } from '../../polling/types';
+import { IDefinitionsSyncTask } from '../../polling/types';
 import { InstantUpdate } from '../../polling/updaters/definitionChangesUpdater';
 import { RB_SEGMENT_UPDATE } from '../constants';
 import { parseFFUpdatePayload } from '../parseUtils';
@@ -18,7 +18,7 @@ import { IUpdateWorker } from './types';
 /**
  * DefinitionsUpdateWorker factory
  */
-export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, definitionsEventEmitter: IDefinitionsEventEmitter, telemetryTracker: ITelemetryTracker, segmentsSyncTask?: ISegmentsSyncTask): IUpdateWorker<[updateData: ISplitUpdateData]> & { killDefinition(event: ISplitKillData): void } {
+export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, definitionsEventEmitter: IDefinitionsEventEmitter, telemetryTracker: ITelemetryTracker): IUpdateWorker<[updateData: ISplitUpdateData]> & { killDefinition(event: ISplitKillData): void } {
 
   const ff = DefinitionsUpdateWorker(storage.definitions);
   const rbs = DefinitionsUpdateWorker(storage.rbSegments);
@@ -42,8 +42,6 @@ export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, def
             __handleDefinitionUpdateCall();
           } else {
             if (instantUpdate) telemetryTracker.trackUpdatesFromSSE(SPLITS);
-            // fetch new registered segments for server-side API. Not retrying on error
-            if (segmentsSyncTask) segmentsSyncTask.execute(true);
 
             const attempts = backoff.attempts + 1;
 

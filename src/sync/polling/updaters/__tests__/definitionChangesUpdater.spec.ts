@@ -290,7 +290,7 @@ describe('definitionChangesUpdater', () => {
       { sets: ['set_a'], shouldEmit: true }, /* should emit if flag is back in configured sets */
     ];
 
-    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
+    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1);
 
     let index = 0;
     let calls = 0;
@@ -305,7 +305,7 @@ describe('definitionChangesUpdater', () => {
     // @ts-ignore
     splitFiltersValidation = { queryString: null, groupedFilters: { bySet: ['set_a'], byName: [], byPrefix: [] }, validFilters: [] };
     storage.definitions.clear();
-    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
+    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1);
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {
@@ -424,8 +424,8 @@ describe('definitionChangesUpdater', () => {
     readinessManager.definitions.definitionsArrived = false;
     readinessManager.segments.segmentsArrived = false; // Segments not ready - client-side should still emit
 
-    // Create client-side updater (isClientSide = true)
-    const clientSideUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1, true);
+    // Create client-side updater (segmentsSyncTask = undefined)
+    const clientSideUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1);
 
     const flag1 = { name: 'client-flag', status: 'ACTIVE', changeNumber: 300, conditions: [] } as unknown as IDefinition;
     fetchMock.once('*', { status: 200, body: { ff: { d: [flag1], t: 300 } } });

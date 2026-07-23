@@ -1,4 +1,4 @@
-import { ISegmentsCacheBase, IStorageBase } from '../../../storages/types';
+import { IStorageBase } from '../../../storages/types';
 import { IDefinitionChangesFetcher } from '../fetchers/types';
 import { IRBSegment, IDefinition, IDefinitionChangesResponse, ISplitFiltersValidation, MaybeThenable } from '../../../dtos/types';
 import { IDefinitionsEventEmitter } from '../../../readiness/types';
@@ -12,20 +12,10 @@ import { setToArray } from '../../../utils/lang/sets';
 import { SPLIT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 import { ISplit } from '../fetchers/splitChangesFetcher';
+import { ISegmentsSyncTask } from '../types';
 
 export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
 type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
-
-// Checks that all registered segments have been fetched (changeNumber !== -1 for every segment).
-// Returns a promise that could be rejected.
-// @TODO review together with Segments and MySegments storage APIs
-function checkAllSegmentsExist(segments: ISegmentsCacheBase): Promise<boolean> {
-  let registeredSegments = Promise.resolve(segments.getRegisteredSegments());
-  return registeredSegments.then(segmentNames => {
-    return Promise.all(segmentNames.map(segmentName => segments.getChangeNumber(segmentName)))
-      .then(changeNumbers => changeNumbers.every(changeNumber => changeNumber !== undefined));
-  });
-}
 
 /**
  * Collect segments from a raw FF or RBS definition.
@@ -133,7 +123,7 @@ export function definitionChangesUpdaterFactory(
   definitionsEventEmitter?: IDefinitionsEventEmitter,
   requestTimeoutBeforeReady = 0,
   retriesOnFailureBeforeReady = 0,
-  isClientSide?: boolean
+  segmentsSyncTask?: ISegmentsSyncTask // undefined for client-side
 ): DefinitionChangesUpdater {
   const { definitions, rbSegments, segments } = storage;
 
@@ -202,8 +192,8 @@ export function definitionChangesUpdaterFactory(
             startingUp = false;
 
             if (definitionsEventEmitter) {
-              // To emit SDK_DEFINITIONS_ARRIVED for server-side SDK, we must check that all registered segments have been fetched
-              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((ffChanged || rbsChanged) && (isClientSide || checkAllSegmentsExist(segments))))
+              // To emit SDK_DEFINITIONS_ARRIVED for server-side SDK, we must wait for all registered segments to be fetched
+              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((ffChanged || rbsChanged) && (!segmentsSyncTask || segmentsSyncTask.execute(true))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events

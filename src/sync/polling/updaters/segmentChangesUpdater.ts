@@ -76,7 +76,7 @@ export function segmentChangesUpdaterFactory(
     log.debug(`${LOG_PREFIX_SYNC}Started segments update`);
 
     // If not a segment name provided, read list of available segments names to be updated.
-    let segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
+    const segmentsPromise = Promise.resolve(segmentName ? [segmentName] : segments.getRegisteredSegments());
 
     return segmentsPromise.then(segmentNames => {
       const updaters = segmentNames.map(segmentName => updateSegment(segmentName, noCache, till, fetchOnlyNew, readyOnAlreadyExistentState ? retriesOnFailureBeforeReady : 0));
@@ -85,7 +85,7 @@ export function segmentChangesUpdaterFactory(
         // if at least one segment fetch succeeded, mark segments ready
         if (shouldUpdateFlags.some(update => update) || readyOnAlreadyExistentState) {
           readyOnAlreadyExistentState = false;
-          if (readiness) {
+          if (readiness && !fetchOnlyNew) {
             const metadata: SdkUpdateMetadata = {
               type: SEGMENTS_UPDATE,
               names: []

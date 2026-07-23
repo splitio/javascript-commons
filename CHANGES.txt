@@ -1,3 +1,7 @@
+3.1.0 (July 23, 2026)
+ - Added support for rule-based segments in /api/v1/configs endpoint.
+ - Updated polling flow to fetch new referenced segments immediately.
+
 3.0.0 (June 26, 2026)
  - Extracted SDK lifecycle methods (`init`, `flush`, and `destroy`) into a reusable `sdkLifecycle` module.
  - Extracted the `track` method into a standalone `trackMethod` factory for reuse across SDKs.

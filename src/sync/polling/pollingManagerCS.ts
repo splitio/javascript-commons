@@ -24,7 +24,7 @@ export function pollingManagerCSFactory(
   const { serviceApi, storage, readiness, settings } = params;
   const log = settings.log;
 
-  const definitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, true);
+  const definitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings);
 
   // Map of matching keys to their corresponding MySegmentsSyncTask.
   const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
