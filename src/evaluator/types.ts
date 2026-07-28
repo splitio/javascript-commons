@@ -1,4 +1,4 @@
-import { IBetweenMatcherData, IBetweenStringMatcherData, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
+import { IBetweenMatcherData, IBetweenStringMatcherData, IDefinition, IDependencyMatcherData, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
 import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
@@ -23,6 +23,8 @@ export interface IEvaluation {
   label: string,
   changeNumber?: number,
   config?: string | null | SplitIO.JsonObject
+  type?: IDefinition['type']
+  subtype?: IDefinition['subtype']
 }
 
 export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }

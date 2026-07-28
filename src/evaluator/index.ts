@@ -161,6 +161,8 @@ function getEvaluation(
       return evaluation.then(result => {
         result.changeNumber = definition.changeNumber;
         result.config = definition.configurations && definition.configurations[result.treatment] || null;
+        result.type = definition.type;
+        result.subtype = definition.subtype;
         // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
         result.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
 
@@ -169,6 +171,8 @@ function getEvaluation(
     } else {
       evaluation.changeNumber = definition.changeNumber;
       evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
+      evaluation.type = definition.type;
+      evaluation.subtype = definition.subtype;
       // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
       evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
     }
@@ -236,7 +240,9 @@ function getDefaultTreatment(
       treatment: definition.defaultTreatment,
       label: NO_CONDITION_MATCH, // "default rule"
       config: definition.configurations && definition.configurations[definition.defaultTreatment] || null,
-      changeNumber: definition.changeNumber
+      changeNumber: definition.changeNumber,
+      type: definition.type,
+      subtype: definition.subtype
     };
   }
 
