@@ -47,29 +47,14 @@ export function evaluateFeature(
     return EVALUATION_EXCEPTION;
   }
 
-  if (thenable(definition)) {
-    return definition.then((definition) => getEvaluation(
-      log,
-      key,
-      definition,
-      attributes,
-      storage,
-      options,
-    )).catch(
-      // Exception on async storage. For example, when the storage is redis or
-      // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
-      () => EVALUATION_EXCEPTION
-    );
-  }
-
-  return getEvaluation(
-    log,
-    key,
-    definition,
-    attributes,
-    storage,
-    options,
-  );
+  return thenable(definition) ?
+    definition.then((definition) => getEvaluation(log, key, definition, attributes, storage, options))
+      .catch(
+        // Exception on async storage. For example, when the storage is redis or
+        // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
+        () => EVALUATION_EXCEPTION
+      ) :
+    getEvaluation(log, key, definition, attributes, storage, options);
 }
 
 export function evaluateFeatures(
@@ -91,11 +76,11 @@ export function evaluateFeatures(
 
   return thenable(definitions) ?
     definitions.then(definitions => getEvaluations(log, key, definitionNames, definitions, attributes, storage, options))
-      .catch(() => {
+      .catch(
         // Exception on async storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
-        return treatmentsException(definitionNames);
-      }) :
+        () => treatmentsException(definitionNames)
+      ) :
     getEvaluations(log, key, definitionNames, definitions, attributes, storage, options);
 }
 
@@ -137,10 +122,19 @@ export function evaluateFeaturesByFlagSets(
   // evaluate related features
   return thenable(storedFlagNames) ?
     storedFlagNames.then((storedFlagNames) => evaluate(storedFlagNames))
-      .catch(() => {
-        return {};
-      }) :
+      .catch(() => ({})) :
     evaluate(storedFlagNames);
+}
+
+function setEvaluationDataFromDefinition(evaluation: IEvaluationResult, definition: IDefinition, options?: SplitIO.EvaluationOptions): IEvaluationResult {
+  evaluation.changeNumber = definition.changeNumber;
+  evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
+  evaluation.type = definition.type;
+  evaluation.subtype = definition.subtype;
+  // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
+  evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
+
+  return evaluation;
 }
 
 function getEvaluation(
@@ -156,28 +150,9 @@ function getEvaluation(
     const split = engineParser(log, definition, storage);
     const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
-    // If the storage is async and the evaluated definition uses segments or dependencies, evaluation is thenable
-    if (thenable(evaluation)) {
-      return evaluation.then(result => {
-        result.changeNumber = definition.changeNumber;
-        result.config = definition.configurations && definition.configurations[result.treatment] || null;
-        result.type = definition.type;
-        result.subtype = definition.subtype;
-        // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-        result.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
-
-        return result;
-      });
-    } else {
-      evaluation.changeNumber = definition.changeNumber;
-      evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
-      evaluation.type = definition.type;
-      evaluation.subtype = definition.subtype;
-      // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-      evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
-    }
-
-    return evaluation;
+    return thenable(evaluation) ?
+      evaluation.then(result => setEvaluationDataFromDefinition(result, definition, options)) :
+      setEvaluationDataFromDefinition(evaluation, definition, options);
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;
@@ -195,21 +170,12 @@ function getEvaluations(
   const result: Record<string, IEvaluationResult> = {};
   const thenables: Promise<void>[] = [];
   definitionNames.forEach(definitionName => {
-    const evaluation = getEvaluation(
-      log,
-      key,
-      definitions[definitionName],
-      attributes,
-      storage,
-      options
-    );
-    if (thenable(evaluation)) {
+    const evaluation = getEvaluation(log, key, definitions[definitionName], attributes, storage, options);
+    thenable(evaluation) ?
       thenables.push(evaluation.then(res => {
         result[definitionName] = res;
-      }));
-    } else {
+      })) :
       result[definitionName] = evaluation;
-    }
   });
 
   return thenables.length > 0 ? Promise.all(thenables).then(() => result) : result;
@@ -236,14 +202,10 @@ function getDefaultTreatment(
   definition: IDefinition | null,
 ): MaybeThenable<IEvaluationResult> {
   if (definition) {
-    return {
+    return setEvaluationDataFromDefinition({
       treatment: definition.defaultTreatment,
-      label: NO_CONDITION_MATCH, // "default rule"
-      config: definition.configurations && definition.configurations[definition.defaultTreatment] || null,
-      changeNumber: definition.changeNumber,
-      type: definition.type,
-      subtype: definition.subtype
-    };
+      label: NO_CONDITION_MATCH // "default rule"
+    }, definition);
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;
