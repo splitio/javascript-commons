@@ -215,8 +215,8 @@ export interface IRBSegment extends TargetingEntity {
   } | null
 }
 
-export type ConfigType = 'STANDARD' | 'AI';
-export type ConfigSubtype = 'LLM_CALL';
+export type ConfigType = 'standard' | 'ai';
+export type ConfigSubtype = 'llm_call';
 
 export interface IDefinition extends TargetingEntity {
   trafficTypeName: string;
