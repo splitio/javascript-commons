@@ -1,3 +1,7 @@
+3.2.0 (July 31, 2026)
+ - Added support for AI configs.
+ - Removed Configs SDK-related types and modules and moved them to the Configs SDK repository.
+
 3.1.0 (July 23, 2026)
  - Added support for rule-based segments in /api/v1/configs endpoint.
  - Updated polling flow to fetch new referenced segments immediately.
