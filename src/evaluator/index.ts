@@ -4,11 +4,12 @@ import { EXCEPTION, NO_CONDITION_MATCH, DEFINITION_NOT_FOUND } from '../utils/la
 import { CONTROL } from '../utils/constants';
 import { IDefinition, MaybeThenable } from '../dtos/types';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluationResult } from './types';
+import { IEvaluation } from './types';
 import SplitIO from '../../types/splitio';
 import { ILogger } from '../logger/types';
 import { returnSetsUnion, setToArray } from '../utils/lang/sets';
 import { WARN_FLAGSET_WITHOUT_FLAGS } from '../logger/constants';
+import { objectAssign } from '../utils/lang/objectAssign';
 
 const EVALUATION_EXCEPTION = {
   treatment: CONTROL,
@@ -23,7 +24,7 @@ const EVALUATION_DEFINITION_NOT_FOUND = {
 };
 
 function treatmentsException(definitionNames: string[]) {
-  const evaluations: Record<string, IEvaluationResult> = {};
+  const evaluations: Record<string, IEvaluation> = {};
   definitionNames.forEach(definitionName => {
     evaluations[definitionName] = EVALUATION_EXCEPTION;
   });
@@ -36,8 +37,7 @@ export function evaluateFeature(
   definitionName: string,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-  options?: SplitIO.EvaluationOptions
-): MaybeThenable<IEvaluationResult> {
+): MaybeThenable<IEvaluation> {
   let definition;
 
   try {
@@ -48,13 +48,13 @@ export function evaluateFeature(
   }
 
   return thenable(definition) ?
-    definition.then((definition) => getEvaluation(log, key, definition, attributes, storage, options))
+    definition.then((definition) => getEvaluation(log, key, definition, attributes, storage))
       .catch(
         // Exception on async storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         () => EVALUATION_EXCEPTION
       ) :
-    getEvaluation(log, key, definition, attributes, storage, options);
+    getEvaluation(log, key, definition, attributes, storage);
 }
 
 export function evaluateFeatures(
@@ -63,8 +63,7 @@ export function evaluateFeatures(
   definitionNames: string[],
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-  options?: SplitIO.EvaluationOptions,
-): MaybeThenable<Record<string, IEvaluationResult>> {
+): MaybeThenable<Record<string, IEvaluation>> {
   let definitions;
 
   try {
@@ -75,13 +74,13 @@ export function evaluateFeatures(
   }
 
   return thenable(definitions) ?
-    definitions.then(definitions => getEvaluations(log, key, definitionNames, definitions, attributes, storage, options))
+    definitions.then(definitions => getEvaluations(log, key, definitionNames, definitions, attributes, storage))
       .catch(
         // Exception on async storage. For example, when the storage is redis or
         // pluggable and there is a connection issue and we can't retrieve the split to be evaluated
         () => treatmentsException(definitionNames)
       ) :
-    getEvaluations(log, key, definitionNames, definitions, attributes, storage, options);
+    getEvaluations(log, key, definitionNames, definitions, attributes, storage);
 }
 
 export function evaluateFeaturesByFlagSets(
@@ -91,8 +90,7 @@ export function evaluateFeaturesByFlagSets(
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
   method: string,
-  options?: SplitIO.EvaluationOptions,
-): MaybeThenable<Record<string, IEvaluationResult>> {
+): MaybeThenable<Record<string, IEvaluation>> {
   let storedFlagNames: MaybeThenable<Set<string>[]>;
 
   function evaluate(featureFlagsByFlagSets: Set<string>[]) {
@@ -107,7 +105,7 @@ export function evaluateFeaturesByFlagSets(
     }
 
     return featureFlags.size ?
-      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage, options) :
+      evaluateFeatures(log, key, setToArray(featureFlags), attributes, storage) :
       {};
   }
 
@@ -126,33 +124,21 @@ export function evaluateFeaturesByFlagSets(
     evaluate(storedFlagNames);
 }
 
-function setEvaluationDataFromDefinition(evaluation: IEvaluationResult, definition: IDefinition, options?: SplitIO.EvaluationOptions): IEvaluationResult {
-  evaluation.changeNumber = definition.changeNumber;
-  evaluation.config = definition.configurations && definition.configurations[evaluation.treatment] || null;
-  evaluation.type = definition.type;
-  evaluation.subtype = definition.subtype;
-  // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-  evaluation.impressionsDisabled = options?.impressionsDisabled || definition.impressionsDisabled;
-
-  return evaluation;
-}
-
 function getEvaluation(
   log: ILogger,
   key: SplitIO.SplitKey,
   definition: IDefinition | null,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-  options?: SplitIO.EvaluationOptions,
-): MaybeThenable<IEvaluationResult> {
+): MaybeThenable<IEvaluation> {
 
   if (definition) {
     const split = engineParser(log, definition, storage);
     const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     return thenable(evaluation) ?
-      evaluation.then(result => setEvaluationDataFromDefinition(result, definition, options)) :
-      setEvaluationDataFromDefinition(evaluation, definition, options);
+      evaluation.then(result => objectAssign(result, { definition })) :
+      objectAssign(evaluation, { definition });
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;
@@ -165,12 +151,11 @@ function getEvaluations(
   definitions: Record<string, IDefinition | null>,
   attributes: SplitIO.Attributes | undefined,
   storage: IStorageSync | IStorageAsync,
-  options?: SplitIO.EvaluationOptions,
-): MaybeThenable<Record<string, IEvaluationResult>> {
-  const result: Record<string, IEvaluationResult> = {};
+): MaybeThenable<Record<string, IEvaluation>> {
+  const result: Record<string, IEvaluation> = {};
   const thenables: Promise<void>[] = [];
   definitionNames.forEach(definitionName => {
-    const evaluation = getEvaluation(log, key, definitions[definitionName], attributes, storage, options);
+    const evaluation = getEvaluation(log, key, definitions[definitionName], attributes, storage);
     thenable(evaluation) ?
       thenables.push(evaluation.then(res => {
         result[definitionName] = res;
@@ -184,7 +169,7 @@ function getEvaluations(
 export function evaluateDefaultTreatment(
   definitionName: string,
   storage: IStorageSync | IStorageAsync,
-): MaybeThenable<IEvaluationResult> {
+): MaybeThenable<IEvaluation> {
   let definition;
 
   try {
@@ -200,12 +185,13 @@ export function evaluateDefaultTreatment(
 
 function getDefaultTreatment(
   definition: IDefinition | null,
-): MaybeThenable<IEvaluationResult> {
+): MaybeThenable<IEvaluation> {
   if (definition) {
-    return setEvaluationDataFromDefinition({
+    return {
       treatment: definition.defaultTreatment,
-      label: NO_CONDITION_MATCH // "default rule"
-    }, definition);
+      label: NO_CONDITION_MATCH, // "default rule"
+      definition,
+    };
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;

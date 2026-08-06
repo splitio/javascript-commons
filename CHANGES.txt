@@ -1,4 +1,4 @@
-3.2.0 (July 31, 2026)
+3.2.0 (August 10, 2026)
  - Added support for AI configs.
  - Removed Configs SDK-related types and modules and moved them to the Configs SDK repository.
 

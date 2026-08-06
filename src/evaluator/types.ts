@@ -19,15 +19,10 @@ export interface IMatcherDto {
 }
 
 export interface IEvaluation {
-  treatment?: string,
+  treatment: string,
   label: string,
-  changeNumber?: number,
-  config?: string | null | SplitIO.JsonObject
-  type?: IDefinition['type']
-  subtype?: IDefinition['subtype']
+  definition?: IDefinition
 }
-
-export type IEvaluationResult = IEvaluation & { treatment: string; impressionsDisabled?: boolean }
 
 export type IDefinitionEvaluator = (log: ILogger, key: SplitIO.SplitKey, definitionName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
 

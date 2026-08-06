@@ -4,7 +4,7 @@ import { getMatching, getBucketing } from '../utils/key';
 import { validateDefinitionExistence } from '../utils/inputValidation/definitionExistence';
 import { SDK_NOT_READY } from '../utils/labels';
 import { CONTROL, TREATMENT, TREATMENTS, TREATMENT_WITH_CONFIG, TREATMENTS_WITH_CONFIG, TREATMENTS_WITH_CONFIG_BY_FLAGSETS, TREATMENTS_BY_FLAGSETS, TREATMENTS_BY_FLAGSET, TREATMENTS_WITH_CONFIG_BY_FLAGSET, GET_TREATMENTS_WITH_CONFIG, GET_TREATMENTS_BY_FLAG_SETS, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SETS, GET_TREATMENTS_BY_FLAG_SET, GET_TREATMENTS_WITH_CONFIG_BY_FLAG_SET, GET_TREATMENT_WITH_CONFIG, GET_TREATMENT, GET_TREATMENTS } from '../utils/constants';
-import { IEvaluationResult } from '../evaluator/types';
+import { IEvaluation } from '../evaluator/types';
 import SplitIO from '../../types/splitio';
 import { IMPRESSION_QUEUEING } from '../logger/constants';
 import { ISdkFactoryContext } from '../sdkFactory/types';
@@ -16,17 +16,17 @@ import { trackMethodFactory } from './trackMethod';
 const treatmentNotReady = { treatment: CONTROL, label: SDK_NOT_READY };
 
 function treatmentsNotReady(featureFlagNames: string[]) {
-  const evaluations: Record<string, IEvaluationResult> = {};
+  const evaluations: Record<string, IEvaluation> = {};
   featureFlagNames.forEach(featureFlagName => {
     evaluations[featureFlagName] = treatmentNotReady;
   });
   return evaluations;
 }
 
-export function stringify(options?: SplitIO.EvaluationOptions) {
-  if (options && options.properties) {
+export function stringify(properties?: SplitIO.Properties) {
+  if (properties) {
     try {
-      return JSON.stringify(options.properties);
+      return JSON.stringify(properties);
     } catch { /* JSON.stringify should never throw with validated options, but handling just in case */ }
   }
 }
@@ -42,9 +42,9 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function getTreatment(key: SplitIO.SplitKey, featureFlagName: string, attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENT) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENT_WITH_CONFIG : TREATMENT);
 
-    const wrapUp = (evaluationResult: IEvaluationResult) => {
+    const wrapUp = (evaluationResult: IEvaluation) => {
       const queue: ImpressionDecorated[] = [];
-      const treatment = processEvaluation(evaluationResult, featureFlagName, key, stringify(options), withConfig, methodName, queue);
+      const treatment = processEvaluation(evaluationResult, featureFlagName, key, withConfig, methodName, queue, options);
       impressionsTracker.track(queue, attributes);
 
       stopTelemetryTracker(queue[0] && queue[0].imp.label);
@@ -52,7 +52,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluation = readinessManager.isReadyFromCache() ?
-      evaluateFeature(log, key, featureFlagName, attributes, storage, options) :
+      evaluateFeature(log, key, featureFlagName, attributes, storage) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentNotReady) :
         treatmentNotReady;
@@ -67,12 +67,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function getTreatments(key: SplitIO.SplitKey, featureFlagNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, methodName = GET_TREATMENTS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(withConfig ? TREATMENTS_WITH_CONFIG : TREATMENTS);
 
-    const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
+    const wrapUp = (evaluationResults: Record<string, IEvaluation>) => {
       const queue: ImpressionDecorated[] = [];
       const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
-      const properties = stringify(options);
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, withConfig, methodName, queue, options);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -81,7 +80,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeatures(log, key, featureFlagNames, attributes, storage, options) :
+      evaluateFeatures(log, key, featureFlagNames, attributes, storage) :
       isAsync ? // If the SDK is not ready, treatment may be incorrect due to having splits but not segments data, or storage is not connected
         Promise.resolve(treatmentsNotReady(featureFlagNames)) :
         treatmentsNotReady(featureFlagNames);
@@ -96,12 +95,11 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
   function getTreatmentsByFlagSets(key: SplitIO.SplitKey, flagSetNames: string[], attributes?: SplitIO.Attributes, options?: SplitIO.EvaluationOptions, withConfig = false, method: Method = TREATMENTS_BY_FLAGSETS, methodName = GET_TREATMENTS_BY_FLAG_SETS) {
     const stopTelemetryTracker = telemetryTracker.trackEval(method);
 
-    const wrapUp = (evaluationResults: Record<string, IEvaluationResult>) => {
+    const wrapUp = (evaluationResults: Record<string, IEvaluation>) => {
       const queue: ImpressionDecorated[] = [];
       const treatments: SplitIO.Treatments | SplitIO.TreatmentsWithConfig = {};
-      const properties = stringify(options);
       Object.keys(evaluationResults).forEach(featureFlagName => {
-        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, properties, withConfig, methodName, queue);
+        treatments[featureFlagName] = processEvaluation(evaluationResults[featureFlagName], featureFlagName, key, withConfig, methodName, queue, options);
       });
       impressionsTracker.track(queue, attributes);
 
@@ -110,7 +108,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     };
 
     const evaluations = readinessManager.isReadyFromCache() ?
-      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName, options) :
+      evaluateFeaturesByFlagSets(log, key, flagSetNames, attributes, storage, methodName) :
       isAsync ?
         Promise.resolve({}) :
         {};
@@ -132,19 +130,20 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
 
   // Internal function
   function processEvaluation(
-    evaluation: IEvaluationResult,
+    evaluation: IEvaluation,
     featureFlagName: string,
     key: SplitIO.SplitKey,
-    properties: string | undefined,
     withConfig: boolean,
     invokingMethodName: string,
-    queue: ImpressionDecorated[]
+    queue: ImpressionDecorated[],
+    options: SplitIO.EvaluationOptions = {}
   ): SplitIO.Treatment | SplitIO.TreatmentWithConfig {
     const matchingKey = getMatching(key);
     const bucketingKey = getBucketing(key);
 
-    const { changeNumber, impressionsDisabled } = evaluation;
-    let { treatment, label, config = null } = evaluation;
+    const { definition } = evaluation;
+    let { treatment, label } = evaluation;
+    let config = definition?.configurations?.[treatment] || null;
 
     if (treatment === CONTROL) {
       const fallbackTreatment = fallbackCalculator(featureFlagName, label);
@@ -163,10 +162,10 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
           time: Date.now(),
           bucketingKey,
           label,
-          changeNumber: changeNumber as number,
-          properties
-        },
-        disabled: impressionsDisabled
+          changeNumber: definition!.changeNumber,
+          properties: stringify(options.properties)
+        }, // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
+        disabled: options.impressionsDisabled || definition!.impressionsDisabled
       });
     }
 

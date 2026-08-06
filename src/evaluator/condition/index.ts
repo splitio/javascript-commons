@@ -29,9 +29,9 @@ export function conditionContext(log: ILogger, matcherEvaluator: (key: SplitIO.S
     // Whitelisting has more priority than traffic allocation, so we don't apply this filtering to those conditions.
     if (conditionType === 'ROLLOUT' && !shouldApplyRollout(trafficAllocation!, key.bucketingKey, trafficAllocationSeed!)) {
       return {
-        treatment: undefined, // treatment value is assigned later
+        // treatment value is assigned later, at Engine's evaluationResult
         label: NOT_IN_SPLIT
-      };
+      } as IEvaluation;
     }
 
     // matcherEvaluator could be Async, this relays on matchers return value, so we need
