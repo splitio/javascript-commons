@@ -49,7 +49,8 @@ test('EVALUATOR / should return label exception, treatment control and config nu
 
 test('EVALUATOR / should return right label, treatment and definition if storage returns without errors.', async () => {
   const expectedOutput = {
-    treatment: 'on', label: 'in segment all', definition: splitsMock['config']
+    treatment: 'on', label: 'in segment all', definition: splitsMock['config'],
+    config: '{color:\'black\'}'
   };
   const expectedOutputControl = {
     treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
@@ -80,7 +81,7 @@ test('EVALUATOR / should return right label, treatment and definition if storage
     undefined,
     mockStorage,
   );
-  expect(evaluation).toEqual({ ...expectedOutput, definition: splitsMock['regular'] }); // If the split is retrieved successfully we should get the right evaluation result, label and definition.
+  expect(evaluation).toEqual({ ...expectedOutput, definition: splitsMock['regular'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
 
   const evaluationKilled = evaluateFeature(
     loggerMock,
@@ -89,7 +90,7 @@ test('EVALUATOR / should return right label, treatment and definition if storage
     undefined,
     mockStorage,
   );
-  expect(evaluationKilled).toEqual({ ...expectedOutput, treatment: 'off', label: SPLIT_KILLED, definition: splitsMock['killed'] });
+  expect(evaluationKilled).toEqual({ ...expectedOutput, treatment: 'off', label: SPLIT_KILLED, definition: splitsMock['killed'], config: null });
   // If the split is retrieved but is killed, we should get the right evaluation result, label and definition.
 
   const evaluationArchived = evaluateFeature(
@@ -99,7 +100,7 @@ test('EVALUATOR / should return right label, treatment and definition if storage
     undefined,
     mockStorage,
   );
-  expect(evaluationArchived).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archived'] });
+  expect(evaluationArchived).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archived'], config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and definition.
 
   const evaluationtrafficAlocation1 = evaluateFeature(
@@ -109,7 +110,7 @@ test('EVALUATOR / should return right label, treatment and definition if storage
     undefined,
     mockStorage,
   );
-  expect(evaluationtrafficAlocation1).toEqual({ ...expectedOutput, label: NOT_IN_SPLIT, treatment: 'off', definition: splitsMock['trafficAlocation1'] });
+  expect(evaluationtrafficAlocation1).toEqual({ ...expectedOutput, label: NOT_IN_SPLIT,  treatment: 'off', definition: splitsMock['trafficAlocation1'], config: null });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and definition.
 
   const evaluationKilledWithConfig = evaluateFeature(
@@ -129,7 +130,7 @@ test('EVALUATOR / should return right label, treatment and definition if storage
     undefined,
     mockStorage,
   );
-  expect(evaluationArchivedWithConfig).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archivedWithConfig'] });
+  expect(evaluationArchivedWithConfig).toEqual({ ...expectedOutput, treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archivedWithConfig'], config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and definition.
 
   const evaluationtrafficAlocation1WithConfig = evaluateFeature(

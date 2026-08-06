@@ -142,8 +142,7 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
     const bucketingKey = getBucketing(key);
 
     const { definition } = evaluation;
-    let { treatment, label } = evaluation;
-    let config = definition?.configurations?.[treatment] || null;
+    let { treatment, label, config = null } = evaluation;
 
     if (treatment === CONTROL) {
       const fallbackTreatment = fallbackCalculator(featureFlagName, label);

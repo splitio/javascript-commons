@@ -31,6 +31,13 @@ function treatmentsException(definitionNames: string[]) {
   return evaluations;
 }
 
+function setEvaluationDataFromDefinition(evaluation: IEvaluation, definition: IDefinition): IEvaluation {
+  return objectAssign(evaluation, {
+    definition,
+    config: definition.configurations && definition.configurations[evaluation.treatment] || null
+  });
+}
+
 export function evaluateFeature(
   log: ILogger,
   key: SplitIO.SplitKey,
@@ -137,8 +144,8 @@ function getEvaluation(
     const evaluation = split.getTreatment(key, attributes, evaluateFeature);
 
     return thenable(evaluation) ?
-      evaluation.then(result => objectAssign(result, { definition })) :
-      objectAssign(evaluation, { definition });
+      evaluation.then(result => setEvaluationDataFromDefinition(result, definition)) :
+      setEvaluationDataFromDefinition(evaluation, definition);
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;
@@ -187,11 +194,10 @@ function getDefaultTreatment(
   definition: IDefinition | null,
 ): MaybeThenable<IEvaluation> {
   if (definition) {
-    return {
+    return setEvaluationDataFromDefinition({
       treatment: definition.defaultTreatment,
       label: NO_CONDITION_MATCH, // "default rule"
-      definition,
-    };
+    }, definition);
   }
 
   return EVALUATION_DEFINITION_NOT_FOUND;

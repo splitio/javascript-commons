@@ -22,6 +22,7 @@ export interface IEvaluation {
   treatment: string,
   label: string,
   definition?: IDefinition
+  config?: string | null | SplitIO.JsonObject
 }
 
 export type IDefinitionEvaluator = (log: ILogger, key: SplitIO.SplitKey, definitionName: string, attributes: SplitIO.Attributes | undefined, storage: IStorageSync | IStorageAsync) => MaybeThenable<IEvaluation>
