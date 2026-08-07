@@ -3,12 +3,12 @@ import SplitIO from '../../../types/splitio';
 import { submitterFactory } from './submitter';
 import { ImpressionsPayload } from './types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
-import { EntityType, ISdkFactoryContextSync } from '../../sdkFactory/types';
+import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Converts `impressions` data from cache into request payload.
  */
-export function fromImpressionsCollector(sendLabels: boolean, entityType: EntityType | undefined, data: SplitIO.ImpressionDTO[]): ImpressionsPayload {
+export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.ImpressionDTO[]): ImpressionsPayload {
   let groupedByFeature = groupBy(data, 'feature');
   let dto: ImpressionsPayload = [];
 
@@ -25,7 +25,8 @@ export function fromImpressionsCollector(sendLabels: boolean, entityType: Entity
           b: entry.bucketingKey, // Bucketing Key
           pt: entry.pt, // Previous time
           properties: entry.properties, // Properties
-          et: entityType, // Definition type
+          // @ts-expect-error - entityType is not yet public. @TODO: add to SplitIO.ImpressionDTO type
+          et: entry.entityType, // Definition type
         };
       })
     });
@@ -42,12 +43,11 @@ export function impressionsSubmitterFactory(params: ISdkFactoryContextSync) {
   const {
     settings: { log, scheduler: { impressionsRefreshRate }, core: { labelsEnabled } },
     serviceApi: { postTestImpressionsBulk },
-    storage: { impressions },
-    entityType
+    storage: { impressions }
   } = params;
 
   // retry impressions only once.
-  const syncTask = submitterFactory(log, postTestImpressionsBulk, impressions, impressionsRefreshRate, fromImpressionsCollector.bind(undefined, labelsEnabled, entityType), 1);
+  const syncTask = submitterFactory(log, postTestImpressionsBulk, impressions, impressionsRefreshRate, fromImpressionsCollector.bind(undefined, labelsEnabled), 1);
 
   // register impressions submitter to be executed when impressions cache is full
   impressions.setOnFullQueueCb(() => {

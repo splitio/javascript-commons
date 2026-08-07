@@ -2,7 +2,8 @@
 import { IMetadata } from '../../dtos/types';
 import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
-import { EntityType } from '../../sdkFactory/types';
+
+type EntityType = 'config' | 'flag' | 'ai-config';
 
 type ImpressionPayload = {
   /** Matching Key */

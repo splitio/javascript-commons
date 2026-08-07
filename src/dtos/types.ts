@@ -215,6 +215,9 @@ export interface IRBSegment extends TargetingEntity {
   } | null
 }
 
+export type ConfigType = 'standard' | 'ai';
+export type ConfigSubtype = 'llm_call';
+
 export interface IDefinition extends TargetingEntity {
   trafficTypeName: string;
   sets?: string[] | null;
@@ -231,6 +234,10 @@ export interface IDefinition extends TargetingEntity {
   configurations?: {
     [treatmentName: string]: string | SplitIO.JsonObject
   } | null;
+  /** Definition classification. Absent means a feature flag. */
+  type?: ConfigType;
+  /** Only meaningful when `type === 'AI'`. */
+  subtype?: ConfigSubtype;
 }
 
 /** Interface of the parsed JSON response of `/splitChanges` */
