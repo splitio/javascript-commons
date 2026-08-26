@@ -1031,9 +1031,10 @@ declare namespace SplitIO {
      */
     label: string;
     /**
-     * Version of the feature flag
+     * Version of the feature flag.
+     * Undefined if the feature flag was not found, for example, if the label is 'not ready', 'exception' or 'definition not found'.
      */
-    changeNumber: number;
+    changeNumber?: number;
     /**
      * Previous time
      */

@@ -161,10 +161,10 @@ export function clientFactory(params: ISdkFactoryContext): SplitIO.IClient | Spl
           time: Date.now(),
           bucketingKey,
           label,
-          changeNumber: definition!.changeNumber,
+          changeNumber: definition?.changeNumber,
           properties: stringify(options.properties)
         }, // @ts-expect-error impressionsDisabled is not exposed in the public typings yet.
-        disabled: options.impressionsDisabled || definition!.impressionsDisabled
+        disabled: options.impressionsDisabled || definition?.impressionsDisabled
       });
     }
 

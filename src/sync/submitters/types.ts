@@ -15,7 +15,7 @@ type ImpressionPayload = {
   /** Timestamp */
   m: number;
   /** Change number */
-  c: number;
+  c?: number;
   /** Rule label */
   r?: string;
   /** Previous time */
