@@ -3,7 +3,7 @@ import { IMetadata } from '../../dtos/types';
 import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
 
-type EntityType = 'config' | 'flag' | 'ai-config';
+export type EntityType = 'config' | 'flag' | 'ai-config';
 
 type ImpressionPayload = {
   /** Matching Key */

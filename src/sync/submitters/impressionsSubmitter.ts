@@ -1,14 +1,14 @@
 import { groupBy, forOwn } from '../../utils/lang';
 import SplitIO from '../../../types/splitio';
 import { submitterFactory } from './submitter';
-import { ImpressionsPayload } from './types';
+import { EntityType, ImpressionsPayload } from './types';
 import { SUBMITTERS_PUSH_FULL_QUEUE } from '../../logger/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
 /**
  * Converts `impressions` data from cache into request payload.
  */
-export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.ImpressionDTO[]): ImpressionsPayload {
+export function fromImpressionsCollector(sendLabels: boolean, data: (SplitIO.ImpressionDTO & { entityType?: EntityType })[]): ImpressionsPayload {
   let groupedByFeature = groupBy(data, 'feature');
   let dto: ImpressionsPayload = [];
 
@@ -25,7 +25,7 @@ export function fromImpressionsCollector(sendLabels: boolean, data: SplitIO.Impr
           b: entry.bucketingKey, // Bucketing Key
           pt: entry.pt, // Previous time
           properties: entry.properties, // Properties
-          // @ts-expect-error - entityType is not yet public. @TODO: add to SplitIO.ImpressionDTO type
+          // @TODO: add entityType to public SplitIO.ImpressionDTO type
           et: entry.entityType, // Definition type
         };
       })

@@ -236,7 +236,7 @@ export interface IDefinition extends TargetingEntity {
   } | null;
   /** Definition classification. Absent means a feature flag. */
   type?: ConfigType;
-  /** Only meaningful when `type === 'AI'`. */
+  /** Only meaningful when `type === 'ai'`. */
   subtype?: ConfigSubtype;
 }
 
