@@ -7,7 +7,6 @@ import { SSEHandlerFactory } from './SSEHandler';
 import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
 import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
-import { authenticateFactory } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { checkIfServerSide, getMatching } from '../../utils/key';
@@ -45,7 +44,6 @@ export function pushManagerFactory(
     log.warn(STREAMING_FALLBACK, [e]);
     return;
   }
-  const authenticate = authenticateFactory(serviceApi.fetchAuth);
 
   // init feedback loop
   const pushEmitter = new platform.EventEmitter() as IPushEventEmitter;
@@ -111,7 +109,7 @@ export function pushManagerFactory(
     disconnected = false;
 
     const userKeys = userKey ? Object.keys(clients) : undefined;
-    authenticate(userKeys).then((authData) => {
+    serviceApi.fetchAuth(userKeys).then((authData) => {
       if (disconnected) return;
 
       // 'pushEnabled: false' is handled as a PUSH_NON_RETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
