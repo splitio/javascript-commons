@@ -1,11 +1,13 @@
 import { IPlatform } from '../sdkFactory/types';
 import { ISettings } from '../types';
 import { splitHttpClientFactory } from './splitHttpClient';
-import { ISecureSplitHttpClient, IServiceApi } from './types';
+import { IServiceApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
+import { secureSplitHttpClientFactory } from './secureSplitHttpClient';
+import { authProviderFactory } from './authProvider';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -25,14 +27,15 @@ export function serviceApiFactory(
   settings: ISettings,
   platform: Pick<IPlatform, 'getOptions' | 'getFetch'>,
   telemetryTracker: ITelemetryTracker,
-  secureSplitHttpClientFactory?: (settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, telemetryTracker: ITelemetryTracker) => ISecureSplitHttpClient,
 ): IServiceApi {
 
   const urls = settings.urls;
   const filterQueryString = settings.sync.__splitFiltersValidation && settings.sync.__splitFiltersValidation.queryString;
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
+
   const splitHttpClient = splitHttpClientFactory(settings, platform);
-  const secureSplitHttpClient = secureSplitHttpClientFactory!(settings, platform, telemetryTracker);
+  const authProvider = authProviderFactory(settings, splitHttpClient, telemetryTracker);
+  const secureSplitHttpClient = secureSplitHttpClientFactory(splitHttpClient, authProvider);
 
   return {
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
