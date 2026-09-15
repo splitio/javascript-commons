@@ -7,7 +7,7 @@ import { SSEHandlerFactory } from './SSEHandler';
 import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
 import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
-import { authenticateFactory, hashUserKey } from './AuthClient';
+import { authenticateFactory } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { checkIfServerSide, getMatching } from '../../utils/key';
@@ -58,8 +58,6 @@ export function pushManagerFactory(
   // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
   const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
-  const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
   const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
@@ -323,10 +321,7 @@ export function pushManagerFactory(
 
       // [Only for client-side]
       add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
-        const hash = hashUserKey(userKey);
-
-        if (!userKeyHashes[hash]) {
-          userKeyHashes[hash] = userKey;
+        if (!clients[userKey]) {
           clients[userKey] = {
             hash64: hash64(userKey),
             worker: MySegmentsUpdateWorker(log, storage, mySegmentsSyncTask, telemetryTracker)
@@ -348,8 +343,6 @@ export function pushManagerFactory(
       },
       // [Only for client-side]
       remove(userKey: string) {
-        const hash = hashUserKey(userKey);
-        delete userKeyHashes[hash];
         delete clients[userKey];
       }
     }

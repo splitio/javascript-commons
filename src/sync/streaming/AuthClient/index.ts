@@ -1,9 +1,7 @@
 import { IFetchAuth } from '../../../services/types';
 import { IAuthenticate, IJwtCredential } from './types';
 import { objectAssign } from '../../../utils/lang/objectAssign';
-import { encodeToBase64 } from '../../../utils/base64';
 import { decodeJWTtoken } from '../../../utils/jwt';
-import { hash } from '../../../utils/murmur3/murmur3';
 
 /**
  * Factory of authentication function.
@@ -40,11 +38,4 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
         return json;
       });
   };
-}
-
-/**
- * Returns the hash of a given user key
- */
-export function hashUserKey(userKey: string): string {
-  return encodeToBase64(hash(userKey, 0).toString());
 }
