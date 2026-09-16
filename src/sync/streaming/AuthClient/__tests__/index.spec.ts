@@ -1,23 +1,17 @@
 // mocks and dependencies
 import { splitApiFactory } from '../../../../services/splitApi';
-import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat, userKeySample, userKeyBase64HashSample } from '../../__tests__/dataMocks';
+import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat } from '../../__tests__/dataMocks';
 import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsServiceApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 
 // module to test
-import { authenticateFactory, hashUserKey } from '../index';
+import { authenticateFactory } from '../index';
 
 const authorizationKey = settingsServiceApi.core.authorizationKey;
 const authUrl = settingsServiceApi.urls.auth; // @ts-ignore
 const serviceApi = splitApiFactory(settingsServiceApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
 const authenticate = authenticateFactory(serviceApi.fetchAuth);
-
-test('hashUserKey', () => {
-
-  expect(hashUserKey(userKeySample)).toBe(userKeyBase64HashSample); // hashes key and encodes to base64
-
-});
 
 test('authenticate / success in node (200)', done => {
 

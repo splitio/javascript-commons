@@ -7,16 +7,16 @@ import { SSEHandlerFactory } from './SSEHandler';
 import { MySegmentsUpdateWorker } from './UpdateWorkers/MySegmentsUpdateWorker';
 import { SegmentsUpdateWorker } from './UpdateWorkers/SegmentsUpdateWorker';
 import { DefinitionsUpdateWorker } from './UpdateWorkers/DefinitionsUpdateWorker';
-import { authenticateFactory, hashUserKey } from './AuthClient';
+import { authenticateFactory } from './AuthClient';
 import { forOwn } from '../../utils/lang';
 import { SSEClient } from './SSEClient';
 import { checkIfServerSide, getMatching } from '../../utils/key';
-import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NON_RETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
+import { MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, PUSH_NON_RETRYABLE_ERROR, PUSH_SUBSYSTEM_DOWN, SECONDS_BEFORE_EXPIRATION, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, CONFIG_UPDATE, RB_SEGMENT_UPDATE, PUSH_RETRYABLE_ERROR, PUSH_SUBSYSTEM_UP, ControlType } from './constants';
 import { STREAMING_FALLBACK, STREAMING_REFRESH_TOKEN, STREAMING_CONNECTING, STREAMING_DISABLED, ERROR_STREAMING_AUTH, STREAMING_DISCONNECTING, STREAMING_RECONNECT, STREAMING_PARSING_MEMBERSHIPS_UPDATE } from '../../logger/constants';
 import { IMembershipMSUpdateData, IMembershipLSUpdateData, KeyList, UpdateStrategy } from './SSEHandler/types';
 import { getDelay, isInBitmap, parseBitmap, parseCompressedData } from './parseUtils';
 import { Hash64, hash64 } from '../../utils/murmur3/murmur3_64';
-import { IJwtCredentialV2 } from './AuthClient/types';
+import { IJwtCredential } from './AuthClient/types';
 import { TOKEN_REFRESH, AUTH_REJECTION } from '../../utils/constants';
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 
@@ -58,8 +58,6 @@ export function pushManagerFactory(
   // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
   const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker);
 
-  // [Only for client-side] map of hashes to user keys, to dispatch membership update events to the corresponding MySegmentsUpdateWorker
-  const userKeyHashes: Record<string, string> = {};
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.
   const clients: Record<string, { hash64: Hash64, worker: ReturnType<typeof MySegmentsUpdateWorker> }> = {};
@@ -81,7 +79,7 @@ export function pushManagerFactory(
   let timeoutIdTokenRefresh: ReturnType<typeof setTimeout>;
   let timeoutIdSseOpen: ReturnType<typeof setTimeout>;
 
-  function scheduleTokenRefreshAndSse(authData: IJwtCredentialV2) {
+  function scheduleTokenRefreshAndSse(authData: IJwtCredential) {
     // clear scheduled tasks if exist
     if (timeoutIdTokenRefresh) clearTimeout(timeoutIdTokenRefresh);
     if (timeoutIdSseOpen) clearTimeout(timeoutIdSseOpen);
@@ -113,41 +111,37 @@ export function pushManagerFactory(
     disconnected = false;
 
     const userKeys = userKey ? Object.keys(clients) : undefined;
-    authenticate(userKeys).then(
-      function (authData) {
-        if (disconnected) return;
+    authenticate(userKeys).then((authData) => {
+      if (disconnected) return;
 
-        // 'pushEnabled: false' is handled as a PUSH_NON_RETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
-        // close the sseClient in case the org has been bloqued while the instance was connected to streaming
-        if (!authData.pushEnabled) {
-          log.info(STREAMING_DISABLED);
-          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
-          return;
-        }
-
-        // [Only for client-side] don't open SSE connection if a new shared client was added, since it means that a new authentication is taking place
-        if (userKeys && userKeys.length < Object.keys(clients).length) return;
-
-        // Schedule SSE connection and refresh token
-        scheduleTokenRefreshAndSse(authData);
+      // 'pushEnabled: false' is handled as a PUSH_NON_RETRYABLE_ERROR instead of PUSH_SUBSYSTEM_DOWN, in order to
+      // close the sseClient in case the org has been bloqued while the instance was connected to streaming
+      if (!authData.pushEnabled) {
+        log.info(STREAMING_DISABLED);
+        pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
+        return;
       }
-    ).catch(
-      function (error) {
-        if (disconnected) return;
 
-        log.error(ERROR_STREAMING_AUTH, [error.message]);
+      // [Only for client-side] don't open SSE connection if a new shared client was added, since it means that a new authentication is taking place
+      if (userKeys && userKeys.length < Object.keys(clients).length) return;
 
-        // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
-        if (error.statusCode >= 400 && error.statusCode < 500) {
-          telemetryTracker.streamingEvent(AUTH_REJECTION);
-          pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
-          return;
-        }
+      // Schedule SSE connection and refresh token
+      scheduleTokenRefreshAndSse(authData);
+    }).catch((error) => {
+      if (disconnected) return;
 
-        // Handle other HTTP and network errors as recoverable errors
-        pushEmitter.emit(PUSH_RETRYABLE_ERROR);
+      log.error(ERROR_STREAMING_AUTH, [error.message]);
+
+      // Handle 4XX HTTP errors: 401 (invalid SDK Key) or 400 (using incorrect SDK Key, i.e., client-side SDK Key on server-side)
+      if (error.statusCode >= 400 && error.statusCode < 500) {
+        telemetryTracker.streamingEvent(AUTH_REJECTION);
+        pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
+        return;
       }
-    );
+
+      // Handle other HTTP and network errors as recoverable errors
+      pushEmitter.emit(PUSH_RETRYABLE_ERROR);
+    });
   }
 
   // close SSE connection and cancel scheduled tasks
@@ -218,8 +212,11 @@ export function pushManagerFactory(
 
   /** Functions related to synchronization (Queues and Workers in the spec) */
 
+  // Some notification types are specific to the Feature flags or Configs SDKs. Their handlers are
+  // registered unconditionally, since the SDK only subscribes to the channels of its own entities.
   pushEmitter.on(SPLIT_KILL, definitionsUpdateWorker.killDefinition);
   pushEmitter.on(SPLIT_UPDATE, definitionsUpdateWorker.put);
+  pushEmitter.on(CONFIG_UPDATE, definitionsUpdateWorker.put);
   pushEmitter.on(RB_SEGMENT_UPDATE, definitionsUpdateWorker.put);
 
   function handleMySegmentsUpdate(parsedData: IMembershipMSUpdateData | IMembershipLSUpdateData) {
@@ -324,10 +321,7 @@ export function pushManagerFactory(
 
       // [Only for client-side]
       add(userKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
-        const hash = hashUserKey(userKey);
-
-        if (!userKeyHashes[hash]) {
-          userKeyHashes[hash] = userKey;
+        if (!clients[userKey]) {
           clients[userKey] = {
             hash64: hash64(userKey),
             worker: MySegmentsUpdateWorker(log, storage, mySegmentsSyncTask, telemetryTracker)
@@ -349,8 +343,6 @@ export function pushManagerFactory(
       },
       // [Only for client-side]
       remove(userKey: string) {
-        const hash = hashUserKey(userKey);
-        delete userKeyHashes[hash];
         delete clients[userKey];
       }
     }
