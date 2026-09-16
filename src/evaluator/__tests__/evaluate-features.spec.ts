@@ -64,11 +64,11 @@ test('EVALUATOR - Multiple evaluations at once  / should return label exception,
 });
 
 
-test('EVALUATOR - Multiple evaluations at once / should return right labels, treatments and configs if storage returns without errors.', async () => {
+test('EVALUATOR - Multiple evaluations at once / should return right labels, treatments and definitions if storage returns without errors.', async () => {
   const expectedOutput = {
     config: {
-      treatment: 'on', label: 'in segment all',
-      config: '{color:\'black\'}', changeNumber: 1487277320548
+      treatment: 'on', label: 'in segment all', definition: splitsMock['config'],
+      config: '{color:\'black\'}'
     },
     not_existent_split: {
       treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
@@ -83,33 +83,33 @@ test('EVALUATOR - Multiple evaluations at once / should return right labels, tre
     mockStorage,
   );
   // assert evaluationWithConfig
-  expect(multipleEvaluationAtOnce['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and config.
+  expect(multipleEvaluationAtOnce['config']).toEqual(expectedOutput['config']); // If the split is retrieved successfully we should get the right evaluation result, label and definition.
   // assert evaluationNotFound
   expect(multipleEvaluationAtOnce['not_existent_split']).toEqual(expectedOutput['not_existent_split']); // If the split is not retrieved successfully because it does not exist, we should get the right evaluation result, label and config.
   // assert regular
-  expect(multipleEvaluationAtOnce['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
+  expect(multipleEvaluationAtOnce['regular']).toEqual({ ...expectedOutput['config'], definition: splitsMock['regular'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
   // assert killed
-  expect(multipleEvaluationAtOnce['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED });
+  expect(multipleEvaluationAtOnce['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED, definition: splitsMock['killed'] });
   // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
   // assert archived
-  expect(multipleEvaluationAtOnce['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
+  expect(multipleEvaluationAtOnce['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archived'], config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
   // assert trafficAllocation1
-  expect(multipleEvaluationAtOnce['trafficAlocation1']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, config: null, treatment: 'off' });
+  expect(multipleEvaluationAtOnce['trafficAlocation1']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, definition: splitsMock['trafficAlocation1'], config: null, treatment: 'off' });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.
 
   // assert killedWithConfig
-  expect(multipleEvaluationAtOnce['killedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'off', label: SPLIT_KILLED });
+  expect(multipleEvaluationAtOnce['killedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'off', label: SPLIT_KILLED, definition: splitsMock['killedWithConfig'] });
   // If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
   // assert archivedWithConfig
-  expect(multipleEvaluationAtOnce['archivedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
+  expect(multipleEvaluationAtOnce['archivedWithConfig']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archivedWithConfig'], config: null });
   // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
   // assert trafficAlocation1WithConfig
-  expect(multipleEvaluationAtOnce['trafficAlocation1WithConfig']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, treatment: 'off' });
+  expect(multipleEvaluationAtOnce['trafficAlocation1WithConfig']).toEqual({ ...expectedOutput['config'], label: NOT_IN_SPLIT, treatment: 'off', definition: splitsMock['trafficAlocation1WithConfig'] });
   // If the split is retrieved but is not in split (out of Traffic Allocation), we should get the right evaluation result, label and config.
 
 });
@@ -118,8 +118,8 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
 
   const expectedOutput = {
     config: {
-      treatment: 'on', label: 'in segment all',
-      config: '{color:\'black\'}', changeNumber: 1487277320548
+      treatment: 'on', label: 'in segment all', definition: splitsMock['config'],
+      config: '{color:\'black\'}'
     },
     not_existent_split: {
       treatment: 'control', label: DEFINITION_NOT_FOUND, config: null
@@ -146,13 +146,13 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
     // @todo assert flag set not found - for input validations
 
     // assert regular
-    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
+    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], definition: splitsMock['regular'], config: null }); // If the split is retrieved successfully we should get the right evaluation result, label and config. If Split has no config it should have config equal null.
     // assert killed
-    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED });
+    expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual({ ...expectedOutput['config'], treatment: 'off', config: null, label: SPLIT_KILLED, definition: splitsMock['killed'] });
     // 'If the split is retrieved but is killed, we should get the right evaluation result, label and config.
 
     // assert archived
-    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, config: null });
+    expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual({ ...expectedOutput['config'], treatment: 'control', label: SPLIT_ARCHIVED, definition: splitsMock['archived'], config: null });
     // If the split is retrieved but is archived, we should get the right evaluation result, label and config.
 
     // assert not_existent_split not in evaluation if it is not related to defined flag sets
@@ -163,7 +163,7 @@ describe('EVALUATOR - Multiple evaluations at once by flag sets', () => {
 
     multipleEvaluationAtOnceByFlagSets = await getResultsByFlagSets(['reg_and_config']);
     expect(multipleEvaluationAtOnceByFlagSets['config']).toEqual(expectedOutput['config']);
-    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], config: null });
+    expect(multipleEvaluationAtOnceByFlagSets['regular']).toEqual({ ...expectedOutput['config'], definition: splitsMock['regular'], config: null });
     expect(multipleEvaluationAtOnceByFlagSets['killed']).toEqual(undefined);
     expect(multipleEvaluationAtOnceByFlagSets['archived']).toEqual(undefined);
   });

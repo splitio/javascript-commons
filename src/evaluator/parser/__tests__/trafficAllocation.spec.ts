@@ -2,7 +2,6 @@
 import { parser } from '..';
 import { keyParser } from '../../../utils/key';
 import { IDefinitionCondition } from '../../../dtos/types';
-import { IEvaluation } from '../../types';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 
 test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', async () => {
@@ -25,8 +24,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 0%', a
     label: 'in segment all'
   }] as IDefinitionCondition[]);
 
-  // @ts-ignore
-  const evaluation = await evaluator(keyParser('a key'), 31, 0, 31) as IEvaluation;
+  const evaluation = await evaluator(keyParser('a key'), 31, 0, 31);
 
   expect(evaluation.treatment).toBe(undefined); // treatment should be undefined
   expect(evaluation.label).toBe('not in split'); // label should be fixed string
@@ -52,8 +50,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% wi
     label: 'in segment all'
   }] as IDefinitionCondition[]);
 
-  // @ts-ignore
-  const evaluation = await evaluator(keyParser('a key'), 31, 99, 31) as IEvaluation;
+  const evaluation = await evaluator(keyParser('a key'), 31, 99, 31);
 
   expect(evaluation.treatment).toBe('on'); // on
   expect(evaluation.label).toBe('in segment all'); // in segment all
@@ -79,8 +76,7 @@ test('PARSER / if user is in segment all 100%:on but trafficAllocation is 99% an
     label: 'in segment all'
   }] as IDefinitionCondition[]);
 
-  // @ts-ignore
-  const evaluation = await evaluator(keyParser('a48'), 31, 99, 14) as IEvaluation; // murmur3.bucket('a48', 14) === 100
+  const evaluation = await evaluator(keyParser('a48'), 31, 99, 14); // murmur3.bucket('a48', 14) === 100
 
   expect(evaluation.treatment).toBe(undefined); // treatment should be undefined
   expect(evaluation.label).toBe('not in split'); // label should be fixed string
@@ -126,8 +122,7 @@ test('PARSER / if user is whitelisted and in segment all 100%:off with trafficAl
     label: 'in segment all'
   }] as IDefinitionCondition[]);
 
-  // @ts-ignore
-  const evaluation = await evaluator(keyParser('a key'), 31, 0, 31) as IEvaluation;
+  const evaluation = await evaluator(keyParser('a key'), 31, 0, 31);
 
   expect(evaluation.treatment).toBe('on'); // on
   expect(evaluation.label).toBe('whitelisted'); // whitelisted

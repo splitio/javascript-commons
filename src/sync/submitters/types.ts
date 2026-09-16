@@ -2,7 +2,8 @@
 import { IMetadata } from '../../dtos/types';
 import SplitIO from '../../../types/splitio';
 import { ISyncTask } from '../types';
-import { EntityType } from '../../sdkFactory/types';
+
+export type EntityType = 'config' | 'flag' | 'ai-config';
 
 type ImpressionPayload = {
   /** Matching Key */
@@ -14,7 +15,7 @@ type ImpressionPayload = {
   /** Timestamp */
   m: number;
   /** Change number */
-  c: number;
+  c?: number;
   /** Rule label */
   r?: string;
   /** Previous time */

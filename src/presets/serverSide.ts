@@ -7,7 +7,7 @@ import { sdkManagerFactory } from '../sdkManager';
 import { sdkClientMethodFactory } from '../sdkClient/sdkClientMethod';
 import { impressionObserverSSFactory } from '../trackers/impressionObserver/impressionObserverSS';
 
-const syncManagerOnlineSSFactory = syncManagerOnlineFactory(pollingManagerSSFactory, pushManagerFactory);
+const syncManagerOnlineSSFactory = syncManagerOnlineFactory(pollingManagerSSFactory(), pushManagerFactory);
 
 export const serverSideModules = {
   storageFactory: InMemoryStorageFactory,

@@ -31,6 +31,7 @@ export function impressionsToJSON(impressions: SplitIO.ImpressionDTO[], metadata
         m: impression.time,
         pt: impression.pt,
         properties: impression.properties
+        // @TODO set entityType
       }
     };
 

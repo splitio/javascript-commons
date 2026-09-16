@@ -47,7 +47,7 @@ export function segmentChangesUpdaterFactory(
         false :
         segmentChangesFetcher(since || -1, segmentName, noCache, till, _promiseDecorator).then((changes) => {
           return Promise.all(changes.map(x => {
-            log.debug(`${LOG_PREFIX_SYNC}Processing ${segmentName} with till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
+            log.debug(`${LOG_PREFIX_SYNC}Processing ${segmentName} with since = ${x.since} and till = ${x.till}. Added: ${x.added.length}. Removed: ${x.removed.length}`);
             return segments.update(segmentName, x.added, x.removed, x.till);
           })).then((updates) => {
             return updates.some(update => update);
