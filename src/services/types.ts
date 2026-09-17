@@ -1,3 +1,5 @@
+import { IFetchAuth } from '../sync/streaming/AuthClient/types';
+
 export type IRequestOptions = {
 	method?: string,
 	headers?: Record<string, string>,
@@ -34,8 +36,6 @@ export type IHealthCheckAPI = () => Promise<boolean>
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
 
 export type ISecureSplitHttpClient = ISplitHttpClient & { stop(): void }
-
-export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
 
 export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
 

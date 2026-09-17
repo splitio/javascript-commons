@@ -5,13 +5,10 @@ import fetchMock from '../../../../__tests__/testUtils/fetchMock';
 import { settingsServiceApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 
-// module to test
-import { authenticateFactory } from '../index';
-
 const authorizationKey = settingsServiceApi.core.authorizationKey;
 const authUrl = settingsServiceApi.urls.auth; // @ts-ignore
 const serviceApi = splitApiFactory(settingsServiceApi, { getFetch: () => fetchMock }, telemetryTrackerFactory());
-const authenticate = authenticateFactory(serviceApi.fetchAuth);
+const authenticate = serviceApi.fetchAuth;
 
 test('authenticate / success in node (200)', done => {
 
