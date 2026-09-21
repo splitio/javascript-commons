@@ -4,16 +4,12 @@ import { splitHttpClientFactory } from './splitHttpClient';
 import { IServiceApi } from './types';
 import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
-import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
+import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
-import { secureSplitHttpClientFactory } from './secureSplitHttpClient';
 import { authProviderFactory } from './authProvider';
+import { secureSplitHttpClientFactory } from './secureSplitHttpClient';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
-
-function userKeyToQueryParam(userKey: string) {
-  return 'users=' + encodeURIComponent(userKey); // no need to check availability of `encodeURIComponent`, since it is a global highly supported.
-}
 
 /**
  * Factory of ServiceApi objects, which group the collection of HTTP endpoints used by the SDKs
@@ -21,7 +17,6 @@ function userKeyToQueryParam(userKey: string) {
  * @param settings - validated settings object
  * @param platform - object containing environment-specific dependencies
  * @param telemetryTracker - telemetry tracker
- * @param secureSplitHttpClientFactory - factory of SecureSplitHttpClient objects
  */
 export function serviceApiFactory(
   settings: ISettings,
@@ -34,10 +29,24 @@ export function serviceApiFactory(
   const SplitSDKImpressionsMode = settings.sync.impressionsMode;
 
   const splitHttpClient = splitHttpClientFactory(settings, platform);
+
+  // Shared authProvider so that the SSE authentication (via `fetchAuth`,
+  // used by `pushManager`) and every authenticated HTTP request to the Configs
+  // API reuse the same cached credential instead of each fetching their own.
   const authProvider = authProviderFactory(settings, splitHttpClient, telemetryTracker);
   const secureSplitHttpClient = secureSplitHttpClientFactory(splitHttpClient, authProvider);
 
+  let initialAuth = true;
+
   return {
+    fetchAuth() {
+      // Guard condition to avoid invalidating the cached credential on the first pushManager authentication
+      if (initialAuth) initialAuth = false;
+      else authProvider.invalidate();
+
+      return authProvider.credential();
+    },
+
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
     getSdkAPIHealthCheck() {
       const url = `${urls.sdk}/api/version`;
@@ -47,15 +56,6 @@ export function serviceApiFactory(
     getEventsAPIHealthCheck() {
       const url = `${urls.events}/api/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
-    },
-
-    fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/api/v2/auth?s=${settings.sync.flagSpecVersion}`;
-      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
-        const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-        if (queryParams) url += '&' + queryParams;
-      }
-      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
@@ -102,7 +102,7 @@ export function serviceApiFactory(
      */
     postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS), false, false, false);
     },
 
     /**
@@ -113,10 +113,10 @@ export function serviceApiFactory(
      */
     postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/testImpressions/bulk`;
-      return splitHttpClient(url, {
+      return secureSplitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
-      }, telemetryTracker.trackHttp(IMPRESSIONS));
+      }, telemetryTracker.trackHttp(IMPRESSIONS), false, false, false);
     },
 
     /**
@@ -127,7 +127,7 @@ export function serviceApiFactory(
      */
     postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT), false, false, false);
     },
 
     /**
@@ -138,7 +138,7 @@ export function serviceApiFactory(
      */
     postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/api/v1/keys/cs`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), false, false, false);
     },
 
     /**
@@ -149,7 +149,7 @@ export function serviceApiFactory(
      */
     postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/api/v1/keys/ss`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), false, false, false);
     },
 
     postMetricsConfig(body: string, headers?: Record<string, string>) {

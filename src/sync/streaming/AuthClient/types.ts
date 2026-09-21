@@ -16,4 +16,4 @@ export type IJwtCredential = {
   } | null;
 }
 
-export type IAuthenticate = (userKeys?: string[]) => Promise<IJwtCredential>
+export type IFetchAuth = (userKeys?: string[]) => Promise<IJwtCredential>

@@ -1,14 +1,14 @@
-import { IFetchAuth } from '../../../services/types';
-import { IAuthenticate, IJwtCredential } from './types';
+import { IJwtCredential, IFetchAuth } from './types';
 import { objectAssign } from '../../../utils/lang/objectAssign';
 import { decodeJWTtoken } from '../../../utils/jwt';
+import { IResponse } from '../../../services/types';
 
 /**
  * Factory of authentication function.
  *
- * @param fetchAuth - `ServiceApi.fetchAuth` endpoint
+ * @param fetchAuth - /auth endpoint
  */
-export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
+export function fetchAuthFactory(fetchAuth: (userKeys?: string[]) => Promise<IResponse>): IFetchAuth {
 
   /**
    * Run authentication requests to Auth Server, and returns a promise that resolves with the decoded JTW token.
