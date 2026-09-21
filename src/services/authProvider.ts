@@ -69,8 +69,8 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
   return {
     credential(): Promise<IJwtCredential> {
-      if (cachedCredential && !isExpired(cachedCredential)) {
-        return Promise.resolve(cachedCredential);
+      if (stopped || (cachedCredential && !isExpired(cachedCredential))) {
+        return Promise.resolve(cachedCredential!);
       }
 
       if (cachedCredential) log.debug(LOG_PREFIX_SYNC_AUTH + 'cached credential expired');
@@ -84,7 +84,7 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
     stop() {
       stopped = true;
-      cachedCredential = undefined;
+      // Keep any already-cached credential usable (e.g. by a final flush on destroy)
       inFlightPromise = undefined;
       backoff.reset();
     }
