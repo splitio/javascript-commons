@@ -102,7 +102,7 @@ export function serviceApiFactory(
      */
     postEventsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/events/bulk`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(EVENTS), false, false, false);
     },
 
     /**
@@ -113,10 +113,10 @@ export function serviceApiFactory(
      */
     postTestImpressionsBulk(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/testImpressions/bulk`;
-      return splitHttpClient(url, {
+      return secureSplitHttpClient(url, {
         // Adding extra headers to send impressions in OPTIMIZED or DEBUG modes.
         method: 'POST', body, headers: objectAssign({ SplitSDKImpressionsMode }, headers)
-      }, telemetryTracker.trackHttp(IMPRESSIONS));
+      }, telemetryTracker.trackHttp(IMPRESSIONS), false, false, false);
     },
 
     /**
@@ -127,7 +127,7 @@ export function serviceApiFactory(
      */
     postTestImpressionsCount(body: string, headers?: Record<string, string>) {
       const url = `${urls.events}/api/testImpressions/count`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(IMPRESSIONS_COUNT), false, false, false);
     },
 
     /**
@@ -138,7 +138,7 @@ export function serviceApiFactory(
      */
     postUniqueKeysBulkCs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/api/v1/keys/cs`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), false, false, false);
     },
 
     /**
@@ -149,7 +149,7 @@ export function serviceApiFactory(
      */
     postUniqueKeysBulkSs(body: string, headers?: Record<string, string>) {
       const url = `${urls.telemetry}/api/v1/keys/ss`;
-      return splitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY));
+      return secureSplitHttpClient(url, { method: 'POST', body, headers }, telemetryTracker.trackHttp(TELEMETRY), false, false, false);
     },
 
     postMetricsConfig(body: string, headers?: Record<string, string>) {

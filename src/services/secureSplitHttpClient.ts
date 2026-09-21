@@ -10,19 +10,19 @@ import { IAuthProvider } from './authProvider';
  */
 export function secureSplitHttpClientFactory(splitHttpClient: ISplitHttpClient, authProvider: IAuthProvider): ISecureSplitHttpClient {
 
-  function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker: ((error?: NetworkError) => void) | undefined, logErrorsAsInfo: boolean | undefined, token: string): Promise<IResponse> {
-    return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo, true);
+  function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean, token?: string): Promise<IResponse> {
+    return splitHttpClient(url, token ? { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } } : options, latencyTracker, logErrorsAsInfo, newVersionHeader);
   }
 
-  const httpClient = function (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean): Promise<IResponse> {
+  const httpClient = function (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader = true, useJwt = true): Promise<IResponse> {
     return authProvider.credential().then(credential => {
-      return makeRequest(url, options, latencyTracker, logErrorsAsInfo, credential.token)
+      return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newVersionHeader, useJwt ? credential.token : undefined)
         .catch((error: NetworkError) => {
           if (error.statusCode === 401) {
             // retry once for 401, in case the token has just expired
             authProvider.invalidate();
             return authProvider.credential().then(newCredential => {
-              return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newCredential.token);
+              return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newVersionHeader, useJwt ? newCredential.token : undefined);
             });
           }
           throw error;
