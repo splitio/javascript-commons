@@ -1,6 +1,6 @@
 import { errorParser, messageParser } from './NotificationParser';
 import { notificationKeeperFactory } from './NotificationKeeper';
-import { PUSH_RETRYABLE_ERROR, PUSH_NON_RETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, RB_SEGMENT_UPDATE } from '../constants';
+import { PUSH_RETRYABLE_ERROR, PUSH_NON_RETRYABLE_ERROR, OCCUPANCY, CONTROL, SEGMENT_UPDATE, SPLIT_KILL, SPLIT_UPDATE, CONFIG_UPDATE, MEMBERSHIPS_MS_UPDATE, MEMBERSHIPS_LS_UPDATE, RB_SEGMENT_UPDATE } from '../constants';
 import { IPushEventEmitter } from '../types';
 import { ISseEventHandler } from '../SSEClient/types';
 import { INotificationError, INotificationMessage } from './types';
@@ -80,6 +80,7 @@ export function SSEHandlerFactory(log: ILogger, pushEmitter: IPushEventEmitter, 
       switch (parsedData.type) {
         /* update events */
         case SPLIT_UPDATE:
+        case CONFIG_UPDATE:
         case SEGMENT_UPDATE:
         case MEMBERSHIPS_MS_UPDATE:
         case MEMBERSHIPS_LS_UPDATE:
