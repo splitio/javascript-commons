@@ -1,6 +1,6 @@
 {
   "name": "@splitsoftware/splitio-commons",
-  "version": "3.1.1-rc.8",
+  "version": "3.1.1-rc.9",
   "description": "Split JavaScript SDK common components",
   "main": "cjs/index.js",
   "module": "esm/index.js",
@@ -20,8 +20,8 @@
     "check:lint": "eslint src types --ext .js,.ts",
     "check:types": "tsc --noEmit",
     "build": "npm run build:cjs && npm run build:esm",
-    "build:esm": "rimraf esm && tsc -m es2015 --outDir esm",
-    "build:cjs": "rimraf cjs && tsc -m CommonJS --outDir cjs",
+    "build:esm": "rimraf esm && tsc -p tsconfig.build.json -m es2015 --outDir esm",
+    "build:cjs": "rimraf cjs && tsc -p tsconfig.build.json -m CommonJS --outDir cjs",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "all": "npm run check && npm run build && npm run test",

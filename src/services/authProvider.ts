@@ -84,9 +84,10 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
     stop() {
       stopped = true;
-      // Keep any already-cached credential usable (e.g. by a final flush on destroy)
       inFlightPromise = undefined;
-      backoff.reset();
+      // Keep any already-cached credential usable (e.g. by a final flush on destroy).
+      // Pass it to reset() so a pending retry's promise settles with it immediately.
+      backoff.reset(cachedCredential);
     }
   };
 }

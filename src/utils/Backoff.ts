@@ -12,9 +12,11 @@ export class Backoff {
   attempts: number;
   cb: (...args: any[]) => any;
   timeoutID: ReturnType<typeof setTimeout> | undefined;
+  pendingResolve: ((value: any) => void) | undefined;
 
   /**
-   * Schedule function calls with exponential backoff
+   * Schedule function calls with exponential backoff.
+   * @param cb - The function to call. Must return a promise if used with `scheduleCallAsync`.
    */
   constructor(cb: (...args: any[]) => any, baseMillis?: number, maxMillis?: number) {
     this.baseMillis = Backoff.__TEST__BASE_MILLIS || baseMillis || Backoff.DEFAULT_BASE_MILLIS;
@@ -31,11 +33,12 @@ export class Backoff {
     let delayInMillis = Math.min(this.baseMillis * Math.pow(2, this.attempts), this.maxMillis);
 
     if (this.timeoutID) clearTimeout(this.timeoutID);
+    this.attempts++;
+
     this.timeoutID = setTimeout(() => {
       this.timeoutID = undefined;
       this.cb();
     }, delayInMillis);
-    this.attempts++;
 
     return delayInMillis;
   }
@@ -51,21 +54,28 @@ export class Backoff {
     this.attempts++;
 
     return new Promise<T>((resolve, reject) => {
+      this.pendingResolve = resolve;
       this.timeoutID = setTimeout(() => {
         this.timeoutID = undefined;
+        this.pendingResolve = undefined;
         this.cb().then(resolve, reject);
       }, delayInMillis);
     });
   }
 
   /**
-   * Reset the backoff attempts
+   * Reset the backoff attempts, canceling any scheduled `cb` call. If a `scheduleCallAsync` call is pending,
+   * its promise is resolved immediately with provided `value`, instead of invoking `cb` again.
    */
-  reset() {
+  reset<T>(value?: T) {
     this.attempts = 0;
     if (this.timeoutID) {
       clearTimeout(this.timeoutID);
       this.timeoutID = undefined;
+    }
+    if (this.pendingResolve) {
+      this.pendingResolve(value);
+      this.pendingResolve = undefined;
     }
   }
 

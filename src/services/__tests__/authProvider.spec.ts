@@ -153,11 +153,11 @@ describe('authProviderFactory', () => {
 
     provider.stop();
 
-    // Promise should never resolve/reject after stop (pending timeout cleared)
+    // Promise should settle immediately after stop, instead of hanging on the cleared timeout
     const result = await Promise.race([
       promise.then(() => 'resolved').catch(() => 'rejected'),
       new Promise(r => setTimeout(() => r('timeout'), 100))
     ]);
-    expect(result).toBe('timeout');
+    expect(result).toBe('resolved');
   });
 });
