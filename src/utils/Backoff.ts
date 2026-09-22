@@ -12,7 +12,7 @@ export class Backoff {
   attempts: number;
   cb: (...args: any[]) => any;
   timeoutID: ReturnType<typeof setTimeout> | undefined;
-  pendingResolve: ((value: any) => void) | undefined;
+  pending: { resolve: (value: any) => void, reject: (error: any) => void } | undefined;
 
   /**
    * Schedule function calls with exponential backoff.
@@ -54,28 +54,30 @@ export class Backoff {
     this.attempts++;
 
     return new Promise<T>((resolve, reject) => {
-      this.pendingResolve = resolve;
+      this.pending = { resolve, reject };
       this.timeoutID = setTimeout(() => {
         this.timeoutID = undefined;
-        this.pendingResolve = undefined;
+        this.pending = undefined;
         this.cb().then(resolve, reject);
       }, delayInMillis);
     });
   }
 
   /**
-   * Reset the backoff attempts, canceling any scheduled `cb` call. If a `scheduleCallAsync` call is pending,
-   * its promise is resolved immediately with provided `value`, instead of invoking `cb` again.
+   * Reset the backoff attempts, canceling any scheduled `cb` call. If a `scheduleCallAsync` call is pending
+   * and the caller wants to settle it immediately instead of waiting for `cb` to be invoked, pass `settle`:
+   * `{ value }` to resolve, or `{ error }` to reject.
    */
-  reset<T>(value?: T) {
+  reset<T>(settle?: { value: T } | { error: any }) {
     this.attempts = 0;
     if (this.timeoutID) {
       clearTimeout(this.timeoutID);
       this.timeoutID = undefined;
     }
-    if (this.pendingResolve) {
-      this.pendingResolve(value);
-      this.pendingResolve = undefined;
+    if (settle && this.pending) {
+      if ('value' in settle) this.pending.resolve(settle.value);
+      else this.pending.reject(settle.error);
+      this.pending = undefined;
     }
   }
 

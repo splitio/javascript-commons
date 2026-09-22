@@ -13,6 +13,10 @@ function isExpired(credential: IJwtCredential): boolean {
   return Date.now() / 1000 + SKEW_SECONDS >= credential.decodedToken.exp;
 }
 
+function noCachedCredentialError() {
+  return new Error(LOG_PREFIX_SYNC_AUTH + 'stopped without a cached credential');
+}
+
 export interface IAuthProvider {
   /**
    * Returns the cached credential, or fetches a new one if there isn't one cached or it's expired,
@@ -53,8 +57,9 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
       backoff.reset();
       return credential;
     }).catch((error: NetworkError) => {
-      // Avoid rejected promises and unnecessary retries after stop()
-      if (stopped) return cachedCredential!;
+      // Avoid unnecessary retries after stop(): fall back to any cached credential, or reject
+      // (never resolve with `undefined`, which callers would otherwise send as an unauthenticated request).
+      if (stopped) return cachedCredential || Promise.reject(noCachedCredentialError());
 
       if (error.statusCode && error.statusCode >= 400 && error.statusCode < 500) {
         log.error(LOG_PREFIX_SYNC_AUTH + 'non-retryable error fetching credential (status ' + error.statusCode + '): ' + error.message);
@@ -69,13 +74,23 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
   return {
     credential(): Promise<IJwtCredential> {
-      if (stopped || (cachedCredential && !isExpired(cachedCredential))) {
-        return Promise.resolve(cachedCredential!);
+      if (cachedCredential && !isExpired(cachedCredential)) {
+        return Promise.resolve(cachedCredential);
+      }
+
+      // Reuse any fetch already in flight (e.g. one started just before stop()), instead of firing a redundant one.
+      if (inFlightPromise) return inFlightPromise;
+
+      // No cached credential to fall back to and stopped: reject so callers don't send an unauthenticated request.
+      if (stopped && !cachedCredential) {
+        return Promise.reject(noCachedCredentialError());
       }
 
       if (cachedCredential) log.debug(LOG_PREFIX_SYNC_AUTH + 'cached credential expired');
 
-      return inFlightPromise || (inFlightPromise = fetchCredential());
+      // If stopped, this is a last, bounded refetch: fetchCredential()'s catch short-circuits (no backoff retry)
+      // once stopped, so it's a single attempt that falls back to the stale cached credential on failure.
+      return inFlightPromise = fetchCredential();
     },
 
     invalidate() {
@@ -84,10 +99,10 @@ export function authProviderFactory(settings: ISettings, splitHttpClient: ISplit
 
     stop() {
       stopped = true;
-      inFlightPromise = undefined;
-      // Keep any already-cached credential usable (e.g. by a final flush on destroy).
-      // Pass it to reset() so a pending retry's promise settles with it immediately.
-      backoff.reset(cachedCredential);
+      // Keep any in-flight fetch and already-cached credential usable (e.g. by a final flush on destroy).
+      // If a retry is only pending (not actively in flight), settle it immediately instead of waiting out the
+      // backoff delay: with the cached credential if there is one, or rejected otherwise.
+      backoff.reset(cachedCredential ? { value: cachedCredential } : { error: noCachedCredentialError() });
     }
   };
 }

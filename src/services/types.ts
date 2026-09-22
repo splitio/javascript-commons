@@ -35,6 +35,7 @@ export type IHealthCheckAPI = () => Promise<boolean>
 
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
 
+// @TODO: remove `newVersionHeader` and `useJwt` arguments when all service endpoints are migrated to the new auth mechanism
 export type ISecureSplitHttpClient = ((url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean, useJwt?: boolean) => Promise<IResponse>) & { stop(): void }
 
 export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
