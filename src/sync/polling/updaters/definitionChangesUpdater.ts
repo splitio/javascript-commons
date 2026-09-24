@@ -9,7 +9,7 @@ import { SYNC_FETCH, SYNC_UPDATE, SYNC_FETCH_FAILS, SYNC_FETCH_RETRY } from '../
 import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
-import { SPLIT_UPDATE } from '../../streaming/constants';
+import { RB_SEGMENT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 import { ISplit } from '../fetchers/splitChangesFetcher';
 import { ISegmentsSyncTask } from '../types';
@@ -154,14 +154,14 @@ export function definitionChangesUpdaterFactory(
 
       return Promise.resolve(
         instantUpdate ?
-          instantUpdate.type === SPLIT_UPDATE ?
+          instantUpdate.type === RB_SEGMENT_UPDATE ?
+            { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
             // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
             Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
               return contains ?
                 { d: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['d'] } :
                 definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
             }) :
-            { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
           definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
       )
         .then((definitionChanges: IDefinitionChangesResponse) => {

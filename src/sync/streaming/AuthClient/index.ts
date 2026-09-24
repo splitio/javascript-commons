@@ -1,22 +1,20 @@
-import { IFetchAuth } from '../../../services/types';
-import { IAuthenticate, IJwtCredentialV2 } from './types';
+import { IJwtCredential, IFetchAuth } from './types';
 import { objectAssign } from '../../../utils/lang/objectAssign';
-import { encodeToBase64 } from '../../../utils/base64';
 import { decodeJWTtoken } from '../../../utils/jwt';
-import { hash } from '../../../utils/murmur3/murmur3';
+import { IResponse } from '../../../services/types';
 
 /**
  * Factory of authentication function.
  *
- * @param fetchAuth - `ServiceApi.fetchAuth` endpoint
+ * @param fetchAuth - /auth endpoint
  */
-export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
+export function fetchAuthFactory(fetchAuth: (userKeys?: string[]) => Promise<IResponse>): IFetchAuth {
 
   /**
    * Run authentication requests to Auth Server, and returns a promise that resolves with the decoded JTW token.
    * @param userKeys - set of user Keys to track membership updates. It is undefined for server-side API.
    */
-  return function authenticate(userKeys?: string[]): Promise<IJwtCredentialV2> {
+  return function authenticate(userKeys?: string[]): Promise<IJwtCredential> {
     return fetchAuth(userKeys)
       .then(resp => resp.json())
       .then(json => {
@@ -24,19 +22,20 @@ export function authenticateFactory(fetchAuth: IFetchAuth): IAuthenticate {
           const decodedToken = decodeJWTtoken(json.token);
           if (typeof decodedToken.iat !== 'number' || typeof decodedToken.exp !== 'number') throw new Error('token properties "issuedAt" (iat) or "expiration" (exp) are missing or invalid');
           const channels = JSON.parse(decodedToken['x-ably-capability']);
-          return objectAssign({
+          const credential = objectAssign({
             decodedToken,
             channels
           }, json);
+          // The `/api/v3/auth` endpoint nests the streaming settings under `config.streaming`. Normalize
+          // them into the flat `pushEnabled`/`connDelay` properties used by the PushManager.
+          const streaming = credential.config && credential.config.streaming;
+          if (streaming) {
+            credential.pushEnabled = streaming.enabled;
+            credential.connDelay = streaming.delay;
+          }
+          return credential;
         }
         return json;
       });
   };
-}
-
-/**
- * Returns the hash of a given user key
- */
-export function hashUserKey(userKey: string): string {
-  return encodeToBase64(hash(userKey, 0).toString());
 }

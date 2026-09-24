@@ -1,11 +1,10 @@
-
-3.3.0 (XXX XX, 2026)
+3.2.0 (XXX XX, 2026)
+ - Added support for AI configs.
  - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
  - Removed the `@types/ioredis` dependency, which is no longer required since the public type definitions don't depend on ioredis types. The `@types/node` dependency, previously installed transitively by `@types/ioredis`, is now declared explicitly, since the public type definitions use Node.js types for the `agent` and `tls` options.
-
-3.2.0 (August 28, 2026)
- - Added support for AI configs.
  - Removed Configs SDK-related types and modules and moved them to the Configs SDK repository.
+ - Bugfix - Fixed a memory leak in the `Backoff` utility, where promises returned by pending scheduled calls were never settled when the backoff was reset.
+ - Bugfix - Fixed the authentication service to not send unauthenticated requests when the SDK is destroyed while an authentication retry is pending.
 
 3.1.0 (July 23, 2026)
  - Added support for rule-based segments in /api/v1/configs endpoint.

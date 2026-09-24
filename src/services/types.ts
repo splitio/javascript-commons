@@ -1,3 +1,5 @@
+import { IFetchAuth } from '../sync/streaming/AuthClient/types';
+
 export type IRequestOptions = {
 	method?: string,
 	headers?: Record<string, string>,
@@ -33,9 +35,8 @@ export type IHealthCheckAPI = () => Promise<boolean>
 
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
 
-export type ISecureSplitHttpClient = ISplitHttpClient & { stop(): void }
-
-export type IFetchAuth = (userKeys?: string[]) => Promise<IResponse>
+// @TODO: remove `newVersionHeader` and `useJwt` arguments when all service endpoints are migrated to the new auth mechanism
+export type ISecureSplitHttpClient = ((url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean, useJwt?: boolean) => Promise<IResponse>) & { stop(): void }
 
 export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
 
@@ -73,7 +74,7 @@ export interface IServiceApi {
 	postTestImpressionsCount: IPostTestImpressionsCount
 	postMetricsConfig: IPostMetricsConfig
 	postMetricsUsage: IPostMetricsUsage
-	// lifecycle
+	// lifecycle: stops authProvider backoff retries
 	stop(): void
 }
 

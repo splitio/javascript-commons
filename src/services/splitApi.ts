@@ -6,6 +6,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
+import { fetchAuthFactory } from '../sync/streaming/AuthClient';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 
@@ -33,6 +34,15 @@ export function splitApiFactory(
   const splitHttpClient = splitHttpClientFactory(settings, platform);
 
   return {
+    fetchAuth: fetchAuthFactory((userMatchingKeys?: string[]) => {
+      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
+      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
+        const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
+        if (queryParams) url += '&' + queryParams;
+      }
+      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
+    }),
+
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer
     getSdkAPIHealthCheck() {
       const url = `${urls.sdk}/version`;
@@ -42,15 +52,6 @@ export function splitApiFactory(
     getEventsAPIHealthCheck() {
       const url = `${urls.events}/version`;
       return splitHttpClient(url).then(() => true).catch(() => false);
-    },
-
-    fetchAuth(userMatchingKeys?: string[]) {
-      let url = `${urls.auth}/v2/auth?s=${settings.sync.flagSpecVersion}`;
-      if (userMatchingKeys) { // `userMatchingKeys` is undefined in server-side
-        const queryParams = userMatchingKeys.map(userKeyToQueryParam).join('&');
-        if (queryParams) url += '&' + queryParams;
-      }
-      return splitHttpClient(url, undefined, telemetryTracker.trackHttp(TOKEN));
     },
 
     fetchSplitChanges(since: number, noCache?: boolean, till?: number, rbSince?: number) {
