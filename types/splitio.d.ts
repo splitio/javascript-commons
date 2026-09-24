@@ -1,7 +1,7 @@
 // Type definitions for Split Software SDKs
 // Project: https://www.split.io/
 
-import type { RedisOptions } from 'ioredis';
+import type { ConnectionOptions } from 'tls';
 import type { RequestOptions } from 'http';
 
 export as namespace SplitIO;
@@ -1715,7 +1715,7 @@ declare namespace SplitIO {
          *
          * @defaultValue `undefined`
          */
-        tls?: RedisOptions['tls'];
+        tls?: ConnectionOptions;
       };
       /**
        * Optional prefix to prevent any kind of data collision between SDK versions.

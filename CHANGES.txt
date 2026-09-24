@@ -1,3 +1,8 @@
+
+3.3.0 (XXX XX, 2026)
+ - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
+ - Removed the `@types/ioredis` dependency, which is no longer required since the public type definitions don't depend on ioredis types. The `@types/node` dependency, previously installed transitively by `@types/ioredis`, is now declared explicitly, since the public type definitions use Node.js types for the `agent` and `tls` options.
+
 3.2.0 (August 28, 2026)
  - Added support for AI configs.
  - Removed Configs SDK-related types and modules and moved them to the Configs SDK repository.
@@ -19,6 +24,13 @@
    - input validation for the target object.
  - Removed the misleading warning log 'No listeners for SDK_READY event detected', since users can use the `whenReady` method to wait for the SDK to be ready.
  - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
+
+2.13.0 (September 24, 2026)
+ - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
+ - Removed the `@types/ioredis` dependency, which is no longer required since the public type definitions don't depend on ioredis types. The `@types/node` dependency, previously installed transitively by `@types/ioredis`, is now declared explicitly, since the public type definitions use Node.js types for the `agent` and `tls` options.
+
+2.12.2 (September 23, 2026)
+ - Updated some transitive dependencies for vulnerability fixes.
 
 2.12.1 (June 25, 2026)
  - Updated internal modules to handle `null` values from `/splitChanges` response.

@@ -1,12 +1,12 @@
 // Dynamically require ioredis to prevent strict TypeScript binding
-// and handle module export differences between v4 and v5.
+// and handle module export differences between v4 and later major versions.
 let RedisConstructor: any;
 try {
   const ioredisLib = require('ioredis');
   RedisConstructor = ioredisLib.default || ioredisLib;
 } catch (e) {
   // If we reach here, the peer dependency is missing
-  throw new Error('ioredis is missing. Please install ioredis v4 or v5.');
+  throw new Error('ioredis is missing. Please install ioredis v4, v5 or v6.');
 }
 
 import { ILogger } from '../../logger/types';
@@ -31,9 +31,12 @@ const DEFAULT_LIBRARY_OPTIONS = {
   enableOfflineQueue: false,
   connectTimeout: DEFAULT_OPTIONS.connectionTimeout,
   lazyConnect: false,
-  // CRITICAL: v5 defaults this to 0 (disabled), which breaks dynamic clusters.
-  // v4 defaulted to 5000. We explicitly set it here to ensure v5 works like v4.
+  // CRITICAL: v5 and v6 default this to 0 (disabled), which breaks dynamic clusters.
+  // v4 defaulted to 5000. We explicitly set it here to ensure v5 and v6 work like v4.
   slotsRefreshInterval: 5000,
+  // v6 defaults to RESP3 (`protocol: 3`). The SDK doesn't use any RESP3 feature,
+  // so we stick to RESP2 to keep the v4 and v5 behavior. Ignored by v4 and v5.
+  protocol: 2,
 };
 
 interface IRedisCommand {
@@ -45,7 +48,7 @@ interface IRedisCommand {
 
 /**
  * Redis adapter on top of the library of choice (written with ioredis) for some extra control.
- * Refactored to use Composition instead of Inheritance to support both v4 and v5.
+ * Refactored to use Composition instead of Inheritance to support v4, v5 and v6.
  */
 export class RedisAdapter {
   // eslint-disable-next-line no-undef -- Index signature to allow proxying dynamic ioredis methods without TS errors
