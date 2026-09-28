@@ -115,9 +115,9 @@ export class DefinitionsCacheInLocal extends AbstractDefinitionsCacheSync {
     return item && JSON.parse(item);
   }
 
-  setChangeNumber(changeNumber: number): boolean {
+  setChangeNumber(changeNumber?: number): boolean {
     try {
-      this.storage.setItem(this.keys.buildDefinitionsTillKey(), changeNumber + '');
+      if (changeNumber !== undefined) this.storage.setItem(this.keys.buildDefinitionsTillKey(), changeNumber + '');
       // update "last updated" timestamp with current time
       this.storage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
       this.hasSync = true;

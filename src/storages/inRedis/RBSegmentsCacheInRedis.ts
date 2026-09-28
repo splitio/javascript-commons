@@ -37,7 +37,7 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
     });
   }
 
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(toAdd => {
@@ -54,10 +54,12 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
     });
   }
 
-  setChangeNumber(changeNumber: number) {
-    return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
-      (status: string | null) => status === 'OK'
-    );
+  setChangeNumber(changeNumber?: number) {
+    if (changeNumber !== undefined) {
+      return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
+        (status: string | null) => status === 'OK'
+      );
+    }
   }
 
   getChangeNumber(): Promise<number> {

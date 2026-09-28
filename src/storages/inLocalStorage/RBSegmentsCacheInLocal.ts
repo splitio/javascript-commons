@@ -25,16 +25,16 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     this.storage.removeItem(this.keys.buildRBSegmentsTillKey());
   }
 
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): boolean {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): boolean {
     let updated = toAdd.map(toAdd => this.add(toAdd)).some(result => result);
     updated = toRemove.map(toRemove => this.remove(toRemove)).some(result => result) || updated;
     this.setChangeNumber(changeNumber);
     return updated;
   }
 
-  private setChangeNumber(changeNumber: number) {
+  private setChangeNumber(changeNumber?: number) {
     try {
-      this.storage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
+      if (changeNumber !== undefined) this.storage.setItem(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
       this.storage.setItem(this.keys.buildLastUpdatedKey(), Date.now() + '');
     } catch (e) {
       this.log.error(LOG_PREFIX + e);

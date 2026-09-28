@@ -21,12 +21,12 @@ export type ISplit = IDefinition;
 export interface ISplitChangesResponse {
   ff?: {
     t: number,
-    s?: number,
+    s?: number | null,
     d?: ISplit[] | null,
   },
   rbs?: {
     t: number,
-    s?: number,
+    s?: number | null,
     d?: IRBSegment[] | null,
   }
 }
@@ -34,7 +34,7 @@ export interface ISplitChangesResponse {
 /** JSON response of `/splitChanges` for flag spec version 1.2 or below */
 export interface ISplitChangesLegacyResponse {
   till: number,
-  since?: number,
+  since?: number | null,
   splits: ISplit[]
 }
 
@@ -42,10 +42,10 @@ function isSplitChangesLegacyResponse(data: ISplitChangesResponse | ISplitChange
   return (data as ISplitChangesLegacyResponse).splits != null;
 }
 
-function partitionByStatus<T extends { status?: string; name: string }>(items: T[], till: number, since?: number) {
+function partitionByStatus<T extends { status?: string; name: string }>(items: T[], till: number, since?: number | null) {
   const updated: T[] = [], removed: string[] = [];
   items.forEach(item => item.status === 'ARCHIVED' ? removed.push(item.name) : updated.push(item));
-  return { updated, removed, till, since };
+  return { updated, removed, till, since: since ?? undefined };
 }
 
 /**

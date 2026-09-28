@@ -202,8 +202,10 @@ export class DefinitionsCachePluggable extends AbstractDefinitionsCacheAsync {
    * The returned promise is resolved when the operation success,
    * or rejected if it fails (e.g., wrapper operation fails).
    */
-  setChangeNumber(changeNumber: number) {
-    return this.wrapper.set(this.keys.buildDefinitionsTillKey(), changeNumber + '');
+  setChangeNumber(changeNumber?: number) {
+    if (changeNumber !== undefined) {
+      return this.wrapper.set(this.keys.buildDefinitionsTillKey(), changeNumber + '');
+    }
   }
 
   /**
