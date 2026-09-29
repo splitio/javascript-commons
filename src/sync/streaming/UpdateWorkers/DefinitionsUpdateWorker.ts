@@ -1,24 +1,28 @@
 import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { STREAMING_PARSING_SPLIT_UPDATE } from '../../../logger/constants';
-import { ILogger } from '../../../logger/types';
 import { SDK_DEFINITIONS_ARRIVED } from '../../../readiness/constants';
-import { IDefinitionsEventEmitter } from '../../../readiness/types';
-import { IRBSegmentsCacheSync, IDefinitionsCacheSync, IStorageSync } from '../../../storages/types';
-import { ITelemetryTracker } from '../../../trackers/types';
+import { ISdkFactoryContextSync } from '../../../sdkFactory/types';
+import { IRBSegmentsCacheSync, IDefinitionsCacheSync } from '../../../storages/types';
 import { Backoff } from '../../../utils/Backoff';
 import { SPLITS } from '../../../utils/constants';
-import { IDefinitionsSyncTask } from '../../polling/types';
-import { InstantUpdate } from '../../polling/updaters/definitionChangesUpdater';
+import { IPollingManager } from '../../polling/types';
+import { InstantUpdate } from '../../polling/types';
 import { RB_SEGMENT_UPDATE } from '../constants';
-import { parseFFUpdatePayload } from '../parseUtils';
+import { parseUpdatePayload } from '../parseUtils';
 import { ISplitKillData, ISplitUpdateData } from '../SSEHandler/types';
 import { FETCH_BACKOFF_BASE, FETCH_BACKOFF_MAX_WAIT, FETCH_BACKOFF_MAX_RETRIES } from './constants';
-import { IUpdateWorker } from './types';
+import { IDefinitionsUpdateWorker } from './types';
 
 /**
- * DefinitionsUpdateWorker factory
+ * DefinitionsUpdateWorker factory for Flags SDKs, where notifications pcn and changeNumber are environment-scoped
  */
-export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, definitionsSyncTask: IDefinitionsSyncTask, definitionsEventEmitter: IDefinitionsEventEmitter, telemetryTracker: ITelemetryTracker): IUpdateWorker<[updateData: ISplitUpdateData]> & { killDefinition(event: ISplitKillData): void } {
+export function DefinitionsUpdateWorker(
+  params: Pick<ISdkFactoryContextSync, 'settings' | 'storage' | 'telemetryTracker' | 'readiness'>,
+  pollingManager: Pick<IPollingManager, 'definitionsSyncTask'>,
+): IDefinitionsUpdateWorker {
+
+  const { settings: { log }, storage, telemetryTracker, readiness: { definitions: definitionsEventEmitter } } = params;
+  const { definitionsSyncTask } = pollingManager;
 
   const ff = DefinitionsUpdateWorker(storage.definitions);
   const rbs = DefinitionsUpdateWorker(storage.rbSegments);
@@ -108,7 +112,7 @@ export function DefinitionsUpdateWorker(log: ILogger, storage: IStorageSync, def
     put(parsedData) {
       if (parsedData.d && parsedData.c !== undefined) {
         try {
-          const payload = parseFFUpdatePayload(parsedData.c, parsedData.d);
+          const payload = parseUpdatePayload<IDefinition | IRBSegment>(parsedData.c, parsedData.d);
           if (payload) {
             (parsedData.type === RB_SEGMENT_UPDATE ? rbs : ff).put(parsedData, payload);
             return;
