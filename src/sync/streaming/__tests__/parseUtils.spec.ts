@@ -1,7 +1,7 @@
 import { hash64 } from '../../../utils/murmur3/murmur3_64';
 import { keylists, bitmaps, splitNotifications } from './dataMocks';
 
-import { parseCompressedData, parseBitmap, isInBitmap, parseFFUpdatePayload, getDelay } from '../parseUtils';
+import { parseCompressedData, parseBitmap, isInBitmap, parseUpdatePayload, getDelay } from '../parseUtils';
 
 test('parseCompressedData', () => {
   keylists.forEach(keylist => {
@@ -55,7 +55,7 @@ test('split notification - parseCompressedData', () => {
 
   splitNotifications.forEach(notification => {
     let { compression, data, decoded } = notification;
-    expect(parseFFUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
+    expect(parseUpdatePayload(compression, data)).toEqual(decoded); // decompress split notification
   });
 
 });

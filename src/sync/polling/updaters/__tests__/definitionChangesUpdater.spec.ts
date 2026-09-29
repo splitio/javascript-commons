@@ -13,9 +13,9 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
-import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
+import { CONFIG_UPDATE, RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
-import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE, CONFIGS_UPDATE } from '../../../../readiness/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -433,6 +433,95 @@ describe('definitionChangesUpdater', () => {
 
     // Client-side should emit even if segments aren't all fetched (isClientSide bypasses checkAllSegmentsExist)
     expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['client-flag'] });
+  });
+
+  // Configs SDK doesn't support flag filters
+  const noFilters = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+
+  test('test with config payload - keeps the storage change number', async () => {
+    storage.definitions.clear();
+    storage.definitions.setChangeNumber(100);
+
+    // The CONFIG_UPDATE change number is config-scoped, so it must not be tracked as the storage change number
+    const payload = { name: 'config1', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IDefinition;
+
+    const configsUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, noFilters, readinessManager.definitions, 1000, 1);
+
+    // no `changeNumber` in the instant update -> the storage change number is preserved
+    await expect(configsUpdater(undefined, undefined, { payload, type: CONFIG_UPDATE })).resolves.toBe(true);
+
+    expect(fetchSplitChanges).toBeCalledTimes(0);
+    expect(updateSplits).lastCalledWith([payload], [], undefined); // no change number is passed to the storage
+    expect(storage.definitions.getChangeNumber()).toBe(100);
+    expect(storage.definitions.get(payload.name)!.changeNumber).toBe(payload.changeNumber);
+  });
+
+  test('test with previousChangeNumbers - clamps `since` to the notification pcn when lower than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { since: 50 });
+
+    expect(fetchSplitChanges).lastCalledWith(50, undefined, undefined, -1);
+  });
+
+  test('test with previousChangeNumbers - `since` is unaffected when higher than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { since: 150 });
+
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, -1);
+  });
+
+  test('test with previousChangeNumbers - clamps `rbSince` to the notification pcn when lower than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+    storage.rbSegments.update([], [], 80);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 }, rbs: { d: [], t: 80 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { rbSince: 30 });
+
+    // `since` is unaffected, and `rbSince` is clamped to the notification pcn
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, 30);
+  });
+
+  test('test with previousChangeNumbers - `rbSince` is unaffected when higher than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+    storage.rbSegments.update([], [], 80);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 }, rbs: { d: [], t: 80 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { rbSince: 150 });
+
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, 80);
+  });
+
+  test('test with configs fetcher - should emit CONFIGS_UPDATE', async () => {
+    splitsEmitSpy.mockClear();
+    storage.definitions.clear();
+    readinessManager.definitions.definitionsArrived = true;
+
+    const config1 = { name: 'config1', status: 'ACTIVE', changeNumber: 500, conditions: [] } as unknown as IDefinition;
+    const configChangesFetcher = Object.assign(
+      () => Promise.resolve({ d: { updated: [config1], removed: [], till: 500 } }),
+      { type: 'configs' as const }
+    ); // @ts-ignore
+    const configsUpdater = definitionChangesUpdaterFactory(loggerMock, configChangesFetcher, storage, noFilters, readinessManager.definitions, 1000, 1);
+
+    await expect(configsUpdater()).resolves.toBe(true);
+
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: CONFIGS_UPDATE, names: ['config1'] });
   });
 
 });

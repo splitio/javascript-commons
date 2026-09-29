@@ -27,9 +27,10 @@ import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 export function pushManagerFactory(
   params: ISdkFactoryContextSync,
   pollingManager: IPollingManager,
+  definitionsUpdateWorkerFactory = DefinitionsUpdateWorker
 ): IPushManager | undefined {
 
-  const { settings, storage, serviceApi, readiness, platform, telemetryTracker } = params;
+  const { settings, storage, serviceApi, platform, telemetryTracker } = params;
 
   // `userKey` is the matching key of main client in client-side SDK.
   // It can be used to check if running on client-side or server-side SDK.
@@ -54,7 +55,7 @@ export function pushManagerFactory(
   // MySegmentsUpdateWorker (client-side) are initiated in `add` method
   const segmentsUpdateWorker = userKey ? undefined : SegmentsUpdateWorker(log, pollingManager.segmentsSyncTask as ISegmentsSyncTask, storage.segments);
   // For server-side we pass the segmentsSyncTask, used by DefinitionsUpdateWorker to fetch new segments
-  const definitionsUpdateWorker = DefinitionsUpdateWorker(log, storage, pollingManager.definitionsSyncTask, readiness.definitions, telemetryTracker);
+  const definitionsUpdateWorker = definitionsUpdateWorkerFactory(params, pollingManager);
 
   // [Only for client-side] map of user keys to their corresponding hash64 and MySegmentsUpdateWorkers.
   // Hash64 is used to process membership update events and dispatch actions to the corresponding MySegmentsUpdateWorker.

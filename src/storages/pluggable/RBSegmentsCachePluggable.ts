@@ -36,7 +36,7 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
     });
   }
 
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<boolean> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(toAdd => {
@@ -53,8 +53,10 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
     });
   }
 
-  setChangeNumber(changeNumber: number) {
-    return this.wrapper.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
+  setChangeNumber(changeNumber?: number) {
+    if (changeNumber !== undefined) {
+      return this.wrapper.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '');
+    }
   }
 
   getChangeNumber(): Promise<number> {

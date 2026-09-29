@@ -143,10 +143,12 @@ export class DefinitionsCacheInRedis extends AbstractDefinitionsCacheAsync {
    * The returned promise is resolved when the operation success,
    * or rejected if it fails.
    */
-  setChangeNumber(changeNumber: number): Promise<boolean> {
-    return this.redis.set(this.keys.buildDefinitionsTillKey(), changeNumber + '').then(
-      (status: string | null) => status === 'OK'
-    );
+  setChangeNumber(changeNumber?: number) {
+    if (changeNumber !== undefined) {
+      return this.redis.set(this.keys.buildDefinitionsTillKey(), changeNumber + '').then(
+        (status: string | null) => status === 'OK'
+      );
+    }
   }
 
   /**

@@ -11,11 +11,9 @@ import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT
 import { setToArray } from '../../../utils/lang/sets';
 import { RB_SEGMENT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
-import { ISplit } from '../fetchers/splitChangesFetcher';
-import { ISegmentsSyncTask } from '../types';
+import { InstantUpdate, ISegmentsSyncTask, PreviousChangeNumbers } from '../types';
 
-export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
-type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
+type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers) => Promise<boolean>
 
 /**
  * Collect segments from a raw FF or RBS definition.
@@ -142,14 +140,21 @@ export function definitionChangesUpdaterFactory(
    * @param noCache - true to revalidate data to fetch
    * @param till - query param to bypass CDN requests
    */
-  return function definitionChangesUpdater(noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) {
+  return function definitionChangesUpdater(noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers) {
 
     /**
      * @param since - current changeNumber at definitionsCache
      * @param retry - current number of retry attempts
      */
     function _definitionChangesUpdater(sinces: [number, number], retry = 0): Promise<boolean> {
-      const [since, rbSince] = sinces;
+      let [since, rbSince] = sinces;
+
+      // If provided, `since` and `rbSince` must not be higher than it, to avoid missing an update that the scoped `pcn` indicates hasn't been fetched yet.
+      if (pcns) {
+        if (pcns.since !== undefined && pcns.since < since) since = pcns.since;
+        if (pcns.rbSince !== undefined && pcns.rbSince < rbSince) rbSince = pcns.rbSince;
+      }
+
       log.debug(SYNC_FETCH, [definitionChangesFetcher.type, since, rbSince]);
 
       return Promise.resolve(

@@ -77,8 +77,8 @@ export class DefinitionsCacheInMemory extends AbstractDefinitionsCacheSync {
     return this.definitionsCache[name] || null;
   }
 
-  setChangeNumber(changeNumber: number): boolean {
-    this.changeNumber = changeNumber;
+  setChangeNumber(changeNumber?: number): boolean {
+    if (changeNumber !== undefined) this.changeNumber = changeNumber;
     return true;
   }
 

@@ -11,9 +11,9 @@ export abstract class AbstractDefinitionsCacheSync implements IDefinitionsCacheS
 
   protected abstract add(definition: IDefinition): boolean
   protected abstract remove(name: string): boolean
-  protected abstract setChangeNumber(changeNumber: number): boolean | void
+  protected abstract setChangeNumber(changeNumber?: number): boolean | void
 
-  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): boolean {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber?: number): boolean {
     let updated = toAdd.map(addedFF => this.add(addedFF)).some(result => result);
     updated = toRemove.map(removedFF => this.remove(removedFF)).some(result => result) || updated;
     this.setChangeNumber(changeNumber);
