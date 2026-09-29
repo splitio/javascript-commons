@@ -12,6 +12,7 @@ import { setToArray } from '../../../utils/lang/sets';
 import { RB_SEGMENT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
 import { InstantUpdate, ISegmentsSyncTask, PreviousChangeNumbers } from '../types';
+import { thenable } from '../../../utils/promise/thenable';
 
 type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers) => Promise<boolean>
 
@@ -155,20 +156,20 @@ export function definitionChangesUpdaterFactory(
         if (pcns.rbSince !== undefined && pcns.rbSince < rbSince) rbSince = pcns.rbSince;
       }
 
-      log.debug(SYNC_FETCH, [definitionChangesFetcher.type, since, rbSince]);
+      const definitionChangesRequest = instantUpdate ?
+        instantUpdate.type === RB_SEGMENT_UPDATE ?
+          { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
+          // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
+          Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
+            return contains ?
+              { d: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['d'] } :
+              definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
+          }) :
+        definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
 
-      return Promise.resolve(
-        instantUpdate ?
-          instantUpdate.type === RB_SEGMENT_UPDATE ?
-            { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
-            // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
-            Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
-              return contains ?
-                { d: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['d'] } :
-                definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
-            }) :
-          definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
-      )
+      if (thenable(definitionChangesRequest)) log.debug(SYNC_FETCH, [definitionChangesFetcher.type, since, rbSince]);
+
+      return Promise.resolve(definitionChangesRequest)
         .then((definitionChanges: IDefinitionChangesResponse) => {
           const usedSegments = new Set<string>();
 
