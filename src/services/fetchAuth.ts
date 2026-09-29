@@ -1,7 +1,6 @@
-import { IJwtCredential, IFetchAuth } from './types';
-import { objectAssign } from '../../../utils/lang/objectAssign';
-import { decodeJWTtoken } from '../../../utils/jwt';
-import { IResponse } from '../../../services/types';
+import { IJwtCredential, IFetchAuth, IResponse } from './types';
+import { objectAssign } from '../utils/lang/objectAssign';
+import { decodeJWTtoken } from '../utils/jwt';
 
 /**
  * Factory of authentication function.

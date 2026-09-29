@@ -1,9 +1,9 @@
 // mocks and dependencies
-import { splitApiFactory } from '../../../../services/splitApi';
-import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat } from '../../__tests__/dataMocks';
-import fetchMock from '../../../../__tests__/testUtils/fetchMock';
-import { settingsServiceApi } from '../../../../utils/settingsValidation/__tests__/settings.mocks';
-import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
+import { splitApiFactory } from '../splitApi';
+import { authDataResponseSample, authDataSample, jwtSampleInvalid, jwtSampleNoChannels, jwtSampleNoIat } from '../../sync/streaming/__tests__/dataMocks';
+import fetchMock from '../../__tests__/testUtils/fetchMock';
+import { settingsServiceApi } from '../../utils/settingsValidation/__tests__/settings.mocks';
+import { telemetryTrackerFactory } from '../../trackers/telemetryTracker';
 
 const authorizationKey = settingsServiceApi.core.authorizationKey;
 const authUrl = settingsServiceApi.urls.auth; // @ts-ignore

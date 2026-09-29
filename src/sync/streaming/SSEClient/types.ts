@@ -1,4 +1,4 @@
-import { IJwtCredential } from '../AuthClient/types';
+import { IJwtCredential } from '../../../services/types';
 
 export interface ISseEventHandler {
   handleError: (ev: Event) => any;

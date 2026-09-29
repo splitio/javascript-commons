@@ -6,7 +6,7 @@ import { objectAssign } from '../utils/lang/objectAssign';
 import { ITelemetryTracker } from '../trackers/types';
 import { SPLITS, IMPRESSIONS, IMPRESSIONS_COUNT, EVENTS, TELEMETRY, TOKEN, SEGMENT, MEMBERSHIPS } from '../utils/constants';
 import { ERROR_TOO_MANY_SETS } from '../logger/constants';
-import { fetchAuthFactory } from '../sync/streaming/AuthClient';
+import { fetchAuthFactory } from './fetchAuth';
 
 const noCacheHeaderOptions = { headers: { 'Cache-Control': 'no-cache' } };
 

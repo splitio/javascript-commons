@@ -1,6 +1,6 @@
 import { ISplitHttpClient, NetworkError } from './types';
-import { IJwtCredential } from '../sync/streaming/AuthClient/types';
-import { fetchAuthFactory } from '../sync/streaming/AuthClient';
+import { IJwtCredential } from './types';
+import { fetchAuthFactory } from './fetchAuth';
 import { Backoff } from '../utils/Backoff';
 import { LOG_PREFIX_SYNC_AUTH } from '../logger/constants';
 import { ISettings } from '../types';

@@ -5,7 +5,7 @@ import { ISettings } from '../../../types';
 import { checkIfServerSide } from '../../../utils/key';
 import { isString } from '../../../utils/lang';
 import { objectAssign } from '../../../utils/lang/objectAssign';
-import { IJwtCredential } from '../AuthClient/types';
+import { IJwtCredential } from '../../../services/types';
 import { ISSEClient, ISseEventHandler } from './types';
 
 const ABLY_API_VERSION = '1.1';

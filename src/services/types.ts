@@ -1,4 +1,4 @@
-import { IFetchAuth } from '../sync/streaming/AuthClient/types';
+import { IDecodedJWTToken } from '../utils/jwt/types';
 
 export type IRequestOptions = {
 	method?: string,
@@ -30,13 +30,30 @@ export type NetworkError = Error & { statusCode?: number }
 // Reduced version of Fetch API
 export type IFetch = (url: string, options?: IRequestOptions) => Promise<IResponse>
 
-// IFetch specialization
-export type IHealthCheckAPI = () => Promise<boolean>
-
 export type ISplitHttpClient = (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean) => Promise<IResponse>
 
 // @TODO: remove `newVersionHeader` and `useJwt` arguments when all service endpoints are migrated to the new auth mechanism
 export type ISecureSplitHttpClient = ((url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean, useJwt?: boolean) => Promise<IResponse>) & { stop(): void }
+
+export type IJwtCredential = {
+	token: string; // empty string ("") when `"pushEnabled": false`
+	decodedToken: IDecodedJWTToken
+	channels: { [channel: string]: string[] }
+	// /api/v2/auth fields
+	pushEnabled?: boolean | null;
+	connDelay?: number | null;
+	// /api/v3/auth fields
+	config?: {
+		streaming?: {
+			delay?: number | null;
+			enabled?: boolean | null;
+		} | null;
+	} | null;
+}
+
+export type IFetchAuth = (userKeys?: string[]) => Promise<IJwtCredential>
+
+export type IHealthCheckAPI = () => Promise<boolean>
 
 export type IFetchDefinitionChanges = (since: number, noCache?: boolean, till?: number, rbSince?: number) => Promise<IResponse>
 

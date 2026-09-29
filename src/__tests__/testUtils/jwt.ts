@@ -1,4 +1,4 @@
-import { IJwtCredential } from '../../sync/streaming/AuthClient/types';
+import { IJwtCredential } from '../../services/types';
 
 function toBase64Url(str: string) {
   return Buffer.from(str).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
