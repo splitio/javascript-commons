@@ -79,13 +79,15 @@ export class DefinitionsCacheInLocal extends AbstractDefinitionsCacheSync {
     this.hasSync = false;
   }
 
-  add(definition: IDefinition) {
+  add(definition: IDefinition): boolean {
     const name = definition.name;
     const definitionKey = this.keys.buildDefinitionKey(name);
     const definitionFromStorage = this.storage.getItem(definitionKey);
     const previousDefinition = definitionFromStorage ? JSON.parse(definitionFromStorage) : null;
 
     if (previousDefinition) {
+      if (previousDefinition.changeNumber >= definition.changeNumber) return false;
+
       this._decrementCounts(previousDefinition);
       this.removeFromSets(previousDefinition.name, previousDefinition.sets);
     }

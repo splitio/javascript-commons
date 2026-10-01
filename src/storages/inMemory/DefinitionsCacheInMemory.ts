@@ -31,6 +31,7 @@ export class DefinitionsCacheInMemory extends AbstractDefinitionsCacheSync {
     const name = definition.name;
     const previousDefinition = this.get(name);
     if (previousDefinition) { // We had this Split already
+      if (previousDefinition.changeNumber >= definition.changeNumber) return false;
 
       const previousTtName = previousDefinition.trafficTypeName;
       this.ttCache[previousTtName]--;
