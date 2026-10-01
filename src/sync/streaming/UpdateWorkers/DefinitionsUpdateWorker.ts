@@ -1,6 +1,6 @@
 import { IRBSegment, IDefinition } from '../../../dtos/types';
 import { STREAMING_PARSING_SPLIT_UPDATE } from '../../../logger/constants';
-import { SDK_DEFINITIONS_ARRIVED } from '../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE } from '../../../readiness/constants';
 import { ISdkFactoryContextSync } from '../../../sdkFactory/types';
 import { IRBSegmentsCacheSync, IDefinitionsCacheSync } from '../../../storages/types';
 import { Backoff } from '../../../utils/Backoff';
@@ -133,7 +133,7 @@ export function DefinitionsUpdateWorker(
     killDefinition({ changeNumber, splitName, defaultTreatment }: ISplitKillData) {
       if (storage.definitions.killLocally(splitName, defaultTreatment, changeNumber)) {
         // trigger an SDK_UPDATE if Split was killed locally
-        definitionsEventEmitter.emit(SDK_DEFINITIONS_ARRIVED, true);
+        definitionsEventEmitter.emit(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: [splitName] }, true /* isSplitKill */);
       }
       // queues the SplitChanges fetch (only if changeNumber is newer)
       ff.put({ changeNumber } as ISplitUpdateData);

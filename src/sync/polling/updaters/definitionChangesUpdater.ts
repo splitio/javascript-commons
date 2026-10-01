@@ -48,7 +48,6 @@ export function parseSegments(ruleEntity: IDefinition | IRBSegment, matcherType:
 interface IDefinitionMutations<T extends IDefinition | IRBSegment> {
   updated: T[],
   removed: string[],
-  names: string[]
 }
 
 /**
@@ -88,9 +87,8 @@ export function computeMutation<T extends IDefinition | IRBSegment>(update: { up
     } else {
       accum.removed.push(ruleEntity.name);
     }
-    accum.names.push(ruleEntity.name);
     return accum;
-  }, { updated: [], removed: update.removed, names: update.removed.slice() } as IDefinitionMutations<T>);
+  }, { updated: [], removed: update.removed } as IDefinitionMutations<T>);
 }
 
 function convertInstantUpdateToDefinitionChanges(instantUpdate: InstantUpdate) {
@@ -173,33 +171,31 @@ export function definitionChangesUpdaterFactory(
         .then((definitionChanges: IDefinitionChangesResponse) => {
           const usedSegments = new Set<string>();
 
-          let updatedDefinitions: string[] = [];
-          let ffUpdate: MaybeThenable<boolean> = false;
+          let updatedDefinitions: MaybeThenable<string[]> = [];
           if (definitionChanges.d) {
-            const { updated, removed, names } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
-            updatedDefinitions = names;
+            const { updated, removed } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
             log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, updated.length, removed.length]);
-            ffUpdate = definitions.update(updated, removed, definitionChanges.d.till);
+            updatedDefinitions = definitions.update(updated, removed, definitionChanges.d.till);
           }
 
-          let rbsUpdate: MaybeThenable<boolean> = false;
+          let updatedRBSNames: MaybeThenable<string[]> = [];
           if (definitionChanges.rbs) {
             const { updated, removed } = computeMutation(definitionChanges.rbs, usedSegments);
             log.debug(SYNC_UPDATE, ['rule-based segments', updated.length, removed.length]);
-            rbsUpdate = rbSegments.update(updated, removed, definitionChanges.rbs.till);
+            updatedRBSNames = rbSegments.update(updated, removed, definitionChanges.rbs.till);
           }
 
-          return Promise.all([ffUpdate, rbsUpdate,
+          return Promise.all([updatedDefinitions, updatedRBSNames,
             // @TODO if at least 1 segment fetch fails due to 404 and other segments are updated in the storage, SDK_UPDATE is not emitted
             segments.registerSegments(setToArray(usedSegments))
-          ]).then(([ffChanged, rbsChanged]) => {
+          ]).then(([updatedDefinitions, updatedRBSNames]) => {
             if (storage.save) storage.save();
 
             startingUp = false;
 
             if (definitionsEventEmitter) {
               // To emit SDK_DEFINITIONS_ARRIVED for server-side SDK, we must wait for all registered segments to be fetched
-              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((ffChanged || rbsChanged) && (!segmentsSyncTask || segmentsSyncTask.execute(true))))
+              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((updatedDefinitions.length > 0 || updatedRBSNames.length > 0) && (!segmentsSyncTask || segmentsSyncTask.execute(true))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events

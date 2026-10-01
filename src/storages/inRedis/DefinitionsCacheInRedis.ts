@@ -91,6 +91,8 @@ export class DefinitionsCacheInRedis extends AbstractDefinitionsCacheAsync {
       let parsedPreviousDefinition: IDefinition, stringifiedNewDefinition;
       try {
         parsedPreviousDefinition = definitionFromStorage ? JSON.parse(definitionFromStorage) : undefined;
+        if (parsedPreviousDefinition && parsedPreviousDefinition.changeNumber >= definition.changeNumber) return false;
+
         stringifiedNewDefinition = JSON.stringify(definition);
       } catch (e) {
         throw new Error('Error parsing feature flag definition: ' + e);
@@ -104,8 +106,8 @@ export class DefinitionsCacheInRedis extends AbstractDefinitionsCacheAsync {
         return this._incrementCounts(definition).then(() => {
           if (parsedPreviousDefinition) return this._decrementCounts(parsedPreviousDefinition);
         });
-      }).then(() => this._updateSets(name, parsedPreviousDefinition && parsedPreviousDefinition.sets, definition.sets));
-    }).then(() => true);
+      }).then(() => this._updateSets(name, parsedPreviousDefinition && parsedPreviousDefinition.sets, definition.sets)).then(() => true);
+    });
   }
 
   /**
@@ -115,11 +117,11 @@ export class DefinitionsCacheInRedis extends AbstractDefinitionsCacheAsync {
    */
   remove(name: string) {
     return this.get(name).then((definition) => {
-      if (definition) {
-        return this._decrementCounts(definition).then(() => this._updateSets(name, definition.sets));
-      }
-    }).then(() => {
-      return this.redis.del(this.keys.buildDefinitionKey(name)).then((status: number) => status === 1);
+      if (!definition) return false;
+
+      return this._decrementCounts(definition).then(() => this._updateSets(name, definition.sets)).then(() => {
+        return this.redis.del(this.keys.buildDefinitionKey(name)).then((status: number) => status === 1);
+      });
     });
   }
 

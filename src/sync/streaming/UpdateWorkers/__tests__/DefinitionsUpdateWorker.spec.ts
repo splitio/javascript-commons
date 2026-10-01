@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { SDK_DEFINITIONS_ARRIVED } from '../../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE } from '../../../../readiness/constants';
 import { DefinitionsCacheInMemory } from '../../../../storages/inMemory/DefinitionsCacheInMemory';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
 import { DefinitionsUpdateWorker } from '../DefinitionsUpdateWorker';
@@ -189,7 +189,7 @@ describe('DefinitionsUpdateWorker', () => {
     // assert killing split locally, emitting SDK_DEFINITIONS_ARRIVED event, and synchronizing splits if changeNumber is new
     splitUpdateWorker.killDefinition({ changeNumber: 100, splitName: 'something', defaultTreatment: 'off' }); // splitsCache.killLocally is synchronous
     expect(splitsSyncTask.execute).toBeCalledTimes(1); // synchronizes splits if `isExecuting` is false
-    expect(definitionsEventEmitterMock.emit.mock.calls).toEqual([[SDK_DEFINITIONS_ARRIVED, true]]); // emits `SDK_DEFINITIONS_ARRIVED` with `isSplitKill` flag in true, if split kill resolves with update
+    expect(definitionsEventEmitterMock.emit.mock.calls).toEqual([[SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['something'] }, true]]); // emits `SDK_DEFINITIONS_ARRIVED` with the killed flag name as metadata and `isSplitKill` flag in true, if split kill resolves with update
     assertKilledSplit(storage.definitions, 100, 'something', 'off');
 
     // assert not killing split locally, not emitting SDK_DEFINITIONS_ARRIVED event, and not synchronizes splits, if changeNumber is old

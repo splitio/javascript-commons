@@ -195,7 +195,7 @@ export interface IPluggableStorageWrapper {
 /** Splits cache */
 
 export interface IDefinitionsCacheBase {
-  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): MaybeThenable<boolean>,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): MaybeThenable<string[]>,
   get(name: string): MaybeThenable<IDefinition | null>,
   getMany(names: string[]): MaybeThenable<Record<string, IDefinition | null>>, // `fetchMany` in spec
   // should never reject or throw an exception. Instead return -1 by default, assuming no splits are present in the storage.
@@ -212,7 +212,7 @@ export interface IDefinitionsCacheBase {
 }
 
 export interface IDefinitionsCacheSync extends IDefinitionsCacheBase {
-  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): boolean,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): string[],
   get(name: string): IDefinition | null,
   getMany(names: string[]): Record<string, IDefinition | null>,
   getChangeNumber(): number,
@@ -226,7 +226,7 @@ export interface IDefinitionsCacheSync extends IDefinitionsCacheBase {
 }
 
 export interface IDefinitionsCacheAsync extends IDefinitionsCacheBase {
-  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): Promise<boolean>,
+  update(toUpsert: IDefinition[], toRemove: string[], changeNumber?: number): Promise<string[]>,
   get(name: string): Promise<IDefinition | null>,
   getMany(names: string[]): Promise<Record<string, IDefinition | null>>,
   getChangeNumber(): Promise<number>,
@@ -242,7 +242,7 @@ export interface IDefinitionsCacheAsync extends IDefinitionsCacheBase {
 /** Rule-Based Segments cache */
 
 export interface IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): MaybeThenable<boolean>,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): MaybeThenable<string[]>,
   get(name: string): MaybeThenable<IRBSegment | null>,
   getChangeNumber(): MaybeThenable<number>,
   clear(): MaybeThenable<boolean | void>,
@@ -250,7 +250,7 @@ export interface IRBSegmentsCacheBase {
 }
 
 export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): boolean,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): string[],
   get(name: string): IRBSegment | null,
   getChangeNumber(): number,
   getAll(): IRBSegment[],
@@ -261,7 +261,7 @@ export interface IRBSegmentsCacheSync extends IRBSegmentsCacheBase {
 }
 
 export interface IRBSegmentsCacheAsync extends IRBSegmentsCacheBase {
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<boolean>,
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<string[]>,
   get(name: string): Promise<IRBSegment | null>,
   getChangeNumber(): Promise<number>,
   clear(): Promise<boolean | void>,

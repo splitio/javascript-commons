@@ -25,9 +25,9 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     this.storage.removeItem(this.keys.buildRBSegmentsTillKey());
   }
 
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): boolean {
-    let updated = toAdd.map(toAdd => this.add(toAdd)).some(result => result);
-    updated = toRemove.map(toRemove => this.remove(toRemove)).some(result => result) || updated;
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): string[] {
+    const updated = toRemove.filter(name => this.remove(name))
+      .concat(toAdd.filter(rbSegment => this.add(rbSegment)).map(rbSegment => rbSegment.name));
     this.setChangeNumber(changeNumber);
     return updated;
   }
@@ -53,6 +53,8 @@ export class RBSegmentsCacheInLocal implements IRBSegmentsCacheSync {
     const rbSegmentKey = this.keys.buildRBSegmentKey(name);
     const rbSegmentFromStorage = this.storage.getItem(rbSegmentKey);
     const previous = rbSegmentFromStorage ? JSON.parse(rbSegmentFromStorage) : null;
+
+    if (previous && previous.changeNumber >= rbSegment.changeNumber) return false;
 
     this.storage.setItem(rbSegmentKey, JSON.stringify(rbSegment));
 
