@@ -1,36 +1,28 @@
-import { IRequestOptions, IResponse, ISecureSplitHttpClient, NetworkError } from './types';
-import { ISettings } from '../types';
-import { IPlatform } from '../sdkFactory/types';
-import { splitHttpClientFactory } from './splitHttpClient';
-import { authProviderFactory } from './authProvider';
-import { ITelemetryTracker } from '../trackers/types';
+import { IRequestOptions, IResponse, ISecureSplitHttpClient, ISplitHttpClient, NetworkError } from './types';
+import { IAuthProvider } from './authProvider';
 
 /**
  * Factory of Secure HTTP client, which authenticates requests using a JWT token.
  * On 401 responses, invalidates the cached credential and retries once with a fresh token.
  *
- * @param settings - SDK settings
- * @param platform - object containing environment-specific dependencies
- * @param fetchAuth - function to fetch auth credentials from the /v2/auth endpoint
+ * @param splitHttpClient - `splitHttpClientFactory` to use for making requests
+ * @param authProvider - `authProviderFactory` to use for authentication
  */
-export function secureSplitHttpClientFactory(settings: ISettings, platform: Pick<IPlatform, 'getOptions' | 'getFetch'>, telemetryTracker: ITelemetryTracker): ISecureSplitHttpClient {
+export function secureSplitHttpClientFactory(splitHttpClient: ISplitHttpClient, authProvider: IAuthProvider): ISecureSplitHttpClient {
 
-  const splitHttpClient = splitHttpClientFactory(settings, platform);
-  const authProvider = authProviderFactory(settings, splitHttpClient, telemetryTracker);
-
-  function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker: ((error?: NetworkError) => void) | undefined, logErrorsAsInfo: boolean | undefined, token: string): Promise<IResponse> {
-    return splitHttpClient(url, { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } }, latencyTracker, logErrorsAsInfo, true);
+  function makeRequest(url: string, options: IRequestOptions | undefined, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader?: boolean, token?: string): Promise<IResponse> {
+    return splitHttpClient(url, token ? { ...options, headers: { ...options?.headers, Authorization: `Bearer ${token}` } } : options, latencyTracker, logErrorsAsInfo, newVersionHeader);
   }
 
-  const httpClient = function (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean): Promise<IResponse> {
+  const httpClient = function (url: string, options?: IRequestOptions, latencyTracker?: (error?: NetworkError) => void, logErrorsAsInfo?: boolean, newVersionHeader = true, useJwt = true): Promise<IResponse> {
     return authProvider.credential().then(credential => {
-      return makeRequest(url, options, latencyTracker, logErrorsAsInfo, credential.token)
+      return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newVersionHeader, useJwt ? credential.token : undefined)
         .catch((error: NetworkError) => {
           if (error.statusCode === 401) {
             // retry once for 401, in case the token has just expired
             authProvider.invalidate();
             return authProvider.credential().then(newCredential => {
-              return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newCredential.token);
+              return makeRequest(url, options, latencyTracker, logErrorsAsInfo, newVersionHeader, useJwt ? newCredential.token : undefined);
             });
           }
           throw error;

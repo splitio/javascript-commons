@@ -9,13 +9,12 @@ import { SYNC_FETCH, SYNC_UPDATE, SYNC_FETCH_FAILS, SYNC_FETCH_RETRY } from '../
 import { startsWith } from '../../../utils/lang';
 import { IN_RULE_BASED_SEGMENT, IN_SEGMENT, RULE_BASED_SEGMENT, STANDARD_SEGMENT } from '../../../utils/constants';
 import { setToArray } from '../../../utils/lang/sets';
-import { SPLIT_UPDATE } from '../../streaming/constants';
+import { RB_SEGMENT_UPDATE } from '../../streaming/constants';
 import { SdkUpdateMetadata } from '../../../../types/splitio';
-import { ISplit } from '../fetchers/splitChangesFetcher';
-import { ISegmentsSyncTask } from '../types';
+import { InstantUpdate, ISegmentsSyncTask, PreviousChangeNumbers } from '../types';
+import { thenable } from '../../../utils/promise/thenable';
 
-export type InstantUpdate = { payload: ISplit | IRBSegment, changeNumber: number, type: string };
-type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) => Promise<boolean>
+type DefinitionChangesUpdater = (noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers) => Promise<boolean>
 
 /**
  * Collect segments from a raw FF or RBS definition.
@@ -49,7 +48,6 @@ export function parseSegments(ruleEntity: IDefinition | IRBSegment, matcherType:
 interface IDefinitionMutations<T extends IDefinition | IRBSegment> {
   updated: T[],
   removed: string[],
-  names: string[]
 }
 
 /**
@@ -89,9 +87,8 @@ export function computeMutation<T extends IDefinition | IRBSegment>(update: { up
     } else {
       accum.removed.push(ruleEntity.name);
     }
-    accum.names.push(ruleEntity.name);
     return accum;
-  }, { updated: [], removed: update.removed, names: update.removed.slice() } as IDefinitionMutations<T>);
+  }, { updated: [], removed: update.removed } as IDefinitionMutations<T>);
 }
 
 function convertInstantUpdateToDefinitionChanges(instantUpdate: InstantUpdate) {
@@ -142,58 +139,63 @@ export function definitionChangesUpdaterFactory(
    * @param noCache - true to revalidate data to fetch
    * @param till - query param to bypass CDN requests
    */
-  return function definitionChangesUpdater(noCache?: boolean, till?: number, instantUpdate?: InstantUpdate) {
+  return function definitionChangesUpdater(noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers) {
 
     /**
      * @param since - current changeNumber at definitionsCache
      * @param retry - current number of retry attempts
      */
     function _definitionChangesUpdater(sinces: [number, number], retry = 0): Promise<boolean> {
-      const [since, rbSince] = sinces;
-      log.debug(SYNC_FETCH, [definitionChangesFetcher.type, since, rbSince]);
+      let [since, rbSince] = sinces;
 
-      return Promise.resolve(
-        instantUpdate ?
-          instantUpdate.type === SPLIT_UPDATE ?
-            // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
-            Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
-              return contains ?
-                { d: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['d'] } :
-                definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
-            }) :
-            { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
-          definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator)
-      )
+      // If provided, `since` and `rbSince` must not be higher than it, to avoid missing an update that the scoped `pcn` indicates hasn't been fetched yet.
+      if (pcns) {
+        if (pcns.since !== undefined && pcns.since < since) since = pcns.since;
+        if (pcns.rbSince !== undefined && pcns.rbSince < rbSince) rbSince = pcns.rbSince;
+      }
+
+      const definitionChangesRequest = instantUpdate ?
+        instantUpdate.type === RB_SEGMENT_UPDATE ?
+          { rbs: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['rbs'] } :
+          // IFFU edge case: a change to definition that adds an IN_RULE_BASED_SEGMENT matcher that is not present yet
+          Promise.resolve(rbSegments.contains(parseSegments(instantUpdate.payload, IN_RULE_BASED_SEGMENT))).then((contains) => {
+            return contains ?
+              { d: convertInstantUpdateToDefinitionChanges(instantUpdate) as IDefinitionChangesResponse['d'] } :
+              definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
+          }) :
+        definitionChangesFetcher(since, noCache, till, rbSince, _promiseDecorator);
+
+      if (thenable(definitionChangesRequest)) log.debug(SYNC_FETCH, [definitionChangesFetcher.type, since, rbSince]);
+
+      return Promise.resolve(definitionChangesRequest)
         .then((definitionChanges: IDefinitionChangesResponse) => {
           const usedSegments = new Set<string>();
 
-          let updatedDefinitions: string[] = [];
-          let ffUpdate: MaybeThenable<boolean> = false;
+          let updatedDefinitions: MaybeThenable<string[]> = [];
           if (definitionChanges.d) {
-            const { updated, removed, names } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
-            updatedDefinitions = names;
+            const { updated, removed } = computeMutation(definitionChanges.d, usedSegments, splitFiltersValidation);
             log.debug(SYNC_UPDATE, [definitionChangesFetcher.type, updated.length, removed.length]);
-            ffUpdate = definitions.update(updated, removed, definitionChanges.d.till);
+            updatedDefinitions = definitions.update(updated, removed, definitionChanges.d.till);
           }
 
-          let rbsUpdate: MaybeThenable<boolean> = false;
+          let updatedRBSNames: MaybeThenable<string[]> = [];
           if (definitionChanges.rbs) {
             const { updated, removed } = computeMutation(definitionChanges.rbs, usedSegments);
             log.debug(SYNC_UPDATE, ['rule-based segments', updated.length, removed.length]);
-            rbsUpdate = rbSegments.update(updated, removed, definitionChanges.rbs.till);
+            updatedRBSNames = rbSegments.update(updated, removed, definitionChanges.rbs.till);
           }
 
-          return Promise.all([ffUpdate, rbsUpdate,
+          return Promise.all([updatedDefinitions, updatedRBSNames,
             // @TODO if at least 1 segment fetch fails due to 404 and other segments are updated in the storage, SDK_UPDATE is not emitted
             segments.registerSegments(setToArray(usedSegments))
-          ]).then(([ffChanged, rbsChanged]) => {
+          ]).then(([updatedDefinitions, updatedRBSNames]) => {
             if (storage.save) storage.save();
 
             startingUp = false;
 
             if (definitionsEventEmitter) {
               // To emit SDK_DEFINITIONS_ARRIVED for server-side SDK, we must wait for all registered segments to be fetched
-              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((ffChanged || rbsChanged) && (!segmentsSyncTask || segmentsSyncTask.execute(true))))
+              return Promise.resolve(!definitionsEventEmitter.definitionsArrived || ((updatedDefinitions.length > 0 || updatedRBSNames.length > 0) && (!segmentsSyncTask || segmentsSyncTask.execute(true))))
                 .catch(() => false /** noop. just to handle a possible `checkAllSegmentsExist` rejection, before emitting SDK event */)
                 .then(emitSplitsArrivedEvent => {
                   // emit SDK events

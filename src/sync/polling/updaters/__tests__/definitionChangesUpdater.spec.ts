@@ -13,9 +13,9 @@ import { loggerMock } from '../../../../logger/__tests__/sdkLogger.mock';
 import { telemetryTrackerFactory } from '../../../../trackers/telemetryTracker';
 import { splitNotifications } from '../../../streaming/__tests__/dataMocks';
 import { RBSegmentsCacheInMemory } from '../../../../storages/inMemory/RBSegmentsCacheInMemory';
-import { RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
+import { CONFIG_UPDATE, RB_SEGMENT_UPDATE, SPLIT_UPDATE } from '../../../streaming/constants';
 import { IN_RULE_BASED_SEGMENT } from '../../../../utils/constants';
-import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../../readiness/constants';
+import { SDK_DEFINITIONS_ARRIVED, FLAGS_UPDATE, SEGMENTS_UPDATE, CONFIGS_UPDATE } from '../../../../readiness/constants';
 
 const ARCHIVED_FF = 'ARCHIVED';
 
@@ -116,7 +116,6 @@ test('definitionChangesUpdater / compute splits mutation', () => {
 
   expect(splitsMutation.updated).toEqual([activeSplitWithSegments]);
   expect(splitsMutation.removed).toEqual([archivedSplit.name]);
-  expect(splitsMutation.names).toEqual([archivedSplit.name, activeSplitWithSegments.name]);
   expect(Array.from(segments)).toEqual(['A', 'B']);
 
   // SDK initialization without sets
@@ -126,7 +125,6 @@ test('definitionChangesUpdater / compute splits mutation', () => {
 
   expect(splitsMutation.updated).toEqual([testFFSetsAB, test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([]);
-  expect(splitsMutation.names).toEqual([testFFSetsAB.name, test2FFSetsX.name]);
   expect(Array.from(segments)).toEqual([]);
 });
 
@@ -140,28 +138,24 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
   // should add it to mutations
   expect(splitsMutation.updated).toEqual([testFFSetsAB]);
   expect(splitsMutation.removed).toEqual([]);
-  expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFRemoveSetB], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.updated).toEqual([testFFRemoveSetB]);
   expect(splitsMutation.removed).toEqual([]);
-  expect(splitsMutation.names).toEqual([testFFRemoveSetB.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFRemoveSetA], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFRemoveSetA.name]);
-  expect(splitsMutation.names).toEqual([testFFRemoveSetA.name]);
 
   // fetching existing test feature flag removed from set B
   splitsMutation = computeMutation({ updated: [testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
-  expect(splitsMutation.names).toEqual([testFFEmptySet.name]);
 
   // SDK initialization with names: ['test2']
   splitFiltersValidation = { queryString: '&names=test2', groupedFilters: { bySet: [], byName: ['test2'], byPrefix: [] }, validFilters: [] };
@@ -169,13 +163,11 @@ test('definitionChangesUpdater / compute splits mutation with filters', () => {
 
   expect(splitsMutation.updated).toEqual([]);
   expect(splitsMutation.removed).toEqual([testFFSetsAB.name]);
-  expect(splitsMutation.names).toEqual([testFFSetsAB.name]);
 
   splitsMutation = computeMutation({ updated: [test2FFSetsX, testFFEmptySet], removed: [] }, new Set(), splitFiltersValidation);
 
   expect(splitsMutation.updated).toEqual([test2FFSetsX]);
   expect(splitsMutation.removed).toEqual([testFFEmptySet.name]);
-  expect(splitsMutation.names).toEqual([test2FFSetsX.name, testFFEmptySet.name]);
 });
 
 describe('definitionChangesUpdater', () => {
@@ -294,9 +286,10 @@ describe('definitionChangesUpdater', () => {
 
     let index = 0;
     let calls = 0;
+    storage.definitions.clear(); // avoid outdated updates due to flags stored by previous tests
     // emit always if not configured sets
     for (const setMock of setMocks) {
-      await expect(definitionChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
+      await expect(definitionChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE', changeNumber: index }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       expect(splitsEmitSpy.mock.calls[index][0]).toBe(SDK_DEFINITIONS_ARRIVED);
       expect(splitsEmitSpy.mock.calls[index][1]).toEqual({ type: FLAGS_UPDATE, names: [payload.name] });
       index++;
@@ -309,12 +302,16 @@ describe('definitionChangesUpdater', () => {
     splitsEmitSpy.mockReset();
     index = 0;
     for (const setMock of setMocks) {
-      await expect(definitionChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE' }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
+      await expect(definitionChangesUpdater(undefined, undefined, { payload: { ...payload, sets: setMock.sets, status: 'ACTIVE', changeNumber: index }, changeNumber: index, type: SPLIT_UPDATE })).resolves.toBe(true);
       if (setMock.shouldEmit) calls++;
       expect(splitsEmitSpy.mock.calls.length).toBe(calls);
       index++;
     }
 
+    // restore updater without filters for next tests
+    // @ts-ignore
+    splitFiltersValidation = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+    definitionChangesUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, splitFiltersValidation, readinessManager.definitions, 1000, 1);
   });
 
   test('test with ff payload - should emit metadata with flag name', async () => {
@@ -359,6 +356,8 @@ describe('definitionChangesUpdater', () => {
     readinessManager.segments.segmentsArrived = true; // Segments ready
 
     const archivedFlag = { name: 'archived-flag', status: ARCHIVED_FF, changeNumber: 200, conditions: [] } as unknown as IDefinition;
+
+    storage.definitions.update([{ ...archivedFlag, status: 'ACTIVE', changeNumber: 100 } as IDefinition], [], 100); // archived flag must exist in storage to be reported as updated
 
     const payload = archivedFlag as Pick<IDefinition, 'name' | 'changeNumber' | 'killed' | 'defaultTreatment' | 'trafficTypeName' | 'conditions' | 'status' | 'seed' | 'trafficAllocation' | 'trafficAllocationSeed' | 'configurations'>;
     const changeNumber = payload.changeNumber;
@@ -433,6 +432,95 @@ describe('definitionChangesUpdater', () => {
 
     // Client-side should emit even if segments aren't all fetched (isClientSide bypasses checkAllSegmentsExist)
     expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: ['client-flag'] });
+  });
+
+  // Configs SDK doesn't support flag filters
+  const noFilters = { queryString: null, groupedFilters: { bySet: [], byName: [], byPrefix: [] }, validFilters: [] };
+
+  test('test with config payload - keeps the storage change number', async () => {
+    storage.definitions.clear();
+    storage.definitions.setChangeNumber(100);
+
+    // The CONFIG_UPDATE change number is config-scoped, so it must not be tracked as the storage change number
+    const payload = { name: 'config1', status: 'ACTIVE', changeNumber: 1684329854385, conditions: [] } as unknown as IDefinition;
+
+    const configsUpdater = definitionChangesUpdaterFactory(loggerMock, splitChangesFetcher, storage, noFilters, readinessManager.definitions, 1000, 1);
+
+    // no `changeNumber` in the instant update -> the storage change number is preserved
+    await expect(configsUpdater(undefined, undefined, { payload, type: CONFIG_UPDATE })).resolves.toBe(true);
+
+    expect(fetchSplitChanges).toBeCalledTimes(0);
+    expect(updateSplits).lastCalledWith([payload], [], undefined); // no change number is passed to the storage
+    expect(storage.definitions.getChangeNumber()).toBe(100);
+    expect(storage.definitions.get(payload.name)!.changeNumber).toBe(payload.changeNumber);
+  });
+
+  test('test with previousChangeNumbers - clamps `since` to the notification pcn when lower than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { since: 50 });
+
+    expect(fetchSplitChanges).lastCalledWith(50, undefined, undefined, -1);
+  });
+
+  test('test with previousChangeNumbers - `since` is unaffected when higher than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { since: 150 });
+
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, -1);
+  });
+
+  test('test with previousChangeNumbers - clamps `rbSince` to the notification pcn when lower than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+    storage.rbSegments.update([], [], 80);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 }, rbs: { d: [], t: 80 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { rbSince: 30 });
+
+    // `since` is unaffected, and `rbSince` is clamped to the notification pcn
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, 30);
+  });
+
+  test('test with previousChangeNumbers - `rbSince` is unaffected when higher than the storage change number', async () => {
+    storage.definitions.clear();
+    storage.rbSegments.clear();
+    storage.definitions.setChangeNumber(100);
+    storage.rbSegments.update([], [], 80);
+
+    fetchMock.once('*', { status: 200, body: { ff: { d: [], t: 100 }, rbs: { d: [], t: 80 } } });
+
+    await definitionChangesUpdater(undefined, undefined, undefined, { rbSince: 150 });
+
+    expect(fetchSplitChanges).lastCalledWith(100, undefined, undefined, 80);
+  });
+
+  test('test with configs fetcher - should emit CONFIGS_UPDATE', async () => {
+    splitsEmitSpy.mockClear();
+    storage.definitions.clear();
+    readinessManager.definitions.definitionsArrived = true;
+
+    const config1 = { name: 'config1', status: 'ACTIVE', changeNumber: 500, conditions: [] } as unknown as IDefinition;
+    const configChangesFetcher = Object.assign(
+      () => Promise.resolve({ d: { updated: [config1], removed: [], till: 500 } }),
+      { type: 'configs' as const }
+    ); // @ts-ignore
+    const configsUpdater = definitionChangesUpdaterFactory(loggerMock, configChangesFetcher, storage, noFilters, readinessManager.definitions, 1000, 1);
+
+    await expect(configsUpdater()).resolves.toBe(true);
+
+    expect(splitsEmitSpy).toBeCalledWith(SDK_DEFINITIONS_ARRIVED, { type: CONFIGS_UPDATE, names: ['config1'] });
   });
 
 });

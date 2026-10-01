@@ -1,5 +1,5 @@
 import { IDefinitionsCacheAsync } from './types';
-import { IDefinition } from '../dtos/types';
+import { IDefinition, MaybeThenable } from '../dtos/types';
 import { objectAssign } from '../utils/lang/objectAssign';
 
 /**
@@ -10,15 +10,16 @@ export abstract class AbstractDefinitionsCacheAsync implements IDefinitionsCache
 
   protected abstract add(definition: IDefinition): Promise<boolean>
   protected abstract remove(name: string): Promise<boolean>
-  protected abstract setChangeNumber(changeNumber: number): Promise<boolean | void>
+  protected abstract setChangeNumber(changeNumber?: number): MaybeThenable<boolean | void>
 
-  update(toAdd: IDefinition[], toRemove: string[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IDefinition[], toRemove: string[], changeNumber?: number): Promise<string[]> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(addedFF => this.add(addedFF))),
       Promise.all(toRemove.map(removedFF => this.remove(removedFF)))
     ]).then(([, added, removed]) => {
-      return added.some(result => result) || removed.some(result => result);
+      return toRemove.filter((_, i) => removed[i])
+        .concat(toAdd.filter((_, i) => added[i]).map(addedFF => addedFF.name));
     });
   }
 

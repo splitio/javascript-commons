@@ -22,7 +22,7 @@ describe('serviceApi', () => {
 
   test.each([settingsServiceApi, settingsWithRuntime, settingsWithSets])('performs requests with expected headers', (settings) => {
 
-    const fetchMock = jest.fn(() => Promise.resolve({ ok: true }));
+    const fetchMock = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve({}) }));
     const serviceApi = splitApiFactory(settings, { getFetch: () => fetchMock }, telemetryTrackerMock);
 
     serviceApi.fetchAuth(['key1', 'key2']);
@@ -92,7 +92,7 @@ describe('serviceApi', () => {
     const serviceApi = splitApiFactory(settingsServiceApi, { getFetch: () => undefined }, telemetryTrackerMock);
 
     // Invoking any Service method, returns a rejected promise with Split error
-    serviceApi.fetchAuth().catch(error => {
+    serviceApi.fetchConfigs().catch(error => {
       expect(error).toBeInstanceOf(Error);
       expect(error.message).toBe('Global fetch API is not available.');
       done();

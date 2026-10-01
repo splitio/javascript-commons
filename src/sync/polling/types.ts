@@ -4,7 +4,28 @@ import { IStorageSync } from '../../storages/types';
 import { MEMBERSHIPS_LS_UPDATE, MEMBERSHIPS_MS_UPDATE } from '../streaming/types';
 import { ITask, ISyncTask } from '../types';
 
-export interface IDefinitionsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, definitionUpdateNotification?: { payload: IDefinition | IRBSegment, changeNumber: number }], boolean> { }
+export type InstantUpdate = {
+  payload: IDefinition | IRBSegment,
+  /**
+   * Environment-scoped change number to track as the storage change number.
+   * If not provided, the storage change number is preserved. That's the case of config instant
+   * updates, where the notification change number is scoped to the config rather than to the
+   * environment.
+   */
+  changeNumber?: number,
+  type: string
+};
+
+/**
+ * `pcn` of CONFIG_UPDATE and RB_SEGMENT_UPDATE notifications for the Configs SDK, used as lower bounds for the `since` and `rbSince` fetch params.
+ * Added for robustness, although in practice `pcn` should never be lower than the current storage change number.
+ */
+export type PreviousChangeNumbers = {
+  since?: number, // `pcn` of CONFIG_UPDATE notifications
+  rbSince?: number // `pcn` of RB_SEGMENT_UPDATE notifications
+};
+
+export interface IDefinitionsSyncTask extends ISyncTask<[noCache?: boolean, till?: number, instantUpdate?: InstantUpdate, pcns?: PreviousChangeNumbers], boolean> { }
 
 export interface ISegmentsSyncTask extends ISyncTask<[fetchOnlyNew?: boolean, segmentName?: string, noCache?: boolean, till?: number], boolean> { }
 

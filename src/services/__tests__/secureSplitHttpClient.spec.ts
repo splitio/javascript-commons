@@ -1,4 +1,6 @@
 import { secureSplitHttpClientFactory } from '../secureSplitHttpClient';
+import { splitHttpClientFactory } from '../splitHttpClient';
+import { authProviderFactory } from '../authProvider';
 import { Backoff } from '../../utils/Backoff';
 import { makeJwtCredential } from '../../__tests__/testUtils/jwt';
 
@@ -27,7 +29,9 @@ function createSecureSplitHttpClient(configsHandler: (callCount: number) => any)
     configsCallCount++;
     return configsHandler(configsCallCount);
   });
-  const client = secureSplitHttpClientFactory(mockSettings, { getFetch: () => fetchImpl, getOptions: () => undefined }, mockTelemetryTracker);
+  const splitHttpClient = splitHttpClientFactory(mockSettings, { getFetch: () => fetchImpl, getOptions: () => undefined });
+  const authProvider = authProviderFactory(mockSettings, splitHttpClient, mockTelemetryTracker);
+  const client = secureSplitHttpClientFactory(splitHttpClient, authProvider);
   return { client, fetchImpl };
 }
 

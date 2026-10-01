@@ -22,27 +22,36 @@ describe.each([{ cache: cacheInRedis, wrapper: redisClient }, { cache: cachePlug
     await wrapper.disconnect();
   });
 
+  test('update should ignore outdated rule-based segments', async () => {
+    const current = { ...rbSegment, changeNumber: 10 };
+    await cache.update([current], [], 10);
+    expect(await cache.update([current], [], 10)).toEqual([]);
+    expect(await cache.update([{ ...rbSegment, changeNumber: 9 }], [], 10)).toEqual([]);
+    expect(await cache.get(rbSegment.name)).toEqual(current);
+    expect(await cache.update([{ ...rbSegment, changeNumber: 11 }], [], 11)).toEqual([rbSegment.name]);
+  });
+
   test('update should add and remove segments correctly', async () => {
     // Add segments
-    expect(await cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1)).toBe(true);
+    expect(await cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1)).toEqual([rbSegment.name, rbSegmentWithInSegmentMatcher.name]);
     expect(await cache.get(rbSegment.name)).toEqual(rbSegment);
     expect(await cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(await cache.getChangeNumber()).toBe(1);
 
     // Remove a segment
-    expect(await cache.update([], [rbSegment.name], 2)).toBe(true);
+    expect(await cache.update([], [rbSegment.name], 2)).toEqual([rbSegment.name]);
     expect(await cache.get(rbSegment.name)).toBeNull();
     expect(await cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(await cache.getChangeNumber()).toBe(2);
 
     // Remove remaining segment
-    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toBe(true);
+    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toEqual([rbSegmentWithInSegmentMatcher.name]);
     expect(await cache.get(rbSegment.name)).toBeNull();
     expect(await cache.get(rbSegmentWithInSegmentMatcher.name)).toBeNull();
     expect(await cache.getChangeNumber()).toBe(3);
 
     // No changes
-    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toBe(false);
+    expect(await cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toEqual([]);
     expect(await cache.getChangeNumber()).toBe(4);
   });
 
