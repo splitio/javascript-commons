@@ -42,8 +42,8 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
       Promise.all(toAdd.map(rbSegment => this.add(rbSegment))),
       Promise.all(toRemove.map(name => this.remove(name)))
     ]).then(([, added, removed]) => {
-      return toAdd.filter((_, i) => added[i]).map(rbSegment => rbSegment.name)
-        .concat(toRemove.filter((_, i) => removed[i]));
+      return toRemove.filter((_, i) => removed[i])
+        .concat(toAdd.filter((_, i) => added[i]).map(rbSegment => rbSegment.name));
     });
   }
 

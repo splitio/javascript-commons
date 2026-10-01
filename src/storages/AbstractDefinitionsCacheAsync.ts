@@ -18,8 +18,8 @@ export abstract class AbstractDefinitionsCacheAsync implements IDefinitionsCache
       Promise.all(toAdd.map(addedFF => this.add(addedFF))),
       Promise.all(toRemove.map(removedFF => this.remove(removedFF)))
     ]).then(([, added, removed]) => {
-      return toAdd.filter((_, i) => added[i]).map(addedFF => addedFF.name)
-        .concat(toRemove.filter((_, i) => removed[i]));
+      return toRemove.filter((_, i) => removed[i])
+        .concat(toAdd.filter((_, i) => added[i]).map(addedFF => addedFF.name));
     });
   }
 
