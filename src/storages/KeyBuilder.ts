@@ -5,6 +5,22 @@ const everythingAtTheEnd = /[^.]+$/;
 
 const DEFAULT_PREFIX = 'SPLITIO';
 
+/**
+ * Builds the key prefix used by every storage.
+ *
+ * The SDK's own `SPLITIO` segment is always appended to the value you supply,
+ * so a prefix of `myApp` produces keys of the form `myApp.SPLITIO.split.<name>`
+ * — the custom part comes first, not last.
+ *
+ * Note that `SPLITIO` is not implied: passing it explicitly produces
+ * `SPLITIO.SPLITIO.split.<name>`. A producer and a consumer configured that
+ * way still agree with each other, but one configured with `SPLITIO` and one
+ * with no prefix at all do not, and the symptom is silent — every evaluation
+ * returns `control`, since the reader simply finds nothing under its own keys.
+ *
+ * @param prefix - custom prefix, or a falsy value for none
+ * @returns the full key prefix
+ */
 export function validatePrefix(prefix: unknown) {
   return prefix ? prefix + '.SPLITIO' : 'SPLITIO';
 }
