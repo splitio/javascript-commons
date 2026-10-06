@@ -1200,7 +1200,7 @@ declare namespace SplitIO {
   /**
    * Asynchronous storages valid types for Node.js.
    */
-  type NodeAsyncStorage = 'REDIS';
+  type NodeAsyncStorage = 'REDIS' | 'PLUGGABLE';
   /**
    * Storage valid types for the browser.
    */
@@ -1643,24 +1643,32 @@ declare namespace SplitIO {
    */
   interface INodeAsyncSettings extends IServerSideSharedSettings, ISharedSettings, INonPluggableSharedSettings {
     /**
-     * The SDK mode. When using 'REDIS' storage type, the only possible value is "consumer", which is required.
+     * The SDK mode. With the 'REDIS' storage type the only possible value is "consumer".
+     * With the 'PLUGGABLE' storage type, "consumer" and "consumer_partial" are both valid.
      *
      * @see {@link https://developer.harness.io/docs/feature-management-experimentation/sdks-and-infrastructure/server-side-sdks/nodejs-sdk/#state-sharing-redis-integration}
      */
-    mode: 'consumer';
+    mode: 'consumer' | 'consumer_partial';
     /**
-     * Defines which kind of async storage we can instantiate on Node.js for 'consumer' mode.
-     * The only possible storage type is 'REDIS'.
+     * Defines which kind of async storage to instantiate on Node.js for consumer modes:
+     * 'REDIS', or 'PLUGGABLE' with a storage wrapper you provide.
      */
     storage: {
       /**
-       * 'REDIS' storage type to be instantiated by the SDK.
+       * 'REDIS' or 'PLUGGABLE' storage type to be instantiated by the SDK.
        */
       type: NodeAsyncStorage;
       /**
-       * Options to be passed to the Redis storage. Use it with storage type: 'REDIS'.
+       * Options to be passed to the storage.
+       *
+       * With storage type: 'PLUGGABLE', only `wrapper` applies. The remaining
+       * properties are Redis connection settings, used with storage type: 'REDIS'.
        */
       options?: {
+        /**
+         * Storage wrapper to read the rollout plan from. Required with storage type: 'PLUGGABLE'.
+         */
+        wrapper?: Object;
         /**
          * Redis URL. If set, `host`, `port`, `db` and `pass` params will be ignored.
          *
