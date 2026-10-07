@@ -30,6 +30,7 @@ export const codesError: [number, string][] = [
   [c.ERROR_EMPTY, '%s: you passed an empty %s. It must be a non-empty string.'],
   [c.ERROR_EMPTY_ARRAY, '%s: %s must be a non-empty array.'],
   [c.ERROR_NOT_BOOLEAN, '%s: provided param must be a boolean value.'],
+  [c.ERROR_FLAGSET_CACHE_DISABLED, 'The flag set cache is disabled via the `disableFlagSetCache` setting, so `getTreatments(WithConfig)ByFlagSet(s)` methods always return empty objects. Remove the setting to use them.'],
   // initialization / settings validation
   [c.ERROR_INVALID_CONFIG_PARAM, c.LOG_PREFIX_SETTINGS + ': you passed an invalid "%s" config param. It should be one of the following values: %s. Defaulting to "%s".'],
   [c.ERROR_STORAGE_INVALID, c.LOG_PREFIX_SETTINGS+': the provided storage is invalid.%s Falling back into default MEMORY storage'],

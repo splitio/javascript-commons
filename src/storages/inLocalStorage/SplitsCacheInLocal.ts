@@ -4,6 +4,7 @@ import { isFiniteNumber, toNumber, isNaNNumber } from '../../utils/lang';
 import { KeyBuilderCS } from '../KeyBuilderCS';
 import { ILogger } from '../../logger/types';
 import { LOG_PREFIX } from './constants';
+import { ERROR_FLAGSET_CACHE_DISABLED } from '../../logger/constants';
 import { ISettings } from '../../types';
 import { setToArray } from '../../utils/lang/sets';
 import { StorageAdapter } from '../types';
@@ -25,15 +26,17 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   private readonly keys: KeyBuilderCS;
   private readonly log: ILogger;
   private readonly flagSetsFilter: string[];
+  private readonly disableFlagSetCache?: boolean;
   private hasSync?: boolean;
   private readonly storage: StorageAdapter;
 
-  constructor(settings: ISettings, keys: KeyBuilderCS, storage: StorageAdapter) {
+  constructor(settings: ISettings, keys: KeyBuilderCS, storage: StorageAdapter, disableFlagSetCache?: boolean) {
     super();
     this.keys = keys;
     this.log = settings.log;
     this.flagSetsFilter = settings.sync.__splitFiltersValidation.groupedFilters.bySet;
     this.storage = storage;
+    this.disableFlagSetCache = disableFlagSetCache;
   }
 
   private updateCount(batch: UpdateBatch, key: string, diff: number) {
@@ -198,6 +201,11 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   getNamesByFlagSets(flagSets: string[]): Set<string>[] {
+    if (this.disableFlagSetCache) {
+      this.log.error(ERROR_FLAGSET_CACHE_DISABLED);
+      return flagSets.map(() => new Set<string>());
+    }
+
     return flagSets.map(flagSet => {
       const flagSetKey = this.keys.buildFlagSetKey(flagSet);
       const flagSetFromStorage = this.storage.getItem(flagSetKey);
@@ -207,7 +215,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   private addToFlagSets(featureFlag: ISplit, batch: UpdateBatch) {
-    if (!featureFlag.sets) return;
+    if (this.disableFlagSetCache || !featureFlag.sets) return;
 
     featureFlag.sets.forEach(featureFlagSet => {
 
@@ -220,7 +228,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
   }
 
   private removeFromFlagSets(featureFlagName: string, flagSets: string[] | null | undefined, batch: UpdateBatch) {
-    if (!flagSets) return;
+    if (this.disableFlagSetCache || !flagSets) return;
 
     flagSets.forEach(flagSet => {
       this.removeNames(flagSet, featureFlagName, batch);

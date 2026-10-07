@@ -3,6 +3,7 @@ import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse, featureFlagOne, featureFlagTwo, featureFlagThree, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { StorageAdapter } from '../../types';
 import { storages, PREFIX } from './wrapper.mock';
 
@@ -317,6 +318,33 @@ describe.each(storages)('SPLITS CACHE', (storage) => {
     cache.update([], [...many(3, 'account_tt', true), splitWithAccountTT, splitWithAccountTTAndUsesSegments], 4);
     expect(storage.getItem(ttKey('account_tt'))).toBeNull();
     expect(storage.getItem(segmentsKey)).toBeNull();
+
+    cache.clear();
+  });
+
+  test('LocalStorage / disableFlagSetCache', () => {
+    const settings = { ...fullSettings, log: loggerMock };
+    const keys = new KeyBuilderCS(PREFIX, 'user');
+    const cache = new SplitsCacheInLocal(settings, keys, storage, true);
+    cache.clear();
+    loggerMock.mockClear();
+
+    cache.update([featureFlagOne, featureFlagTwo, featureFlagThree], [], 1);
+
+    // flags and counts are stored, but flag sets are not
+    expect(cache.getSplit('ff_one')).toEqual(featureFlagOne);
+    expect(storage.getItem(keys.buildTrafficTypeKey(featureFlagOne.trafficTypeName))).toBe('3');
+    ['o', 'n', 'e', 't'].forEach(set => expect(storage.getItem(keys.buildFlagSetKey(set))).toBeNull());
+    expect(loggerMock.error).not.toBeCalled();
+
+    // flag sets lookups return empty sets and log an error
+    expect(cache.getNamesByFlagSets(['o', 'n'])).toEqual([new Set(), new Set()]);
+    expect(loggerMock.error).toBeCalledTimes(1);
+
+    // updating and removing flags still work
+    cache.update([{ ...featureFlagOne, sets: ['x'] }], [featureFlagTwo], 2);
+    expect(cache.getSplit('ff_two')).toBeNull();
+    expect(storage.getItem(keys.buildFlagSetKey('x'))).toBeNull();
 
     cache.clear();
   });

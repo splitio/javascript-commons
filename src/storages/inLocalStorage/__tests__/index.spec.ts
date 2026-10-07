@@ -7,7 +7,7 @@ jest.mock('../../inMemory/InMemoryStorageCS', () => {
   };
 });
 
-import { IStorageFactoryParams } from '../../types';
+import { IStorageFactoryParams, IStorageSync } from '../../types';
 import { assertStorageInterface } from '../../__tests__/testUtils';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
 import { createMemoryStorage } from './wrapper.mock';
@@ -59,6 +59,30 @@ describe('IN LOCAL STORAGE', () => {
 
     assertStorageInterface(storage); // the instance must implement the storage interface
     expect(fakeInMemoryStorageFactory).not.toBeCalled(); // doesn't call InMemoryStorage factory
+  });
+
+  test('disableFlagSetCache option is validated and passed to the splits cache', () => {
+    const log = fullSettings.log as jest.Mocked<typeof fullSettings.log>;
+    const params = { settings: { ...fullSettings, log } } as unknown as IStorageFactoryParams;
+    (log.error as jest.Mock).mockClear();
+
+    // valid values
+    let storage = InLocalStorage({ prefix: 'prefix', wrapper: createMemoryStorage(), disableFlagSetCache: true })(params) as IStorageSync;
+    expect(storage.splits.getNamesByFlagSets(['a'])).toEqual([new Set()]);
+    expect(log.error).toBeCalledTimes(1); // flag set cache disabled error
+
+    (log.error as jest.Mock).mockClear();
+    storage = InLocalStorage({ prefix: 'prefix', wrapper: createMemoryStorage() })(params) as IStorageSync;
+    expect(storage.splits.getNamesByFlagSets(['a'])).toEqual([new Set()]);
+    expect(log.error).not.toBeCalled();
+
+    // invalid value is ignored (flag set cache enabled) with an error log
+    // @ts-expect-error Provided option is invalid
+    storage = InLocalStorage({ prefix: 'prefix', wrapper: createMemoryStorage(), disableFlagSetCache: 'true' })(params) as IStorageSync;
+    expect(log.error).toBeCalledTimes(1);
+    (log.error as jest.Mock).mockClear();
+    storage.splits.getNamesByFlagSets(['a']);
+    expect(log.error).not.toBeCalled();
   });
 
   test('calls InLocalStorage if the provided storage wrapper is valid', () => {

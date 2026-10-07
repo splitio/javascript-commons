@@ -18,6 +18,8 @@ import { validateCache } from './validateCache';
 import { ILogger } from '../../logger/types';
 import SplitIO from '../../../types/splitio';
 import { storageAdapter } from './storageAdapter';
+import { isBoolean } from '../../utils/lang';
+import { ERROR_INVALID_CONFIG_PARAM } from '../../logger/constants';
 
 function validateStorage(log: ILogger, prefix: string, wrapper?: SplitIO.StorageWrapper): StorageAdapter | undefined {
   if (wrapper) {
@@ -50,7 +52,11 @@ export function InLocalStorage(options: SplitIO.InLocalStorageOptions = {}): ISt
     const matchingKey = getMatching(settings.core.key);
     const keys = new KeyBuilderCS(prefix, matchingKey);
 
-    const splits = new SplitsCacheInLocal(settings, keys, storage);
+    if (options.disableFlagSetCache !== undefined && !isBoolean(options.disableFlagSetCache)) {
+      log.error(ERROR_INVALID_CONFIG_PARAM, ['disableFlagSetCache', 'true, false', 'false']);
+    }
+
+    const splits = new SplitsCacheInLocal(settings, keys, storage, options.disableFlagSetCache === true);
     const rbSegments = new RBSegmentsCacheInLocal(settings, keys, storage);
     const segments = new MySegmentsCacheInLocal(log, keys, storage);
     const largeSegments = new MySegmentsCacheInLocal(log, myLargeSegmentsKeyBuilder(prefix, matchingKey), storage);

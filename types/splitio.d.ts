@@ -1162,6 +1162,15 @@ declare namespace SplitIO {
      * @defaultValue `window.localStorage`
      */
     wrapper?: StorageWrapper;
+    /**
+     * If set to `true`, the SDK does not build the flag set index when it stores feature flag definitions, which speeds up the SDK initialization (SDK_READY event) and updates (SDK_UPDATE event).
+     *
+     * NOTE: when enabled, the `getTreatments(WithConfig)ByFlagSet(s)` methods return empty results.
+     * If you disable it afterwards, clear the cached data (e.g., with `storage.clearOnInit`) so the index is rebuilt.
+     *
+     * @defaultValue `false`
+     */
+    disableFlagSetCache?: boolean;
   }
   /**
    * Storage for asynchronous (consumer) SDK.
@@ -1542,6 +1551,15 @@ declare namespace SplitIO {
        * @defaultValue `window.localStorage`
        */
       wrapper?: StorageWrapper;
+      /**
+       * Optional settings for the 'LOCALSTORAGE' storage type. If set to `true`, the SDK does not build the flag set index when it stores feature flag definitions, which speeds up the SDK initialization (SDK_READY event) and updates (SDK_UPDATE event).
+       *
+       * NOTE: when enabled, the `getTreatments(WithConfig)ByFlagSet(s)` methods return empty results.
+       * If you disable it afterwards, clear the cached data (e.g., with `storage.clearOnInit`) so the index is rebuilt.
+       *
+       * @defaultValue `false`
+       */
+      disableFlagSetCache?: boolean;
     };
   }
   /**
