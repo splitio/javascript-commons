@@ -1,4 +1,4 @@
-2.13.1 (October 8, 2026)
+2.13.1 (October 7, 2026)
  - Updated the 'LOCALSTORAGE' storage to batch the writes of flag sets and traffic type/segment counters when storing feature flags, reducing the time of cold initializations.
 
 2.13.0 (September 24, 2026)
