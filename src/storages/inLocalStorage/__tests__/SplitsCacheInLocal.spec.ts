@@ -3,8 +3,17 @@ import { KeyBuilderCS } from '../../KeyBuilderCS';
 import { splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments, something, somethingElse, featureFlagOne, featureFlagTwo, featureFlagThree, featureFlagWithEmptyFS, featureFlagWithoutFS } from '../../__tests__/testUtils';
 import { ISplit } from '../../../dtos/types';
 import { fullSettings } from '../../../utils/settingsValidation/__tests__/settings.mocks';
+import { StorageAdapter } from '../../types';
 import { storages, PREFIX } from './wrapper.mock';
 
+function storageMethods(storage: StorageAdapter) {
+  return {
+    get length() { return storage.length; },
+    key: (index: number) => storage.key(index),
+    getItem: (key: string) => storage.getItem(key),
+    removeItem: (key: string) => storage.removeItem(key),
+  };
+}
 
 describe.each(storages)('SPLITS CACHE', (storage) => {
   test('LocalStorage', () => {
@@ -229,5 +238,99 @@ describe.each(storages)('SPLITS CACHE', (storage) => {
     // Validate that the feature flag cache is cleared when calling `clear` method
     cache.clear();
     expect(storage.length).toBe(0);
+  });
+
+  test('LocalStorage / flag sets are batched in update', () => {
+    const keys = new KeyBuilderCS(PREFIX, 'user');
+    const writes: string[] = [];
+    const spiedStorage = { ...storageMethods(storage), setItem: (key: string, value: string) => { writes.push(key); storage.setItem(key, value); } };
+    const cache = new SplitsCacheInLocal(fullSettings, keys, spiedStorage);
+    cache.clear();
+    const ff = (name: string, sets: string[]) => ({ ...featureFlagOne, name, sets } as ISplit);
+
+    // several flags across overlapping sets
+    cache.update([ff('a', ['x', 'y']), ff('b', ['y', 'z']), ff('c', ['x', 'y', 'z'])], [], 1);
+    expect(cache.getNamesByFlagSets(['x', 'y', 'z'])).toEqual([new Set(['a', 'c']), new Set(['a', 'b', 'c']), new Set(['b', 'c'])]);
+
+    // each flag set is serialized once per update
+    writes.length = 0;
+    cache.update([ff('d', ['x', 'y']), ff('e', ['x', 'y'])], [], 2);
+    const writesPerSet = (set: string) => writes.filter(key => key === keys.buildFlagSetKey(set)).length;
+    expect(writesPerSet('x')).toBe(1);
+    expect(writesPerSet('y')).toBe(1);
+
+    // a flag changing sets, a flag removed, and an empty set being removed
+    cache.update([ff('a', ['z'])], [ff('b', [])], 3);
+    expect(cache.getNamesByFlagSets(['x', 'y', 'z'])).toEqual([new Set(['c', 'd', 'e']), new Set(['c', 'd', 'e']), new Set(['a', 'c'])]);
+
+    cache.update([ff('a', ['w'])], [], 4);
+    expect(cache.getNamesByFlagSets(['w', 'z'])).toEqual([new Set(['a']), new Set(['c'])]);
+
+    cache.update([], [ff('a', [])], 5);
+    expect(cache.getNamesByFlagSets(['w'])).toEqual([new Set()]);
+    expect(storage.getItem(keys.buildFlagSetKey('w'))).toBeNull();
+
+    // flag added and then moved within the same update
+    cache.update([ff('f', ['p']), ff('f', ['q'])], [], 6);
+    expect(cache.getNamesByFlagSets(['p', 'q'])).toEqual([new Set(), new Set(['f'])]);
+    expect(storage.getItem(keys.buildFlagSetKey('p'))).toBeNull();
+
+    cache.clear();
+  });
+
+  test('LocalStorage / traffic type and segments counts are batched in update', () => {
+    const keys = new KeyBuilderCS(PREFIX, 'user');
+    const writes: string[] = [];
+    const spiedStorage = { ...storageMethods(storage), setItem: (key: string, value: string) => { writes.push(key); storage.setItem(key, value); } };
+    const cache = new SplitsCacheInLocal(fullSettings, keys, spiedStorage);
+    cache.clear();
+
+    const ttKey = (tt: string) => keys.buildTrafficTypeKey(tt);
+    const segmentsKey = keys.buildSplitsWithSegmentCountKey();
+    const writesOf = (key: string) => writes.filter(k => k === key).length;
+
+    cache.update([splitWithUserTT, splitWithAccountTT, splitWithAccountTTAndUsesSegments], [], 1);
+    expect(storage.getItem(ttKey('user_tt'))).toBe('1');
+    expect(storage.getItem(ttKey('account_tt'))).toBe('2');
+    expect(storage.getItem(segmentsKey)).toBe('1');
+
+    const many = (n: number, tt: string, withSegments: boolean) => Array.from({ length: n }, (_, i) => ({
+      ...(withSegments ? splitWithAccountTTAndUsesSegments : splitWithUserTT), name: `${tt}_${withSegments}_${i}`, trafficTypeName: tt
+    } as ISplit));
+
+    writes.length = 0;
+    cache.update([...many(5, 'user_tt', false), ...many(3, 'account_tt', true)], [], 2);
+    expect(writesOf(ttKey('user_tt'))).toBe(1);
+    expect(writesOf(ttKey('account_tt'))).toBe(1);
+    expect(writesOf(segmentsKey)).toBe(1);
+    expect(storage.getItem(ttKey('user_tt'))).toBe('6');
+    expect(storage.getItem(ttKey('account_tt'))).toBe('5');
+    expect(storage.getItem(segmentsKey)).toBe('4');
+
+    // a flag changing traffic type and no longer using segments, and removing flags down to zero
+    cache.update([{ ...splitWithAccountTTAndUsesSegments, trafficTypeName: 'user_tt', conditions: [] } as ISplit], many(5, 'user_tt', false), 3);
+    expect(storage.getItem(ttKey('user_tt'))).toBe('2');
+    expect(storage.getItem(ttKey('account_tt'))).toBe('4');
+    expect(storage.getItem(segmentsKey)).toBe('3');
+    expect(cache.trafficTypeExists('user_tt')).toBe(true);
+
+    cache.update([], [...many(3, 'account_tt', true), splitWithAccountTT, splitWithAccountTTAndUsesSegments], 4);
+    expect(storage.getItem(ttKey('account_tt'))).toBeNull();
+    expect(storage.getItem(segmentsKey)).toBeNull();
+
+    cache.clear();
+  });
+
+  test('LocalStorage / flag sets flush errors are logged and do not throw', () => {
+    const failingStorage = { ...storageMethods(storage), setItem: (key: string, value: string) => { if (key.indexOf('.flagSet.') > -1) throw new Error('quota'); storage.setItem(key, value); } };
+    const cache = new SplitsCacheInLocal(fullSettings, new KeyBuilderCS(PREFIX, 'user'), failingStorage);
+    cache.clear();
+    const errorSpy = jest.spyOn(fullSettings.log, 'error');
+
+    expect(() => cache.update([featureFlagOne], [], 1)).not.toThrow();
+    expect(errorSpy).toHaveBeenCalled();
+
+    errorSpy.mockRestore();
+    cache.clear();
   });
 });
