@@ -8,6 +8,18 @@ import { ISettings } from '../../types';
 import { setToArray } from '../../utils/lang/sets';
 import { StorageAdapter } from '../types';
 
+/**
+ * Changes accumulated in memory while applying an update, so that each flag set and counter delta is written once at the end of the update.
+ */
+interface UpdateBatch {
+  flagSets: Map<string, Set<string>>;
+  counts: Map<string, number>;
+}
+
+function newBatch(): UpdateBatch {
+  return { flagSets: new Map(), counts: new Map() };
+}
+
 export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
   private readonly keys: KeyBuilderCS;
@@ -24,40 +36,14 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.storage = storage;
   }
 
-  private _decrementCount(key: string) {
-    const count = toNumber(this.storage.getItem(key)) - 1;
-    if (count > 0) this.storage.setItem(key, count + '');
-    else this.storage.removeItem(key);
+  private updateCount(batch: UpdateBatch, key: string, diff: number) {
+    batch.counts.set(key, (batch.counts.get(key) || 0) + diff);
   }
 
-  private _decrementCounts(split: ISplit) {
-    try {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      this._decrementCount(ttKey);
-
-      if (usesSegments(split)) {
-        const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-        this._decrementCount(segmentsCountKey);
-      }
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-    }
+  private updateCounts(split: ISplit, batch: UpdateBatch, diff: number) {
+    this.updateCount(batch, this.keys.buildTrafficTypeKey(split.trafficTypeName), diff);
+    if (usesSegments(split)) this.updateCount(batch, this.keys.buildSplitsWithSegmentCountKey(), diff);
   }
-
-  private _incrementCounts(split: ISplit) {
-    try {
-      const ttKey = this.keys.buildTrafficTypeKey(split.trafficTypeName);
-      this.storage.setItem(ttKey, (toNumber(this.storage.getItem(ttKey)) + 1) + '');
-
-      if (usesSegments(split)) {
-        const segmentsCountKey = this.keys.buildSplitsWithSegmentCountKey();
-        this.storage.setItem(segmentsCountKey, (toNumber(this.storage.getItem(segmentsCountKey)) + 1) + '');
-      }
-    } catch (e) {
-      this.log.error(LOG_PREFIX + e);
-    }
-  }
-
 
   /**
    * Removes all splits cache related data from localStorage (splits, counters, changeNumber and lastUpdated).
@@ -79,33 +65,69 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     this.hasSync = false;
   }
 
+  /**
+   * Overrides the default implementation to batch the flag set and counter writes: each flag set and each counter is read from
+   * storage once, updated in memory, and written once at the end, instead of once per feature flag.
+   * `update` is synchronous, so no other reader can observe the intermediate state.
+   */
+  update(toAdd: ISplit[], toRemove: ISplit[], changeNumber: number): boolean {
+    const batch = newBatch();
+    let updated;
+    try {
+      updated = toAdd.map(addedFF => this.addSplitToBatch(addedFF, batch)).some(result => result);
+      updated = toRemove.map(removedFF => this.removeSplitFromBatch(removedFF.name, batch)).some(result => result) || updated;
+    } finally {
+      this.flushBatch(batch);
+    }
+    this.setChangeNumber(changeNumber);
+    return updated;
+  }
+
   addSplit(split: ISplit) {
+    const batch = newBatch();
+    try {
+      return this.addSplitToBatch(split, batch);
+    } finally {
+      this.flushBatch(batch);
+    }
+  }
+
+  removeSplit(name: string): boolean {
+    const batch = newBatch();
+    try {
+      return this.removeSplitFromBatch(name, batch);
+    } finally {
+      this.flushBatch(batch);
+    }
+  }
+
+  private addSplitToBatch(split: ISplit, batch: UpdateBatch) {
     const name = split.name;
     const splitKey = this.keys.buildSplitKey(name);
     const splitFromStorage = this.storage.getItem(splitKey);
     const previousSplit = splitFromStorage ? JSON.parse(splitFromStorage) : null;
 
     if (previousSplit) {
-      this._decrementCounts(previousSplit);
-      this.removeFromFlagSets(previousSplit.name, previousSplit.sets);
+      this.updateCounts(previousSplit, batch, -1);
+      this.removeFromFlagSets(previousSplit.name, previousSplit.sets, batch);
     }
 
     this.storage.setItem(splitKey, JSON.stringify(split));
 
-    this._incrementCounts(split);
-    this.addToFlagSets(split);
+    this.updateCounts(split, batch, 1);
+    this.addToFlagSets(split, batch);
 
     return true;
   }
 
-  removeSplit(name: string): boolean {
+  private removeSplitFromBatch(name: string, batch: UpdateBatch): boolean {
     const split = this.getSplit(name);
     if (!split) return false;
 
     this.storage.removeItem(this.keys.buildSplitKey(name));
 
-    this._decrementCounts(split);
-    this.removeFromFlagSets(split.name, split.sets);
+    this.updateCounts(split, batch, -1);
+    this.removeFromFlagSets(split.name, split.sets, batch);
 
     return true;
   }
@@ -184,7 +206,7 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
     });
   }
 
-  private addToFlagSets(featureFlag: ISplit) {
+  private addToFlagSets(featureFlag: ISplit, batch: UpdateBatch) {
     if (!featureFlag.sets) return;
 
     featureFlag.sets.forEach(featureFlagSet => {
@@ -193,42 +215,62 @@ export class SplitsCacheInLocal extends AbstractSplitsCacheSync {
 
       const flagSetKey = this.keys.buildFlagSetKey(featureFlagSet);
 
-      const flagSetFromStorage = this.storage.getItem(flagSetKey);
-
-      const flagSetCache = new Set(flagSetFromStorage ? JSON.parse(flagSetFromStorage) : []);
-
-      if (flagSetCache.has(featureFlag.name)) return;
-
-      flagSetCache.add(featureFlag.name);
-
-      this.storage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+      this.getFlagSetFromBatch(flagSetKey, batch).add(featureFlag.name);
     });
   }
 
-  private removeFromFlagSets(featureFlagName: string, flagSets?: string[] | null) {
+  private removeFromFlagSets(featureFlagName: string, flagSets: string[] | null | undefined, batch: UpdateBatch) {
     if (!flagSets) return;
 
     flagSets.forEach(flagSet => {
-      this.removeNames(flagSet, featureFlagName);
+      this.removeNames(flagSet, featureFlagName, batch);
     });
   }
 
-  private removeNames(flagSetName: string, featureFlagName: string) {
+  private removeNames(flagSetName: string, featureFlagName: string, batch: UpdateBatch) {
     const flagSetKey = this.keys.buildFlagSetKey(flagSetName);
 
-    const flagSetFromStorage = this.storage.getItem(flagSetKey);
+    // nothing to remove from a flag set that is neither in storage nor in the batch
+    if (!batch.flagSets.has(flagSetKey) && !this.storage.getItem(flagSetKey)) return;
 
-    if (!flagSetFromStorage) return;
+    this.getFlagSetFromBatch(flagSetKey, batch).delete(featureFlagName);
+  }
 
-    const flagSetCache = new Set(JSON.parse(flagSetFromStorage));
-    flagSetCache.delete(featureFlagName);
-
-    if (flagSetCache.size === 0) {
-      this.storage.removeItem(flagSetKey);
-      return;
+  /**
+   * Returns the flag names of the given flag set, reading from storage only the first time
+   */
+  private getFlagSetFromBatch(flagSetKey: string, batch: UpdateBatch): Set<string> {
+    let flagSetCache = batch.flagSets.get(flagSetKey);
+    if (!flagSetCache) {
+      const flagSetFromStorage = this.storage.getItem(flagSetKey);
+      flagSetCache = new Set(flagSetFromStorage ? JSON.parse(flagSetFromStorage) : []);
+      batch.flagSets.set(flagSetKey, flagSetCache);
     }
+    return flagSetCache;
+  }
 
-    this.storage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+  private flushBatch(batch: UpdateBatch) {
+    // flush counts
+    batch.counts.forEach((diff, key) => {
+      try {
+        if (diff === 0) return;
+        const count = toNumber(this.storage.getItem(key)) + diff;
+        if (count > 0) this.storage.setItem(key, count + '');
+        else this.storage.removeItem(key);
+      } catch (e) {
+        this.log.error(LOG_PREFIX + e);
+      }
+    });
+
+    // flush flag sets
+    batch.flagSets.forEach((flagSetCache, flagSetKey) => {
+      try {
+        if (flagSetCache.size === 0) this.storage.removeItem(flagSetKey);
+        else this.storage.setItem(flagSetKey, JSON.stringify(setToArray(flagSetCache)));
+      } catch (e) {
+        this.log.error(LOG_PREFIX + e);
+      }
+    });
   }
 
 }
