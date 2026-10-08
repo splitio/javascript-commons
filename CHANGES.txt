@@ -2,6 +2,7 @@
  - Added support for streaming in the Configs SDK, handling CONFIG_UPDATE notifications. Unlike feature flag notifications, the previous change number of CONFIG_UPDATE and RB_SEGMENT_UPDATE notifications are scoped to the referenced entity rather than to the environment, and so instant updates are applied without updating the storage change number.
  - Added support for AI configs.
  - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
+ - Updated the 'LOCALSTORAGE' storage to batch the writes of flag sets and traffic type/segment counters when storing feature flags, reducing the time of cold initializations.
  - Removed the `@types/ioredis` dependency, which is no longer required since the public type definitions don't depend on ioredis types. The `@types/node` dependency, previously installed transitively by `@types/ioredis`, is now declared explicitly, since the public type definitions use Node.js types for the `agent` and `tls` options.
  - Removed Configs SDK-related types and modules and moved them to the Configs SDK repository.
  - Bugfix - Fixed the SDK_UPDATE event in localhost mode, which is now emitted with the correct list of names of the updated or removed feature flags.
@@ -26,6 +27,9 @@
    - input validation for the target object.
  - Removed the misleading warning log 'No listeners for SDK_READY event detected', since users can use the `whenReady` method to wait for the SDK to be ready.
  - BREAKING CHANGES: Renamed some types and modules, and updated the signatures of others for clarity and reusability.
+
+2.13.1 (October 7, 2026)
+ - Updated the 'LOCALSTORAGE' storage to batch the writes of flag sets and traffic type/segment counters when storing feature flags, reducing the time of cold initializations.
 
 2.13.0 (September 24, 2026)
  - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
