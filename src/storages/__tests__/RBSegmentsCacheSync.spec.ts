@@ -25,27 +25,36 @@ describe.each([cacheInMemory, cacheInLocal])('Rule-based segments cache sync (Me
     expect(cache.get(rbSegment.name)).toBeNull();
   });
 
+  test('update should ignore outdated rule-based segments', () => {
+    const current = { ...rbSegment, changeNumber: 10 };
+    cache.update([current], [], 10);
+    expect(cache.update([current], [], 10)).toEqual([]);
+    expect(cache.update([{ ...rbSegment, changeNumber: 9 }], [], 10)).toEqual([]);
+    expect(cache.get(rbSegment.name)).toEqual(current);
+    expect(cache.update([{ ...rbSegment, changeNumber: 11 }], [], 11)).toEqual([rbSegment.name]);
+  });
+
   test('update should add and remove segments correctly', () => {
     // Add segments
-    expect(cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1)).toBe(true);
+    expect(cache.update([rbSegment, rbSegmentWithInSegmentMatcher], [], 1)).toEqual([rbSegment.name, rbSegmentWithInSegmentMatcher.name]);
     expect(cache.get(rbSegment.name)).toEqual(rbSegment);
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(cache.getChangeNumber()).toBe(1);
 
     // Remove a segment
-    expect(cache.update([], [rbSegment.name], 2)).toBe(true);
+    expect(cache.update([], [rbSegment.name], 2)).toEqual([rbSegment.name]);
     expect(cache.get(rbSegment.name)).toBeNull();
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toEqual(rbSegmentWithInSegmentMatcher);
     expect(cache.getChangeNumber()).toBe(2);
 
     // Remove remaining segment
-    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toBe(true);
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 3)).toEqual([rbSegmentWithInSegmentMatcher.name]);
     expect(cache.get(rbSegment.name)).toBeNull();
     expect(cache.get(rbSegmentWithInSegmentMatcher.name)).toBeNull();
     expect(cache.getChangeNumber()).toBe(3);
 
     // No changes
-    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toBe(false);
+    expect(cache.update([], [rbSegmentWithInSegmentMatcher.name], 4)).toEqual([]);
     expect(cache.getChangeNumber()).toBe(4);
   });
 

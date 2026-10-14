@@ -69,6 +69,9 @@ export function sdkLifecycleFactory(params: ISdkFactoryContext, isSharedClient?:
 
       // Stop background jobs
       syncManager && syncManager.stop();
+
+      // Stop the service API (the auth provider backoff retries specifically) before flushing,
+      // so that a pending/never-resolved auth retry doesn't block the flush forever
       serviceApi && serviceApi.stop();
 
       return __flush().then(() => {

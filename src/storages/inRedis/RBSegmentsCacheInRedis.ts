@@ -37,27 +37,38 @@ export class RBSegmentsCacheInRedis implements IRBSegmentsCacheAsync {
     });
   }
 
-  update(toAdd: IRBSegment[], toRemove: string[], changeNumber: number): Promise<boolean> {
+  update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<string[]> {
     return Promise.all([
       this.setChangeNumber(changeNumber),
-      Promise.all(toAdd.map(toAdd => {
-        const key = this.keys.buildRBSegmentKey(toAdd.name);
-        const stringifiedNewRBSegment = JSON.stringify(toAdd);
-        return this.redis.set(key, stringifiedNewRBSegment).then(() => true);
-      })),
-      Promise.all(toRemove.map(toRemove => {
-        const key = this.keys.buildRBSegmentKey(toRemove);
-        return this.redis.del(key).then((status: number) => status === 1);
-      }))
+      Promise.all(toAdd.map(rbSegment => this.add(rbSegment))),
+      Promise.all(toRemove.map(name => this.remove(name)))
     ]).then(([, added, removed]) => {
-      return added.some(result => result) || removed.some(result => result);
+      return toRemove.filter((_, i) => removed[i])
+        .concat(toAdd.filter((_, i) => added[i]).map(rbSegment => rbSegment.name));
     });
   }
 
-  setChangeNumber(changeNumber: number) {
-    return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
-      (status: string | null) => status === 'OK'
-    );
+  private add(rbSegment: IRBSegment): Promise<boolean> {
+    const key = this.keys.buildRBSegmentKey(rbSegment.name);
+    return this.get(rbSegment.name).then(previous => {
+      if (previous && previous.changeNumber >= rbSegment.changeNumber) return false;
+
+      const stringifiedNewRBSegment = JSON.stringify(rbSegment);
+      return this.redis.set(key, stringifiedNewRBSegment).then(() => true);
+    });
+  }
+
+  private remove(name: string): Promise<boolean> {
+    const key = this.keys.buildRBSegmentKey(name);
+    return this.redis.del(key).then((status: number) => status === 1);
+  }
+
+  setChangeNumber(changeNumber?: number) {
+    if (changeNumber !== undefined) {
+      return this.redis.set(this.keys.buildRBSegmentsTillKey(), changeNumber + '').then(
+        (status: string | null) => status === 'OK'
+      );
+    }
   }
 
   getChangeNumber(): Promise<number> {
