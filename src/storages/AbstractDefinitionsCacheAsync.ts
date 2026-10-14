@@ -14,12 +14,13 @@ export abstract class AbstractDefinitionsCacheAsync implements IDefinitionsCache
 
   update(toAdd: IDefinition[], toRemove: string[], changeNumber?: number): Promise<string[]> {
     return Promise.all([
-      this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(addedFF => this.add(addedFF))),
       Promise.all(toRemove.map(removedFF => this.remove(removedFF)))
-    ]).then(([, added, removed]) => {
-      return toRemove.filter((_, i) => removed[i])
-        .concat(toAdd.filter((_, i) => added[i]).map(addedFF => addedFF.name));
+    ]).then(([added, removed]) => {
+      return Promise.resolve(this.setChangeNumber(changeNumber)).then(() => {
+        return toRemove.filter((_, i) => removed[i])
+          .concat(toAdd.filter((_, i) => added[i]).map(addedFF => addedFF.name));
+      });
     });
   }
 

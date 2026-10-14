@@ -38,12 +38,13 @@ export class RBSegmentsCachePluggable implements IRBSegmentsCacheAsync {
 
   update(toAdd: IRBSegment[], toRemove: string[], changeNumber?: number): Promise<string[]> {
     return Promise.all([
-      this.setChangeNumber(changeNumber),
       Promise.all(toAdd.map(rbSegment => this.add(rbSegment))),
       Promise.all(toRemove.map(name => this.remove(name)))
-    ]).then(([, added, removed]) => {
-      return toRemove.filter((_, i) => removed[i])
-        .concat(toAdd.filter((_, i) => added[i]).map(rbSegment => rbSegment.name));
+    ]).then(([added, removed]) => {
+      return Promise.resolve(this.setChangeNumber(changeNumber)).then(() => {
+        return toRemove.filter((_, i) => removed[i])
+          .concat(toAdd.filter((_, i) => added[i]).map(rbSegment => rbSegment.name));
+      });
     });
   }
 
