@@ -1,4 +1,4 @@
-3.2.0 (XXX XX, 2026)
+3.2.0 (October 28, 2026)
  - Added support for streaming in the Configs SDK, handling CONFIG_UPDATE notifications. Unlike feature flag notifications, the previous change number of CONFIG_UPDATE and RB_SEGMENT_UPDATE notifications are scoped to the referenced entity rather than to the environment, and so instant updates are applied without updating the storage change number.
  - Added support for AI configs.
  - Added support for ioredis v6 (Related to issue https://github.com/splitio/javascript-client/issues/951). Note that ioredis v6 requires Node.js 20 or above; stay on ioredis v4 or v5 for older Node.js versions.
