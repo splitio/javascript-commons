@@ -100,7 +100,6 @@ export function syncManagerOnlineFactory(
             if (!cacheMetadata.initialCacheLoad) {
               readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
             }
-
           }
 
           // start syncing splits and segments

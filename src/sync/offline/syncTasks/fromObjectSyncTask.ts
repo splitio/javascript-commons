@@ -1,12 +1,10 @@
-import { forOwn } from '../../../utils/lang';
 import { IReadinessManager } from '../../../readiness/types';
 import { IStorageSync } from '../../../storages/types';
-import { IDefinitionsParser, IDefinitionPartial } from '../splitsParser/types';
-import { IDefinition } from '../../../dtos/types';
+import { IDefinitionsParser } from '../splitsParser/types';
+import { IDefinitionChangesResponse } from '../../../dtos/types';
 import { syncTaskFactory } from '../../syncTask';
 import { ISyncTask } from '../../types';
 import { ISettings } from '../../../types';
-import { CONTROL } from '../../../utils/constants';
 import { SDK_DEFINITIONS_ARRIVED, SDK_SEGMENTS_ARRIVED, SDK_DEFINITIONS_CACHE_LOADED, FLAGS_UPDATE, SEGMENTS_UPDATE } from '../../../readiness/constants';
 import { SYNC_OFFLINE_DATA, ERROR_SYNC_OFFLINE_LOADING } from '../../../logger/constants';
 
@@ -24,55 +22,37 @@ export function fromObjectUpdaterFactory(
   let startingUp = true;
 
   return function objectUpdater() {
-    const splits: IDefinition[] = [];
-    let loadError = null;
-    let splitsMock: false | Record<string, IDefinitionPartial> = {};
+    let changes: IDefinitionChangesResponse | undefined;
     try {
-      splitsMock = splitsParser(settings);
+      changes = splitsParser(settings);
     } catch (err) {
-      loadError = err;
       log.error(ERROR_SYNC_OFFLINE_LOADING, [err]);
     }
 
-    if (!loadError && splitsMock) {
-      log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(splitsMock)]);
+    if (!changes || !changes.d) return Promise.resolve(true);
 
-      forOwn(splitsMock, (val, name) => {
-        // @ts-ignore Split changeNumber and seed is undefined in localhost mode
-        splits.push({
-          name,
-          status: 'ACTIVE',
-          killed: false,
-          trafficAllocation: 100,
-          defaultTreatment: CONTROL,
-          conditions: val.conditions || [],
-          configurations: val.configurations,
-          trafficTypeName: val.trafficTypeName
+    const { updated, removed, till } = changes.d;
+    log.debug(SYNC_OFFLINE_DATA, [JSON.stringify(changes.d)]);
+
+    // On start, clear definitions that might be in the storage from a previous session (InLocalStorage), since the parser only tracks its own changes.
+    return Promise.resolve(startingUp && definitions.clear()).then(() => {
+      return definitions.update(updated, removed, till);
+    }).then((names) => {
+      readiness.definitions.emit(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names });
+
+      if (startingUp) {
+        startingUp = false;
+        Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
+          // Emits SDK_READY_FROM_CACHE
+          if (!cacheMetadata.initialCacheLoad) {
+            readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
+          }
+          // Emits SDK_READY
+          readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
         });
-      });
-
-      return Promise.all([
-        definitions.clear(), // required to sync removed splits from mock
-        definitions.update(splits, [], Date.now())
-      ]).then(() => {
-        readiness.definitions.emit(SDK_DEFINITIONS_ARRIVED, { type: FLAGS_UPDATE, names: [] });
-
-        if (startingUp) {
-          startingUp = false;
-          Promise.resolve(storage.validateCache ? storage.validateCache() : { initialCacheLoad: true /* Fallback: assume initial load when validateCache doesn't exist */ }).then((cacheMetadata) => {
-            // Emits SDK_READY_FROM_CACHE
-            if (!cacheMetadata.initialCacheLoad) {
-              readiness.definitions.emit(SDK_DEFINITIONS_CACHE_LOADED, cacheMetadata);
-            }
-            // Emits SDK_READY
-            readiness.segments.emit(SDK_SEGMENTS_ARRIVED, { type: SEGMENTS_UPDATE, names: [] });
-          });
-        }
-        return true;
-      });
-    } else {
-      return Promise.resolve(true);
-    }
+      }
+      return true;
+    });
   };
 }
 

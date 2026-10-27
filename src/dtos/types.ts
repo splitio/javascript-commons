@@ -243,14 +243,14 @@ export interface IDefinition extends TargetingEntity {
 /** Interface of the parsed JSON response of `/splitChanges` */
 export interface IDefinitionChangesResponse {
   d?: {
-    till: number,
-    since?: number | null,
+    till?: number,
+    since?: number,
     updated: IDefinition[],
     removed: string[],
   },
   rbs?: {
-    till: number,
-    since?: number | null,
+    till?: number,
+    since?: number,
     updated: IRBSegment[],
     removed: string[],
   }

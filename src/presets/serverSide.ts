@@ -1,4 +1,4 @@
-import { serviceApiFactory } from '../services/serviceApi';
+import { splitApiFactory } from '../services/splitApi';
 import { syncManagerOnlineFactory } from '../sync/syncManagerOnline';
 import { pushManagerFactory } from '../sync/streaming/pushManager';
 import { pollingManagerSSFactory } from '../sync/polling/pollingManagerSS';
@@ -11,7 +11,7 @@ const syncManagerOnlineSSFactory = syncManagerOnlineFactory(pollingManagerSSFact
 
 export const serverSideModules = {
   storageFactory: InMemoryStorageFactory,
-  serviceApiFactory,
+  serviceApiFactory: splitApiFactory,
   syncManagerFactory: syncManagerOnlineSSFactory,
   sdkManagerFactory,
   sdkClientMethodFactory,
