@@ -28,14 +28,14 @@ export class BrowserSignalListener implements ISignalListener {
   private serviceApi: IServiceApi;
   private fromImpressionsCollector: (data: SplitIO.ImpressionDTO[]) => ImpressionsPayload;
 
-  constructor({ syncManager, settings, storage, serviceApi, entityType }: ISdkFactoryContextSync) {
+  constructor({ syncManager, settings, storage, serviceApi }: ISdkFactoryContextSync) {
     this.syncManager = syncManager;
     this.settings = settings;
     this.storage = storage;
     this.serviceApi = serviceApi;
     this.flushData = this.flushData.bind(this);
     this.flushDataIfHidden = this.flushDataIfHidden.bind(this);
-    this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled, entityType);
+    this.fromImpressionsCollector = fromImpressionsCollector.bind(undefined, settings.core.labelsEnabled);
   }
 
   /**

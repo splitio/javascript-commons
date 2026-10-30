@@ -84,7 +84,7 @@ export function notificationKeeperFactory(pushEmitter: IPushEventEmitter, teleme
             c.cTime = timestamp;
             if (controlType === ControlType.STREAMING_DISABLED) {
               telemetryTracker.streamingEvent(STREAMING_STATUS, DISABLED);
-              pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR);
+              pushEmitter.emit(PUSH_NON_RETRYABLE_ERROR); // not a non-retryable error per se, but same logic
             } else if (hasPublishers) {
               if (controlType === ControlType.STREAMING_PAUSED && hasResumed) {
                 telemetryTracker.streamingEvent(STREAMING_STATUS, PAUSED);

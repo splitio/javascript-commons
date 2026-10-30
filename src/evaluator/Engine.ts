@@ -7,12 +7,12 @@ import { CONTROL } from '../utils/constants';
 import { IDefinition, MaybeThenable } from '../dtos/types';
 import SplitIO from '../../types/splitio';
 import { IStorageAsync, IStorageSync } from '../storages/types';
-import { IEvaluation, IEvaluationResult, IDefinitionEvaluator } from './types';
+import { IEvaluation, IDefinitionEvaluator } from './types';
 import { ILogger } from '../logger/types';
 import { ENGINE_DEFAULT } from '../logger/constants';
 import { prerequisitesMatcherContext } from './matchers/prerequisites';
 
-function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluationResult {
+function evaluationResult(result: IEvaluation | undefined, defaultTreatment: string): IEvaluation {
   return {
     treatment: get(result, 'treatment', defaultTreatment),
     label: get(result, 'label', NO_CONDITION_MATCH)
@@ -29,7 +29,7 @@ export function engineParser(log: ILogger, split: IDefinition, storage: IStorage
 
   return {
 
-    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: IDefinitionEvaluator): MaybeThenable<IEvaluationResult> {
+    getTreatment(key: SplitIO.SplitKey, attributes: SplitIO.Attributes | undefined, splitEvaluator: IDefinitionEvaluator): MaybeThenable<IEvaluation> {
 
       const parsedKey = keyParser(key);
 

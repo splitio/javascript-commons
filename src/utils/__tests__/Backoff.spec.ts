@@ -62,16 +62,42 @@ describe('Backoff', () => {
     await expect(backoff.scheduleCallAsync()).rejects.toThrow('fail');
   });
 
-  test('scheduleCallAsync is cancelled by reset()', async () => {
+  test('scheduleCallAsync is settled immediately by reset({ value }), without invoking cb again', async () => {
     const cb = jest.fn(() => Promise.resolve('done'));
     const backoff = new Backoff(cb, 100, 100);
+
+    const promise = backoff.scheduleCallAsync();
+    backoff.reset({ value: 'fallback-value' });
+
+    const result = await Promise.race([
+      promise,
+      new Promise(r => setTimeout(() => r('timeout'), 150))
+    ]);
+    expect(result).toBe('fallback-value');
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  test('scheduleCallAsync is rejected immediately by reset({ error }), without invoking cb again', async () => {
+    const cb = jest.fn(() => Promise.resolve('done'));
+    const backoff = new Backoff(cb, 100, 100);
+
+    const promise = backoff.scheduleCallAsync();
+    backoff.reset({ error: new Error('gave up') });
+
+    await expect(promise).rejects.toThrow('gave up');
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  test('reset() without settle cancels the scheduled cb call, leaving the scheduleCallAsync promise unsettled', async () => {
+    const cb = jest.fn(() => Promise.resolve('done'));
+    const backoff = new Backoff(cb, 10, 10);
 
     const promise = backoff.scheduleCallAsync();
     backoff.reset();
 
     const result = await Promise.race([
-      promise.then(() => 'resolved'),
-      new Promise(r => setTimeout(() => r('timeout'), 150))
+      promise.then(() => 'resolved').catch(() => 'rejected'),
+      new Promise(r => setTimeout(() => r('timeout'), 50))
     ]);
     expect(result).toBe('timeout');
     expect(cb).not.toHaveBeenCalled();

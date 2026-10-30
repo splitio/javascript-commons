@@ -1,52 +1,22 @@
 import { IDefinitionPartial } from './types';
+import { IDefinitionChangesResponse } from '../../../dtos/types';
 import SplitIO from '../../../../types/splitio';
-import { isObject, forOwn, merge } from '../../../utils/lang';
+import { isObject, forOwn } from '../../../utils/lang';
 import { parseCondition } from './parseCondition';
-
-function hasTreatmentChanged(prev: string | SplitIO.TreatmentWithConfig, curr: string | SplitIO.TreatmentWithConfig) {
-  if (typeof prev !== typeof curr) return true;
-
-  if (typeof prev === 'string') { // strings treatments, just compare
-    return prev !== curr;
-  } else { // has treatment and config, compare both
-    return prev.treatment !== (curr as SplitIO.TreatmentWithConfig).treatment || prev.config !== (curr as SplitIO.TreatmentWithConfig).config;
-  }
-}
+import { definitionChangesBuilderFactory } from './definitionChangesBuilder';
 
 export function splitsParserFromSettingsFactory() {
 
-  let previousMock: SplitIO.MockedFeaturesMap = { 'emptyMock': '1' };
-
-  function mockUpdated(currentData: SplitIO.MockedFeaturesMap) {
-    const names = Object.keys(currentData);
-
-    // Different amount of items
-    if (names.length !== Object.keys(previousMock).length) {
-      previousMock = merge({}, currentData) as SplitIO.MockedFeaturesMap;
-      return true;
-    }
-
-    return names.some(name => {
-      const newSplit = !previousMock[name];
-      const newTreatment = hasTreatmentChanged(previousMock[name], currentData[name]);
-      const changed = newSplit || newTreatment;
-
-      if (changed) previousMock = merge({}, currentData) as SplitIO.MockedFeaturesMap;
-
-      return changed;
-    });
-  }
+  const definitionChangesBuilder = definitionChangesBuilderFactory();
 
   /**
    *
    * @param settings - validated object with mocked features mapping.
    */
-  return function splitsParserFromSettings(settings: Pick<SplitIO.ISettings, 'features'>): false | Record<string, IDefinitionPartial> {
+  return function splitsParserFromSettings(settings: Pick<SplitIO.ISettings, 'features'>): IDefinitionChangesResponse {
     const features = settings.features as SplitIO.MockedFeaturesMap || {};
 
-    if (!mockUpdated(features)) return false;
-
-    const splitObjects: Record<string, IDefinitionPartial> = {};
+    const mock: Record<string, IDefinitionPartial> = {};
 
     forOwn(features, (data, splitName) => {
       let treatment = data;
@@ -59,14 +29,14 @@ export function splitsParserFromSettingsFactory() {
       const configurations: Record<string, string> = {};
       if (config !== null) configurations[treatment as string] = config;
 
-      splitObjects[splitName] = {
+      mock[splitName] = {
         trafficTypeName: 'localhost',
         conditions: [parseCondition({ treatment: treatment as string })],
         configurations
       };
     });
 
-    return splitObjects;
+    return definitionChangesBuilder(mock);
   };
 
 }

@@ -1,4 +1,4 @@
-import { serviceApiFactory } from '../services/serviceApi';
+import { splitApiFactory } from '../services/splitApi';
 import { syncManagerOnlineFactory } from '../sync/syncManagerOnline';
 import { pushManagerFactory } from '../sync/streaming/pushManager';
 import { pollingManagerSSFactory } from '../sync/polling/pollingManagerSS';
@@ -7,11 +7,11 @@ import { sdkManagerFactory } from '../sdkManager';
 import { sdkClientMethodFactory } from '../sdkClient/sdkClientMethod';
 import { impressionObserverSSFactory } from '../trackers/impressionObserver/impressionObserverSS';
 
-const syncManagerOnlineSSFactory = syncManagerOnlineFactory(pollingManagerSSFactory, pushManagerFactory);
+const syncManagerOnlineSSFactory = syncManagerOnlineFactory(pollingManagerSSFactory(), pushManagerFactory);
 
 export const serverSideModules = {
   storageFactory: InMemoryStorageFactory,
-  serviceApiFactory,
+  serviceApiFactory: splitApiFactory,
   syncManagerFactory: syncManagerOnlineSSFactory,
   sdkManagerFactory,
   sdkClientMethodFactory,

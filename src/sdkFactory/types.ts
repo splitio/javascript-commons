@@ -43,9 +43,6 @@ export interface IPlatform {
   SignalListener?: new (params: ISdkFactoryContext) => ISignalListener, // Used by BrowserSignalListener
 }
 
-// Definition type
-export type EntityType = 'config' | 'flag';
-
 export interface ISdkFactoryContext {
   platform: IPlatform,
   sdkReadinessManager: ISdkReadinessManager,
@@ -59,7 +56,6 @@ export interface ISdkFactoryContext {
   syncManager?: ISyncManager,
   clients: Record<string, SplitIO.IBasicClient>,
   fallbackCalculator: IFallbackCalculator,
-  entityType?: EntityType
 }
 
 export interface ISdkFactoryContextSync extends ISdkFactoryContext {

@@ -1,4 +1,4 @@
-import { fromImpressionsCollector, impressionsSubmitterFactory } from '../impressionsSubmitter';
+import { impressionsSubmitterFactory } from '../impressionsSubmitter';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
 import { ImpressionsCacheInMemory } from '../../../storages/inMemory/ImpressionsCacheInMemory';
 
@@ -11,7 +11,7 @@ const imp1 = {
   time: 0
 };
 const imp2 = { ...imp1, keyName: 'k2' };
-const imp3 = { ...imp1, keyName: 'k3' };
+const imp3 = { ...imp1, keyName: 'k3', entityType: 'config' as const };
 
 describe('Impressions submitter', () => {
 
@@ -41,7 +41,7 @@ describe('Impressions submitter', () => {
         // POST with imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
         // POST with imp2 and imp3
-        ['[{"f":"someFeature","i":[{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123}]}]']]);
+        ['[{"f":"someFeature","i":[{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123,"et":"config"}]}]']]);
       impressionsSubmitter.stop();
 
       done();
@@ -66,7 +66,7 @@ describe('Impressions submitter', () => {
         // impression for imp1
         ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123}]}]'],
         // impressions for imp1, imp2 and imp3
-        ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123},{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123}]}]']]);
+        ['[{"f":"someFeature","i":[{"k":"k1","t":"someTreatment","m":0,"c":123},{"k":"k2","t":"someTreatment","m":0,"c":123},{"k":"k3","t":"someTreatment","m":0,"c":123,"et":"config"}]}]']]);
       impressionsSubmitter.stop();
 
       done();
@@ -93,23 +93,6 @@ describe('Impressions submitter', () => {
       done();
     });
 
-  });
-
-});
-
-describe('fromImpressionsCollector', () => {
-
-  test('includes entityType in payload when provided', () => {
-    const impressions = [imp1, imp2];
-    const result = fromImpressionsCollector(false, 'config', impressions);
-
-    expect(result).toEqual([{
-      f: 'someFeature',
-      i: [
-        { k: 'k1', t: 'someTreatment', m: 0, c: 123, et: 'config' },
-        { k: 'k2', t: 'someTreatment', m: 0, c: 123, et: 'config' },
-      ]
-    }]);
   });
 
 });

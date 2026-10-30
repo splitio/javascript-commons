@@ -110,7 +110,7 @@ describe('STORAGE Redis Adapter', () => {
     // Keep in mind we're storing the arguments object, not a true array.
     expect(constructorParams.length).toBe(2); // In this signature, the constructor receives two params.
     expect(constructorParams[0]).toBe(redisUrl); // When we use the Redis URL, that should be the first parameter passed to ioredis constructor
-    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
+    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, protocol: 2, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
 
     new RedisAdapter(loggerMock, {
       ...redisParams,
@@ -121,7 +121,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(constructorParams.length).toBe(1); // In this signature, the constructor receives one param.
     // we keep "pass" instead of "password" on our settings API to be backwards compatible.
-    expect(constructorParams[0]).toEqual({ host: redisParams.host, port: redisParams.port, db: redisParams.db, password: redisParams.pass, enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // If we send all the redis params separate, it will pass one object to the library containing that and the rest of the options.
+    expect(constructorParams[0]).toEqual({ host: redisParams.host, port: redisParams.port, db: redisParams.db, password: redisParams.pass, enableOfflineQueue: false, connectTimeout: 123, lazyConnect: false, slotsRefreshInterval: 5000, protocol: 2, tls: { ca: 'ca' } }); // If we send all the redis params separate, it will pass one object to the library containing that and the rest of the options.
 
     new RedisAdapter(loggerMock, {
       ...redisParams,
@@ -133,7 +133,7 @@ describe('STORAGE Redis Adapter', () => {
 
     expect(constructorParams.length).toBe(2); // In this signature, the constructor receives two params.
     expect(constructorParams[0]).toBe(redisUrl); // When we use the Redis URL, even if we specified all the other params one by one the URL takes precedence, so that should be the first parameter passed to ioredis constructor
-    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 10000, lazyConnect: false, slotsRefreshInterval: 5000, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
+    expect(constructorParams[1]).toEqual({ enableOfflineQueue: false, connectTimeout: 10000, lazyConnect: false, slotsRefreshInterval: 5000, protocol: 2, tls: { ca: 'ca' } }); // and the second parameter would be the default settings for the lib.
   });
 
   test('static method - _defineOptions', () => {

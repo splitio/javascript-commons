@@ -75,6 +75,20 @@ pipeline:
                     command: npm run test
               - step:
                   type: Run
+                  name: ioredis peer dependency matrix
+                  identifier: ioredis_matrix
+                  spec:
+                    shell: Sh
+                    command: |-
+                      set -e
+                      for version in 4 5; do
+                        echo "--- Testing against ioredis v$version ---"
+                        npm install --no-save --no-audit --no-fund "ioredis@$version"
+                        npx jest src/storages/inRedis
+                      done
+                      npm ci
+              - step:
+                  type: Run
                   name: npm run build
                   identifier: npm_run_build
                   spec:
