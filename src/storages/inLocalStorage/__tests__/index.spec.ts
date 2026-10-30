@@ -30,7 +30,7 @@ describe('IN LOCAL STORAGE', () => {
   test('fallback to InMemoryStorage if LocalStorage API is not available or the provided storage wrapper is invalid', () => {
     // Delete global localStorage property
     const originalLocalStorage = Object.getOwnPropertyDescriptor(global, 'localStorage');
-    Object.defineProperty(global, 'localStorage', {});
+    Object.defineProperty(global, 'localStorage', { value: undefined, configurable: true });
 
     // LocalStorage API is not available
     let storageFactory = InLocalStorage({ prefix: 'prefix' });
