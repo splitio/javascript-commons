@@ -112,13 +112,16 @@ beforeAll(() => {
           if (eventListeners[event]) eventListeners[event].delete(cb);
         }),
       }
-    }
+    },
+    configurable: true
   });
   Object.defineProperty(global, 'navigator', {
-    value: global.window.navigator
+    value: global.window.navigator,
+    configurable: true
   });
   Object.defineProperty(global, 'document', {
-    value: global.window.document
+    value: global.window.document,
+    configurable: true
   });
 });
 
