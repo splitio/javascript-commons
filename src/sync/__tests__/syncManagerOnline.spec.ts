@@ -117,8 +117,10 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
+  expect(pollingManagerMock.syncAll).lastCalledWith(true); // retries with backoff, since there is no polling
 
   syncManager.stop();
+  expect(pollingManagerMock.stop).toBeCalled(); // cancels pending retries
   await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();

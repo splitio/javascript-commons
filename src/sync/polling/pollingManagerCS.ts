@@ -11,6 +11,7 @@ import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { usesSegmentsSync } from '../../storages/AbstractDefinitionsCacheSync';
 import { SdkUpdateMetadata } from '../../../types/splitio';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
+import { retrierFactory } from './retrier';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -29,6 +30,9 @@ export function pollingManagerCSFactory(
 
     // Map of matching keys to their corresponding MySegmentsSyncTask.
     const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
+    // Map of matching keys to retriers of their MySegmentsSyncTask, used to retry the initial sync with backoff.
+    const mySegmentsRetriers: Record<string, ReturnType<typeof retrierFactory>> = {};
+    const definitionsRetrier = retrierFactory(() => definitionsSyncTask.execute());
 
     const matchingKey = getMatching(settings.core.key);
     const mySegmentsSyncTask = add(matchingKey, readiness, storage);
@@ -70,6 +74,7 @@ export function pollingManagerCSFactory(
       else readiness.definitions.once(SDK_DEFINITIONS_ARRIVED, smartReady);
 
       mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
+      mySegmentsRetriers[matchingKey] = retrierFactory(() => mySegmentsSyncTask.execute());
       return mySegmentsSyncTask;
     }
 
@@ -91,24 +96,37 @@ export function pollingManagerCSFactory(
 
         if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
         stopMySegmentsSyncTasks();
+
+        // cancel pending retries of `syncAll`
+        definitionsRetrier.cancel();
+        forOwn(mySegmentsRetriers, (retrier) => retrier.cancel());
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
       // fetch definitions and segments
-      syncAll() {
-        const promises = [definitionsSyncTask.execute()];
-        forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
-          promises.push(mySegmentsSyncTask.execute());
+      syncAll(retryWithBackoff) {
+        const promises = [retryWithBackoff ? definitionsRetrier.run() : definitionsSyncTask.execute()];
+        forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask, matchingKey) => {
+          promises.push(retryWithBackoff ? mySegmentsRetriers[matchingKey].run() : mySegmentsSyncTask.execute());
         });
         return Promise.all(promises);
+      },
+
+      // fetch memberships of a shared client
+      syncMySegments(matchingKey, retryWithBackoff) {
+        const mySegmentsSyncTask = mySegmentsSyncTasks[matchingKey];
+        if (!mySegmentsSyncTask) return Promise.resolve(false);
+        return retryWithBackoff ? mySegmentsRetriers[matchingKey].run() : mySegmentsSyncTask.execute();
       },
 
       // Support for handling mySegments sync of multiple clients
       add,
 
       remove(matchingKey: string) {
+        mySegmentsRetriers[matchingKey].cancel();
+        delete mySegmentsRetriers[matchingKey];
         delete mySegmentsSyncTasks[matchingKey];
       },
 

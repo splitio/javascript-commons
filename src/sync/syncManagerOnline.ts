@@ -118,7 +118,7 @@ export function syncManagerOnlineFactory(
               }
             } else {
               if (startFirstTime) {
-                pollingManager.syncAll();
+                pollingManager.syncAll(true);
               }
             }
           }
@@ -135,7 +135,8 @@ export function syncManagerOnlineFactory(
 
         // stop syncing
         if (pushManager) pushManager.stop();
-        if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
+        // if sync is disabled (single sync), polling is not running but `stop` must cancel the pending retries of `syncAll`
+        if (pollingManager && (pollingManager.isRunning() || !syncEnabled)) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
         submitterManager.stop();
@@ -172,7 +173,7 @@ export function syncManagerOnlineFactory(
               if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
             }
           } else {
-            if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
+            if (!readinessManager.isReady()) (pollingManager as IPollingManagerCS).syncMySegments(matchingKey, true);
           }
         }
 

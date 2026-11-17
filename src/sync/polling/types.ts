@@ -39,7 +39,11 @@ export type MySegmentsData = {
 export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegmentsData, noCache?: boolean, till?: number], boolean> { }
 
 export interface IPollingManager extends ITask {
-  syncAll(): Promise<any>
+  /**
+   * Fetches definitions and segments.
+   * @param retryWithBackoff - if true, retries each fetch with exponential backoff until it succeeds, or `stop` is called.
+   */
+  syncAll(retryWithBackoff?: boolean): Promise<any>
   definitionsSyncTask: IDefinitionsSyncTask
   segmentsSyncTask: ISyncTask
 }
@@ -48,6 +52,7 @@ export interface IPollingManager extends ITask {
  * PollingManager for client-side with support for multiple clients
  */
 export interface IPollingManagerCS extends IPollingManager {
+  syncMySegments(matchingKey: string, retryWithBackoff?: boolean): Promise<any>
   add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): IMySegmentsSyncTask
   remove(matchingKey: string): void;
   get(matchingKey: string): IMySegmentsSyncTask | undefined
