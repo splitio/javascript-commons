@@ -43,9 +43,10 @@ export function pollingManagerSSFactory(
 
       // Stop periodic fetching (polling)
       stop() {
-        log.info(POLLING_STOP);
-
-        if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
+        if (definitionsSyncTask.isRunning()) {
+          log.info(POLLING_STOP);
+          definitionsSyncTask.stop();
+        }
         if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
       },
 

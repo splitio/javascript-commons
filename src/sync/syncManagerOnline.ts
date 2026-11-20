@@ -10,7 +10,6 @@ import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 import { SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
-import { usesSegmentsSync } from '../storages/AbstractDefinitionsCacheSync';
 
 /**
  * Online SyncManager factory.
@@ -135,7 +134,7 @@ export function syncManagerOnlineFactory(
 
         // stop syncing
         if (pushManager) pushManager.stop();
-        if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
+        if (pollingManager) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
         submitterManager.stop();
@@ -154,39 +153,14 @@ export function syncManagerOnlineFactory(
       shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync) {
         if (!pollingManager) return;
 
-        const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
-        if (syncEnabled && pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
-
-        if (running) {
-          if (syncEnabled) {
-            if (pushManager) {
-              if (pollingManager.isRunning()) {
-                // if doing polling, we must start the periodic fetch of data
-                if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-              } else {
-                // if not polling, we must execute the sync task for the initial fetch
-                // of segments since `syncAll` was already executed when starting the main client
-                mySegmentsSyncTask.execute();
-              }
-            } else {
-              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-            }
-          } else {
-            if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
-          }
-        }
+        const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage, running);
+        if (pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
 
         return {
           stop() {
-            // check in case `client.destroy()` has been invoked more than once for the same client
-            const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);
-            if (mySegmentsSyncTask) {
-              // stop syncing
-              if (pushManager) pushManager.remove(matchingKey);
-              if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
-
-              (pollingManager as IPollingManagerCS).remove(matchingKey);
-            }
+            // stop syncing
+            if (pushManager) pushManager.remove(matchingKey);
+            (pollingManager as IPollingManagerCS).remove(matchingKey);
           },
           flush() { return Promise.resolve(); }
         };

@@ -59,7 +59,12 @@ export function pollingManagerCSFactory(
       }
     });
 
-    function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync) {
+    /**
+     * Creates and registers the MySegmentsSyncTask of a client.
+     * @param startSync - true if the SyncManager is running, to start syncing the client memberships: periodic fetch if polling,
+     * initial fetch if streaming or if synchronization is disabled (single sync).
+     */
+    function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync, startSync?: boolean) {
       const mySegmentsSyncTask = mySegmentsSyncTaskFactory(serviceApi.fetchMemberships, storage, readiness, settings, matchingKey);
 
       // smart ready
@@ -70,6 +75,27 @@ export function pollingManagerCSFactory(
       else readiness.definitions.once(SDK_DEFINITIONS_ARRIVED, smartReady);
 
       mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
+
+      if (startSync) {
+        if (settings.sync.enabled) {
+          if (settings.streamingEnabled) {
+            if (definitionsSyncTask.isRunning()) {
+              // if polling, start the periodic fetch
+              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
+            } else {
+              // if not polling, execute the initial fetch of segments
+              // since `syncAll` was already executed when starting the main client
+              mySegmentsSyncTask.execute();
+            }
+          } else {
+            if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
+          }
+        } else {
+          // if single sync, execute the initial fetch
+          if (!readiness.isReady()) mySegmentsSyncTask.execute();
+        }
+      }
+
       return mySegmentsSyncTask;
     }
 
@@ -87,9 +113,10 @@ export function pollingManagerCSFactory(
 
       // Stop periodic fetching (polling)
       stop() {
-        log.info(POLLING_STOP);
-
-        if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
+        if (definitionsSyncTask.isRunning()) {
+          log.info(POLLING_STOP);
+          definitionsSyncTask.stop();
+        }
         stopMySegmentsSyncTasks();
       },
 
@@ -108,7 +135,10 @@ export function pollingManagerCSFactory(
       // Support for handling mySegments sync of multiple clients
       add,
 
+      // Stops syncing the client memberships and unregisters its MySegmentsSyncTask. No-op if not registered
       remove(matchingKey: string) {
+        const mySegmentsSyncTask = mySegmentsSyncTasks[matchingKey];
+        if (mySegmentsSyncTask && mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
         delete mySegmentsSyncTasks[matchingKey];
       },
 

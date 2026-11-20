@@ -48,7 +48,7 @@ export interface IPollingManager extends ITask {
  * PollingManager for client-side with support for multiple clients
  */
 export interface IPollingManagerCS extends IPollingManager {
-  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync): IMySegmentsSyncTask
+  add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync, startSync?: boolean): IMySegmentsSyncTask
   remove(matchingKey: string): void;
   get(matchingKey: string): IMySegmentsSyncTask | undefined
 }
