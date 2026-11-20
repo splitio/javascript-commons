@@ -5,6 +5,7 @@ import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logg
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { segmentChangesFetcherFactory } from './fetchers/segmentChangesFetcher';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
+import { retrierFactory } from './retrier';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -22,6 +23,9 @@ export function pollingManagerSSFactory(
     const segmentChangesFetcher = segmentFetcherFactory(params);
     const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
     const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, segmentsSyncTask);
+
+    const definitionsRetrier = retrierFactory(() => definitionsSyncTask.execute());
+    const segmentsRetrier = retrierFactory(() => segmentsSyncTask.execute());
 
     return {
       definitionsSyncTask,
@@ -47,13 +51,20 @@ export function pollingManagerSSFactory(
 
         if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
         if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
+
+        // cancel pending retries of `syncAll`
+        definitionsRetrier.cancel();
+        segmentsRetrier.cancel();
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
-      syncAll() {
+      syncAll(retryWithBackoff) {
         // fetch definitions and segments. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
+        if (retryWithBackoff) {
+          return definitionsRetrier.run().then((success) => success && segmentsRetrier.run());
+        }
         return definitionsSyncTask.execute().then(() => {
           return segmentsSyncTask.execute();
         });
