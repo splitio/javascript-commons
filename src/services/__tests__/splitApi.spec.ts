@@ -55,20 +55,25 @@ describe('serviceApi', () => {
     assertHeaders(settings, headers);
     expect(url).toBe('configs/v1/segmentChanges/segmentName?since=-1&till=100');
 
+    serviceApi.fetchConfigsMemberships('user/Key%', false, 110);
+    [url, { headers }] = fetchMock.mock.calls[6];
+    assertHeaders(settings, headers);
+    expect(url).toBe('configs/v1/memberships/user%2FKey%25?till=110');
+
     serviceApi.postEventsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[6][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
 
     serviceApi.postTestImpressionsBulk('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[7][1].headers);
-    expect(fetchMock.mock.calls[7][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
+    assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
+    expect(fetchMock.mock.calls[8][1].headers['SplitSDKImpressionsMode']).toBe(settings.sync.impressionsMode);
 
     serviceApi.postTestImpressionsCount('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[8][1].headers);
+    assertHeaders(settings, fetchMock.mock.calls[9][1].headers);
 
     serviceApi.postMetricsConfig('fake-body');
-    assertHeaders(settings, fetchMock.mock.calls[9][1].headers);
-    serviceApi.postMetricsUsage('fake-body');
     assertHeaders(settings, fetchMock.mock.calls[10][1].headers);
+    serviceApi.postMetricsUsage('fake-body');
+    assertHeaders(settings, fetchMock.mock.calls[11][1].headers);
 
     expect(telemetryTrackerMock.trackHttp).toBeCalledTimes(9);
 

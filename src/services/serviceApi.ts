@@ -94,6 +94,11 @@ export function serviceApiFactory(
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined, telemetryTracker.trackHttp(MEMBERSHIPS));
     },
 
+    fetchConfigsMemberships(userMatchingKey: string, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/api/v1/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
+      return secureSplitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+    },
+
     /**
      * Post events.
      *

@@ -84,6 +84,7 @@ export interface IServiceApi {
 	fetchConfigs: IFetchDefinitionChanges
 	fetchConfigsSegmentChanges: IFetchSegmentChanges
 	fetchMemberships: IFetchMemberships
+	fetchConfigsMemberships: IFetchMemberships
 	postEventsBulk: IPostEventsBulk
 	postUniqueKeysBulkCs: IPostUniqueKeysBulkCs
 	postUniqueKeysBulkSs: IPostUniqueKeysBulkSs

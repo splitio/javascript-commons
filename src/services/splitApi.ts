@@ -160,6 +160,11 @@ export function splitApiFactory(
       return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
     },
 
+    fetchConfigsMemberships(userMatchingKey: string, noCache?: boolean, till?: number) {
+      const url = `${urls.configs}/v1/memberships/${encodeURIComponent(userMatchingKey)}${till ? '?till=' + till : ''}`;
+      return splitHttpClient(url, noCache ? noCacheHeaderOptions : undefined);
+    },
+
     stop() {
       // no-op
     }
