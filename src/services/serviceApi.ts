@@ -39,12 +39,12 @@ export function serviceApiFactory(
   let initialAuth = true;
 
   return {
-    fetchAuth() {
+    fetchAuth(userKeys?: string[]) {
       // Guard condition to avoid invalidating the cached credential on the first pushManager authentication
       if (initialAuth) initialAuth = false;
       else authProvider.invalidate();
 
-      return authProvider.credential();
+      return authProvider.credential(userKeys);
     },
 
     // @TODO throw errors if health check requests fail, to log them in the Synchronizer

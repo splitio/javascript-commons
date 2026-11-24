@@ -280,4 +280,76 @@ describe('authProviderFactory', () => {
     const result = await promise;
     expect(result).toEqual(staleCred);
   });
+
+  describe('user keys (`key` query params)', () => {
+    const BASE_URL = 'https://auth.split.io/api/api/v3/auth?capabilities=config,aiconfig';
+    const urlOfCall = (splitHttpClient: jest.Mock, i: number) => (splitHttpClient.mock.calls[i] as any[])[0];
+
+    test('no `key` params when user keys are not provided (server-side)', async () => {
+      const splitHttpClient = mockSplitHttpClient();
+      const provider = authProviderFactory(mockSettings, splitHttpClient, mockTelemetryTracker);
+
+      await provider.credential();
+      expect(urlOfCall(splitHttpClient, 0)).toBe(BASE_URL);
+    });
+
+    test('sends one `key` param per unique user key, sorted and URI-encoded', async () => {
+      const splitHttpClient = mockSplitHttpClient();
+      const provider = authProviderFactory(mockSettings, splitHttpClient, mockTelemetryTracker);
+
+      await provider.credential(['user/2', 'user%1', 'user/2']);
+      expect(urlOfCall(splitHttpClient, 0)).toBe(BASE_URL + '&key=user%251&key=user%2F2');
+    });
+
+    test('reuses cached credential for the same set of keys (in any order) and for calls without keys', async () => {
+      const splitHttpClient = mockSplitHttpClient();
+      const provider = authProviderFactory(mockSettings, splitHttpClient, mockTelemetryTracker);
+
+      const cred = await provider.credential(['a', 'b']);
+      expect(await provider.credential(['b', 'a'])).toBe(cred);
+      expect(await provider.credential()).toBe(cred);
+      expect(splitHttpClient).toHaveBeenCalledTimes(1);
+    });
+
+    test('refetches when the set of keys changes, and later calls without keys use the latest keys', async () => {
+      const splitHttpClient = mockSplitHttpClient();
+      const provider = authProviderFactory(mockSettings, splitHttpClient, mockTelemetryTracker);
+
+      // e.g., a secure HTTP request before the first SSE authentication
+      await provider.credential();
+      await provider.credential(['a']);
+      await provider.credential(['a', 'b']);
+      expect(splitHttpClient).toHaveBeenCalledTimes(3);
+      expect(urlOfCall(splitHttpClient, 1)).toBe(BASE_URL + '&key=a');
+      expect(urlOfCall(splitHttpClient, 2)).toBe(BASE_URL + '&key=a&key=b');
+
+      provider.invalidate();
+      await provider.credential();
+      expect(urlOfCall(splitHttpClient, 3)).toBe(BASE_URL + '&key=a&key=b');
+    });
+
+    test('waits for an in-flight fetch for different keys, and then fetches for the new keys', async () => {
+      const resolvers: Array<(res: any) => void> = [];
+      const splitHttpClient = jest.fn(() => new Promise(resolve => { resolvers.push(resolve); }));
+      const provider = authProviderFactory(mockSettings, splitHttpClient as any, mockTelemetryTracker);
+      const okResponse = () => ({ ok: true, status: 200, json: () => Promise.resolve(makeJwtCredential()), text: () => Promise.resolve('') });
+
+      const promiseA = provider.credential(['a']);
+      const promiseAB = provider.credential(['a', 'b']);
+      const promiseNoKeys = provider.credential(); // uses latest keys: ['a', 'b']
+      expect(splitHttpClient).toHaveBeenCalledTimes(1);
+
+      resolvers[0](okResponse());
+      const credA = await promiseA;
+      await new Promise(r => setTimeout(r, 0));
+      expect(splitHttpClient).toHaveBeenCalledTimes(2);
+      expect(urlOfCall(splitHttpClient as any, 1)).toBe(BASE_URL + '&key=a&key=b');
+
+      resolvers[1](okResponse());
+      const [credAB, credNoKeys] = await Promise.all([promiseAB, promiseNoKeys]);
+      expect(credAB).not.toBe(credA);
+      expect(credNoKeys).toBe(credAB);
+      expect(splitHttpClient).toHaveBeenCalledTimes(2);
+    });
+  });
 });
