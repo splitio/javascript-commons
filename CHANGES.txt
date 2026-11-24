@@ -1,3 +1,7 @@
+3.3.0 (Unpublished)
+ - Added /api/v1/memberships endpoint of configs subdomain.
+ - Update single sync mode to retry with backoff.
+ 
 3.2.0 (October 30, 2026)
  - Added support for streaming in the Configs SDK, handling CONFIG_UPDATE notifications. Unlike feature flag notifications, the previous change number of CONFIG_UPDATE and RB_SEGMENT_UPDATE notifications are scoped to the referenced entity rather than to the environment, and so instant updates are applied without updating the storage change number.
  - Added support for AI configs.
