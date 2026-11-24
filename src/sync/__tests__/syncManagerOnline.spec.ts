@@ -36,7 +36,7 @@ const pollingManagerMock = {
   stop: jest.fn(),
   isRunning: jest.fn(),
   add: jest.fn(() => { return { isRunning: () => true }; }),
-  get: jest.fn()
+  remove: jest.fn()
 };
 
 const pushManagerMock = {
@@ -139,10 +139,12 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   if (!pollingSyncManagerShared) throw new Error('pollingSyncManagerShared should exist');
 
   expect(pollingManagerMock.start).not.toBeCalled();
+  expect(pollingManagerMock.add).lastCalledWith('sharedKey', readinessManagerMock, storageManagerMock, false);
 
   pollingSyncManagerShared.stop();
 
   expect(pollingManagerMock.start).not.toBeCalled();
+  expect(pollingManagerMock.remove).lastCalledWith('sharedKey');
 
   pollingSyncManagerShared.stop();
 

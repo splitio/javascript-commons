@@ -25,6 +25,10 @@ describe('TELEMETRY CACHE IN REDIS', () => {
     await connection.del(initKey);
   });
 
+  afterEach(async () => {
+    await connection.disconnect();
+  });
+
   test('TELEMETRY CACHE IN REDIS', async () => {
 
     // recordException

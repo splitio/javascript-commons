@@ -2,7 +2,6 @@
 .DS_Store
 **/npm-debug.log
 /.idea
-/.sonar
 **/node_modules
 /.vscode
 
