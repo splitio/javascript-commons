@@ -2,16 +2,15 @@ import { IStorageSync } from '../../../storages/types';
 import { IReadinessManager } from '../../../readiness/types';
 import { syncTaskFactory } from '../../syncTask';
 import { IMySegmentsSyncTask } from '../types';
-import { IFetchMemberships } from '../../../services/types';
-import { mySegmentsFetcherFactory } from '../fetchers/mySegmentsFetcher';
 import { ISettings } from '../../../types';
 import { mySegmentsUpdaterFactory } from '../updaters/mySegmentsUpdater';
+import { IMySegmentsFetcher } from '../fetchers/types';
 
 /**
  * Creates a sync task that periodically executes a `mySegmentsUpdater` task
  */
 export function mySegmentsSyncTaskFactory(
-  fetchMemberships: IFetchMemberships,
+  mySegmentsFetcher: IMySegmentsFetcher,
   storage: IStorageSync,
   readiness: IReadinessManager,
   settings: ISettings,
@@ -21,7 +20,7 @@ export function mySegmentsSyncTaskFactory(
     settings.log,
     mySegmentsUpdaterFactory(
       settings.log,
-      mySegmentsFetcherFactory(fetchMemberships),
+      mySegmentsFetcher,
       storage,
       readiness.segments,
       settings.startup.requestTimeoutBeforeReady,

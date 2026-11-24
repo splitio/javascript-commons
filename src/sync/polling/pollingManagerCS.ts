@@ -12,6 +12,7 @@ import { usesSegmentsSync } from '../../storages/AbstractDefinitionsCacheSync';
 import { SdkUpdateMetadata } from '../../../types/splitio';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
 import { Backoff } from '../../utils/Backoff';
+import { mySegmentsFetcherFactory } from './fetchers/mySegmentsFetcher';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -19,14 +20,16 @@ import { Backoff } from '../../utils/Backoff';
  */
 export function pollingManagerCSFactory(
   definitionFetcherFactory = splitChangesFetcherFactory,
+  mySegmentFetcherFactory = (params: ISdkFactoryContextSync) => mySegmentsFetcherFactory(params.serviceApi.fetchMemberships)
 ): (params: ISdkFactoryContextSync) => IPollingManagerCS {
 
   return function (params: ISdkFactoryContextSync): IPollingManagerCS {
-    const { serviceApi, storage, readiness, settings } = params;
+    const { storage, readiness, settings } = params;
     const log = settings.log;
 
     const definitionChangesFetcher = definitionFetcherFactory(params);
     const definitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings);
+    const mySegmentsFetcher = mySegmentFetcherFactory(params);
 
     // Map of matching keys to their corresponding MySegmentsSyncTask.
     const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
@@ -69,7 +72,7 @@ export function pollingManagerCSFactory(
      * initial fetch if streaming, or initial fetch retried with backoff if synchronization is disabled (single sync).
      */
     function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync, startSync?: boolean) {
-      const mySegmentsSyncTask = mySegmentsSyncTaskFactory(serviceApi.fetchMemberships, storage, readiness, settings, matchingKey);
+      const mySegmentsSyncTask = mySegmentsSyncTaskFactory(mySegmentsFetcher, storage, readiness, settings, matchingKey);
 
       // smart ready
       function smartReady(metadata: SdkUpdateMetadata) {
