@@ -11,6 +11,7 @@ import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { usesSegmentsSync } from '../../storages/AbstractDefinitionsCacheSync';
 import { SdkUpdateMetadata } from '../../../types/splitio';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
+import { Backoff } from '../../utils/Backoff';
 
 /**
  * Expose start / stop mechanism for polling data from services.
@@ -29,6 +30,9 @@ export function pollingManagerCSFactory(
 
     // Map of matching keys to their corresponding MySegmentsSyncTask.
     const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
+    // Map of matching keys to the backoff of their MySegmentsSyncTask, used by `syncAll(true)`.
+    const mySegmentsBackoffs: Record<string, Backoff> = {};
+    const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
 
     const matchingKey = getMatching(settings.core.key);
     const mySegmentsSyncTask = add(matchingKey, readiness, storage);
@@ -62,7 +66,7 @@ export function pollingManagerCSFactory(
     /**
      * Creates and registers the MySegmentsSyncTask of a client.
      * @param startSync - true if the SyncManager is running, to start syncing the client memberships: periodic fetch if polling,
-     * initial fetch if streaming or if synchronization is disabled (single sync).
+     * initial fetch if streaming, or initial fetch retried with backoff if synchronization is disabled (single sync).
      */
     function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync, startSync?: boolean) {
       const mySegmentsSyncTask = mySegmentsSyncTaskFactory(serviceApi.fetchMemberships, storage, readiness, settings, matchingKey);
@@ -91,8 +95,12 @@ export function pollingManagerCSFactory(
             if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
           }
         } else {
-          // if single sync, execute the initial fetch
-          if (!readiness.isReady()) mySegmentsSyncTask.execute();
+          // if single sync, execute the initial fetch with backoff
+          if (!readiness.isReady()) {
+            const mySegmentsBackoff = new Backoff(() => mySegmentsSyncTask.execute());
+            mySegmentsBackoffs[matchingKey] = mySegmentsBackoff;
+            mySegmentsBackoff.callUntilSuccess();
+          }
         }
       }
 
@@ -118,16 +126,20 @@ export function pollingManagerCSFactory(
           definitionsSyncTask.stop();
         }
         stopMySegmentsSyncTasks();
+
+        // halt the retries of `syncAll`
+        definitionsBackoff.stop();
+        forOwn(mySegmentsBackoffs, (backoff) => backoff.stop());
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
       // fetch definitions and segments
-      syncAll() {
-        const promises = [definitionsSyncTask.execute()];
-        forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask) => {
-          promises.push(mySegmentsSyncTask.execute());
+      syncAll(retryWithBackoff) {
+        const promises = [retryWithBackoff ? definitionsBackoff.callUntilSuccess() : definitionsSyncTask.execute()];
+        forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask, matchingKey) => {
+          promises.push(retryWithBackoff ? mySegmentsBackoffs[matchingKey].callUntilSuccess() : mySegmentsSyncTask.execute());
         });
         return Promise.all(promises);
       },
@@ -140,6 +152,10 @@ export function pollingManagerCSFactory(
         const mySegmentsSyncTask = mySegmentsSyncTasks[matchingKey];
         if (mySegmentsSyncTask && mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
         delete mySegmentsSyncTasks[matchingKey];
+
+        const mySegmentsBackoff = mySegmentsBackoffs[matchingKey];
+        if (mySegmentsBackoff) mySegmentsBackoff.stop();
+        delete mySegmentsBackoffs[matchingKey];
       },
 
       get(matchingKey: string) {

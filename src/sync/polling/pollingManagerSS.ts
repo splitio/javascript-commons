@@ -5,6 +5,7 @@ import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logg
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { segmentChangesFetcherFactory } from './fetchers/segmentChangesFetcher';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
+import { Backoff } from '../../utils/Backoff';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -22,6 +23,10 @@ export function pollingManagerSSFactory(
     const segmentChangesFetcher = segmentFetcherFactory(params);
     const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
     const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, segmentsSyncTask);
+
+    // Used by `syncAll(true)` to retry the fetch of definitions and segments
+    const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
+    const segmentsBackoff = new Backoff(() => segmentsSyncTask.execute());
 
     return {
       definitionsSyncTask,
@@ -48,13 +53,22 @@ export function pollingManagerSSFactory(
           definitionsSyncTask.stop();
         }
         if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
+
+        // halt the retries of `syncAll`
+        definitionsBackoff.stop();
+        segmentsBackoff.stop();
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
-      syncAll() {
+      syncAll(retryWithBackoff) {
         // fetch definitions and segments. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
+        if (retryWithBackoff) {
+          return definitionsBackoff.callUntilSuccess().then((success) => {
+            success && segmentsBackoff.callUntilSuccess();
+          });
+        }
         return definitionsSyncTask.execute().then(() => {
           return segmentsSyncTask.execute();
         });

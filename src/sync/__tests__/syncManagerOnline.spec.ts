@@ -117,8 +117,10 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
+  expect(pollingManagerMock.syncAll).lastCalledWith(true); // retries with backoff, since there is no polling
 
   syncManager.stop();
+  expect(pollingManagerMock.stop).toBeCalled(); // cancels pending retries
   await syncManager.start();
 
   expect(pollingManagerMock.start).not.toBeCalled();
@@ -139,9 +141,10 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   if (!pollingSyncManagerShared) throw new Error('pollingSyncManagerShared should exist');
 
   expect(pollingManagerMock.start).not.toBeCalled();
-  expect(pollingManagerMock.add).lastCalledWith('sharedKey', readinessManagerMock, storageManagerMock, false);
+  expect(pollingManagerMock.add).lastCalledWith('sharedKey', readinessManagerMock, storageManagerMock, false); // SyncManager is not running
 
   pollingSyncManagerShared.stop();
+  expect(pollingManagerMock.remove).lastCalledWith('sharedKey');
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.remove).lastCalledWith('sharedKey');
