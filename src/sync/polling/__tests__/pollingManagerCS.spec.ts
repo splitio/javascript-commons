@@ -1,5 +1,6 @@
 import { pollingManagerCSFactory } from '../pollingManagerCS';
 import { mySegmentsSyncTaskFactory } from '../syncTasks/mySegmentsSyncTask';
+import { definitionsSyncTaskFactory } from '../syncTasks/definitionsSyncTask';
 import { mySegmentsFetcherFactory } from '../fetchers/mySegmentsFetcher';
 import { syncTaskFactory } from '../../__tests__/syncTask.mock';
 import { loggerMock } from '../../../logger/__tests__/sdkLogger.mock';
@@ -54,5 +55,45 @@ describe('pollingManagerCS', () => {
 
     assertMySegmentsFetcher(params.serviceApi.fetchConfigsMemberships);
     expect(params.serviceApi.fetchMemberships).not.toHaveBeenCalled();
+  });
+
+  test('syncAll(true) retries with backoff the memberships of clients added without `startSync` (single sync)', async () => {
+    const params = createParams();
+    params.settings.sync.enabled = false;
+    const pollingManager = pollingManagerCSFactory()(params);
+    pollingManager.add('user2', params.readiness, params.storage); // added before the SyncManager starts
+
+    const mySegmentsSyncTasks = (mySegmentsSyncTaskFactory as jest.Mock).mock.results.map(result => result.value);
+    const definitionsSyncTask = (definitionsSyncTaskFactory as jest.Mock).mock.results.slice(-1)[0].value;
+    [definitionsSyncTask, ...mySegmentsSyncTasks].forEach(syncTask => syncTask.execute.mockResolvedValue(true));
+
+    await pollingManager.syncAll(true);
+
+    expect(mySegmentsSyncTasks.length).toBe(2); // default client (user1) and user2
+    mySegmentsSyncTasks.forEach(mySegmentsSyncTask => expect(mySegmentsSyncTask.execute).toHaveBeenCalledTimes(1));
+
+    pollingManager.stop();
+  });
+
+  test('single sync of a client added while running, before syncAll(true), executes its memberships fetch once', async () => {
+    // sync tasks whose execution succeeds
+    const succeedingSyncTask = () => { const syncTask = syncTaskFactory(); syncTask.execute.mockResolvedValue(true); return syncTask; };
+    (definitionsSyncTaskFactory as jest.Mock).mockImplementationOnce(succeedingSyncTask);
+    (mySegmentsSyncTaskFactory as jest.Mock).mockImplementation(succeedingSyncTask);
+
+    const params = createParams();
+    params.settings.sync.enabled = false;
+    const pollingManager = pollingManagerCSFactory()(params);
+
+    // the SyncManager is running (`startSync`), but has not called `syncAll(true)` yet
+    pollingManager.add('user2', params.readiness, params.storage, true);
+    await pollingManager.syncAll(true);
+
+    const mySegmentsSyncTasks = (mySegmentsSyncTaskFactory as jest.Mock).mock.results.map(result => result.value);
+    expect(mySegmentsSyncTasks.length).toBe(2); // default client (user1) and user2
+    mySegmentsSyncTasks.forEach(mySegmentsSyncTask => expect(mySegmentsSyncTask.execute).toHaveBeenCalledTimes(1));
+
+    pollingManager.stop();
+    (mySegmentsSyncTaskFactory as jest.Mock).mockImplementation(() => syncTaskFactory());
   });
 });

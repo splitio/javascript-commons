@@ -37,6 +37,12 @@ export function pollingManagerCSFactory(
     const mySegmentsBackoffs: Record<string, Backoff> = {};
     const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
 
+    // Returns the backoff of the given MySegmentsSyncTask, creating it on demand: a client added without `startSync`
+    // (e.g., the default client, added before the SyncManager starts) has none until `syncAll(true)` is called.
+    function getMySegmentsBackoff(matchingKey: string, mySegmentsSyncTask: IMySegmentsSyncTask) {
+      return mySegmentsBackoffs[matchingKey] || (mySegmentsBackoffs[matchingKey] = new Backoff(() => mySegmentsSyncTask.execute()));
+    }
+
     const matchingKey = getMatching(settings.core.key);
     const mySegmentsSyncTask = add(matchingKey, readiness, storage);
 
@@ -100,9 +106,8 @@ export function pollingManagerCSFactory(
         } else {
           // if single sync, execute the initial fetch with backoff
           if (!readiness.isReady()) {
-            const mySegmentsBackoff = new Backoff(() => mySegmentsSyncTask.execute());
-            mySegmentsBackoffs[matchingKey] = mySegmentsBackoff;
-            mySegmentsBackoff.callUntilSuccess();
+            // `syncAll(true)` might also call it, if the client is added before it runs: the backoff runs only once
+            getMySegmentsBackoff(matchingKey, mySegmentsSyncTask).callUntilSuccess();
           }
         }
       }
@@ -142,7 +147,7 @@ export function pollingManagerCSFactory(
       syncAll(retryWithBackoff) {
         const promises = [retryWithBackoff ? definitionsBackoff.callUntilSuccess() : definitionsSyncTask.execute()];
         forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask, matchingKey) => {
-          promises.push(retryWithBackoff ? mySegmentsBackoffs[matchingKey].callUntilSuccess() : mySegmentsSyncTask.execute());
+          promises.push(retryWithBackoff ? getMySegmentsBackoff(matchingKey, mySegmentsSyncTask).callUntilSuccess() : mySegmentsSyncTask.execute());
         });
         return Promise.all(promises);
       },

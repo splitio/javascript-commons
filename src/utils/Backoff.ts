@@ -13,7 +13,7 @@ export class Backoff {
   cb: (...args: any[]) => any;
   timeoutID: ReturnType<typeof setTimeout> | undefined;
   pending: { resolve: (value: any) => void, reject: (error: any) => void } | undefined;
-  stopped: boolean | undefined;
+  untilSuccess: Promise<boolean> | undefined;
 
   /**
    * Schedule function calls with exponential backoff.
@@ -67,27 +67,32 @@ export class Backoff {
   /**
    * Call `cb`, and call it again with exponential backoff until it resolves with `true`, or `stop` is called.
    * `cb` must return a promise that resolves with a boolean value.
+   * While in progress, calling it again returns the same promise (no new calls to `cb`). Once succeeded or stopped, it starts a new run.
    * @returns a promise that resolves with `true` when `cb` succeeds, or `false` if `stop` is called before.
    */
   callUntilSuccess(): Promise<boolean> {
-    this.stopped = false;
+    if (this.untilSuccess) return this.untilSuccess;
 
+    let untilSuccess: Promise<boolean>;
     const attempt = (): Promise<boolean> => this.cb().then((success: boolean) => {
+      // stopped: neither retry nor reset, even if a new run was started after it
+      if (this.untilSuccess !== untilSuccess) return false;
       if (success) {
+        this.untilSuccess = undefined;
         this.reset();
         return true;
       }
-      return this.stopped ? false : this.scheduleCallAsync(attempt);
+      return this.scheduleCallAsync(attempt);
     });
 
-    return attempt();
+    return untilSuccess = this.untilSuccess = attempt();
   }
 
   /**
    * Stop the `callUntilSuccess` retries, resolving its promise with `false`.
    */
   stop() {
-    this.stopped = true;
+    this.untilSuccess = undefined;
     this.reset({ value: false });
   }
 
