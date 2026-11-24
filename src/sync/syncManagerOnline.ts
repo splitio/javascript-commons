@@ -117,7 +117,7 @@ export function syncManagerOnlineFactory(
               }
             } else {
               if (startFirstTime) {
-                pollingManager.syncAll();
+                pollingManager.syncAll(true);
               }
             }
           }
