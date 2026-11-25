@@ -58,10 +58,9 @@ export function syncManagerOnlineFactory(
     function stopPollingAndSyncAll() {
       log.info(SYNC_STOP_POLLING);
       // if polling, stop
-      if (pollingManager!.isRunning()) {
-        pollingManager!.stop();
-        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
-      }
+      if (pollingManager!.isRunning()) telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
+      // stop polling and halt pending retries, so that `syncAll` fetches immediately
+      pollingManager!.stop();
 
       // fetch splits and segments. There is no need to catch this promise (it is always resolved)
       pollingManager!.syncAll();
@@ -104,21 +103,13 @@ export function syncManagerOnlineFactory(
           // start syncing splits and segments
           if (pollingManager) {
 
-            // If synchronization is disabled pushManager and pollingManager should not start
-            if (syncEnabled) {
-              if (pushManager) {
-                // Doesn't call `syncAll` when the syncManager is resuming
-                if (startFirstTime) {
-                  pollingManager.syncAll();
-                }
-                pushManager.start();
-              } else {
-                pollingManager.start();
-              }
+            // If synchronization is enabled without streaming, start polling
+            if (syncEnabled && !pushManager) {
+              pollingManager.start();
             } else {
-              if (startFirstTime) {
-                pollingManager.syncAll(true);
-              }
+              // If streaming or single sync, call `syncAll` only the first time, not when the syncManager is resuming
+              if (startFirstTime) pollingManager.syncAll();
+              if (pushManager) pushManager.start();
             }
           }
 

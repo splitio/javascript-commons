@@ -3,6 +3,7 @@ import { syncTaskFactory } from './syncTask.mock';
 import { syncManagerOnlineFactory } from '../syncManagerOnline';
 import { IReadinessManager } from '../../readiness/types';
 import { SDK_DEFINITIONS_CACHE_LOADED } from '../../readiness/constants';
+import { PUSH_SUBSYSTEM_UP } from '../streaming/constants';
 
 jest.mock('../submitters/submitterManager', () => {
   return {
@@ -117,7 +118,7 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
 
   expect(pollingManagerMock.start).not.toBeCalled();
   expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
-  expect(pollingManagerMock.syncAll).lastCalledWith(true); // retries with backoff, since there is no polling
+  expect(pollingManagerMock.syncAll).lastCalledWith(); // no arguments: it always retries with backoff
 
   syncManager.stop();
   expect(pollingManagerMock.stop).toBeCalled(); // cancels pending retries
@@ -191,6 +192,15 @@ test('syncManagerOnline should syncAll a single time when sync is disabled', asy
   await testSyncManager.start();
 
   expect(pushManagerMock.start).toBeCalled();
+
+  // when streaming is (re)established, polling and pending retries are stopped, before calling `syncAll`
+  const onPushSubsystemUp = (pushManagerMock.on.mock.calls as any[]).find(([event]) => event === PUSH_SUBSYSTEM_UP)[1];
+  pollingManagerMock.stop.mockClear();
+  pollingManagerMock.syncAll.mockClear();
+  onPushSubsystemUp();
+  expect(pollingManagerMock.stop).toBeCalledTimes(1);
+  expect(pollingManagerMock.syncAll).toBeCalledTimes(1);
+  expect(pollingManagerMock.stop.mock.invocationCallOrder[0]).toBeLessThan(pollingManagerMock.syncAll.mock.invocationCallOrder[0]);
 
   testSyncManager.stop();
 
