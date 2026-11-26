@@ -5,6 +5,7 @@ import { POLLING_START, POLLING_STOP, LOG_PREFIX_SYNC_POLLING } from '../../logg
 import { ISdkFactoryContextSync } from '../../sdkFactory/types';
 import { segmentChangesFetcherFactory } from './fetchers/segmentChangesFetcher';
 import { splitChangesFetcherFactory } from './fetchers/splitChangesFetcher';
+import { Backoff } from '../../utils/Backoff';
 
 /**
  * Expose start / stop mechanism for pulling data from services.
@@ -23,6 +24,16 @@ export function pollingManagerSSFactory(
     const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
     const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, segmentsSyncTask);
 
+    // Used by `syncAll` to retry the fetch of definitions and segments
+    const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
+    const segmentsBackoff = new Backoff(() => segmentsSyncTask.execute());
+
+    // Halts the retries of `syncAll`
+    function stopBackoffs() {
+      definitionsBackoff.stop();
+      segmentsBackoff.stop();
+    }
+
     return {
       definitionsSyncTask,
       segmentsSyncTask,
@@ -30,6 +41,7 @@ export function pollingManagerSSFactory(
       // Start periodic fetching (polling)
       start() {
         log.info(POLLING_START);
+        stopBackoffs(); // polling takes over the retries
         log.debug(LOG_PREFIX_SYNC_POLLING + `${definitionChangesFetcher.type} will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
         log.debug(LOG_PREFIX_SYNC_POLLING + `segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
@@ -43,19 +55,21 @@ export function pollingManagerSSFactory(
 
       // Stop periodic fetching (polling)
       stop() {
-        log.info(POLLING_STOP);
-
-        if (definitionsSyncTask.isRunning()) definitionsSyncTask.stop();
+        if (definitionsSyncTask.isRunning()) {
+          log.info(POLLING_STOP);
+          definitionsSyncTask.stop();
+        }
         if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
+        stopBackoffs();
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
+      // fetch definitions and then segments, retrying with backoff. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
       syncAll() {
-        // fetch definitions and segments. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
-        return definitionsSyncTask.execute().then(() => {
-          return segmentsSyncTask.execute();
+        return definitionsBackoff.callUntilSuccess().then((success) => {
+          return success && segmentsBackoff.callUntilSuccess();
         });
       }
     };

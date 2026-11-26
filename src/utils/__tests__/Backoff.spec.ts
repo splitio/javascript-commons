@@ -102,4 +102,102 @@ describe('Backoff', () => {
     expect(result).toBe('timeout');
     expect(cb).not.toHaveBeenCalled();
   });
+  test('callUntilSuccess calls cb until it resolves with true, and resets attempts', async () => {
+    const cb = jest.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    const backoff = new Backoff(cb, 10, 10);
+
+    expect(await backoff.callUntilSuccess()).toBe(true);
+    expect(cb).toHaveBeenCalledTimes(3);
+    expect(backoff.attempts).toBe(0);
+  });
+
+  test('callUntilSuccess is resolved with false by stop, without invoking cb again', async () => {
+    const cb = jest.fn(() => Promise.resolve(false));
+    const backoff = new Backoff(cb, 10, 10);
+
+    const promise = backoff.callUntilSuccess();
+    await new Promise(r => setTimeout(r, 0)); // first call fails and a retry is scheduled
+    backoff.stop();
+
+    expect(await promise).toBe(false);
+    await new Promise(r => setTimeout(r, 50));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test('callUntilSuccess does not retry if stop is called while cb is in progress', async () => {
+    let resolveCb: (value: boolean) => void = () => { };
+    const cb = jest.fn(() => new Promise<boolean>(r => { resolveCb = r; }));
+    const backoff = new Backoff(cb, 10, 10);
+
+    const promise = backoff.callUntilSuccess();
+    backoff.stop();
+    resolveCb(false);
+
+    expect(await promise).toBe(false);
+    await new Promise(r => setTimeout(r, 50));
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  test('callUntilSuccess returns the same promise if called again while in progress, and starts a new run once succeeded', async () => {
+    const cb = jest.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true);
+    const backoff = new Backoff(cb, 10, 10);
+
+    const promise = backoff.callUntilSuccess();
+    expect(backoff.callUntilSuccess()).toBe(promise); // in progress
+    expect(await promise).toBe(true);
+    expect(cb).toHaveBeenCalledTimes(2);
+
+    const newPromise = backoff.callUntilSuccess(); // succeeded: new run
+    expect(newPromise).not.toBe(promise);
+    expect(await newPromise).toBe(true);
+    expect(cb).toHaveBeenCalledTimes(3);
+  });
+
+  test('callUntilSuccess starts a new run if called after stop, and the stopped run does not retry', async () => {
+    let resolveCb: (value: boolean) => void = () => { };
+    const cb = jest.fn(() => new Promise<boolean>(r => { resolveCb = r; }));
+    const backoff = new Backoff(cb, 10, 10);
+
+    const stoppedPromise = backoff.callUntilSuccess();
+    const resolveStoppedCb = resolveCb;
+    backoff.stop();
+
+    const promise = backoff.callUntilSuccess();
+    expect(promise).not.toBe(stoppedPromise);
+    expect(cb).toHaveBeenCalledTimes(2);
+
+    resolveStoppedCb(false); // the stopped run fails after the new run started, and must not retry
+    expect(await stoppedPromise).toBe(false);
+    await new Promise(r => setTimeout(r, 50));
+    expect(cb).toHaveBeenCalledTimes(2);
+
+    resolveCb(true);
+    expect(await promise).toBe(true);
+  });
+
+  test('callUntilSuccess: a stopped run that succeeds after a new run started does not reset the new run', async () => {
+    const resolvers: Array<(value: boolean) => void> = [];
+    const cb = jest.fn(() => new Promise<boolean>(r => { resolvers.push(r); }));
+    const backoff = new Backoff(cb, 10, 10);
+
+    const stoppedPromise = backoff.callUntilSuccess();
+    backoff.stop();
+    const promise = backoff.callUntilSuccess();
+
+    resolvers[1](false); // the new run fails and schedules a retry
+    await new Promise(r => setTimeout(r, 0));
+    resolvers[0](true); // the stopped run succeeds: must not cancel the retry of the new run
+    expect(await stoppedPromise).toBe(false);
+
+    await new Promise(r => setTimeout(r, 50)); // the retry is called
+    expect(cb).toHaveBeenCalledTimes(3);
+    resolvers[2](true);
+    expect(await promise).toBe(true);
+  });
 });

@@ -10,7 +10,6 @@ import { isConsentGranted } from '../consent';
 import { POLLING, STREAMING, SYNC_MODE_UPDATE } from '../utils/constants';
 import { ISdkFactoryContextSync } from '../sdkFactory/types';
 import { SDK_DEFINITIONS_CACHE_LOADED } from '../readiness/constants';
-import { usesSegmentsSync } from '../storages/AbstractDefinitionsCacheSync';
 
 /**
  * Online SyncManager factory.
@@ -59,10 +58,9 @@ export function syncManagerOnlineFactory(
     function stopPollingAndSyncAll() {
       log.info(SYNC_STOP_POLLING);
       // if polling, stop
-      if (pollingManager!.isRunning()) {
-        pollingManager!.stop();
-        telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
-      }
+      if (pollingManager!.isRunning()) telemetryTracker.streamingEvent(SYNC_MODE_UPDATE, STREAMING);
+      // stop polling and halt pending retries, so that `syncAll` fetches immediately
+      pollingManager!.stop();
 
       // fetch splits and segments. There is no need to catch this promise (it is always resolved)
       pollingManager!.syncAll();
@@ -105,21 +103,13 @@ export function syncManagerOnlineFactory(
           // start syncing splits and segments
           if (pollingManager) {
 
-            // If synchronization is disabled pushManager and pollingManager should not start
-            if (syncEnabled) {
-              if (pushManager) {
-                // Doesn't call `syncAll` when the syncManager is resuming
-                if (startFirstTime) {
-                  pollingManager.syncAll();
-                }
-                pushManager.start();
-              } else {
-                pollingManager.start();
-              }
+            // If synchronization is enabled without streaming, start polling
+            if (syncEnabled && !pushManager) {
+              pollingManager.start();
             } else {
-              if (startFirstTime) {
-                pollingManager.syncAll();
-              }
+              // If streaming or single sync, call `syncAll` only the first time, not when the syncManager is resuming
+              if (startFirstTime) pollingManager.syncAll();
+              if (pushManager) pushManager.start();
             }
           }
 
@@ -135,7 +125,7 @@ export function syncManagerOnlineFactory(
 
         // stop syncing
         if (pushManager) pushManager.stop();
-        if (pollingManager && pollingManager.isRunning()) pollingManager.stop();
+        if (pollingManager) pollingManager.stop();
 
         // stop periodic data recording (events, impressions, telemetry).
         submitterManager.stop();
@@ -154,39 +144,14 @@ export function syncManagerOnlineFactory(
       shared(matchingKey: string, readinessManager: IReadinessManager, storage: IStorageSync) {
         if (!pollingManager) return;
 
-        const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage);
-        if (syncEnabled && pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
-
-        if (running) {
-          if (syncEnabled) {
-            if (pushManager) {
-              if (pollingManager.isRunning()) {
-                // if doing polling, we must start the periodic fetch of data
-                if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-              } else {
-                // if not polling, we must execute the sync task for the initial fetch
-                // of segments since `syncAll` was already executed when starting the main client
-                mySegmentsSyncTask.execute();
-              }
-            } else {
-              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-            }
-          } else {
-            if (!readinessManager.isReady()) mySegmentsSyncTask.execute();
-          }
-        }
+        const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).add(matchingKey, readinessManager, storage, running);
+        if (pushManager) pushManager.add(matchingKey, mySegmentsSyncTask);
 
         return {
           stop() {
-            // check in case `client.destroy()` has been invoked more than once for the same client
-            const mySegmentsSyncTask = (pollingManager as IPollingManagerCS).get(matchingKey);
-            if (mySegmentsSyncTask) {
-              // stop syncing
-              if (pushManager) pushManager.remove(matchingKey);
-              if (mySegmentsSyncTask.isRunning()) mySegmentsSyncTask.stop();
-
-              (pollingManager as IPollingManagerCS).remove(matchingKey);
-            }
+            // stop syncing
+            if (pushManager) pushManager.remove(matchingKey);
+            (pollingManager as IPollingManagerCS).remove(matchingKey);
           },
           flush() { return Promise.resolve(); }
         };
