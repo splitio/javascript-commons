@@ -1,4 +1,4 @@
-3.3.0 (Unpublished)
+3.3.0 (November 26, 2026)
  - Added /api/v1/memberships endpoint of configs subdomain.
  - Updated single sync and streaming modes to retry with backoff, so that the SDK recovers from a failed fetch without waiting for a push notification or a reconnection.
 
