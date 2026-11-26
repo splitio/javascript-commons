@@ -40,10 +40,9 @@ export interface IMySegmentsSyncTask extends ISyncTask<[segmentsData?: MySegment
 
 export interface IPollingManager extends ITask {
   /**
-   * Fetches definitions and segments.
-   * @param retryWithBackoff - if true, retries each fetch with exponential backoff until it succeeds, or `stop` is called.
+   * Fetches definitions and segments, retrying each fetch with exponential backoff until it succeeds, or `stop` or `start` is called.
    */
-  syncAll(retryWithBackoff?: boolean): Promise<any>
+  syncAll(): Promise<any>
   definitionsSyncTask: IDefinitionsSyncTask
   segmentsSyncTask: ISyncTask
 }

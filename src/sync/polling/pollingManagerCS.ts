@@ -33,9 +33,15 @@ export function pollingManagerCSFactory(
 
     // Map of matching keys to their corresponding MySegmentsSyncTask.
     const mySegmentsSyncTasks: Record<string, IMySegmentsSyncTask> = {};
-    // Map of matching keys to the backoff of their MySegmentsSyncTask, used by `syncAll(true)`.
+    // Map of matching keys to the backoff of their MySegmentsSyncTask, used to retry the initial fetch of memberships.
     const mySegmentsBackoffs: Record<string, Backoff> = {};
     const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
+
+    // Halts the retries of `syncAll` and of the initial fetch of memberships
+    function stopBackoffs() {
+      definitionsBackoff.stop();
+      forOwn(mySegmentsBackoffs, (backoff) => backoff.stop());
+    }
 
     const matchingKey = getMatching(settings.core.key);
     const mySegmentsSyncTask = add(matchingKey, readiness, storage);
@@ -69,41 +75,31 @@ export function pollingManagerCSFactory(
     /**
      * Creates and registers the MySegmentsSyncTask of a client.
      * @param startSync - true if the SyncManager is running, to start syncing the client memberships: periodic fetch if polling,
-     * initial fetch if streaming, or initial fetch retried with backoff if synchronization is disabled (single sync).
+     * or initial fetch retried with backoff if streaming or synchronization is disabled (single sync).
      */
     function add(matchingKey: string, readiness: IReadinessManager, storage: IStorageSync, startSync?: boolean) {
       const mySegmentsSyncTask = mySegmentsSyncTaskFactory(mySegmentsFetcher, storage, readiness, settings, matchingKey);
+      const usingSegments = usesSegmentsSync(storage);
 
       // smart ready
       function smartReady(metadata: SdkUpdateMetadata) {
         if (!readiness.isReady() && !usesSegmentsSync(storage)) readiness.segments.emit(SDK_SEGMENTS_ARRIVED, metadata);
       }
-      if (!usesSegmentsSync(storage)) setTimeout(smartReady, 0);
+      if (!usingSegments) setTimeout(smartReady, 0);
       else readiness.definitions.once(SDK_DEFINITIONS_ARRIVED, smartReady);
 
       mySegmentsSyncTasks[matchingKey] = mySegmentsSyncTask;
+      const mySegmentsBackoff = mySegmentsBackoffs[matchingKey] = new Backoff(() => mySegmentsSyncTask.execute());
 
       if (startSync) {
-        if (settings.sync.enabled) {
-          if (settings.streamingEnabled) {
-            if (definitionsSyncTask.isRunning()) {
-              // if polling, start the periodic fetch
-              if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-            } else {
-              // if not polling, execute the initial fetch of segments
-              // since `syncAll` was already executed when starting the main client
-              mySegmentsSyncTask.execute();
-            }
-          } else {
-            if (usesSegmentsSync(storage)) mySegmentsSyncTask.start();
-          }
+        if (settings.sync.enabled && (!settings.streamingEnabled || definitionsSyncTask.isRunning())) {
+          // if polling, start the periodic fetch
+          if (usingSegments) mySegmentsSyncTask.start();
         } else {
-          // if single sync, execute the initial fetch with backoff
-          if (!readiness.isReady()) {
-            const mySegmentsBackoff = new Backoff(() => mySegmentsSyncTask.execute());
-            mySegmentsBackoffs[matchingKey] = mySegmentsBackoff;
-            mySegmentsBackoff.callUntilSuccess();
-          }
+          // if streaming or single sync, execute the initial fetch with backoff. In single sync, skip it if segments are not used,
+          // since the client is ready by smart ready. In streaming, it's not skipped, because nothing would fetch the memberships
+          // if definitions later use segments. `syncAll` might also call it, if the client is added before it runs: the backoff runs only once
+          if (settings.sync.enabled || usingSegments) mySegmentsBackoff.callUntilSuccess();
         }
       }
 
@@ -117,6 +113,7 @@ export function pollingManagerCSFactory(
       // Start periodic fetching (polling)
       start() {
         log.info(POLLING_START);
+        stopBackoffs(); // polling takes over the retries
 
         definitionsSyncTask.start();
         if (usesSegmentsSync(storage)) startMySegmentsSyncTasks();
@@ -129,20 +126,17 @@ export function pollingManagerCSFactory(
           definitionsSyncTask.stop();
         }
         stopMySegmentsSyncTasks();
-
-        // halt the retries of `syncAll`
-        definitionsBackoff.stop();
-        forOwn(mySegmentsBackoffs, (backoff) => backoff.stop());
+        stopBackoffs();
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
-      // fetch definitions and segments
-      syncAll(retryWithBackoff) {
-        const promises = [retryWithBackoff ? definitionsBackoff.callUntilSuccess() : definitionsSyncTask.execute()];
-        forOwn(mySegmentsSyncTasks, (mySegmentsSyncTask, matchingKey) => {
-          promises.push(retryWithBackoff ? mySegmentsBackoffs[matchingKey].callUntilSuccess() : mySegmentsSyncTask.execute());
+      // fetch definitions and memberships, retrying with backoff
+      syncAll() {
+        const promises = [definitionsBackoff.callUntilSuccess()];
+        forOwn(mySegmentsBackoffs, (mySegmentsBackoff) => {
+          promises.push(mySegmentsBackoff.callUntilSuccess());
         });
         return Promise.all(promises);
       },

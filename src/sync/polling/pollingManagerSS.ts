@@ -24,9 +24,15 @@ export function pollingManagerSSFactory(
     const segmentsSyncTask: ISegmentsSyncTask = segmentsSyncTaskFactory(segmentChangesFetcher, storage, readiness, settings);
     const definitionsSyncTask: IDefinitionsSyncTask = definitionsSyncTaskFactory(definitionChangesFetcher, storage, readiness, settings, segmentsSyncTask);
 
-    // Used by `syncAll(true)` to retry the fetch of definitions and segments
+    // Used by `syncAll` to retry the fetch of definitions and segments
     const definitionsBackoff = new Backoff(() => definitionsSyncTask.execute());
     const segmentsBackoff = new Backoff(() => segmentsSyncTask.execute());
+
+    // Halts the retries of `syncAll`
+    function stopBackoffs() {
+      definitionsBackoff.stop();
+      segmentsBackoff.stop();
+    }
 
     return {
       definitionsSyncTask,
@@ -35,6 +41,7 @@ export function pollingManagerSSFactory(
       // Start periodic fetching (polling)
       start() {
         log.info(POLLING_START);
+        stopBackoffs(); // polling takes over the retries
         log.debug(LOG_PREFIX_SYNC_POLLING + `${definitionChangesFetcher.type} will be refreshed each ${settings.scheduler.featuresRefreshRate} millis`);
         log.debug(LOG_PREFIX_SYNC_POLLING + `segments will be refreshed each ${settings.scheduler.segmentsRefreshRate} millis`);
 
@@ -53,24 +60,16 @@ export function pollingManagerSSFactory(
           definitionsSyncTask.stop();
         }
         if (segmentsSyncTask.isRunning()) segmentsSyncTask.stop();
-
-        // halt the retries of `syncAll`
-        definitionsBackoff.stop();
-        segmentsBackoff.stop();
+        stopBackoffs();
       },
 
       // Used by SyncManager to know if running in polling mode.
       isRunning: definitionsSyncTask.isRunning,
 
-      syncAll(retryWithBackoff) {
-        // fetch definitions and segments. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
-        if (retryWithBackoff) {
-          return definitionsBackoff.callUntilSuccess().then((success) => {
-            success && segmentsBackoff.callUntilSuccess();
-          });
-        }
-        return definitionsSyncTask.execute().then(() => {
-          return segmentsSyncTask.execute();
+      // fetch definitions and then segments, retrying with backoff. There is no need to catch this promise (`DefinitionChangesUpdater` is always resolved with a boolean value)
+      syncAll() {
+        return definitionsBackoff.callUntilSuccess().then((success) => {
+          return success && segmentsBackoff.callUntilSuccess();
         });
       }
     };
